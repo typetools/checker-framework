@@ -15,12 +15,11 @@ sourceSets {
     }
 }
 
-ext {
-    versions = [
-            autoValue       : "1.6.5",
-            lombok          : "1.18.12",
-    ]
-}
+def versions = [
+        autoValue       : "1.7",
+        lombok          : "1.18.12",
+]
+
 
 dependencies {
     implementation project(':dataflow')
@@ -96,7 +95,18 @@ checkCompilerMessages {
     ]
 }
 
+test {
+    useJUnit {
+        // These are run in task wholeProgramInferenceTests.
+        excludeCategories 'tests.WholeProgramInferenceTest'
+    }
+}
+
 task testWPI(type: Test) {
+    description 'Task that runs whole program inference and inserts the inferred annotations ' +
+            'into source code. (Used by wholeProgramInferenceTests.)'
+    dependsOn(compileTestJava)
+
     doFirst {
         delete("tests/whole-program-inference/annotated")
     }
@@ -113,6 +123,9 @@ task testWPI(type: Test) {
 }
 
 task testWPIValidate(type: Test) {
+    description 'Task that checks for expected errors output by testWPI task. ' +
+            '(Used by wholeProgramInferenceTests.)'
+
     outputs.upToDateWhen { false }
     include '**/WholeProgramInferenceValidationTest.class'
     testLogging {
@@ -127,7 +140,6 @@ task testWPIValidate(type: Test) {
 
 task wholeProgramInferenceTests(dependsOn: 'shadowJar', group: 'Verification') {
     description 'Run tests for whole-program inference using .jaif files'
-    dependsOn(compileTestJava)
     dependsOn(testWPI)
     outputs.upToDateWhen { false }
 
@@ -185,4 +197,25 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 
 clean {
     delete("tests/whole-program-inference/annotated")
+    delete("tests/returnsreceiverdelomboked")
 }
+
+
+task delombok {
+    description 'Delomboks the source code tree in tests/returnsreceiverlombok'
+
+    def srcDelomboked = 'tests/returnsreceiverdelomboked'
+    def srcJava = 'tests/returnsreceiverlombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    doLast {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: configurations.testCompileClasspath.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    }
+}
+
+tasks.test.dependsOn("delombok")

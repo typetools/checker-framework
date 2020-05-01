@@ -28,7 +28,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
@@ -595,13 +595,13 @@ public class TypeVisualizer {
                 builder.append(methodElem.getReturnType().toString());
                 builder.append(" <");
 
-                builder.append(PluginUtil.join(", ", methodElem.getTypeParameters()));
+                builder.append(SystemUtil.join(", ", methodElem.getTypeParameters()));
                 builder.append("> ");
 
                 builder.append(methodElem.getSimpleName().toString());
 
                 builder.append("(");
-                builder.append(PluginUtil.join(",", methodElem.getParameters()));
+                builder.append(SystemUtil.join(",", methodElem.getParameters()));
                 builder.append(")");
                 return builder.toString();
             }

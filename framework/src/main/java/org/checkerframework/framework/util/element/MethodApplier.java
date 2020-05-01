@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
@@ -154,7 +154,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         if (!unmatched.isEmpty()) {
             throw new BugInCF(
                     "Unexpected annotations ( "
-                            + PluginUtil.join(",", unmatched)
+                            + SystemUtil.join(",", unmatched)
                             + " ) for"
                             + "type ( "
                             + type

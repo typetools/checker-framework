@@ -9,6 +9,7 @@ import java.util.List;
 import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
 
+/** tests the returns receiver checker's AutoValue integration. */
 public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
     private static final ImmutableList<String> ANNOTATION_PROCS =

@@ -64,6 +64,15 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cf-inference.sh
     displayName: test-cf-inference.sh
+- job: cf_inference_jdk11
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cf-inference.sh
+    displayName: test-cf-inference.sh
 - job: daikon_jdk8
   pool:
     vmImage: 'ubuntu-latest'
@@ -73,15 +82,15 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-#- job: daikon_jdk11
-#  pool:
-#    vmImage: 'ubuntu-latest'
-#  container: mdernst/cf-ubuntu-jdk11:latest
-#  steps:
-#  - checkout: self
-#    fetchDepth: 25
-#  - bash: ./checker/bin-devel/test-daikon.sh
-#    displayName: test-daikon.sh
+- job: daikon_jdk11
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk11:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon.sh
+    displayName: test-daikon.sh
 - job: guava_jdk8
   pool:
     vmImage: 'ubuntu-latest'

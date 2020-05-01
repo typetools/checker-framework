@@ -7,25 +7,32 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Test runner for tests of the Returns Receiver Checker.
- *
- * <p>Tests appear as Java files in the {@code tests/lombok} folder. To add a new test case, create
- * a Java file in that directory. The file contains "// ::" comments to indicate expected errors and
- * warnings; see https://github.com/typetools/checker-framework/blob/master/checker/tests/README .
+ * Tests the returns receiver checker's lombok integration, the test files in
+ * tests/returnsreceiverlombok package will be delomboked into tests/returnsreceiverdelomboked
+ * package before running the test and the returns receiver checker will run on the generated codes.
  */
 public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest {
     public ReturnsReceiverLombokTest(List<File> testFiles) {
         super(
                 testFiles,
                 ReturnsReceiverChecker.class,
-                "lombok",
+                "returnsreceiverdelomboked",
                 "-Anomsgtext",
                 "-nowarn",
                 "-AsuppressWarnings=type.anno.before.modifier");
     }
 
+    @Override
+    public void run() {
+        // Only run if delomboked codes have been created.
+        if (!new File("tests/returnsreceiverdelomboked/").exists()) {
+            throw new RuntimeException("delombok task must be run before this test.");
+        }
+        super.run();
+    }
+
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"returnsreceiverlombok"};
+        return new String[] {"returnsreceiverdelomboked"};
     }
 }

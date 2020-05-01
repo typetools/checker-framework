@@ -3,11 +3,10 @@ package org.checkerframework.common.returnsreceiver;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The visitor for the Returns Receiver Checker. */
@@ -25,20 +24,31 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
         AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(node);
+        // Warn if a @This annotation is in an illegal location.
         if (AnnotationUtils.areSame(annot, getTypeFactory().THIS_ANNOTATION)) {
             TreePath parentPath = getCurrentPath().getParentPath();
             Tree parent = parentPath.getLeaf();
             Tree grandparent = parentPath.getParentPath().getLeaf();
+            Tree greatGrandparent = parentPath.getParentPath().getParentPath().getLeaf();
             boolean isReturnAnnot =
                     grandparent instanceof MethodTree
                             && (parent.equals(((MethodTree) grandparent).getReturnType())
                                     || parent instanceof ModifiersTree);
+            boolean isReceiverAnnot =
+                    greatGrandparent instanceof MethodTree
+                            && grandparent.equals(
+                                    ((MethodTree) greatGrandparent).getReceiverParameter())
+                            && parent.equals(((VariableTree) grandparent).getModifiers());
             boolean isCastAnnot =
                     grandparent instanceof TypeCastTree
                             && parent.equals(((TypeCastTree) grandparent).getType());
-            if (!(isReturnAnnot || isCastAnnot)) {
-                checker.report(
-                        node, new DiagMessage(Diagnostic.Kind.ERROR, "invalid.this.location"));
+            if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
+                checker.reportError(node, "type.invalid.this.location");
+            }
+            if (isReturnAnnot
+                    && ElementUtils.isStatic(
+                            TreeUtils.elementFromDeclaration((MethodTree) grandparent))) {
+                checker.reportError(node, "type.invalid.this.location");
             }
         }
         return super.visitAnnotation(node, p);

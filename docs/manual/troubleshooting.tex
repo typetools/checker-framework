@@ -135,20 +135,6 @@ If you get the error
 \end{Verbatim}
 
 \noindent
-If you get an error such as
-
-\begin{Verbatim}
-  java.lang.NoClassDefFoundError: java/util/Objects
-\end{Verbatim}
-
-\noindent
-then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 8
-% or later
-JDK, at least for running the Checker
-Framework.
-
-\noindent
 % I'm not 100% sure of the following explanation and solution.
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
@@ -202,37 +188,6 @@ to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk
 That usually works, but if not, then you should recompile the Checker
 Framework from source (Section~\ref{build-source}) rather than using
 the pre-compiled distribution.
-
-
-\item
-\label{no-such-field-error}
-A \<NoSuchFieldError> such as this:
-
-\begin{Verbatim}
-java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
-\end{Verbatim}
-
-\noindent
-Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
-The error message suggests that
-you're not executing with the right bootclasspath: some classes were
-compiled with the JDK 8 version and expect the field, but you're
-executing the compiler on a JDK without the field.
-
-One possibility is that you are not running the Checker Framework compiler
---- use \<javac -version> to check this, then use the right one.  (Maybe
-the Checker Framework javac is at the end rather than the beginning of your
-path.)
-
-If you are using Ant, then one possibility
-is that the javac compiler is using the same JDK as Ant is using.  You can
-correct this by being sure to use \<fork="yes"> (see
-Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
-\<extJavac>.
-
-If you are building from source (Section~\ref{build-source}),
-you might need to rebuild the Annotation
-File Utilities before recompiling or using the Checker Framework.
 
 
 \item
@@ -720,36 +675,17 @@ maintainers' time to evaluate and fix.
 
 \subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
-Sometimes, a checker will report a warning because a library is not
-annotated or because the library contains incorrect annotations.
-Please do not open GitHub issues for these.
+Sometimes, a checker reports a warning because a library is not
+annotated.  Please do not open GitHub issues for these.
 Instead, we appreciate pull requests to help us improve the annotations.
 Alternatively or in the interim, you can use stub files as described in
 Section~\ref{stub}.
 
-If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations.
-\begin{itemize}
-\item
-  Non-JDK libraries:  You can find the annotated source in
-  \url{https://github.com/typetools/}.
-  If the library does not exist there, then it has no annotations yet.
-  You can fork it, add annotations,
-  and propose that your annotated version be moved into
-  \url{https://github.com/typetools/}.
-\item
-  JDK:  You need to open two pull requests, because there are two versions of the
-  annotated JDK.
-  \begin{itemize}
-  \item JDK 8: The annotated JDK source is in the
-    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
-      GitHub repository}, either in a subdirectory of
-    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-    or in files named \<jdk.astub> in the checker's implementation directory.
-  \item
-    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
-  \end{itemize}
-\end{itemize}
+If a checker reports a warning because a library contains incorrect annotations,
+then please open a pull request that adds the annotations.  If the
+library's maintainers have added annotations, make a pull request to them.
+If the Checker Framework maintainers have added annotations,
+you can find the annotated source in \url{https://github.com/typetools/}.
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.

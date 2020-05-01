@@ -22,7 +22,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 
 public class TestUtilities {
@@ -34,8 +34,8 @@ public class TestUtilities {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = PluginUtil.getJreVersion() >= 9;
-        IS_AT_LEAST_11_JVM = PluginUtil.getJreVersion() >= 11;
+        IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
+        IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -89,19 +89,21 @@ public class TestUtilities {
     private static List<List<File>> findJavaTestFilesInDirectory(File dir) {
         assert dir.isDirectory();
         List<List<File>> fileGroupedByDirectory = new ArrayList<>();
-        List<File> fileInDir = new ArrayList<>();
+        List<File> filesInDir = new ArrayList<>();
 
-        fileGroupedByDirectory.add(fileInDir);
-        for (String fileName : dir.list()) {
+        fileGroupedByDirectory.add(filesInDir);
+        String[] dirContents = dir.list();
+        Arrays.sort(dirContents);
+        for (String fileName : dirContents) {
             File file = new File(dir, fileName);
             if (file.isDirectory()) {
                 fileGroupedByDirectory.addAll(findJavaTestFilesInDirectory(file));
             } else if (isJavaTestFile(file)) {
-                fileInDir.add(file);
+                filesInDir.add(file);
             }
         }
-        if (fileInDir.isEmpty()) {
-            fileGroupedByDirectory.remove(fileInDir);
+        if (filesInDir.isEmpty()) {
+            fileGroupedByDirectory.remove(filesInDir);
         }
         return fileGroupedByDirectory;
     }
@@ -324,19 +326,19 @@ public class TestUtilities {
             pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
             pw.println("Expected:");
-            pw.println(PluginUtil.joinLines(expected));
+            pw.println(SystemUtil.joinLines(expected));
             pw.println();
 
             pw.println("Actual:");
-            pw.println(PluginUtil.joinLines(actual));
+            pw.println(SystemUtil.joinLines(actual));
             pw.println();
 
             pw.println("Missing:");
-            pw.println(PluginUtil.joinLines(missing));
+            pw.println(SystemUtil.joinLines(missing));
             pw.println();
 
             pw.println("Unexpected:");
-            pw.println(PluginUtil.joinLines(unexpected));
+            pw.println(SystemUtil.joinLines(unexpected));
             pw.println();
 
             pw.println();
@@ -414,15 +416,35 @@ public class TestUtilities {
         }
     }
 
-    public static boolean testBooleanProperty(String propName) {
-        return testBooleanProperty(propName, false);
+    /**
+     * Return true if the system property is set to "true". Return false if the system property is
+     * not set or is set to "false". Otherwise, errs.
+     *
+     * @param key system property to check
+     * @return true if the system property is set to "true". Return false if the system property is
+     *     not set or is set to "false". Otherwise, errs.
+     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String)} instead.
+     */
+    @Deprecated
+    public static boolean testBooleanProperty(String key) {
+        return testBooleanProperty(key, false);
     }
 
-    public static boolean testBooleanProperty(String propName, boolean defaultValue) {
-        return PluginUtil.getBooleanSystemProperty(propName, defaultValue);
+    /**
+     * Return its boolean value if the system property is set. Return defaultValue if the system
+     * property is not set. Errs if the system property is set to a non-boolean value.
+     *
+     * @param key system property to check
+     * @param defaultValue value to use if the property is not set
+     * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
+     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String, boolean)} instead.
+     */
+    @Deprecated
+    public static boolean testBooleanProperty(String key, boolean defaultValue) {
+        return SystemUtil.getBooleanSystemProperty(key, defaultValue);
     }
 
     public static boolean getShouldEmitDebugInfo() {
-        return PluginUtil.getBooleanSystemProperty("emit.test.debug");
+        return SystemUtil.getBooleanSystemProperty("emit.test.debug");
     }
 }

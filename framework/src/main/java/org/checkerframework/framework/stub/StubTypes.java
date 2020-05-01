@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** Holds information about types parsed from stub files. */
 public class StubTypes {
@@ -78,13 +78,13 @@ public class StubTypes {
         this.typesFromStubFiles = new HashMap<>();
         this.declAnnosFromStubFiles = new HashMap<>();
         this.parsing = false;
-        String release = PluginUtil.getReleaseValue(factory.getProcessingEnv());
+        String release = SystemUtil.getReleaseValue(factory.getProcessingEnv());
         this.annotatedJdkVersion =
-                release != null ? release : String.valueOf(PluginUtil.getJreVersion());
+                release != null ? release : String.valueOf(SystemUtil.getJreVersion());
 
         this.shouldParseJdk =
                 !factory.getContext().getChecker().hasOption("ignorejdkastub")
-                        && PluginUtil.getJreVersion() != 8
+                        && SystemUtil.getJreVersion() != 8
                         && annotatedJdkVersion.equals("11");
     }
 
@@ -410,7 +410,7 @@ public class StubTypes {
 
     /** @return JarURLConnection to "/jdk*" */
     private JarURLConnection getJarURLConnectionToJdk() {
-        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
+        URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         JarURLConnection connection;
         try {
             connection = (JarURLConnection) resourceURL.openConnection();
@@ -435,7 +435,7 @@ public class StubTypes {
         if (!shouldParseJdk) {
             return;
         }
-        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
+        URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         if (resourceURL == null) {
             if (factory.getContext().getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
@@ -502,13 +502,13 @@ public class StubTypes {
         JarURLConnection connection = getJarURLConnectionToJdk();
 
         try (JarFile jarFile = connection.getJarFile()) {
-            for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
+            for (JarEntry jarEntry : jarFile.stream().collect(Collectors.toList())) {
                 // filter out directories and non-class files
-                if (!je.isDirectory()
-                        && je.getName().endsWith(".java")
-                        && je.getName().startsWith("jdk" + annotatedJdkVersion)) {
-                    String jeNAme = je.getName();
-                    int index = je.getName().indexOf("/share/classes/");
+                if (!jarEntry.isDirectory()
+                        && jarEntry.getName().endsWith(".java")
+                        && jarEntry.getName().startsWith("annotated-jdk")) {
+                    String jeNAme = jarEntry.getName();
+                    int index = jarEntry.getName().indexOf("/share/classes/");
                     String shortName =
                             jeNAme.substring(index + "/share/classes/".length())
                                     .replace(".java", "")
