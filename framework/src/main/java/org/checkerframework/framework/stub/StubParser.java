@@ -415,7 +415,7 @@ public class StubParser {
     }
 
     /**
-     * Parse a stub file that is a part of the annotated jdk and side-effects the last two
+     * Parse a stub file that is a part of the annotated JDK and side-effects the last two
      * arguments.
      *
      * @param filename name of stub file, used only for diagnostic messages

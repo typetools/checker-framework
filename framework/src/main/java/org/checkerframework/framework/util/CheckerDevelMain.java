@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 public class CheckerDevelMain extends CheckerMain {
 
@@ -23,7 +23,7 @@ public class CheckerDevelMain extends CheckerMain {
         final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
         final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
-        final boolean verbose = PluginUtil.getBooleanSystemProperty(VERBOSE_PROP);
+        final boolean verbose = SystemUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
         if (verbose) {
             System.out.println("CheckerDevelMain:");
