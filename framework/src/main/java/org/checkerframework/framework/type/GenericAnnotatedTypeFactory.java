@@ -830,10 +830,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
-    /**
-     * A mapping from methods (or other code blocks) to their exceptional exit store (used to check
-     * postconditions).
-     */
+    /** A mapping from methods (or other code blocks) to their exceptional exit store. */
     protected IdentityHashMap<Tree, Store> exceptionalExitStores;
 
     /** A mapping from methods to a list with all return statements and the corresponding store. */
@@ -870,12 +867,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a list of all return statements of {@code method} paired with their the corresponding
+     * Returns a list of all return statements of {@code method} paired with their corresponding
      * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
      * returned.
      *
      * @param methodTree method whose return statements should be returned
-     * @return a list of all return statements of {@code method} paired with their the corresponding
+     * @return a list of all return statements of {@code method} paired with their corresponding
      *     {@link TransferResult} or an empty list if {@code method} has no return statements
      */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
