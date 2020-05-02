@@ -294,6 +294,10 @@ import org.plumelib.util.UtilPlume;
     "permitMissingJdk",
     "nocheckjdk", // temporary, for backward compatibility
 
+    // Parse all JDK files at startup rather than as needed.
+    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    "parseAllJdk",
+
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
     "stubDebug",

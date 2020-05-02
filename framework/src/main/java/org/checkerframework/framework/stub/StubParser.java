@@ -2034,7 +2034,7 @@ public class StubParser {
      */
     private void stubWarn(String warning, Object... args) {
         warning = String.format(warning, args);
-        if (warnings.add(warning)) {
+        if (warnings.add(warning) && !isJdkAsStub) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);
