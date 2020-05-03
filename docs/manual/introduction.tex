@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.3.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.4.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -554,13 +554,10 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
-There are two special cases.
+There is one special case.
 \begin{itemize}
 \item
-The annotated JDK is automatically put on your
-classpath; you don't have to do anything special for it.
-\item
-For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
+For the Java 8 version of the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
 use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
@@ -1502,7 +1499,7 @@ same methodology in different words.
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
-% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations

@@ -89,10 +89,7 @@ public class StubTypes {
         this.annotatedJdkVersion =
                 release != null ? release : String.valueOf(SystemUtil.getJreVersion());
 
-        this.shouldParseJdk =
-                !factory.getContext().getChecker().hasOption("ignorejdkastub")
-                        && SystemUtil.getJreVersion() != 8
-                        && annotatedJdkVersion.equals("11");
+        this.shouldParseJdk = !factory.getContext().getChecker().hasOption("ignorejdkastub");
         this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
     }
 
@@ -488,6 +485,10 @@ public class StubTypes {
                     parseStubFile(path);
                     continue;
                 }
+                if (path.getFileName().toString().equals("module-info.java")) {
+                    // JavaParser can't parse module-info files, so skip them.
+                    continue;
+                }
                 if (parseAllJdkFiles) {
                     parseStubFile(path);
                     continue;
@@ -518,8 +519,14 @@ public class StubTypes {
                 // filter out directories and non-class files
                 if (!jarEntry.isDirectory()
                         && jarEntry.getName().endsWith(".java")
-                        && jarEntry.getName().startsWith("annotated-jdk")) {
+                        && jarEntry.getName().startsWith("annotated-jdk")
+                        // JavaParser can't parse module-info files, so skip them.
+                        && !jarEntry.getName().contains("module-info")) {
                     String jarEntryName = jarEntry.getName();
+                    if (parseAllJdkFiles) {
+                        parseJarEntry(jarEntryName);
+                        continue;
+                    }
                     int index = jarEntry.getName().indexOf("/share/classes/");
                     String shortName =
                             jarEntryName
@@ -529,10 +536,6 @@ public class StubTypes {
                     jdkStubFilesJar.put(shortName, jarEntryName);
                     if (jarEntryName.endsWith("package-info.java")) {
                         parseJarEntry(jarEntryName);
-                    }
-                    if (parseAllJdkFiles) {
-                        parseJarEntry(jarEntryName);
-                        continue;
                     }
                 }
             }
