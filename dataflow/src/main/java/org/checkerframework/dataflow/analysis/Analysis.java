@@ -872,10 +872,14 @@ public class Analysis<
 
     /** @return the exceptional exit store. */
     @RequiresNonNull("cfg")
-    public S getExceptionalExitStore() {
+    public @Nullable S getExceptionalExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        @SuppressWarnings("dereference.of.nullable")
-        S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock()).getRegularStore();
-        return exceptionalExitStore;
+        SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
+        if (inputs.containsKey(exceptionalExitBlock)) {
+            S exceptionalExitStore = inputs.get(exceptionalExitBlock).getRegularStore();
+            return exceptionalExitStore;
+        } else {
+            return null;
+        }
     }
 }
