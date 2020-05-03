@@ -486,6 +486,7 @@ public class StubTypes {
                     continue;
                 }
                 if (path.getFileName().toString().equals("module-info.java")) {
+                    // JavaParser can't parse module-info files, so skip them.
                     continue;
                 }
                 if (parseAllJdkFiles) {
@@ -519,6 +520,7 @@ public class StubTypes {
                 if (!jarEntry.isDirectory()
                         && jarEntry.getName().endsWith(".java")
                         && jarEntry.getName().startsWith("annotated-jdk")
+                        // JavaParser can't parse module-info files, so skip them.
                         && !jarEntry.getName().contains("module-info")) {
                     String jarEntryName = jarEntry.getName();
                     if (parseAllJdkFiles) {
