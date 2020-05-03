@@ -864,9 +864,9 @@ optional, and many checker classes do not have one.)
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled.  The checker uses
-\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
 and
-\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
 to issue errors.
 
 Also, the checker class follows the factory method pattern to
