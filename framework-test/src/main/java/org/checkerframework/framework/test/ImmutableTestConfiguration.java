@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -89,11 +89,11 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
-                "processors=" + PluginUtil.join(", ", processors),
-                "options=" + PluginUtil.join(", ", getFlatOptions()),
+                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
+                "processors=" + SystemUtil.join(", ", processors),
+                "options=" + SystemUtil.join(", ", getFlatOptions()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 }

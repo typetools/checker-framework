@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util.defaults;
 
 import java.util.TreeSet;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}).
@@ -17,7 +17,7 @@ class DefaultSet extends TreeSet<Default> {
 
     @Override
     public String toString() {
-        return "DefaultSet( " + PluginUtil.join(", ", this) + " )";
+        return "DefaultSet( " + SystemUtil.join(", ", this) + " )";
     }
 
     public static final DefaultSet EMPTY = new DefaultSet();
