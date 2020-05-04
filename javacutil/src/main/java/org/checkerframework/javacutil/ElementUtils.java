@@ -220,26 +220,7 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
-                    switch (type.getKind()) {
-                        case BOOLEAN:
-                            return "boolean";
-                        case BYTE:
-                            return "byte";
-                        case CHAR:
-                            return "char";
-                        case DOUBLE:
-                            return "double";
-                        case FLOAT:
-                            return "float";
-                        case INT:
-                            return "int";
-                        case LONG:
-                            return "long";
-                        case SHORT:
-                            return "short";
-                        default:
-                            throw new BugInCF("expected a primitive type, but found " + type);
-                    }
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
                 }
         }
         throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
