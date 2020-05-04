@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;
   public TreeSet() { throw new RuntimeException("skeleton method"); }
-  public TreeSet(Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeSet(@Nullable Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
   public TreeSet(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public TreeSet(SortedSet<E> a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree
@@ -30,7 +30,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E>, Clone
   @SideEffectFree public SortedSet<E> subSet(E a1, E a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public SortedSet<E> headSet(E a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public SortedSet<E> tailSet(E a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public E first() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public E last() { throw new RuntimeException("skeleton method"); }
   public @Nullable E lower(E a1) { throw new RuntimeException("skeleton method"); }

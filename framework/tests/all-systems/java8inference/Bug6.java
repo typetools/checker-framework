@@ -5,7 +5,7 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug6 {
     public static <Q> Iterable<Q> method(final Iterable<Q> iterable) {
         return new Iterable<Q>() {

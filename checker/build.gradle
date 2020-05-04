@@ -2,7 +2,7 @@ ext {
     // See instructions for updating jdk8.jar at
     // https://github.com/typetools/annotated-libraries/blob/master/README.md .
     // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'f1f958b7e6667b4511162b70274babb2e3005ff3'
+    jdkShaHash = 'ac868645142c2466aaec739f1331f217a669fd4a'
     if (rootProject.hasProperty("useLocalJdk")) {
         jdkShaHash = 'local'
     }
@@ -13,7 +13,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java', "${buildDir}/jdk"]
+            srcDirs += ['src/main/java', "${buildDir}/generated-resources"]
         }
     }
     testannotations
@@ -57,10 +57,16 @@ task cloneTypetoolsJdk() {
     }
 }
 
-task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
-    description "Copy annotated jdk 11 files to ${buildDir}/jdk/jdk11/"
+task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+    def inputDir = "${jdkHome}/src"
+    def outputDir = "${buildDir}/generated-resources/annotated-jdk/"
+    description "Copy annotated jdk files to ${outputDir}"
+
+    inputs.dir file(inputDir)
+    outputs.dir file(outputDir)
+
     doLast {
-        FileTree tree = fileTree(dir: "${jdkHome}/src/")
+        FileTree tree = fileTree(dir: inputDir)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit { FileVisitDetails fvd ->
             if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
@@ -76,7 +82,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         int jdkDirStringSize = absolutejdkHome.size()
         copy {
             from(jdkHome)
-            into("${buildDir}/jdk/jdk11/")
+            into(outputDir)
             for (String filename : annotatedForFiles) {
                 include filename.substring(jdkDirStringSize)
             }
@@ -84,7 +90,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     }
 }
 
-processResources.dependsOn(copyJdk11Files)
+processResources.dependsOn(copyAnnotatedJdkFiles)
 
 jar {
     manifest {
@@ -184,8 +190,9 @@ task updateJdk() {
             if (!downloadedJdk.exists()) {
                 download {
                     src "https://github.com/typetools/annotated-libraries/raw/${jdkShaHash}/jdk8.jar"
-                    overwrite true
                     dest downloadedJdk
+                    overwrite true
+                    retries 3
                 }
             }
             copy {
@@ -373,5 +380,42 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
         }
 
 
+    }
+}
+task jdkSourcesJar(type: Jar) {
+    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
+    // See: https://central.sonatype.org/pages/requirements.html -->
+    archiveFileName = 'jdk8-source.jar'
+    from "${rootDir}/maven-artifacts/release/"
+    include 'README-jdk'
+    destinationDirectory = buildDir
+}
+
+task jdkJavadocJar(type: Jar) {
+    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
+    // See: https://central.sonatype.org/pages/requirements.html -->
+    archiveFileName = 'jdk8-javadoc.jar'
+    from "${rootDir}/maven-artifacts/release/"
+    include 'README-jdk'
+    destinationDirectory = buildDir
+}
+
+task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
+    description 'Deploys checker.jar and jdk8.jar to the local Maven repository'
+    dependsOn 'updateJdk'
+    doLast {
+        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
+        mvnDeployToLocalRepo("${projectDir}/dist/jdk8.jar", "${pomFiles}/jdk8-pom.xml")
+    }
+}
+
+task deployArtifactsToSonatype {
+    description 'Deploys checker.jar and jdk8.jar (and their sources/javadoc jars) to the Sonatype repository'
+    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar', jdkSourcesJar, jdkJavadocJar, 'updateJdk')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
+        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${pomFiles}/jdk8-pom.xml")
     }
 }

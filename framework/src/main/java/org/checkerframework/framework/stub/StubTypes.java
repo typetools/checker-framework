@@ -218,12 +218,20 @@ public class StubTypes {
                     // If there exists one parent checker which can find this stub file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
+                        File stubPathParent = new File(stubPath).getParentFile();
+                        String stubPathParentDescription =
+                                (stubPathParent == null
+                                        ? "current directory"
+                                        : "directory "
+                                                + new File(stubPath)
+                                                        .getParentFile()
+                                                        .getAbsolutePath());
                         checker.message(
                                 Kind.WARNING,
                                 "Did not find stub file "
                                         + stubPath
-                                        + " on classpath or within directory "
-                                        + new File(stubPath).getAbsolutePath()
+                                        + " on classpath or within "
+                                        + stubPathParentDescription
                                         + (stubPathFull.equals(stubPath)
                                                 ? ""
                                                 : (" or at " + stubPathFull)));
@@ -402,7 +410,7 @@ public class StubTypes {
 
     /** @return JarURLConnection to "/jdk*" */
     private JarURLConnection getJarURLConnectionToJdk() {
-        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
+        URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         JarURLConnection connection;
         try {
             connection = (JarURLConnection) resourceURL.openConnection();
@@ -427,7 +435,7 @@ public class StubTypes {
         if (!shouldParseJdk) {
             return;
         }
-        URL resourceURL = factory.getClass().getResource("/jdk" + annotatedJdkVersion);
+        URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         if (resourceURL == null) {
             if (factory.getContext().getChecker().hasOption("permitMissingJdk")
                     // temporary, for backward compatibility
@@ -494,13 +502,13 @@ public class StubTypes {
         JarURLConnection connection = getJarURLConnectionToJdk();
 
         try (JarFile jarFile = connection.getJarFile()) {
-            for (JarEntry je : jarFile.stream().collect(Collectors.toList())) {
+            for (JarEntry jarEntry : jarFile.stream().collect(Collectors.toList())) {
                 // filter out directories and non-class files
-                if (!je.isDirectory()
-                        && je.getName().endsWith(".java")
-                        && je.getName().startsWith("jdk" + annotatedJdkVersion)) {
-                    String jeNAme = je.getName();
-                    int index = je.getName().indexOf("/share/classes/");
+                if (!jarEntry.isDirectory()
+                        && jarEntry.getName().endsWith(".java")
+                        && jarEntry.getName().startsWith("annotated-jdk")) {
+                    String jeNAme = jarEntry.getName();
+                    int index = jarEntry.getName().indexOf("/share/classes/");
                     String shortName =
                             jeNAme.substring(index + "/share/classes/".length())
                                     .replace(".java", "")

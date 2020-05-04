@@ -86,6 +86,7 @@ public class RangeTest {
         Long.MAX_VALUE
     };
 
+    /** Contains a Range for every combination of values in rangeBounds. */
     Range[] ranges;
 
     static final long INT_WIDTH = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
@@ -97,7 +98,7 @@ public class RangeTest {
     static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
     public RangeTest() {
-        // Initialize the ranges list.
+        // Initialize the ranges list to every combination of values in rangeBounds.
         List<Range> rangesList = new ArrayList<>();
         for (long lowerbound : rangeBounds) {
             for (long upperbound : rangeBounds) {
@@ -326,6 +327,22 @@ public class RangeTest {
                 }
             }
         }
+
+        Range r1 = Range.create(5, 1000);
+        Range r2 = Range.create(1024 + 17, 1024 + 22);
+        Range r3 = Range.create(5, Byte.MAX_VALUE + 2);
+
+        Range.ignoreOverflow = true;
+
+        assert r1.byteRange().equals(Range.create(5, Byte.MAX_VALUE));
+        assert r2.byteRange().equals(Range.create(Byte.MAX_VALUE, Byte.MAX_VALUE));
+        assert r3.byteRange().equals(Range.create(5, Byte.MAX_VALUE));
+
+        Range.ignoreOverflow = false;
+
+        assert r1.byteRange().equals(Range.BYTE_EVERYTHING);
+        assert r2.byteRange().equals(Range.create(17, 22));
+        assert r3.byteRange().equals(Range.BYTE_EVERYTHING);
     }
 
     @Test

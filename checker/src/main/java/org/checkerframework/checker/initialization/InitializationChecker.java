@@ -26,7 +26,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         // The key "initialization" is not useful here: it suppresses *all* warnings, not just those
         // related to initialization.  Instead, if the user writes
-        // @SuppressWarnings("initialization", let that match keys containing that string.
+        // @SuppressWarnings("initialization"), let that match keys containing that string.
         result.add("fbc");
         return result;
     }
