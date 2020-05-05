@@ -22,7 +22,6 @@ env:
     - GROUP=cftests-junit JDKVER=jdk11
     - GROUP=cftests-nonjunit JDKVER=jdk8
     - GROUP=cftests-nonjunit JDKVER=jdk11
-    - GROUP=jdk-jar JDKVER=jdk8
     - GROUP=misc JDKVER=jdk8-plus
     - GROUP=misc JDKVER=jdk11-plus
     - GROUP=cf-inference JDKVER=jdk8
