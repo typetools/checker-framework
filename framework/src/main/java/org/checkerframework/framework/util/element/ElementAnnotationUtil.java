@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -61,10 +61,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + PluginUtil.join(", ", types)
+                            + SystemUtil.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + PluginUtil.join(", ", elements)
+                            + SystemUtil.join(", ", elements)
                             + " ) ");
         }
 

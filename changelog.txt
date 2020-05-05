@@ -1,3 +1,15 @@
+Version 3.4.0, May 3, 2020
+
+The annotated jdk8.jar is no longer used.  You should remove any occurrence of
+  -Xbootclasspath/p:.../jdk8.jar
+from your build scripts.  Annotations for JDK 8 are included in checker.jar.
+
+The Returns Receiver Checker enables documenting and checking that a method
+returns its receiver (i.e., the `this` parameter).
+
+Closed issues:
+3267, 3263, 3217, 3212, 3201, 3111, 3010, 2943, 2930.
+
 ---------------------------------------------------------------------------
 
 Version 3.3.0, April 1, 2020

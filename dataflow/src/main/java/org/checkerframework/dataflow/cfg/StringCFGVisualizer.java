@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
@@ -73,6 +74,14 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
         return super.visualizeSpecialBlockHelper(sbb, lineSeparator);
+    }
+
+    @Override
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        return "ConditionalBlock: then: "
+                + cbb.getThenSuccessor().getId()
+                + ", else: "
+                + cbb.getElseSuccessor().getId();
     }
 
     @Override

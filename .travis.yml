@@ -18,37 +18,36 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
   matrix:
-    - GROUP=cftests-junit JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=cftests-junit JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=cftests-nonjunit JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=cftests-nonjunit JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=jdk-jar JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=misc JDKVER=jdk8-plus BUILDJDK=downloadjdk
-    - GROUP=misc JDKVER=jdk11-plus BUILDJDK=downloadjdk
-    - GROUP=cf-inference JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=cf-inference JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=daikon-part1 JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=daikon-part1 JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=daikon-part2 JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=daikon-part2 JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-formatter JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-formatter JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-index JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-index JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-interning JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-interning JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-lock JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-lock JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-nullness JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-nullness JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-regex JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-regex JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=guava-signature JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=guava-signature JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=plume-lib JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=plume-lib JDKVER=jdk11 BUILDJDK=downloadjdk
-    - GROUP=downstream JDKVER=jdk8 BUILDJDK=downloadjdk
-    - GROUP=downstream JDKVER=jdk11 BUILDJDK=downloadjdk
+    - GROUP=cftests-junit JDKVER=jdk8
+    - GROUP=cftests-junit JDKVER=jdk11
+    - GROUP=cftests-nonjunit JDKVER=jdk8
+    - GROUP=cftests-nonjunit JDKVER=jdk11
+    - GROUP=misc JDKVER=jdk8-plus
+    - GROUP=misc JDKVER=jdk11-plus
+    - GROUP=cf-inference JDKVER=jdk8
+    - GROUP=cf-inference JDKVER=jdk11
+    - GROUP=daikon-part1 JDKVER=jdk8
+    - GROUP=daikon-part1 JDKVER=jdk11
+    - GROUP=daikon-part2 JDKVER=jdk8
+    - GROUP=daikon-part2 JDKVER=jdk11
+    - GROUP=guava-formatter JDKVER=jdk8
+    - GROUP=guava-formatter JDKVER=jdk11
+    - GROUP=guava-index JDKVER=jdk8
+    - GROUP=guava-index JDKVER=jdk11
+    - GROUP=guava-interning JDKVER=jdk8
+    - GROUP=guava-interning JDKVER=jdk11
+    - GROUP=guava-lock JDKVER=jdk8
+    - GROUP=guava-lock JDKVER=jdk11
+    - GROUP=guava-nullness JDKVER=jdk8
+    - GROUP=guava-nullness JDKVER=jdk11
+    - GROUP=guava-regex JDKVER=jdk8
+    - GROUP=guava-regex JDKVER=jdk11
+    - GROUP=guava-signature JDKVER=jdk8
+    - GROUP=guava-signature JDKVER=jdk11
+    - GROUP=plume-lib JDKVER=jdk8
+    - GROUP=plume-lib JDKVER=jdk11
+    - GROUP=downstream JDKVER=jdk8
+    - GROUP=downstream JDKVER=jdk11
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
@@ -65,7 +64,6 @@ script:
 - echo "THIS_REPO=${THIS_REPO}"
 - echo "JDKVER=${JDKVER}"
 - echo "GROUP=${GROUP}"
-- echo "BUILDJDK=${BUILDJDK}"
 - echo "TRAVIS_BRANCH=${TRAVIS_BRANCH}"
 - echo "REMOTE_ORIGIN_URL=${REMOTE_ORIGIN_URL}"
 - echo "TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}"
@@ -105,7 +103,7 @@ script:
      export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
      export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
      export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
-     ./.travis-build.sh $GROUP $BUILDJDK"
+     ./.travis-build.sh $GROUP"
 
 git:
   depth: 9

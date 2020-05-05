@@ -28,15 +28,6 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-all.sh
     displayName: test-cftests-all.sh
-- job: jdk_jar_jdk8
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk8:latest
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-jdk-jar.sh
-    displayName: test-jdk-jar.sh
 - job: misc_jdk8
   pool:
     vmImage: 'ubuntu-latest'

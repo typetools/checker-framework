@@ -67,7 +67,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.UtilPlume;
@@ -294,6 +294,10 @@ import org.plumelib.util.UtilPlume;
     "permitMissingJdk",
     "nocheckjdk", // temporary, for backward compatibility
 
+    // Parse all JDK files at startup rather than as needed.
+    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    "parseAllJdk",
+
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
     "stubDebug",
@@ -356,7 +360,10 @@ import org.plumelib.util.UtilPlume;
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
-    "resourceStats"
+    "resourceStats",
+
+    // Parse all JDK files at startup rather than as needed.
+    "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
@@ -462,8 +469,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The string that separates the checker name from the option name in a "-A" command-line
      * argument. This string may only consist of valid Java identifier part characters, because it
      * will be used within the key of an option.
-     *
-     * @see #activeOptions
      */
     protected static final String OPTION_SEPARATOR = "_";
 
@@ -487,7 +492,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         // Keep in sync with check in checker-framework/build.gradle and text in installation
         // section of manual.
-        int jreVersion = PluginUtil.getJreVersion();
+        int jreVersion = SystemUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
                     "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",

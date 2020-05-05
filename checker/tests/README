@@ -37,11 +37,6 @@ or (to build distribution files)
   cd $CHECKERFRAMEWORK/checker/tests/nullness
   (cd $CHECKERFRAMEWORK && ./gradlew assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
 
-or, less commonly (to rebuild the JDK):
-
-  cd $CHECKERFRAMEWORK/checker/tests/framework
-  (cd $CHECKERFRAMEWORK && ./gradlew buildJdk assemble -PuseLocalJdk) && $CHECKERFRAMEWORK/checker/bin/javac -processor TestChecker -implicit:class GenericTest10.java
-
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
   checker-framework/checker/tests/src/tests/MyTypeSystemTest.java

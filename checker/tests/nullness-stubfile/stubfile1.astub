@@ -3,7 +3,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 package java.util;
-public interface List<@Nullable T> {}  // overrules annotated jdk
+public interface List<@Nullable T> {}  // overrules annotated JDK
 
 package java.lang;
 

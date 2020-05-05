@@ -21,7 +21,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -114,7 +114,7 @@ public class ReflectiveEvaluator {
                     return null;
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
-                        String args = PluginUtil.join(", ", arguments);
+                        String args = SystemUtil.join(", ", arguments);
                         checker.reportWarning(
                                 tree,
                                 "method.evaluation.exception",
@@ -326,7 +326,7 @@ public class ReflectiveEvaluator {
                             tree,
                             "constructor.evaluation.failed",
                             typeToCreate,
-                            PluginUtil.join(", ", arguments));
+                            SystemUtil.join(", ", arguments));
                 }
                 return null;
             }

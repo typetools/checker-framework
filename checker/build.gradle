@@ -1,13 +1,5 @@
 ext {
-    // See instructions for updating jdk8.jar at
-    // https://github.com/typetools/annotated-libraries/blob/master/README.md .
-    // Set jdkShaHash to 'local' to use a locally-built version of jdk8.jar .
-    jdkShaHash = 'ac868645142c2466aaec739f1331f217a669fd4a'
-    if (rootProject.hasProperty("useLocalJdk")) {
-        jdkShaHash = 'local'
-    }
-
-    jdkHome = '../../jdk'
+    annotatedJdkHome = '../../jdk'
 }
 sourceSets {
     main {
@@ -37,19 +29,19 @@ dependencies {
 }
 
 task cloneTypetoolsJdk() {
-    description 'Obtain or update the jdk'
+    description 'Obtain or update the annotated JDK.'
     doLast {
-        if (file(jdkHome).exists()) {
+        if (file(annotatedJdkHome).exists()) {
             exec {
-                workingDir jdkHome
+                workingDir annotatedJdkHome
                 executable 'git'
                 args = ['pull', '-q']
                 ignoreExitValue = true
             }
         } else {
-            println 'Cloning JDK repository.'
+            println 'Cloning annotated JDK repository.'
             exec {
-                workingDir "${jdkHome}/../"
+                workingDir "${annotatedJdkHome}/../"
                 executable 'git'
                 args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
             }
@@ -58,9 +50,9 @@ task cloneTypetoolsJdk() {
 }
 
 task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
-    def inputDir = "${jdkHome}/src"
+    def inputDir = "${annotatedJdkHome}/src"
     def outputDir = "${buildDir}/generated-resources/annotated-jdk/"
-    description "Copy annotated jdk files to ${outputDir}"
+    description "Copy annotated JDK files to ${outputDir}"
 
     inputs.dir file(inputDir)
     outputs.dir file(outputDir)
@@ -69,7 +61,11 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
         FileTree tree = fileTree(dir: inputDir)
         SortedSet<String> annotatedForFiles = new TreeSet<>();
         tree.visit { FileVisitDetails fvd ->
-            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")) {
+            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")
+                    && !fvd.file.path.contains("org/checkerframework")
+                    && !fvd.file.name.matches("module-info.java")) {
+                // Ignore module-info until this JavaParser bug is fixed (and merged in the StubParser):
+                // https://github.com/javaparser/javaparser/issues/2615
                 fvd.getFile().readLines().any { line ->
                     if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
                         annotatedForFiles.add(fvd.file.absolutePath)
@@ -78,10 +74,10 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
                 }
             }
         }
-        String absolutejdkHome = file(jdkHome).absolutePath
+        String absolutejdkHome = file(annotatedJdkHome).absolutePath
         int jdkDirStringSize = absolutejdkHome.size()
         copy {
-            from(jdkHome)
+            from(annotatedJdkHome)
             into(outputDir)
             for (String filename : annotatedForFiles) {
                 include filename.substring(jdkDirStringSize)
@@ -90,7 +86,17 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
     }
 }
 
-processResources.dependsOn(copyAnnotatedJdkFiles)
+task minimizeJdk(type: JavaExec) {
+    description 'Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK.'
+    dependsOn copyAnnotatedJdkFiles
+    dependsOn ':framework:compileJava'
+    classpath = project(':framework').sourceSets.main.runtimeClasspath
+
+    main = 'org.checkerframework.framework.stub.JavaStubifier'
+    args "${buildDir}/generated-resources/annotated-jdk/"
+}
+
+processResources.dependsOn(minimizeJdk)
 
 jar {
     manifest {
@@ -105,10 +111,9 @@ Instead, use checker/dist/checker.jar.
     }
 }
 
-task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
-    description 'Builds jars required by CheckerMain, except for jdk8.jar, and puts them in checker/dist.'
+task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
+    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
-    // Also moves jdk8.jar to checker/dist
     doLast {
         copy {
             from file(project(':checker-qual').tasks.getByName("jar").archivePath)
@@ -129,106 +134,6 @@ task copyJarsOtherThanJdk8ToDist(dependsOn: shadowJar, group: 'Build') {
     }
 }
 
-task forceBuildJdk(group: 'Build') {
-    description 'Builds jdk.jar even if no file in the JDK has changed. ' +
-            'Use to update jdk.jar if defaulting has changed in a checker.'
-    doLast {
-        delete 'jdk/jdk.jar'
-        buildJdk.execute()
-    }
-}
-
-task buildJdk(group: 'Build', dependsOn: copyJarsOtherThanJdk8ToDist) {
-    description 'Builds jdk8.jar. Requires -PuseLocalJdk, or that jdkShaHash == \'local\' in checker/build.gradle.'
-
-    doLast {
-        if (System.getenv('JAVA_HOME') == null) {
-            throw new GradleException("Environment variable JAVA_HOME is not set.")
-        }
-        if (!jdkShaHash.is('local')) {
-            throw new GradleException('To build jdk.jar, pass -PuseLocalJdk, or set jdkShaHash to \'local\' in checker/build.gradle.')
-        }
-        delete 'dist/jdk8.jar'
-        exec {
-            executable 'make'
-            environment CHECKERFRAMEWORK: "${projectDir}/..",
-                    ANNOTATION_TOOLS: "${afu}/..",
-                    CLASSPATH: project(':checker').tasks.getByName('shadowJar').archivePath
-            args += ["-C", "jdk/"]
-        }
-
-        copy {
-            from 'jdk/jdk.jar'
-            rename { String fileName ->
-                fileName.replace(fileName, "jdk8.jar")
-            }
-            into 'jdk'
-        }
-
-        copy {
-            from 'jdk/jdk8.jar'
-            into 'dist'
-        }
-    }
-}
-
-task cleanJdk(type: Exec){
-    description 'Runs \'make clean\' in checker/jdk directory.'
-    workingDir "${projectDir}/jdk"
-    executable 'make'
-    args = ["clean"]
-}
-
-task updateJdk() {
-    description 'Downloads or builds jdk8.jar and copies into checker/dist'
-    if (jdkShaHash.is('local')) {
-        dependsOn(buildJdk)
-    }
-    doLast {
-        if (!jdkShaHash.is('local')) {
-            File downloadedJdk = new File(buildDir, "jdk8-${jdkShaHash}.jar");
-            if (!downloadedJdk.exists()) {
-                download {
-                    src "https://github.com/typetools/annotated-libraries/raw/${jdkShaHash}/jdk8.jar"
-                    dest downloadedJdk
-                    overwrite true
-                    retries 3
-                }
-            }
-            copy {
-                from(downloadedJdk) {
-                    rename downloadedJdk.name, 'jdk8.jar'
-                }
-                into "dist"
-            }
-        }
-    }
-}
-
-task printJdkJarManifest(type: Copy) {
-    description 'Outputs the manifest file for checker/dist/jdk8.jar'
-    outputs.upToDateWhen { false }
-
-    from(zipTree('dist/jdk8.jar')) {
-        include "META-INF/MANIFEST.MF"
-    }
-
-    String tmpDir = "${buildDir}/tmpJDKManifest"
-    into tmpDir
-    doLast {
-        println(new File(tmpDir, 'META-INF/MANIFEST.MF').text)
-        delete tmpDir
-    }
-
-}
-
-task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
-    description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
-    dependsOn project(':checker-qual').tasks.jar
-    // Also moves jdk8.jar to checker/dist
-    dependsOn updateJdk
-    dependsOn copyJarsOtherThanJdk8ToDist
-}
 assemble.dependsOn copyJarsToDist
 
 task printPlumeUtilJarPath {
@@ -268,7 +173,6 @@ artifacts {
 }
 
 clean {
-    dependsOn cleanJdk
     delete "${projectDir}/dist"
 }
 
@@ -350,7 +254,6 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     description 'Run the jtreg tests made for JDK 11.'
     dependsOn('compileJava')
     dependsOn('compileTestJava')
-    dependsOn(':checker:updateJdk')
     dependsOn('shadowJar')
 
     String jtregOutput = "${buildDir}/jtregJdk11"
@@ -382,40 +285,19 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 
     }
 }
-task jdkSourcesJar(type: Jar) {
-    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
-    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
-    // See: https://central.sonatype.org/pages/requirements.html -->
-    archiveFileName = 'jdk8-source.jar'
-    from "${rootDir}/maven-artifacts/release/"
-    include 'README-jdk'
-    destinationDirectory = buildDir
-}
-
-task jdkJavadocJar(type: Jar) {
-    // All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
-    // We create dummies with READMEs in them and pass those to Central. This is the recommended way of handling this.
-    // See: https://central.sonatype.org/pages/requirements.html -->
-    archiveFileName = 'jdk8-javadoc.jar'
-    from "${rootDir}/maven-artifacts/release/"
-    include 'README-jdk'
-    destinationDirectory = buildDir
-}
 
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys checker.jar and jdk8.jar to the local Maven repository'
-    dependsOn 'updateJdk'
+    description 'Deploys checker.jar to the local Maven repository'
     doLast {
         mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
-        mvnDeployToLocalRepo("${projectDir}/dist/jdk8.jar", "${pomFiles}/jdk8-pom.xml")
     }
 }
 
 task deployArtifactsToSonatype {
-    description 'Deploys checker.jar and jdk8.jar (and their sources/javadoc jars) to the Sonatype repository'
-    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar', jdkSourcesJar, jdkJavadocJar, 'updateJdk')
+    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
+    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
+    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
     doLast {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/jdk8.jar", jdkSourcesJar.archiveFile.get().toString(), jdkJavadocJar.archiveFile.get().toString(), "${pomFiles}/jdk8-pom.xml")
     }
 }
