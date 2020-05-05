@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.3.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.4.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -485,6 +485,7 @@ Checker Framework looks up the library's annotations in its class files.
 
 Some projects are already distributed with type annotations by their
 maintainers, so you do not need to do anything special.
+An example is all the libraries in \url{https://github.com/plume-lib/}.
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
@@ -493,8 +494,8 @@ The annotated libraries appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
-unannotated version; the source code is identical other than the
-annotations are different.
+unannotated version; the source code is identical other than added
+annotations.
 %
 (Some of the annotated libraries are
 % This list appears here to make it searchable/discoverable.
@@ -537,7 +538,7 @@ to
 \end{Verbatim}
 
 \noindent
-Use the same version number.  (Sometimes you will use a slightly larger
+Usually use the same version number.  (Sometimes you will use a slightly larger
 number, if the Checker Framework developers have improved the type
 annotations since the last release by the upstream maintainers.)  If a
 newer version of the upstream library is available but that version is not
@@ -553,13 +554,10 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
-There are two special cases.
+There is one special case.
 \begin{itemize}
 \item
-The annotated JDK is automatically put on your
-classpath; you don't have to do anything special for it.
-\item
-For the Javadoc classes in the JDK's \<com.sun.javadoc> package,
+For the Java 8 version of the Javadoc classes in the JDK's \<com.sun.javadoc> package,
 % are not exposed by ct.sym and therefore cannot be part of an
 % annotated JDK
 use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
@@ -752,6 +750,7 @@ Format of diagnostic messages; see Section~\ref{creating-debugging-options-forma
 \item
  \<-Aignorejdkastub>,
  \<-ApermitMissingJdk>,
+ \<-AparseAllJdk>,
  \<-AstubDebug>
 Stub and JDK libraries; see Section~\ref{creating-debugging-options-libraries}.
 
@@ -1500,7 +1499,7 @@ same methodology in different words.
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
-% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations

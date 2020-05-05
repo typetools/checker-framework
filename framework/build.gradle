@@ -15,6 +15,12 @@ sourceSets {
     }
 }
 
+def versions = [
+        autoValue       : "1.7.1",
+        lombok          : "1.18.12",
+]
+
+
 dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
@@ -29,6 +35,13 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
+
+    // AutoValue support in Returns Receiver Checker
+    testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
+    testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
+
+    // Lombok support in Returns Receiver Checker
+    testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
 task checkDependencies() {
@@ -184,4 +197,25 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 
 clean {
     delete("tests/whole-program-inference/annotated")
+    delete("tests/returnsreceiverdelomboked")
 }
+
+
+task delombok {
+    description 'Delomboks the source code tree in tests/returnsreceiverlombok'
+
+    def srcDelomboked = 'tests/returnsreceiverdelomboked'
+    def srcJava = 'tests/returnsreceiverlombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    doLast {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: configurations.testCompileClasspath.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    }
+}
+
+tasks.test.dependsOn("delombok")

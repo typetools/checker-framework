@@ -23,7 +23,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -416,10 +416,9 @@ public class StubGenerator {
 
         Context context = new Context();
         Options options = Options.instance(context);
-        if (PluginUtil.getJreVersion() == 8) {
+        if (SystemUtil.getJreVersion() == 8) {
             options.put(Option.SOURCE, "8");
             options.put(Option.TARGET, "8");
-            options.put(Option.XBOOTCLASSPATH_PREPEND, "jdk8.jar");
         }
 
         JavaCompiler javac = JavaCompiler.instance(context);
