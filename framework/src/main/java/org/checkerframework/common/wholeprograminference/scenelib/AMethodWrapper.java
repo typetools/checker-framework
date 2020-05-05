@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
@@ -10,6 +9,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 
 /**
@@ -24,14 +24,6 @@ public class AMethodWrapper {
     /** The return type of the method, or null if the method's return type is unknown or void. */
     private final @Nullable TypeMirror returnType;
 
-    /**
-     * A mirror of the parameters field of AMethod, but using AFieldWrapper objects as the values.
-     * Keys are parameter indices. Like the parameters field of AMethod, this map starts empty and
-     * is vivified by calls to {@link #vivifyParameter(int, TypeMirror, Name)} or {@link
-     * #vivifyParameter(int, TypeMirror, Name)}.
-     */
-    private final Map<Integer, AFieldWrapper> parameters = new HashMap<>();
-
     /** The type parameters of this method. */
     private final List<? extends TypeParameterElement> typeParameters;
 
@@ -44,8 +36,8 @@ public class AMethodWrapper {
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
         this.returnType = methodElt.getReturnType();
-        this.vivifyParameters(methodElt);
         this.typeParameters = methodElt.getTypeParameters();
+        vivifyAndAddTypeMirrorToParameters(methodElt);
     }
 
     /**
@@ -72,12 +64,12 @@ public class AMethodWrapper {
      *
      * @param methodElt the method whose parameters should be vivified
      */
-    private void vivifyParameters(ExecutableElement methodElt) {
+    private void vivifyAndAddTypeMirrorToParameters(ExecutableElement methodElt) {
         for (int i = 0; i < methodElt.getParameters().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             TypeMirror type = ve.asType();
             Name name = ve.getSimpleName();
-            this.vivifyParameter(i, type, name);
+            vivifyAndAddTypeMirrorToParameter(i, type, name);
         }
     }
 
@@ -90,16 +82,13 @@ public class AMethodWrapper {
      * @param simpleName the name of the parameter
      * @return an AFieldWrapper representing the parameter
      */
-    public AFieldWrapper vivifyParameter(int i, TypeMirror type, Name simpleName) {
-        if (parameters.containsKey(i)) {
-            return parameters.get(i);
-        } else {
-            AFieldWrapper wrapper =
-                    new AFieldWrapper(
-                            theMethod.parameters.getVivify(i), type, simpleName.toString());
-            parameters.put(i, wrapper);
-            return wrapper;
+    public AField vivifyAndAddTypeMirrorToParameter(int i, TypeMirror type, Name simpleName) {
+        AField param = theMethod.parameters.getVivify(i);
+        param.setName(simpleName.toString());
+        if (param.getTypeMirror() == null) {
+            param.setTypeMirror(type);
         }
+        return param;
     }
 
     /**
@@ -107,8 +96,8 @@ public class AMethodWrapper {
      *
      * @return an immutable copy of the vivified parameters, as a map from index to representation
      */
-    public Map<Integer, AFieldWrapper> getParameters() {
-        return ImmutableMap.copyOf(parameters);
+    public Map<Integer, AField> getParameters() {
+        return ImmutableMap.copyOf(theMethod.parameters);
     }
 
     /**
