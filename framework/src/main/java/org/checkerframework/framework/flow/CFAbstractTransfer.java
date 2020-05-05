@@ -792,13 +792,19 @@ public abstract class CFAbstractTransfer<
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+
         if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
-            if (lhs instanceof FieldAccessNode) {
+            // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD,
+            // for some reason.
+            if (lhs instanceof FieldAccessNode
+                    || (lhs instanceof LocalVariableNode
+                            && ((LocalVariableNode) lhs).getElement().getKind()
+                                    == ElementKind.FIELD)) {
                 // Updates inferred field type
                 analysis.atypeFactory
                         .getWholeProgramInference()
                         .updateFromFieldAssignment(
-                                (FieldAccessNode) lhs,
+                                lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
                                 analysis.getTypeFactory());

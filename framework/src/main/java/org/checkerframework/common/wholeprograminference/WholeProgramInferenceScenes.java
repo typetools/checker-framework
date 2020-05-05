@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AField;
@@ -256,19 +257,33 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     @Override
     public void updateFromFieldAssignment(
-            FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+
+        Element element;
+        String fieldName;
+        if (lhs instanceof FieldAccessNode) {
+            element = ((FieldAccessNode) lhs).getElement();
+            fieldName = ((FieldAccessNode) lhs).getFieldName();
+        } else if (lhs instanceof LocalVariableNode) {
+            element = ((LocalVariableNode) lhs).getElement();
+            fieldName = ((LocalVariableNode) lhs).getName();
+        } else {
+            throw new BugInCF(
+                    "updateFromFieldAssignment received an unexpected node type: "
+                            + lhs.getClass());
+        }
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        if (atf.getDeclAnnotation(lhs.getElement(), IgnoreInWholeProgramInference.class) != null
+        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
                 || atf.getDeclAnnotationWithMetaAnnotation(
-                                        lhs.getElement(), IgnoreInWholeProgramInference.class)
+                                        element, IgnoreInWholeProgramInference.class)
                                 .size()
                         > 0) {
             return;
         }
 
-        ClassSymbol enclosingClass = ((VarSymbol) lhs.getElement()).enclClass();
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
         // do not infer types for code that isn't presented as source
         if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
@@ -281,7 +296,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AField field = clazz.vivifyField(lhs.getFieldName(), lhsATM.getUnderlyingType());
+        AField field = clazz.vivifyField(fieldName, lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());

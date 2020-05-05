@@ -7,7 +7,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -139,14 +138,15 @@ public interface WholeProgramInference {
      * be the type of rhs. If there is a stored entry/type for lhs, its new type will be the LUB
      * between the previous type and the type of rhs.
      *
-     * @param field the field whose type will be refined
+     * @param field the field whose type will be refined. Must be either a FieldAccessNode or a
+     *     LocalVariableNode whose element kind is FIELD.
      * @param rhs the expression being assigned to the field
      * @param classTree the ClassTree for the enclosing class of the assignment
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the field's type
      */
     void updateFromFieldAssignment(
-            FieldAccessNode field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
+            Node field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
