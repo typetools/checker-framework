@@ -23,8 +23,6 @@ binaryDir="${mydir}"/../dist
 
 javacJar=${binaryDir}/javac.jar
 
-jdkPaths="${mydir}"/../jdk/annotated
-
 cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
 stubparserDir="${cfDir}"/../stubparser
@@ -58,7 +56,6 @@ eval "java" \
      "-ea " \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
-     "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.cp=${javacJar} " \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \

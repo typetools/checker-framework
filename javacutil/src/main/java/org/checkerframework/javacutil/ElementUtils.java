@@ -215,7 +215,7 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
-                    return type.toString();
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
                 }
         }
         throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
