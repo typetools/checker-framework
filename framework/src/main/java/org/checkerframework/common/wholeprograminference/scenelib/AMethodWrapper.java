@@ -1,8 +1,6 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
@@ -76,15 +74,6 @@ public class AMethodWrapper {
             param.setTypeMirror(type);
         }
         return param;
-    }
-
-    /**
-     * Get the parameters, as a map from parameter index (0-indexed) to representation.
-     *
-     * @return an immutable copy of the vivified parameters, as a map from index to representation
-     */
-    public Map<Integer, AField> getParameters() {
-        return ImmutableMap.copyOf(theMethod.parameters);
     }
 
     /**

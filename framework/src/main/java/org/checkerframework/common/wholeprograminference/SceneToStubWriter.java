@@ -560,8 +560,8 @@ public final class SceneToStubWriter {
             // Only output the receiver if it has an annotation.
             parameters.add(formatParameter(aMethod.receiver, "this", simplename));
         }
-        for (Integer index : aMethodWrapper.getParameters().keySet()) {
-            AField param = aMethodWrapper.getParameters().get(index);
+        for (Integer index : aMethodWrapper.getAMethod().getParameters().keySet()) {
+            AField param = aMethodWrapper.getAMethod().getParameters().get(index);
             parameters.add(formatParameter(param, param.getName(), simplename));
         }
         printWriter.print(parameters.toString());
