@@ -8,7 +8,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 
@@ -21,9 +20,6 @@ public class AMethodWrapper {
     /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    /** The return type of the method, or null if the method's return type is unknown or void. */
-    private final @Nullable TypeMirror returnType;
-
     /** The type parameters of this method. */
     private final List<? extends TypeParameterElement> typeParameters;
 
@@ -35,18 +31,9 @@ public class AMethodWrapper {
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
-        this.returnType = methodElt.getReturnType();
+        this.getAMethod().setReturnTypeMirror(methodElt.getReturnType());
         this.typeParameters = methodElt.getTypeParameters();
         vivifyAndAddTypeMirrorToParameters(methodElt);
-    }
-
-    /**
-     * Get the return type.
-     *
-     * @return the return type, or null if the return type is unknown or void
-     */
-    public @Nullable TypeMirror getReturnType() {
-        return returnType;
     }
 
     /**

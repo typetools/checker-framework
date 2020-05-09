@@ -548,7 +548,9 @@ public final class SceneToStubWriter {
             // Set methodName, but don't output a return type.
             methodName = simplename;
         } else {
-            printWriter.print(formatType(aMethod.returnType, aMethodWrapper.getReturnType()));
+            printWriter.print(
+                    formatType(
+                            aMethod.returnType, aMethodWrapper.getAMethod().getReturnTypeMirror()));
         }
         printWriter.print(methodName);
         printWriter.print("(");
