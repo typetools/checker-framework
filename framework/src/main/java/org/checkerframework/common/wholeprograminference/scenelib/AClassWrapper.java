@@ -77,7 +77,9 @@ public class AClassWrapper {
             return methods.get(methodSignature);
         } else {
             AMethodWrapper wrapper =
-                    new AMethodWrapper(theClass.methods.getVivify(methodSignature), methodElt);
+                    new AMethodWrapper(theClass.methods.getVivify(methodSignature));
+            wrapper.getAMethod().setFieldsFromMethodElement(methodElt);
+
             methods.put(methodSignature, wrapper);
             return wrapper;
         }

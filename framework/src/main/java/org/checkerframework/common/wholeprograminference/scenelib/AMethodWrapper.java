@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import javax.lang.model.element.ExecutableElement;
 import scenelib.annotations.el.AMethod;
 
 /**
@@ -18,9 +17,8 @@ public class AMethodWrapper {
      * @param theMethod the method to wrap
      * @param methodElt the method's declaration
      */
-    AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
+    AMethodWrapper(AMethod theMethod) {
         this.theMethod = theMethod;
-        this.getAMethod().setFieldsFromMethodElement(methodElt);
     }
 
     /**
