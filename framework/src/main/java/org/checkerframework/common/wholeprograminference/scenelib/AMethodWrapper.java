@@ -15,7 +15,6 @@ public class AMethodWrapper {
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
      * @param theMethod the method to wrap
-     * @param methodElt the method's declaration
      */
     AMethodWrapper(AMethod theMethod) {
         this.theMethod = theMethod;
