@@ -5,7 +5,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java', "${buildDir}/generated-resources"]
+            srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
         }
     }
     testannotations
@@ -49,14 +49,12 @@ task cloneTypetoolsJdk() {
     }
 }
 
-task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
-    // Make two copies of the annotated JDK. One to minimize and one to use in the up to date
-    // check of task minimizeJdk. See minimizeJdk for more details.
+task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+    dependsOn ':framework:compileJava'
     def inputDir = "${annotatedJdkHome}/src"
-    def outputDir = "${buildDir}/generated-resources/not-minimized-annotated-jdk/"
-    def dirToBeMinimized = "${buildDir}/generated-resources/annotated-jdk/"
+    def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
 
-    description "Copy annotated JDK files to ${outputDir}"
+    description "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
 
     inputs.dir file(inputDir)
     outputs.dir file(outputDir)
@@ -87,34 +85,16 @@ task copyAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
                 include filename.substring(jdkDirStringSize)
             }
         }
-        copy {
-            from(annotatedJdkHome)
-            into(dirToBeMinimized)
-            for (String filename : annotatedForFiles) {
-                include filename.substring(jdkDirStringSize)
-            }
+        javaexec {
+            classpath = project(':framework').sourceSets.main.runtimeClasspath
+
+            main = 'org.checkerframework.framework.stub.JavaStubifier'
+            args outputDir
         }
     }
 }
 
-task minimizeJdk(type: JavaExec) {
-    description 'Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK.'
-    dependsOn copyAnnotatedJdkFiles
-    dependsOn ':framework:compileJava'
-    // JavaStubifier minimizes files in place, so that the inputs are the same as the outputs. So,
-    // use a copy of the annotated JDK created by copyAnnotatedJdkFiles task as the "input" to this task.
-    def inputDir = "${buildDir}/generated-resources/not-minimized-annotated-jdk/"
-    def outputDir = "${buildDir}/generated-resources/annotated-jdk/"
-    inputs.dir file(inputDir)
-    outputs.dir file(outputDir)
-
-    classpath = project(':framework').sourceSets.main.runtimeClasspath
-
-    main = 'org.checkerframework.framework.stub.JavaStubifier'
-    args "${buildDir}/generated-resources/annotated-jdk/"
-}
-
-processResources.dependsOn(minimizeJdk)
+processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 jar {
     manifest {
