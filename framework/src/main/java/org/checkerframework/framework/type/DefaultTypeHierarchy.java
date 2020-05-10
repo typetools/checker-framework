@@ -370,6 +370,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedTypeMirror outsideLowerBound,
             boolean canBeCovariant) {
 
+        if (inside.getKind() == TypeKind.WILDCARD
+                && outside.getKind() == TypeKind.WILDCARD
+                && inside.equals(outside)) {
+            return true;
+        }
         if (inside.getKind() == TypeKind.WILDCARD) {
             outsideUpperBound =
                     checker.getTypeFactory()
