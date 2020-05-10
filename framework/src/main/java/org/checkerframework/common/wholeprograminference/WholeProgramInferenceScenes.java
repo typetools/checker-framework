@@ -162,8 +162,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
             AField param =
-                    method.vivifyAndAddTypeMirrorToParameter(
-                            i, argATM.getUnderlyingType(), ve.getSimpleName());
+                    method.getAMethod()
+                            .vivifyAndAddTypeMirrorToParameter(
+                                    i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -193,8 +194,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             AField param =
-                    methodWrapper.vivifyAndAddTypeMirrorToParameter(
-                            i, argATM.getUnderlyingType(), ve.getSimpleName());
+                    methodWrapper
+                            .getAMethod()
+                            .vivifyAndAddTypeMirrorToParameter(
+                                    i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -246,8 +249,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AField param =
-                        method.vivifyAndAddTypeMirrorToParameter(
-                                i, argATM.getUnderlyingType(), ve.getSimpleName());
+                        method.getAMethod()
+                                .vivifyAndAddTypeMirrorToParameter(
+                                        i, argATM.getUnderlyingType(), ve.getSimpleName());
                 storage.updateAnnotationSetInScene(
                         param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
