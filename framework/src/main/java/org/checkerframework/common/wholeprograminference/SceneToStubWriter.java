@@ -532,6 +532,7 @@ public final class SceneToStubWriter {
             AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
 
         if (aMethod.getTypeParameters() == null) {
+            // aMethod.setFieldsFromMethodElement has not been called
             return;
         }
 
