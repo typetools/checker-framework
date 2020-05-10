@@ -20,9 +20,7 @@ public class AMethodWrapper {
      */
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
-        this.getAMethod().setReturnTypeMirror(methodElt.getReturnType());
-        this.getAMethod().setTypeParameters(methodElt.getTypeParameters());
-        this.getAMethod().vivifyAndAddTypeMirrorToParameters(methodElt);
+        this.getAMethod().setFieldsFromMethodElement(methodElt);
     }
 
     /**
