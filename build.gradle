@@ -228,6 +228,13 @@ task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
 }
+task maybeCloneAndBuildDependencies(type: Exec) {
+    description 'Clones (or updates) and builds all dependencies'
+    onlyIf{
+        !file(afuJar).exists()|| !file(stubparserJar).exists()
+    }
+    executable 'checker/bin-devel/build.sh'
+}
 
 task version() {
     description 'Print Checker Framework version'
