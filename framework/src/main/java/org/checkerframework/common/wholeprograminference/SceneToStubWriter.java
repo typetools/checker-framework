@@ -25,7 +25,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
-import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -53,10 +52,9 @@ import scenelib.annotations.io.IndexFileWriter;
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). The A*Wrapper
- * classes ({@link ASceneWrapper}, {@link AClassWrapper}, and {@link AMethodWrapper}) store this
- * additional information. This class walks the scene-lib representation structurally and outputs
- * the stub file as a string, by combining the information scene-lib stores with the information
- * gathered elsewhere.
+ * classes ({@link ASceneWrapper} and {@link AClassWrapper}) store this additional information. This
+ * class walks the scene-lib representation structurally and outputs the stub file as a string, by
+ * combining the information scene-lib stores with the information gathered elsewhere.
  *
  * <p>The additional information is necessary because the scene-lib representation of a type does
  * not have enough information to print full types.
@@ -524,23 +522,22 @@ public final class SceneToStubWriter {
     /**
      * Prints a method declaration in stub file format (i.e., without a method body).
      *
-     * @param aMethodWrapper the method to print
+     * @param aMethod the method to print
      * @param simplename the simple name of the enclosing class, for receiver parameters and
      *     constructor names
      * @param printWriter where to print the method signature
      * @param indentLevel the indent string
      */
     private static void printMethodDeclaration(
-            AMethodWrapper aMethodWrapper,
-            String simplename,
-            PrintWriter printWriter,
-            String indentLevel) {
+            AMethod aMethod, String simplename, PrintWriter printWriter, String indentLevel) {
 
-        AMethod aMethod = aMethodWrapper.getAMethod();
+        if (aMethod.getTypeParameters() == null) {
+            return;
+        }
 
         printWriter.print(indentLevel);
 
-        printTypeParameters(aMethodWrapper.getAMethod().getTypeParameters(), printWriter);
+        printTypeParameters(aMethod.getTypeParameters(), printWriter);
 
         String methodName = aMethod.getMethodName();
         // Use Java syntax for constructors.
@@ -548,9 +545,7 @@ public final class SceneToStubWriter {
             // Set methodName, but don't output a return type.
             methodName = simplename;
         } else {
-            printWriter.print(
-                    formatType(
-                            aMethod.returnType, aMethodWrapper.getAMethod().getReturnTypeMirror()));
+            printWriter.print(formatType(aMethod.returnType, aMethod.getReturnTypeMirror()));
         }
         printWriter.print(methodName);
         printWriter.print("(");
@@ -560,8 +555,8 @@ public final class SceneToStubWriter {
             // Only output the receiver if it has an annotation.
             parameters.add(formatParameter(aMethod.receiver, "this", simplename));
         }
-        for (Integer index : aMethodWrapper.getAMethod().getParameters().keySet()) {
-            AField param = aMethodWrapper.getAMethod().getParameters().get(index);
+        for (Integer index : aMethod.getParameters().keySet()) {
+            AField param = aMethod.getParameters().get(index);
             parameters.add(formatParameter(param, param.getName(), simplename));
         }
         printWriter.print(parameters.toString());
@@ -699,8 +694,7 @@ public final class SceneToStubWriter {
             // print method signatures
             printWriter.println(indentLevel + "// methods:");
             printWriter.println();
-            for (Map.Entry<String, AMethodWrapper> methodEntry :
-                    aClassWrapper.getMethods().entrySet()) {
+            for (Map.Entry<String, AMethod> methodEntry : aClassWrapper.getMethods().entrySet()) {
                 printMethodDeclaration(
                         methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }

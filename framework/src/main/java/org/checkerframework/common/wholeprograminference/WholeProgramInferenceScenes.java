@@ -15,7 +15,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
-import org.checkerframework.common.wholeprograminference.scenelib.AMethodWrapper;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -33,6 +32,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
@@ -109,7 +109,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
-        AMethodWrapper method = clazz.vivifyMethod(constructorElt);
+        AMethod method = clazz.vivifyMethod(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -132,7 +132,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        AMethodWrapper method = clazz.vivifyMethod(methodElt);
+        AMethod method = clazz.vivifyMethod(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -143,7 +143,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf,
             String jaifPath,
-            AMethodWrapper method,
+            AMethod method,
             List<Node> arguments) {
 
         for (int i = 0; i < arguments.size(); i++) {
@@ -162,9 +162,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
             AField param =
-                    method.getAMethod()
-                            .vivifyAndAddTypeMirrorToParameter(
-                                    i, argATM.getUnderlyingType(), ve.getSimpleName());
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -186,7 +185,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethodWrapper methodWrapper = clazz.vivifyMethod(methodElt);
+        AMethod method = clazz.vivifyMethod(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -194,10 +193,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             AField param =
-                    methodWrapper
-                            .getAMethod()
-                            .vivifyAndAddTypeMirrorToParameter(
-                                    i, argATM.getUnderlyingType(), ve.getSimpleName());
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -206,7 +203,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (argADT != null) {
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                AField receiver = methodWrapper.getAMethod().receiver;
+                AField receiver = method.receiver;
                 storage.updateAnnotationSetInScene(
                         receiver.type, atf, jaifPath, argADT, paramATM, TypeUseLocation.RECEIVER);
             }
@@ -229,7 +226,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        AMethodWrapper method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -249,9 +246,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AField param =
-                        method.getAMethod()
-                                .vivifyAndAddTypeMirrorToParameter(
-                                        i, argATM.getUnderlyingType(), ve.getSimpleName());
+                        method.vivifyAndAddTypeMirrorToParameter(
+                                i, argATM.getUnderlyingType(), ve.getSimpleName());
                 storage.updateAnnotationSetInScene(
                         param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
@@ -353,20 +349,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethodWrapper methodWrapper =
-                clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
-                methodWrapper.getAMethod().returnType,
-                atf,
-                jaifPath,
-                rhsATM,
-                lhsATM,
-                TypeUseLocation.RETURN);
+                method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -402,12 +392,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superClassName,
                             superJaifPath,
                             ((MethodSymbol) overriddenMethodElement).enclClass());
-            AMethodWrapper overriddenMethodInSuperclass =
-                    superClazz.vivifyMethod(overriddenMethodElement);
+            AMethod overriddenMethodInSuperclass = superClazz.vivifyMethod(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(
-                    overriddenMethodInSuperclass.getAMethod().returnType,
+                    overriddenMethodInSuperclass.returnType,
                     atf,
                     superJaifPath,
                     rhsATM,
