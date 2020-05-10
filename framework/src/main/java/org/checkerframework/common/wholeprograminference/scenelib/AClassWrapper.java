@@ -19,6 +19,7 @@ import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -76,8 +77,8 @@ public class AClassWrapper {
         if (methods.containsKey(methodSignature)) {
             return methods.get(methodSignature);
         } else {
-            AMethodWrapper wrapper =
-                    new AMethodWrapper(theClass.methods.getVivify(methodSignature));
+            AMethod method = theClass.methods.getVivify(methodSignature);
+            AMethodWrapper wrapper = new AMethodWrapper(method);
             wrapper.getAMethod().setFieldsFromMethodElement(methodElt);
 
             methods.put(methodSignature, wrapper);
