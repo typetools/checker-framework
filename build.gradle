@@ -714,6 +714,8 @@ subprojects {
                 ]
             }
 
+            maxParallelForks = Integer.MAX_VALUE
+
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')
             }
