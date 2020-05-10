@@ -540,7 +540,7 @@ public final class SceneToStubWriter {
 
         printWriter.print(indentLevel);
 
-        printTypeParameters(aMethodWrapper.getTypeParameters(), printWriter);
+        printTypeParameters(aMethodWrapper.getAMethod().getTypeParameters(), printWriter);
 
         String methodName = aMethod.getMethodName();
         // Use Java syntax for constructors.

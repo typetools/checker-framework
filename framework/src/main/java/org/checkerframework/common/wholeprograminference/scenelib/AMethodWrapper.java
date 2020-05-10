@@ -1,9 +1,7 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import scenelib.annotations.el.AField;
@@ -18,9 +16,6 @@ public class AMethodWrapper {
     /** The wrapped AMethod. */
     private final AMethod theMethod;
 
-    /** The type parameters of this method. */
-    private final List<? extends TypeParameterElement> typeParameters;
-
     /**
      * Wrap an AMethod. Package-private, because it should only be called from AClassWrapper.
      *
@@ -30,17 +25,8 @@ public class AMethodWrapper {
     AMethodWrapper(AMethod theMethod, ExecutableElement methodElt) {
         this.theMethod = theMethod;
         this.getAMethod().setReturnTypeMirror(methodElt.getReturnType());
-        this.typeParameters = methodElt.getTypeParameters();
+        this.getAMethod().setTypeParameters(methodElt.getTypeParameters());
         vivifyAndAddTypeMirrorToParameters(methodElt);
-    }
-
-    /**
-     * Get the type parameters of this method.
-     *
-     * @return the list of type parameters
-     */
-    public List<? extends TypeParameterElement> getTypeParameters() {
-        return typeParameters;
     }
 
     /**
