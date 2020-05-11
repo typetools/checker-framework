@@ -230,8 +230,8 @@ task cloneAndBuildDependencies(type: Exec) {
 }
 task maybeCloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies if they are not present.'
-    onlyIf{
-        !file(afuJar).exists()|| !file(stubparserJar).exists()
+    onlyIf {
+        !file(afuJar).exists() || !file(stubparserJar).exists()
     }
     executable 'checker/bin-devel/build.sh'
 }
