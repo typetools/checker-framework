@@ -26,7 +26,15 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** An annotated type factory for an accumulation checker. */
+/**
+ * An annotated type factory for an accumulation checker.
+ *
+ * <p>New accumulation checkers should extend this class and implement their own version of the
+ * constructor, which should take a {@link BaseTypeChecker} and pass constants for the annotation
+ * classes required by the constructor defined in this class.
+ *
+ * <p>New subclasses must also call {@link #postInit()} in their constructors.
+ */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical top and bottom annotations for this accumulation checker. */
@@ -47,7 +55,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *     argument named "value" whose type is a String array.
      * @param bot the bottom type in the hierarchy
      */
-    public AccumulationAnnotatedTypeFactory(
+    protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
             Class<? extends Annotation> top,
             Class<? extends Annotation> accumulator,
