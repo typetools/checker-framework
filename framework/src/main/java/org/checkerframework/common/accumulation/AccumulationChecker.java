@@ -10,11 +10,13 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
  * structure, they need to reason about fluent APIs, and they need some way to easily add facts to
  * the accumulation they are tracking. This accumulation analysis represents all facts as Strings.
  *
- * <p>Accumulation checkers are particularly interesting because they can represent many interesting
+ * <p>Accumulation checkers are particularly interesting because they can represent many
  * typestate-like properties, but do not require a precise alias analysis for soundness.
  *
  * <p>This class provides a basic accumulation checker that can be extended to implement a
- * particular accumulation type system.
+ * particular accumulation type system. The primary extension point is the constructor of {@link
+ * AccumulationAnnotatedTypeFactory}, which every subclass should override to provide custom
+ * annotations.
  */
 public abstract class AccumulationChecker extends BaseTypeChecker {
 

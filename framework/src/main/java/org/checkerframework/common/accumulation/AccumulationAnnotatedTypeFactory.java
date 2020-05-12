@@ -90,15 +90,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return whether the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
-        System.out.println("calling returnsThis in AATF");
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror methodAtm = rrATF.getAnnotatedType(methodEle);
         AnnotatedTypeMirror rrType =
                 ((AnnotatedTypeMirror.AnnotatedExecutableType) methodAtm).getReturnType();
-        System.out.println("rrType: " + rrType);
-        System.out.println("result: " + rrType != null && rrType.hasAnnotation(This.class));
         return rrType != null && rrType.hasAnnotation(This.class);
     }
 

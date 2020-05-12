@@ -16,6 +16,13 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
+/**
+ * The default transfer function for an accumulation checker.
+ *
+ * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate} or
+ * {@link #accumulate(MethodInvocationNode, TransferResult, String...)} methods to accumulate a
+ * string at a particular program point.
+ */
 public class AccumulationTransfer extends CFTransfer {
 
     protected final AccumulationAnnotatedTypeFactory typeFactory;
@@ -60,10 +67,6 @@ public class AccumulationTransfer extends CFTransfer {
         }
         AnnotationMirror newAnno = getNewAnno(oldType, values);
         while (receiver != null) {
-
-            System.out.println("inserting this new anno: " + newAnno);
-            System.out.println("into this receiver's type: " + receiver);
-
             insertIntoStores(result, receiver, newAnno);
 
             Tree receiverTree = receiver.getTree();
@@ -102,7 +105,6 @@ public class AccumulationTransfer extends CFTransfer {
      * @return an annotation representing all the values
      */
     private AnnotationMirror getNewAnno(AnnotatedTypeMirror oldType, String[] newValues) {
-        System.out.println("oldType: " + oldType);
         AnnotationMirror oldAnno;
         if (oldType == null) {
             oldAnno = typeFactory.TOP;
@@ -112,7 +114,6 @@ public class AccumulationTransfer extends CFTransfer {
                 oldAnno = typeFactory.TOP;
             }
         }
-        System.out.println("old anno: " + oldAnno);
         String[] allValues;
         if (typeFactory.isAccumulatorAnnotation(oldAnno)) {
             List<String> oldTypeValues =
