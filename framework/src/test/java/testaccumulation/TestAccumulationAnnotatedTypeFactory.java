@@ -6,7 +6,10 @@ import testaccumulation.qual.TestAccumulation;
 import testaccumulation.qual.TestAccumulationBottom;
 import testaccumulation.qual.TestAccumulationTop;
 
-/** The annotated type factory for a test accumulation checker. */
+/**
+ * The annotated type factory for a test accumulation checker, which implements a basic called
+ * methods checker.
+ */
 public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
     /**
      * Create a new accumulation checker's annotated type factory.

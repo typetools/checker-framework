@@ -1,9 +1,7 @@
 // Copied from the Object Construction Checker.
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 import org.checkerframework.common.returnsreceiver.qual.*;
 import testaccumulation.qual.*;
 
@@ -43,13 +41,5 @@ class Generics {
             }
         }
         return null;
-    }
-
-    static Stream<String> stringList() {
-        String s = "hi";
-        // dummy method call
-        s.contains("h");
-        // should infer type Stream<@TestAccumulationTop String>
-        return Arrays.asList(s).stream();
     }
 }
