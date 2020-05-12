@@ -1,19 +1,27 @@
 // A simple test that the fluent API logic in the Accumulation Checker works.
-// Based on a similar test in the Object Construction Checker.
+// Copied from the Object Construction Checker.
 
-import testaccumulation.qual.*;
 import org.checkerframework.common.returnsreceiver.qual.*;
+import testaccumulation.qual.*;
 
 /* Simple inference of a fluent builder */
 class SimpleFluent {
-    SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) { return this; }
+    SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) {
+        return this;
+    }
 
-    @This SimpleFluent a() { return this; }
+    @This SimpleFluent a() {
+        return this;
+    }
 
-    @This SimpleFluent b() { return this; }
+    @This SimpleFluent b() {
+        return this;
+    }
 
     // intentionally does not have an @This annotation
-    SimpleFluent c() { return new SimpleFluent(); }
+    SimpleFluent c() {
+        return new SimpleFluent();
+    }
 
     static void doStuffCorrect(@TestAccumulation({"a", "b"}) SimpleFluent s) {
         s.a().b().build();
@@ -21,14 +29,15 @@ class SimpleFluent {
 
     static void doStuffWrong(@TestAccumulation({"a"}) SimpleFluent s) {
         s.a()
-            // :: error: method.invocation.invalid
-            .build();
+                // :: error: method.invocation.invalid
+                .build();
     }
 
     static void noReturnsReceiverAnno(@TestAccumulation({"a", "b"}) SimpleFluent s) {
-        s.a().b().c()
-             // :: error: method.invocation.invalid
-             .build();
+        s.a().b()
+                .c()
+                // :: error: method.invocation.invalid
+                .build();
     }
 
     static void fluentLoop(@TestAccumulation({"a", "b"}) SimpleFluent t) {
