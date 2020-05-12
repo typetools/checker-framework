@@ -19,6 +19,6 @@ public class AccumulationTest extends FrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"accumulation"};
+        return new String[] {"accumulation", "all-systems"};
     }
 }
