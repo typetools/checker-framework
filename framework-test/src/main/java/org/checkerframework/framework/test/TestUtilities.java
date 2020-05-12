@@ -80,8 +80,8 @@ public class TestUtilities {
     }
 
     /**
-     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
-     * subdirectory of {@code dir} and also a list of Java files in dir.
+     * Returns a list where each item is a list of Java files, excluding any skip tests. There is
+     * one list for {@code dir}, and one list for each subdirectory of {@code dir}.
      *
      * @param dir directory in which to search for Java files
      * @return a list of list of Java test files

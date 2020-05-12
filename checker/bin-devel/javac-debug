@@ -21,8 +21,6 @@ esac
 
 binaryDir="${mydir}"/../dist
 
-jdkPaths="${mydir}"/../jdk/annotated
-
 cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
 stubparserDir="${cfDir}"/../stubparser
@@ -58,7 +56,6 @@ eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
-     "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.cp=${JAVA_HOME}/lib/tools.jar " \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \

@@ -294,6 +294,10 @@ import org.plumelib.util.UtilPlume;
     "permitMissingJdk",
     "nocheckjdk", // temporary, for backward compatibility
 
+    // Parse all JDK files at startup rather than as needed.
+    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    "parseAllJdk",
+
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
     "stubDebug",
@@ -356,7 +360,10 @@ import org.plumelib.util.UtilPlume;
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
-    "resourceStats"
+    "resourceStats",
+
+    // Parse all JDK files at startup rather than as needed.
+    "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
@@ -462,8 +469,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The string that separates the checker name from the option name in a "-A" command-line
      * argument. This string may only consist of valid Java identifier part characters, because it
      * will be used within the key of an option.
-     *
-     * @see #activeOptions
      */
     protected static final String OPTION_SEPARATOR = "_";
 
@@ -853,7 +858,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (p.getCompilationUnit() != currentRoot) {
             setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
-                // Add timestamp to indicate how long operations are taking
+                // TODO: Have a command-line option to turn the timestamps on/off too, because
+                // they are nondeterministic across runs.
+
+                // Add timestamp to indicate how long operations are taking.
+                // Duplicate messages are suppressed, so this might not appear in front of every "
+                // is type-checking " message (when a file takes less than a second to type-check).
                 message(NOTE, new java.util.Date().toString());
                 message(
                         NOTE,

@@ -183,36 +183,6 @@ public class SystemUtil {
     }
 
     /**
-     * Determine the version of the JRE that we are currently running and select a jdkX where X is
-     * the version of Java that is being run (e.g. 8, 9, ...)
-     *
-     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
-     */
-    public static String getJdkJarPrefix() {
-        final int jreVersion = getJreVersion();
-        final String prefix;
-
-        if (jreVersion < 8) {
-            throw new AssertionError("Unsupported JRE version: " + jreVersion);
-        } else {
-            prefix = "jdk" + jreVersion;
-        }
-
-        return prefix;
-    }
-
-    /**
-     * Determine the version of the JRE that we are currently running and select a jdkX.jar where X
-     * is the version of Java that is being run (e.g. 8, 9, ...)
-     *
-     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 8, 9, ...)
-     */
-    public static String getJdkJarName() {
-        final String fileName = getJdkJarPrefix() + ".jar";
-        return fileName;
-    }
-
-    /**
      * Returns the release value passed to the compiler or null if release was not passed.
      *
      * @param env the ProcessingEnvironment

@@ -31,9 +31,8 @@ different licenses.
  * Libraries in plume-lib (https://github.com/plume-lib/) are licensed
    under the MIT License.
 
-The Checker Framework includes annotations for the JDK in directory
-checker/jdk/, and for some other libraries.  Each annotated library uses
-the same license as the unannotated version of the library.
+The Checker Framework includes annotations for some libraries.  Each annotated
+library uses the same license as the unannotated version of the library.
 
 ===========================================================================
 
