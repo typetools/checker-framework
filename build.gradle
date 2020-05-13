@@ -521,7 +521,7 @@ subprojects {
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
         // checker-qual* projects have no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual') }
+        // onlyIf {!project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
