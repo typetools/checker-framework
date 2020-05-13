@@ -16,7 +16,7 @@ sourceSets {
 }
 
 def versions = [
-        autoValue       : "1.7",
+        autoValue       : "1.7.1",
         lombok          : "1.18.12",
 ]
 

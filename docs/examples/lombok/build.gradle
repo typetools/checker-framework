@@ -16,8 +16,6 @@ dependencies {
     compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
     testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
     checkerFramework files(cfHome + "/checker/dist/checker.jar")
-    // only needed for JDK 8
-    checkerFrameworkAnnotatedJDK files(cfHome + "/checker/dist/jdk8.jar")
 }
 
 repositories {
