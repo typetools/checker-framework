@@ -121,7 +121,7 @@ public class AccumulationTransfer extends CFTransfer {
             for (String newValue : newValues) {
                 oldTypeValues.add(newValue);
             }
-            allValues = oldTypeValues.toArray(String[]::new);
+            allValues = oldTypeValues.toArray(new String[0]);
         } else {
             allValues = newValues;
         }
