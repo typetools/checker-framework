@@ -25,8 +25,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public class AccumulationTransfer extends CFTransfer {
 
+    /** The type factory. */
     protected final AccumulationAnnotatedTypeFactory typeFactory;
 
+    /**
+     * Required constructor.
+     *
+     * @param analysis the analysis
+     */
     public AccumulationTransfer(CFAnalysis analysis) {
         super(analysis);
         typeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
