@@ -1,0 +1,80 @@
+\htmlhr
+\chapterAndLabel{Building an accumulation checker}{accumulation-checker}
+
+%% This chapter should appear after the "creating a checker" chapter, or perhaps as part of it,
+%% once accumulation support is complete.
+
+This chapter describes how to build a particular kind of checker---an accumulation
+checker. If you want to \emph{use} an existing checker, you do not need to read this chapter.
+
+An \emph{accumulation analysis} is a program analysis where the
+analysis abstraction is a monotonically increasing set, and some operation is legal
+only when the set is large enough---that is, the estimate has accumulated
+sufficiently many items.
+Accumulation analysis is a special case of typestate analysis in which
+(1) the order in which operations are performed does not affect what is subsequently legal,
+and (2) the accumulation does not add restrictions; that is, as
+more operations are performed, more operations become legal.
+
+Unlike a traditional typestate analysis, an accumulation analysis does
+not require an alias analysis for soundness. It can therefore be implemented
+as a flow-sensitive type system.
+
+The Checker Framework contains a generic accumulation analysis that can
+be extended to implement any particular accumulation analysis. We refer to
+such an extension as an "accumulation checker" in this chapter.
+
+Before reading the rest of this chapter, you should
+read the section on creating a checker (Chapter~\ref{creating-a-checker}).
+The rest of this chapter assumes you have done so.
+
+\paragraphAndLabel{Defining type qualifiers}{accumulation-qualifiers}
+
+The first step in building an accumulation checker is to decide what it is
+your checker will accumulate, and how to represent it. The Checker Framework's
+support for accumulation analysis requires you to accumulate a string representation
+of whatever you are accumulating. For example, when accumulating which methods have
+been called on an object, you might choose to accumulate method names.
+
+Define a type qualifier that with a single argument: a \<String[]> named \<value>.
+Choose a descriptive name for the qualifier that suggests what is being accumulated.
+An example of such a qualifier can be found in the Checker Framework's tests, at
+\<$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulation.java>.
+
+Also define top and bottom types, analogous to
+\<$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulationTop.java>
+and
+\<$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java>.
+
+\paragraphAndLabel{Setting up the checker}{accumulation-setup}
+
+Define a new class that extends \refclass{common/accumulation}{AccumulationChecker}.
+It does not need any content.
+
+Define a new class that extends \refclass{common/accumulation}{AccumulationAnnotatedTypeFactory}.
+You must create a new constructor whose only argument is a \refclass{common/basetype}{BaseTypeChecker}.
+Your constructor should call the \<super> constructor defined in
+\refclass{common/accumulation}{AccumulationAnnotatedTypeFactory}. That constructor takes four arguments:
+\begin{itemize}
+\item the \refclass{common/basetype}{BaseTypeChecker} argument to your constructor,
+\item the class that defines your accumulation annotation,
+\item the class that defines your top annotation, and
+\item the class that defines your bottom annotation.
+\end{itemize}
+
+\paragraphAndLabel{Adding accumulation logic}{accumulation-accumulating}
+
+Define a class that extends \refclass{common/accumulation}{AccumulationTransfer}.
+In your subclass, you should call the
+\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}
+or
+\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}
+methods when your checker should update its estimate of what has been accumulated.
+To do so, you will need to override one or more methods of \refclass{framework/flow}{CFAbstractTransfer},
+as you would when defining a typical transfer. The \<accumulate> methods will handle updating the store,
+etc., for you.
+
+For example, when accumulating the names of methods called, you would override
+\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-},
+call \<super> to get a \<TransferResult>, compute the method name from the \<MethodInvocationNode>,
+and then call \<accumulate>.
