@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -37,12 +37,6 @@ public class AClassWrapper {
      * that are enums.
      */
     private final HashSet<String> enums = new HashSet<>();
-
-    /**
-     * The methods of the class. Keys are the signatures of methods, entries are AMethodWrapper
-     * objects. Mirrors the "methods" field of AClass.
-     */
-    private final Map<String, AMethodWrapper> methods = new HashMap<>();
 
     /** The enum constants of the class, or null if this class is not an enum. */
     private @MonotonicNonNull List<VariableElement> enumConstants = null;
@@ -69,18 +63,13 @@ public class AClassWrapper {
      * <p>Results are interned.
      *
      * @param methodElt the method
-     * @return an AMethodWrapper representing the method
+     * @return an AMethod representing the method
      */
-    public AMethodWrapper vivifyMethod(ExecutableElement methodElt) {
+    public AMethod vivifyMethod(ExecutableElement methodElt) {
         String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
-        if (methods.containsKey(methodSignature)) {
-            return methods.get(methodSignature);
-        } else {
-            AMethodWrapper wrapper =
-                    new AMethodWrapper(theClass.methods.getVivify(methodSignature), methodElt);
-            methods.put(methodSignature, wrapper);
-            return wrapper;
-        }
+        AMethod method = theClass.methods.getVivify(methodSignature);
+        method.setFieldsFromMethodElement(methodElt);
+        return method;
     }
 
     /**
@@ -88,8 +77,8 @@ public class AClassWrapper {
      *
      * @return a map from method signature (in JVM format) to the object representing the method
      */
-    public Map<String, AMethodWrapper> getMethods() {
-        return ImmutableMap.copyOf(methods);
+    public Map<String, AMethod> getMethods() {
+        return ImmutableMap.copyOf(theClass.methods);
     }
 
     /**
