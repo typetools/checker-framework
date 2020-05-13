@@ -168,7 +168,15 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * All accumulation analyses share a similar type hierarchy. This hierarchy implements the
      * subtyping, LUB, and GLB for that hierarchy. The lattice looks like:
      *
-     * <p>top / \ acc(x) acc(y) ... \ / acc(x,y) ... | bottom
+     * <pre>
+     *       top
+     *      /   \
+     * acc(x)   acc(y) ...
+     *      \   /
+     *     acc(x,y) ...
+     *        |
+     *      bottom
+     * </pre>
      */
     protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 

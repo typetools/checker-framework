@@ -56,8 +56,10 @@ public class AccumulationTransfer extends CFTransfer {
      * with this MethodInvocationNode to include the new values.
      *
      * <p>For example, if the argument is the expression {@code a.b().c()}, the new value is "foo",
-     * and b and c return their receiver, all of the expressions {@code a}, {@code a.b()}, and
-     * {@code a.b().c()} would have their estimates updated to include "foo".
+     * and b and c return their receiver (and are deterministic), all of the expressions {@code a},
+     * {@code a.b()}, and {@code a.b().c()} would have their estimates updated to include "foo". If
+     * any method in the chain is non-deterministic, its estimate will not be updated (but the rest
+     * of the chain is not affected).
      *
      * @param node a method invocation whose receiver is to be updated
      * @param result the result containing the store to be modified
@@ -73,6 +75,8 @@ public class AccumulationTransfer extends CFTransfer {
         }
         AnnotationMirror newAnno = getNewAnno(oldType, values);
         while (receiver != null) {
+            // Note that this call doesn't do anything if receiver is a method call
+            // that is not deterministic, though it can still continue to recurse.
             insertIntoStores(result, receiver, newAnno);
 
             Tree receiverTree = receiver.getTree();

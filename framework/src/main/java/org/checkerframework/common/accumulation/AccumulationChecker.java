@@ -14,9 +14,10 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
  * typestate-like properties, but do not require a precise alias analysis for soundness.
  *
  * <p>This class provides a basic accumulation checker that can be extended to implement a
- * particular accumulation type system. The primary extension point is the constructor of {@link
- * AccumulationAnnotatedTypeFactory}, which every subclass should override to provide custom
- * annotations.
+ * particular accumulation type system. It automatically includes returns-receiver aliasing to
+ * precisely handle fluent APIs, but otherwise uses no alias analysis. The primary extension point
+ * is the constructor of {@link AccumulationAnnotatedTypeFactory}, which every subclass should
+ * override to provide custom annotations.
  */
 public abstract class AccumulationChecker extends BaseTypeChecker {
 
