@@ -50,19 +50,19 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * Create a new accumulation checker's annotated type factory.
      *
      * @param checker the checker
-     * @param top the top type in the hierarchy
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
      *     argument named "value" whose type is a String array.
+     * @param t the top type in the hierarchy
      * @param bot the bottom type in the hierarchy
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
-            Class<? extends Annotation> top,
             Class<? extends Annotation> accumulator,
+            Class<? extends Annotation> t,
             Class<? extends Annotation> bot) {
         super(checker);
 
-        TOP = AnnotationBuilder.fromClass(elements, top);
+        TOP = AnnotationBuilder.fromClass(elements, t);
         BOTTOM = AnnotationBuilder.fromClass(elements, bot);
         ACC = accumulator;
 

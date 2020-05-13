@@ -19,8 +19,8 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
     public TestAccumulationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(
                 checker,
-                TestAccumulationTop.class,
                 TestAccumulation.class,
+                TestAccumulationTop.class,
                 TestAccumulationBottom.class);
         this.postInit();
     }
