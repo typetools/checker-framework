@@ -184,8 +184,10 @@ public abstract class AbstractCFGVisualizer<
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
                 centered = true;
+            } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
+                sbBlock.append(visualizeConditionalBlock((ConditionalBlock) bb));
             } else {
-                return "";
+                sbBlock.append("<empty block>");
             }
         }
 
@@ -309,7 +311,7 @@ public abstract class AbstractCFGVisualizer<
             case EXCEPTIONAL_EXIT:
                 return "<exceptional-exit>" + separator;
             default:
-                return "";
+                throw new Error("Unrecognized special block type: " + sbb.getType());
         }
     }
 
@@ -324,10 +326,13 @@ public abstract class AbstractCFGVisualizer<
             case REGULAR_BLOCK:
                 List<Node> blockContents = ((RegularBlock) bb).getContents();
                 return blockContents.get(blockContents.size() - 1);
+            case CONDITIONAL_BLOCK:
+            case SPECIAL_BLOCK:
+                return null;
             case EXCEPTION_BLOCK:
                 return ((ExceptionBlock) bb).getNode();
             default:
-                return null;
+                throw new Error("Unrecognized block type: " + bb.getType());
         }
     }
 

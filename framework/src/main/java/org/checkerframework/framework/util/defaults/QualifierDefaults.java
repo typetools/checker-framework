@@ -44,7 +44,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -76,18 +76,26 @@ public class QualifierDefaults {
      */
     private boolean applyToTypeVar = false;
 
+    /** Element utilities to use. */
     private final Elements elements;
+
+    /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
+
+    /** List of the upstream checker binary names. */
     private final List<String> upstreamCheckerNames;
 
+    /** Defaults for checked code. */
     private final DefaultSet checkedCodeDefaults = new DefaultSet();
+
+    /** Defaults for unchecked code. */
     private final DefaultSet uncheckedCodeDefaults = new DefaultSet();
 
-    /** Mapping from an Element to the source Tree of the declaration. */
+    /** Size for caches. */
     private static final int CACHE_SIZE = 300;
 
-    @SuppressWarnings("checkstyle:constantname") // only a shallow constant, so don't use all-caps
-    protected static final Map<Element, BoundType> elementToBoundType =
+    /** Mapping from an Element to the bound type. */
+    protected final Map<Element, BoundType> elementToBoundType =
             CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /**
@@ -140,6 +148,7 @@ public class QualifierDefaults {
 
     /** True if conservative defaults should be used in unannotated source code. */
     private final boolean useConservativeDefaultsSource;
+
     /** True if conservative defaults should be used for bytecode. */
     private final boolean useConservativeDefaultsBytecode;
 
@@ -170,11 +179,11 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "Checked code defaults: ",
-                PluginUtil.joinLines(checkedCodeDefaults),
+                SystemUtil.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                PluginUtil.joinLines(uncheckedCodeDefaults),
+                SystemUtil.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -708,10 +717,16 @@ public class QualifierDefaults {
         return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
     }
 
-    public static class DefaultApplierElement {
+    /** A default applier element. */
+    protected class DefaultApplierElement {
 
+        /** The annotated type factory. */
         protected final AnnotatedTypeFactory atypeFactory;
+
+        /** The scope of the default. */
         protected final Element scope;
+
+        /** The type to which to apply the default. */
         protected final AnnotatedTypeMirror type;
 
         /**
@@ -1018,7 +1033,7 @@ public class QualifierDefaults {
                 final boolean prevIsLowerBound = isLowerBound;
                 final BoundType prevBoundType = boundType;
 
-                boundType = getBoundType(boundedType, atypeFactory);
+                boundType = getBoundType(boundedType);
 
                 try {
                     isLowerBound = true;
@@ -1046,7 +1061,7 @@ public class QualifierDefaults {
      * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
      * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
      */
-    enum BoundType {
+    protected enum BoundType {
 
         /** Indicates an upper-bounded type variable or wildcard. */
         UPPER,
@@ -1077,36 +1092,38 @@ public class QualifierDefaults {
      *     AnnotatedTypeVariable.
      * @return the boundType for type
      */
-    private static BoundType getBoundType(
-            final AnnotatedTypeMirror type, final AnnotatedTypeFactory typeFactory) {
+    private BoundType getBoundType(final AnnotatedTypeMirror type) {
         if (type instanceof AnnotatedTypeVariable) {
-            return getTypeVarBoundType((AnnotatedTypeVariable) type, typeFactory);
+            return getTypeVarBoundType((AnnotatedTypeVariable) type);
         }
 
         if (type instanceof AnnotatedWildcardType) {
-            return getWildcardBoundType((AnnotatedWildcardType) type, typeFactory);
+            return getWildcardBoundType((AnnotatedWildcardType) type);
         }
 
         throw new BugInCF("Unexpected type kind: type=" + type);
     }
 
-    /** @return the bound type of the input typeVar */
-    private static BoundType getTypeVarBoundType(
-            final AnnotatedTypeVariable typeVar, final AnnotatedTypeFactory typeFactory) {
-        return getTypeVarBoundType(
-                (TypeParameterElement) typeVar.getUnderlyingType().asElement(), typeFactory);
+    /**
+     * @param typeVar the type variable
+     * @return the bound type of the input typeVar
+     */
+    private BoundType getTypeVarBoundType(final AnnotatedTypeVariable typeVar) {
+        return getTypeVarBoundType((TypeParameterElement) typeVar.getUnderlyingType().asElement());
     }
 
-    /** @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem */
+    /**
+     * @param typeParamElem the type parameter element
+     * @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem
+     */
     // Results are cached in {@link elementToBoundType}.
-    private static BoundType getTypeVarBoundType(
-            final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
+    private BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem) {
         final BoundType prev = elementToBoundType.get(typeParamElem);
         if (prev != null) {
             return prev;
         }
 
-        TreePath declaredTypeVarEle = typeFactory.getTreeUtils().getPath(typeParamElem);
+        TreePath declaredTypeVarEle = atypeFactory.getTreeUtils().getPath(typeParamElem);
         Tree typeParamDecl = declaredTypeVarEle == null ? null : declaredTypeVarEle.getLeaf();
 
         final BoundType boundType;
@@ -1136,7 +1153,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        PluginUtil.joinLines(
+                        SystemUtil.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));
@@ -1148,19 +1165,17 @@ public class QualifierDefaults {
     }
 
     /**
+     * @param annotatedWildcard the annotated wildcard type
      * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to
      *     which its an argument.
      */
-    public static BoundType getWildcardBoundType(
-            final AnnotatedWildcardType annotatedWildcard, final AnnotatedTypeFactory typeFactory) {
+    public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
 
         final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
 
         final BoundType boundType;
         if (wildcard.isUnbound() && wildcard.bound != null) {
-            boundType =
-                    getTypeVarBoundType(
-                            (TypeParameterElement) wildcard.bound.asElement(), typeFactory);
+            boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
 
         } else {
             // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is

@@ -52,7 +52,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -492,10 +492,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    PluginUtil.joinLines(
+                    SystemUtil.joinLines(
                             "Mismatch between formal parameter count and argument count.",
-                            "paramTypes=" + PluginUtil.join(",", paramTypes),
-                            "argTypes=" + PluginUtil.join(",", argTypes)));
+                            "paramTypes=" + SystemUtil.join(",", paramTypes),
+                            "argTypes=" + SystemUtil.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -810,10 +810,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        PluginUtil.joinLines(
+                        SystemUtil.joinLines(
                                 "All afConstraints should be irreducible before conversion.",
-                                "afConstraints=[ " + PluginUtil.join(", ", afConstraints) + " ]",
-                                "targets=[ " + PluginUtil.join(", ", targets) + "]"));
+                                "afConstraints=[ " + SystemUtil.join(", ", afConstraints) + " ]",
+                                "targets=[ " + SystemUtil.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());

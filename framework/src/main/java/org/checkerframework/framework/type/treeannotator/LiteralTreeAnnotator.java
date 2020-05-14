@@ -22,7 +22,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
@@ -249,7 +249,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
                         throw new BugInCF(
-                                PluginUtil.joinLines(
+                                SystemUtil.joinLines(
                                         "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy definition:",
                                         " inferred type for \"" + string + "\" is " + res,
                                         " which is a subtype of " + sam,

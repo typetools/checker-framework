@@ -13,7 +13,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups. TARGETED
@@ -134,8 +134,8 @@ abstract class TargetedElementAnnotationApplier {
                 remainingInfo.add(r.toString() + " (" + r.position + ")");
             }
             msg.add(remainingInfo.toString());
-            msg.add("Targeted annotations: " + PluginUtil.join(", ", annotatedTargets()));
-            msg.add("Valid annotations: " + PluginUtil.join(", ", validTargets()));
+            msg.add("Targeted annotations: " + SystemUtil.join(", ", annotatedTargets()));
+            msg.add("Valid annotations: " + SystemUtil.join(", ", validTargets()));
 
             throw new BugInCF(msg.toString());
         }
