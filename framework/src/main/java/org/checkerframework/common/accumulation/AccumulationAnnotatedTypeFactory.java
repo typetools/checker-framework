@@ -135,6 +135,14 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             super(factory);
         }
 
+        /**
+         * If a method returns its receiver, and the receiver has an accumulation type, then the
+         * default type of its return value is the type of the receiver.
+         *
+         * @param tree a method invocation tree
+         * @param type the type of that tree (i.e. the return type)
+         * @return nothing, works by side-effect on the type
+         */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             // Check to see if the ReturnsReceiver Checker has a @This annotation
