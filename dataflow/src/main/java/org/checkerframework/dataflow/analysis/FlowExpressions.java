@@ -11,6 +11,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -314,6 +315,10 @@ public class FlowExpressions {
                     default:
                         receiver = null;
                 }
+                break;
+            case UNARY_PLUS:
+                LiteralTree un = (LiteralTree) (((JCUnary) receiverTree).getExpression());
+                receiver = new ValueLiteral(TreeUtils.typeOf(receiverTree), un.getValue());
                 break;
             default:
                 receiver = null;
