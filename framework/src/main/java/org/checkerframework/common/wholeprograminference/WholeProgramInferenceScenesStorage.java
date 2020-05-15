@@ -19,7 +19,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
-import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -35,6 +34,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.InnerTypeLocation;
@@ -160,11 +160,11 @@ public class WholeProgramInferenceScenesStorage {
      * @param jaifPath the path to the jaif file that would represent that class (must end in
      *     ".jaif")
      * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the symbol
-     *     information stored on an AClassWrapper.
+     *     information stored on an AClass.
      * @return a version of the scene-lib representation of the class, augmented with symbol
      *     information if {@code classSymbol} was non-null
      */
-    protected AClassWrapper getAClass(
+    protected AClass getAClass(
             @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
         // Possibly reads .jaif file to obtain a Scene.
         ASceneWrapper scene = getScene(jaifPath);
@@ -182,7 +182,7 @@ public class WholeProgramInferenceScenesStorage {
      *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
      *     already been called with a non-null third argument.
      */
-    protected AClassWrapper getAClass(@BinaryName String className, String jaifPath) {
+    protected AClass getAClass(@BinaryName String className, String jaifPath) {
         return getAClass(className, jaifPath, null);
     }
 
