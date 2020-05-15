@@ -461,7 +461,7 @@ public final class SceneToStubWriter {
             } else {
                 printWriter.print("class ");
             }
-            printWriter.print(formatAnnotations(aClass.getAnnotations()));
+            printWriter.print(formatAnnotations(aClass.theClass.getAnnotations()));
             printWriter.print(nameToPrint);
             printTypeParameters(aClass, printWriter);
             printWriter.println(" {");
@@ -484,13 +484,13 @@ public final class SceneToStubWriter {
     private static void printFields(
             AClassWrapper aClass, PrintWriter printWriter, String indentLevel) {
 
-        if (aClass.getFields().isEmpty()) {
+        if (aClass.theClass.getFields().isEmpty()) {
             return;
         }
 
         printWriter.println(indentLevel + "// fields:");
         printWriter.println();
-        for (Map.Entry<String, AField> fieldEntry : aClass.getFields().entrySet()) {
+        for (Map.Entry<String, AField> fieldEntry : aClass.theClass.getFields().entrySet()) {
             String fieldName = fieldEntry.getKey();
             AField aField = fieldEntry.getValue();
             printField(aField, fieldName, printWriter, indentLevel);
@@ -695,11 +695,12 @@ public final class SceneToStubWriter {
 
         printFields(aClassWrapper, printWriter, indentLevel);
 
-        if (!aClassWrapper.getMethods().isEmpty()) {
+        if (!aClassWrapper.theClass.getMethods().isEmpty()) {
             // print method signatures
             printWriter.println(indentLevel + "// methods:");
             printWriter.println();
-            for (Map.Entry<String, AMethod> methodEntry : aClassWrapper.getMethods().entrySet()) {
+            for (Map.Entry<String, AMethod> methodEntry :
+                    aClassWrapper.theClass.getMethods().entrySet()) {
                 printMethodDeclaration(
                         methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
