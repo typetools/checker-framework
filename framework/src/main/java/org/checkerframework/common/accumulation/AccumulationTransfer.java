@@ -117,11 +117,11 @@ public class AccumulationTransfer extends CFTransfer {
     private AnnotationMirror getNewAnno(AnnotatedTypeMirror oldType, String[] newValues) {
         AnnotationMirror oldAnno;
         if (oldType == null) {
-            oldAnno = typeFactory.TOP;
+            oldAnno = typeFactory.top;
         } else {
-            oldAnno = oldType.getAnnotationInHierarchy(typeFactory.TOP);
+            oldAnno = oldType.getAnnotationInHierarchy(typeFactory.top);
             if (oldAnno == null || !typeFactory.isAccumulatorAnnotation(oldAnno)) {
-                oldAnno = typeFactory.TOP;
+                oldAnno = typeFactory.top;
             }
         }
         String[] allValues;

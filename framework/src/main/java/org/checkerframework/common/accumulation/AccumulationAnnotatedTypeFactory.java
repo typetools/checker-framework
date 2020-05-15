@@ -35,16 +35,16 @@ import org.checkerframework.javacutil.TreeUtils;
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical top annotation for this accumulation checker. */
-    public final AnnotationMirror TOP;
+    public final AnnotationMirror top;
 
     /** The canonical bottom annotation for this accumulation checker. */
-    public final AnnotationMirror BOTTOM;
+    public final AnnotationMirror bottom;
 
     /**
      * The annotation that accumulates things in this accumulation checker. Must be an annotation
      * with exactly one field named "value" whose type is a String array.
      */
-    private final Class<? extends Annotation> ACC;
+    private final Class<? extends Annotation> accumulator;
 
     /**
      * Create an annotated type factory for an accumulation checker.
@@ -62,9 +62,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             Class<? extends Annotation> bottom) {
         super(checker);
 
-        TOP = AnnotationBuilder.fromClass(elements, top);
-        BOTTOM = AnnotationBuilder.fromClass(elements, bottom);
-        ACC = accumulator;
+        this.top = AnnotationBuilder.fromClass(elements, top);
+        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
+        this.accumulator = accumulator;
 
         // Every subclass must call postInit!  This does not do so for subclasses.
         if (this.getClass() == AccumulationAnnotatedTypeFactory.class) {
@@ -82,9 +82,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public AnnotationMirror createAccumulatorAnnotation(final String... values) {
         if (values.length == 0) {
-            return TOP;
+            return top;
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ACC);
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
         Arrays.sort(values);
         builder.setValue("value", values);
         return builder.build();
@@ -114,7 +114,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
      */
     public boolean isAccumulatorAnnotation(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, ACC);
+        return AnnotationUtils.areSameByClass(anm, accumulator);
     }
 
     @Override
@@ -156,9 +156,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
                 if (receiverTree != null
                         && (receiverType = getAnnotatedType(receiverTree)) != null) {
-                    receiverAnno = receiverType.getAnnotationInHierarchy(TOP);
+                    receiverAnno = receiverType.getAnnotationInHierarchy(top);
                 } else {
-                    receiverAnno = TOP;
+                    receiverAnno = top;
                 }
 
                 type.replaceAnnotation(receiverAnno);
@@ -199,7 +199,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
         @Override
         public AnnotationMirror getTopAnnotation(final AnnotationMirror start) {
-            return TOP;
+            return top;
         }
 
         /**
@@ -209,8 +209,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         @Override
         public AnnotationMirror greatestLowerBound(
                 final AnnotationMirror a1, final AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, BOTTOM) || AnnotationUtils.areSame(a2, BOTTOM)) {
-                return BOTTOM;
+            if (AnnotationUtils.areSame(a1, bottom) || AnnotationUtils.areSame(a2, bottom)) {
+                return bottom;
             }
 
             if (!AnnotationUtils.hasElementValue(a1, "value")) {
@@ -231,7 +231,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 a1Val.addAll(a2Val);
                 return createAccumulatorAnnotation(a1Val.toArray(new String[0]));
             } else {
-                return BOTTOM;
+                return bottom;
             }
         }
 
@@ -242,9 +242,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         @Override
         public AnnotationMirror leastUpperBound(
                 final AnnotationMirror a1, final AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, BOTTOM)) {
+            if (AnnotationUtils.areSame(a1, bottom)) {
                 return a2;
-            } else if (AnnotationUtils.areSame(a2, BOTTOM)) {
+            } else if (AnnotationUtils.areSame(a2, bottom)) {
                 return a1;
             }
 
@@ -266,24 +266,24 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 a1Val.retainAll(a2Val);
                 return createAccumulatorAnnotation(a1Val.toArray(new String[0]));
             } else {
-                return TOP;
+                return top;
             }
         }
 
         /** isSubtype in this type system is subset. */
         @Override
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSame(subAnno, BOTTOM)) {
+            if (AnnotationUtils.areSame(subAnno, bottom)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(superAnno, BOTTOM)) {
+            if (AnnotationUtils.areSame(superAnno, bottom)) {
                 return false;
             }
 
-            if (AnnotationUtils.areSame(superAnno, TOP)) {
+            if (AnnotationUtils.areSame(superAnno, top)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(subAnno, TOP)) {
+            if (AnnotationUtils.areSame(subAnno, top)) {
                 return false;
             }
 
