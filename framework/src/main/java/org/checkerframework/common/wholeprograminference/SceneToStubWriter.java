@@ -644,7 +644,11 @@ public final class SceneToStubWriter {
             return false;
         }
 
-        aClassWrapper.checkIfPrintable();
+        if (aClassWrapper.theClass.getTypeElement() == null) {
+            throw new BugInCF(
+                    "Tried printing an unprintable class to a stub file during WPI: "
+                            + aClassWrapper.theClass.className);
+        }
 
         return true;
     }
@@ -726,7 +730,7 @@ public final class SceneToStubWriter {
      * @param printWriter where to print the type parameters
      */
     private static void printTypeParameters(AClassWrapper aClass, PrintWriter printWriter) {
-        TypeElement type = aClass.getTypeElement();
+        TypeElement type = aClass.theClass.getTypeElement();
         if (type == null) {
             return;
         }

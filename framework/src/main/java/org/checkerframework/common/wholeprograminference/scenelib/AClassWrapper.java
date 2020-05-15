@@ -4,12 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
-import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -26,12 +21,6 @@ public class AClassWrapper {
 
     /** The wrapped AClass object. */
     public final AClass theClass;
-
-    /**
-     * The type element representing the class. Clients must call {@link
-     * #setTypeElement(TypeElement)} before accessing this field.
-     */
-    private @MonotonicNonNull TypeElement typeElement = null;
 
     /**
      * Wrap an AClass. Package-private, because it should only be called from ASceneWrapper.
@@ -98,45 +87,6 @@ public class AClassWrapper {
      */
     public Collection<? extends Annotation> getAnnotations() {
         return theClass.tlAnnotationsHere;
-    }
-
-    /**
-     * Get the type of the class, or null if it is unknown. Callers should ensure that either:
-     *
-     * <ul>
-     *   <li>{@link #setTypeElement(TypeElement)} has been called, or
-     *   <li>the return value is checked against null.
-     * </ul>
-     *
-     * @return a type element representing this class
-     */
-    public @Nullable TypeElement getTypeElement() {
-        return typeElement;
-    }
-
-    /**
-     * Set the type element representing the class.
-     *
-     * @param typeElement the type element representing the class
-     */
-    public void setTypeElement(TypeElement typeElement) {
-        if (this.typeElement == null) {
-            this.typeElement = typeElement;
-        } else if (!this.typeElement.equals(typeElement)) {
-            throw new BugInCF(
-                    "setTypeElement(%s): type is already %s", typeElement, this.typeElement);
-        }
-    }
-
-    /**
-     * Can {@link SceneToStubWriter} print this class? If so, do nothing. If not, throw an error.
-     */
-    public void checkIfPrintable() {
-        if (typeElement == null) {
-            throw new BugInCF(
-                    "Tried printing an unprintable class to a stub file during WPI: "
-                            + theClass.className);
-        }
     }
 
     @Override

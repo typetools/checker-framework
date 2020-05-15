@@ -265,7 +265,7 @@ public class ASceneWrapper {
             // otherwise this loop will sometimes run forever.
         } while (outerClass != null && !previous.equals(outerClass));
 
-        aClassWrapper.setTypeElement(classSymbol);
+        aClassWrapper.theClass.setTypeElement(classSymbol);
     }
 
     /**
