@@ -109,7 +109,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
-        AMethod method = clazz.setFieldsFromMethod(constructorElt);
+        AMethod method = clazz.theClass.setFieldsFromMethodElement(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -132,7 +132,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        AMethod method = clazz.setFieldsFromMethod(methodElt);
+        AMethod method = clazz.theClass.setFieldsFromMethodElement(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -185,7 +185,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethod method = clazz.setFieldsFromMethod(methodElt);
+        AMethod method = clazz.theClass.setFieldsFromMethodElement(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -226,7 +226,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        AMethod method = clazz.setFieldsFromMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AMethod method =
+                clazz.theClass.setFieldsFromMethodElement(
+                        TreeUtils.elementFromDeclaration(methodTree));
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -296,7 +298,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AField field = clazz.addTypeMirrorToField(fieldName, lhsATM.getUnderlyingType());
+        AField field = clazz.theClass.setTypeMirror(fieldName, lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
@@ -349,7 +351,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethod method = clazz.setFieldsFromMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AMethod method =
+                clazz.theClass.setFieldsFromMethodElement(
+                        TreeUtils.elementFromDeclaration(methodTree));
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
 
@@ -393,7 +397,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superJaifPath,
                             ((MethodSymbol) overriddenMethodElement).enclClass());
             AMethod overriddenMethodInSuperclass =
-                    superClazz.setFieldsFromMethod(overriddenMethodElement);
+                    superClazz.theClass.setFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(
