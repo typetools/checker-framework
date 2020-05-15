@@ -456,7 +456,7 @@ public final class SceneToStubWriter {
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
             printWriter.print(indents(i));
-            if (aClass.isEnum(nameToPrint)) {
+            if (aClass.theClass.isEnum(nameToPrint)) {
                 printWriter.print("enum ");
             } else {
                 printWriter.print("class ");
@@ -465,7 +465,7 @@ public final class SceneToStubWriter {
             printWriter.print(nameToPrint);
             printTypeParameters(aClass, printWriter);
             printWriter.println(" {");
-            if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
+            if (aClass.theClass.isEnum(nameToPrint) && i != classNames.length - 1) {
                 // Print a blank set of enum constants if this is an outer enum.
                 printWriter.println(indents(i + 1) + "/* omitted enum constants */ ;");
             }
@@ -676,7 +676,7 @@ public final class SceneToStubWriter {
 
         String indentLevel = indents(curlyCount);
 
-        List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+        List<VariableElement> enumConstants = aClassWrapper.theClass.getEnumConstants();
         if (enumConstants != null) {
             StringJoiner sj = new StringJoiner(", ");
             for (VariableElement enumConstant : enumConstants) {

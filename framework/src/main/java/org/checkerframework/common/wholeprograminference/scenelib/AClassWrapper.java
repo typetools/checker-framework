@@ -1,15 +1,10 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -30,16 +25,7 @@ import scenelib.annotations.util.JVMNames;
 public class AClassWrapper {
 
     /** The wrapped AClass object. */
-    private final AClass theClass;
-
-    /**
-     * This HashSet contains the simple class names any of this class' outer classes (or this class)
-     * that are enums.
-     */
-    private final HashSet<String> enums = new HashSet<>();
-
-    /** The enum constants of the class, or null if this class is not an enum. */
-    private @MonotonicNonNull List<VariableElement> enumConstants = null;
+    public final AClass theClass;
 
     /**
      * The type element representing the class. Clients must call {@link
@@ -140,65 +126,6 @@ public class AClassWrapper {
             throw new BugInCF(
                     "setTypeElement(%s): type is already %s", typeElement, this.typeElement);
         }
-    }
-
-    /**
-     * Checks if the given class is an enum or not.
-     *
-     * @param className the simple class name of this class or one of its outer classes
-     * @return true if the given class is an enum
-     */
-    public boolean isEnum(String className) {
-        return enums.contains(className);
-    }
-
-    /**
-     * Checks if this class is an enum.
-     *
-     * @return true if this class is an enum
-     */
-    public boolean isEnum() {
-        return enums.contains(this.theClass.className);
-    }
-
-    /**
-     * Marks the given simple class name as an enum. This method is used to mark outer classes of
-     * this class that have not been vivified, meaning that only their names are available.
-     *
-     * <p>Note that this code will misbehave if a class has the same name as its inner enum, or
-     * vice-versa, because this uses simple names.
-     *
-     * @param className the simple class name of this class or one of its outer classes
-     */
-    public void markAsEnum(String className) {
-        enums.add(className);
-    }
-
-    /**
-     * Returns the set of enum constants for this class, or null if this is not an enum.
-     *
-     * @return the enum constants, or null if this is not an enum
-     */
-    public @Nullable List<VariableElement> getEnumConstants() {
-        if (enumConstants != null) {
-            return ImmutableList.copyOf(enumConstants);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Marks this class as an enum.
-     *
-     * @param enumConstants the list of enum constants for the class
-     */
-    public void setEnumConstants(List<VariableElement> enumConstants) {
-        if (this.enumConstants != null) {
-            throw new BugInCF(
-                    "setEnumConstants was called multiple times with arguments %s and %s",
-                    this.enumConstants, enumConstants);
-        }
-        this.enumConstants = new ArrayList<>(enumConstants);
     }
 
     /**

@@ -228,10 +228,11 @@ public class ASceneWrapper {
                 }
             }
             // Either call setEnumConstants or verify that the existing value is consistent.
-            if (!aClassWrapper.isEnum(classSymbol.getSimpleName().toString())) {
-                aClassWrapper.setEnumConstants(enumConstants);
+            if (!aClassWrapper.theClass.isEnum(classSymbol.getSimpleName().toString())) {
+                aClassWrapper.theClass.setEnumConstants(enumConstants);
             } else {
-                List<VariableElement> existingEnumConstants = aClassWrapper.getEnumConstants();
+                List<VariableElement> existingEnumConstants =
+                        aClassWrapper.theClass.getEnumConstants();
                 if (existingEnumConstants.size() != enumConstants.size()) {
                     throw new BugInCF(
                             "inconsistent enum constants in WPI for class "
@@ -251,7 +252,7 @@ public class ASceneWrapper {
         ClassSymbol previous = classSymbol;
         do {
             if (outerClass.isEnum()) {
-                aClassWrapper.markAsEnum(outerClass.getSimpleName().toString());
+                aClassWrapper.theClass.markAsEnum(outerClass.getSimpleName().toString());
             }
             Element element = classSymbol.getEnclosingElement();
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
