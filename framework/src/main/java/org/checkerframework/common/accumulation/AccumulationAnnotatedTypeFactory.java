@@ -52,8 +52,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
      *     argument named "value" whose type is a String array.
-     * @param top the top type in the hierarchy
-     * @param bottom the bottom type in the hierarchy
+     * @param top the top type in the hierarchy, which must be distinct from and a supertype of
+     *     {@code accumulator}. The top type should be an annotation with no arguments.
+     * @param bottom the bottom type in the hierarchy, which must be distinct from and a subtype of
+     *     {@code accumulator}. The bottom type should be an annotation with no arguments.
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
