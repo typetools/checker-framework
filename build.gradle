@@ -408,6 +408,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         options.memberLevel = memberLevel
         options.addBooleanOption('Xdoclint:all', true)
         options.addStringOption('Xmaxwarns', '99999')
+	options.addStringOption('Xwerror', '-quiet')
 
         // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
     }
