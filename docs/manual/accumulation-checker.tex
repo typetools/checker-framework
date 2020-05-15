@@ -32,8 +32,11 @@ The rest of this chapter assumes you have done so.
 
 \paragraphAndLabel{Defining type qualifiers}{accumulation-qualifiers}
 
-[[TODO: This should reference the Called Methods Checker as a concrete
-example of how to create an accumulation checker.]]
+The Object Construction Checker (Section~\ref{object-construction-checker})
+is a concrete example of a practical accumulation checker that you may want
+to reference. The
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/TestAccumulationChecker.java}{Test Accumulation Checker}
+is a simplified version of the same that you can also use as a model.
 
 First, design your analysis.  Decide what
 your checker will accumulate and how to represent it. The Checker Framework's
@@ -41,16 +44,14 @@ support for accumulation analysis requires you to accumulate a string representa
 of whatever you are accumulating. For example, when accumulating which methods have
 been called on an object, you might choose to accumulate method names.
 
-[[TODO: Change the filesystem links into links into the GitHub repository.]]
-
 Define a type qualifier that has a single argument: a \<String[]> named \<value>.
-An example of such a qualifier can be found in the Checker Framework's tests, at
-\<\$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulation.java>.
+An example of such a qualifier can be found in the Checker Framework's tests:
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
 
 Also define top and bottom types, analogous to
-\<\$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulationTop.java>
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationTop.java}{TestAccumulationTop.java}.
 and
-\<\$CHECKERFRAMEWORK/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java>.
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
 Both should take no arguments. The top type should be a supertype of the accumulator annotation
 you defined earlier, and the bottom type should be a subtype of it.
 
