@@ -9,8 +9,12 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -24,12 +28,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
@@ -98,15 +101,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(constructorElt)) {
+        if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
         }
 
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
-        String methodSignature = JVMNames.getJVMMethodSignature(constructorElt);
-        AMethod method = clazz.methods.getVivify(methodSignature);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
+        AMethod method = clazz.vivifyMethod(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -120,16 +123,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
-        AMethod method = clazz.methods.getVivify(methodSignature);
+        AMethod method = clazz.vivifyMethod(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -142,6 +145,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             String jaifPath,
             AMethod method,
             List<Node> arguments) {
+
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
@@ -157,7 +161,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.getVivify(i);
+            AField param =
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -171,22 +177,24 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
-        String methodSignature = JVMNames.getJVMMethodSignature(methodElt);
-        AMethod method = clazz.methods.getVivify(methodSignature);
+        AClassWrapper clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
+        AMethod method = clazz.vivifyMethod(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AField param = method.parameters.getVivify(i);
+            AField param =
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
             storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
@@ -211,15 +219,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
+        if (!isElementFromSourceCode(lhs)) {
             return;
         }
 
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
-        String methodSignature = JVMNames.getJVMMethodSignature(methodTree);
-        AMethod method = clazz.methods.getVivify(methodSignature);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath);
+        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -237,7 +244,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                AField param = method.parameters.getVivify(i);
+                VariableElement ve = TreeUtils.elementFromDeclaration(vt);
+                AField param =
+                        method.vivifyAndAddTypeMirrorToParameter(
+                                i, argATM.getUnderlyingType(), ve.getSimpleName());
                 storage.updateAnnotationSetInScene(
                         param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
@@ -247,29 +257,46 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     @Override
     public void updateFromFieldAssignment(
-            FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
 
-        // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
-            return;
+        Element element;
+        String fieldName;
+        if (lhs instanceof FieldAccessNode) {
+            element = ((FieldAccessNode) lhs).getElement();
+            fieldName = ((FieldAccessNode) lhs).getFieldName();
+        } else if (lhs instanceof LocalVariableNode) {
+            element = ((LocalVariableNode) lhs).getElement();
+            fieldName = ((LocalVariableNode) lhs).getName();
+        } else {
+            throw new BugInCF(
+                    "updateFromFieldAssignment received an unexpected node type: "
+                            + lhs.getClass());
         }
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        if (atf.getDeclAnnotation(lhs.getElement(), IgnoreInWholeProgramInference.class) != null
+        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
                 || atf.getDeclAnnotationWithMetaAnnotation(
-                                        lhs.getElement(), IgnoreInWholeProgramInference.class)
+                                        element, IgnoreInWholeProgramInference.class)
                                 .size()
                         > 0) {
             return;
         }
 
-        String className = getEnclosingClassName(lhs.getElement());
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
-        AField field = clazz.fields.getVivify(lhs.getFieldName());
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+            return;
+        }
+
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        String jaifPath = storage.getJaifPath(className);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
+
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        AField field = clazz.vivifyField(fieldName, lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
@@ -306,7 +333,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // do not infer types for code that isn't presented as source
         if (methodTree == null
-                || ElementUtils.isElementFromByteCode(
+                || !ElementUtils.isElementFromSourceCode(
                         TreeUtils.elementFromDeclaration(methodTree))) {
             return;
         }
@@ -316,14 +343,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        String className = classSymbol.flatname.toString();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodTree));
-        // Method return type
+        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
+
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
+
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         storage.updateAnnotationSetInScene(
@@ -344,6 +373,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedDeclaredType superclassDecl = pair.getKey();
             ExecutableElement overriddenMethodElement = pair.getValue();
 
+            // do not infer types for code that isn't presented as source
+            if (!ElementUtils.isElementFromSourceCode(overriddenMethodElement)) {
+                continue;
+            }
+
             AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(
                             atf.getProcessingEnv().getTypeUtils(),
@@ -351,12 +385,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superclassDecl,
                             overriddenMethodElement);
 
-            String superClassName = superclassDecl.getUnderlyingType().toString();
+            String superClassName = getEnclosingClassName(overriddenMethodElement);
             String superJaifPath = storage.getJaifPath(superClassName);
-            AClass superClazz = storage.getAClass(superClassName, superJaifPath);
-            AMethod overriddenMethodInSuperclass =
-                    superClazz.methods.getVivify(
-                            JVMNames.getJVMMethodSignature(overriddenMethodElement));
+            AClassWrapper superClazz =
+                    storage.getAClass(
+                            superClassName,
+                            superJaifPath,
+                            ((MethodSymbol) overriddenMethodElement).enclClass());
+            AMethod overriddenMethodInSuperclass = superClazz.vivifyMethod(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(
@@ -369,10 +405,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         }
     }
 
-    /** Write all modified scenes into .jaif files. */
+    /** Write all modified scenes into .jaif files or stub files. */
     @Override
-    public void saveResults() {
-        storage.writeScenesToJaif();
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        storage.writeScenes(outputFormat, checker);
     }
 
     /**
@@ -381,7 +417,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
         return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
@@ -393,17 +430,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    private String getEnclosingClassName(ExecutableElement executableElement) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
+     * Checks whether a given local variable came from a source file or not.
      *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, whether or not there is also a source file.
+     *
+     * @param localVariableNode the local variable declaration to check
+     * @return true if a source file containing the variable is being compiled
      */
-    private String getEnclosingClassName(VariableElement variableElement) {
-        return ((VarSymbol) variableElement).enclClass().flatName().toString();
+    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
+        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 }
