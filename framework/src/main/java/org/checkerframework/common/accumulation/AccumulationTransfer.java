@@ -39,10 +39,10 @@ public class AccumulationTransfer extends CFTransfer {
     }
 
     /**
-     * Updates the estimate of how many things node has accumulated to include all the values.
+     * Updates the estimate of how many things {@code node} has accumulated.
      *
-     * @param node the node whose estimate should be adjusted
-     * @param result the result containing the store to be modified
+     * @param node the node whose estimate should be expanded
+     * @param result the transfer result containing the store to be modified
      * @param values the new accumulation values
      */
     public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
@@ -108,7 +108,7 @@ public class AccumulationTransfer extends CFTransfer {
 
     /**
      * Combines the values in oldType with the values in newValues to produce a single accumulator
-     * type.
+     * type qualifier.
      *
      * @param oldType an annotated type mirror whose values should be included
      * @param newValues new values to include

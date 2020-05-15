@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,16 +28,17 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * An annotated type factory for an accumulation checker.
  *
- * <p>New accumulation checkers should extend this class and implement their own version of the
- * constructor, which should take a {@link BaseTypeChecker} and pass constants for the annotation
- * classes required by the constructor defined in this class.
- *
- * <p>New subclasses must also call {@link #postInit()} in their constructors.
+ * <p>New accumulation checkers should extend this class and implement a constructor, which should
+ * take a {@link BaseTypeChecker} and call both the constructor defined in this class and {@link
+ * #postInit()}.
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The canonical top and bottom annotations for this accumulation checker. */
-    public final AnnotationMirror TOP, BOTTOM;
+    /** The canonical top annotation for this accumulation checker. */
+    public final AnnotationMirror TOP;
+
+    /** The canonical bottom annotation for this accumulation checker. */
+    public final AnnotationMirror BOTTOM;
 
     /**
      * The annotation that accumulates things in this accumulation checker. Must be an annotation
@@ -47,26 +47,26 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     private final Class<? extends Annotation> ACC;
 
     /**
-     * Create a new accumulation checker's annotated type factory.
+     * Create an annotated type factory for an accumulation checker.
      *
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
      *     argument named "value" whose type is a String array.
-     * @param t the top type in the hierarchy
-     * @param bot the bottom type in the hierarchy
+     * @param top the top type in the hierarchy
+     * @param bottom the bottom type in the hierarchy
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
             Class<? extends Annotation> accumulator,
-            Class<? extends Annotation> t,
-            Class<? extends Annotation> bot) {
+            Class<? extends Annotation> top,
+            Class<? extends Annotation> bottom) {
         super(checker);
 
-        TOP = AnnotationBuilder.fromClass(elements, t);
-        BOTTOM = AnnotationBuilder.fromClass(elements, bot);
+        TOP = AnnotationBuilder.fromClass(elements, top);
+        BOTTOM = AnnotationBuilder.fromClass(elements, bottom);
         ACC = accumulator;
 
-        // Every subclass must call postInit!
+        // Every subclass must call postInit!  This does not do so for subclasses.
         if (this.getClass() == AccumulationAnnotatedTypeFactory.class) {
             this.postInit();
         }
@@ -77,8 +77,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * values} in sorted order.
      *
      * @param values the arguments to the annotation
-     * @return an annotation mirror representing the accumulator annotation with values's arguments,
-     *     or top is {@code values} is empty
+     * @return an annotation mirror representing the accumulator annotation with {@code values}'s
+     *     arguments, or top if {@code values} is empty
      */
     public AnnotationMirror createAccumulatorAnnotation(final String... values) {
         if (values.length == 0) {
@@ -91,11 +91,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Utility method that returns whether the return type of the given method invocation tree has
-     * an @This annotation from the Returns Receiver Checker.
+     * Returns true if the return type of the given method invocation tree has an @This annotation
+     * from the Returns Receiver Checker.
      *
-     * @param tree the method invocation tree to check
-     * @return whether the method being invoked returns its receiver
+     * @param tree a method invocation tree
+     * @return true if the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
         ReturnsReceiverAnnotatedTypeFactory rrATF =
@@ -111,7 +111,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * Is the given annotation an accumulator annotation?
      *
      * @param anm an annotation mirror
-     * @return whether the annotation mirror is an instance of this factory's accumulator annotation
+     * @return true if the annotation mirror is an instance of this factory's accumulator annotation
      */
     public boolean isAccumulatorAnnotation(AnnotationMirror anm) {
         return AnnotationUtils.areSameByClass(anm, ACC);
@@ -140,14 +140,14 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
          * default type of its return value is the type of the receiver.
          *
          * @param tree a method invocation tree
-         * @param type the type of that tree (i.e. the return type)
-         * @return nothing, works by side-effect on the type
+         * @param type the type of that tree (i.e. the return type of the invoked method). Is
+         *     (possibly) side-effected by this method.
+         * @return nothing, works by side-effect on {@code type}
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            // Check to see if the ReturnsReceiver Checker has a @This annotation
-            // on the return type of the method.
             if (returnsThis(tree)) {
+                // There is a @This annotation on the return type of the invoked method.
 
                 // Fetch the current type of the receiver, or top if none exists.
                 ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree.getMethodSelect());
@@ -270,27 +270,27 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             }
         }
 
-        /** isSubtype in this type system is subset */
+        /** isSubtype in this type system is subset. */
         @Override
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, BOTTOM)) {
                 return true;
-            } else if (AnnotationUtils.areSame(superAnno, BOTTOM)) {
+            }
+            if (AnnotationUtils.areSame(superAnno, BOTTOM)) {
                 return false;
             }
 
             if (AnnotationUtils.areSame(superAnno, TOP)) {
                 return true;
             }
+            if (AnnotationUtils.areSame(subAnno, TOP)) {
+                return false;
+            }
 
-            List<String> subVal =
-                    AnnotationUtils.areSame(subAnno, TOP)
-                            ? Collections.emptyList()
-                            : ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
-
-            // superAnno is a ACC annotation, so compare the sets
-            return subVal.containsAll(
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno));
+            List<String> subVal = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
+            List<String> superVal =
+                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
+            return subVal.containsAll(superVal);
         }
     }
 }
