@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +50,6 @@ public class ASceneWrapper {
     /** The AScene being wrapped. */
     private final AScene theScene;
 
-    /** The classes in the scene. */
-    private final Map<@BinaryName String, AClass> classes = new HashMap<>();
-
     /**
      * Constructor. Pass the AScene to wrap.
      *
@@ -69,7 +65,7 @@ public class ASceneWrapper {
      * @return an immutable map from binary names to AClass objects
      */
     public Map<@BinaryName String, AClass> getClasses() {
-        return ImmutableMap.copyOf(classes);
+        return ImmutableMap.copyOf(theScene.classes);
     }
 
     /**
@@ -189,13 +185,7 @@ public class ASceneWrapper {
      * @return an AClass representing that class
      */
     public AClass vivifyClass(@BinaryName String className, @Nullable ClassSymbol classSymbol) {
-        AClass aClass;
-        if (classes.containsKey(className)) {
-            aClass = classes.get(className);
-        } else {
-            aClass = theScene.classes.getVivify(className);
-            classes.put(className, aClass);
-        }
+        AClass aClass = theScene.classes.getVivify(className);
 
         // updateSymbolInformation must be called on both paths (cache hit and cache miss) because
         // the
