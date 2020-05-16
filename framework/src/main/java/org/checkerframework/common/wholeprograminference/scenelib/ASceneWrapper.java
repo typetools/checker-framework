@@ -64,6 +64,7 @@ public class ASceneWrapper {
      *
      * @return an immutable map from binary names to AClass objects
      */
+    @SuppressWarnings("signature:return.type.incompatible") // unannotated ImmutableMap??
     public Map<@BinaryName String, AClass> getClasses() {
         return ImmutableMap.copyOf(theScene.classes);
     }
