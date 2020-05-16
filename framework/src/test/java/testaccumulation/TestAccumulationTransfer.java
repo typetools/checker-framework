@@ -4,6 +4,7 @@ import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -25,8 +26,9 @@ public class TestAccumulationTransfer extends AccumulationTransfer {
             final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
         String methodName = node.getTarget().getMethod().getSimpleName().toString();
-        if (!"<init>".equals(methodName)) {
-            accumulate(node, result, methodName);
+        Node receiver = node.getTarget().getReceiver();
+        if (!"<init>".equals(methodName) && receiver != null) {
+            accumulate(receiver, result, methodName);
         }
         return result;
     }
