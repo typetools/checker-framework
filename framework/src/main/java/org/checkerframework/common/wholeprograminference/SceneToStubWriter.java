@@ -574,6 +574,7 @@ public final class SceneToStubWriter {
     private static void writeImpl(ASceneWrapper scene, String filename) {
         // Sort by package name first so that output is deterministic and default package
         // comes first; within package sort by class name.
+        @SuppressWarnings("signature") // scene-lib lacks signature annotations
         List<@BinaryName String> classes = new ArrayList<>(scene.theScene.getClasses().keySet());
         Collections.sort(
                 classes,
