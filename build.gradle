@@ -111,6 +111,9 @@ allprojects {
     configurations {
         javacJar
 
+        // Holds the combined classpath of all subprojects including the subprojects themselves.
+        allProjects
+
         // There's a bug in IntelliJ that adds the processor path to the classpath when building
         // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
         // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
@@ -126,6 +129,8 @@ allprojects {
         }
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+
+        allProjects subprojects
     }
 
     // After all the tasks have been created, modify some of them.
@@ -345,7 +350,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    classpath = configurations.allProjects
     if (isJava8) {
         classpath += configurations.javacJar
     }
@@ -402,7 +407,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
             }
         }
 
-        classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+        classpath = configurations.allProjects
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
@@ -521,7 +526,7 @@ subprojects {
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
         // checker-qual* projects have no source, so skip
-         onlyIf {!project.name.startsWith('checker-qual') }
+        onlyIf {!project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
