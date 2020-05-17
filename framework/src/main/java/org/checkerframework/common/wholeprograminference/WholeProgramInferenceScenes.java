@@ -33,6 +33,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
@@ -109,7 +110,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
-        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(constructorElt);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(constructorElt));
+        method.setFieldsFromMethodElement(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -132,7 +134,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(methodElt);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -185,7 +188,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(methodElt);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -226,9 +230,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath);
-        AMethod method =
-                clazz.vivifyAndSetFieldsFromMethodElement(
-                        TreeUtils.elementFromDeclaration(methodTree));
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -298,7 +302,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AField field = clazz.vivifyAndSetTypeMirror(fieldName, lhsATM.getUnderlyingType());
+        AField field = clazz.fields.getVivify(fieldName);
+        field.setTypeMirror(lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
@@ -351,9 +356,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethod method =
-                clazz.vivifyAndSetFieldsFromMethodElement(
-                        TreeUtils.elementFromDeclaration(methodTree));
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
 
@@ -397,7 +402,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             superJaifPath,
                             ((MethodSymbol) overriddenMethodElement).enclClass());
             AMethod overriddenMethodInSuperclass =
-                    superClazz.vivifyAndSetFieldsFromMethodElement(overriddenMethodElement);
+                    superClazz.methods.getVivify(
+                            JVMNames.getJVMMethodSignature(overriddenMethodElement));
+            overriddenMethodInSuperclass.setFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(
