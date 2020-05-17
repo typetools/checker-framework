@@ -168,7 +168,7 @@ public class WholeProgramInferenceScenesStorage {
             @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
         // Possibly reads .jaif file to obtain a Scene.
         ASceneWrapper scene = getScene(jaifPath);
-        AClass aClass = scene.classes.getVivify(className);
+        AClass aClass = scene.theScene.classes.getVivify(className);
         scene.updateSymbolInformation(aClass, classSymbol);
         return aClass;
     }

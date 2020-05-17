@@ -168,7 +168,7 @@ public class ASceneWrapper {
      * @param classSymbol the source of the symbol information; may be null, in which case this
      *     method does nothing
      */
-    private void updateSymbolInformation(AClass aClass, @Nullable ClassSymbol classSymbol) {
+    public void updateSymbolInformation(AClass aClass, @Nullable ClassSymbol classSymbol) {
         if (classSymbol == null) {
             return;
         }
