@@ -232,6 +232,8 @@ task maybeCloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
         !file(afuJar).exists() || !file(stubparserJar).exists()
+        // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
+        // the repository does not exist when building checker.jar.
     }
     executable 'checker/bin-devel/build.sh'
 }
