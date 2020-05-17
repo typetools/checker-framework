@@ -206,6 +206,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
 
@@ -273,6 +274,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses.clear();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
         this.initializationStore = null;
@@ -829,6 +831,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
+    /** A mapping from methods (or other code blocks) to their exceptional exit store. */
+    protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+
     /** A mapping from methods to a list with all return statements and the corresponding store. */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
             returnStatementStores;
@@ -843,14 +848,34 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the regular exit store for a method or another code block (such as static
      * initializers).
      *
+     * @param tree a MethodTree or other code block, such as a static initializer
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public @Nullable Store getRegularExitStore(Tree t) {
-        return regularExitStores.get(t);
+    public @Nullable Store getRegularExitStore(Tree tree) {
+        return regularExitStores.get(tree);
     }
 
-    /** @return all return node and store pairs for a given method */
+    /**
+     * Returns the exceptional exit store for a method or another code block (such as static
+     * initializers).
+     *
+     * @param tree a MethodTree or other code block, such as a static initializer
+     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     */
+    public @Nullable Store getExceptionalExitStore(Tree tree) {
+        return exceptionalExitStores.get(tree);
+    }
+
+    /**
+     * Returns a list of all return statements of {@code method} paired with their corresponding
+     * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
+     * returned.
+     *
+     * @param methodTree method whose return statements should be returned
+     * @return a list of all return statements of {@code method} paired with their corresponding
+     *     {@link TransferResult} or an empty list if {@code method} has no return statements
+     */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
@@ -978,6 +1003,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
+            exceptionalExitStores = new IdentityHashMap<>();
             returnStatementStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
         }
@@ -1196,12 +1222,20 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(method, exceptionalExitStore);
+            }
             returnStatementStores.put(method, analysis.getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
             // TODO: Postconditions?
@@ -1210,6 +1244,10 @@ public abstract class GenericAnnotatedTypeFactory<
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else {
             assert false : "Unexpected AST kind: " + ast.getKind();
@@ -1365,8 +1403,13 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    protected void constructorFromUsePreSubstitution(
+            NewClassTree tree, AnnotatedExecutableType type) {
+        poly.resolve(tree, type);
     }
 
     @Override
@@ -1569,8 +1612,15 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        super.methodFromUsePreSubstitution(tree, type);
+        if (tree instanceof MethodInvocationTree) {
+            poly.resolve((MethodInvocationTree) tree, type);
+        }
     }
 
     @Override

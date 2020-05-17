@@ -17,7 +17,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -76,7 +76,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "AnnotatedTypeMirrors aren't structurally equal.",
                 "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
                 "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
@@ -143,9 +143,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         if (types1.size() != types2.size()) {
             throw new BugInCF(
                     "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-                    PluginUtil.join("; ", types1),
+                    SystemUtil.join("; ", types1),
                     types1.size(),
-                    PluginUtil.join("; ", types2),
+                    SystemUtil.join("; ", types2),
                     types2.size());
         }
 

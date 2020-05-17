@@ -8,7 +8,7 @@ public class StateMatch {
         "Interning",
         "index"
     }) // This code is inherently unsafe for the index checker, but adding index annotations
-    // produces warnings for other checkers (fenum)
+    // produces warnings for other checkers (fenum).
     public boolean state_match(Object state) {
         if (!(state instanceof double[][])) {
             System.out.println("");

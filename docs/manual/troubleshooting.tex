@@ -135,105 +135,11 @@ If you get the error
 \end{Verbatim}
 
 \noindent
-If you get an error such as
-
-\begin{Verbatim}
-  java.lang.NoClassDefFoundError: java/util/Objects
-\end{Verbatim}
-
-\noindent
-then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
-Install and use a Java 8
-% or later
-JDK, at least for running the Checker
-Framework.
-
-\noindent
 % I'm not 100% sure of the following explanation and solution.
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 You can use JDK 8 at run time.
-
-\item
-\label{troubleshooting-class-file-not-found}
-A ``class file for \ldots\ not found'' error, especially for an inner class
-in the JDK, is probably due to a JDK version mismatch.  To solve the
-problem, you need to perform compilation with a different Java version or
-different version of the JDK\@.
-
-In general, Java issues a ``class file for \ldots\ not found'' error when
-your classpath contains code that was compiled
-with some library, but your classpath does not contain that library itself.
-
-For example, suppose that when you run the compiler, you are using JDK 8,
-but some library on your classpath was compiled against JDK 6 or 7, and the
-compiled library refers to a class that only appears in JDK 6 or 7.  (If only
-one version of Java existed, or the Checker Framework didn't try to support
-multiple different versions of Java, this would not be a problem.)
-
-Examples of classes that were removed from the JDK include:
-
-\begin{Verbatim}
-  class file for java.io.File$LazyInitialization not found  -- removed in JDK 7
-  class file for java.util.Hashtable$EmptyIterator not found  -- removed in JDK 7
-  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator  -- removed in JDK 7
-  class file for java.util.TimeZone$DisplayNames not found  -- removed in JDK 8
-\end{Verbatim}
-
-Examples of classes that were added to the JDK include:
-
-\begin{Verbatim}
-  class file for java.util.Vector$Itr not found  -- introduced in JDK 7
-  class file for java.lang.Class$ReflectionData not found  -- introduced in JDK 7 release 45
-  The type java.lang.Class$ReflectionData cannot be resolved  -- introduced in JDK 8
-  class file for java.util.regex.Pattern$HorizWS not found  -- introduced in JDK 9
-\end{Verbatim}
-
-You may be able to solve the problem by running
-
-\begin{Verbatim}
-  ./gradlew buildJdk assemble
-\end{Verbatim}
-
-\noindent
-to re-generate files \code{checker/jdk/jdk\{8,9\}.jar} and \code{checker/bin/jdk\{8,9\}.jar}.
-
-That usually works, but if not, then you should recompile the Checker
-Framework from source (Section~\ref{build-source}) rather than using
-the pre-compiled distribution.
-
-
-\item
-\label{no-such-field-error}
-A \<NoSuchFieldError> such as this:
-
-\begin{Verbatim}
-java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
-\end{Verbatim}
-
-\noindent
-Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
-The error message suggests that
-you're not executing with the right bootclasspath: some classes were
-compiled with the JDK 8 version and expect the field, but you're
-executing the compiler on a JDK without the field.
-
-One possibility is that you are not running the Checker Framework compiler
---- use \<javac -version> to check this, then use the right one.  (Maybe
-the Checker Framework javac is at the end rather than the beginning of your
-path.)
-
-If you are using Ant, then one possibility
-is that the javac compiler is using the same JDK as Ant is using.  You can
-correct this by being sure to use \<fork="yes"> (see
-Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
-\<extJavac>.
-
-If you are building from source (Section~\ref{build-source}),
-you might need to rebuild the Annotation
-File Utilities before recompiling or using the Checker Framework.
-
 
 \item
 If you get an error that contains lines like these:
@@ -443,13 +349,11 @@ documentation states is correct, then maybe that library method has not yet
 been annotated, so default annotations are being used.
 
 To solve the problem, add the missing annotations to the library (see
-Chapter~\ref{annotating-libraries}).  Depending on the checker, the
-annotations might be expressed in the form of stub files (which appear
-together with the checker's source code, such as in file
-\code{checker/src/org/checkerframework/checker/interning/jdk8.astub} for the
-Interning Checker) or in the form of annotated libraries (which appear
-under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
-the Nullness Checker.
+Chapter~\ref{annotating-libraries}).  The
+annotations might appear in stub files (which appear
+in an \code{.astub} file together with the checker's source code)
+or in the form of annotated libraries (which appear
+in \url{https://github.com/typetools/}).
 
 \item
 If the compiler reports that it cannot find a method from the JDK or
@@ -584,25 +488,6 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 
 \subsectionAndLabel{Unexpected compilation output when running javac without a pluggable type-checker}{common-problems-running-javac}
 
-On rare occasions, javac may issue an error when compiling against the
-Checker Framework's annotated JDK that you do not get when using the
-regular JDK\@.  (Recall that the Checker Framework compiler uses the
-annotated JDK\@.)  This may occur even when you are \emph{not} running any
-annotation processor.  The error is:
-
-\begin{Verbatim}
-  unchecked method invocation: method myMethod in class C is applied to given types
-\end{Verbatim}
-
-The reason for this is that there are some wildcards in the annotated JDK
-that have been given an explicit upper bound --- they have been changed
-from, for example, \code{List<?>} to \code{List<? extends Object>}.  The
-JDK treats these two types as identical in almost all respects.  However,
-they have a different representation in bytecode.  More importantly,
-\code{List<?>} is reifiable but \code{List<? extends Object>} is not; this
-means that the compiler permits uses of the former in some locations where
-it issues a warning for the latter.  You can suppress the warning.
-
 A message of the form
 
 \begin{Verbatim}
@@ -645,7 +530,7 @@ including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
 We welcome suggestions, annotated libraries, bug fixes, new
-features, new checker plugins, and other improvements.
+features, new checkers, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
@@ -720,36 +605,17 @@ maintainers' time to evaluate and fix.
 
 \subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
-Sometimes, a checker will report a warning because a library is not
-annotated or because the library contains incorrect annotations.
-Please do not open GitHub issues for these.
+If a checker reports a warning because a library contains \emph{incorrect} annotations,
+then please open a pull request that adds the annotations.  If the
+library's maintainers have added annotations, make a pull request to them.
+If the Checker Framework maintainers have added annotations,
+you can find the annotated source in \url{https://github.com/typetools/}.
+
+If a checker reports a warning because a library is \emph{not
+annotated}, please do not open a GitHub issue.
 Instead, we appreciate pull requests to help us improve the annotations.
 Alternatively or in the interim, you can use stub files as described in
 Section~\ref{stub}.
-
-If the library is annotated but has some incorrect or missing annotations,
-then please open a pull request that adds the annotations.
-\begin{itemize}
-\item
-  Non-JDK libraries:  You can find the annotated source in
-  \url{https://github.com/typetools/}.
-  If the library does not exist there, then it has no annotations yet.
-  You can fork it, add annotations,
-  and propose that your annotated version be moved into
-  \url{https://github.com/typetools/}.
-\item
-  JDK:  You need to open two pull requests, because there are two versions of the
-  annotated JDK.
-  \begin{itemize}
-  \item JDK 8: The annotated JDK source is in the
-    \ahref{https://github.com/typetools/checker-framework}{Checker Framework
-      GitHub repository}, either in a subdirectory of
-    \ahref{https://github.com/typetools/checker-framework/tree/master/checker/jdk}{\<checker/jdk>}
-    or in files named \<jdk.astub> in the checker's implementation directory.
-  \item
-    JDK 11: The annotated JDK source is in \url{https://github.com/typetools/jdk}.
-  \end{itemize}
-\end{itemize}
 
 For either approach, please see \chapterpageref{annotating-libraries} for
 tips about writing library annotations.
@@ -997,22 +863,14 @@ Please see the
 
 \subsectionAndLabel{Enable continuous integration builds}{building-ci}
 
-A continuous integration system runs tests every time you
-push a commit to GitHub.
+We strongly recommend that you enable continuous integration (CI) builds on
+your fork of the projects, so that you learn quickly about errors.  See the
+\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
+  instructions} in the Checker Framework Developer Manual.
 
-If you have forked any of the projects rather than just creating a clone,
-then we recommend that you enable CI builds,
-so that you learn quickly of any errors that creep into your fork.
-
-Follow the
-\ahref{https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops}{Azure
-  Pipelines getting started directions}.
-
-To save time, by default the CI jobs download a pre-built version of
-the JDK rather than building the JDK from the sources in the Checker
-Framework repository.  This means that if you make a change to the
-annotated JDK, your tests will fail.
-To fix your tests, follow the instructions at
+If you make a change to the
+annotated JDK, you need to upload a JDK artifact.
+Follow the instructions at
 \url{https://github.com/typetools/annotated-libraries}.
 
 

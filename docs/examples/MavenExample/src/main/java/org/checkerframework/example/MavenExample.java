@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <pre>mvn compile</pre>
  *
- * The build for this project should fail with a warning for the line:
+ * then the build for this project should fail with a warning for the line:
  *
  * <pre>@NonNull Object nn = nullable;</pre>
  */

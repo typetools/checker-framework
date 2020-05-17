@@ -67,7 +67,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.UtilPlume;
@@ -268,11 +268,6 @@ import org.plumelib.util.UtilPlume;
     // when multiple type variables are used this becomes useful very quickly
     "printVerboseGenerics",
 
-    // Output detailed message in simple-to-parse format, useful
-    // for tools parsing Checker Framework output.
-    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
-    "detailedmsgtext",
-
     // Whether to NOT output a stack trace for each framework error.
     // org.checkerframework.framework.source.SourceChecker.logBugInCF
     "noPrintErrorStack",
@@ -280,6 +275,13 @@ import org.plumelib.util.UtilPlume;
     // Only output error code, useful for testing framework
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "nomsgtext",
+
+    /// Format of messages
+
+    // Output detailed message in simple-to-parse format, useful
+    // for tools parsing Checker Framework output.
+    // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+    "detailedmsgtext",
 
     /// Stub and JDK libraries
 
@@ -291,6 +293,10 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
     "permitMissingJdk",
     "nocheckjdk", // temporary, for backward compatibility
+
+    // Parse all JDK files at startup rather than as needed.
+    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    "parseAllJdk",
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
@@ -354,7 +360,10 @@ import org.plumelib.util.UtilPlume;
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
-    "resourceStats"
+    "resourceStats",
+
+    // Parse all JDK files at startup rather than as needed.
+    "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
@@ -460,10 +469,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The string that separates the checker name from the option name in a "-A" command-line
      * argument. This string may only consist of valid Java identifier part characters, because it
      * will be used within the key of an option.
-     *
-     * @see #activeOptions
      */
-    private static final String OPTION_SEPARATOR = "_";
+    protected static final String OPTION_SEPARATOR = "_";
 
     /**
      * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
@@ -485,7 +492,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         // Keep in sync with check in checker-framework/build.gradle and text in installation
         // section of manual.
-        int jreVersion = PluginUtil.getJreVersion();
+        int jreVersion = SystemUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
                     "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
@@ -781,6 +788,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messagesProperties = getMessagesProperties();
 
         this.visitor = createSourceVisitor();
+
+        // Validate the lint flags, if they haven't been used already.
+        if (this.activeLints == null) {
+            this.activeLints = createActiveLints(getOptions());
+        }
     }
 
     /** Output the warning about source level at most once. */
@@ -846,7 +858,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (p.getCompilationUnit() != currentRoot) {
             setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
-                // Add timestamp to indicate how long operations are taking
+                // TODO: Have a command-line option to turn the timestamps on/off too, because
+                // they are nondeterministic across runs.
+
+                // Add timestamp to indicate how long operations are taking.
+                // Duplicate messages are suppressed, so this might not appear in front of every "
+                // is type-checking " message (when a file takes less than a second to type-check).
                 message(NOTE, new java.util.Date().toString());
                 message(
                         NOTE,
@@ -1021,11 +1038,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
-        if (messager != null) {
-            messager.printMessage(kind, ftdmsg);
-        } else {
-            System.err.println(kind + ": " + ftdmsg);
+        if (messager == null) {
+            // If this method is called before initChecker() sets the field
+            messager = processingEnv.getMessager();
         }
+        messager.printMessage(kind, ftdmsg);
     }
 
     /**
@@ -1035,6 +1052,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private void printMessage(String msg) {
         if (messager == null) {
+            // If this method is called before initChecker() sets the field
             messager = processingEnv.getMessager();
         }
         messager.printMessage(ERROR, msg);
@@ -1058,6 +1076,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             CompilationUnitTree root) {
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Diagnostic message formatting
+    ///
 
     /**
      * Returns the localized long message corresponding to this key. If not found, tries suffixes of
@@ -1140,19 +1162,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             sj.add(Integer.toString(0));
         }
 
-        // (3) The error position, as starting and ending characters in
-        // the source file.
-        final Tree tree;
-        if (source instanceof Element) {
-            tree = trees.getTree((Element) source);
-        } else if (source instanceof Tree) {
-            tree = (Tree) source;
-        } else if (source == null) {
-            tree = null;
-        } else {
-            throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
-        }
-        sj.add(detailedMsgTextPositionString(tree, currentRoot));
+        // (3) The error position, as starting and ending characters in the source file.
+        sj.add(detailedMsgTextPositionString(sourceToTree(source), currentRoot));
 
         // (4) The human-readable error message will be added by the caller.
         sj.add(""); // Add DETAILS_SEPARATOR at the end.
@@ -1167,11 +1178,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return the most specific warning suppression key for the warning/error being printed
      */
     private String suppressionKey(String messageKey) {
-        if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
+        if (hasOption("showSuppressWarningKeys")) {
             return this.getSuppressWarningsKeys() + ":" + messageKey;
-        } else if (this.processingEnv
-                .getOptions()
-                .containsKey("requirePrefixInWarningSuppressions")) {
+        } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the
             // warning key that is printed.
             String defaultKey = getDefaultWarningSuppressionKey();
@@ -1191,6 +1200,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         } else {
             return messageKey;
+        }
+    }
+
+    /**
+     * Convert a Tree, Element, or null, into a Tree or null.
+     *
+     * @param source the object from which to obtain source position information; may be an Element,
+     *     a Tree, or null
+     * @return the tree associated with the given source object, or null if none.
+     */
+    private @Nullable Tree sourceToTree(@Nullable Object source) {
+        if (source instanceof Element) {
+            return trees.getTree((Element) source);
+        } else if (source instanceof Tree) {
+            return (Tree) source;
+        } else if (source == null) {
+            return null;
+        } else {
+            throw new BugInCF("Unexpected source %s [%s]", source, source.getClass());
         }
     }
 
@@ -1242,15 +1270,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     && !(s.charAt(0) == '-'
                             && this.getSupportedLintOptions().contains(s.substring(1)))
                     && !s.equals("all")
-                    && !s.equals("none") /*&&
-                    !warnedOnLint.contains(s)*/) {
+                    && !s.equals("none")) {
                 this.messager.printMessage(
                         WARNING,
                         "Unsupported lint option: "
                                 + s
                                 + "; All options: "
                                 + this.getSupportedLintOptions());
-                // warnedOnLint.add(s);
             }
 
             activeLint.add(s);
@@ -1303,7 +1329,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (activeLints == null) {
-            activeLints = createActiveLints(processingEnv.getOptions());
+            activeLints = createActiveLints(getOptions());
         }
 
         if (activeLints.isEmpty()) {
@@ -1938,7 +1964,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 }
                 userKey = userKey.substring(colonPos + 1);
             }
-            if (errKey.contains(userKey)) {
+            if (errKey.equals(userKey)
+                    || errKey.startsWith(userKey + ".")
+                    || errKey.endsWith("." + userKey)
+                    || errKey.contains("." + userKey + ".")) {
                 return true;
             }
         }
@@ -2361,11 +2390,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
 
             if (printClasspath) {
-                msg.add("Classpath:");
                 ClassLoader cl = ClassLoader.getSystemClassLoader();
-                URL[] urls = ((URLClassLoader) cl).getURLs();
-                for (URL url : urls) {
-                    msg.add(url.getFile());
+
+                if (cl instanceof URLClassLoader) {
+                    msg.add("Classpath:");
+                    URL[] urls = ((URLClassLoader) cl).getURLs();
+                    for (URL url : urls) {
+                        msg.add(url.getFile());
+                    }
+                } else {
+                    // TODO: Java 9+ use an internal classloader that doesn't support getting URLs,
+                    // so we will need an alternative approach to retrieve the classpath on Java 9+.
+                    msg.add("Cannot print classpath on Java 9+. To see the classpath, use Java 8.");
                 }
             }
         }

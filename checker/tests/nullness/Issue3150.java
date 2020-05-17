@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 // Test case for https://tinyurl.com/cfissue/3150 .
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -7,9 +5,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Issue3150 {
     void foo(@Nullable Object nble, @NonNull Object nn) {
-        // :: error: (argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         requireNonNull1(null);
-        // :: error: (argument.type.incompatible)
+        // :: error: (type.argument.type.incompatible)
         requireNonNull1(nble);
         requireNonNull1("hello");
         requireNonNull1(nn);

@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -69,7 +69,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 : "Encountered invalid type: "
                         + underlyingType
                         + " annotations: "
-                        + PluginUtil.join(", ", annotations);
+                        + SystemUtil.join(", ", annotations);
     }
 
     public static boolean validateSet(

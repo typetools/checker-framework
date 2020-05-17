@@ -2005,8 +2005,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
+        AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
+        methodFromUsePreSubstitution(tree, memberType);
+
         AnnotatedExecutableType methodType =
-                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
+                AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
         Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -2037,6 +2040,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return new ParameterizedExecutableType(methodType, typeargs);
+    }
+
+    /**
+     * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
+     * declared method type before type variable substitution.
+     *
+     * @param tree either a method invocation or a member reference tree
+     * @param type declared method type before type variable substitution
+     */
+    protected void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        assert tree instanceof MethodInvocationTree || tree instanceof MemberReferenceTree;
     }
 
     /**
@@ -2129,7 +2143,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         addComputedTypeAnnotations(tree, type);
-        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+        AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
+        constructorFromUsePreSubstitution(tree, con);
+
+        con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
 
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
                 && isSyntheticArgument(tree.getArguments().get(0))) {
@@ -2155,7 +2172,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new ParameterizedExecutableType(con, typeargs);
     }
 
-    /** Returns the return type of the method {@code m}. */
+    /**
+     * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
+     * declared constructor type before type variable substitution.
+     *
+     * @param tree a NewClassTree from constructorFromUse()
+     * @param type declared method type before type variable substitution
+     */
+    protected void constructorFromUsePreSubstitution(
+            NewClassTree tree, AnnotatedExecutableType type) {}
+
+    /**
+     * Returns the return type of the method {@code m}.
+     *
+     * @param m a tree of method
+     * @return the return type of the method
+     */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
@@ -3247,39 +3279,91 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param metaAnnotationClass the class of the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror (of type {@code
-     *     metaAnnotationClass}) used to annotate {@code anno}.
+     *     metaAnnotationClass}) used to meta-annotate the declaration of {@code anno}
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotationClass) {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
         Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
-        // Go through all annotations found.
-        for (AnnotationMirror annotation : annotationMirrors) {
-            List<? extends AnnotationMirror> annotationsOnAnnotation;
+        for (AnnotationMirror candidate : annotationMirrors) {
+            List<? extends AnnotationMirror> metaAnnotationsOnAnnotation;
             try {
-                annotationsOnAnnotation =
-                        annotation.getAnnotationType().asElement().getAnnotationMirrors();
+                metaAnnotationsOnAnnotation =
+                        candidate.getAnnotationType().asElement().getAnnotationMirrors();
             } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                 // Fix for Issue 309: If a CompletionFailure occurs, issue a warning.
                 // I didn't find a nicer alternative to check whether the Symbol can be completed.
                 // The completer field of a Symbol might be non-null also in successful cases.
                 // Issue a warning (exception only happens once) and continue.
                 checker.reportWarning(
-                        annotation.getAnnotationType().asElement(),
+                        candidate.getAnnotationType().asElement(),
                         "annotation.not.completed",
                         ElementUtils.getVerboseName(element),
-                        annotation);
+                        candidate);
                 continue;
             }
             // First call copier, if exception, continue normal modula laws.
-            for (AnnotationMirror a : annotationsOnAnnotation) {
-                if (areSameByClass(a, metaAnnotationClass)) {
-                    result.add(Pair.of(annotation, a));
+            for (AnnotationMirror ma : metaAnnotationsOnAnnotation) {
+                if (areSameByClass(ma, metaAnnotationClass)) {
+                    // This candidate has the right kind of meta-annotation.
+                    // It might be a real contract, or a list of contracts.
+                    if (isListForRepeatedAnnotation(candidate)) {
+                        List<AnnotationMirror> wrappedCandidates =
+                                AnnotationUtils.getElementValueArray(
+                                        candidate, "value", AnnotationMirror.class, false);
+                        for (AnnotationMirror wrappedCandidate : wrappedCandidates) {
+                            result.add(Pair.of(wrappedCandidate, ma));
+                        }
+                    } else {
+                        result.add(Pair.of(candidate, ma));
+                    }
                 }
             }
         }
         return result;
+    }
+
+    /** Cache for {@link #isListForRepeatedAnnotation}. */
+    private final Map<DeclaredType, Boolean> isListForRepeatedAnnotationCache = new HashMap<>();
+
+    /**
+     * Returns true if the given annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param a an annotation that might be a wrapper
+     * @return true if the argument is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotation(AnnotationMirror a) {
+        DeclaredType annotationType = a.getAnnotationType();
+        Boolean resultObject = isListForRepeatedAnnotationCache.get(annotationType);
+        if (resultObject != null) {
+            return resultObject;
+        }
+        boolean result = isListForRepeatedAnnotationImplementation(annotationType);
+        isListForRepeatedAnnotationCache.put(annotationType, result);
+        return result;
+    }
+
+    /**
+     * Returns true if the annotation is a wrapper for multiple repeated annotations.
+     *
+     * @param annotationType the declaration of the annotation to test
+     * @return true if the annotation is a wrapper for multiple repeated annotations
+     */
+    private boolean isListForRepeatedAnnotationImplementation(DeclaredType annotationType) {
+        TypeMirror enclosingType = annotationType.getEnclosingType();
+        if (enclosingType == null) {
+            return false;
+        }
+        if (!annotationType.asElement().getSimpleName().contentEquals("List")) {
+            return false;
+        }
+        List<? extends Element> annoElements = annotationType.asElement().getEnclosedElements();
+        if (annoElements.size() != 1) {
+            return false;
+        }
+        // TODO: should check that the type of the single element is: "array of enclosingType".
+        return true;
     }
 
     /**
