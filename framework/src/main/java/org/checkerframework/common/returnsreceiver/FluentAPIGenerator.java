@@ -15,8 +15,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * Wrapper class for {@link FluentAPIGenerators} Enum to keep it private. The only use of the enum
  * is to support fluent API generators so the checker can add {@code @This} annotations on method
  * return types when these generators has been used. To check whether a method is created by any of
- * the generators defined in the {@link FluentAPIGenerator.FluentAPIGenerators} Enum and returns {@code this}, simply
- * call the {@link FluentAPIGenerator#check} on the annotated type of the method signature.
+ * the generators defined in the {@link FluentAPIGenerator.FluentAPIGenerators} Enum and returns
+ * {@code this}, simply call the {@link FluentAPIGenerator#check} on the annotated type of the
+ * method signature.
  */
 public class FluentAPIGenerator {
 
