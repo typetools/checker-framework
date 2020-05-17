@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -48,7 +46,7 @@ import scenelib.annotations.io.IndexFileWriter;
 public class ASceneWrapper {
 
     /** The AScene being wrapped. */
-    private final AScene theScene;
+    public final AScene theScene;
 
     /**
      * Constructor. Pass the AScene to wrap.
@@ -57,16 +55,6 @@ public class ASceneWrapper {
      */
     public ASceneWrapper(AScene theScene) {
         this.theScene = theScene;
-    }
-
-    /**
-     * Fetch the classes in this scene, represented as AClass objects.
-     *
-     * @return an immutable map from binary names to AClass objects
-     */
-    @SuppressWarnings("signature:return.type.incompatible") // unannotated ImmutableMap??
-    public Map<@BinaryName String, AClass> getClasses() {
-        return ImmutableMap.copyOf(theScene.classes);
     }
 
     /**
@@ -185,7 +173,8 @@ public class ASceneWrapper {
      *     the symbol information stored by the AClass is not updated.
      * @return an AClass representing that class
      */
-    public AClass vivifyClass(@BinaryName String className, @Nullable ClassSymbol classSymbol) {
+    public AClass vivifyClassAndUpdateSymbolInformation(
+            @BinaryName String className, @Nullable ClassSymbol classSymbol) {
         AClass aClass = theScene.classes.getVivify(className);
 
         // updateSymbolInformation must be called on both paths (cache hit and cache miss) because
