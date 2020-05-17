@@ -12,12 +12,15 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Wrapper class for {@link FluentAPIGenerators} Enum to keep it private. The only use of the enum
- * is to support fluent API generators so the checker can add {@code @This} annotations on method
- * return types when these generators has been used. To check whether a method is created by any of
- * the generators defined in the {@link FluentAPIGenerator.FluentAPIGenerators} Enum and returns
- * {@code this}, simply call the {@link FluentAPIGenerator#check} on the annotated type of the
- * method signature.
+ * Wrapper class for {@link
+ * org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators} Enum to keep
+ * it private. The only use of the enum is to support fluent API generators so the checker can add
+ * {@code @This} annotations on method return types when these generators has been used. To check
+ * whether a method is created by any of the generators defined in the {@link
+ * org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators} Enum and
+ * returns {@code this}, simply call the {@link
+ * org.checkerframework.common.returnsreceiver.FluentAPIGenerator#check} on the annotated type of
+ * the method signature.
  */
 public class FluentAPIGenerator {
 
@@ -26,7 +29,8 @@ public class FluentAPIGenerator {
      *
      * @param t the annotated type of the method signature
      * @return {@code true} if the method was created by any of the generators defined in {@link
-     *     FluentAPIGenerator.FluentAPIGenerators} and returns {@code this}
+     *     org.checkerframework.common.returnsreceiver.FluentAPIGenerator.FluentAPIGenerators} and
+     *     returns {@code this}
      */
     public static boolean check(AnnotatedExecutableType t) {
         for (FluentAPIGenerators fluentAPIGenerator : FluentAPIGenerators.values()) {
