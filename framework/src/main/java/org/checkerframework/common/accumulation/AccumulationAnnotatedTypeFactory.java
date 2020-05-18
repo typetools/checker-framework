@@ -99,6 +99,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
+        // Must call `getTypeFactoryOfSubchecker` each time, not store and reuse.
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
