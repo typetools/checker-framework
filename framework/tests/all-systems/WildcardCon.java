@@ -1,6 +1,6 @@
 import java.util.Comparator;
 
-@SuppressWarnings("") // Only testing for crashes
+@SuppressWarnings("all") // Only testing for crashes
 public class WildcardCon<E> {
     ComparatorClass<ComparableClass<? extends Object>> RANGE_LEX_ORDERING = null;
 

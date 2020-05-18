@@ -4,7 +4,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 
-@SuppressWarnings("") // just check for crashes.
+@SuppressWarnings("all") // just check for crashes.
 public class Issue1506 {
     static void m() {
         ArrayList<? super Exception> l = new ArrayList<>();

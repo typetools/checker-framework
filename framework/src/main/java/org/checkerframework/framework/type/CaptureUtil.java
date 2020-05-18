@@ -4,7 +4,6 @@ import java.util.IdentityHashMap;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeReplacer.Visitor;
 
 public class CaptureUtil {
 

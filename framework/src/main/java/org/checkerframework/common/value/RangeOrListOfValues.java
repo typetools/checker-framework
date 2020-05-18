@@ -8,15 +8,13 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An abstraction that can be either a range or a list of values that could come from an {@link
  * ArrayLen} or {@link IntVal}. This abstraction reduces the number of cases that {@link
- * org.checkerframework.common.value.ValueAnnotatedTypeFactory.ValueTreeAnnotator#handleInitializers(List,
- * AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
- * org.checkerframework.common.value.ValueAnnotatedTypeFactory.ValueTreeAnnotator#handleDimensions(List,
- * AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
+ * ValueTreeAnnotator#handleInitializers(List, AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
+ * ValueTreeAnnotator#handleDimensions(List, AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
  *
  * <p>Tracks Ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
  * to be used to reason about ArrayLen and ArrayLenRange values.
@@ -122,7 +120,7 @@ class RangeOrListOfValues {
                 return "[]";
             }
             String res = "[";
-            res += PluginUtil.join(", ", values);
+            res += SystemUtil.join(", ", values);
             res += "]";
             return res;
         }

@@ -185,8 +185,8 @@ public class TestDiagnosticUtils {
             // "unexpected Throwable" or it is an Checker Error (contains "Compilation unit").
             if (!trimmed.contains("unexpected Throwable")
                     && !trimmed.contains("Compilation unit")) {
-                if (trimmed.contains("\n")) {
-                    trimmed = trimmed.substring(0, trimmed.indexOf('\n'));
+                if (trimmed.contains(System.lineSeparator())) {
+                    trimmed = trimmed.substring(0, trimmed.indexOf(System.lineSeparator()));
                 }
 
                 if (trimmed.contains(".java:")) {

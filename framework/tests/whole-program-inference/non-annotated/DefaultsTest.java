@@ -9,7 +9,7 @@ public class DefaultsTest {
     String defaultField2;
 
     void test() {
-        @SuppressWarnings("") // To allow the use of the explicit @DefaultType.
+        @SuppressWarnings("all") // To allow the use of the explicit @DefaultType.
         @DefaultType String explicitDefault = "";
         defaultField2 = explicitDefault;
     }

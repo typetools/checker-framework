@@ -14,7 +14,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -342,7 +342,7 @@ public class BoundSet implements ReductionResult {
         } else if (variables.isEmpty()) {
             return "EMPTY";
         }
-        String vars = PluginUtil.join(", ", getInstantiatedVariables());
+        String vars = SystemUtil.join(", ", getInstantiatedVariables());
         if (vars.isEmpty()) {
             return "No instantiated variables";
         } else {

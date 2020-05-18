@@ -34,7 +34,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -159,7 +158,7 @@ public class InvocationTypeInference {
 
                 // TODO: Add more detail to the error message to indicate which bounds/constraints
                 // could not be stisfied so that the user can figure out how to correct their code.
-                checker.report(Result.failure("type.inference.failed"), invocation);
+                checker.reportError(invocation, "type.inference.failed");
             } else {
                 logException(invocation, ex);
             }
@@ -588,8 +587,7 @@ public class InvocationTypeInference {
         if (checker.hasOption("printErrorStack")) {
             message.append("\n").append(formatStackTrace(ex.getStackTrace()));
         }
-        checker.report(
-                Result.failure("type.inference.crash", message.toString()), methodInvocation);
+        checker.reportError(methodInvocation, "type.inference.crash", message);
     }
 
     /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
@@ -685,13 +683,12 @@ public class InvocationTypeInference {
                 }
                 if (!context.types.isSameType((Type) correctType, (Type) inferredType)) {
                     // type.inference.not.same=type variable: %s\ninferred: %s\njava type: %s
-                    checker.report(
-                            Result.failure(
-                                    "type.inference.not.same",
-                                    typeVariable + "(" + variable + ")",
-                                    inferredType,
-                                    correctType),
-                            invocation);
+                    checker.reportError(
+                            invocation,
+                            "type.inference.not.same",
+                            typeVariable + "(" + variable + ")",
+                            inferredType,
+                            correctType);
                 }
             }
         }

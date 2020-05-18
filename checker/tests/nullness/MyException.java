@@ -10,7 +10,7 @@ public class MyException extends Exception {
         for (StackTraceElement st : getStackTrace()) {
             // :: error: (dereference.of.nullable)
             sb.append(st.toString());
-            sb.append("\n");
+            sb.append(System.lineSeparator());
         }
         return sb.toString();
     }

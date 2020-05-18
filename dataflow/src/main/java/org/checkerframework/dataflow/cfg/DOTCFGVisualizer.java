@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -21,6 +22,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
@@ -79,6 +81,7 @@ public class DOTCFGVisualizer<
         return res;
     }
 
+    @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
@@ -89,7 +92,7 @@ public class DOTCFGVisualizer<
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Definition of all nodes including their labels.
-        for (Block v : blocks) {
+        for (@KeyFor("processOrder") Block v : blocks) {
             sbDotNodes.append("    ").append(v.getId()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
@@ -134,6 +137,12 @@ public class DOTCFGVisualizer<
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
         return super.visualizeSpecialBlockHelper(sbb, "");
+    }
+
+    @Override
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        // No extra content in DOT output.
+        return "";
     }
 
     @Override

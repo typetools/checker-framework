@@ -20,6 +20,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class is an abstract annotation processor designed to be a convenient superclass for
@@ -46,13 +47,13 @@ import javax.lang.model.util.ElementFilter;
  *       #typeProcess(TypeElement, TreePath) typeProcess} method on the {@code Processor}. The class
  *       is guaranteed to be type-checked Java code and all the tree type and symbol information is
  *       resolved.
- *   <li>Finally, the tools calls the {@link #typeProcessingOver() typeProcessingOver} method on the
+ *   <li>Finally, the tool calls the {@link #typeProcessingOver typeProcessingOver} method on the
  *       {@code Processor}.
  * </ol>
  *
  * <p>The tool is permitted to ask type processors to process a class once it is analyzed before the
  * rest of classes are analyzed. The tool is also permitted to stop type processing immediately if
- * any errors are raised, without invoking {@code typeProcessingOver}
+ * any errors are raised, without invoking {@link #typeProcessingOver}.
  *
  * <p>A subclass may override any of the methods in this class, as long as the general {@link
  * javax.annotation.processing.Processor Processor} contract is obeyed, with one notable exception.
@@ -74,10 +75,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
     private boolean hasInvokedTypeProcessingStart = false;
 
     /**
-     * Method {@link #typeProcessingOver()} must be invoked exactly once, after the last invocation
-     * of {@link #typeProcess(TypeElement, TreePath)}.
+     * Method {@link #typeProcessingOver} must be invoked exactly once, after the last invocation of
+     * {@link #typeProcess(TypeElement, TreePath)}.
      */
-    private static boolean hasInvokedTypeProcessingOver = false;
+    private boolean hasInvokedTypeProcessingOver = false;
 
     /** The TaskListener registered for completion of attribution. */
     private final AttributionTaskListener listener = new AttributionTaskListener();
@@ -139,10 +140,19 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
      * persistence) or resource deallocation.
      *
-     * <p>If an error (a Java error or a processor error) is reported, this method is not guaranteed
-     * to be invoked.
+     * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
      */
     public void typeProcessingOver() {}
+
+    /**
+     * Return the compiler log, which contains errors and warnings.
+     *
+     * @return the compiler log, which contains errors and warnings
+     */
+    @SideEffectFree
+    public Log getCompilerLog() {
+        return Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
+    }
 
     /** A task listener that invokes the processor whenever a class is fully analyzed. */
     private final class AttributionTaskListener implements TaskListener {
@@ -158,9 +168,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
                 hasInvokedTypeProcessingStart = true;
             }
 
-            Log log = Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
-
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
+            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
                 typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
@@ -181,7 +189,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
             typeProcess(elem, p);
 
-            if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
+            if (!hasInvokedTypeProcessingOver && elements.isEmpty()) {
                 typeProcessingOver();
                 hasInvokedTypeProcessingOver = true;
             }
