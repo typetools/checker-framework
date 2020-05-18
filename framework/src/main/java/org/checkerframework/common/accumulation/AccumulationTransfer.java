@@ -49,9 +49,10 @@ public class AccumulationTransfer extends CFTransfer {
      * type will also be updated. This chain will continue as long as each receiver is itself a
      * receiver-returning method invocation.
      *
-     * <p>For example, if the argument is the expression {@code a.b().c()}, the new value is "foo",
-     * and b and c return their receiver (and are deterministic), all of the expressions {@code a},
-     * {@code a.b()}, and {@code a.b().c()} would have their estimates updated to include "foo".
+     * <p>For example, suppose the argument is the expression {@code a.b().c()}, the new value is
+     * "foo", and b and c return their receiver (and are deterministic). Then all of the expressions
+     * {@code a}, {@code a.b()}, and {@code a.b().c()} would have their estimates updated to include
+     * "foo".
      *
      * <p>If any method in the chain is non-deterministic, its estimate will not be updated (but the
      * types of any deterministic methods, and the ultimate receiver, will be updated).
@@ -104,8 +105,9 @@ public class AccumulationTransfer extends CFTransfer {
      * Unions the values in oldType with the values in newValues to produce a single accumulator
      * type qualifier.
      *
-     * @param oldType an annotated type mirror whose values should be included
-     * @param newValues new values to include.
+     * @param oldType an annotated type mirror whose values should be included, or null which is
+     *     treated as top
+     * @param newValues new values to include
      * @return an annotation representing all the values
      */
     private AnnotationMirror getCombinedAnno(
@@ -129,7 +131,7 @@ public class AccumulationTransfer extends CFTransfer {
     }
 
     /**
-     * Inserts newAnno as the value into all stores (conditional or not) in result for node.
+     * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
      *
      * @param result the TransferResult holding the stores to modify
      * @param node the node whose value should be modified

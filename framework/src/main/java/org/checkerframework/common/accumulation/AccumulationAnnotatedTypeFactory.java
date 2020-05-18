@@ -50,10 +50,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
      *     argument named "value" whose type is a String array.
-     * @param top the top type in the hierarchy, which must be distinct from and a supertype of
-     *     {@code accumulator}. The top type should be an annotation with no arguments.
-     * @param bottom the bottom type in the hierarchy, which must be distinct from and a subtype of
-     *     {@code accumulator}. The bottom type should be an annotation with no arguments.
+     * @param top the top type in the hierarchy, which must be a supertype of {@code accumulator}.
+     *     The top type should be an annotation with no arguments.
+     * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
+     *     accumulator}. The bottom type should be an annotation with no arguments.
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
@@ -86,8 +86,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             return top;
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-        values = ValueCheckerUtils.removeDuplicates(values);
-        builder.setValue("value", values);
+        builder.setValue("value", ValueCheckerUtils.removeDuplicates(values));
         return builder.build();
     }
 
@@ -127,8 +126,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     /**
      * This tree annotator implements the following rule(s): 1. If a method returns its receiver,
-     * and the receiver has an accumulation type, then the default type of its return value is the
-     * type of the receiver.
+     * and the receiver has an accumulation type, then the default type of the method's return value
+     * is the type of the receiver.
      */
     protected class AccumulationTreeAnnotator extends TreeAnnotator {
 
@@ -145,8 +144,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
          * Implements rule 1.
          *
          * @param tree a method invocation tree
-         * @param type the type of that tree (i.e. the return type of the invoked method, in the
-         *     context of this tree). Is (possibly) side-effected by this method.
+         * @param type the type {@code tree} (i.e. the return type of the invoked method). Is
+         *     (possibly) side-effected by this method.
          * @return nothing, works by side-effect on {@code type}
          */
         @Override
@@ -154,19 +153,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             if (returnsThis(tree)) {
                 // There is a @This annotation on the return type of the invoked method.
 
-                // Fetch the current type of the receiver, or top if none exists.
                 ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree.getMethodSelect());
-                AnnotationMirror receiverAnno = null;
-
-                if (receiverTree != null) {
-                    AnnotatedTypeMirror receiverType = getAnnotatedType(receiverTree);
-                    if (receiverType != null) {
-                        receiverAnno = receiverType.getAnnotationInHierarchy(top);
-                    }
-                }
-                if (receiverAnno == null) {
-                    receiverAnno = top;
-                }
+                AnnotatedTypeMirror receiverType =
+                        receiverTree == null ? null : getAnnotatedType(receiverTree);
+                // The current type of the receiver, or top if none exists.
+                AnnotationMirror receiverAnno =
+                        receiverType == null ? top : receiverType.getAnnotationInHierarchy(top);
 
                 AnnotationMirror returnAnno = type.getAnnotationInHierarchy(top);
                 type.replaceAnnotation(qualHierarchy.greatestLowerBound(returnAnno, receiverAnno));
@@ -269,17 +261,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         /** isSubtype in this type system is subset. */
         @Override
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSame(subAnno, bottom)) {
+            if (AnnotationUtils.areSame(subAnno, bottom)
+                    || AnnotationUtils.areSame(superAnno, top)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(superAnno, bottom)) {
-                return false;
-            }
-
-            if (AnnotationUtils.areSame(superAnno, top)) {
-                return true;
-            }
-            if (AnnotationUtils.areSame(subAnno, top)) {
+            if (AnnotationUtils.areSame(superAnno, bottom)
+                    || AnnotationUtils.areSame(subAnno, top)) {
                 return false;
             }
 
