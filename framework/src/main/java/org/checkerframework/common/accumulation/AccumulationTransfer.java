@@ -23,9 +23,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 /**
  * The default transfer function for an accumulation checker.
  *
- * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate} or
- * {@link #accumulate(MethodInvocationNode, TransferResult, String...)} methods to accumulate a
- * string at a particular program point.
+ * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
+ * method to accumulate a string at a particular program point.
  */
 public class AccumulationTransfer extends CFTransfer {
 

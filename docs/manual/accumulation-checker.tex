@@ -71,10 +71,7 @@ Your constructor should call the \<super> constructor defined in
 Define a class that extends \refclass{common/accumulation}{AccumulationTransfer}.
 To update the estimate of what has been accumulated, override
 \refclass{framework/flow}{CFAbstractTransfer} to call
-call
-\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}
-or
-\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}.
+\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}.
 
 For example, when accumulating the names of methods called, you would override
 \refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-},
