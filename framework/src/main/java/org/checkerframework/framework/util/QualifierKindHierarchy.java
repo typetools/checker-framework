@@ -15,7 +15,7 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -329,11 +329,11 @@ public class QualifierKindHierarchy {
                 } else if (qualifierKind.top == null) {
                     throw new UserError(
                             "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
-                            qualifierKind, PluginUtil.join(", ", tops));
+                            qualifierKind, SystemUtil.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new UserError(
                             "Polymorphic qualifier, %s, specified %s, instead of a top qualifier in a hierarchy. Top qualifiers: %s",
-                            qualifierKind, qualifierKind.top, PluginUtil.join(", ", tops));
+                            qualifierKind, qualifierKind.top, SystemUtil.join(", ", tops));
                 }
             }
         }
@@ -341,7 +341,7 @@ public class QualifierKindHierarchy {
         if (bottoms.size() != tops.size()) {
             throw new UserError(
                     "Number of tops not equal to number of bottoms: Tops: [%s] Bottoms: [%s]",
-                    PluginUtil.join(", ", tops), PluginUtil.join(", ", bottoms));
+                    SystemUtil.join(", ", tops), SystemUtil.join(", ", bottoms));
         }
     }
 
@@ -400,7 +400,7 @@ public class QualifierKindHierarchy {
                                 "%s @Subtype meta-annotation refers to a qualifier, %s, that isn't in the hierarchy. Qualifiers: [%s]",
                                 qualifierKind,
                                 superName,
-                                PluginUtil.join(", ", qualifierKindMap.values()));
+                                SystemUtil.join(", ", qualifierKindMap.values()));
                     }
                     directSupers.add(superQualifier);
                 }
@@ -513,7 +513,7 @@ public class QualifierKindHierarchy {
                     } else {
                         throw new UserError(
                                 "The polymorphic qualifier, %s, did not specify a top annotation class. Tops: [%s]",
-                                qualifierKind, PluginUtil.join(", ", tops));
+                                qualifierKind, SystemUtil.join(", ", tops));
                     }
                 } else {
                     throw new UserError(
@@ -651,7 +651,7 @@ public class QualifierKindHierarchy {
         if (lubs.size() != 1) {
             throw new BugInCF(
                     "Not exactly 1 lub for %s and %s. Found lubs: [%s].",
-                    qual1, qual2, PluginUtil.join(", ", lubs));
+                    qual1, qual2, SystemUtil.join(", ", lubs));
         }
         QualifierKind lub = lubs.iterator().next();
         if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
@@ -729,7 +729,7 @@ public class QualifierKindHierarchy {
         if (glbs.size() != 1) {
             throw new BugInCF(
                     "Not exactly 1 glb for %s and %s. Found glb: [%s].",
-                    qual1, qual2, PluginUtil.join(", ", glbs));
+                    qual1, qual2, SystemUtil.join(", ", glbs));
         }
         QualifierKind lub = glbs.iterator().next();
         if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
