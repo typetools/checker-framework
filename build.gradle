@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.3.1-SNAPSHOT'
+    version '3.4.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -110,6 +110,9 @@ allprojects {
 
     configurations {
         javacJar
+
+        // Holds the combined classpath of all subprojects including the subprojects themselves.
+        allProjects
 
         // There's a bug in IntelliJ that adds the processor path to the classpath when building
         // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
@@ -126,6 +129,8 @@ allprojects {
         }
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+
+        allProjects subprojects
     }
 
     // After all the tasks have been created, modify some of them.
@@ -227,7 +232,15 @@ allprojects {
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
-    args = ['downloadjdk']
+}
+task maybeCloneAndBuildDependencies(type: Exec) {
+    description 'Clones (or updates) and builds all dependencies if they are not present.'
+    onlyIf {
+        !file(afuJar).exists() || !file(stubparserJar).exists()
+        // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
+        // the repository does not exist when building checker.jar.
+    }
+    executable 'checker/bin-devel/build.sh'
 }
 
 task version() {
@@ -249,7 +262,6 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
     project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
         description "Run the ${shortName} Checker on the main sources."
         group 'Verification'
-        dependsOn ':checker:updateJdk'
         // Always run the task.
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
@@ -266,7 +278,6 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
 
         if (isJava8) {
             options.compilerArgs += [
-                "-Xbootclasspath/p:${rootDir}/checker/dist/jdk8.jar",
                 "-source",
                 "8",
                 "-target",
@@ -348,7 +359,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    classpath = configurations.allProjects
     if (isJava8) {
         classpath += configurations.javacJar
     }
@@ -405,7 +416,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
             }
         }
 
-        classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+        classpath = configurations.allProjects
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
@@ -523,8 +534,8 @@ subprojects {
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
+        // checker-qual* projects have no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual') }
         executable 'python'
 
         doFirst {
@@ -542,8 +553,8 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // jdk8 and checker-qual have no source, so skip
-        onlyIf { !project.name.is('jdk8') && !project.name.startsWith('checker-qual') }
+        // checker-qual* projects have no source, so skip
+        onlyIf { !project.name.startsWith('checker-qual') }
         executable 'python'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
@@ -576,10 +587,10 @@ subprojects {
         relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.startsWith('checker-qual') && !project.name.is('jdk8')) {
+    if (!project.name.startsWith('checker-qual')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
-            commandLine "bash", "-c", "find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+            commandLine "bash", "-c", "find . \\( -name jdk11 \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
@@ -642,7 +653,6 @@ subprojects {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
-                dependsOn(':checker:updateJdk')
                 dependsOn('shadowJar')
 
                 String jtregOutput = "${buildDir}/jtreg"
@@ -671,11 +681,6 @@ subprojects {
                                 "-javacoptions:-source 8",
                                 "-javacoptions:-target 8"
                                 ]
-                            if (project.name.is('checker')) {
-                                args += [
-                                        "-javacoptions:-Xbootclasspath/p:${projectDir}/dist/jdk8.jar",
-                                ]
-                            }
                         } else {
                             args += [
                                     // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
@@ -717,17 +722,16 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             } else {
-                // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
-                forkEvery(1)
                 jvmArgs += [
                         "--illegal-access=warn",
                         "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 ]
             }
 
+            maxParallelForks = Integer.MAX_VALUE
+
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')
-                systemProperties += [JDK_JAR: "${projectDir}/dist/jdk8.jar"]
             }
 
             if (project.hasProperty('emit.test.debug')) {

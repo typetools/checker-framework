@@ -26,7 +26,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
  * {@code CheckerMain}.
+ *
+ * @deprecated Renamed to {@link SystemUtil} and deleted some unused methods.
  */
+@Deprecated
 public class PluginUtil {
 
     /**

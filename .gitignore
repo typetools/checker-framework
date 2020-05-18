@@ -122,6 +122,7 @@ checker-qual/src
 checker-qual-android/src
 
 framework/tests/whole-program-inference/annotated/
+/framework/tests/returnsreceiverdelomboked/
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class

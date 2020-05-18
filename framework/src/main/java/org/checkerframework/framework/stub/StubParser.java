@@ -415,7 +415,7 @@ public class StubParser {
     }
 
     /**
-     * Parse a stub file that is a part of the annotated jdk and side-effects the last two
+     * Parse a stub file that is a part of the annotated JDK and side-effects the last two
      * arguments.
      *
      * @param filename name of stub file, used only for diagnostic messages
@@ -992,6 +992,7 @@ public class StubParser {
                                         declType.getTypeArguments().get().size(),
                                         adeclType,
                                         adeclType.getTypeArguments().size()));
+                        break;
                     }
                     for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
                         annotate(
@@ -1543,6 +1544,7 @@ public class StubParser {
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
         String annoName = annotation.getNameAsString();
+
         TypeElement annoTypeElm = allStubAnnotations.get(annoName);
         if (annoTypeElm == null) {
             // Not a supported qualifier -> ignore
@@ -2034,7 +2036,7 @@ public class StubParser {
      */
     private void stubWarn(String warning, Object... args) {
         warning = String.format(warning, args);
-        if (warnings.add(warning)) {
+        if (warnings.add(warning) && !isJdkAsStub) {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);
