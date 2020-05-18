@@ -24,11 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import scenelib.annotations.Annotation;
+import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
@@ -51,10 +51,10 @@ import scenelib.annotations.io.IndexFileWriter;
  * for manipulating .jaif files, because it has nothing to do with .jaif files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
- * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). The A*Wrapper
- * classes ({@link ASceneWrapper} and {@link AClassWrapper}) store this additional information. This
- * class walks the scene-lib representation structurally and outputs the stub file as a string, by
- * combining the information scene-lib stores with the information gathered elsewhere.
+ * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
+ * ASceneWrapper} stores this additional information. This class walks the scene-lib representation
+ * structurally and outputs the stub file as a string, by combining the information scene-lib stores
+ * with the information gathered elsewhere.
  *
  * <p>The additional information is necessary because the scene-lib representation of a type does
  * not have enough information to print full types.
@@ -449,7 +449,7 @@ public final class SceneToStubWriter {
      * @return the number of outer classes within which this class is nested
      */
     private static int printClassDefinitions(
-            String basename, AClassWrapper aClass, PrintWriter printWriter) {
+            String basename, AClass aClass, PrintWriter printWriter) {
 
         String[] classNames = StringUtils.split(basename, '$');
 
@@ -481,8 +481,7 @@ public final class SceneToStubWriter {
      * @param printWriter the writer on which to print the fields
      * @param indentLevel the indent string
      */
-    private static void printFields(
-            AClassWrapper aClass, PrintWriter printWriter, String indentLevel) {
+    private static void printFields(AClass aClass, PrintWriter printWriter, String indentLevel) {
 
         if (aClass.getFields().isEmpty()) {
             return;
@@ -628,10 +627,10 @@ public final class SceneToStubWriter {
      * (not a package or module) and is not anonymous.
      *
      * @param classname the class name
-     * @param aClassWrapper the representation of the class
+     * @param aClass the representation of the class
      * @return whether the class is printable, by the definition above
      */
-    private static boolean isPrintable(@BinaryName String classname, AClassWrapper aClassWrapper) {
+    private static boolean isPrintable(@BinaryName String classname, AClass aClass) {
         String basename = basenamePart(classname);
 
         if ("package-info".equals(basename) || "module-info".equals(basename)) {
@@ -644,22 +643,25 @@ public final class SceneToStubWriter {
             return false;
         }
 
-        aClassWrapper.checkIfPrintable();
+        if (aClass.getTypeElement() == null) {
+            throw new BugInCF(
+                    "Tried printing an unprintable class to a stub file during WPI: "
+                            + aClass.className);
+        }
 
         return true;
     }
 
     /**
      * Print the class body, or nothing if this is an anonymous inner class. Call {@link
-     * #isPrintable(String, AClassWrapper)} and check that it returns true before calling this
-     * method.
+     * #isPrintable(String, AClass)} and check that it returns true before calling this method.
      *
      * @param classname the class name
-     * @param aClassWrapper the representation of the class
+     * @param aClass the representation of the class
      * @param printWriter the writer on which to print
      */
     private static void printClass(
-            @BinaryName String classname, AClassWrapper aClassWrapper, PrintWriter printWriter) {
+            @BinaryName String classname, AClass aClass, PrintWriter printWriter) {
 
         String basename = basenamePart(classname);
         String innermostClassname =
@@ -672,11 +674,11 @@ public final class SceneToStubWriter {
             printWriter.println("package " + pkg + ";");
         }
 
-        int curlyCount = printClassDefinitions(basename, aClassWrapper, printWriter);
+        int curlyCount = printClassDefinitions(basename, aClass, printWriter);
 
         String indentLevel = indents(curlyCount);
 
-        List<VariableElement> enumConstants = aClassWrapper.getEnumConstants();
+        List<VariableElement> enumConstants = aClass.getEnumConstants();
         if (enumConstants != null) {
             StringJoiner sj = new StringJoiner(", ");
             for (VariableElement enumConstant : enumConstants) {
@@ -689,13 +691,13 @@ public final class SceneToStubWriter {
             printWriter.println();
         }
 
-        printFields(aClassWrapper, printWriter, indentLevel);
+        printFields(aClass, printWriter, indentLevel);
 
-        if (!aClassWrapper.getMethods().isEmpty()) {
+        if (!aClass.getMethods().isEmpty()) {
             // print method signatures
             printWriter.println(indentLevel + "// methods:");
             printWriter.println();
-            for (Map.Entry<String, AMethod> methodEntry : aClassWrapper.getMethods().entrySet()) {
+            for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
                 printMethodDeclaration(
                         methodEntry.getValue(), innermostClassname, printWriter, indentLevel);
             }
@@ -725,7 +727,7 @@ public final class SceneToStubWriter {
      * @param aClass the class whose type parameters should be printed
      * @param printWriter where to print the type parameters
      */
-    private static void printTypeParameters(AClassWrapper aClass, PrintWriter printWriter) {
+    private static void printTypeParameters(AClass aClass, PrintWriter printWriter) {
         TypeElement type = aClass.getTypeElement();
         if (type == null) {
             return;

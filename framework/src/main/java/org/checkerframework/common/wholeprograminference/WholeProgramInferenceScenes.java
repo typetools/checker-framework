@@ -14,7 +14,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.scenelib.AClassWrapper;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -31,6 +30,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
 
@@ -107,9 +107,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(constructorElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz =
+        AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
-        AMethod method = clazz.vivifyMethod(constructorElt);
+        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
@@ -129,10 +129,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz =
+        AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        AMethod method = clazz.vivifyMethod(methodElt);
+        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -183,9 +183,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz =
+        AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-        AMethod method = clazz.vivifyMethod(methodElt);
+        AMethod method = clazz.vivifyAndSetFieldsFromMethodElement(methodElt);
 
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
@@ -225,8 +225,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath);
-        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AClass clazz = storage.getAClass(className, jaifPath);
+        AMethod method =
+                clazz.vivifyAndSetFieldsFromMethodElement(
+                        TreeUtils.elementFromDeclaration(methodTree));
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -293,10 +295,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath, enclosingClass);
+        AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AField field = clazz.vivifyField(fieldName, lhsATM.getUnderlyingType());
+        AField field = clazz.vivifyAndSetTypeMirror(fieldName, lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
@@ -347,9 +349,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         @BinaryName String className = classSymbol.flatname.toString();
 
         String jaifPath = storage.getJaifPath(className);
-        AClassWrapper clazz = storage.getAClass(className, jaifPath, classSymbol);
+        AClass clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethod method = clazz.vivifyMethod(TreeUtils.elementFromDeclaration(methodTree));
+        AMethod method =
+                clazz.vivifyAndSetFieldsFromMethodElement(
+                        TreeUtils.elementFromDeclaration(methodTree));
 
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
 
@@ -387,12 +391,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
             String superClassName = getEnclosingClassName(overriddenMethodElement);
             String superJaifPath = storage.getJaifPath(superClassName);
-            AClassWrapper superClazz =
+            AClass superClazz =
                     storage.getAClass(
                             superClassName,
                             superJaifPath,
                             ((MethodSymbol) overriddenMethodElement).enclClass());
-            AMethod overriddenMethodInSuperclass = superClazz.vivifyMethod(overriddenMethodElement);
+            AMethod overriddenMethodInSuperclass =
+                    superClazz.vivifyAndSetFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
             storage.updateAnnotationSetInScene(

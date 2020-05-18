@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +50,6 @@ public class ASceneWrapper {
     /** The AScene being wrapped. */
     private final AScene theScene;
 
-    /** The classes in the scene. */
-    private final Map<@BinaryName String, AClassWrapper> classes = new HashMap<>();
-
     /**
      * Constructor. Pass the AScene to wrap.
      *
@@ -64,12 +60,13 @@ public class ASceneWrapper {
     }
 
     /**
-     * Fetch the classes in this scene, represented as AClassWrapper objects.
+     * Fetch the classes in this scene, represented as AClass objects.
      *
-     * @return an immutable map from binary names to AClassWrapper objects
+     * @return an immutable map from binary names to AClass objects
      */
-    public Map<@BinaryName String, AClassWrapper> getClasses() {
-        return ImmutableMap.copyOf(classes);
+    @SuppressWarnings("signature:return.type.incompatible") // unannotated ImmutableMap??
+    public Map<@BinaryName String, AClass> getClasses() {
+        return ImmutableMap.copyOf(theScene.classes);
     }
 
     /**
@@ -184,20 +181,12 @@ public class ASceneWrapper {
      *
      * @param className the binary name of the class to be added to the scene
      * @param classSymbol the element representing the class, used for adding symbol information to
-     *     the AClassWrapper returned by this method. If it is null, an AClassWrapper is looked up
-     *     or created, but the symbol information stored by the AClassWrapper is not updated.
-     * @return an AClassWrapper representing that class
+     *     the AClass returned by this method. If it is null, an AClass is looked up or created, but
+     *     the symbol information stored by the AClass is not updated.
+     * @return an AClass representing that class
      */
-    public AClassWrapper vivifyClass(
-            @BinaryName String className, @Nullable ClassSymbol classSymbol) {
-        AClassWrapper wrapper;
-        if (classes.containsKey(className)) {
-            wrapper = classes.get(className);
-        } else {
-            AClass aClass = theScene.classes.getVivify(className);
-            wrapper = new AClassWrapper(aClass);
-            classes.put(className, wrapper);
-        }
+    public AClass vivifyClass(@BinaryName String className, @Nullable ClassSymbol classSymbol) {
+        AClass aClass = theScene.classes.getVivify(className);
 
         // updateSymbolInformation must be called on both paths (cache hit and cache miss) because
         // the
@@ -207,19 +196,18 @@ public class ASceneWrapper {
         // Since it is not used until the end of WPI, it being unavailable during WPI is not a
         // problem.
         if (classSymbol != null) {
-            updateSymbolInformation(wrapper, classSymbol);
+            updateSymbolInformation(aClass, classSymbol);
         }
-        return wrapper;
+        return aClass;
     }
 
     /**
-     * Updates the symbol information stored in AClassWrapper for the given class.
+     * Updates the symbol information stored in AClass for the given class.
      *
-     * @param aClassWrapper the class representation in which the symbol information is to be
-     *     updated
+     * @param aClass the class representation in which the symbol information is to be updated
      * @param classSymbol the source of the symbol information
      */
-    private void updateSymbolInformation(AClassWrapper aClassWrapper, ClassSymbol classSymbol) {
+    private void updateSymbolInformation(AClass aClass, ClassSymbol classSymbol) {
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();
             for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
@@ -228,10 +216,10 @@ public class ASceneWrapper {
                 }
             }
             // Either call setEnumConstants or verify that the existing value is consistent.
-            if (!aClassWrapper.isEnum(classSymbol.getSimpleName().toString())) {
-                aClassWrapper.setEnumConstants(enumConstants);
+            if (!aClass.isEnum(classSymbol.getSimpleName().toString())) {
+                aClass.setEnumConstants(enumConstants);
             } else {
-                List<VariableElement> existingEnumConstants = aClassWrapper.getEnumConstants();
+                List<VariableElement> existingEnumConstants = aClass.getEnumConstants();
                 if (existingEnumConstants.size() != enumConstants.size()) {
                     throw new BugInCF(
                             "inconsistent enum constants in WPI for class "
@@ -251,7 +239,7 @@ public class ASceneWrapper {
         ClassSymbol previous = classSymbol;
         do {
             if (outerClass.isEnum()) {
-                aClassWrapper.markAsEnum(outerClass.getSimpleName().toString());
+                aClass.markAsEnum(outerClass.getSimpleName().toString());
             }
             Element element = classSymbol.getEnclosingElement();
             if (element == null || element.getKind() == ElementKind.PACKAGE) {
@@ -264,7 +252,7 @@ public class ASceneWrapper {
             // otherwise this loop will sometimes run forever.
         } while (outerClass != null && !previous.equals(outerClass));
 
-        aClassWrapper.setTypeElement(classSymbol);
+        aClass.setTypeElement(classSymbol);
     }
 
     /**
