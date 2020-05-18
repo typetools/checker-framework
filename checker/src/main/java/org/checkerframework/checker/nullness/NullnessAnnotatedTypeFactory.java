@@ -106,6 +106,8 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.NonNull",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
                     "io.reactivex.annotations.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/NonNull.java
+                    "io.reactivex.rxjava3.annotations.NonNull",
                     // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.Nonnull",
                     // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
@@ -152,6 +154,8 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
                     "io.reactivex.annotations.Nullable",
+                    // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/Nullable.java
+                    "io.reactivex.rxjava3.annotations.Nullable",
                     // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
@@ -206,7 +210,7 @@ public class NullnessAnnotatedTypeFactory
         postInit();
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(checker, this);
     }
 
     @Override

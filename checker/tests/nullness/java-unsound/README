@@ -1,0 +1,9 @@
+This directory discusses the examples from the paper
+"Java and Scala's Type Systems are Unsound - The Existential Crisis of Null Pointers"
+by Amin and Tate, OOPSLA 2016.
+
+The un-annotated example programs all get rejected either by a Java 9+ javac or by the
+Nullness Checker.
+
+Figure3NC and Figure6NC are variations of the examples with nullness annotations.
+Those versions pass the Nullness Checker, but result in ClassCastExceptions!

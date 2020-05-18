@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 public class CheckerDevelMain extends CheckerMain {
 
@@ -23,25 +23,15 @@ public class CheckerDevelMain extends CheckerMain {
         final String runtimeCp = System.getProperty(RUNTIME_CP_PROP);
         final String compileBcp = System.getProperty(COMPILE_BCP_PROP);
         final String binDir = System.getProperty(BINARY_PROP);
-        final boolean verbose = PluginUtil.getBooleanSystemProperty(VERBOSE_PROP);
+        final boolean verbose = SystemUtil.getBooleanSystemProperty(VERBOSE_PROP);
 
         if (verbose) {
-            System.out.print(
-                    "CheckerDevelMain:\n"
-                            + "Prepended to classpath:     "
-                            + cp
-                            + "Prepended to processor classpath:     "
-                            + pp
-                            + "\n"
-                            + "Prepended to compile bootclasspath: "
-                            + compileBcp
-                            + "\n"
-                            + "Prepended to runtime classpath: "
-                            + runtimeCp
-                            + "\n"
-                            + "Binary Dir:                 "
-                            + binDir
-                            + "\n");
+            System.out.println("CheckerDevelMain:");
+            System.out.println("Prepended to classpath:     " + cp);
+            System.out.println("Prepended to processor classpath:   " + pp);
+            System.out.println("Prepended to compile bootclasspath: " + compileBcp);
+            System.out.println("Prepended to runtime classpath:     " + runtimeCp);
+            System.out.println("Binary Dir:                 " + binDir);
         }
 
         assert (binDir != null)

@@ -222,13 +222,14 @@ rules are used in order, until one applies.
 \item
   The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
   These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
-  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}) (CLIMB means \textbf{C}asts, \textbf{L}ocals,
+  \textbf{I}nstanceof, and (some) i\textbf{M}plicit \textbf{B}ounds).
 \item
   The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
-rules 6 and 7 apply.  This makes the type local variables top so they can be refined.
+rules 6 and 7 apply. If rule 6 applies, it makes the type of local variables top so they can be refined.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
@@ -522,10 +523,10 @@ is implicitly the bottom annotation: \code {@NonNull}.
 \subsectionAndLabel{Default qualifiers for \<.class> files (library defaults)}{defaults-classfile}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
-are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
+are off by default and can be turned on by supplying the \<-AuseConservativeDefaultsForUncheckedCode=bytecode>
 command-line option.  In a future release, they will be turned on
 by default and it will be possible to turn them off by supplying a
-\<-AuseDefaultsForUncheckedCode=-bytecode> command-line option.)
+\<-AuseConservativeDefaultsForUncheckedCode=-bytecode> command-line option.)
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -609,11 +610,6 @@ misbehave at run time.
 % time.  However, it can be useful when you are first annotating a codebase,
 % to help you focus on errors within the codebase before you have annotated
 % external libraries.
-
-% TODO: document
-% the \refqualclass{framework/qual}{DefaultInUncheckedCodeFor}
-% and \refqualclass{framework/qual}{DefaultQualifierInHierarchyInUncheckedCode}
-% annotations for type system designers.
 
 
 \newpage
@@ -1170,13 +1166,18 @@ The set of permitted expressions is a subset of all Java expressions:
 \item
   a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
-  refer to the receiver object; use \<this> instead.  (A side note:
+  refer to the receiver object; use \<this> instead.
+
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
   separate compilation, when an annotated method has already been compiled
   into a \<.class> file and a client of that method is later compiled.
   In the \<.class> file, no formal parameter name information is available,
-  so it is necessary to use a number to indicate a formal parameter.)
+  so it is necessary to use a number to indicate a formal parameter.
+  If all your annotated code is always provided to the checker in source
+  code format (this also implies that you will never provide \<.class>
+  files to clients who might want to do type-checking), then you can use
+  the formal parameter name instead of the numeric index.
 %% At some point, we will start assuming that the .class file was created
 %% by the Checker Framework and this justification, and the #n syntax
 %% itself, will not be necessary.
@@ -1519,8 +1520,8 @@ class @Marsupial-Animal {
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
 %%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  AuseDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  AuseDefaultsForUncheckedcode EnsuresKeyFor EnsuresKeyForIf
+%%  LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
 %%  LocalWords:  Signedness MonotonicNonNull UpperBoundFor

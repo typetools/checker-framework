@@ -34,8 +34,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -224,8 +225,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             f.visitorState.setAssignmentContext(null);
 
             AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType) type).getComponentType();
+            if (type.getKind() == TypeKind.ARRAY) {
+                return ((AnnotatedArrayType) type).getComponentType();
+            } else if (type.getKind() == TypeKind.WILDCARD
+                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
+                // Clean-up after Issue #979.
+                AnnotatedTypeMirror wcbound = ((AnnotatedWildcardType) type).getExtendsBound();
+                if (wcbound instanceof AnnotatedArrayType) {
+                    return ((AnnotatedArrayType) wcbound).getComponentType();
+                }
+            }
+            throw new BugInCF("Unexpected type: " + type);
         } finally {
             f.visitorState.setAssignmentContext(preAssCtxt);
         }
@@ -337,16 +347,15 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
 
-        // the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
-        // appropriately initialized where for the type of node, instead of replacing that bound
-        // we merge the annotations onto the initialized bound
-        // This ensures that the structure of the wildcard will match that created by
-        // BoundsInitializer/createType
+        // Instead of directly overwriting the bound, replace each annotation
+        // to ensure that the structure of the wildcard will match that created by
+        // BoundsInitializer/createType.
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
-            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
+            AnnotatedTypeReplacer.replace(bound, ((AnnotatedWildcardType) result).getSuperBound());
 
         } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
-            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getExtendsBound());
+            AnnotatedTypeReplacer.replace(
+                    bound, ((AnnotatedWildcardType) result).getExtendsBound());
         }
         return result;
     }

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -112,6 +113,31 @@ public class Range {
             if (max < current) max = current;
         }
         return create(min, max);
+    }
+
+    /**
+     * Returns a Range representing all possible values for the given primitive type.
+     *
+     * @param typeKind one of INT, SHORT, BYTE, CHAR, or LONG
+     * @return the range for the given primitive type
+     */
+    public static Range create(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+                return INT_EVERYTHING;
+            case SHORT:
+                return SHORT_EVERYTHING;
+            case BYTE:
+                return BYTE_EVERYTHING;
+            case CHAR:
+                return CHAR_EVERYTHING;
+            case LONG:
+                return LONG_EVERYTHING;
+            default:
+                throw new IllegalArgumentException(
+                        "Invalid TypeKind for Range: expected INT, SHORT, BYTE, CHAR, or LONG, got "
+                                + typeKind);
+        }
     }
 
     /** Long.MIN_VALUE, as a BigInteger. */
@@ -276,8 +302,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (INT_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Integer.MIN_VALUE), Math.min(to, Integer.MAX_VALUE));
+            return create(clipToRange(from, INT_EVERYTHING), clipToRange(to, INT_EVERYTHING));
         }
         if (this.isWiderThan(INT_WIDTH)) {
             return INT_EVERYTHING;
@@ -305,8 +334,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (SHORT_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Short.MIN_VALUE), Math.min(to, Short.MAX_VALUE));
+            return create(clipToRange(from, SHORT_EVERYTHING), clipToRange(to, SHORT_EVERYTHING));
         }
         if (this.isWiderThan(SHORT_WIDTH)) {
             // short is promoted to int before the operation so no need for explicit casting
@@ -335,8 +367,11 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (CHAR_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Character.MIN_VALUE), Math.min(to, Character.MAX_VALUE));
+            return create(clipToRange(from, CHAR_EVERYTHING), clipToRange(to, CHAR_EVERYTHING));
         }
         if (this.isWiderThan(CHAR_WIDTH)) {
             // char is promoted to int before the operation so no need for explicit casting
@@ -349,7 +384,7 @@ public class Range {
     private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
     /**
-     * Converts a this range to a 8-bit byte range.
+     * Converts this range to a 8-bit byte range.
      *
      * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
      * that bound is set to the bound of the Byte range.
@@ -365,14 +400,35 @@ public class Range {
         if (this.isNothing()) {
             return this;
         }
+        if (BYTE_EVERYTHING.contains(this)) {
+            return this;
+        }
         if (ignoreOverflow) {
-            return create(Math.max(from, Byte.MIN_VALUE), Math.min(to, Byte.MAX_VALUE));
+            return create(clipToRange(from, BYTE_EVERYTHING), clipToRange(to, BYTE_EVERYTHING));
         }
         if (this.isWiderThan(BYTE_WIDTH)) {
             // byte is promoted to int before the operation so no need for explicit casting
             return BYTE_EVERYTHING;
         }
         return createOrElse((byte) this.from, (byte) this.to, BYTE_EVERYTHING);
+    }
+
+    /**
+     * Return x clipped to the given range; out-of-range values become extremal values. Appropriate
+     * only when {@link #ignoreOverflow} is true.
+     *
+     * @param x a value
+     * @param r a range
+     * @return a value within the range; if x is outside r, returns the min or max of r
+     */
+    private long clipToRange(long x, Range r) {
+        if (x < r.from) {
+            return r.from;
+        } else if (x > r.to) {
+            return r.to;
+        } else {
+            return x;
+        }
     }
 
     /**

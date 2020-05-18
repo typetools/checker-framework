@@ -11,9 +11,14 @@ import java.lang.annotation.Target;
  * Deterministic}. The more important of these, when performing pluggable type-checking, is usually
  * {@link SideEffectFree}.
  *
+ * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
+ * {@code @InheritedAnnotation}.
+ *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */
+// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
+// "framework" project.
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

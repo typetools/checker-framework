@@ -215,7 +215,7 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
-                    return type.toString();
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
                 }
         }
         throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
@@ -337,9 +337,7 @@ public class ElementUtils {
         // cardinality.  (Does any code depend on the invariant, though?)
         if (origCardinality != names.size() + elements.size()) {
             throw new BugInCF(
-                    String.format(
-                            "Bad sizes: %d != %d + %d",
-                            origCardinality, names.size(), elements.size()));
+                    "Bad sizes: %d != %d + %d", origCardinality, names.size(), elements.size());
         }
         return elements;
     }

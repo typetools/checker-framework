@@ -37,7 +37,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
  * intended that this class can be overridden for these cases.
  *
  * @see org.checkerframework.framework.type.TypeVariableSubstitutor
- * @see org.checkerframework.framework.type.AnnotatedTypeReplacer
+ * @see org.checkerframework.framework.type.AnnotatedTypeCopierWithReplacement
  */
 public class AnnotatedTypeCopier
         implements AnnotatedTypeVisitor<

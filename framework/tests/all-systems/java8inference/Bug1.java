@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug1<B> {
     @SuppressWarnings("type.inference.not.same")
     public void method1(Map<? extends Class<? extends B>, ? extends B> map) {

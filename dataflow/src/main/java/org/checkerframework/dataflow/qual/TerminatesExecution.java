@@ -25,9 +25,14 @@ import java.lang.annotation.Target;
  * <p>The annotation is a <em>trusted</em> annotation, meaning that it is not checked whether the
  * annotated method really does terminate the program.
  *
+ * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
+ * {@code @InheritedAnnotation}.
+ *
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
  *     qualifier inference)
  */
+// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
+// "framework" project.
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

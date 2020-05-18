@@ -7,7 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -61,13 +62,7 @@ public class TestConfigurationBuilder {
             configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
         }
 
-        if (PluginUtil.getJreVersion() == 8) {
-            // Use the annotated jdk for the compile bootclasspath
-            String jdkJarPath = getJdkJarPathFromProperty();
-            if (notNullOrEmpty(jdkJarPath)) {
-                configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
-            }
-
+        if (SystemUtil.getJreVersion() == 8) {
             configBuilder.addOption("-source", "8").addOption("-target", "8");
         }
 
@@ -112,10 +107,6 @@ public class TestConfigurationBuilder {
                         options,
                         shouldEmitDebugInfo);
         return builder.validateThenBuild(true);
-    }
-
-    private static boolean notNullOrEmpty(String str) {
-        return str != null && !str.isEmpty();
     }
 
     /**
@@ -354,13 +345,9 @@ public class TestConfigurationBuilder {
             return build();
         }
 
-        throw new RuntimeException(
-                "Attempted to build invalid test configuration:\n"
-                        + "Errors:\n"
-                        + String.join("\n", errors)
-                        + "\n"
-                        + this
-                        + "\n");
+        throw new BugInCF(
+                "Attempted to build invalid test configuration:%n" + "Errors:%n%s%n%s%n",
+                String.join("%n", errors), this);
     }
 
     /** @return the set of Javac options as a flat list */
@@ -370,18 +357,12 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return "TestConfigurationBuilder:\n"
-                + "testSourceFiles="
-                + (testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles))
-                + "\n"
-                + "processors="
-                + (processors == null ? "null" : PluginUtil.join(", ", processors))
-                + "\n"
-                + "options="
-                + (options == null ? "null" : PluginUtil.join(", ", options.getOptionsAsList()))
-                + "\n"
-                + "shouldEmitDebugInfo="
-                + shouldEmitDebugInfo;
+        return SystemUtil.joinLines(
+                "TestConfigurationBuilder:",
+                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
+                "processors=" + SystemUtil.join(", ", processors),
+                "options=" + SystemUtil.join(", ", options.getOptionsAsList()),
+                "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 
     /** @return a list that first has the items from parameter list then the items from iterable */
@@ -414,14 +395,5 @@ public class TestConfigurationBuilder {
                 System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
         return classpath + File.pathSeparator + globalclasspath;
-    }
-
-    /**
-     * The path to the annotated JDK, looked up from the system property "JDK_JAR".
-     *
-     * @return the value of the system property "JDK_JAR"
-     */
-    public static String getJdkJarPathFromProperty() {
-        return System.getProperty("JDK_JAR");
     }
 }

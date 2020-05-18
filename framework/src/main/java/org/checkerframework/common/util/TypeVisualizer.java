@@ -28,7 +28,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.ExecUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
@@ -255,12 +255,8 @@ public class TypeVisualizer {
                     writer.flush();
                 } catch (IOException e) {
                     throw new BugInCF(
-                            "Exception visualizing type:\n"
-                                    + "file="
-                                    + file
-                                    + "\n"
-                                    + "type="
-                                    + type,
+                            String.format(
+                                    "Exception visualizing type:%nfile=%s%ntype=%s", file, type),
                             e);
                 } finally {
                     if (writer != null) {
@@ -269,7 +265,7 @@ public class TypeVisualizer {
                 }
             } catch (IOException exc) {
                 throw new BugInCF(
-                        "Exception visualizing type:\n" + "file=" + file + "\n" + "type=" + type,
+                        String.format("Exception visualizing type:%nfile=%s%ntype=%s", file, type),
                         exc);
             }
         }
@@ -492,8 +488,7 @@ public class TypeVisualizer {
                     visitAll(type.getThrownTypes());
 
                 } else {
-                    throw new BugInCF(
-                            "Executable types should never be recursive\n" + "type=" + type);
+                    throw new BugInCF("Executable types should never be recursive%ntype=%s", type);
                 }
                 return null;
             }
@@ -600,13 +595,13 @@ public class TypeVisualizer {
                 builder.append(methodElem.getReturnType().toString());
                 builder.append(" <");
 
-                builder.append(PluginUtil.join(", ", methodElem.getTypeParameters()));
+                builder.append(SystemUtil.join(", ", methodElem.getTypeParameters()));
                 builder.append("> ");
 
                 builder.append(methodElem.getSimpleName().toString());
 
                 builder.append("(");
-                builder.append(PluginUtil.join(",", methodElem.getParameters()));
+                builder.append(SystemUtil.join(",", methodElem.getParameters()));
                 builder.append(")");
                 return builder.toString();
             }

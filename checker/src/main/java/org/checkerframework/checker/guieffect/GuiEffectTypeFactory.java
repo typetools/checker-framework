@@ -30,7 +30,6 @@ import org.checkerframework.checker.guieffect.qual.UIPackage;
 import org.checkerframework.checker.guieffect.qual.UIType;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -441,24 +440,22 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
-                        checker.report(
-                                Result.failure(
-                                        "override.effect.invalid",
-                                        overridingMethod,
-                                        declaringType,
-                                        safeOverride,
-                                        superclass),
-                                errorNode);
+                        checker.reportError(
+                                errorNode,
+                                "override.effect.invalid",
+                                overridingMethod,
+                                declaringType,
+                                safeOverride,
+                                superclass);
                     }
                     if (isPolyUI && issueConflictWarning) {
-                        checker.report(
-                                Result.failure(
-                                        "override.effect.invalid.polymorphic",
-                                        overridingMethod,
-                                        declaringType,
-                                        safeOverride,
-                                        superclass),
-                                errorNode);
+                        checker.reportError(
+                                errorNode,
+                                "override.effect.invalid.polymorphic",
+                                overridingMethod,
+                                declaringType,
+                                safeOverride,
+                                superclass);
                     }
                 } else if (eff.isUI()) {
                     // found a ui override
@@ -480,10 +477,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) &&
                     // getDeclAnnotation(declaringType, UI.class) != null;
                     //    if (!isAnonInstantiation && !hasAnnotationByName(supdecl, UI.class)) {
-                    //        checker.report(Result.failure("override.effect.invalid",
-                    //            "non-UI instantiation of "+supdecl), errorNode);
+                    //        checker.reportError(errorNode, "override.effect.invalid",
+                    //            "non-UI instantiation of "+supdecl);
                     //        If uncommenting this, change the above line to match other calls of
-                    //            Result.failure("override.effect.invalid", ...)
+                    //            checker.report(..., "override.effect.invalid", ...)
                     //    }
                     // }
                 }
@@ -502,24 +499,22 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safeOverride = overrides;
                     if (isUI && issueConflictWarning) {
-                        checker.report(
-                                Result.failure(
-                                        "override.effect.invalid",
-                                        overridingMethod,
-                                        declaringType,
-                                        safeOverride,
-                                        ty),
-                                errorNode);
+                        checker.reportError(
+                                errorNode,
+                                "override.effect.invalid",
+                                overridingMethod,
+                                declaringType,
+                                safeOverride,
+                                ty);
                     }
                     if (isPolyUI && issueConflictWarning) {
-                        checker.report(
-                                Result.failure(
-                                        "override.effect.invalid.polymorphic",
-                                        overridingMethod,
-                                        declaringType,
-                                        safeOverride,
-                                        ty),
-                                errorNode);
+                        checker.reportError(
+                                errorNode,
+                                "override.effect.invalid.polymorphic",
+                                overridingMethod,
+                                declaringType,
+                                safeOverride,
+                                ty);
                     }
                 } else if (eff.isUI()) {
                     // found a ui override
@@ -537,14 +532,13 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                         && (fromElement(declaringType).hasAnnotation(UI.class)
                                                 || uiAnonClasses.contains(declaringType));
                         if (!isAnonInstantiation && !supdecl.hasAnnotation(UI.class)) {
-                            checker.report(
-                                    Result.failure(
-                                            "override.effect.invalid.nonui",
-                                            overridingMethod,
-                                            declaringType,
-                                            polyOverride,
-                                            supdecl),
-                                    errorNode);
+                            checker.reportError(
+                                    errorNode,
+                                    "override.effect.invalid.nonui",
+                                    overridingMethod,
+                                    declaringType,
+                                    polyOverride,
+                                    supdecl);
                         }
                     }
                 }
@@ -555,16 +549,15 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
             // enough to know there are at least 2 in conflict
-            checker.report(
-                    Result.warning(
-                            "override.effect.warning.inheritance",
-                            overridingMethod,
-                            declaringType,
-                            uiOverride.toString(),
-                            uiOverride.getEnclosingElement().asType().toString(),
-                            safeOverride.toString(),
-                            safeOverride.getEnclosingElement().asType().toString()),
-                    errorNode);
+            checker.reportWarning(
+                    errorNode,
+                    "override.effect.warning.inheritance",
+                    overridingMethod,
+                    declaringType,
+                    uiOverride.toString(),
+                    uiOverride.getEnclosingElement().asType().toString(),
+                    safeOverride.toString(),
+                    safeOverride.getEnclosingElement().asType().toString());
         }
 
         Effect min =
