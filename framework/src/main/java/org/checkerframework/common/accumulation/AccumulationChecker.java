@@ -4,16 +4,17 @@ import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 
-// TODO: Javadoc should reference the Checker Framework manual.
+// TODO: This Javadoc comment should reference the Checker Framework manual.
 /**
- * An accumulation checker is one that accumulates some property: method calls, keys into maps, etc.
+ * An accumulation checker is one that accumulates some property: method calls, map keys, etc.
  *
  * <p>This class provides a basic accumulation analysis that can be extended to implement a
  * particular accumulation type system. This accumulation analysis represents all facts as Strings.
  * It automatically includes returns-receiver aliasing to precisely handle fluent APIs, but
- * otherwise uses no alias analysis. The primary extension point is the constructor of {@link
- * AccumulationAnnotatedTypeFactory}, which every subclass should override to provide custom
- * annotations.
+ * otherwise uses no alias analysis.
+ *
+ * <p>The primary extension point is the constructor of {@link AccumulationAnnotatedTypeFactory},
+ * which every subclass should override to provide custom annotations.
  */
 public abstract class AccumulationChecker extends BaseTypeChecker {
 
