@@ -246,6 +246,8 @@ public abstract class QualifierHierarchy {
      * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
      * annotation).
      *
+     * @param subAnno a qualifier that might be a subtype
+     * @param superAnno a qualifier that might be a subtype
      * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
      */
     public abstract boolean isSubtypeTypeVariable(
