@@ -2,6 +2,7 @@ package org.checkerframework.framework.type.visitor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -55,6 +56,24 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *     that do not need an additional parameter.
  */
 public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
+    @FunctionalInterface
+    public interface Reduce<R> {
+        R reduce(R r1, R r2);
+    }
+
+    protected final Reduce<R> reduce;
+
+    public AnnotatedTypeScanner(@Nullable Reduce<R> reduce) {
+        if (reduce == null) {
+            this.reduce = (r1, r2) -> r1 == null ? r2 : r1;
+        } else {
+            this.reduce = reduce;
+        }
+    }
+
+    public AnnotatedTypeScanner() {
+        this(null);
+    }
 
     // To prevent infinite loops
     protected final Map<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();
@@ -148,10 +167,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * @return the combination of {@code r1} and {@code r2}
      */
     protected R reduce(R r1, R r2) {
-        if (r1 == null) {
-            return r2;
-        }
-        return r1;
+        return reduce.reduce(r1, r2);
     }
 
     @Override

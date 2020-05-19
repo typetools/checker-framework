@@ -14,7 +14,35 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * A simple implementation of AnnotatedTypeScanner. It is abstract; its purpose is to provide
  * default implementations of all methods.
  */
-public abstract class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
+public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
+
+    @FunctionalInterface
+    public interface DefaultAction<R, P> {
+        R defaultAction(AnnotatedTypeMirror type, P p);
+    }
+
+    protected final DefaultAction<R, P> defaultAction;
+
+    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
+        super(reduce);
+        if (defaultAction == null) {
+            this.defaultAction = (t, p) -> null;
+        } else {
+            this.defaultAction = defaultAction;
+        }
+    }
+
+    public SimpleAnnotatedTypeScanner() {
+        this(null, null);
+    }
+
+    public SimpleAnnotatedTypeScanner(Reduce<R> reduce) {
+        this(null, reduce);
+    }
+
+    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {
+        this(defaultAction, null);
+    }
 
     /**
      * Called by default for any visit method that is not overridden.
@@ -24,8 +52,7 @@ public abstract class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScan
      * @return a visitor-specified result
      */
     protected R defaultAction(AnnotatedTypeMirror type, P p) {
-        // Do nothing
-        return null;
+        return defaultAction.defaultAction(type, p);
     }
 
     /**
