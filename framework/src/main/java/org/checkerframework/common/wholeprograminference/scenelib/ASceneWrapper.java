@@ -45,7 +45,7 @@ import scenelib.annotations.io.IndexFileWriter;
 public class ASceneWrapper {
 
     /** The AScene being wrapped. */
-    public final AScene theScene;
+    private final AScene theScene;
 
     /**
      * Constructor. Pass the AScene to wrap.

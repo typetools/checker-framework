@@ -575,7 +575,7 @@ public final class SceneToStubWriter {
         // Sort by package name first so that output is deterministic and default package
         // comes first; within package sort by class name.
         @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
-        List<@BinaryName String> classes = new ArrayList<>(scene.theScene.getClasses().keySet());
+        List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
         Collections.sort(
                 classes,
                 new Comparator<@BinaryName String>() {
@@ -596,7 +596,7 @@ public final class SceneToStubWriter {
 
         // For each class
         for (String clazz : classes) {
-            if (isPrintable(clazz, scene.theScene.getClasses().get(clazz))) {
+            if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
                 if (!anyClassPrintable) {
                     try {
                         printWriter = new PrintWriter(new FileWriter(filename));
@@ -615,7 +615,7 @@ public final class SceneToStubWriter {
                     printWriter.println();
                     anyClassPrintable = true;
                 }
-                printClass(clazz, scene.theScene.getClasses().get(clazz), printWriter);
+                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter);
             }
         }
         if (printWriter != null) {
