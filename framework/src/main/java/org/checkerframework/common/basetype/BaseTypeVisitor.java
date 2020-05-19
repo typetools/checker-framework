@@ -2468,8 +2468,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * are the same but their verbose toStrings differ.
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
+        Map<String, String> simpleToVerbose = new HashMap<>();
         for (AnnotatedTypeMirror atm : atms) {
-            Boolean result = checkContainsSameToString.visit(atm, new HashMap<>());
+            Boolean result = checkContainsSameToString.visit(atm, simpleToVerbose);
             if (result != null && result) {
                 return true;
             }
