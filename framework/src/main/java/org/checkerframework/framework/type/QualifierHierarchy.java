@@ -405,6 +405,10 @@ public abstract class QualifierHierarchy {
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
+     * @param subType the type that might be a subtype
+     * @param superType the type that might be a supertype
+     * @param subAnno the type qualifier that might be a subtype
+     * @param superAnno the type qualifier that might be a supertype
      * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
      */
     public boolean isSubtype(
@@ -428,6 +432,10 @@ public abstract class QualifierHierarchy {
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
+     * @param subType the type that might be a subtype
+     * @param superType the type that might be a supertype
+     * @param subs the type qualifiers that might be a subtype
+     * @param supers the type qualifiers that might be a supertype
      * @return true iff an annotation in {@code supers} is a supertype of, or equal to, one in
      *     {@code subs}
      */
