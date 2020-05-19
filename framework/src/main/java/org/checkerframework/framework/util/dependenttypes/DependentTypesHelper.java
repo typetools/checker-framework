@@ -45,6 +45,7 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -915,38 +916,23 @@ public class DependentTypesHelper {
         if (atm == null) {
             return false;
         }
-        Boolean b = new ContainsDependentType().visit(atm);
+        Boolean b =
+                new SimpleAnnotatedTypeScanner<>(
+                                (AnnotatedTypeMirror type, Void aVoid) -> {
+                                    for (AnnotationMirror am : type.getAnnotations()) {
+                                        if (isExpressionAnno(am)) {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                },
+                                (Boolean r1, Boolean r2) ->
+                                        (r1 == null ? false : r1) || (r2 == null ? false : r2))
+                        .visit(atm);
         if (b == null) {
             return false;
         }
         return b;
-    }
-
-    /** Checks whether or not an annotated type contains an dependent type annotation. */
-    private class ContainsDependentType extends AnnotatedTypeScanner<Boolean, Void> {
-        @Override
-        protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
-            for (AnnotationMirror am : type.getAnnotations()) {
-                if (isExpressionAnno(am)) {
-                    return true;
-                }
-            }
-            return super.scan(type, aVoid);
-        }
-
-        @Override
-        protected Boolean reduce(Boolean r1, Boolean r2) {
-            if (r1 != null && r2 != null) {
-                // if either have an expression anno, return true;
-                return r1 || r2;
-            } else if (r1 != null) {
-                return r1;
-            } else if (r2 != null) {
-                return r2;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
