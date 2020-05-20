@@ -26,7 +26,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
         super(reduce);
         if (defaultAction == null) {
-            this.defaultAction = (t, p) -> null;
+            this.defaultAction = (t, p) -> defaultResult;
         } else {
             this.defaultAction = defaultAction;
         }
