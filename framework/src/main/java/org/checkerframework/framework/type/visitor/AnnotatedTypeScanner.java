@@ -16,9 +16,29 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * An {@link AnnotatedTypeVisitor} that visits all the child types of the type. Subclasses of this
- * class are used to implement some logical unit of work that varies depending on the kind of
- * AnnotatedTypeMirror.
+ * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
+ * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
+ * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
+ * regardless of the kind of type.
+ *
+ * <p>The default implementation of the visitAnnoatedTypeMirror methods will determine a result as
+ * follows:
+ *
+ * <ul>
+ *   <li>If the type being visited has no children, the {@link #defaultResult} is returned.
+ *   <li>If the type being visited has one child, the result of visiting the child type is returned.
+ *   <li>If the type being visited has more than one child, the result is determined by visiting
+ *       each child in turn, and then combining the result of each with the cumulative result so
+ *       far, as determined by the {@link #reduce(R, R)} method.
+ * </ul>
+ *
+ * The {@link #reduce(R, R)} method combines the results of visiting child types. It can be
+ * specified by passing an {@link Reduce} object to one of the constructors or by overriden the
+ * method directly. If it is not otherwise specified, the reduce returns the first result if it is
+ * not null; otherwise, the second result is returned.
+ *
+ * <p>If the function does not return a result, then the type parameter {@code R} should be {@link
+ * Void}.
  *
  * <p>If the unit of work does not return a result, then {@code R} should be instantiated to {@link
  * Void}. Override the desired visitXXX methods and usually {@code return super.vistXXX} is the last
@@ -29,20 +49,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * visitXXX methods and usually {@code reduce(super.visitArray(type, parameter), result)} is the
  * last statement to ensure that composite types are visited and the result are reduced correctly.
  *
- * <p>The default implementation of the visitXYZ methods will determine a result as follows:
- *
- * <ul>
- *   <li>If the node being visited has no children, the result will be null.
- *   <li>If the node being visited has one child, the result will be the result of calling scan on
- *       that child. The child may be a simple node or itself a list of nodes.
- *   <li>If the node being visited has more than one child, the result will be determined by calling
- *       scan each child in turn, and then combining the result of each scan after the first with
- *       the cumulative result so far, as determined by the reduce(R, R) method. Each child may be
- *       either a simple node or a list of nodes. The default behavior of the reduce method is such
- *       that the result of the visitXYZ method will be the result of the last child scanned.
- * </ul>
- *
- * Here is an example to count the number of TypeVariables in an AnnotatedTypeMirror
+ * <p>Here is an example to count the number of TypeVariables in an AnnotatedTypeMirror
  *
  * <pre><code>
  * class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void> {
