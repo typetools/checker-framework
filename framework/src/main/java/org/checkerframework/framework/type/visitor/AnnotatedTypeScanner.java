@@ -31,14 +31,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *   <li>If the type being visited has one child, the result of visiting the child type is returned.
  *   <li>If the type being visited has more than one child, the result is determined by visiting
  *       each child in turn, and then combining the result of each with the cumulative result so
- *       far, as determined by the {@link #reduce(R, R)} method.
+ *       far, as determined by the {@link #reduce} method.
  * </ul>
  *
- * The {@link #reduce(R, R)} method combines the results of visiting child types. It can be
- * specified by passing an {@link Reduce} object to one of the constructors or by overriden the
- * method directly. If it is not otherwise specified, the reduce returns the first result if it is
- * not null; otherwise, the second result is returned. If the default result is nonnull and reduce
- * never returns null, then both parameters passed to reduce will be nonnull.
+ * The {@link #reduce} method combines the results of visiting child types. It can be specified by
+ * passing an {@link Reduce} object to one of the constructors or by overriden the method directly.
+ * If it is not otherwise specified, the reduce returns the first result if it is not null;
+ * otherwise, the second result is returned. If the default result is nonnull and reduce never
+ * returns null, then both parameters passed to reduce will be nonnull.
  *
  * <p>When overridden a visitAnnotatedTypeMirror method, the returned expression should be {@code
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
@@ -47,8 +47,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * <p>Here is an example of a scanner that counts the number of {@link AnnotatedTypeVariable} in an
  * AnnotatedTypeMirror.
  *
- * <pre><code>
- * class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void> {
+ * <pre>
+ * {@code class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void>} {
  *    public CountTypeVariable() {
  *        super(Integer::sum, 0);
  *    }
@@ -58,7 +58,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *         return reduce(super.visitTypeVariable(type, p), 1);
  *     }
  * }
- * </code></pre>
+ * </pre>
  *
  * Below is an example of how to use {@code CountTypeVariable}
  *
