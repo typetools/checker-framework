@@ -837,10 +837,6 @@ public class DependentTypesHelper {
                     errors.addAll(checkForError(am));
                 }
             }
-            List<DependentTypesError> superList = super.scan(type, aVoid);
-            if (superList != null) {
-                errors.addAll(superList);
-            }
             return errors;
         }
 
