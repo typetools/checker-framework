@@ -23,7 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * argument of type {@link P}. If the function does not return any value, then {@code R} should be
  * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.
  *
- * <p>The default implementation of the visitAnnoatedTypeMirror methods will determine a result as
+ * <p>The default implementation of the visitAnnotatedTypeMirror methods will determine a result as
  * follows:
  *
  * <ul>
