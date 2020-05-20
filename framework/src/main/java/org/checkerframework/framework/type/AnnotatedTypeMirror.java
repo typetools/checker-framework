@@ -769,11 +769,11 @@ public abstract class AnnotatedTypeMirror {
     /** The implementation of the visitor for #containsUninferredTypeArguments */
     private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
             new SimpleAnnotatedTypeScanner<>(
-                    (AnnotatedTypeMirror type, Void aVoid) ->
+                    (type, p) ->
                             type.getKind() == TypeKind.WILDCARD
                                     && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
-                    (Boolean r1, Boolean r2) ->
-                            (r1 == null ? false : r1) || (r2 == null ? false : r2));
+                    Boolean::logicalOr,
+                    false);
 
     /**
      * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It

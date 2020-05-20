@@ -905,9 +905,9 @@ public class DependentTypesHelper {
         if (atm == null) {
             return false;
         }
-        Boolean b =
+        boolean b =
                 new SimpleAnnotatedTypeScanner<>(
-                                (AnnotatedTypeMirror type, Void aVoid) -> {
+                                (type, p) -> {
                                     for (AnnotationMirror am : type.getAnnotations()) {
                                         if (isExpressionAnno(am)) {
                                             return true;
@@ -915,12 +915,9 @@ public class DependentTypesHelper {
                                     }
                                     return false;
                                 },
-                                (Boolean r1, Boolean r2) ->
-                                        (r1 == null ? false : r1) || (r2 == null ? false : r2))
+                                Boolean::logicalOr,
+                                false)
                         .visit(atm);
-        if (b == null) {
-            return false;
-        }
         return b;
     }
 

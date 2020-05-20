@@ -100,7 +100,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
         this.completer =
                 new SimpleAnnotatedTypeScanner<>(
-                        (AnnotatedTypeMirror type, Void p) -> {
+                        (type, p) -> {
                             for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry :
                                     polyQuals.entrySet()) {
                                 AnnotationMirror top = pqentry.getValue();
@@ -120,8 +120,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
         this.replacer =
                 new SimpleAnnotatedTypeScanner<>(
-                        (AnnotatedTypeMirror type,
-                                AnnotationMirrorMap<AnnotationMirrorSet> map) -> {
+                        (type, map) -> {
                             replace(type, map);
                             return null;
                         });

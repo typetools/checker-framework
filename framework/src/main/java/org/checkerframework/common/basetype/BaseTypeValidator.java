@@ -9,6 +9,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +128,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy> scanner =
                 new SimpleAnnotatedTypeScanner<>(
-                        (atm, q) -> isTopLevelValidType(q, atm), DiagMessage::mergeLists);
+                        (atm, q) -> isTopLevelValidType(q, atm),
+                        DiagMessage::mergeLists,
+                        new ArrayList<>());
         return scanner.visit(type, qualifierHierarchy);
     }
 

@@ -11,8 +11,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * A simple implementation of AnnotatedTypeScanner. It is abstract; its purpose is to provide
- * default implementations of all methods.
+ * An {@link AnnotatedTypeScanner} that scans an {@link AnnotatedTypeMirror} and performs some
+ * {@link #defaultAction} on each type.
  */
 public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
 
@@ -23,8 +23,13 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
 
     protected final DefaultAction<R, P> defaultAction;
 
-    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
-        super(reduce);
+    public SimpleAnnotatedTypeScanner() {
+        this(null);
+    }
+
+    public SimpleAnnotatedTypeScanner(
+            DefaultAction<R, P> defaultAction, Reduce<R> reduce, R defaultResult) {
+        super(reduce, defaultResult);
         if (defaultAction == null) {
             this.defaultAction = (t, p) -> defaultResult;
         } else {
@@ -32,12 +37,12 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
         }
     }
 
-    public SimpleAnnotatedTypeScanner() {
-        this(null, null);
+    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
+        this(defaultAction, reduce, null);
     }
 
-    public SimpleAnnotatedTypeScanner(Reduce<R> reduce) {
-        this(null, reduce);
+    public SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
+        this(null, reduce, defaultResult);
     }
 
     public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {

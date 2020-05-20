@@ -2460,8 +2460,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                     return !verbose.equals(type.toString(true));
                                 }
                             },
-                            (Boolean r1, Boolean r2) ->
-                                    (r1 == null ? false : r1) || (r2 == null ? false : r2));
+                            Boolean::logicalOr,
+                            false);
 
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
@@ -2470,8 +2470,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         Map<String, String> simpleToVerbose = new HashMap<>();
         for (AnnotatedTypeMirror atm : atms) {
-            Boolean result = checkContainsSameToString.visit(atm, simpleToVerbose);
-            if (result != null && result) {
+            if (checkContainsSameToString.visit(atm, simpleToVerbose)) {
                 return true;
             }
         }
