@@ -14,18 +14,8 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
  */
 public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<@Nullable Integer, Void> {
 
-    /** Used to combine the hashcodes of component types or a type and its component types. */
-    @Override
-    protected @Nullable Integer reduce(@Nullable Integer hashcode1, @Nullable Integer hashcode2) {
-        if (hashcode1 == null) {
-            return hashcode2;
-        }
-
-        if (hashcode2 == null) {
-            return hashcode1;
-        }
-
-        return hashcode1 + hashcode2;
+    public HashcodeAtmVisitor() {
+        super(Integer::sum, 0);
     }
 
     /**
@@ -35,11 +25,11 @@ public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<@Nullable Int
      * @param type the type
      */
     @Override
-    protected @Nullable Integer defaultAction(AnnotatedTypeMirror type, Void v) {
+    protected Integer defaultAction(AnnotatedTypeMirror type, Void v) {
         // To differentiate between partially initialized type's (which may have null components)
         // and fully initialized types, null values are allowed
         if (type == null) {
-            return null;
+            return 0;
         }
 
         return type.getAnnotations().toString().hashCode() * 17
