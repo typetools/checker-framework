@@ -16,8 +16,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * An {@link AnnotatedTypeVisitor} that visits all the composite types in the type. Subclasses of
- * this class are used to implement some logical unit of work that varies depending on the kind of
+ * An {@link AnnotatedTypeVisitor} that visits all the child types of the type. Subclasses of this
+ * class are used to implement some logical unit of work that varies depending on the kind of
  * AnnotatedTypeMirror.
  *
  * <p>If the unit of work does not return a result, then {@code R} should be instantiated to {@link
@@ -94,7 +94,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
     /** The reduce function to use. */
     protected final Reduce<R> reduceFunction;
 
-    protected final R defaultResult;
+    protected R defaultResult;
 
     /**
      * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}

@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 
 /**
  * Computes the hashcode of an AnnotatedTypeMirror using the underlying type and primary annotations
@@ -11,20 +12,11 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  * @see org.checkerframework.framework.type.EqualityAtmComparer for more details.
  *     <p>This is used by AnnotatedTypeMirror.hashcode.
  */
-public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
-
-    /**
-     * Generates the hashcode of type and combines it with the hashcode of its component types (if
-     * any).
-     */
-    @Override
-    protected Integer scan(AnnotatedTypeMirror type, Void v) {
-        return reduce(super.scan(type, null), generateHashcode(type));
-    }
+public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<@Nullable Integer, Void> {
 
     /** Used to combine the hashcodes of component types or a type and its component types. */
     @Override
-    protected Integer reduce(Integer hashcode1, Integer hashcode2) {
+    protected @Nullable Integer reduce(@Nullable Integer hashcode1, @Nullable Integer hashcode2) {
         if (hashcode1 == null) {
             return hashcode2;
         }
@@ -42,7 +34,8 @@ public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
      *
      * @param type the type
      */
-    private Integer generateHashcode(AnnotatedTypeMirror type) {
+    @Override
+    protected @Nullable Integer defaultAction(AnnotatedTypeMirror type, Void v) {
         // To differentiate between partially initialized type's (which may have null components)
         // and fully initialized types, null values are allowed
         if (type == null) {
