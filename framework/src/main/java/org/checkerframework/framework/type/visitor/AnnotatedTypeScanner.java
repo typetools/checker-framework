@@ -16,9 +16,18 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * A TypeVisitor that visits all the child tree nodes. To visit types of a particular type, just
- * override the corresponding visitXYZ method. Inside your method, call super.visitXYZ to visit
- * descendant nodes.
+ * An {@link AnnotatedTypeVisitor} that visits all the composite types in the type. Subclasses of
+ * this class are used to implement some logical unit of work that varies depending on the kind of
+ * AnnotatedTypeMirror.
+ *
+ * <p>If the unit of work does not return a result, then {@code R} should be instantiated to {@link
+ * Void} Override the desired visitXXX methods and usually {@code return super.vistXXX} is the last
+ * statement to ensure that composite types are visited. If you do not want composite types to be
+ * visited, the just return {@code null}.
+ *
+ * <p>If the unit of work return a result, then Override {@link #reduce(R, R)} Override the desired
+ * visitXXX methods and usually {@code reduce(super.visitArray(type, parameter), result)} is the
+ * last statement to ensure that composite types are visited and the result are reduced correctly.
  *
  * <p>The default implementation of the visitXYZ methods will determine a result as follows:
  *
@@ -33,19 +42,26 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *       that the result of the visitXYZ method will be the result of the last child scanned.
  * </ul>
  *
- * Here is an example to count the parameter types number of nodes in a tree:
+ * Here is an example to count the number of TypeVariables in an AnnotatedTypeMirror
  *
  * <pre><code>
- * class CountTypeVariable extends TreeScanner {
+ * class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void> {
  *
  *    {@literal @}Override
- *     public Integer visitTypeVariable(ATypeVariable node, Void p) {
- *         return 1;
+ *     public Integer visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+ *         return reduce(super.visitTypeVariable(type, p), 1);
  *     }
  *
  *    {@literal @}Override
  *     public Integer reduce(Integer r1, Integer r2) {
+ *         // The default implementation of visit methods that do not have composite
+ *         // types return null, so reduce must expect null.
  *         return (r1 == null ? 0 : r1) + (r2 == null ? 0 : r2);
+ *     }
+ *
+ *     public static int count(AnnotatedTypeMirror type) {
+ *         Integer count = new CountTypeVariable().visit(type);
+ *         return count == null ? 0 : count;
  *     }
  * }
  * </code></pre>
@@ -56,23 +72,74 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *     that do not need an additional parameter.
  */
 public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
+
+    /**
+     * Reduces two results into a single result.
+     *
+     * @param <R> the result type
+     */
     @FunctionalInterface
     public interface Reduce<R> {
+
+        /**
+         * Returns the combination of two results.
+         *
+         * @param r1 the first result
+         * @param r2 the second result
+         * @return the combination of the two results
+         */
         R reduce(R r1, R r2);
     }
 
-    protected final Reduce<R> reduce;
+    /** The reduce function to use. */
+    protected final Reduce<R> reduceFunction;
 
-    public AnnotatedTypeScanner(@Nullable Reduce<R> reduce) {
-        if (reduce == null) {
-            this.reduce = (r1, r2) -> r1 == null ? r2 : r1;
+    protected final R defaultResult;
+
+    /**
+     * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}
+     * is null, then the reduce function returns the first result if it is nonnull; otherwise the
+     * second result is returned.
+     *
+     * @param reduceFunction function used to combine two results
+     * @param defaultResult the result to return if a visit type method is not overriden
+     */
+    public AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
+        if (reduceFunction == null) {
+            this.reduceFunction = (r1, r2) -> r1 == null ? r2 : r1;
         } else {
-            this.reduce = reduce;
+            this.reduceFunction = reduceFunction;
         }
+        this.defaultResult = defaultResult;
     }
 
+    /**
+     * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}
+     * is null, then the reduce function returns the first result if it is nonnull; otherwise the
+     * second result is returned. The default result is {@code null}
+     *
+     * @param reduceFunction function used to combine two results
+     */
+    public AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction) {
+        this(reduceFunction, null);
+    }
+
+    /**
+     * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
+     * is nonnull; otherwise the second result is returned.
+     *
+     * @param defaultResult the result to return if a visit type method is not overriden
+     */
+    public AnnotatedTypeScanner(R defaultResult) {
+        this(null, defaultResult);
+    }
+
+    /**
+     * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
+     * is nonnull; otherwise the second result is returned. The default result is {@code null}.
+     */
     public AnnotatedTypeScanner() {
-        this(null);
+        this(null, null);
     }
 
     // To prevent infinite loops
@@ -131,9 +198,9 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      */
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
         if (types == null) {
-            return null;
+            return defaultResult;
         }
-        R r = null;
+        R r = defaultResult;
         boolean first = true;
         for (AnnotatedTypeMirror type : types) {
             r = (first ? scan(type, p) : scanAndReduce(type, p, r));
@@ -167,23 +234,30 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * @return the combination of {@code r1} and {@code r2}
      */
     protected R reduce(R r1, R r2) {
-        return reduce.reduce(r1, r2);
+        return reduceFunction.reduce(r1, r2);
     }
 
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
-        if (!type.getTypeArguments().isEmpty()) {
-            // Only declared types with type arguments might be recursive.
-            if (visitedNodes.containsKey(type)) {
-                return visitedNodes.get(type);
-            }
-            visitedNodes.put(type, null);
+        boolean shouldStoreType = !type.getTypeArguments().isEmpty();
+        // Only declared types with type arguments might be recursive.
+        if (shouldStoreType && visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
         }
-        R r = null;
+        if (shouldStoreType) {
+            visitedNodes.put(type, defaultResult);
+        }
+        R r = defaultResult;
         if (type.getEnclosingType() != null) {
-            scan(type.getEnclosingType(), p);
+            r = scan(type.getEnclosingType(), p);
+            if (shouldStoreType) {
+                visitedNodes.put(type, r);
+            }
         }
         r = scanAndReduce(type.getTypeArguments(), p, r);
+        if (shouldStoreType) {
+            visitedNodes.put(type, r);
+        }
         return r;
     }
 
@@ -192,8 +266,9 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        visitedNodes.put(type, null);
+        visitedNodes.put(type, defaultResult);
         R r = scan(type.directSuperTypes(), p);
+        visitedNodes.put(type, r);
         return r;
     }
 
@@ -202,8 +277,9 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        visitedNodes.put(type, null);
+        visitedNodes.put(type, defaultResult);
         R r = scan(type.getAlternatives(), p);
+        visitedNodes.put(type, r);
         return r;
     }
 
@@ -230,7 +306,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        visitedNodes.put(type, null);
+        visitedNodes.put(type, defaultResult);
         R r = scan(type.getLowerBound(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getUpperBound(), p, r);
@@ -240,17 +316,17 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
 
     @Override
     public R visitNoType(AnnotatedNoType type, P p) {
-        return null;
+        return defaultResult;
     }
 
     @Override
     public R visitNull(AnnotatedNullType type, P p) {
-        return null;
+        return defaultResult;
     }
 
     @Override
     public R visitPrimitive(AnnotatedPrimitiveType type, P p) {
-        return null;
+        return defaultResult;
     }
 
     @Override
@@ -258,7 +334,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        visitedNodes.put(type, null);
+        visitedNodes.put(type, defaultResult);
         R r = scan(type.getExtendsBound(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getSuperBound(), p, r);
