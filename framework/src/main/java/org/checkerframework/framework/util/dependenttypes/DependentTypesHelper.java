@@ -827,10 +827,10 @@ public class DependentTypesHelper {
      * returned.
      */
     private class ExpressionErrorChecker
-            extends AnnotatedTypeScanner<List<DependentTypesError>, Void> {
+            extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
         @Override
-        protected List<DependentTypesError> scan(AnnotatedTypeMirror type, Void aVoid) {
+        protected List<DependentTypesError> defaultAction(AnnotatedTypeMirror type, Void aVoid) {
             List<DependentTypesError> errors = new ArrayList<>();
             for (AnnotationMirror am : type.getAnnotations()) {
                 if (isExpressionAnno(am)) {
@@ -852,10 +852,8 @@ public class DependentTypesHelper {
                 return r1;
             } else if (r1 != null) {
                 return r1;
-            } else if (r2 != null) {
-                return r2;
             } else {
-                return null;
+                return r2;
             }
         }
     }
