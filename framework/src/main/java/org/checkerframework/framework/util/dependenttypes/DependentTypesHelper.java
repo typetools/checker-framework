@@ -829,12 +829,12 @@ public class DependentTypesHelper {
     private class ExpressionErrorChecker
             extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
         private ExpressionErrorChecker() {
-            this.reduceFunction =
+            super(
                     (r1, r2) -> {
                         r1.addAll(r2);
                         return r1;
-                    };
-            this.defaultResult = new ArrayList<>();
+                    },
+                    new ArrayList<>());
         }
 
         @Override

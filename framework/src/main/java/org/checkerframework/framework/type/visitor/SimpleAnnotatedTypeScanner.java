@@ -27,6 +27,14 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
         this(null);
     }
 
+    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {
+        this(defaultAction, null, null);
+    }
+
+    public SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
+        this(null, reduce, defaultResult);
+    }
+
     public SimpleAnnotatedTypeScanner(
             DefaultAction<R, P> defaultAction, Reduce<R> reduce, R defaultResult) {
         super(reduce, defaultResult);
@@ -35,18 +43,6 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
         } else {
             this.defaultAction = defaultAction;
         }
-    }
-
-    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
-        this(defaultAction, reduce, null);
-    }
-
-    public SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
-        this(null, reduce, defaultResult);
-    }
-
-    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {
-        this(defaultAction, null);
     }
 
     /**
