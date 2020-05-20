@@ -19,7 +19,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
  * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
  * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
- * regardless of the kind of type.
+ * regardless of the kind of type. The function returns some value with type {@link R} and takes an
+ * argument of type {@link P}. If the function does not return any value, then {@code R} should be
+ * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.
  *
  * <p>The default implementation of the visitAnnoatedTypeMirror methods will determine a result as
  * follows:
@@ -35,21 +37,15 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * The {@link #reduce(R, R)} method combines the results of visiting child types. It can be
  * specified by passing an {@link Reduce} object to one of the constructors or by overriden the
  * method directly. If it is not otherwise specified, the reduce returns the first result if it is
- * not null; otherwise, the second result is returned.
+ * not null; otherwise, the second result is returned. If the default result is nonnull and reduce
+ * never returns null, then both parameters passed to reduce will be nonnull.
  *
- * <p>If the function does not return a result, then the type parameter {@code R} should be {@link
- * Void}.
+ * <p>When overridden a visitAnnotatedTypeMirror method, the returned expression should be {@code
+ * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
+ * scanned.
  *
- * <p>If the unit of work does not return a result, then {@code R} should be instantiated to {@link
- * Void}. Override the desired visitXXX methods and usually {@code return super.vistXXX} is the last
- * statement to ensure that composite types are visited. If you do not want composite types to be
- * visited, the just return {@code null}.
- *
- * <p>If the unit of work return a result, then Override {@link #reduce(R, R)} Override the desired
- * visitXXX methods and usually {@code reduce(super.visitArray(type, parameter), result)} is the
- * last statement to ensure that composite types are visited and the result are reduced correctly.
- *
- * <p>Here is an example to count the number of TypeVariables in an AnnotatedTypeMirror
+ * <p>Here is an example of a scanner that counts the number of {@link AnnotatedTypeVariable} in an
+ * AnnotatedTypeMirror.
  *
  * <pre><code>
  * class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void> {
@@ -61,6 +57,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *     public Integer visitTypeVariable(AnnotatedTypeVariable type, Void p) {
  *         return reduce(super.visitTypeVariable(type, p), 1);
  *     }
+ * }
+ * </code></pre>
+ *
+ * Below is an example of how to use {@code CountTypeVariable}
+ *
+ * <pre><code>
+ * void method(AnnotatedTypeMirror type) {
+ *     int count = new CountTypeVariable().visit(type);
  * }
  * </code></pre>
  *
@@ -230,8 +234,10 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * Combines {@code r1} and {@code r2} and returns the result. The default implementation returns
      * {@code r1} if it is not null; otherwise, it returns {@code r2}.
      *
-     * @param r1 a result of scan
-     * @param r2 a result of scan
+     * @param r1 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method
+     *     never returns null
+     * @param r2 a result of scan, nonnull if {@link #defaultResult} is nonnull and this method
+     *     never returns null
      * @return the combination of {@code r1} and {@code r2}
      */
     protected R reduce(R r1, R r2) {
