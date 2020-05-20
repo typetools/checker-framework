@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * &nbsp; @DefaultQualifier(NonNull.class)
- * &nbsp; @DefaultQualifier(value = Interned.class, locations = ALL_EXCEPT_LOCALS)
+ * &nbsp; @DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)
  * &nbsp; @DefaultQualifier(Tainted.class)
  * &nbsp; class MyClass { ... }
  * </pre>
