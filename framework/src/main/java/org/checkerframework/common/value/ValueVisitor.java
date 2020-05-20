@@ -124,7 +124,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
                     @Override
                     public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-                        // Skip type arguments.
+                        // Don't call super so that the type arguments are not visited.
                         if (type.getEnclosingType() != null) {
                             scan(type.getEnclosingType(), p);
                         }
