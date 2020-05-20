@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * AnnotatedTypeMirror.
  *
  * <p>If the unit of work does not return a result, then {@code R} should be instantiated to {@link
- * Void} Override the desired visitXXX methods and usually {@code return super.vistXXX} is the last
+ * Void}. Override the desired visitXXX methods and usually {@code return super.vistXXX} is the last
  * statement to ensure that composite types are visited. If you do not want composite types to be
  * visited, the just return {@code null}.
  *
@@ -46,22 +46,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * <pre><code>
  * class CountTypeVariable extends AnnotatedTypeScanner<Integer, Void> {
+ *    public CountTypeVariable() {
+ *        super(Integer::sum, 0);
+ *    }
  *
  *    {@literal @}Override
  *     public Integer visitTypeVariable(AnnotatedTypeVariable type, Void p) {
  *         return reduce(super.visitTypeVariable(type, p), 1);
- *     }
- *
- *    {@literal @}Override
- *     public Integer reduce(Integer r1, Integer r2) {
- *         // The default implementation of visit methods that do not have composite
- *         // types return null, so reduce must expect null.
- *         return (r1 == null ? 0 : r1) + (r2 == null ? 0 : r2);
- *     }
- *
- *     public static int count(AnnotatedTypeMirror type) {
- *         Integer count = new CountTypeVariable().visit(type);
- *         return count == null ? 0 : count;
  *     }
  * }
  * </code></pre>
@@ -92,8 +83,11 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
     }
 
     /** The reduce function to use. */
+    // This isn't final so that it can be set in subclass constructors. It's sometimes clear to
+    // assign to a field than pass an expression to the super constructor.
     protected Reduce<R> reduceFunction;
 
+    /** The result to return if no other result is provided. */
     protected R defaultResult;
 
     /**
@@ -196,7 +190,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * @param p the parameter to use
      * @return the reduced result of scanning all the types
      */
-    protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
+    protected R scan(@Nullable Iterable<? extends AnnotatedTypeMirror> types, P p) {
         if (types == null) {
             return defaultResult;
         }
@@ -239,8 +233,9 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
 
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
+        // Only declared types with type arguments might be recursive,
+        // so only store those.
         boolean shouldStoreType = !type.getTypeArguments().isEmpty();
-        // Only declared types with type arguments might be recursive.
         if (shouldStoreType && visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
