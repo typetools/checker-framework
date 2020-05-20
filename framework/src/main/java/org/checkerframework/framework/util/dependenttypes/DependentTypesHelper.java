@@ -828,6 +828,14 @@ public class DependentTypesHelper {
      */
     private class ExpressionErrorChecker
             extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
+        private ExpressionErrorChecker() {
+            this.reduceFunction =
+                    (r1, r2) -> {
+                        r1.addAll(r2);
+                        return r1;
+                    };
+            this.defaultResult = new ArrayList<>();
+        }
 
         @Override
         protected List<DependentTypesError> defaultAction(AnnotatedTypeMirror type, Void aVoid) {
@@ -838,19 +846,6 @@ public class DependentTypesHelper {
                 }
             }
             return errors;
-        }
-
-        @Override
-        protected List<DependentTypesError> reduce(
-                List<DependentTypesError> r1, List<DependentTypesError> r2) {
-            if (r1 != null && r2 != null) {
-                r1.addAll(r2);
-                return r1;
-            } else if (r1 != null) {
-                return r1;
-            } else {
-                return r2;
-            }
         }
     }
 

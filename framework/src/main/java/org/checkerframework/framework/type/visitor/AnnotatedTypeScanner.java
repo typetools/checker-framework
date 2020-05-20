@@ -92,7 +92,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
     }
 
     /** The reduce function to use. */
-    protected final Reduce<R> reduceFunction;
+    protected Reduce<R> reduceFunction;
 
     protected R defaultResult;
 

@@ -25,8 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -308,6 +306,7 @@ public class TypesIntoElements {
 
         TCConvert(ProcessingEnvironment processingEnv) {
             this.processingEnv = processingEnv;
+            this.defaultResult = List.nil();
         }
 
         @Override
@@ -317,15 +316,6 @@ public class TypesIntoElements {
             }
             List<TypeCompound> res = super.scan(type, pos);
             return res;
-        }
-
-        @Override
-        protected List<TypeCompound> scan(
-                Iterable<? extends AnnotatedTypeMirror> types, TypeAnnotationPosition pos) {
-            if (types == null) {
-                return List.nil();
-            }
-            return super.scan(types, pos);
         }
 
         @Override
@@ -520,16 +510,6 @@ public class TypesIntoElements {
             }
             visitedNodes.put(type, res);
             return res;
-        }
-
-        @Override
-        public List<TypeCompound> visitNoType(AnnotatedNoType type, TypeAnnotationPosition tapos) {
-            return List.nil();
-        }
-
-        @Override
-        public List<TypeCompound> visitNull(AnnotatedNullType type, TypeAnnotationPosition tapos) {
-            return List.nil();
         }
     }
 }
