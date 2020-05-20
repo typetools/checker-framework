@@ -305,8 +305,8 @@ public class TypesIntoElements {
         private final ProcessingEnvironment processingEnv;
 
         TCConvert(ProcessingEnvironment processingEnv) {
+            super(List.nil());
             this.processingEnv = processingEnv;
-            this.defaultResult = List.nil();
         }
 
         @Override

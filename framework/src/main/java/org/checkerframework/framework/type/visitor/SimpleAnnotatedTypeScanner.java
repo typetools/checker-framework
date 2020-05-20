@@ -12,7 +12,19 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 
 /**
  * An {@link AnnotatedTypeScanner} that scans an {@link AnnotatedTypeMirror} and performs some
- * {@link #defaultAction} on each type.
+ * {@link #defaultAction} on each type. The defaultAction can be passed to the constructor {@link
+ * #SimpleAnnotatedTypeScanner(DefaultAction)} or this class can be extended an {@link
+ * #defaultAction} can be overridden.
+ *
+ * <p>If the default action does not return a result, then {@code R} should be {@link Void}.
+ *
+ * <p>If the default action returns a result, the a {@link #reduce} function and a {@link
+ * #defaultResult} should be specified.
+ *
+ * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
+ *     return results.
+ * @param <P> the type of the additional parameter to this visitor's methods. Use Void for visitors
+ *     that do not need an additional parameter.
  */
 public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
 
@@ -23,7 +35,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
 
     protected final DefaultAction<R, P> defaultAction;
 
-    public SimpleAnnotatedTypeScanner() {
+    protected SimpleAnnotatedTypeScanner() {
         this(null);
     }
 
@@ -31,7 +43,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
         this(defaultAction, null, null);
     }
 
-    public SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
+    protected SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
         this(null, reduce, defaultResult);
     }
 

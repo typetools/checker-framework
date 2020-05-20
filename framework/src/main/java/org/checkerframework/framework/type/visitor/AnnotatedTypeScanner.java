@@ -94,12 +94,10 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
     }
 
     /** The reduce function to use. */
-    // This isn't final so that it can be set in subclass constructors. It's sometimes clear to
-    // assign to a field than pass an expression to the super constructor.
-    protected Reduce<R> reduceFunction;
+    protected final Reduce<R> reduceFunction;
 
     /** The result to return if no other result is provided. */
-    protected R defaultResult;
+    protected final R defaultResult;
 
     /**
      * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction}
