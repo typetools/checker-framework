@@ -1,6 +1,5 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 
 /**
@@ -12,14 +11,14 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
  * @see org.checkerframework.framework.type.EqualityAtmComparer for more details.
  *     <p>This is used by AnnotatedTypeMirror.hashcode.
  */
-public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<@Nullable Integer, Void> {
+public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void> {
 
     public HashcodeAtmVisitor() {
         super();
     }
 
     @Override
-    protected @Nullable Integer reduce(@Nullable Integer r1, @Nullable Integer r2) {
+    protected Integer reduce(Integer r1, Integer r2) {
         return r1 + r2;
     }
 
