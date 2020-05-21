@@ -9,6 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * An {@link AnnotatedTypeScanner} that scans an {@link AnnotatedTypeMirror} and performs some
@@ -16,10 +17,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * #SimpleAnnotatedTypeScanner(DefaultAction)} or this class can be extended an {@link
  * #defaultAction} can be overridden.
  *
- * <p>If the default action does not return a result, then {@code R} should be {@link Void}.
- *
- * <p>If the default action returns a result, the a {@link #reduce} function and a {@link
- * #defaultResult} should be specified.
+ * <p>If the default action does not return a result, then {@code R} should be {@link Void}. If the
+ * default action returns a result, then specify a {@link #reduce} function.
  *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
@@ -28,33 +27,59 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  */
 public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P> {
 
+    /**
+     * Represents an action to perform on every type.
+     *
+     * @param <R> the type of the result of the action
+     * @param <P> the type of the parameter of action
+     */
     @FunctionalInterface
     public interface DefaultAction<R, P> {
+
+        /**
+         * The action to perform on every type.
+         *
+         * @param type AnnotatedTypeMirror on which to perform some action
+         * @param p argument to pass to the action
+         * @return result of the action
+         */
         R defaultAction(AnnotatedTypeMirror type, P p);
     }
 
+    /** The action to perform on every type. */
     protected final DefaultAction<R, P> defaultAction;
 
-    protected SimpleAnnotatedTypeScanner() {
-        this(null);
-    }
-
+    /**
+     * Creates a scanner that performs {@code defaultAction} on every type.
+     *
+     * <p>Use this constructor if the type of result of the default action is {@link Void}.
+     *
+     * @param defaultAction action to perform on every type
+     */
     public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {
-        this(defaultAction, null, null);
+        this(defaultAction, null);
     }
 
-    protected SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
-        this(null, reduce, defaultResult);
+    /**
+     * Creates a scanner that performs {@code defaultAction} on every type and use {@code reduce} to
+     * combine the results.
+     *
+     * <p>Use this constructor if the default action returns a result.
+     *
+     * @param defaultAction action to perform on every type
+     * @param reduce function used to combine results
+     */
+    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
+        super(reduce);
+        this.defaultAction = defaultAction;
     }
 
-    public SimpleAnnotatedTypeScanner(
-            DefaultAction<R, P> defaultAction, Reduce<R> reduce, R defaultResult) {
-        super(reduce, defaultResult);
-        if (defaultAction == null) {
-            this.defaultAction = (t, p) -> defaultResult;
-        } else {
-            this.defaultAction = defaultAction;
-        }
+    /**
+     * Creates a scanner without specifing the default action. Subclasses may only use this
+     * constructor if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
+     */
+    protected SimpleAnnotatedTypeScanner() {
+        this(null, null);
     }
 
     /**
@@ -65,6 +90,12 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
      * @return a visitor-specified result
      */
     protected R defaultAction(AnnotatedTypeMirror type, P p) {
+        if (defaultAction == null) {
+            // The no argument constructor sets default action to null.
+            throw new BugInCF(
+                    "%s did not provide a default action.  Please override #defaultAction",
+                    this.getClass());
+        }
         return defaultAction.defaultAction(type, p);
     }
 

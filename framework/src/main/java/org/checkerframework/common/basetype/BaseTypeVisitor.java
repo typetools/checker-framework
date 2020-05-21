@@ -2460,8 +2460,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                     return !verbose.equals(type.toString(true));
                                 }
                             },
-                            Boolean::logicalOr,
-                            false);
+                            Boolean::logicalOr);
 
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings

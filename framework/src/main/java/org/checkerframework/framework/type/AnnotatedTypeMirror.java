@@ -772,8 +772,7 @@ public abstract class AnnotatedTypeMirror {
                     (type, p) ->
                             type.getKind() == TypeKind.WILDCARD
                                     && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
-                    Boolean::logicalOr,
-                    false);
+                    Boolean::logicalOr);
 
     /**
      * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It

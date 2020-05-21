@@ -44,6 +44,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
  * scanned.
  *
+ * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or to pass {@code
+ * null} as the last parameter, call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
+ * #reset()}.
+ *
  * <p>Here is an example of a scanner that counts the number of {@link AnnotatedTypeVariable} in an
  * AnnotatedTypeMirror.
  *

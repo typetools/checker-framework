@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<@Nullable Integer, Void> {
 
     public HashcodeAtmVisitor() {
-        super(Integer::sum, 0);
+        super(Integer::sum);
     }
 
     /**
