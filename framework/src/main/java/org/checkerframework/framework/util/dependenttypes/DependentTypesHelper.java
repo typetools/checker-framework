@@ -829,7 +829,13 @@ public class DependentTypesHelper {
     private class ExpressionErrorChecker
             extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
         private ExpressionErrorChecker() {
-            super();
+            super(
+                    (r1, r2) -> {
+                        List<DependentTypesError> newList = new ArrayList<>(r1);
+                        newList.addAll(r2);
+                        return newList;
+                    },
+                    Collections.emptyList());
         }
 
         @Override
@@ -841,13 +847,6 @@ public class DependentTypesHelper {
                 }
             }
             return errors;
-        }
-
-        @Override
-        protected List<DependentTypesError> reduce(
-                List<DependentTypesError> r1, List<DependentTypesError> r2) {
-            r1.addAll(r2);
-            return r1;
         }
     }
 
@@ -917,7 +916,8 @@ public class DependentTypesHelper {
                                     }
                                     return false;
                                 },
-                                Boolean::logicalOr)
+                                Boolean::logicalOr,
+                                false)
                         .visit(atm);
         return b;
     }

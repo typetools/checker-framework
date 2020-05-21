@@ -14,12 +14,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void> {
 
     public HashcodeAtmVisitor() {
-        super();
-    }
-
-    @Override
-    protected Integer reduce(Integer r1, Integer r2) {
-        return r1 + r2;
+        super(Integer::sum, 0);
     }
 
     /**

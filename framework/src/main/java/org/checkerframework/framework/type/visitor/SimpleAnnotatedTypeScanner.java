@@ -57,7 +57,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
      * @param defaultAction action to perform on every type
      */
     public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction) {
-        this(defaultAction, null);
+        this(defaultAction, null, null);
     }
 
     /**
@@ -68,9 +68,11 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
      *
      * @param defaultAction action to perform on every type
      * @param reduce function used to combine results
+     * @param defaultResult result to use by default
      */
-    public SimpleAnnotatedTypeScanner(DefaultAction<R, P> defaultAction, Reduce<R> reduce) {
-        super(reduce);
+    public SimpleAnnotatedTypeScanner(
+            DefaultAction<R, P> defaultAction, Reduce<R> reduce, R defaultResult) {
+        super(reduce, defaultResult);
         this.defaultAction = defaultAction;
     }
 
@@ -79,7 +81,18 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
      * constructor if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
      */
     protected SimpleAnnotatedTypeScanner() {
-        this(null, null);
+        this(null, null, null);
+    }
+
+    /**
+     * Creates a scanner without specifing the default action. Subclasses may only use this
+     * constructor if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
+     *
+     * @param reduce function used to combine results
+     * @param defaultResult result to use by default
+     */
+    protected SimpleAnnotatedTypeScanner(Reduce<R> reduce, R defaultResult) {
+        this(null, reduce, defaultResult);
     }
 
     /**
