@@ -101,20 +101,20 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.completer =
                 new SimpleAnnotatedTypeScanner<>(
                         (type, p) -> {
-                            for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry :
-                                    polyQuals.entrySet()) {
-                                AnnotationMirror top = pqentry.getValue();
-                                AnnotationMirror poly = pqentry.getKey();
-                                if (type.hasAnnotation(poly)) {
-                                    type.removeAnnotation(poly);
-                                    if (type.getKind() != TypeKind.TYPEVAR
-                                            && type.getKind() != TypeKind.WILDCARD) {
-                                        // Do not add qualifiers to type variables and wildcards
-                                        type.addAnnotation(
-                                                this.qualHierarchy.getBottomAnnotation(top));
-                                    }
-                                }
-                            }
+                            polyQuals.forEach(
+                                    (poly, top) -> {
+                                        if (type.hasAnnotation(poly)) {
+                                            type.removeAnnotation(poly);
+                                            if (type.getKind() != TypeKind.TYPEVAR
+                                                    && type.getKind() != TypeKind.WILDCARD) {
+                                                // Do not add qualifiers to type variables and
+                                                // wildcards
+                                                type.addAnnotation(
+                                                        this.qualHierarchy.getBottomAnnotation(
+                                                                top));
+                                            }
+                                        }
+                                    });
                             return null;
                         });
 
