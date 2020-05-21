@@ -402,6 +402,8 @@ public class TypeArgInferenceUtil {
      */
     private static class TypeVariableFinder
             extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
+
+        /** Create TypeVariableFinder. */
         protected TypeVariableFinder() {
             super(Boolean::logicalOr, false);
         }

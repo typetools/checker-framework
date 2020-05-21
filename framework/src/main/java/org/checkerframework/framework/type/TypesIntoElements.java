@@ -302,8 +302,14 @@ public class TypesIntoElements {
     private static class TCConvert
             extends AnnotatedTypeScanner<List<Attribute.TypeCompound>, TypeAnnotationPosition> {
 
+        /** ProcessEnvironment */
         private final ProcessingEnvironment processingEnv;
 
+        /**
+         * Creates a {@link TCConvert}.
+         *
+         * @param processingEnv ProcessEnvironment
+         */
         TCConvert(ProcessingEnvironment processingEnv) {
             super(List.nil());
             this.processingEnv = processingEnv;

@@ -828,6 +828,8 @@ public class DependentTypesHelper {
      */
     private class ExpressionErrorChecker
             extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
+
+        /** Create ExpressionErrorChecker. */
         private ExpressionErrorChecker() {
             super(
                     (r1, r2) -> {

@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
  */
 public class HashcodeAtmVisitor extends SimpleAnnotatedTypeScanner<Integer, Void> {
 
+    /** Creates a {@link HashcodeAtmVisitor}. */
     public HashcodeAtmVisitor() {
         super(Integer::sum, 0);
     }
