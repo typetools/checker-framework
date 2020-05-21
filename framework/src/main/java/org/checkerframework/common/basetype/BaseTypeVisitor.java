@@ -2466,6 +2466,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
      * are the same but their verbose toStrings differ.
+     *
+     * @param atms annotated type mirrors to compare
+     * @return true iff there are two annotated types (anywhere in any ATM) such that their
+     *     toStrings are the same but their verbose toStrings differ.
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         Map<String, String> simpleToVerbose = new HashMap<>();
