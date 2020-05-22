@@ -317,9 +317,8 @@ public class FlowExpressions {
                 }
                 break;
             case UNARY_PLUS:
-                LiteralTree un = (LiteralTree) (((JCUnary) receiverTree).getExpression());
-                receiver = new ValueLiteral(TreeUtils.typeOf(receiverTree), un.getValue());
-                break;
+                return internalReprOf(
+                        provider, ((JCUnary) receiverTree).getExpression(), allowNonDeterministic);
             default:
                 receiver = null;
         }
