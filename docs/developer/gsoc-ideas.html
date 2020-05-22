@@ -1303,8 +1303,9 @@ The <code>FlowExpressions.Receiver</code> class is about 1000 lines of code
 that represent an AST.  There is no need for the Checker Framework to
 define its own AST when the JavaParser AST already exists and is
 maintained.  In fact, <code>FlowExpressionParseUtil</code> uses JavaParser,
-but then needlessly converts a JavaParser <code>Expression</code> into
-a <code>FlowExpressions.Receiver</code>
+but needlessly converts a
+JavaParser <code>Expression</code> into
+a <code>FlowExpressions.Receiver</code>.
 </p>
 
 <p>
@@ -1340,10 +1341,19 @@ JavaParser lacks, such as <code>isUnassignableByOtherCode</code>.  As a
 first step before doing the tasks listed above, you may want to convert
 these methods from instance methods of <code>Receiver</code> into static
 methods in <code>FlowExpressions</code>, making <code>Receiver</code> more
-like a standard AST that can be replaced by JavaParser classes.  An
+like a standard AST that can be replaced by JavaParser classes.
+You also need to decide how to store the <code>type</code> field
+of <code>Receiver</code>, when <code>Receiver</code> is eliminated.
+An
 alternate design (or a partial step in the refactoring process) would be to
 retain the <code>Receiver</code> class, but make it a thin wrapper around
 JavaParser classes that do most of the real work.
+</p>
+
+<p>
+Another aspect of this project is
+fixing <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
+    issues that are labeled "JavaExpression".</a>
 </p>
 
 
