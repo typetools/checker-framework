@@ -157,7 +157,7 @@ allprojects {
 
                 // We want to link to Java 9 documentation of the compiler classes since we use Java 9
                 // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-                // apart of the main documentation of Java 8, javadoc links to the Java 9 versions.
+                // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
                 // TODO, this creates broken links to the com.sun.tools.javac package.
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
                 // This file is looked for by Javadoc.
