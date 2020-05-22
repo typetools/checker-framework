@@ -210,9 +210,9 @@ task delombok {
     inputs.files file(srcJava)
     outputs.dir file(srcDelomboked)
 
-    // this dependency is required to ensure the checker-qual jar exists,
+    // This dependency is required to ensure the checker-qual jar exists,
     // to prevent lombok from emitting "cannot find symbol" errors for @This
-    // annotations in the test input code
+    // annotations in the test input code.
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
