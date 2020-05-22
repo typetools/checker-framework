@@ -44,7 +44,7 @@ dependencies {
     testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
-task checkDependencies() {
+task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
     doLast {
         if (!file(afuJar).exists()) {
             if (!file(stubparserJar).exists()) {
