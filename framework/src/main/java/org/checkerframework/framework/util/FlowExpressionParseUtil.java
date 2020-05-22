@@ -169,7 +169,7 @@ public class FlowExpressionParseUtil {
 
     /**
      * A visitor class that converts a JavaParser {@link Expression} to a {@link
-     * FlowExpressionContext#receiver}.
+     * FlowExpressions.Receiver}.
      */
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
