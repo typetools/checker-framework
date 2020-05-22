@@ -574,7 +574,8 @@ public final class SceneToStubWriter {
     private static void writeImpl(ASceneWrapper scene, String filename) {
         // Sort by package name first so that output is deterministic and default package
         // comes first; within package sort by class name.
-        List<@BinaryName String> classes = new ArrayList<>(scene.getClasses().keySet());
+        @SuppressWarnings("signature") // scene-lib bytecode lacks signature annotations
+        List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
         Collections.sort(
                 classes,
                 new Comparator<@BinaryName String>() {
@@ -595,7 +596,7 @@ public final class SceneToStubWriter {
 
         // For each class
         for (String clazz : classes) {
-            if (isPrintable(clazz, scene.getClasses().get(clazz))) {
+            if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
                 if (!anyClassPrintable) {
                     try {
                         printWriter = new PrintWriter(new FileWriter(filename));
@@ -614,7 +615,7 @@ public final class SceneToStubWriter {
                     printWriter.println();
                     anyClassPrintable = true;
                 }
-                printClass(clazz, scene.getClasses().get(clazz), printWriter);
+                printClass(clazz, scene.getAScene().getClasses().get(clazz), printWriter);
             }
         }
         if (printWriter != null) {

@@ -1,6 +1,5 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,14 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
@@ -57,16 +54,6 @@ public class ASceneWrapper {
      */
     public ASceneWrapper(AScene theScene) {
         this.theScene = theScene;
-    }
-
-    /**
-     * Fetch the classes in this scene, represented as AClass objects.
-     *
-     * @return an immutable map from binary names to AClass objects
-     */
-    @SuppressWarnings("signature:return.type.incompatible") // unannotated ImmutableMap??
-    public Map<@BinaryName String, AClass> getClasses() {
-        return ImmutableMap.copyOf(theScene.classes);
     }
 
     /**
@@ -173,41 +160,18 @@ public class ASceneWrapper {
     }
 
     /**
-     * Obtain the given class, which can be further operated on to e.g. add information about a
-     * method. This method also updates the symbol information stored about the class using the
-     * given ClassSymbol, if it is non-null.
-     *
-     * <p>Results are interned.
-     *
-     * @param className the binary name of the class to be added to the scene
-     * @param classSymbol the element representing the class, used for adding symbol information to
-     *     the AClass returned by this method. If it is null, an AClass is looked up or created, but
-     *     the symbol information stored by the AClass is not updated.
-     * @return an AClass representing that class
-     */
-    public AClass vivifyClass(@BinaryName String className, @Nullable ClassSymbol classSymbol) {
-        AClass aClass = theScene.classes.getVivify(className);
-
-        // updateSymbolInformation must be called on both paths (cache hit and cache miss) because
-        // the
-        // second parameter could have been null when the first miss occurred.
-        // Different visit methods in CFAbstractTransfer call WPI in different ways.  Only some
-        // provide the symbol information, and the visit order isn't known ahead of time.
-        // Since it is not used until the end of WPI, it being unavailable during WPI is not a
-        // problem.
-        if (classSymbol != null) {
-            updateSymbolInformation(aClass, classSymbol);
-        }
-        return aClass;
-    }
-
-    /**
-     * Updates the symbol information stored in AClass for the given class.
+     * Updates the symbol information stored in AClass for the given class. May be called multiple
+     * times (and needs to be if the second parameter was null the first time it was called; only
+     * some calls provide the symbol inforamtion).
      *
      * @param aClass the class representation in which the symbol information is to be updated
-     * @param classSymbol the source of the symbol information
+     * @param classSymbol the source of the symbol information; may be null, in which case this
+     *     method does nothing
      */
-    private void updateSymbolInformation(AClass aClass, ClassSymbol classSymbol) {
+    public void updateSymbolInformation(AClass aClass, @Nullable ClassSymbol classSymbol) {
+        if (classSymbol == null) {
+            return;
+        }
         if (classSymbol.isEnum()) {
             List<VariableElement> enumConstants = new ArrayList<>();
             for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
@@ -215,10 +179,10 @@ public class ASceneWrapper {
                     enumConstants.add((VariableElement) e);
                 }
             }
-            // Either call setEnumConstants or verify that the existing value is consistent.
             if (!aClass.isEnum(classSymbol.getSimpleName().toString())) {
                 aClass.setEnumConstants(enumConstants);
             } else {
+                // Verify that the existing value is consistent.
                 List<VariableElement> existingEnumConstants = aClass.getEnumConstants();
                 if (existingEnumConstants.size() != enumConstants.size()) {
                     throw new BugInCF(
