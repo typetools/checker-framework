@@ -8,10 +8,10 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -318,7 +318,9 @@ public class FlowExpressions {
                 break;
             case UNARY_PLUS:
                 return internalReprOf(
-                        provider, ((JCUnary) receiverTree).getExpression(), allowNonDeterministic);
+                        provider,
+                        ((UnaryTree) receiverTree).getExpression(),
+                        allowNonDeterministic);
             default:
                 receiver = null;
         }
