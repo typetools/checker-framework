@@ -124,9 +124,9 @@ public class AnnotationBuilder {
      * <p>This method raises an user error if the annotation corresponding to the class could not be
      * loaded.
      *
-     * <p>Clients can use {@link #fromName} and check the result for null manually, if the error
-     * from this method is not desired. This method is provided as a convenience to create an
-     * AnnotationMirror from scratch in a checker's code.
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
+     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
+     * code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
