@@ -6,6 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.javacutil.SystemUtil;
 
+/**
+ * The main entry point to the Checker Framework, for use by Checker Framework developers.
+ *
+ * @see CheckerMain
+ */
 public class CheckerDevelMain extends CheckerMain {
 
     private static final String PROP_PREFIX = "CheckerDevelMain";
