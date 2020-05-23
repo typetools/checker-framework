@@ -25,7 +25,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -87,13 +89,20 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     public void initChecker() {
         // initialize all checkers and share options as necessary
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.initChecker();
             // We need to add all options that are activated for the set of subcheckers to
             // the individual checkers.
             checker.addOptions(super.getOptions());
             // Each checker should "support" all possible lint options - otherwise
             // subchecker A would complain about a lint option for subchecker B.
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
+
+            // initChecker validates the passed options, so call it after setting supported options
+            // and lints.
+            checker.initChecker();
+        }
+
+        if (!getSubcheckers().isEmpty()) {
+            messageStore = new TreeSet<>(this::compareCheckerMessages);
         }
 
         super.initChecker();
@@ -111,7 +120,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * list before getSubcheckers() is called, thereby ensuring that this list is non-empty only for
      * one checker.
      */
-    private List<BaseTypeChecker> subcheckers;
+    private @MonotonicNonNull List<BaseTypeChecker> subcheckers = null;
 
     /**
      * The list of subcheckers that are direct dependencies of this checker. This list will be
@@ -120,16 +129,17 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>Does not need to be initialized to null or an empty list because it is always initialized
      * via calls to instantiateSubcheckers.
      */
-    private List<BaseTypeChecker> immediateSubcheckers;
+    // Set to non-null when subcheckers is.
+    private @MonotonicNonNull List<BaseTypeChecker> immediateSubcheckers = null;
 
     /** Supported options for this checker. */
-    private Set<String> supportedOptions;
+    private @MonotonicNonNull Set<String> supportedOptions = null;
 
     /**
-     * TreePathCacher to share between instances. Initialized either in instantiateSubcheckers or in
-     * getTreePathCacher.
+     * TreePathCacher to share between instances. Initialized either in getTreePathCacher (which is
+     * also called from instantiateSubcheckers).
      */
-    private TreePathCacher treePathCacher;
+    private TreePathCacher treePathCacher = null;
 
     @Override
     protected void setRoot(CompilationUnitTree newRoot) {
@@ -155,7 +165,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Though each checker is run on a whole compilation unit before the next checker is run,
      * error and warning messages are collected and sorted based on the location in the source file
-     * before being printed. (See {@link #printMessage(Diagnostic.Kind, String, Tree,
+     * before being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
      * CompilationUnitTree)}.)
      *
      * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
@@ -203,14 +213,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         Class<?> checkerClass = this.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Visitor")
-                            .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?> result =
                     invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
                             new Class<?>[] {BaseTypeChecker.class},
                             new Object[] {this});
             if (result != null) {
@@ -221,6 +226,23 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         // If a visitor couldn't be loaded reflectively, return the default.
         return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    }
+
+    /**
+     * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
+     * {@code replacement}.
+     *
+     * @param checkerClass the checker class
+     * @param replacement the string to replace "Checker" or "Subchecker" by
+     * @return the name of the related class
+     */
+    @SuppressWarnings("signature") // string manipulation of @ClassGetName string
+    public static @ClassGetName String getRelatedClassName(
+            Class<?> checkerClass, String replacement) {
+        return checkerClass
+                .getName()
+                .replace("Checker", replacement)
+                .replace("Subchecker", replacement);
     }
 
     // **********************************************************************
@@ -255,7 +277,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *     not exist
      */
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
-    public static <T> T invokeConstructorFor(String name, Class<?>[] paramTypes, Object[] args) {
+    public static <T> T invokeConstructorFor(
+            @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.
         Class<T> cls = null;
@@ -281,10 +304,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     throw ue;
                 }
                 throw new BugInCF(
-                        "InvocationTargetException when invoking constructor for class "
-                                + name
-                                + "; Underlying cause: "
-                                + err,
+                        String.format(
+                                "InvocationTargetException when invoking constructor for class %s on args %s; Underlying cause: %s",
+                                name, Arrays.toString(args), err),
                         t);
             } else {
                 throw new BugInCF(
@@ -450,49 +472,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return treePathCacher;
     }
 
-    /**
-     * Compares two {@link CheckerMessage}s first by position at which the error will be printed,
-     * then by the order in which the checkers run, then by kind of message, and finally by the
-     * message string.
-     *
-     * @param o1 the first CheckerMessage
-     * @param o2 the second CheckerMessage
-     * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
-     *     than, equal to, or greater than the second.
-     */
-    private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
-        int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-        if (byPos != 0) {
-            return byPos;
-        }
-
-        // Sort by order in which the checkers are run. (All the subcheckers in
-        // followed by the checker.)
-        int o1Index = getSubcheckers().indexOf(o1.checker);
-        int o2Index = getSubcheckers().indexOf(o2.checker);
-        if (o1Index != o2Index) {
-            if (o1Index == -1) {
-                o1Index = getSubcheckers().size();
-            }
-            if (o2Index == -1) {
-                o2Index = getSubcheckers().size();
-            }
-            return Integer.compare(o1Index, o2Index);
-        }
-
-        int kind = o1.kind.compareTo(o2.kind);
-        if (kind != 0) {
-            return kind;
-        }
-
-        return o1.message.compareTo(o2.message);
-    }
-
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         if (!getSubcheckers().isEmpty()) {
-            messageStore = new TreeSet<>(this::compareCheckerMessages);
+            // TODO: I expected this to only be necessary if (parentChecker == null).
+            // However, the NestedAggregateChecker fails otherwise.
+            messageStore.clear();
         }
 
         // Errors (or other messages) issued via
@@ -524,7 +510,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         super.typeProcess(element, tree);
 
         if (!getSubcheckers().isEmpty()) {
-            printCollectedMessages(tree.getCompilationUnit());
+            printStoredMessages(tree.getCompilationUnit());
             // Update errsOnLastExit to reflect the errors issued.
             this.errsOnLastExit = log.nerrors;
         }
@@ -538,21 +524,25 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected void warnUnneededSuppressions() {
-        if (parentChecker != null || !hasOption("warnUnneededSuppressions")) {
+        if (parentChecker != null) {
+            return;
+        }
+
+        if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
         Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> checkerKeys = new HashSet<>(getSuppressWarningsKeys());
-        Set<String> errorKeys = new HashSet<>(messages.stringPropertyNames());
+        Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
             elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
             subChecker.elementsWithSuppressedWarnings.clear();
             checkerKeys.addAll(subChecker.getSuppressWarningsKeys());
-            errorKeys.addAll(subChecker.messages.stringPropertyNames());
+            errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        warnUnneedSuppressions(elementsSuppress, checkerKeys, errorKeys);
+        warnUnneededSuppressions(elementsSuppress, checkerKeys, errorKeys);
 
         getVisitor().treesWithSuppressWarnings.clear();
     }
@@ -563,7 +553,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * unit. If this checker has no subcheckers and is not a subchecker for any other checker, then
      * messageStore is null and messages will be printed as they are issued by this checker.
      */
-    private TreeSet<CheckerMessage> messageStore;
+    private TreeSet<CheckerMessage> messageStore = null;
 
     /**
      * If this is a compound checker or a subchecker of a compound checker, then the message is
@@ -572,11 +562,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>Otherwise, it prints the message.
      */
     @Override
-    protected void printMessage(
+    protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
         assert this.currentRoot == root;
         if (messageStore == null) {
-            super.printMessage(kind, message, source, root);
+            super.printOrStoreMessage(kind, message, source, root);
         } else {
             CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this);
             messageStore.add(checkerMessage);
@@ -585,15 +575,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Prints error messages for this checker and all subcheckers such that the errors are ordered
-     * by line and column number and then by checker. (See checkerMessageComparator for more precise
-     * order.)
+     * by line and column number and then by checker. (See {@link #compareCheckerMessages} for more
+     * precise order.)
      *
      * @param unit current compilation unit
      */
-    private void printCollectedMessages(CompilationUnitTree unit) {
+    private void printStoredMessages(CompilationUnitTree unit) {
         if (messageStore != null) {
             for (CheckerMessage msg : messageStore) {
-                super.printMessage(msg.kind, msg.message, msg.source, unit);
+                super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit);
             }
         }
     }
@@ -628,17 +618,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             }
 
             CheckerMessage that = (CheckerMessage) o;
-
-            if (kind != that.kind) {
-                return false;
-            }
-            if (!message.equals(that.message)) {
-                return false;
-            }
-            if (source != that.source) {
-                return false;
-            }
-            return checker == that.checker;
+            return this.kind == that.kind
+                    && this.message.equals(that.message)
+                    && this.source == that.source
+                    && this.checker == that.checker;
         }
 
         @Override
@@ -659,6 +642,54 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     + ", source="
                     + source
                     + '}';
+        }
+    }
+
+    /**
+     * Compares two {@link CheckerMessage}s. Compares first by position at which the error will be
+     * printed, then by kind of message, then by the message string, and finally by the order in
+     * which the checkers run.
+     *
+     * @param o1 the first CheckerMessage
+     * @param o2 the second CheckerMessage
+     * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
+     *     than, equal to, or greater than the second.
+     */
+    private int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
+        int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
+        if (byPos != 0) {
+            return byPos;
+        }
+
+        int kind = o1.kind.compareTo(o2.kind);
+        if (kind != 0) {
+            return kind;
+        }
+
+        int msgcmp = o1.message.compareTo(o2.message);
+        if (msgcmp == 0) {
+            // If the two messages are identical so far, it doesn't matter
+            // from which checker they came.
+            return 0;
+        }
+
+        // Sort by order in which the checkers are run. (All the subcheckers,
+        // followed by the checker.)
+        List<BaseTypeChecker> subcheckers = BaseTypeChecker.this.getSubcheckers();
+        int o1Index = subcheckers.indexOf(o1.checker);
+        int o2Index = subcheckers.indexOf(o2.checker);
+        if (o1Index == -1) {
+            o1Index = subcheckers.size();
+        }
+        if (o2Index == -1) {
+            o2Index = subcheckers.size();
+        }
+        int checkercmp = Integer.compare(o1Index, o2Index);
+        if (checkercmp == 0) {
+            // If the two messages are from the same checker, sort by message.
+            return msgcmp;
+        } else {
+            return checkercmp;
         }
     }
 

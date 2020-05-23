@@ -72,7 +72,8 @@ public class NonNullMapValue {
         value = myMap.containsKey(key) ? myMap.get(key) : "hello";
     }
 
-    public static <T> void print(Map<T, List<T>> graph, PrintStream ps, int indent) {
+    public static <T extends @NonNull Object> void print(
+            Map<T, List<T>> graph, PrintStream ps, int indent) {
         for (T node : graph.keySet()) {
             for (T child : graph.get(node)) {
                 ps.printf("  %s%n", child);
@@ -84,12 +85,12 @@ public class NonNullMapValue {
         }
     }
 
-    public static <T> void testAssertFlow(Map<T, List<T>> preds, T node) {
+    public static <T extends @NonNull Object> void testAssertFlow(Map<T, List<T>> preds, T node) {
         assert preds.containsKey(node);
         for (T pred : preds.get(node)) {}
     }
 
-    public static <T> void testContainsKey1(Map<T, List<T>> dom, T pred) {
+    public static <T extends @NonNull Object> void testContainsKey1(Map<T, List<T>> dom, T pred) {
         assert dom.containsKey(pred);
         // Both of the next two lines should type-check.  The second one won't
         // unless the checker knows that pred is a key in the map.
@@ -97,7 +98,7 @@ public class NonNullMapValue {
         @NonNull List<T> dom_of_pred2 = dom.get(pred);
     }
 
-    public static <T> void testContainsKey2(Map<T, List<T>> dom, T pred) {
+    public static <T extends @NonNull Object> void testContainsKey2(Map<T, List<T>> dom, T pred) {
         if (!dom.containsKey(pred)) {
             throw new Error();
         }

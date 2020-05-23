@@ -46,7 +46,8 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
         super(analysis, annotations, underlyingType);
-        AnnotationMirror keyfor = AnnotationUtils.getAnnotationByClass(annotations, KeyFor.class);
+        AnnotationMirror keyfor =
+                analysis.getTypeFactory().getAnnotationByClass(annotations, KeyFor.class);
         if (keyfor != null
                 && (underlyingType.getKind() == TypeKind.TYPEVAR
                         || underlyingType.getKind() == TypeKind.WILDCARD)) {

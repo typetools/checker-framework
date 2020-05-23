@@ -12,7 +12,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SuppressWarnings("checkstyle:typename")
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
@@ -22,6 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 // If you want an alias for "m", e.g. "Meter", simply create that
 // annotation and add this meta-annotation:
 // @UnitsMultiple(quantity=m.class, prefix=Prefix.one)
+@SuppressWarnings("checkstyle:typename")
 public @interface m {
     Prefix value() default Prefix.one;
 }

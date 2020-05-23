@@ -35,7 +35,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.qual.JavaExpression;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -53,7 +52,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -706,14 +705,13 @@ public class DependentTypesHelper {
         if (errors.isEmpty()) {
             return;
         }
-        StringJoiner errorsFormatted = new StringJoiner("\n");
+        StringJoiner errorsFormatted = new StringJoiner(System.lineSeparator());
         for (DependentTypesError dte : errors) {
             errorsFormatted.add(dte.format());
         }
         SourceChecker checker = factory.getContext().getChecker();
-        checker.report(
-                Result.failure("expression.unparsable.type.invalid", errorsFormatted.toString()),
-                errorTree);
+        checker.reportError(
+                errorTree, "expression.unparsable.type.invalid", errorsFormatted.toString());
     }
 
     /**
@@ -750,8 +748,8 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.join("\n", errors);
-        checker.report(Result.failure("flowexpr.parse.error", error), errorTree);
+        String error = SystemUtil.joinLines(errors);
+        checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 
     /**
@@ -805,9 +803,16 @@ public class DependentTypesHelper {
         }
     }
 
+    /**
+     * Returns true if {@code am} is an expression annotation, that is an annotation whose value is
+     * a Java expression.
+     *
+     * @param am an annotation
+     * @return true if {@code am} is an expression annotation
+     */
     private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return true;
             }
         }
@@ -954,7 +959,7 @@ public class DependentTypesHelper {
      */
     private List<String> getListOfExpressionElements(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : annoToElements.keySet()) {
-            if (AnnotationUtils.areSameByClass(am, clazz)) {
+            if (factory.areSameByClass(am, clazz)) {
                 return annoToElements.get(clazz);
             }
         }

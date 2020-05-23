@@ -2,7 +2,8 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-# To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
+# To regenerate this list, run:
+# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
 manual-style.tex \
@@ -23,8 +24,10 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 signedness-checker.tex \
-constant-value-checker.tex \
 aliasing-checker.tex \
+purity-checker.tex \
+constant-value-checker.tex \
+returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -38,7 +41,8 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex
+troubleshooting.tex \
+contributors.tex
 
 all: manual.pdf manual.html
 
@@ -46,12 +50,12 @@ all: manual.pdf manual.html
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: bib-update figures-all check-labels
+manual.pdf: ${TEX_FILES} bib-update figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
-	hevea -fix -exec xxdate.exe manual.tex
+	hevea -fix svg.hva -exec xxdate.exe manual.tex
 # I'm not sure why this is necessary; "hevea -fix" should run it automatically.
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
 	imagen manual
@@ -66,10 +70,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
+../../checker/bin-devel/.plume-scripts:
+	cd ../.. && ./gradlew getPlumeScripts
+
 .PHONY: contributors.tex
-# The `git-authors` script is in https://github.com/plume-lib/plume-scripts
-contributors.tex:
-	git-authors --latex --punctuation > contributors.tex
+contributors.tex: ../../checker/bin-devel/.plume-scripts
+	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -87,7 +93,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
-	git clone https://github.com/mernst/plume-bib.git bib
+	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib || git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib)
 .PHONY: bib-update
 bib-update: bib
 # Even if this command fails, it does not terminate the make job.

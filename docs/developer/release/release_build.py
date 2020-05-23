@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 """
 release_build.py
@@ -169,17 +169,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     update_project_dev_website("annotation-file-utilities", version)
 
 def build_and_locally_deploy_maven(version):
-    protocol_length = len("file://")
-    maven_dev_repo_without_protocol = MAVEN_DEV_REPO[protocol_length:]
-
-    execute("mkdir -p " + maven_dev_repo_without_protocol)
-
-    # Deploy jars to Maven Central repo
-    mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
-    mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
-    mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
-
-    return
+    execute("./gradlew deployArtifactsToLocalRepo", working_dir=CHECKER_FRAMEWORK)
 
 def build_checker_framework_release(version, old_cf_version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
     """Build the release files for the Checker Framework project, including the

@@ -24,12 +24,17 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
@@ -53,21 +58,29 @@ import org.checkerframework.javacutil.UserError;
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
-    // For issuing errors to the user
-    private final BaseTypeChecker checker;
+    /** For issuing errors to the user */
+    protected final BaseTypeChecker checker;
 
     // For loading from a source package directory
-    private final String packageName;
+    /** The package name. */
+    private final @DotSeparatedIdentifiers String packageName;
+    /** The package name, with periods replaced by slashes. */
     private final String packageNameWithSlashes;
-    private final List<String> fullyQualifiedPackageNameSegments;
-    private static final String QUAL_PACKAGE_SUFFIX = ".qual";
+    /** The atomic package names (the package name split at dots). */
+    private final List<@Identifier String> fullyQualifiedPackageNameSegments;
+    /** The name of a Checker's qualifier package. */
+    private static final String QUAL_PACKAGE = "qual";
 
     // For loading from a Jar file
+    /** The suffix for a .jar file. */
     private static final String JAR_SUFFIX = ".jar";
+    /** The suffix for a .class file. */
     private static final String CLASS_SUFFIX = ".class";
 
     // Constants
+    /** The package separator. */
     private static final char DOT = '.';
+    /** The path separator, in .jar files, binary names, etc. */
     private static final char SLASH = '/';
 
     /**
@@ -95,6 +108,7 @@ public class AnnotationClassLoader {
      *
      * @param checker a {@link BaseTypeChecker} or its subclass
      */
+    @SuppressWarnings("signature") // TODO: reduce use of string manipulation
     public AnnotationClassLoader(final BaseTypeChecker checker) {
         this.checker = checker;
         processingEnv = checker.getProcessingEnvironment();
@@ -104,8 +118,8 @@ public class AnnotationClassLoader {
         Package checkerPackage = checker.getClass().getPackage();
         packageName =
                 checkerPackage != null && !checkerPackage.getName().isEmpty()
-                        ? checkerPackage.getName() + QUAL_PACKAGE_SUFFIX
-                        : QUAL_PACKAGE_SUFFIX.substring(1);
+                        ? checkerPackage.getName() + DOT + QUAL_PACKAGE
+                        : QUAL_PACKAGE;
 
         // the package name with dots replaced by slashes will be used to scan
         // file directories
@@ -125,23 +139,31 @@ public class AnnotationClassLoader {
 
         classLoader = getClassLoader();
 
+        URL localResourceURL;
         if (classLoader != null) {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = classLoader.getResource(packageNameWithSlashes);
+            localResourceURL = classLoader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
             // resourceURL =
             // Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
         } else {
+            // Signal failure to find resource
+            localResourceURL = null;
+        }
+
+        if (localResourceURL == null) {
             // if the application classloader is not accessible (which means the
             // checker class was loaded using the bootstrap classloader)
+            // or if the classloader didn't find the package,
             // then scan the classpaths to find a jar or directory which
             // contains the qual package and set the resource URL to that jar or
             // qual directory
-            resourceURL = getURLFromClasspaths();
+            localResourceURL = getURLFromClasspaths();
         }
+        resourceURL = localResourceURL;
 
         supportedBundledAnnotationClasses = new LinkedHashSet<>();
 
@@ -259,12 +281,12 @@ public class AnnotationClassLoader {
         while (jarEntries.hasMoreElements()) {
             JarEntry je = jarEntries.nextElement();
 
-            // each entry is the fully qualified path and file name to a
-            // particular artifact in the jar file (eg a class file)
-            // if the jar has the package, one of the entry's name will begin
-            // with the package name in slash notation
+            // Each entry is the fully qualified path and file name to a
+            // particular artifact in the jar file (eg a class file).
+            // If the jar has the package, one of the entry's name will begin
+            // with the package name in slash notation.
             String entryName = je.getName();
-            if (entryName.startsWith(packageNameWithSlashes)) {
+            if (entryName.startsWith(packageNameWithSlashes + SLASH)) {
                 return true;
             }
         }
@@ -474,7 +496,7 @@ public class AnnotationClassLoader {
         }
 
         // retrieve the fully qualified class names of the annotations
-        Set<String> annotationNames;
+        Set<@BinaryName String> annotationNames;
 
         // see whether the resource URL has a protocol of jar or file
         if (resourceURL.getProtocol().contentEquals("jar")) {
@@ -517,8 +539,7 @@ public class AnnotationClassLoader {
 
             // open up the directory
             File packageDir = new File(resourceURL.getFile());
-            annotationNames =
-                    getAnnotationNamesFromDirectory(packageName + DOT, packageDir, packageDir);
+            annotationNames = getAnnotationNamesFromDirectory(packageName, packageDir, packageDir);
         } else {
             // We do not support a resource URL with any other protocols, so create an empty set.
             annotationNames = Collections.emptySet();
@@ -547,8 +568,8 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
-    private final Set<String> getBundledAnnotationNamesFromJar(final JarFile jar) {
-        Set<String> annos = new LinkedHashSet<>();
+    private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
+        Set<@BinaryName String> annos = new LinkedHashSet<>();
 
         // get an enumeration iterator for all the content entries in the jar
         // file
@@ -562,13 +583,10 @@ public class AnnotationClassLoader {
                 continue;
             }
 
-            // get rid of the .class suffix
-            String className = je.getName().substring(0, je.getName().lastIndexOf('.'));
-            // convert path notation to class notation
-            className = className.replace(SLASH, DOT);
+            String className = Signatures.classfilenameToBinaryName(je.getName());
 
             // filter for qual package
-            if (className.startsWith(packageName)) {
+            if (className.startsWith(packageName + DOT)) {
                 // add to set
                 annos.add(className);
             }
@@ -589,7 +607,7 @@ public class AnnotationClassLoader {
      *     by {@link #isSupportedAnnotationClass(Class)}
      */
     public final @Nullable Class<? extends Annotation> loadExternalAnnotationClass(
-            final String annoName) {
+            final @BinaryName String annoName) {
         return loadAnnotationClass(annoName, true);
     }
 
@@ -603,7 +621,8 @@ public class AnnotationClassLoader {
     public final Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(
             final String dirName) {
         File rootDirectory = new File(dirName);
-        Set<String> annoNames = getAnnotationNamesFromDirectory("", rootDirectory, rootDirectory);
+        Set<@BinaryName String> annoNames =
+                getAnnotationNamesFromDirectory(null, rootDirectory, rootDirectory);
         return loadAnnotationClasses(annoNames);
     }
 
@@ -611,18 +630,21 @@ public class AnnotationClassLoader {
      * Retrieves all annotation names from the current directory, and recursively descends and
      * retrieves annotation names from sub-directories.
      *
-     * @param packageName a string storing the name of the package that contains the qual package
+     * @param packageName the name of the package that contains the qual package, or null
      * @param rootDirectory a {@link File} object representing the root directory of a set of
      *     annotations, which is subtracted from class names to retrieve each class's fully
      *     qualified class names
      * @param currentDirectory a {@link File} object representing the current sub-directory of the
      *     root directory
-     * @return a set of strings where each string is the fully qualified class name of an annotation
-     *     in the root directory or its sub-directories
+     * @return a set fully qualified annotation class name, for annotations in the root directory or
+     *     its sub-directories
      */
-    private final Set<String> getAnnotationNamesFromDirectory(
-            final String packageName, final File rootDirectory, final File currentDirectory) {
-        Set<String> results = new LinkedHashSet<>();
+    @SuppressWarnings("signature") // TODO: reduce use of string manipulation
+    private final Set<@BinaryName String> getAnnotationNamesFromDirectory(
+            final @Nullable @DotSeparatedIdentifiers String packageName,
+            final File rootDirectory,
+            final File currentDirectory) {
+        Set<@BinaryName String> results = new LinkedHashSet<>();
 
         // Full path to root directory
         String rootPath = rootDirectory.getAbsolutePath();
@@ -639,6 +661,8 @@ public class AnnotationClassLoader {
                 });
         for (File file : directoryContents) {
             if (file.isFile()) {
+                // TODO: simplify all this string manipulation.
+
                 // Full file name, including path to file
                 String fullFileName = file.getAbsolutePath();
                 // Simple file name
@@ -650,22 +674,23 @@ public class AnnotationClassLoader {
                 String filePath =
                         fullFileName.substring(0, fullFileName.lastIndexOf(File.separator));
                 // Package name beginning with "qual"
-                String qualPackageName = "";
+                String qualPackage = null;
                 if (!filePath.equals(rootPath)) {
-                    qualPackageName =
+                    qualPackage =
                             filePath.substring(rootPath.length() + 1, filePath.length())
-                                            .replace(SLASH, DOT)
-                                    + DOT;
+                                    .replace(SLASH, DOT);
                 }
-                // Annotation name, which is the same as the file name but with
-                // file extension removed
-                String annotationName = fileName;
+                // Simple annotation name, which is the same as the file name (without directory)
+                // but with file extension removed
+                @BinaryName String annotationName = fileName;
                 if (fileName.lastIndexOf(DOT) != -1) {
                     annotationName = fileName.substring(0, fileName.lastIndexOf(DOT));
                 }
 
                 // Fully qualified annotation class name
-                String fullyQualifiedAnnoName = packageName + qualPackageName + annotationName;
+                @BinaryName String fullyQualifiedAnnoName =
+                        Signatures.addPackage(
+                                packageName, Signatures.addPackage(qualPackage, annotationName));
 
                 if (fileName.endsWith(CLASS_SUFFIX)) {
                     // add the fully qualified annotation class name to the set
@@ -694,7 +719,7 @@ public class AnnotationClassLoader {
      *     annotation is not supported by a checker, null is returned.
      */
     protected final @Nullable Class<? extends Annotation> loadAnnotationClass(
-            final String fullyQualifiedClassName, boolean issueError) {
+            final @ClassGetName String fullyQualifiedClassName, boolean issueError) {
 
         // load the class
         Class<?> cls = null;
@@ -760,7 +785,7 @@ public class AnnotationClassLoader {
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final @Nullable Set<String> fullyQualifiedAnnoNames) {
+            final @Nullable Set<@BinaryName String> fullyQualifiedAnnoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
         if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {

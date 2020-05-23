@@ -69,7 +69,10 @@ public abstract class QualifierHierarchy {
      * Returns all type qualifiers in this type qualifier hierarchy.
      *
      * @return the fully qualified name represented in this hierarchy
+     * @deprecated use {@link AnnotatedTypeFactory#getSupportedTypeQualifierNames()} or {@link
+     *     AnnotatedTypeFactory#getSupportedTypeQualifiers()} instead
      */
+    @Deprecated
     public abstract Set<? extends AnnotationMirror> getTypeQualifiers();
 
     // **********************************************************************
@@ -85,8 +88,8 @@ public abstract class QualifierHierarchy {
     public abstract boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs);
 
     /**
-     * Tests whether there is any annotation in lhs that is a super qualifier of some annotation in
-     * rhs. lhs and rhs contain only the annotations, not the Java type.
+     * Tests whether there is any annotation in lhs that is a super qualifier of, or equal to, some
+     * annotation in rhs. lhs and rhs contain only the annotations, not the Java type.
      *
      * @return true iff an annotation in lhs is a super of one in rhs
      */
@@ -177,14 +180,7 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> leastUpperBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
-        if (annos1.size() != annos2.size()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
-        }
+        assertSameSize(annos1, annos2);
         if (annos1.isEmpty()) {
             throw new BugInCF(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
@@ -200,14 +196,7 @@ public abstract class QualifierHierarchy {
             }
         }
 
-        assert result.size() == annos1.size()
-                : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations.\n"
-                        + "    Set 1: "
-                        + annos1
-                        + " Set 2: "
-                        + annos2
-                        + " LUB: "
-                        + result;
+        assertSameSize(result, annos1);
 
         return result;
     }
@@ -227,14 +216,7 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> greatestLowerBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
-        if (annos1.size() != annos2.size()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes.\n"
-                            + "    Set 1: "
-                            + annos1
-                            + " Set 2: "
-                            + annos2);
-        }
+        assertSameSize(annos1, annos2);
         if (annos1.isEmpty()) {
             throw new BugInCF(
                     "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
@@ -250,41 +232,37 @@ public abstract class QualifierHierarchy {
             }
         }
 
-        assert result.size() == annos1.size()
-                : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations.\n"
-                        + "    Set 1: "
-                        + annos1
-                        + " Set 2: "
-                        + annos2
-                        + " GLB: "
-                        + result;
+        assertSameSize(annos1, annos2, result);
 
         return result;
     }
 
     /**
-     * Tests whether {@code subAnno} is a sub-qualifier of {@code superAnno}, according to the type
-     * qualifier hierarchy. This checks only the qualifiers, not the Java type.
-     *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
-     *
-     * @return true iff {@code subAnno} is a sub qualifier of {@code superAnno}
-     */
-    public abstract boolean isSubtypeTypeVariable(
-            AnnotationMirror subAnno, AnnotationMirror superAnno);
-
-    /**
-     * Tests whether there is any annotation in superAnnos that is a super qualifier of some
-     * annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the Java
+     * Tests whether {@code subAnno} is a sub-qualifier of, or equal to, {@code superAnno},
+     * according to the type qualifier hierarchy. This checks only the qualifiers, not the Java
      * type.
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
      * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
      * annotation).
      *
-     * @return true iff an annotation in superAnnos is a super of one in subAnnos
+     * @param subAnno a qualifier that might be a subtype
+     * @param superAnno a qualifier that might be a subtype
+     * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
+     */
+    public abstract boolean isSubtypeTypeVariable(
+            AnnotationMirror subAnno, AnnotationMirror superAnno);
+
+    /**
+     * Tests whether there is any annotation in superAnnos that is a super qualifier of or equal to
+     * some annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the
+     * Java type.
+     *
+     * <p>This method works even if the underlying Java type is a type variable. In that case, a
+     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
+     * annotation).
+     *
+     * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
      */
     // This method requires more revision.
     public abstract boolean isSubtypeTypeVariable(
@@ -421,14 +399,19 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Tests whether {@code subAnno} is a sub-qualifier of {@code superAnno}, according to the type
-     * qualifier hierarchy. This checks only the qualifiers, not the Java type.
+     * Tests whether {@code subAnno} is a sub-qualifier of, or equal to, {@code superAnno},
+     * according to the type qualifier hierarchy. This checks only the qualifiers, not the Java
+     * type.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
-     * @return true iff {@code subAnno} is a sub qualifier of {@code superAnno}
+     * @param subType used to decide whether to call isSubtypeTypeVariable
+     * @param superType used to decide whether to call isSubtypeTypeVariable
+     * @param subAnno the type qualifier that might be a subtype
+     * @param superAnno the type qualifier that might be a supertype
+     * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
      */
     public boolean isSubtype(
             AnnotatedTypeMirror subType,
@@ -443,15 +426,20 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Tests whether there is any annotation in {@code supers} that is a super qualifier of some
-     * annotation in {@code subs}. {@code supers} and {@code subs} contain only the annotations, not
-     * the Java type.
+     * Tests whether there is any annotation in {@code supers} that is a super qualifier of, or
+     * equal to, some annotation in {@code subs}. {@code supers} and {@code subs} contain only the
+     * annotations, not the Java type.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
-     * @return true iff an annotation in {@code supers} is a super of one in {@code subs}
+     * @param subType used to decide whether to call isSubtypeTypeVariable
+     * @param superType used to decide whether to call isSubtypeTypeVariable
+     * @param subs the type qualifiers that might be a subtype
+     * @param supers the type qualifiers that might be a supertype
+     * @return true iff an annotation in {@code supers} is a supertype of, or equal to, one in
+     *     {@code subs}
      */
     public boolean isSubtype(
             AnnotatedTypeMirror subType,
@@ -634,5 +622,34 @@ public abstract class QualifierHierarchy {
             map.put(key, prevs);
         }
         return true;
+    }
+
+    /**
+     * Throws an exception if the given collections do not have the same size.
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+        if (c1.size() != c2.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
+        }
+    }
+
+    /**
+     * Throws an exception if the result does not have the same size as the inputs (which are
+     * assumed to have the same size as one another).
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     * @param result the result collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+        if (c1.size() != result.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
+                    c1.size(), c2.size(), result.size(), c1, c2, result);
+        }
     }
 }

@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -70,7 +72,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.ElementUtils;
@@ -91,6 +93,10 @@ public class FlowExpressionParseUtil {
 
     /** Regular expression for a formal parameter use. */
     protected static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
+
+    /** Anchored pattern for a formal parameter. */
+    protected static final Pattern ANCHORED_PARAMETER_PATTERN =
+            Pattern.compile("^" + PARAMETER_REGEX + "$");
 
     /** Unanchored; can be used to find all formal parameter uses. */
     protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
@@ -132,9 +138,16 @@ public class FlowExpressionParseUtil {
             // superclass.
             throw e.getCheckedException();
         }
-        if (result instanceof ClassName && !expression.endsWith("class")) {
+        if (result instanceof ClassName
+                && !expression.endsWith(".class")
+                // At a call site, "#1" may be transformed to "Something.class", so don't throw an
+                // exception in that case.
+                && !ANCHORED_PARAMETER_PATTERN.matcher(expression).matches()) {
             throw constructParserException(
-                    expression, "a class name cannot terminate a flow expression string");
+                    expression,
+                    String.format(
+                            "a class name cannot terminate a flow expression string, where result=%s [%s]",
+                            result, result.getClass()));
         }
         return result;
     }
@@ -156,7 +169,7 @@ public class FlowExpressionParseUtil {
 
     /**
      * A visitor class that converts a JavaParser {@link Expression} to a {@link
-     * FlowExpressionContext#receiver}.
+     * FlowExpressions.Receiver}.
      */
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
@@ -189,12 +202,12 @@ public class FlowExpressionParseUtil {
 
         @Override
         public Receiver visit(IntegerLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asInt());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), expr.asNumber());
         }
 
         @Override
         public Receiver visit(LongLiteralExpr expr, FlowExpressionContext context) {
-            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asLong());
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), expr.asNumber());
         }
 
         @Override
@@ -445,7 +458,7 @@ public class FlowExpressionParseUtil {
             // can override, rather than halting parsing which the user cannot override.
             /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
-                throw new FlowExpressionParseException(Result.failure(
+                throw new FlowExpressionParseException(new DiagMessage(ERROR,
                         "flowexpr.method.not.deterministic",
                         methodElement.getSimpleName()));
             }*/
@@ -1041,8 +1054,8 @@ public class FlowExpressionParseUtil {
     ///
 
     /**
-     * An exception that indicates a parse error. Call {@link #getResult} to obtain a {@link Result}
-     * that can be used for error reporting.
+     * An exception that indicates a parse error. Call {@link #getDiagMessage} to obtain a {@link
+     * DiagMessage} that can be used for error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
@@ -1065,9 +1078,13 @@ public class FlowExpressionParseUtil {
             return errorKey + " " + Arrays.toString(args);
         }
 
-        /** Return a Result that can be used for error reporting. */
-        public Result getResult() {
-            return Result.failure(errorKey, args);
+        /**
+         * Return a DiagMessage that can be used for error reporting.
+         *
+         * @return a DiagMessage that can be used for error reporting
+         */
+        public DiagMessage getDiagMessage() {
+            return new DiagMessage(ERROR, errorKey, args);
         }
 
         public boolean isFlowParseError() {

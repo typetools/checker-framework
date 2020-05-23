@@ -11,7 +11,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -48,7 +48,7 @@ public class TypecheckExecutor {
         final List<String> options = new ArrayList<>();
         options.add("-processor");
         options.add(String.join(",", configuration.getProcessors()));
-        if (PluginUtil.getJreVersion() == 8) {
+        if (SystemUtil.getJreVersion() == 8) {
             options.add("-source");
             options.add("8");
             options.add("-target");
@@ -67,7 +67,8 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xlint:deprecation");
 
-        nonJvmOptions.add("-Anocheckjdk");
+        nonJvmOptions.add("-ApermitMissingJdk");
+        nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
 
         options.addAll(nonJvmOptions);
 
@@ -77,7 +78,7 @@ public class TypecheckExecutor {
                     "javac "
                             + String.join(" ", options)
                             + " "
-                            + PluginUtil.join(" ", configuration.getTestSourceFiles()));
+                            + SystemUtil.join(" ", configuration.getTestSourceFiles()));
         }
 
         JavaCompiler.CompilationTask task =

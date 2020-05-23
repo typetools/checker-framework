@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayDeque;
@@ -51,7 +52,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -127,17 +128,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (showInferenceSteps) {
             checker.message(
                     Kind.NOTE,
-                    "DTAI: expression: %s\n  argTypes: %s\n  assignedTo: %s\n",
-                    expressionTree.toString().replace("\n", " "),
+                    "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s",
+                    expressionTree.toString().replace(System.lineSeparator(), " "),
                     argTypes,
                     assignedTo);
         }
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
-        if (assignedTo == null && TreeUtils.getAssignmentContext(pathToExpression) != null) {
+        if (TreeUtils.enclosingNonParen(pathToExpression).first.getKind()
+                        == Tree.Kind.LAMBDA_EXPRESSION
+                || (assignedTo == null
+                        && TreeUtils.getAssignmentContext(pathToExpression) != null)) {
             // If the type of the assignment context isn't found, but the expression is assigned,
-            // then don't attempt to infere type arguments, because the Java type inferred will be
+            // then don't attempt to infer type arguments, because the Java type inferred will be
             // incorrect.  The assignment type is null when it includes uninferred type arguments.
             // For example:
             // <T> T outMethod()
@@ -145,6 +149,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             // inMethod(outMethod())
             // would require solving the constraints for both type argument inferences
             // simultaneously
+            // Also, if the parent of the expression is a lambda, then the type arguments cannot be
+            // inferred.
             Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = new LinkedHashMap<>();
             handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
             return inferredArgs;
@@ -157,7 +163,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             inferredArgs =
                     infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  after infer: %s\n", inferredArgs);
+                checker.message(Kind.NOTE, "  after infer: %s", inferredArgs);
             }
             handleNullTypeArguments(
                     typeFactory,
@@ -168,20 +174,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     targets,
                     inferredArgs);
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  after handleNull: %s\n", inferredArgs);
+                checker.message(Kind.NOTE, "  after handleNull: %s", inferredArgs);
             }
         } catch (Exception ex) {
             // Catch any errors thrown by inference.
             inferredArgs = new LinkedHashMap<>();
             if (showInferenceSteps) {
-                checker.message(Kind.NOTE, "  exception: %s\n", ex.getLocalizedMessage());
+                checker.message(Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
             }
         }
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
         if (showInferenceSteps) {
-            checker.message(Kind.NOTE, "  results: %s\n", inferredArgs);
+            checker.message(Kind.NOTE, "  results: %s", inferredArgs);
         }
         try {
             return TypeArgInferenceUtil.correctResults(
@@ -231,7 +237,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
-                    withoutNullResult = typeFactory.getUninferredWildcardType(atv);
+                    withoutNullResult = atv.getUpperBound().deepCopy();
                 }
                 AnnotatedTypeMirror lub =
                         AnnotatedTypes.leastUpperBound(typeFactory, withoutNullResult, result);
@@ -486,12 +492,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
-                    "Mismatch between formal parameter count and argument count.\n"
-                            + "paramTypes="
-                            + PluginUtil.join(",", paramTypes)
-                            + "\n"
-                            + "argTypes="
-                            + PluginUtil.join(",", argTypes));
+                    SystemUtil.joinLines(
+                            "Mismatch between formal parameter count and argument count.",
+                            "paramTypes=" + SystemUtil.join(",", paramTypes),
+                            "argTypes=" + SystemUtil.join(",", argTypes)));
         }
 
         final int numberOfParams = paramTypes.size();
@@ -747,8 +751,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final TypeVariable typeVar = atv.getUnderlyingType();
             if (targets.contains((TypeVariable) TypeAnnotationUtils.unannotatedType(typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
-                if (inferredType == null
-                        || TypeArgInferenceUtil.containsTypeParameter(inferredType, targets)) {
+                if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }
@@ -807,13 +810,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 throw new BugInCF(
-                        "All afConstraints should be irreducible before conversion.\n"
-                                + "afConstraints=[ "
-                                + PluginUtil.join(", ", afConstraints)
-                                + " ]\n"
-                                + "targets=[ "
-                                + PluginUtil.join(", ", targets)
-                                + "]");
+                        SystemUtil.joinLines(
+                                "All afConstraints should be irreducible before conversion.",
+                                "afConstraints=[ " + SystemUtil.join(", ", afConstraints) + " ]",
+                                "targets=[ " + SystemUtil.join(", ", targets) + "]"));
             }
 
             outgoing.add(afConstraint.toTUConstraint());

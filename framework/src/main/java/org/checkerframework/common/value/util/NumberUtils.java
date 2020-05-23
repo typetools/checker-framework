@@ -99,29 +99,94 @@ public class NumberUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type
      */
-    private static TypeKind unboxPrimitive(TypeMirror type) {
-        if (type.getKind() == TypeKind.DECLARED) {
-            String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-
-            switch (typeString) {
-                case "java.lang.Byte":
-                    return TypeKind.BYTE;
-                case "java.lang.Boolean":
-                    return TypeKind.BOOLEAN;
-                case "java.lang.Character":
-                    return TypeKind.CHAR;
-                case "java.lang.Double":
-                    return TypeKind.DOUBLE;
-                case "java.lang.Float":
-                    return TypeKind.FLOAT;
-                case "java.lang.Integer":
-                    return TypeKind.INT;
-                case "java.lang.Long":
-                    return TypeKind.LONG;
-                case "java.lang.Short":
-                    return TypeKind.SHORT;
-            }
+    public static TypeKind unboxPrimitive(TypeMirror type) {
+        final TypeKind typeKind = type.getKind();
+        if (typeKind.isPrimitive()) {
+            return typeKind;
         }
-        return type.getKind();
+
+        final String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+
+        switch (typeString) {
+            case "java.lang.Byte":
+                return TypeKind.BYTE;
+            case "java.lang.Boolean":
+                return TypeKind.BOOLEAN;
+            case "java.lang.Character":
+                return TypeKind.CHAR;
+            case "java.lang.Double":
+                return TypeKind.DOUBLE;
+            case "java.lang.Float":
+                return TypeKind.FLOAT;
+            case "java.lang.Integer":
+                return TypeKind.INT;
+            case "java.lang.Long":
+                return TypeKind.LONG;
+            case "java.lang.Short":
+                return TypeKind.SHORT;
+            default:
+                // TODO: this method should only be called for primitive or boxed primitive types.
+                // However, it is also used to implement other methods where this condition might
+                // not be met.
+                // Think of a nicer way to structure all these methods.
+                // throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " +
+                // typeKind);
+                return typeKind;
+        }
+    }
+
+    /**
+     * Return true if the argument TypeMirror is a (possibly boxed) integral type.
+     *
+     * @param type the type to inspect
+     * @return true if type is an integral type
+     */
+    public static boolean isIntegral(TypeMirror type) {
+        return isPrimitiveIntegral(unboxPrimitive(type));
+    }
+
+    /**
+     * Return true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
+     *
+     * @param typeKind the TypeKind to inspect
+     * @return true if typeKind is a primitive integral type kind
+     */
+    public static boolean isPrimitiveIntegral(TypeKind typeKind) {
+        switch (typeKind) {
+            case INT:
+            case SHORT:
+            case BYTE:
+            case CHAR:
+            case LONG:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+     *
+     * @param type the type to inspect
+     * @return true if type is a floating point type
+     */
+    public static boolean isFloatingPoint(TypeMirror type) {
+        return isPrimitiveFloatingPoint(unboxPrimitive(type));
+    }
+
+    /**
+     * Return true if the argument is one of FLOAT, DOUBLE.
+     *
+     * @param typeKind the TypeKind to inspect
+     * @return true if typeKind is a primitive floating point type kind
+     */
+    public static boolean isPrimitiveFloatingPoint(TypeKind typeKind) {
+        switch (typeKind) {
+            case FLOAT:
+            case DOUBLE:
+                return true;
+            default:
+                return false;
+        }
     }
 }

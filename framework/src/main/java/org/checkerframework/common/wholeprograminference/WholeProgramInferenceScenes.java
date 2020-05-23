@@ -8,8 +8,12 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -22,6 +26,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
@@ -31,20 +37,18 @@ import scenelib.annotations.util.JVMNames;
 
 /**
  * WholeProgramInferenceScenes is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference} that uses a helper class
- * ({@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper})
- * that manipulates .jaif files to perform whole-program inference.
+ * org.checkerframework.common.wholeprograminference.WholeProgramInference} that uses a storage
+ * class ({@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage}) that
+ * manipulates {@link scenelib.annotations.el.AScene}s to perform whole-program inference, and
+ * writes them out to a .jaif file at the end.
  *
- * <p>Calling an update* method ({@link #updateInferredFieldType updateInferredFieldType}, {@link
- * #updateInferredMethodParameterTypes updateInferredMethodParameterTypes}, {@link
- * #updateInferredParameterType updateInferredParameterType}, or {@link
- * #updateInferredMethodReturnType updateInferredMethodReturnType}) replaces the currently-stored
- * type for an element in a {@link scenelib.annotations.el.AScene}, if any, by the LUB of it and the
- * update method's argument.
+ * <p>Calling an update* method replaces the currently-stored type for an element in a {@link
+ * scenelib.annotations.el.AScene}, if any, by the LUB of it and the update method's argument.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations:
- * an update* method ignores an explicitly annotated field, method return, or method parameter when
- * passed as an argument.
+ * calling an update* method on an explicitly annotated field, method return, or method parameter
+ * has no effect.
  *
  * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
  * discovering a use, if:
@@ -78,141 +82,60 @@ import scenelib.annotations.util.JVMNames;
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
-    private final WholeProgramInferenceScenesHelper helper;
-
-    public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
-        helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);
-    }
+    /** The interface to the AScene library itself, which stores the inferred annotations. */
+    private final WholeProgramInferenceScenesStorage storage;
 
     /**
-     * Updates the parameter types of the constructor created by objectCreationNode based on
-     * arguments to the constructor.
+     * Default constructor.
      *
-     * <p>For each parameter in constructorElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the object creation call objectCreationNode
-     *       will be added to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the object creation call.
-     * </ul>
-     *
-     * @param objectCreationNode the new Object() node
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored
      */
+    public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
+        storage = new WholeProgramInferenceScenesStorage(ignoreNullAssignments);
+    }
+
     @Override
-    public void updateInferredConstructorParameterTypes(
+    public void updateFromObjectCreation(
             ObjectCreationNode objectCreationNode,
             ExecutableElement constructorElt,
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(constructorElt)) {
+        if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
         }
 
         String className = getEnclosingClassName(constructorElt);
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(constructorElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) constructorElt).enclClass());
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(constructorElt));
+        method.setFieldsFromMethodElement(constructorElt);
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
     }
 
-    /**
-     * Updates the parameter types of the method {@code methodElt} in the Scene of the method's
-     * enclosing class based on the overridden method {@code overriddenMethod} parameter types.
-     *
-     * <p>For each method parameter in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective parameter on the overridden method will be added to the parameter in the
-     *       Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective parameter
-     *       on the overridden method.
-     * </ul>
-     *
-     * @param methodTree the tree of the method that contains the parameter
-     * @param methodElt the element of the method
-     * @param overriddenMethod the AnnotatedExecutableType of the overridden method
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
-     */
     @Override
-    public void updateInferredMethodParameterTypes(
-            MethodTree methodTree,
-            ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf) {
-
-        // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
-            return;
-        }
-
-        String className = getEnclosingClassName(methodElt);
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
-
-        for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
-            VariableElement ve = methodElt.getParameters().get(i);
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
-
-            AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AField param = method.parameters.getVivify(i);
-            helper.updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
-        }
-    }
-
-    /**
-     * Updates the parameter types of the method methodElt in the Scene of the enclosing class based
-     * on the arguments to the method invocation.
-     *
-     * <p>For each method parameter in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the method call methodInvNode will be added
-     *       to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the method call.
-     * </ul>
-     *
-     * @param methodInvNode the node representing a method invocation
-     * @param receiverTree the Tree of the class that contains the method being invoked
-     * @param methodElt the element of the method being invoked
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types
-     */
-    @Override
-    public void updateInferredMethodParameterTypes(
+    public void updateFromMethodInvocation(
             MethodInvocationNode methodInvNode,
             Tree receiverTree,
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
         String className = getEnclosingClassName(methodElt);
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
 
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
@@ -225,6 +148,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             String jaifPath,
             AMethod method,
             List<Node> arguments) {
+
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
@@ -240,34 +164,58 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.getVivify(i);
-            helper.updateAnnotationSetInScene(
+            AField param =
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
+            storage.updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
     }
 
-    /**
-     * Updates the parameter type represented by lhs of the method methodTree in the Scene of the
-     * enclosing class based on assignments to the parameter inside the method body.
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the method call methodInvNode will be added
-     *       to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the method call.
-     * </ul>
-     *
-     * @param lhs the node representing the parameter
-     * @param rhs the node being assigned to the parameter
-     * @param classTree the tree of the class that contains the parameter
-     * @param methodTree the tree of the method that contains the parameter
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
-     */
     @Override
-    public void updateInferredParameterType(
+    public void updateFromOverride(
+            MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf) {
+
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+            return;
+        }
+
+        String className = getEnclosingClassName(methodElt);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
+
+        for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+
+            AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+            AField param =
+                    method.vivifyAndAddTypeMirrorToParameter(
+                            i, argATM.getUnderlyingType(), ve.getSimpleName());
+            storage.updateAnnotationSetInScene(
+                    param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
+        }
+
+        AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
+        if (argADT != null) {
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
+            if (paramATM != null) {
+                AField receiver = method.receiver;
+                storage.updateAnnotationSetInScene(
+                        receiver.type, atf, jaifPath, argADT, paramATM, TypeUseLocation.RECEIVER);
+            }
+        }
+    }
+
+    @Override
+    public void updateFromLocalAssignment(
             LocalVariableNode lhs,
             Node rhs,
             ClassTree classTree,
@@ -275,15 +223,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
+        if (!isElementFromSourceCode(lhs)) {
             return;
         }
 
         String className = getEnclosingClassName(lhs);
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodTree);
-        AMethod method = clazz.methods.getVivify(methodName);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, jaifPath);
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
 
         List<? extends VariableTree> params = methodTree.getParameters();
         // Look-up parameter by name:
@@ -301,113 +250,71 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                AField param = method.parameters.getVivify(i);
-                helper.updateAnnotationSetInScene(
+                VariableElement ve = TreeUtils.elementFromDeclaration(vt);
+                AField param =
+                        method.vivifyAndAddTypeMirrorToParameter(
+                                i, argATM.getUnderlyingType(), ve.getSimpleName());
+                storage.updateAnnotationSetInScene(
                         param.type, atf, jaifPath, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
             }
         }
     }
 
-    /**
-     * Updates the receiver type of the method {@code methodElt} in the Scene of the method's
-     * enclosing class based on the overridden method {@code overriddenMethod} receiver type.
-     *
-     * <p>For the receiver in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for the receiver, then the type of the
-     *       receiver on the overridden method will be added to the receiver in the Scene.
-     *   <li>If the Scene previously contained an annotated type for the receiver, then its new type
-     *       will be the LUB between the previous type and the type of the receiver on the
-     *       overridden method.
-     * </ul>
-     *
-     * @param methodTree the tree of the method that contains the receiver
-     * @param methodElt the element of the method
-     * @param overriddenMethod the overridden method
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the receiver type
-     */
     @Override
-    public void updateInferredMethodReceiverType(
-            MethodTree methodTree,
-            ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf) {
+    public void updateFromFieldAssignment(
+            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
 
-        // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(methodElt)) {
-            return;
-        }
-
-        String className = getEnclosingClassName(methodElt);
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
-        String methodName = JVMNames.getJVMMethodName(methodElt);
-        AMethod method = clazz.methods.getVivify(methodName);
-
-        AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
-        if (argADT != null) {
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
-            if (paramATM != null) {
-                AField receiver = method.receiver;
-                helper.updateAnnotationSetInScene(
-                        receiver.type, atf, jaifPath, argADT, paramATM, TypeUseLocation.RECEIVER);
-            }
-        }
-    }
-
-    /**
-     * Updates the type of the field lhs in the Scene of the class with tree classTree. If the field
-     * has a declaration annotation with the {@link IgnoreInWholeProgramInference} meta-annotation,
-     * no type annotation will be inferred for that field.
-     *
-     * <p>If the Scene contains no entry for the field lhs, the entry will be created and its type
-     * will be the type of rhs. If the Scene previously contained an entry/type for lhs, its new
-     * type will be the LUB between the previous type and the type of rhs.
-     *
-     * @param lhs the field whose type will be refined
-     * @param rhs the expression being assigned to the field
-     * @param classTree the ClassTree for the enclosing class of the assignment
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the field's type
-     */
-    @Override
-    public void updateInferredFieldType(
-            FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
-
-        // do not infer types for code that isn't presented as source
-        if (ElementUtils.isElementFromByteCode(lhs.getElement())) {
-            return;
+        Element element;
+        String fieldName;
+        if (lhs instanceof FieldAccessNode) {
+            element = ((FieldAccessNode) lhs).getElement();
+            fieldName = ((FieldAccessNode) lhs).getFieldName();
+        } else if (lhs instanceof LocalVariableNode) {
+            element = ((LocalVariableNode) lhs).getElement();
+            fieldName = ((LocalVariableNode) lhs).getName();
+        } else {
+            throw new BugInCF(
+                    "updateFromFieldAssignment received an unexpected node type: "
+                            + lhs.getClass());
         }
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        if (atf.getDeclAnnotation(lhs.getElement(), IgnoreInWholeProgramInference.class) != null
+        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
                 || atf.getDeclAnnotationWithMetaAnnotation(
-                                        lhs.getElement(), IgnoreInWholeProgramInference.class)
+                                        element, IgnoreInWholeProgramInference.class)
                                 .size()
                         > 0) {
             return;
         }
 
-        String className = getEnclosingClassName(lhs.getElement());
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
-        AField field = clazz.fields.getVivify(lhs.getFieldName());
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+            return;
+        }
+
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
+
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        AField field = clazz.fields.getVivify(fieldName);
+        field.setTypeMirror(lhsATM.getUnderlyingType());
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
-        helper.updateAnnotationSetInScene(
+        storage.updateAnnotationSetInScene(
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
 
     /**
      * Updates the return type of the method methodTree in the Scene of the class with symbol
-     * classSymbol.
+     * classSymbol. Also updates the return types of methods that this method overrides, if they are
+     * available as source.
      *
      * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
      * type of the value passed to the return expression will be added to the return type of that
@@ -418,19 +325,22 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param retNode the node that contains the expression returned
      * @param classSymbol the symbol of the class that contains the method
      * @param methodTree the tree of the method whose return type may be updated
+     * @param overriddenMethods the methods that the given method return overrides, each indexed by
+     *     the annotated type of the class that defines it
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method's return type
      */
     @Override
-    public void updateInferredMethodReturnType(
+    public void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf) {
 
         // do not infer types for code that isn't presented as source
         if (methodTree == null
-                || ElementUtils.isElementFromByteCode(
+                || !ElementUtils.isElementFromSourceCode(
                         TreeUtils.elementFromDeclaration(methodTree))) {
             return;
         }
@@ -440,24 +350,77 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
         }
-        String className = classSymbol.flatname.toString();
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = classSymbol.flatname.toString();
 
-        String jaifPath = helper.getJaifPath(className);
-        AClass clazz = helper.getAClass(className, jaifPath);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, jaifPath, classSymbol);
 
-        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodName(methodTree));
-        // Method return type
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+        method.setFieldsFromMethodElement(methodElt);
+
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
+
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
-        helper.updateAnnotationSetInScene(
+        storage.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
+
+        // Now, update return types of overridden methods based on the implementation we just saw.
+        // This inference is similar to the inference procedure for method parameters: both are
+        // updated based only on the implementations (in this case) or call-sites (for method
+        // parameters) that are available to WPI.
+        //
+        // An alternative implementation would be to:
+        //  * update only the method (not overridden methods)
+        //  * when finished, propagate the final result to overridden methods
+        //
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                overriddenMethods.entrySet()) {
+
+            AnnotatedDeclaredType superclassDecl = pair.getKey();
+            ExecutableElement overriddenMethodElement = pair.getValue();
+
+            // do not infer types for code that isn't presented as source
+            if (!ElementUtils.isElementFromSourceCode(overriddenMethodElement)) {
+                continue;
+            }
+
+            AnnotatedExecutableType overriddenMethod =
+                    AnnotatedTypes.asMemberOf(
+                            atf.getProcessingEnv().getTypeUtils(),
+                            atf,
+                            superclassDecl,
+                            overriddenMethodElement);
+
+            String superClassName = getEnclosingClassName(overriddenMethodElement);
+            String superJaifPath = storage.getJaifPath(superClassName);
+            AClass superClazz =
+                    storage.getAClass(
+                            superClassName,
+                            superJaifPath,
+                            ((MethodSymbol) overriddenMethodElement).enclClass());
+            AMethod overriddenMethodInSuperclass =
+                    superClazz.methods.getVivify(
+                            JVMNames.getJVMMethodSignature(overriddenMethodElement));
+            overriddenMethodInSuperclass.setFieldsFromMethodElement(overriddenMethodElement);
+            AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
+
+            storage.updateAnnotationSetInScene(
+                    overriddenMethodInSuperclass.returnType,
+                    atf,
+                    superJaifPath,
+                    rhsATM,
+                    overriddenMethodReturnType,
+                    TypeUseLocation.RETURN);
+        }
     }
 
-    /** Write all modified scenes into .jaif files. */
+    /** Write all modified scenes into .jaif files or stub files. */
     @Override
-    public void saveResults() {
-        helper.writeScenesToJaif();
+    public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        storage.writeScenes(outputFormat, checker);
     }
 
     /**
@@ -466,7 +429,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
      */
-    private String getEnclosingClassName(LocalVariableNode localVariableNode) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(LocalVariableNode localVariableNode) {
         return ((ClassSymbol) ElementUtils.enclosingClass(localVariableNode.getElement()))
                 .flatName()
                 .toString();
@@ -478,17 +442,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
-    private String getEnclosingClassName(ExecutableElement executableElement) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+    private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code variableElement}
+     * Checks whether a given local variable came from a source file or not.
      *
-     * @param variableElement the VariableElement
-     * @return the "flatname" of the class enclosing {@code variableElement}
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, whether or not there is also a source file.
+     *
+     * @param localVariableNode the local variable declaration to check
+     * @return true if a source file containing the variable is being compiled
      */
-    private String getEnclosingClassName(VariableElement variableElement) {
-        return ((VarSymbol) variableElement).enclClass().flatName().toString();
+    private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
+        return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 }

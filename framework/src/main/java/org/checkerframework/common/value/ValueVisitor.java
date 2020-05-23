@@ -1,6 +1,5 @@
 package org.checkerframework.common.value;
 
-import static org.checkerframework.javacutil.AnnotationUtils.areSameByClass;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
@@ -14,26 +13,21 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.ArrayLenRange;
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Visitor for the Constant Value type system. */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
@@ -151,7 +145,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *
      * <p>Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
      *
+     * <p>Issues an error if any constant-value annotation has no arguments.
+     *
      * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES arguments.
+     *
+     * <p>Issues a warning if any @ArrayLen/@ArrayLenRange annotations contain a negative array
+     * length.
+     */
+    /* Implementation note: the ValueAnnotatedTypeFactory replaces such invalid annotations with valid ones.
+     * Therefore, the usual validation in #validateType cannot perform this validation.
+     * These warnings cannot be issued in the ValueAnnotatedTypeFactory, because the conversions
+     * might happen multiple times.
+     * On the other hand, not all validations can happen here, because only the annotations are
+     * available, not the full types.
+     * Therefore, some validation is still done in #validateType below.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
@@ -163,56 +170,63 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
 
         AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+        switch (AnnotationUtils.annotationName(anno)) {
+            case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+                // If there are 2 arguments, issue an error if from.greater.than.to.
+                // If there are fewer than 2 arguments, we needn't worry about this problem because
+                // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
+                // accordingly.
+                if (args.size() == 2) {
+                    long from = getElementValue(anno, "from", Long.class, true);
+                    long to = getElementValue(anno, "to", Long.class, true);
+                    if (from > to) {
+                        checker.reportError(node, "from.greater.than.to");
+                        return null;
+                    }
+                }
+                break;
+            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+            case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
+            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
+            case ValueAnnotatedTypeFactory.INTVAL_NAME:
+            case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                List<Object> values = getElementValueArray(anno, "value", Object.class, true);
 
-        if (areSameByClass(anno, IntRange.class)) {
-            // If there are 2 arguments, issue an error if from.greater.than.to.
-            // If there are fewer than 2 arguments, we needn't worry about this problem because the
-            // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
-            if (args.size() == 2) {
-                long from = getElementValue(anno, "from", Long.class, true);
-                long to = getElementValue(anno, "to", Long.class, true);
+                if (values.isEmpty()) {
+                    checker.reportWarning(node, "no.values.given");
+                    return null;
+                } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
+                    checker.reportWarning(
+                            node,
+                            (AnnotationUtils.areSameByName(
+                                            anno, ValueAnnotatedTypeFactory.INTVAL_NAME)
+                                    ? "too.many.values.given.int"
+                                    : "too.many.values.given"),
+                            ValueAnnotatedTypeFactory.MAX_VALUES);
+                    return null;
+                } else if (AnnotationUtils.areSameByName(
+                        anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
+                    List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
+                    if (Collections.min(arrayLens) < 0) {
+                        checker.reportWarning(
+                                node, "negative.arraylen", Collections.min(arrayLens));
+                        return null;
+                    }
+                }
+                break;
+            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+                int from = getElementValue(anno, "from", Integer.class, true);
+                int to = getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
-                    checker.report(Result.failure("from.greater.than.to"), node);
+                    checker.reportError(node, "from.greater.than.to");
+                    return null;
+                } else if (from < 0) {
+                    checker.reportWarning(node, "negative.arraylen", from);
                     return null;
                 }
-            }
-        } else if (areSameByClass(anno, ArrayLen.class)
-                || areSameByClass(anno, BoolVal.class)
-                || areSameByClass(anno, DoubleVal.class)
-                || areSameByClass(anno, IntVal.class)
-                || areSameByClass(anno, StringVal.class)) {
-            List<Object> values = getElementValueArray(anno, "value", Object.class, true);
-
-            if (values.isEmpty()) {
-                checker.report(Result.warning("no.values.given"), node);
-                return null;
-            } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
-                checker.report(
-                        Result.warning(
-                                (areSameByClass(anno, IntVal.class)
-                                        ? "too.many.values.given.int"
-                                        : "too.many.values.given"),
-                                ValueAnnotatedTypeFactory.MAX_VALUES),
-                        node);
-                return null;
-            } else if (areSameByClass(anno, ArrayLen.class)) {
-                List<Integer> arrayLens = ValueAnnotatedTypeFactory.getArrayLength(anno);
-                if (Collections.min(arrayLens) < 0) {
-                    checker.report(
-                            Result.warning("negative.arraylen", Collections.min(arrayLens)), node);
-                    return null;
-                }
-            }
-        } else if (areSameByClass(anno, ArrayLenRange.class)) {
-            int from = getElementValue(anno, "from", Integer.class, true);
-            int to = getElementValue(anno, "to", Integer.class, true);
-            if (from > to) {
-                checker.report(Result.failure("from.greater.than.to"), node);
-                return null;
-            } else if (from < 0) {
-                checker.report(Result.warning("negative.arraylen", from), node);
-                return null;
-            }
+                break;
+            default:
+                // Do nothing.
         }
 
         return super.visitAnnotation(node, p);
@@ -279,29 +293,50 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
      * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
      * error when writing an annotation or an error in the checker's implementation, as {@code from}
-     * should always be {@code <= to}.
+     * should always be {@code <= to}. Note that additional checks are performed in {@link
+     * #visitAnnotation(AnnotationTree, Void)}.
+     *
+     * @see #visitAnnotation(AnnotationTree, Void)
      */
     @Override
     public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-        boolean result = super.validateType(tree, type);
-        if (!result) {
-            AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
-            if (areSameByClass(anno, IntRange.class)) {
+        replaceSpecialIntRangeAnnotations(type);
+        if (!super.validateType(tree, type)) {
+            return false;
+        }
+
+        AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        if (anno == null) {
+            return false;
+        }
+
+        if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
+            if (NumberUtils.isIntegral(type.getUnderlyingType())) {
                 long from = atypeFactory.getFromValueFromIntRange(type);
                 long to = atypeFactory.getToValueFromIntRange(type);
                 if (from > to) {
-                    checker.report(Result.failure("from.greater.than.to"), tree);
+                    checker.reportError(tree, "from.greater.than.to");
                     return false;
                 }
-            } else if (areSameByClass(anno, ArrayLenRange.class)) {
-                int from = getElementValue(anno, "from", Integer.class, true);
-                int to = getElementValue(anno, "to", Integer.class, true);
-                if (from > to) {
-                    checker.report(Result.failure("from.greater.than.to"), tree);
+            } else {
+                TypeMirror utype = type.getUnderlyingType();
+                if (!TypesUtils.isObject(utype)
+                        && !TypesUtils.isDeclaredOfName(utype, "java.lang.Number")
+                        && !NumberUtils.isFloatingPoint(utype)) {
+                    checker.reportError(tree, "annotation.intrange.on.noninteger");
                     return false;
                 }
             }
+        } else if (AnnotationUtils.areSameByName(
+                anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
+            int from = getElementValue(anno, "from", Integer.class, true);
+            int to = getElementValue(anno, "to", Integer.class, true);
+            if (from > to) {
+                checker.reportError(tree, "from.greater.than.to");
+                return false;
+            }
         }
-        return result;
+
+        return true;
     }
 }

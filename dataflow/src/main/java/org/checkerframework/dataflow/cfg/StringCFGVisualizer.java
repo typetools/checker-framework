@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -12,6 +13,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
@@ -29,6 +31,7 @@ public class StringCFGVisualizer<
         return res;
     }
 
+    @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
@@ -38,7 +41,7 @@ public class StringCFGVisualizer<
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
-        for (Block v : blocks) {
+        for (@KeyFor("processOrder") Block v : blocks) {
             sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
             if (verbose) {
                 sbStringNodes
@@ -71,6 +74,14 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
         return super.visualizeSpecialBlockHelper(sbb, lineSeparator);
+    }
+
+    @Override
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        return "ConditionalBlock: then: "
+                + cbb.getThenSuccessor().getId()
+                + ", else: "
+                + cbb.getElseSuccessor().getId();
     }
 
     @Override

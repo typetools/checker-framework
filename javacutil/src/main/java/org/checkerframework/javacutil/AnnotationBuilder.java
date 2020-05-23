@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,17 +58,12 @@ public class AnnotationBuilder {
     /** The type utilities to use. */
     private final Types types;
 
+    /** The type element of the annotation. */
     private final TypeElement annotationElt;
+    /** The type of the annotation. */
     private final DeclaredType annotationType;
+    /** A mapping from element to AnnotationValue. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
-
-    /**
-     * Caching for annotation creation. Each annotation has no values; that is, getElementValues
-     * returns an empty map. This may be in conflict with the annotation's definition, which might
-     * contain elements (annotation fields).
-     */
-    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Create a new AnnotationBuilder for the given annotation and environment (with no
@@ -88,7 +82,7 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
@@ -333,11 +327,7 @@ public class AnnotationBuilder {
         return result;
     }
 
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationsFromNames.clear();
-    }
-
+    /** Whether or not {@link #build()} has been called. */
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {

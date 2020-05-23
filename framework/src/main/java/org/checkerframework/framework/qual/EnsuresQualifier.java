@@ -9,10 +9,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A postcondition annotation to indicate that a method ensures certain expressions to have a
+ * A postcondition annotation to indicate that a method ensures that certain expressions have a
  * certain type qualifier once the method has successfully terminated. The expressions for which the
- * qualifier must hold after the method's execution are indicated by {@code expression} and are
- * specified using a string. The qualifier is specified by {@code qualifier}.
+ * qualifier holds after the method's execution are indicated by {@code expression} and are
+ * specified using a string. The qualifier is specified by the {@code qualifier} annotation element.
  *
  * <p>Here is an example use:
  *
@@ -34,15 +34,30 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @InheritedAnnotation
-@Repeatable(EnsuresQualifiers.class)
+@Repeatable(EnsuresQualifier.List.class)
 public @interface EnsuresQualifier {
     /**
-     * The Java expressions for which the qualifier holds after successful method termination.
-     *
+     * @return the Java expressions for which the qualifier holds after successful method
+     *     termination
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The qualifier that is guaranteed to hold on successful termination of the method. */
+    /** @return the qualifier that is guaranteed to hold on successful termination of the method */
     Class<? extends Annotation> qualifier();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresQualifier} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresQualifier} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @InheritedAnnotation
+    @interface List {
+        /** @return the repeatable annotations */
+        EnsuresQualifier[] value();
+    }
 }

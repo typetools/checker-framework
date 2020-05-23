@@ -108,7 +108,7 @@ Section~\ref{type-refinement-purity}.
 
 \subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
 
-By supplying the \<-Ainfer> command-line option,
+By supplying the \<-Ainfer=\emph{outputformat}> command-line option,
 any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
@@ -170,7 +170,7 @@ git diff
 \end{Verbatim}
 
 You may need to wait a few minutes for the command to complete.
-You can ignore warnings that the command outputs while trying different
+You can ignore warnings that the command outputs while it tries different
 annotations in your code.
 
 It is recommended that you run \<infer-and-annotate.sh> on a copy of your
@@ -300,7 +300,7 @@ skip this section.
 
 The \<infer-and-annotate.sh> script repeatedly runs the following steps:
 \begin{enumerate}
-\item Run the checker with the \<-Ainfer> command-line option to infer
+\item Run the checker with the \<-Ainfer=jaifs> command-line option to infer
   types for fields and method signatures.  The output of this step
   is a \<.jaif> file that records the inferred types.
 \item Insert the inferred annotations in the program.  This step uses the
@@ -316,7 +316,9 @@ be introduced).
 
 When the type-checker is run on the program with the final annotations
 inserted, there might still be errors.  This may be because the tool did
-not infer enough annotations, or because your program contains a defect.
+not infer enough annotations, or because your program cannot typecheck
+(either because contains a defect, or because it contains subtle code that
+is beyond the capabilities of the type system).
 However, each of the inferred annotations is sound, and this reduces your
 manual effort in annotating the program.
 
