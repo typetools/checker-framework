@@ -288,10 +288,6 @@ public class AnnotationBuilder {
             CharSequence name,
             Map<String, AnnotationValue> elementNamesValues,
             boolean noWarn) {
-        AnnotationMirror res = annotationsFromNames.get(name);
-        if (res != null) {
-            return res;
-        }
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -323,7 +319,6 @@ public class AnnotationBuilder {
         }
 
         AnnotationMirror result = new CheckerFrameworkAnnotationMirror(annoType, elementValues);
-        annotationsFromNames.put(name, result);
         return result;
     }
 
