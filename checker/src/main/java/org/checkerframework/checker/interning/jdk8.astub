@@ -51,6 +51,7 @@ package java.lang.reflect;
 
 class Field {
   public @Interned String getName();
+  public void set(Field this, Object obj, @Interned Object value);
 }
 
 class Method {

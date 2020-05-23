@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -169,8 +170,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     protected boolean isSideEffectFree(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-        return ((LockChecker) lockAnnotatedTypeFactory.getContext())
-                        .hasOption("assumeSideEffectFree")
+        SourceChecker checker = lockAnnotatedTypeFactory.getContext().getChecker();
+        return checker.hasOption("assumeSideEffectFree")
+                || checker.hasOption("assumePure")
                 || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)
                         == SideEffectAnnotation.RELEASESNOLOCKS
                 || super.isSideEffectFree(atypeFactory, method);

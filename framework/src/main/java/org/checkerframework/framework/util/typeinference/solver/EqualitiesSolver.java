@@ -333,11 +333,8 @@ public class EqualitiesSolver {
                     } else {
                         // otherwise the other type is missing an annotation
                         throw new BugInCF(
-                                "Missing annotation.\n"
-                                        + "\nmergedType="
-                                        + mergedType
-                                        + "\ncurrentType="
-                                        + currentType);
+                                "Missing annotation.%nmergedType=%s%ncurrentType=%s",
+                                mergedType, currentType);
                     }
                 }
             }

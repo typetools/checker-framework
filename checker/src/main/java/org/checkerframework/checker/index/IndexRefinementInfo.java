@@ -69,9 +69,8 @@ public class IndexRefinementInfo {
         Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
         if (tops.size() != 1) {
             throw new BugInCF(
-                    IndexRefinementInfo.class
-                            + ": Found multiple tops, but expected one. \nFound: "
-                            + tops);
+                    "%s: Found %d tops, but expected one.%nFound: %s",
+                    IndexRefinementInfo.class, tops.size(), tops);
         }
         return hierarchy.findAnnotationInHierarchy(set, tops.iterator().next());
     }

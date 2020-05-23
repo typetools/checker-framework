@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.util.Range;
 import org.junit.Test;
 
@@ -85,6 +86,7 @@ public class RangeTest {
         Long.MAX_VALUE
     };
 
+    /** Contains a Range for every combination of values in rangeBounds. */
     Range[] ranges;
 
     static final long INT_WIDTH = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE + 1;
@@ -96,7 +98,7 @@ public class RangeTest {
     static final long CHAR_WIDTH = Character.MAX_VALUE - Character.MIN_VALUE + 1;
 
     public RangeTest() {
-        // Initialize the ranges list.
+        // Initialize the ranges list to every combination of values in rangeBounds.
         List<Range> rangesList = new ArrayList<>();
         for (long lowerbound : rangeBounds) {
             for (long upperbound : rangeBounds) {
@@ -325,6 +327,22 @@ public class RangeTest {
                 }
             }
         }
+
+        Range r1 = Range.create(5, 1000);
+        Range r2 = Range.create(1024 + 17, 1024 + 22);
+        Range r3 = Range.create(5, Byte.MAX_VALUE + 2);
+
+        Range.ignoreOverflow = true;
+
+        assert r1.byteRange().equals(Range.create(5, Byte.MAX_VALUE));
+        assert r2.byteRange().equals(Range.create(Byte.MAX_VALUE, Byte.MAX_VALUE));
+        assert r3.byteRange().equals(Range.create(5, Byte.MAX_VALUE));
+
+        Range.ignoreOverflow = false;
+
+        assert r1.byteRange().equals(Range.BYTE_EVERYTHING);
+        assert r2.byteRange().equals(Range.create(17, 22));
+        assert r3.byteRange().equals(Range.BYTE_EVERYTHING);
     }
 
     @Test
@@ -667,5 +685,19 @@ public class RangeTest {
         assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
         assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
         assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
+    }
+
+    @Test
+    public void testFactoryTypeKind() {
+        assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
+        assertEquals(Range.INT_EVERYTHING, Range.create(TypeKind.INT));
+        assertEquals(Range.SHORT_EVERYTHING, Range.create(TypeKind.SHORT));
+        assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
+        assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryTypeKindFailure() {
+        Range.create(TypeKind.FLOAT);
     }
 }

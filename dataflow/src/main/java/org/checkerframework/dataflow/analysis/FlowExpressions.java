@@ -18,6 +18,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -301,6 +302,8 @@ public class FlowExpressions {
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
                         Receiver fieldAccessExpression;
+                        @SuppressWarnings(
+                                "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);
@@ -336,7 +339,12 @@ public class FlowExpressions {
      *     not
      */
     public static Receiver internalReprOfImplicitReceiver(Element ele) {
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        if (enclosingClass == null) {
+            throw new BugInCF(
+                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
+        }
+        TypeMirror enclosingType = enclosingClass.asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
         } else {
@@ -869,6 +877,8 @@ public class FlowExpressions {
             } else if (type.getKind() == TypeKind.LONG) {
                 assert value != null : "@AssumeAssertion(nullness): invariant";
                 return value.toString() + "L";
+            } else if (type.getKind() == TypeKind.CHAR) {
+                return "\'" + value + "\'";
             }
             return value == null ? "null" : value.toString();
         }

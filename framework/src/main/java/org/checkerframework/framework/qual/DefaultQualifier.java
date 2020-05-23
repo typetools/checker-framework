@@ -17,7 +17,14 @@ import java.lang.annotation.Target;
  * DefaultQualifier takes precedence over {@link DefaultQualifierInHierarchy}.
  *
  * <p>You may write multiple {@code @DefaultQualifier} annotations (for unrelated type systems, or
- * with different {@code locations} fields) at the same location.
+ * with different {@code locations} fields) at the same location. For example:
+ *
+ * <pre>
+ * &nbsp; @DefaultQualifier(NonNull.class)
+ * &nbsp; @DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)
+ * &nbsp; @DefaultQualifier(Tainted.class)
+ * &nbsp; class MyClass { ... }
+ * </pre>
  *
  * <p>This annotation currently has no effect in stub files.
  *
@@ -37,7 +44,7 @@ import java.lang.annotation.Target;
     ElementType.LOCAL_VARIABLE,
     ElementType.PARAMETER
 })
-@Repeatable(DefaultQualifiers.class)
+@Repeatable(DefaultQualifier.List.class)
 public @interface DefaultQualifier {
 
     /**
@@ -51,4 +58,26 @@ public @interface DefaultQualifier {
 
     /** @return the locations to which the annotation should be applied */
     TypeUseLocation[] locations() default {TypeUseLocation.ALL};
+
+    /**
+     * A wrapper annotation that makes the {@link DefaultQualifier} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link DefaultQualifier} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({
+        ElementType.PACKAGE,
+        ElementType.TYPE,
+        ElementType.CONSTRUCTOR,
+        ElementType.METHOD,
+        ElementType.FIELD,
+        ElementType.LOCAL_VARIABLE,
+        ElementType.PARAMETER
+    })
+    @interface List {
+        /** @return the repeatable annotations */
+        DefaultQualifier[] value();
+    }
 }

@@ -6,10 +6,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment type system for
- * initialization).
- */
+/** JUnit tests for the Nullness checker. */
 public class NullnessAssertsTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */

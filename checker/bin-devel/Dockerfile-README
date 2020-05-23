@@ -48,11 +48,6 @@ export JDKVER=jdk11-plus
 export PROJECT=cf
 create_upload_docker_image
 
-export OS=ubuntu
-export JDKVER=jdk11-plus-buildjdk
-export PROJECT=cf
-create_upload_docker_image
-
 
 Cleanup:
 

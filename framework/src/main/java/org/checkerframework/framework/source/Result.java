@@ -1,15 +1,17 @@
 package org.checkerframework.framework.source;
 
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents the outcome of a type-checking operation (success, warning, or failure, plus a list of
@@ -18,15 +20,27 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * compiler interface.
  *
  * @see SourceChecker#report
+ * @deprecated use {@link DiagMessage} or {@code List<DiagMessage>} instead
  */
+@Deprecated // use {@link DiagMessage} or {@code List<DiagMessage>} instead
 public final class Result {
 
+    /** The kinds of results: SUCCESS, WARNING, or FAILURE. */
     private static enum Type {
+        /** A successful result. */
         SUCCESS,
-        FAILURE,
-        WARNING;
+        /** A result containing a warning but no failures. */
+        WARNING,
+        /** A result containing a failure. */
+        FAILURE;
 
-        /** @return whichever of the given types is most serious */
+        /**
+         * Return whichever of the given types is most severe.
+         *
+         * @param a the first result kind to compare
+         * @param b the second result kind to compare
+         * @return whichever of the given types is most severe
+         */
         public static final Type merge(Type a, Type b) {
             if (a == FAILURE || b == FAILURE) {
                 return FAILURE;
@@ -53,20 +67,29 @@ public final class Result {
      * @param messageKey the key representing the reason for failure
      * @param args optional arguments to be included in the message
      * @return the failure result
+     * @deprecated use a {@link DiagMessage} instead, or call {@code reportError} or {@code
+     *     reportWarning} directly
      */
+    @Deprecated // use a {@link DiagMessage} instead, or call {@code reportError} or {@code
+    // reportWarning} directly
     public static Result failure(@CompilerMessageKey String messageKey, @Nullable Object... args) {
-        return new Result(Type.FAILURE, Collections.singleton(new DiagMessage(messageKey, args)));
+        return new Result(
+                Type.FAILURE, Collections.singleton(new DiagMessage(ERROR, messageKey, args)));
     }
 
     /**
-     * Creates a new warning result with the given message.
+     * Creates a new warning result with the given message key.
      *
      * @param messageKey the key for the warning message
      * @param args optional arguments to be included in the message
      * @return the warning result
+     * @deprecated use a {@link org.checkerframework.framework.source.DiagMessage} instead
      */
+    @Deprecated // use a {@link org.checkerframework.framework.source.DiagMessage} instead
     public static Result warning(@CompilerMessageKey String messageKey, @Nullable Object... args) {
-        return new Result(Type.WARNING, Collections.singleton(new DiagMessage(messageKey, args)));
+        return new Result(
+                Type.WARNING,
+                Collections.singleton(new DiagMessage(MANDATORY_WARNING, messageKey, args)));
     }
 
     private Result(Type type, Collection<DiagMessage> messagePairs) {
@@ -79,7 +102,20 @@ public final class Result {
                 if (args != null) {
                     args = Arrays.copyOf(msg.getArgs(), args.length);
                 }
-                this.messages.add(new DiagMessage(message, args));
+                javax.tools.Diagnostic.Kind kind;
+                switch (type) {
+                    case FAILURE:
+                        kind = ERROR;
+                        break;
+                    case WARNING:
+                        kind = MANDATORY_WARNING;
+                        break;
+                    case SUCCESS:
+                    default:
+                        throw new BugInCF(
+                                "type=%s, messagePairs=%s", type, messagePairs.toString());
+                }
+                this.messages.add(new DiagMessage(kind, message, args));
             }
         }
     }
@@ -87,10 +123,13 @@ public final class Result {
     /**
      * Merges two results into one.
      *
+     * <p>If both this and {@code r} are success results, returns the success result.
+     *
+     * <p>Otherwise, returns a result with the more severe type (failure &gt; warning &gt; success)
+     * and the union of the messages.
+     *
      * @param r the result to merge with this result
-     * @return a result that is the success result if both this and {@code r} are success results,
-     *     or a result that has the more significant type (failure &gt; warning &gt; success) and
-     *     the message keys of both this result and {@code r}
+     * @return the merge of the two results
      */
     public Result merge(Result r) {
         if (r == null) {
@@ -146,67 +185,9 @@ public final class Result {
             case WARNING:
                 return "WARNING: " + messages;
             case SUCCESS:
-            default:
                 return "SUCCESS";
-        }
-    }
-
-    /**
-     * A class that represents diagnostic messages.
-     *
-     * <p>{@code DiagMessage} encapsulates the message key which would identify the relevant
-     * standard error message according to the user locale.
-     *
-     * <p>The optional arguments are possible custom strings for the error message.
-     */
-    public static class DiagMessage {
-        private final @CompilerMessageKey String message;
-        private Object[] args;
-
-        protected DiagMessage(@CompilerMessageKey String message, Object[] args) {
-            this.message = message;
-            if (args == null) {
-                this.args = new Object[0]; /*null->nn*/
-            } else {
-                this.args = Arrays.copyOf(args, args.length);
-            }
-        }
-
-        /** @return the message key of this DiagMessage */
-        public @CompilerMessageKey String getMessageKey() {
-            return this.message;
-        }
-
-        /** @return the customized optional arguments for the message */
-        public Object[] getArgs() {
-            return this.args;
-        }
-
-        @Override
-        public boolean equals(@Nullable Object obj) {
-            if (!(obj instanceof DiagMessage)) {
-                return false;
-            }
-
-            DiagMessage other = (DiagMessage) obj;
-
-            return (message.equals(other.message) && Arrays.equals(args, other.args));
-        }
-
-        @Pure
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.message, Arrays.hashCode(this.args));
-        }
-
-        @SideEffectFree
-        @Override
-        public String toString() {
-            if (args.length == 0) {
-                return message;
-            }
-
-            return message + " : " + Arrays.toString(args);
+            default:
+                throw new BugInCF("Unhandled Result type %s in %s", type, this);
         }
     }
 }

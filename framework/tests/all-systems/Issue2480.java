@@ -3,7 +3,7 @@
 
 import java.util.List;
 
-@SuppressWarnings({"unchecked", ""}) // check for crashes only
+@SuppressWarnings({"unchecked", "all"}) // check for crashes only
 abstract class Issue2480 {
     void testCase() {
         for (Class<?> wrapperType : of(Character.class, Boolean.class)) {}

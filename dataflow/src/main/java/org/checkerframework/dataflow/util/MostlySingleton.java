@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.util;
 
 import java.util.HashSet;
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -45,7 +44,7 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
     }
 
     @Override
-    public boolean contains(@Nullable Object o) {
+    public boolean contains(Object o) {
         switch (state) {
             case EMPTY:
                 return false;

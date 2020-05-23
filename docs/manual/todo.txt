@@ -21,11 +21,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 
 ------------------------------------------------------
 
-The Javadoc for DefaultQualifieers uses ALL_EXCEPT_LOCALS in an example.
-Replace it and document how to achieve CLIMB-to-top instead.
-
-------------------------------------------------------
-
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
 the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
 to be a subtype of AbstractBasicAnnotatedTypeFactory, because

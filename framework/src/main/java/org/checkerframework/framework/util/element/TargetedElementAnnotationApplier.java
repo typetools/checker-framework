@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups. TARGETED
@@ -119,32 +120,23 @@ abstract class TargetedElementAnnotationApplier {
             }
         }
         if (!remaining.isEmpty()) {
-            StringBuilder msg = new StringBuilder();
-            msg.append(
-                    "handleInvalid(this="
-                            + this.getClass().getName()
-                            + "):"
-                            + "\n"
-                            + "Invalid variable and element passed to extractAndApply; type: "
-                            + type
-                            + "\n"
-                            + "  element: "
+            StringJoiner msg = new StringJoiner(System.lineSeparator());
+            msg.add("handleInvalid(this=" + this.getClass().getName() + "):");
+            msg.add("Invalid variable and element passed to extractAndApply; type: " + type);
+            String elementInfoPrefix =
+                    "  element: "
                             + element
                             + " (kind: "
                             + element.getKind()
-                            + "), invalid annotations: ");
-            List<String> remainingInfo = new ArrayList<>(remaining.size());
+                            + "), invalid annotations: ";
+            StringJoiner remainingInfo = new StringJoiner(", ", elementInfoPrefix, "");
             for (Attribute.TypeCompound r : remaining) {
                 remainingInfo.add(r.toString() + " (" + r.position + ")");
             }
-            msg.append(PluginUtil.join(", ", remainingInfo));
-            msg.append(
-                    "\n"
-                            + "Targeted annotations: "
-                            + PluginUtil.join(", ", annotatedTargets())
-                            + "\n"
-                            + "Valid annotations: "
-                            + PluginUtil.join(", ", validTargets()));
+            msg.add(remainingInfo.toString());
+            msg.add("Targeted annotations: " + SystemUtil.join(", ", annotatedTargets()));
+            msg.add("Valid annotations: " + SystemUtil.join(", ", validTargets()));
+
             throw new BugInCF(msg.toString());
         }
     }

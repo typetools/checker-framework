@@ -1,4 +1,5 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Sibling1;
+import testlib.wholeprograminference.qual.Sibling2;
 
 class OverriddenMethodsTestParent {
     public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}
@@ -35,12 +36,12 @@ class OverriddenMethodsTestChild extends OverriddenMethodsTestParent {
         @Sibling2 Object o = obj;
     }
 
-    @SuppressWarnings("")
+    @SuppressWarnings("all")
     @Override
     public void barz(Object obj) {}
 
     public void callbarz(Object obj) {
-        // If the @SuppressWarnings("") on the overridden version of barz above is not
+        // If the @SuppressWarnings("all") on the overridden version of barz above is not
         // respected, and the annotations on the receiver and parameter of barz are
         // inferred, then the following call to barz will result in a method.invocation.invalid
         // and an argument.type.incompatible type checking errors.
