@@ -48,6 +48,9 @@ public class SignatureTypeFactoryTest {
         String s15 = "";
         String s16 = "[]";
         String s17 = "[][]";
+        String s18 = "null";
+        String s19 = "abstract";
+        String s20 = "float";
 
         // All the examples from the manual
         String t1 = "I";
@@ -320,17 +323,35 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         fbn = s17;
 
-        us = s15;
+        us = s18;
+        fqn = s18;
+        cgn = s18;
         // :: error: (assignment.type.incompatible)
-        fqn = s15;
+        fd = s18;
+        iform = s18;
+        sn = s18;
+        bn = s18;
+        fbn = s18;
+
+        us = s19;
+        fqn = s19;
+        cgn = s19;
         // :: error: (assignment.type.incompatible)
-        cgn = s15;
+        fd = s19;
+        iform = s19;
+        sn = s19;
+        bn = s19;
+        fbn = s19;
+
+        us = s20;
+        fqn = s20;
+        cgn = s20;
         // :: error: (assignment.type.incompatible)
-        fd = s15;
-        // :: error: (assignment.type.incompatible)
-        bn = s15;
-        // :: error: (assignment.type.incompatible)
-        fbn = s15;
+        fd = s20;
+        iform = s20;
+        sn = s20;
+        bn = s20;
+        fbn = s20;
 
         us = t1;
         fqn = t1;
