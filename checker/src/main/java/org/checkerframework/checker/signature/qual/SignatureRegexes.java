@@ -137,6 +137,7 @@ public class SignatureRegexes {
     public static final String DotSeparatedIdentifiers_ANCHORED =
             "^" + IDENTIFIER + "(\\." + IDENTIFIER + ")*$";
 
+    /** The annotations for which main should output a stringPatterns value. */
     private static final String[] annotationNames =
             new String[] {
                 "BinaryNameInUnnamedPackage",
