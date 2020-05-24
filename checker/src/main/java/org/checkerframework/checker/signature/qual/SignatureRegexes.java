@@ -163,6 +163,8 @@ public class SignatureRegexes {
      * Produce text for annotation definitions.
      *
      * @param args ignored
+     * @throws IllegalAccessException if reflection fails
+     * @throws NoSuchFieldException if reflection fails
      */
     public static void main(String[] args) throws IllegalAccessException, NoSuchFieldException {
         Class<SignatureRegexes> clazz = SignatureRegexes.class;
