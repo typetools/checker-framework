@@ -328,7 +328,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 102px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@IdentifierOrArray<xhtml:br />
+            <xhtml:div>@ArrayWithoutPackage<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -338,7 +338,7 @@
            y="19"
            font-size="12px"
            id="text62"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@IdentifierOrArray</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@ArrayWithoutPackage</text>
       </switch>
     </g>
     <rect
@@ -362,7 +362,7 @@
            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
           <xhtml:div
              style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 308px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage<xhtml:br />
+            <xhtml:div>@FieldDescriptorWithoutPackage<xhtml:br />
 <xhtml:br />
 </xhtml:div>
           </xhtml:div>
@@ -372,7 +372,7 @@
            y="19"
            font-size="12px"
            id="text70"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FieldDescriptorWithoutPackage</text>
       </switch>
     </g>
     <rect

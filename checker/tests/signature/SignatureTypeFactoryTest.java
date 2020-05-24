@@ -14,9 +14,9 @@ public class SignatureTypeFactoryTest {
     //     FqBinaryName.class,
     //
     //     BinaryName.class,
-    //     FieldDescriptorForPrimitiveOrArrayInUnnamedPackage.class,
+    //     FieldDescriptorWithoutPackage.class,
     //
-    //     IdentifierOrArray.class,
+    //     ArrayWithoutPackage.class,
     //     DotSeparatedIdentifiers.class,
     //     BinaryNameInUnnamedPackage.class,
     //
@@ -324,23 +324,35 @@ public class SignatureTypeFactoryTest {
         fbn = s17;
 
         us = s18;
+        // :: error: (assignment.type.incompatible)
         fqn = s18;
+        // :: error: (assignment.type.incompatible)
         cgn = s18;
         // :: error: (assignment.type.incompatible)
         fd = s18;
+        // :: error: (assignment.type.incompatible)
         iform = s18;
+        // :: error: (assignment.type.incompatible)
         sn = s18;
+        // :: error: (assignment.type.incompatible)
         bn = s18;
+        // :: error: (assignment.type.incompatible)
         fbn = s18;
 
         us = s19;
+        // :: error: (assignment.type.incompatible)
         fqn = s19;
+        // :: error: (assignment.type.incompatible)
         cgn = s19;
         // :: error: (assignment.type.incompatible)
         fd = s19;
+        // :: error: (assignment.type.incompatible)
         iform = s19;
+        // :: error: (assignment.type.incompatible)
         sn = s19;
+        // :: error: (assignment.type.incompatible)
         bn = s19;
+        // :: error: (assignment.type.incompatible)
         fbn = s19;
 
         us = s20;
