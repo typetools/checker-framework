@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf({
     DotSeparatedIdentifiers.class,
-    BinaryNameInUnnamedPackage.class,
+    BinaryNameWithoutPackage.class,
     IdentifierOrPrimitiveType.class
 })
 @Documented
