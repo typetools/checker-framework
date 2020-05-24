@@ -67,6 +67,7 @@ public class SignatureRegexes {
      * A regex that matches identifier tokens that are not identifiers (keywords, boolean literals,
      * and the null literal).
      */
+    @SuppressWarnings("UnusedVariable") // temporary
     private static final String KEYWORD_OR_LITERAL =
             String.join("|", KEYWORD, "true", "false", "null");
 
