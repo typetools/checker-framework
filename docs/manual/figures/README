@@ -5,7 +5,8 @@ uses PDF conversions of each SVG.
 To edit an existing image (.svg file), use one of these tools.
  * Inkscape
  * Visio
- * LibreOffice/OpenOffice.
+ * LibreOffice/OpenOffice
+Please don't use:
  * https://www.draw.io (no tool installation required)
     * The .svg files it exports don't convert to pdf with correct formatting
       if they have multiline text

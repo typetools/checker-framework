@@ -36,8 +36,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({ClassGetName.class, FqBinaryName.class})
-// TODO: Need to exclude SignatureRegexes.NON_IDENTIFIER_REGEX, and do the same in @InternalForm.
+@SubtypeOf({BinaryNameOrPrimitiveType.class})
 @QualifierForLiterals(
         stringPatterns =
                 /* Do not edit; see SignatureRegexes.java */ "^(?!abstract|assert|break|case|catch|class|const|continue|default|do|else|enum|extends|final|finally|for|if|goto|implements|import|instanceof|interface|native|new|package|private|protected|public|return|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|boolean|byte|char|double|float|int|long|short|true|false|null)[A-Za-z_][A-Za-z_0-9]*(\\.(?!abstract|assert|break|case|catch|class|const|continue|default|do|else|enum|extends|final|finally|for|if|goto|implements|import|instanceof|interface|native|new|package|private|protected|public|return|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|boolean|byte|char|double|float|int|long|short|true|false|null)[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*$")

@@ -124,6 +124,9 @@ public class SignatureRegexes {
     /** A grouped regex that matches identifiers. */
     private static final String IDENTIFIER = "(?!" + KEYWORD_OR_LITERAL + ")" + IDENTIFIER_TOKEN;
 
+    /** An anchored regex that matches Identifier strings. */
+    public static final String IDENTIFIER_OR_PRIMITIVE_TYPE = ALTERNATE(IDENTIFIER, PRIMITIVE_TYPE);
+
     /** An unanchored regex that matches DotSeparatedIdentifiers strings. */
     private static final String DOT_SEPARATED_IDENTIFIERS = IDENTIFIER + ANY("\\." + IDENTIFIER);
 
@@ -142,7 +145,7 @@ public class SignatureRegexes {
     /** A regex that matches the nested-class part of a class name. */
     private static final String ARRAY = "(\\[\\])*";
 
-    /** An anchored regex that matches InternalForm strings. */
+    /** A regex that matches InternalForm strings. */
     public static final String INTERNAL_FORM = SLASH_SEPARATED_IDENTIFIERS + NESTED;
 
     private static final String CLASS_GET_NAME_NONPRIMITIVE_NONARRAY =
@@ -152,13 +155,20 @@ public class SignatureRegexes {
     // Strings to use in annotation definitions.  They are defined in this class because the
     // expression in the annotation definition cannot do computation (even string concatenation).
 
-    /** An anchored regex that matches BinaryName strings. */
+    /** A regex that matches ArrayWithoutPackage strings. */
+    public static final String ArrayWithoutPackage = GROUPED(IDENTIFIER_OR_PRIMITIVE_TYPE) + ARRAY;
+
+    /** A regex that matches BinaryName strings. */
     public static final String BinaryName = BINARY_NAME;
 
-    /** An anchored regex that matches BinaryNameInUnnamedPackage strings. */
+    /** A regex that matches BinaryNameInUnnamedPackage strings. */
     public static final String BinaryNameInUnnamedPackage = IDENTIFIER + NESTED;
 
-    /** An anchored regex that matches ClassGetName strings. */
+    /** A regex that matches BinaryNameOrPrimitiveType strings. */
+    public static final String BinaryNameOrPrimitiveType =
+            GROUPED_ALTERNATE(BINARY_NAME, PRIMITIVE_TYPE);
+
+    /** A regex that matches ClassGetName strings. */
     public static final String ClassGetName =
             GROUPED_ALTERNATE(
                     // non-array
@@ -170,61 +180,65 @@ public class SignatureRegexes {
                                     FD_PRIMITIVE,
                                     "L" + CLASS_GET_NAME_NONPRIMITIVE_NONARRAY + ";")));
 
-    /** An anchored regex that matches ClassGetSimpleName strings. */
+    /** A regex that matches ClassGetSimpleName strings. */
     public static final String ClassGetSimpleName =
             GROUPED_ALTERNATE(
                             "", // empty string is a ClassGetSimpleName
-                            PRIMITIVE_TYPE,
-                            IDENTIFIER)
+                            IDENTIFIER_OR_PRIMITIVE_TYPE)
                     + ARRAY;
 
-    /** An anchored regex that matches DotSeparatedIdentifiers strings. */
+    /** A regex that matches DotSeparatedIdentifiers strings. */
     public static final String DotSeparatedIdentifiers = DOT_SEPARATED_IDENTIFIERS;
 
-    /** An anchored regex that matches FieldDescriptor strings. */
+    /** A regex that matches DotSeparatedIdentifiersOrPrimitiveType strings. */
+    public static final String DotSeparatedIdentifiersOrPrimitiveType =
+            GROUPED_ALTERNATE(DOT_SEPARATED_IDENTIFIERS, PRIMITIVE_TYPE);
+
+    /** A regex that matches FieldDescriptor strings. */
     public static final String FieldDescriptor =
             "\\[*(" + FD_PRIMITIVE + "|L" + INTERNAL_FORM + ";)";
 
-    /** An anchored regex that matches FqBinaryName strings. */
-    public static final String FqBinaryName =
-            "(" + PRIMITIVE_TYPE + "|" + BINARY_NAME + ")" + ARRAY;
-
-    /**
-     * An anchored regex that matches FieldDescriptorWithoutPackage strings.
-     */
+    /** A regex that matches FieldDescriptorWithoutPackage strings. */
     public static final String FieldDescriptorWithoutPackage =
             "(" + FD_PRIMITIVE + "|\\[+" + FD_PRIMITIVE + "|\\[L" + IDENTIFIER + NESTED + ";)";
 
-    /** An anchored regex that matches FullyQualifiedName strings. */
+    /** A regex that matches FqBinaryName strings. */
+    public static final String FqBinaryName =
+            "(" + PRIMITIVE_TYPE + "|" + BINARY_NAME + ")" + ARRAY;
+
+    /** A regex that matches FullyQualifiedName strings. */
     public static final String FullyQualifiedName =
             "(" + PRIMITIVE_TYPE + "|" + DOT_SEPARATED_IDENTIFIERS + ")" + ARRAY;
 
-    /** An anchored regex that matches Identifier strings. */
+    /** A regex that matches Identifier strings. */
     public static final String Identifier = IDENTIFIER;
 
-    /** An anchored regex that matches ArrayWithoutPackage strings. */
-    public static final String ArrayWithoutPackage = IDENTIFIER + ARRAY;
+    /** A regex that matches Identifier strings. */
+    public static final String IdentifierOrPrimitiveType = IDENTIFIER_OR_PRIMITIVE_TYPE;
 
-    /** An anchored regex that matches InternalForm strings. */
+    /** A regex that matches InternalForm strings. */
     public static final String InternalForm = INTERNAL_FORM;
 
-    /** An anchored regex that matches InternalForm strings. */
+    /** A regex that matches InternalForm strings. */
     public static final String PrimitiveType = PRIMITIVE_TYPE;;
 
     /** The annotations for which main should output a stringPatterns value. */
     private static final String[] annotationNames =
             new String[] {
-                "BinaryNameInUnnamedPackage",
+                "ArrayWithoutPackage",
                 "BinaryName",
+                "BinaryNameInUnnamedPackage",
+                "BinaryNameOrPrimitiveType",
                 "ClassGetName",
                 "ClassGetSimpleName",
                 "DotSeparatedIdentifiers",
+                "DotSeparatedIdentifiersOrPrimitiveType",
                 "FieldDescriptor",
                 "FieldDescriptorWithoutPackage",
                 "FqBinaryName",
                 "FullyQualifiedName",
-                "ArrayWithoutPackage",
                 "Identifier",
+                "IdentifierOrPrimitiveType",
                 "InternalForm",
                 "PrimitiveType",
             };
