@@ -37,6 +37,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({ClassGetName.class, FqBinaryName.class})
+// TODO: Need to exclude SignatureRegexes.NON_IDENTIFIER_REGEX, and do the same in @InternalForm.
 @QualifierForLiterals(
-        stringPatterns = "^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*$")
+        stringPatterns =
+                /* Do not edit; see SignatureRegexes.java */ "^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*$")
 public @interface BinaryName {}

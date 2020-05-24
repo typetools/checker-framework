@@ -18,5 +18,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SignatureUnknown.class)
-@QualifierForLiterals(stringPatterns = "^(|[A-Za-z_][A-Za-z_0-9]*)(\\[\\])*$")
+@QualifierForLiterals(
+        stringPatterns =
+                /* Do not edit; see SignatureRegexes.java */ "^(|[A-Za-z_][A-Za-z_0-9]*)(\\[\\])*$")
 public @interface ClassGetSimpleName {}
