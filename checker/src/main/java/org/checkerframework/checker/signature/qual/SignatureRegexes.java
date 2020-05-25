@@ -63,7 +63,7 @@ public class SignatureRegexes {
     /**
      * A grouped alternation.
      *
-     * @param arg a regular expression
+     * @param args regular expressions
      * @return a regex that matches any one of the arguments, wrapped in a capturing group
      */
     private static final String GROUPED_ALTERNATE(String... args) {
