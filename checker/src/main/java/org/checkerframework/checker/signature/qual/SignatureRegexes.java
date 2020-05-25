@@ -20,27 +20,52 @@ public class SignatureRegexes {
     /// Functions on regular expressions
     ///
 
-    /** Create a capturing group. */
+    /**
+     * Create a capturing group.
+     *
+     * @param arg a regular expression
+     * @return the argument wrapped in a capturing group
+     */
     private static final String GROUPED(String arg) {
         return "(" + arg + ")";
     }
 
-    /** Create a regex matching one or more of the given argument (Kleene star). */
+    /**
+     * Create a regex matching zero or more of the given argument (Kleene star).
+     *
+     * @param arg a regular expression
+     * @return the argument, repeated zero or more times
+     */
     private static final String ANY(String arg) {
         return GROUPED(arg) + "*";
     }
 
-    /** Create a regex that must match the entire string. */
+    /**
+     * Create a regex that must match the entire string.
+     *
+     * @param arg a regular expression
+     * @return the argument, made to match the entire string
+     */
     private static final String ANCHORED(String arg) {
         return "^" + arg + "$";
     }
 
-    /** An ungrouped alternation. */
+    /**
+     * An ungrouped alternation.
+     *
+     * @param args regular expressions
+     * @return a regex that matches any one of the arguments
+     */
     private static final String ALTERNATE(String... args) {
         return String.join("|", args);
     }
 
-    /** A grouped alternation. */
+    /**
+     * A grouped alternation.
+     *
+     * @param arg a regular expression
+     * @return a regex that matches any one of the arguments, wrapped in a capturing group
+     */
     private static final String GROUPED_ALTERNATE(String... args) {
         return GROUPED(ALTERNATE(args));
     }
@@ -49,7 +74,7 @@ public class SignatureRegexes {
     /// Building blocks for regular expressions
     ///
 
-    /** An unachored regex that matches keywords, except primitive types. */
+    /** An unanchored regex that matches keywords, except primitive types. */
     private static final String KEYWORD_NON_PRIMITIVE_TYPE =
             String.join(
                     "|",
@@ -104,14 +129,14 @@ public class SignatureRegexes {
                     "volatile",
                     "while");
 
-    /** An unachored regex that matches primitive types. */
+    /** An unanchored regex that matches primitive types. */
     private static final String PRIMITIVE_TYPE =
             String.join("|", "boolean", "byte", "char", "double", "float", "int", "long", "short");
 
     /** A regex that matches field descriptors for primitive types. */
     private static final String FD_PRIMITIVE = "[BCDFIJSZ]";
 
-    /** An unachored regex that matches keywords. */
+    /** An unanchored regex that matches keywords. */
     private static final String KEYWORD = KEYWORD_NON_PRIMITIVE_TYPE + "|" + PRIMITIVE_TYPE;
 
     /**
@@ -217,13 +242,13 @@ public class SignatureRegexes {
     /** A regex that matches Identifier strings. */
     public static final String Identifier = IDENTIFIER;
 
-    /** A regex that matches Identifier strings. */
+    /** A regex that matches IdentifierOrPrimitiveType strings. */
     public static final String IdentifierOrPrimitiveType = IDENTIFIER_OR_PRIMITIVE_TYPE;
 
     /** A regex that matches InternalForm strings. */
     public static final String InternalForm = INTERNAL_FORM;
 
-    /** A regex that matches InternalForm strings. */
+    /** A regex that matches PrimitiveType strings. */
     public static final String PrimitiveType = PRIMITIVE_TYPE;;
 
     /** The annotations for which main should output a stringPatterns value. */
