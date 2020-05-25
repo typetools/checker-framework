@@ -18,7 +18,7 @@ public class SignatureTypeFactoryTest {
     //
     //     ArrayWithoutPackage.class,
     //     DotSeparatedIdentifiers.class,
-    //     BinaryNameInUnnamedPackage.class,
+    //     BinaryNameWithoutPackage.class,
     //
     //     Identifier.class,
     //

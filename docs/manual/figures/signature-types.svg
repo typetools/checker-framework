@@ -285,7 +285,7 @@
            y="19"
            font-size="12px"
            id="text86"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@BinaryNameInUnnamedPackage</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@BinaryNameWithoutPackage</text>
       </switch>
     </g>
     <path

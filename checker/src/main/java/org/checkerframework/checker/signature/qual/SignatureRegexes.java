@@ -161,8 +161,8 @@ public class SignatureRegexes {
     /** A regex that matches BinaryName strings. */
     public static final String BinaryName = BINARY_NAME;
 
-    /** A regex that matches BinaryNameInUnnamedPackage strings. */
-    public static final String BinaryNameInUnnamedPackage = IDENTIFIER + NESTED;
+    /** A regex that matches BinaryNameWithoutPackage strings. */
+    public static final String BinaryNameWithoutPackage = IDENTIFIER + NESTED;
 
     /** A regex that matches BinaryNameOrPrimitiveType strings. */
     public static final String BinaryNameOrPrimitiveType =
@@ -227,7 +227,7 @@ public class SignatureRegexes {
             new String[] {
                 "ArrayWithoutPackage",
                 "BinaryName",
-                "BinaryNameInUnnamedPackage",
+                "BinaryNameWithoutPackage",
                 "BinaryNameOrPrimitiveType",
                 "ClassGetName",
                 "ClassGetSimpleName",
