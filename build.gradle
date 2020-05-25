@@ -400,7 +400,7 @@ task requireJavadoc(type: JavaExec) {
 
 
 /**
- * Creates a task named taskName that runs javadoc.
+ * Creates a task named taskName that runs javadoc with the -Xdoclint:all option.
  *
  * @param taskName the name of the task to create
  * @param taskDescription description of the task
