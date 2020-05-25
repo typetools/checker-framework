@@ -20,14 +20,17 @@ public class SignatureRegexes {
     /// Functions on regular expressions
     ///
 
+    /** Create a capturing group. */
     private static final String GROUPED(String arg) {
         return "(" + arg + ")";
     }
 
+    /** Create a regex matching one or more of the given argument (Kleene star). */
     private static final String ANY(String arg) {
         return GROUPED(arg) + "*";
     }
 
+    /** Create a regex that must match the entire string. */
     private static final String ANCHORED(String arg) {
         return "^" + arg + "$";
     }
@@ -148,6 +151,7 @@ public class SignatureRegexes {
     /** A regex that matches InternalForm strings. */
     public static final String INTERNAL_FORM = SLASH_SEPARATED_IDENTIFIERS + NESTED;
 
+    /** A regex that matches ClassGetName, for non-primitive, non-array types. */
     private static final String CLASS_GET_NAME_NONPRIMITIVE_NONARRAY =
             IDENTIFIER + "(\\." + IDENTIFIER + "|" + NESTED_ONE + ")*";
 
