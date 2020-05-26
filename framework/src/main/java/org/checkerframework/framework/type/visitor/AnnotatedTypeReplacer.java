@@ -115,7 +115,13 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
     @Override
     public Void visitWildcard(AnnotatedWildcardType from, AnnotatedTypeMirror to) {
         resolvePrimaries(from, to);
-        return super.visitWildcard(from, to);
+        if (to.getKind() == TypeKind.WILDCARD) {
+            return super.visitWildcard(from, to);
+        } else {
+            // TODO #3128: The to type is something unexpected, likely a captured wildcard.
+            // What is a proper fix for this bug?
+            return null;
+        }
     }
 
     /**

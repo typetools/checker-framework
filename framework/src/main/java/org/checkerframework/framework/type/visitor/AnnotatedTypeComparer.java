@@ -135,7 +135,8 @@ public abstract class AnnotatedTypeComparer<R>
 
     @Override
     public R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedWildcardType : p;
+        assert p instanceof AnnotatedWildcardType
+                : "Unexpected type " + p + " of kind " + p.getKind();
         AnnotatedWildcardType w = (AnnotatedWildcardType) p;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
