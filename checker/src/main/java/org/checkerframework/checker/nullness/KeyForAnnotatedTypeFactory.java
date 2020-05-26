@@ -141,17 +141,17 @@ public class KeyForAnnotatedTypeFactory
         }
     }
 
-    /** explicitly calling constructor instead of using reflection */
     @Override
     protected KeyForAnalysis createFlowAnalysis(
             List<Pair<VariableElement, KeyForValue>> fieldValues) {
+        // Explicitly call the constructor instead of using reflection.
         return new KeyForAnalysis(checker, this, fieldValues);
     }
 
-    /** explicitly calling constructor instead of using reflection */
     @Override
     public KeyForTransfer createFlowTransferFunction(
             CFAbstractAnalysis<KeyForValue, KeyForStore, KeyForTransfer> analysis) {
+        // Explicitly call the constructor instead of using reflection.
         return new KeyForTransfer((KeyForAnalysis) analysis);
     }
 
