@@ -727,9 +727,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
-                // This is currently not supported. Polymorphic qualifiers cannot have lower bounds
-                // Failed to so causes a NPE when building qualifier hierarchy
                 if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                    // This is currently not supported. No qualifier can have a polymorphic
+                    // qualifier as super qualifier.
                     throw new BugInCF(
                             "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
