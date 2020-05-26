@@ -13,13 +13,29 @@ import org.checkerframework.javacutil.SystemUtil;
  */
 public class CheckerDevelMain extends CheckerMain {
 
+    /** Common prefix for option names. */
     private static final String PROP_PREFIX = "CheckerDevelMain";
+
+    /** Option name for specifying the binary directory. */
     private static final String BINARY_PROP = PROP_PREFIX + ".binary";
+
+    /** Option name for specifying the classpath. */
     private static final String CP_PROP = PROP_PREFIX + ".cp";
+
+    /** Option name for specifying the processor classpath. */
     private static final String PP_PROP = PROP_PREFIX + ".pp";
+
+    /** Option name for specifying the runtime classpath. */
     private static final String RUNTIME_CP_PROP = PROP_PREFIX + ".runtime.cp";
+
+    /** Option name for specifying whether to use verbose output. */
     private static final String VERBOSE_PROP = PROP_PREFIX + ".verbose";
 
+    /**
+     * The main method.
+     *
+     * @param args command-line arguments
+     */
     public static void main(final String[] args) {
 
         final String cp = System.getProperty(CP_PROP);
