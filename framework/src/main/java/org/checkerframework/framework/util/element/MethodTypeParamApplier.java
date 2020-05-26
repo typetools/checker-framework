@@ -83,6 +83,9 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
             TargetType.CONSTRUCTOR_REFERENCE,
             TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
             TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+            // TODO: Test case from Issue 3277 produces invalid position.
+            // Ignore until javac is fixed.
+            TargetType.UNKNOWN
         };
     }
 
