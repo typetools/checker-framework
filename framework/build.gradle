@@ -25,7 +25,9 @@ dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
     implementation files("${stubparserJar}")
-    implementation('org.checkerframework:annotation-file-utilities:3.9.9-SNAPSHOT') {
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google', module: 'javac'
     }
     implementation project(':checker-qual')
