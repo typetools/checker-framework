@@ -313,13 +313,9 @@ public class NullnessAnnotatedTypeFactory
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         // `MyClass.class.getCanonicalName()` is non-null.
-        System.out.printf("tree: %s%n", tree);
         if (TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
-            System.out.printf("is invocation%n");
             ExpressionTree receiver = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
-            System.out.printf("receiver: %s%n", receiver);
-            if ((receiver instanceof MemberSelectTree)
-                    && ((MemberSelectTree) receiver).getIdentifier().contentEquals("class")) {
+            if (TreeUtils.isClassLiteral(receiver)) {
                 AnnotatedTypeMirror type = method.getReturnType();
                 type.replaceAnnotation(NONNULL);
             }
