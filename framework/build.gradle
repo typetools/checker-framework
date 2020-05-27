@@ -32,6 +32,16 @@ dependencies {
     implementation 'org.plumelib:reflection-util:0.2.2'
     implementation 'org.plumelib:plume-util:1.1.4'
 
+    // TODO: The annotated version of Guava gives an error:
+    // org.checkerframework.annotatedlib/guava/.../guava-28.2-jre.jar(/com/google/common/collect/ImmutableCollection.class):
+    // warning: Cannot find annotation method 'value()' in type 'DoNotMock': class file for com.google.errorprone.annotations.DoNotMock not found
+    // implementation ('org.checkerframework.annotatedlib:guava:28.2-jre') {
+
+    implementation ('com.google.guava:guava:28.2-jre') {
+        // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+        exclude group: 'org.checkerframework'
+    }
+
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
@@ -42,16 +52,6 @@ dependencies {
 
     // Lombok support in Returns Receiver Checker
     testImplementation "org.projectlombok:lombok:${versions.lombok}"
-
-    // TODO: The annotated version of Guava gives an error:
-    // org.checkerframework.annotatedlib/guava/.../guava-28.2-jre.jar(/com/google/common/collect/ImmutableCollection.class):
-    // warning: Cannot find annotation method 'value()' in type 'DoNotMock': class file for com.google.errorprone.annotations.DoNotMock not found
-    // testImplementation ('org.checkerframework.annotatedlib:guava:28.2-jre') {
-
-    testImplementation ('com.google.guava:guava:28.2-jre') {
-    // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
-        exclude group: 'org.checkerframework'
-    }
 }
 
 task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {

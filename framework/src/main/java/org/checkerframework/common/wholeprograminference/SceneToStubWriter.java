@@ -20,7 +20,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -450,8 +449,7 @@ public final class SceneToStubWriter {
      */
     private static int printClassDefinitions(
             String basename, AClass aClass, PrintWriter printWriter) {
-
-        String[] classNames = StringUtils.split(basename, '$');
+        String[] classNames = basename.split("\\$");
 
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
