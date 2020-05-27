@@ -1,3 +1,13 @@
+Version ??, June 1, 2020
+
+-Ainfer now takes an argument:
+ * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
+ * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
+
+New command-line option:
+  -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
 Version 3.4.0, May 3, 2020
 
 The annotated jdk8.jar is no longer used.  You should remove any occurrence of

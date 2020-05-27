@@ -111,6 +111,9 @@ allprojects {
     configurations {
         javacJar
 
+        // Holds the combined classpath of all subprojects including the subprojects themselves.
+        allProjects
+
         // There's a bug in IntelliJ that adds the processor path to the classpath when building
         // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
         // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
@@ -126,6 +129,8 @@ allprojects {
         }
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+
+        allProjects subprojects
     }
 
     // After all the tasks have been created, modify some of them.
@@ -152,13 +157,15 @@ allprojects {
 
                 // We want to link to Java 9 documentation of the compiler classes since we use Java 9
                 // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-                // apart of the main documentation of Java 8, javadoc links to the Java 9 versions.
+                // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
                 // TODO, this creates broken links to the com.sun.tools.javac package.
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
+                options.addBooleanOption('Xwerror', true)
+                options.addStringOption('Xmaxwarns', '99999')
             }
         }
 
@@ -226,6 +233,15 @@ allprojects {
 
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
+    executable 'checker/bin-devel/build.sh'
+}
+task maybeCloneAndBuildDependencies(type: Exec) {
+    description 'Clones (or updates) and builds all dependencies if they are not present.'
+    onlyIf {
+        !file(afuJar).exists() || !file(stubparserJar).exists()
+        // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
+        // the repository does not exist when building checker.jar.
+    }
     executable 'checker/bin-devel/build.sh'
 }
 
@@ -345,7 +361,7 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
     source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+    classpath = configurations.allProjects
     if (isJava8) {
         classpath += configurations.javacJar
     }
@@ -384,7 +400,7 @@ task requireJavadoc(type: JavaExec) {
 
 
 /**
- * Creates a task named taskName that runs javadoc.
+ * Creates a task named taskName that runs javadoc with the -Xdoclint:all option.
  *
  * @param taskName the name of the task to create
  * @param taskDescription description of the task
@@ -402,7 +418,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
             }
         }
 
-        classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
+        classpath = configurations.allProjects
 
         destinationDir.deleteDir()
         options.memberLevel = memberLevel
@@ -576,7 +592,7 @@ subprojects {
     if (!project.name.startsWith('checker-qual')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
-            commandLine "bash", "-c", "find . \\( -name jdk \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+            commandLine "bash", "-c", "find . \\( -name jdk11 \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
@@ -713,6 +729,8 @@ subprojects {
                         "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 ]
             }
+
+            maxParallelForks = Integer.MAX_VALUE
 
             if (project.name.is('checker')) {
                 dependsOn('copyJarsToDist')

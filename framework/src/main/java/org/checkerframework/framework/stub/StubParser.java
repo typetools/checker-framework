@@ -88,7 +88,7 @@ import org.checkerframework.javacutil.Pair;
  * ProcessingEnvironment, Map, Map)}, which side-effects its last two arguments.
  *
  * <p>The constructor acts in two parts. First, it calls the Stub Parser to parse a stub file. Then,
- * itis walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  */
 public class StubParser {
 
@@ -660,7 +660,7 @@ public class StubParser {
 
         annotateTypeParameters(decl, elt, atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -690,7 +690,7 @@ public class StubParser {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -814,7 +814,7 @@ public class StubParser {
         }
 
         // Store the type.
-        putNew(atypes, elt, methodType);
+        putMerge(atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
     }
 
@@ -854,6 +854,7 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
+                putMerge(atypes, paramElt, paramType);
             }
         }
     }
@@ -956,7 +957,9 @@ public class StubParser {
             return;
         }
 
-        clearAnnotations(atype, typeDef);
+        if (mightHaveTypeArguments(atype)) {
+            clearAnnotations(atype, typeDef);
+        }
 
         // Primary annotations for the type of a variable declaration are not stored in typeDef, but
         // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
@@ -1051,6 +1054,33 @@ public class StubParser {
         }
     }
 
+    /**
+     * Returns true if atype might have type arguments that {@link
+     * #clearAnnotations(AnnotatedTypeMirror, Type)} might need to remove.
+     *
+     * @param atype the type to check
+     * @return a conservative approximation of whether atype might have type arguments
+     */
+    private boolean mightHaveTypeArguments(AnnotatedTypeMirror atype) {
+        switch (atype.getKind()) {
+            case DECLARED:
+                AnnotatedDeclaredType adtype = (AnnotatedDeclaredType) atype;
+                return !adtype.getTypeArguments().isEmpty();
+            case WILDCARD:
+            case TYPEVAR:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Process the field declaration in decl, and attach any type qualifiers to the type of elt in
+     * {@link #atypes}
+     *
+     * @param decl the declaration in the stub file
+     * @param elt the element representing that same declaration
+     */
     private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private fields of the jdk.  They can't be referenced outside of the jdk
@@ -1073,25 +1103,29 @@ public class StubParser {
         }
         assert fieldVarDecl != null;
         annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations());
-        putNew(atypes, elt, fieldType);
+        putMerge(atypes, elt, fieldType);
     }
 
     /**
      * Adds the annotations present on the declaration of an enum constant to the ATM of that
      * constant.
+     *
+     * @param decl the enum constant, in Javaparser AST form (the source of annotations)
+     * @param elt the enum constant declaration, as an element (the destination for annotations)
      */
     private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
         recordDeclAnnotationFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations());
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations());
-        putNew(atypes, elt, enumConstType);
+        putMerge(atypes, elt, enumConstType);
     }
 
     /**
      * Returns the innermost component type of {@code type}.
      *
      * @param type array type
+     * @return the innermost component type of {@code type}
      */
     private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
         AnnotatedTypeMirror componentType = type;
@@ -1214,7 +1248,7 @@ public class StubParser {
                     stubWarnNotFound("Annotations on intersection types are not yet supported");
                 }
             }
-            putNew(atypes, paramType.getUnderlyingType().asElement(), paramType);
+            putMerge(atypes, paramType.getUnderlyingType().asElement(), paramType);
         }
     }
 
@@ -1964,7 +1998,7 @@ public class StubParser {
      * @param key the key for the map
      * @param newType the new type for the key
      */
-    private void putNew(
+    private void putMerge(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
         if (key == null) {
             throw new BugInCF("StubParser: key is null");
