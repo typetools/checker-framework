@@ -954,9 +954,9 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
       </annotationProcessors>
       <compilerArgs>
-        <!-- If using JDK 8, use only the two arguments immediately below. -->
+        <!-- If using JDK 8, use only the argument immediately below. -->
         <arg>-J-Xbootclasspath/p:$\{errorProneJavac\}</arg>
-        <!-- If using JDK 11, remove the two arguments above, remove the
+        <!-- If using JDK 11, remove the argument above, remove the
              space in the one below, and uncomment it. -->
         <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
 
