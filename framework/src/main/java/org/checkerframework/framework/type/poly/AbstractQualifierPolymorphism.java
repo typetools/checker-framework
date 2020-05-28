@@ -3,6 +3,7 @@ package org.checkerframework.framework.type.poly;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -13,6 +14,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -153,18 +155,33 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                                     atypeFactory.getReceiverType(tree), type.getReceiverType()));
         }
 
+        // receiver-sensitive poly resolution: resolve return value with assignment context l-value
         TreePath path = atypeFactory.getPath(tree);
         if (path != null) {
             AnnotatedTypeMirror assignmentContext =
                     QualifierPolymorphismUtil.assignedTo(atypeFactory, path);
 
             if (assignmentContext != null) {
-                instantiationMapping =
-                        collector.reduceWithUpperBounds(
-                                instantiationMapping,
-                                collector.visit(
-                                        // Actual assignment lhs type
-                                        assignmentContext, type.getReturnType(), true));
+                // get erased subtype relation
+                TypeMirror javaLhstype =
+                        atypeFactory.types.erasure(assignmentContext.getUnderlyingType());
+                TypeMirror javaReturntype =
+                        atypeFactory.types.erasure(type.getReturnType().getUnderlyingType());
+                // primitive types need special care
+                boolean polyIsSub =
+                        javaReturntype instanceof Type.JCPrimitiveType
+                                || atypeFactory.types.isSubtype(javaReturntype, javaLhstype);
+
+                // only perform receiver-sensitive poly resolution when return type is erased
+                // subtype of lhs
+                if (polyIsSub) {
+                    instantiationMapping =
+                            collector.reduceWithUpperBounds(
+                                    instantiationMapping,
+                                    collector.visit(
+                                            // Actual assignment lhs type
+                                            assignmentContext, type.getReturnType(), true));
+                }
             }
         }
 

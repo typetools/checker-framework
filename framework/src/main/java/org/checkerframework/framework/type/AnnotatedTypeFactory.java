@@ -2101,10 +2101,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
         AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
+
+        methodFromUsePreSubstitution(tree, memberType);
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptMethod(receiverType, methodElt, memberType);
         }
-        methodFromUsePreSubstitution(tree, memberType);
 
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberType);
@@ -2243,10 +2244,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addComputedTypeAnnotations(tree, type);
 
         AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
+
+        constructorFromUsePreSubstitution(tree, con);
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptConstructor(type, ctor, con);
         }
-        constructorFromUsePreSubstitution(tree, con);
 
         con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
 
