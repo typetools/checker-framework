@@ -6,8 +6,8 @@
 import testaccumulation.qual.*;
 
 class Subtyping {
-    void top(@TestAccumulationTop Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+    void top(@TestAccumulation() Object o1) {
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         // :: error: assignment.type.incompatible
         Object o3 = o1;
@@ -22,7 +22,7 @@ class Subtyping {
     }
 
     void foo(@TestAccumulation("foo") Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         Object o3 = o1;
         @TestAccumulation("bar")
@@ -36,7 +36,7 @@ class Subtyping {
     }
 
     void bar(@TestAccumulation("bar") Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         // :: error: assignment.type.incompatible
         Object o3 = o1;
@@ -50,7 +50,7 @@ class Subtyping {
     }
 
     void foobar(@TestAccumulation({"foo", "bar"}) Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         Object o3 = o1;
         @TestAccumulation("bar")
@@ -62,7 +62,7 @@ class Subtyping {
     }
 
     void barfoo(@TestAccumulation({"bar", "foo"}) Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         Object o3 = o1;
         @TestAccumulation("bar")
@@ -74,7 +74,7 @@ class Subtyping {
     }
 
     void bot(@TestAccumulationBottom Object o1) {
-        @TestAccumulationTop Object o2 = o1;
+        @TestAccumulation() Object o2 = o1;
         @TestAccumulation("foo")
         Object o3 = o1;
         @TestAccumulation("bar")

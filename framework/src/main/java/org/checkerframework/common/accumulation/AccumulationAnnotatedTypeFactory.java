@@ -3,6 +3,8 @@ package org.checkerframework.common.accumulation;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -21,6 +23,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -32,7 +35,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The canonical top annotation for this accumulation checker. */
+    /**
+     * The canonical top annotation for this accumulation checker: an instance of the accumulator
+     * annotation with no arguments.
+     */
     public final AnnotationMirror top;
 
     /** The canonical bottom annotation for this accumulation checker. */
@@ -50,21 +56,20 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
      *     argument named "value" whose type is a String array.
-     * @param top the top type in the hierarchy, which must be a supertype of {@code accumulator}.
-     *     The top type should be an annotation with no arguments.
      * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
      *     accumulator}. The bottom type should be an annotation with no arguments.
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
             Class<? extends Annotation> accumulator,
-            Class<? extends Annotation> top,
+            // Class<? extends Annotation> top,
             Class<? extends Annotation> bottom) {
         super(checker);
 
-        this.top = AnnotationBuilder.fromClass(elements, top);
+        // this.top = AnnotationBuilder.fromClass(elements, top);
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
         this.accumulator = accumulator;
+        this.top = createAccumulatorAnnotation(null);
 
         // Every subclass must call postInit!  This does not do so for subclasses.
         if (this.getClass() == AccumulationAnnotatedTypeFactory.class) {
@@ -82,8 +87,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *     arguments, or top if {@code values} is null or empty
      */
     public AnnotationMirror createAccumulatorAnnotation(@Nullable List<String> values) {
-        if (values == null || values.size() == 0) {
-            return top;
+        if (values == null) {
+            values = Collections.emptyList();
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
         builder.setValue("value", ValueCheckerUtils.removeDuplicates(values));
@@ -173,11 +178,31 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
+     * Returns all the values that anno has accumulated. This method fails if anno is bottom.
+     *
+     * @param anno an accumulator annotation
+     * @return the list of values the annotation has accumulated
+     */
+    public List<String> getAccumulatedValues(AnnotationMirror anno) {
+        if (!isAccumulatorAnnotation(anno)) {
+            throw new BugInCF(
+                    "attempted to get accumulated values from an annotation that isn't an accumulator: "
+                            + anno);
+        }
+        List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+        if (values == null) {
+            return new ArrayList<>();
+        } else {
+            return values;
+        }
+    }
+
+    /**
      * All accumulation analyses share a similar type hierarchy. This hierarchy implements the
      * subtyping, LUB, and GLB for that hierarchy. The lattice looks like:
      *
      * <pre>
-     *    top = acc()
+     *       acc()
      *      /   \
      * acc(x)   acc(y) ...
      *      \   /
@@ -213,22 +238,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 return bottom;
             }
 
-            if (AnnotationUtils.areSame(a1, top)) {
-                return a2;
-            }
-
-            if (AnnotationUtils.areSame(a2, top)) {
-                return a1;
-            }
-
-            if (isAccumulatorAnnotation(a1) && isAccumulatorAnnotation(a2)) {
-                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
-                a1Val.addAll(a2Val);
-                return createAccumulatorAnnotation(a1Val);
-            } else {
-                return bottom;
-            }
+            List<String> a1Val = getAccumulatedValues(a1);
+            List<String> a2Val = getAccumulatedValues(a2);
+            a1Val.addAll(a2Val);
+            return createAccumulatorAnnotation(a1Val);
         }
 
         /**
@@ -244,35 +257,24 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 return a1;
             }
 
-            if (AnnotationUtils.areSame(a1, top) || AnnotationUtils.areSame(a2, top)) {
-                return top;
-            }
-
-            if (isAccumulatorAnnotation(a1) && isAccumulatorAnnotation(a2)) {
-                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
-                a1Val.retainAll(a2Val);
-                return createAccumulatorAnnotation(a1Val);
-            } else {
-                return top;
-            }
+            List<String> a1Val = getAccumulatedValues(a1);
+            List<String> a2Val = getAccumulatedValues(a2);
+            a1Val.retainAll(a2Val);
+            return createAccumulatorAnnotation(a1Val);
         }
 
         /** isSubtype in this type system is subset. */
         @Override
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSame(subAnno, bottom)
-                    || AnnotationUtils.areSame(superAnno, top)) {
+            if (AnnotationUtils.areSame(subAnno, bottom)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(superAnno, bottom)
-                    || AnnotationUtils.areSame(subAnno, top)) {
+            if (AnnotationUtils.areSame(superAnno, bottom)) {
                 return false;
             }
 
-            List<String> subVal = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
-            List<String> superVal =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
+            List<String> subVal = getAccumulatedValues(subAnno);
+            List<String> superVal = getAccumulatedValues(superAnno);
             return subVal.containsAll(superVal);
         }
     }

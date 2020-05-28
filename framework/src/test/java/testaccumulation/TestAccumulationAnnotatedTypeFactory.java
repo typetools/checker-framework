@@ -4,7 +4,6 @@ import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import testaccumulation.qual.TestAccumulation;
 import testaccumulation.qual.TestAccumulationBottom;
-import testaccumulation.qual.TestAccumulationTop;
 
 /**
  * The annotated type factory for a test accumulation checker, which implements a basic called
@@ -17,11 +16,7 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
      * @param checker the checker
      */
     public TestAccumulationAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(
-                checker,
-                TestAccumulation.class,
-                TestAccumulationTop.class,
-                TestAccumulationBottom.class);
+        super(checker, TestAccumulation.class, TestAccumulationBottom.class);
         this.postInit();
     }
 }

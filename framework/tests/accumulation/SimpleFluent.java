@@ -40,7 +40,7 @@ class SimpleFluent {
                 .build();
     }
 
-    static void fluentLoop(@TestAccumulation({"a", "b"}) SimpleFluent t) {
+    static void fluentLoop(SimpleFluent t) {
         SimpleFluent s = t.a();
         int i = 10;
         while (i > 0) {

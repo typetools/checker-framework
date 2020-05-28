@@ -28,7 +28,7 @@ class Generics {
     }
 
     // reduced from real-world code
-    private <@TestAccumulationTop T extends Symbol> T getMember(Class<T> type, boolean b) {
+    private <@TestAccumulation() T extends Symbol> T getMember(Class<T> type, boolean b) {
         if (b) {
             T sym = getMember(type, !b);
             if (sym != null && sym.isStatic()) {

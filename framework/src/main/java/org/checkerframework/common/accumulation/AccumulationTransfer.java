@@ -3,12 +3,10 @@ package org.checkerframework.common.accumulation;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -111,22 +109,16 @@ public class AccumulationTransfer extends CFTransfer {
      */
     private AnnotationMirror getCombinedAnno(
             @Nullable AnnotatedTypeMirror oldType, List<String> newValues) {
-        AnnotationMirror oldAnno;
-        if (oldType == null) {
+        AnnotationMirror oldAnno =
+                oldType == null
+                        ? typeFactory.top
+                        : oldType.getAnnotationInHierarchy(typeFactory.top);
+        if (oldAnno == null) {
             oldAnno = typeFactory.top;
-        } else {
-            oldAnno = oldType.getAnnotationInHierarchy(typeFactory.top);
-            if (oldAnno == null) {
-                oldAnno = typeFactory.top;
-            }
         }
-        List<String> allValues = new ArrayList<>(newValues);
-        if (typeFactory.isAccumulatorAnnotation(oldAnno)) {
-            List<String> oldTypeValues =
-                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(oldAnno);
-            allValues.addAll(oldTypeValues);
-        }
-        return typeFactory.createAccumulatorAnnotation(allValues);
+        AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(newValues);
+        // For accumulation type systems, GLB is union.
+        return typeFactory.getQualifierHierarchy().greatestLowerBound(oldAnno, newAnno);
     }
 
     /**

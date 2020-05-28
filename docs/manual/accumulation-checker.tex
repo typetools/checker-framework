@@ -45,15 +45,15 @@ of whatever you are accumulating. For example, when accumulating which methods h
 been called on an object, you might choose to accumulate method names.
 
 Define a type qualifier that has a single argument: a \<String[]> named \<value>.
+The default value for this argument should be an empty array. The
+qualifier should have no supertypes (\<@SubtypeOf({})>) and should
+be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 An example of such a qualifier can be found in the Checker Framework's tests:
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
 
-Also define top and bottom types, analogous to
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationTop.java}{TestAccumulationTop.java}.
-and
+Also a bottom type, analogous to
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
-Both should take no arguments. The top type should be a supertype of the accumulator annotation
-you defined earlier, and the bottom type should be a subtype of it.
+It should take no arguments, and should be a subtype of the accumulator type you defined earlier.
 
 \paragraphAndLabel{Setting up the checker}{accumulation-setup}
 
