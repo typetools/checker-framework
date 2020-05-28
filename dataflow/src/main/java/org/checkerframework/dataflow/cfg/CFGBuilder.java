@@ -3408,7 +3408,7 @@ public class CFGBuilder {
                 extendWithNode(variableNode);
 
                 ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
-                handleArtificialTree(variable);
+                handleArtificialTree(variableUse);
 
                 LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
                 variableUseNode.setInSource(false);
