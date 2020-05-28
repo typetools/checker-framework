@@ -1053,20 +1053,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private void warnAboutTypeAnnotationsTooEarly(Tree node, ModifiersTree modifiersTree) {
 
         // Don't issue warnings about compiler-inserted modifiers.
-        // These two tests could be made more precise and catch some user errors in enum constants
-        // and in try-with-resources declarations, but it doesn't seem worth the effort.
+        // This simple code completely igonores enum constants and try-with-resources declarations.
+        // It could be made to catch some user errors in those locations, but it doesn't seem worth
+        // the effort to do so.
         if (node.getKind() == Tree.Kind.VARIABLE) {
-            if (TreeUtils.elementFromDeclaration((VariableTree) node).getKind()
-                    == ElementKind.ENUM_CONSTANT) {
-                // Enum constants are "public static final" by default, so the annotation always
-                // appears to be before "public".
-                return;
-            }
-            Tree parent = getCurrentPath().getParentPath().getLeaf();
-            if (parent.getKind() == Tree.Kind.TRY) {
-                // Try-with-resources variables are "final" by default, so the annotation always
-                // appears to be before "final".
-                return;
+            ElementKind varKind = TreeUtils.elementFromDeclaration((VariableTree) node).getKind();
+            switch (varKind) {
+                case ENUM_CONSTANT:
+                    // Enum constants are "public static final" by default, so the annotation always
+                    // appears to be before "public".
+                    return;
+                case RESOURCE_VARIABLE:
+                    // Try-with-resources variables are "final" by default, so the annotation always
+                    // appears to be before "final".
+                    return;
+                default:
+                    // Nothing to do
             }
         }
 
