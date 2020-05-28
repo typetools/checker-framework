@@ -660,6 +660,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return false;
     }
 
+    @Override
+    public Boolean visitIntersection_Wildcard(
+            AnnotatedIntersectionType subtype, AnnotatedWildcardType supertype, Void p) {
+        // this can occur through capture conversion/comparing bounds
+        Types types = checker.getTypeUtils();
+        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+            if (TypesUtils.isErasedSubtype(
+                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
+                    && isSubtype(subtypeI, supertype, currentTop)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------------------
     // Null as subtype
     @Override
