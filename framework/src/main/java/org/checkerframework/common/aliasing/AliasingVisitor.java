@@ -23,7 +23,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This visitor ensures that every constructor whose result is annotated as {@literal @}Unique does
@@ -71,8 +70,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // Check if a call to super() might create an alias: that
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
-                if ((!superResult.hasAnnotation(Unique.class))
-                        && (!TypesUtils.isObject(superResult.getUnderlyingType()))) {
+                if (!superResult.hasAnnotation(Unique.class)) {
                     checker.reportError(node, "unique.leaked");
                 }
             } else {
@@ -257,8 +255,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.
             AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
-            if ((!superResult.hasAnnotation(Unique.class))
-                    && (!TypesUtils.isObject(superResult.getUnderlyingType()))) {
+            if (!superResult.hasAnnotation(Unique.class)) {
                 checker.reportError(superCall, "unique.leaked");
             }
         }

@@ -1,0 +1,7 @@
+import org.checkerframework.common.aliasing.qual.*;
+
+package java.lang;
+
+class Object {
+    @Unique Object();
+}
