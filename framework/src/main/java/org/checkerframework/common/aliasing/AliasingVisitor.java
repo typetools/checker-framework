@@ -70,8 +70,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // Check if a call to super() might create an alias: that
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
-                if ((!superResult.hasAnnotation(Unique.class))
-                        && (!superResult.toString().equals("@MaybeAliased Object"))) {
+                if (!superResult.hasAnnotation(Unique.class)) {
                     checker.reportError(node, "unique.leaked");
                 }
             } else {
@@ -256,8 +255,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.
             AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
-            if ((!superResult.hasAnnotation(Unique.class))
-                    && (!superResult.toString().equals("@MaybeAliased Object"))) {
+            if (!superResult.hasAnnotation(Unique.class)) {
                 checker.reportError(superCall, "unique.leaked");
             }
         }
@@ -273,7 +271,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        return type.hasAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
+        return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
     }
 
     private boolean isInUniqueConstructor() {
