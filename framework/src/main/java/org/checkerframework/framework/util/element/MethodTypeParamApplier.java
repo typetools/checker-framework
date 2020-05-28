@@ -90,7 +90,7 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
             TargetType.CLASS_EXTENDS,
             // TODO: Test case from Issue 3277 produces invalid position.
             // Ignore until javac is fixed.
-            TargetType.UNKNOWN,
+            TargetType.UNKNOWN
         };
     }
 
