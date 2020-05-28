@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -25,6 +26,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -83,6 +85,9 @@ public class NullnessAnnotatedTypeFactory
 
     /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
+
+    /** The Class.getCanonicalName() method. */
+    protected final ExecutableElement classGetCanonicalName;
 
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
@@ -206,6 +211,10 @@ public class NullnessAnnotatedTypeFactory
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
+        classGetCanonicalName =
+                TreeUtils.getMethod(
+                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
+
         postInit();
 
         // do this last, as it might use the factory again.
@@ -300,8 +309,18 @@ public class NullnessAnnotatedTypeFactory
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
 
+        // Special cases for method invocations with specific arguments.
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
+        // `MyClass.class.getCanonicalName()` is non-null.
+        if (TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
+            ExpressionTree receiver = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
+            if (TreeUtils.isClassLiteral(receiver)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                type.replaceAnnotation(NONNULL);
+            }
+        }
+
         return mType;
     }
 

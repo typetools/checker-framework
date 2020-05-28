@@ -1,4 +1,4 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Sibling1;
 
 // TODO: Like this one, some tests must verify that it contains the expected
 // output after performing the whole-program inference.
