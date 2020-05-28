@@ -70,8 +70,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 // Check if a call to super() might create an alias: that
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
-                if ((!superResult.hasAnnotation(Unique.class))
-                        && (!superResult.toString().equals("@MaybeAliased Object"))) {
+                if (!superResult.hasAnnotation(Unique.class)) {
                     checker.reportError(node, "unique.leaked");
                 }
             } else {
@@ -256,8 +255,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.
             AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(superCall);
-            if ((!superResult.hasAnnotation(Unique.class))
-                    && (!superResult.toString().equals("@MaybeAliased Object"))) {
+            if (!superResult.hasAnnotation(Unique.class)) {
                 checker.reportError(superCall, "unique.leaked");
             }
         }
