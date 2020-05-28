@@ -1,4 +1,4 @@
-// Test case for https://tinyurl.com/cfissue//3305 .
+// Test case for https://tinyurl.com/cfissue/3305 .
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
