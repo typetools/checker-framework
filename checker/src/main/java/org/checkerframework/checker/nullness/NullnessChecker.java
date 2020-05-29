@@ -61,7 +61,7 @@ public class NullnessChecker extends InitializationChecker {
 
     /**
      * If true, client code may clear system properties. If false (the default), some calls to
-     * System.getProperty are refined to return @NonNull.
+     * {@code System.getProperty} are refined to return @NonNull.
      */
     public static final String LINT_PERMITCLEARPROPERTY = "permitClearProperty";
 

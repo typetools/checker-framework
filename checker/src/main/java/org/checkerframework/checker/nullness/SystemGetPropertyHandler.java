@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Utility class for handling {@link java.lang.System#getProperty(String)} invocations.
+ * Utility class for handling {@link java.lang.System#getProperty(String)} and related invocations.
  *
  * <p>The result of the method call is is assumed to be non-null if the argument is a literal key
  * that is guaranteed to be present in the system properties (according to the documentation of
@@ -138,7 +138,7 @@ public class SystemGetPropertyHandler {
     }
 
     /**
-     * Apply rules relating to System.getProperty.
+     * Apply rules regarding System.getProperty and related methods.
      *
      * @param tree a method invocation
      * @param method the method being invoked

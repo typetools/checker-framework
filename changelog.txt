@@ -1,7 +1,3 @@
-Make special-casing of System.getProperty sound.  Use -Alint=permitClearProperty
-to disable it and to permit undefining built-in system properties.
-
-
 Version ??, June 1, 2020
 
 -Ainfer now takes an argument:
@@ -11,6 +7,12 @@ Version ??, June 1, 2020
 
 New command-line option:
   -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
+The Nullness Checker now treats System.getProperty soundly.  Use
+-Alint=permitClearProperty to disable special treatment of System.getProperty
+and to permit undefining built-in system properties.
+
+---------------------------------------------------------------------------
 
 Version 3.4.0, May 3, 2020
 

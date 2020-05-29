@@ -140,11 +140,12 @@ command-line option.)
   \sunjavadoc{java.base/java/lang/System.html\#clearProperty()}{System.clearProperty()}
   that might clear one of the built-in properties.
 
-  By default, the checker forbids calls to those methods, but also
+  By default, the checker forbids calls to those methods, and also
   special-cases type-checking of calls to
   \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
-  A call to
-  \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
+  and
+  \sunjavadoc{java.base/java/lang/System.html\#setProperty(java.lang.String)}{System.setProperty(String)}.
+  A call to one of these methods
   can return null in general, but by default the Nullness Checker treats it
   as returning non-null if the argument is one of the literal strings
   listed in the documentation of
