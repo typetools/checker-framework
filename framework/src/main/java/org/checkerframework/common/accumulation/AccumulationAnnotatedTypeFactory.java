@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
@@ -86,7 +85,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
 
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
-        this.top = createAccumulatorAnnotation(null);
+        this.top = createAccumulatorAnnotation(Collections.emptyList());
 
         // Every subclass must call postInit!  This does not do so for subclasses.
         if (this.getClass() == AccumulationAnnotatedTypeFactory.class) {
@@ -119,12 +118,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param values the arguments to the annotation. The values can contain duplicates and can be
      *     in any order.
      * @return an annotation mirror representing the accumulator annotation with {@code values}'s
-     *     arguments, or top if {@code values} is null or empty
+     *     arguments, or top if {@code values} is empty
      */
-    public AnnotationMirror createAccumulatorAnnotation(@Nullable List<String> values) {
-        if (values == null) {
-            values = Collections.emptyList();
-        }
+    public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
         builder.setValue("value", ValueCheckerUtils.removeDuplicates(values));
         return builder.build();
@@ -165,7 +161,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * This tree annotator implements the following rule(s): 1. If a method returns its receiver,
+     * This tree annotator implements the following rule(s): RRA: If a method returns its receiver,
      * and the receiver has an accumulation type, then the default type of the method's return value
      * is the type of the receiver.
      */
@@ -181,7 +177,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
 
         /**
-         * Implements rule 1.
+         * Implements rule RRA.
          *
          * @param tree a method invocation tree
          * @param type the type {@code tree} (i.e. the return type of the invoked method). Is
@@ -303,8 +299,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, bottom)) {
                 return true;
-            }
-            if (AnnotationUtils.areSame(superAnno, bottom)) {
+            } else if (AnnotationUtils.areSame(superAnno, bottom)) {
                 return false;
             }
 

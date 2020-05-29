@@ -51,7 +51,9 @@ public class AccumulationTransfer extends CFTransfer {
      * "foo".
      *
      * <p>If any method in the chain is non-deterministic, its estimate will not be updated (but the
-     * types of any deterministic methods, and the ultimate receiver, will be updated).
+     * types of any deterministic methods, and the first receiver expression that is not an
+     * invocation of a method that returns its receiver ({@code a} in the example), will be
+     * updated).
      *
      * @param node the node whose estimate should be expanded
      * @param result the transfer result containing the store to be modified
