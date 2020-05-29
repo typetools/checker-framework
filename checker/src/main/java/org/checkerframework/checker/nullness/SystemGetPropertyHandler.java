@@ -44,6 +44,9 @@ public class SystemGetPropertyHandler {
     /** The System.getProperty(String) method. */
     protected final ExecutableElement systemGetProperty;
 
+    /** The System.setProperty(String) method. */
+    protected final ExecutableElement systemSetProperty;
+
     /** The System.clearProperty(String) method. */
     protected final ExecutableElement systemClearProperty;
 
@@ -109,6 +112,8 @@ public class SystemGetPropertyHandler {
 
         systemGetProperty =
                 TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
+        systemSetProperty =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperty", 2, env);
         systemClearProperty =
                 TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
         systemSetProperties =
@@ -123,7 +128,7 @@ public class SystemGetPropertyHandler {
      */
     private static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
         List<? extends ExpressionTree> args = tree.getArguments();
-        assert args.size() == 1;
+        assert args.size() > 0;
         ExpressionTree arg = args.get(0);
         if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
             String literal = (String) ((LiteralTree) arg).getValue();
@@ -142,7 +147,8 @@ public class SystemGetPropertyHandler {
         if (permitClearProperty) {
             return;
         }
-        if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)) {
+        if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)
+                || TreeUtils.isMethodInvocation(tree, systemSetProperty, env)) {
             String literal = literalFirstArgument(tree);
             if (literal != null && predefinedSystemProperties.contains(literal)) {
                 AnnotatedTypeMirror type = method.getReturnType();

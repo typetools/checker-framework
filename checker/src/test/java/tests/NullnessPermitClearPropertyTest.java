@@ -23,6 +23,6 @@ public class NullnessPermitClearPropertyTest extends CheckerFrameworkPerDirector
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"nullness-permitclearproperty"};
+        return new String[] {"nullness-permitClearProperty"};
     }
 }
