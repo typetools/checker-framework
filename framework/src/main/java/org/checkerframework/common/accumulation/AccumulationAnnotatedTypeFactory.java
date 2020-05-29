@@ -74,7 +74,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             rejectMalformedAccumulator("not have more than one argument");
         }
         Method value = accDeclaredMethods[0];
-        if (!value.getName().equals("value")) {
+        if (value.getName() != "value") {
             rejectMalformedAccumulator("name its argument \"value\"");
         }
         if (!value.getReturnType().isInstance(new String[0])) {
