@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -64,7 +63,7 @@ public class AccumulationTransfer extends CFTransfer {
             return;
         }
         AnnotatedTypeMirror oldType = typeFactory.getAnnotatedType(tree);
-        AnnotationMirror newAnno = getCombinedAnno(oldType, Arrays.asList(values));
+        AnnotationMirror newAnno = getUnionAnno(oldType, Arrays.asList(values));
         insertIntoStores(result, node, newAnno);
 
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
@@ -102,17 +101,12 @@ public class AccumulationTransfer extends CFTransfer {
      * Unions the values in oldType with the values in newValues to produce a single accumulator
      * type qualifier.
      *
-     * @param oldType an annotated type mirror whose values should be included, or null which is
-     *     treated as top
+     * @param oldType an annotated type mirror whose values should be included
      * @param newValues new values to include
      * @return an annotation representing all the values
      */
-    private AnnotationMirror getCombinedAnno(
-            @Nullable AnnotatedTypeMirror oldType, List<String> newValues) {
-        AnnotationMirror oldAnno =
-                oldType == null
-                        ? typeFactory.top
-                        : oldType.getAnnotationInHierarchy(typeFactory.top);
+    private AnnotationMirror getUnionAnno(AnnotatedTypeMirror oldType, List<String> newValues) {
+        AnnotationMirror oldAnno = oldType.getAnnotationInHierarchy(typeFactory.top);
         if (oldAnno == null) {
             oldAnno = typeFactory.top;
         }
