@@ -27,13 +27,22 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
+import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
@@ -1116,33 +1125,36 @@ public class FlowExpressions {
         }
     }
 
-    /** Receiver takes in binary operations */
+    /** Receiver takes in binary operations. */
     public static class BinaryAccess extends Receiver {
 
-        BinaryOperationNode receiverNode;
-        Receiver left;
-        Receiver right;
+        /** The binary node. */
+        protected final BinaryOperationNode node;
+        /** Receiver of the left operator. */
+        protected final Receiver left;
+        /** Receiver of the right operator. */
+        protected final Receiver right;
 
-        /** Constructor, takes in a BinaryOpeartionNode and a left and right Receiver */
+        /** Constructor, takes in the BinaryOperationNode and the left and right Receiver. */
         public BinaryAccess(
-                TypeMirror type, BinaryOperationNode receiverNode, Receiver left, Receiver right) {
+                TypeMirror type, BinaryOperationNode node, Receiver left, Receiver right) {
             super(type);
-            this.receiverNode = receiverNode;
+            this.node = node;
             this.left = left;
             this.right = right;
         }
 
-        /** Get the binary operation node */
-        public BinaryOperationNode getReceierNode() {
-            return receiverNode;
+        /** Get the binary operation node. */
+        public BinaryOperationNode getNode() {
+            return node;
         }
 
-        /** Get the left receiver */
+        /** Get the left receiver. */
         public Receiver getLeft() {
             return left;
         }
 
-        /** Get the right receiver */
+        /** Get the right receiver. */
         public Receiver getRight() {
             return right;
         }
@@ -1162,7 +1174,7 @@ public class FlowExpressions {
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return isUnassignableByOtherCode();
+            return right.isUnmodifiableByOtherCode() && left.isUnmodifiableByOtherCode();
         }
 
         @Override
@@ -1170,7 +1182,7 @@ public class FlowExpressions {
             if (!(other instanceof BinaryAccess)) {
                 return false;
             }
-            if (!receiverNode.getClass().equals(((BinaryAccess) other).receiverNode.getClass())) {
+            if (!node.getClass().equals(((BinaryAccess) other).node.getClass())) {
                 return false;
             }
             return right.syntacticEquals(((BinaryAccess) other).right)
@@ -1185,7 +1197,7 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return Objects.hash(receiverNode, left, right);
+            return Objects.hash(node, left, right);
         }
 
         @Override
@@ -1193,8 +1205,22 @@ public class FlowExpressions {
             if (!(other instanceof BinaryAccess)) {
                 return false;
             }
-            if (!receiverNode.getClass().equals(((BinaryAccess) other).receiverNode.getClass())) {
+            if (!node.getClass().equals(((BinaryAccess) other).node.getClass())) {
                 return false;
+            }
+            if (node instanceof BitwiseAndNode
+                    || node instanceof BitwiseOrNode
+                    || node instanceof BitwiseXorNode
+                    || node instanceof ConditionalAndNode
+                    || node instanceof ConditionalOrNode
+                    || node instanceof EqualToNode
+                    || node instanceof NotEqualNode
+                    || node instanceof NumericalAdditionNode
+                    || node instanceof NumericalMultiplicationNode) {
+                return (right.equals(((BinaryAccess) other).right)
+                                && left.equals(((BinaryAccess) other).left))
+                        || (left.equals(((BinaryAccess) other).right)
+                                && right.equals(((BinaryAccess) other).left));
             }
             return right.equals(((BinaryAccess) other).right)
                     && left.equals(((BinaryAccess) other).left);
