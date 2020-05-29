@@ -93,7 +93,7 @@ public class SystemGetPropertyHandler {
      *
      * @param env the processing environment
      * @param factory the factory for constructing and looking up types
-     * @param the checker for issuing errors
+     * @param checker the checker for issuing errors
      */
     public SystemGetPropertyHandler(
             ProcessingEnvironment env,
