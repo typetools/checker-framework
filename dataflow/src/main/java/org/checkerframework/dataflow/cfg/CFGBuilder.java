@@ -3408,7 +3408,7 @@ public class CFGBuilder {
                 extendWithNode(variableNode);
 
                 ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
-                handleArtificialTree(variable);
+                handleArtificialTree(variableUse);
 
                 LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
                 variableUseNode.setInSource(false);
@@ -3426,7 +3426,9 @@ public class CFGBuilder {
 
                 extendWithNode(
                         new MarkerNode(
-                                switchTree, "start of switch statement", env.getTypeUtils()));
+                                switchTree,
+                                "start of switch statement #" + switchTree.hashCode(),
+                                env.getTypeUtils()));
 
                 Integer defaultIndex = null;
                 for (int i = 0; i < cases; ++i) {
@@ -3446,6 +3448,12 @@ public class CFGBuilder {
 
                 addLabelForNextNode(breakTargetL.peekLabel());
                 breakTargetL = oldBreakTargetL;
+
+                extendWithNode(
+                        new MarkerNode(
+                                switchTree,
+                                "end of switch statement #" + switchTree.hashCode(),
+                                env.getTypeUtils()));
             }
 
             private void buildCase(CaseTree tree, int index) {
@@ -4326,7 +4334,11 @@ public class CFGBuilder {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
 
-            extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
+            extendWithNode(
+                    new MarkerNode(
+                            tree,
+                            "start of try statement #" + tree.hashCode(),
+                            env.getTypeUtils()));
 
             // TODO: Should we handle try-with-resources blocks by also generating code
             // for automatically closing the resources?
@@ -4389,13 +4401,19 @@ public class CFGBuilder {
                 extendWithNode(
                         new MarkerNode(
                                 tree,
-                                "start of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                "start of catch block for "
+                                        + c.getParameter().getType()
+                                        + " #"
+                                        + tree.hashCode(),
                                 env.getTypeUtils()));
                 scan(c, p);
                 extendWithNode(
                         new MarkerNode(
                                 tree,
-                                "end of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                "end of catch block for "
+                                        + c.getParameter().getType()
+                                        + " #"
+                                        + tree.hashCode(),
                                 env.getTypeUtils()));
 
                 catchIndex++;
@@ -4434,7 +4452,7 @@ public class CFGBuilder {
                     extendWithNode(
                             new MarkerNode(
                                     tree,
-                                    "start of finally block for Throwable",
+                                    "start of finally block for Throwable #" + tree.hashCode(),
                                     env.getTypeUtils()));
 
                     scan(finallyBlock, p);
@@ -4445,7 +4463,8 @@ public class CFGBuilder {
                             extendWithNodeWithException(
                                     new MarkerNode(
                                             tree,
-                                            "end of finally block for Throwable",
+                                            "end of finally block for Throwable #"
+                                                    + tree.hashCode(),
                                             env.getTypeUtils()),
                                     throwableType);
 

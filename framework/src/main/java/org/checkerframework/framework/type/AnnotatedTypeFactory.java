@@ -727,6 +727,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
+                if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                    // This is currently not supported. No qualifier can have a polymorphic
+                    // qualifier as super qualifier.
+                    throw new BugInCF(
+                            "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
                 AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
