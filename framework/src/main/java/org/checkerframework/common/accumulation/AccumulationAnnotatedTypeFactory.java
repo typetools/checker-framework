@@ -3,6 +3,7 @@ package org.checkerframework.common.accumulation;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -62,19 +64,52 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
             Class<? extends Annotation> accumulator,
-            // Class<? extends Annotation> top,
             Class<? extends Annotation> bottom) {
         super(checker);
 
-        // this.top = AnnotationBuilder.fromClass(elements, top);
-        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
         this.accumulator = accumulator;
+
+        // Check that the requirements of the accumulator are met.
+        Method[] accDeclaredMethods = accumulator.getDeclaredMethods();
+        if (accDeclaredMethods.length != 1) {
+            rejectMalformedAccumulator("not have more than one argument");
+        }
+        Method value = accDeclaredMethods[0];
+        if (!value.getName().equals("value")) {
+            rejectMalformedAccumulator("name its argument \"value\"");
+        }
+        if (!value.getReturnType().isInstance(new String[0])) {
+            rejectMalformedAccumulator("have an argument of type String[]");
+        }
+        if (((String[]) value.getDefaultValue()).length != 0) {
+            rejectMalformedAccumulator("must have the empty string array {} as its default value");
+        }
+
+        this.bottom = AnnotationBuilder.fromClass(elements, bottom);
         this.top = createAccumulatorAnnotation(null);
 
         // Every subclass must call postInit!  This does not do so for subclasses.
         if (this.getClass() == AccumulationAnnotatedTypeFactory.class) {
             this.postInit();
         }
+    }
+
+    /**
+     * Common error message for malformed accumulator annotation.
+     *
+     * @param missing what is missing from the accumulator, suitable for use in this string to
+     *     replace $MISSING$: "The accumulator annotation Foo must $MISSING$."
+     */
+    private void rejectMalformedAccumulator(String missing) {
+        throw new UserError(
+                "The accumulator annotation "
+                        + accumulator
+                        + " must "
+                        + missing
+                        + ". "
+                        + "The accumulator type annotation must have exactly one argument, of type String[] with the name "
+                        + "\"value\" and an empty default. See the documentation in "
+                        + "the manual for creating an accumulation checker.");
     }
 
     /**
