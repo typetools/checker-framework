@@ -12,8 +12,6 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
@@ -25,7 +23,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This visitor ensures that every constructor whose result is annotated as {@literal @}Unique does
@@ -276,10 +273,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
         boolean isArray = type.getUnderlyingType().getKind().toString().equalsIgnoreCase("array");
         boolean isNull = exp.getKind() == Kind.NULL_LITERAL;
-        if (type.getUnderlyingType().toString().startsWith("java.lang") || isArray || isNull){
+        if (type.getUnderlyingType().toString().startsWith("java.lang") || isArray || isNull) {
             return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
-        }
-        else{
+        } else {
             return type.hasAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
         }
     }
