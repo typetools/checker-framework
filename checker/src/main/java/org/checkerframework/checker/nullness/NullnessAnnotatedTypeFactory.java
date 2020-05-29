@@ -209,7 +209,7 @@ public class NullnessAnnotatedTypeFactory
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this, checker);
 
         classGetCanonicalName =
                 TreeUtils.getMethod(

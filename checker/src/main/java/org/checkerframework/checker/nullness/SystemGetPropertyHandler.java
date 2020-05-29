@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
@@ -24,14 +26,29 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class SystemGetPropertyHandler {
 
+    /**
+     * If true, client code may clear system properties, and this class (SystemGetPropertyHandler)
+     * has no effect.
+     */
+    protected final boolean permitClearProperty;
+
     /** The processing environment. */
     protected final ProcessingEnvironment env;
 
     /** The factory for constructing and looking up types. */
     protected final NullnessAnnotatedTypeFactory factory;
 
+    /** The checker for issuing errors. */
+    protected final BaseTypeChecker checker;
+
     /** The System.getProperty(String) method. */
     protected final ExecutableElement systemGetProperty;
+
+    /** The System.clearProperty(String) method. */
+    protected final ExecutableElement systemClearProperty;
+
+    /** The System.setProperties(String) method. */
+    protected final ExecutableElement systemSetProperties;
 
     /**
      * System properties that are defined at startup on every JVM.
@@ -71,27 +88,75 @@ public class SystemGetPropertyHandler {
                             "user.home",
                             "user.dir"));
 
+    /**
+     * Creates a SystemGetPropertyHandler.
+     *
+     * @param permitClearProperty whether code is permitted to clear system properties
+     * @param env the processing environment
+     * @param factory the factory for constructing and looking up types
+     */
     public SystemGetPropertyHandler(
-            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
+            ProcessingEnvironment env,
+            NullnessAnnotatedTypeFactory factory,
+            BaseTypeChecker checker) {
+        this.permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
         this.env = env;
         this.factory = factory;
+        this.checker = checker;
 
         systemGetProperty =
                 TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
+        systemClearProperty =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
+        systemSetProperties =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperties", 1, env);
     }
 
+    /**
+     * If the first argument of a method call is a literal, return it; otherwise return null.
+     *
+     * @param tree a method invocation whose first formal parameter is of String type
+     * @return the first argument if it is a literal, otherwise null
+     */
+    private static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+        List<? extends ExpressionTree> args = tree.getArguments();
+        assert args.size() == 1;
+        ExpressionTree arg = args.get(0);
+        if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
+            String literal = (String) ((LiteralTree) arg).getValue();
+            return literal;
+        }
+        return null;
+    }
+
+    /**
+     * Apply rules relating to System.getProperty.
+     *
+     * @param tree a method invocation
+     * @param method the method being invoked
+     */
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
+        if (permitClearProperty) {
+            return;
+        }
         if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)) {
-            List<? extends ExpressionTree> args = tree.getArguments();
-            assert args.size() == 1;
-            ExpressionTree arg = args.get(0);
-            if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
-                String literal = (String) ((LiteralTree) arg).getValue();
-                if (predefinedSystemProperties.contains(literal)) {
-                    AnnotatedTypeMirror type = method.getReturnType();
-                    type.replaceAnnotation(factory.NONNULL);
-                }
+            String literal = literalFirstArgument(tree);
+            if (literal != null && predefinedSystemProperties.contains(literal)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                type.replaceAnnotation(factory.NONNULL);
             }
+        }
+        if (TreeUtils.isMethodInvocation(tree, systemClearProperty, env)) {
+            String literal = literalFirstArgument(tree);
+            if (literal == null || predefinedSystemProperties.contains(literal)) {
+                checker.reportError(tree, "clear.system.property");
+            }
+        }
+        if (TreeUtils.isMethodInvocation(tree, systemSetProperties, env)) {
+            checker.reportError(tree, "clear.system.property");
         }
     }
 }
