@@ -1,20 +1,12 @@
-// *****
-// When you edit this file, also run:
-//   (cd $CHECKERFRAMEWORK && ./gradlew assemble) && \
-//   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-//     org.checkerframework.checker.signature.qual.SignatureRegexes
-// Then, execute the commands it outputs.
-// *****
-
-package org.checkerframework.checker.signature.qual;
-
-import java.lang.reflect.Field;
+package org.checkerframework.checker.signature;
 
 /** This class exists to define regexes that can be referenced in qualifier definitions. */
 public class SignatureRegexes {
 
     /** Do not instantiate this class. */
-    private SignatureRegexes() {}
+    private SignatureRegexes() {
+        throw new Error("Do not instantiate");
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     /// Functions on regular expressions
@@ -181,8 +173,7 @@ public class SignatureRegexes {
             IDENTIFIER + "(\\." + IDENTIFIER + "|" + NESTED_ONE + ")*";
 
     ///////////////////////////////////////////////////////////////////////////
-    // Strings to use in annotation definitions.  They are defined in this class because the
-    // expression in the annotation definition cannot do computation (even string concatenation).
+    // Regexes for literal Strings, one per annotation definitions.
 
     /** A regex that matches ArrayWithoutPackage strings. */
     public static final String ArrayWithoutPackage = GROUPED(IDENTIFIER_OR_PRIMITIVE_TYPE) + ARRAY;
@@ -231,6 +222,9 @@ public class SignatureRegexes {
     public static final String FieldDescriptorWithoutPackage =
             "(" + FD_PRIMITIVE + "|\\[+" + FD_PRIMITIVE + "|\\[L" + IDENTIFIER + NESTED + ";)";
 
+    /** A regex that matches FieldDescriptorForPrimitive strings. */
+    public static final String FieldDescriptorForPrimitive = "^[BCDFIJSZ]$";
+
     /** A regex that matches FqBinaryName strings. */
     public static final String FqBinaryName =
             "(" + PRIMITIVE_TYPE + "|" + BINARY_NAME + ")" + ARRAY;
@@ -250,44 +244,4 @@ public class SignatureRegexes {
 
     /** A regex that matches PrimitiveType strings. */
     public static final String PrimitiveType = PRIMITIVE_TYPE;;
-
-    /** The annotations for which main should output a stringPatterns value. */
-    private static final String[] annotationNames =
-            new String[] {
-                "ArrayWithoutPackage",
-                "BinaryName",
-                "BinaryNameWithoutPackage",
-                "BinaryNameOrPrimitiveType",
-                "ClassGetName",
-                "ClassGetSimpleName",
-                "DotSeparatedIdentifiers",
-                "DotSeparatedIdentifiersOrPrimitiveType",
-                "FieldDescriptor",
-                "FieldDescriptorWithoutPackage",
-                "FqBinaryName",
-                "FullyQualifiedName",
-                "Identifier",
-                "IdentifierOrPrimitiveType",
-                "InternalForm",
-                "PrimitiveType",
-            };
-
-    // See instructions at top of file.
-    /**
-     * Produce text for annotation definitions.
-     *
-     * @param args ignored
-     * @throws IllegalAccessException if reflection fails
-     * @throws NoSuchFieldException if reflection fails
-     */
-    public static void main(String[] args) throws IllegalAccessException, NoSuchFieldException {
-        Class<SignatureRegexes> clazz = SignatureRegexes.class;
-        for (String annotationName : annotationNames) {
-            Field f = clazz.getDeclaredField(annotationName);
-            String regex = (String) f.get(null);
-            System.out.printf(
-                    "sed -i 's:/\\* Do not edit; see SignatureRegexes.java.*:/* Do not edit; see SignatureRegexes.java */ \"%s\"):' %s.java%n",
-                    ANCHORED(regex.replace("\\", "\\\\\\\\")), annotationName);
-        }
-    }
 }
