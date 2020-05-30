@@ -1,6 +1,13 @@
+Version 3.5.0, July 1, 2020
+
+Renamed Signature Checker annotations:
+  @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
+  @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
+  @IdentifierOrArray => @ArrayWithoutPackage
+
 ---------------------------------------------------------------------------
 
-Version 3.5.0, June 1, 2020
+Version 3.4.1, June 1, 2020
 
 -Ainfer now takes an argument:
  * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
@@ -9,11 +16,6 @@ Version 3.5.0, June 1, 2020
 
 New command-line option:
   -AmergeStubsWithSource If both a stub file and a source file are available, use both.
-
-Renamed Signature Checker annotations:
-  @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
-  @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
-  @IdentifierOrArray => @ArrayWithoutPackage
 
 ---------------------------------------------------------------------------
 
