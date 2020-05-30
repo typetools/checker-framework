@@ -51,6 +51,8 @@ public class SignatureTypeFactoryTest {
         String s18 = "null";
         String s19 = "abstract";
         String s20 = "float";
+        String s21 = "float ";
+        String s22 = " Foo";
 
         // All the examples from the manual
         String t13 = "int";
@@ -372,6 +374,38 @@ public class SignatureTypeFactoryTest {
         // :: error: (assignment.type.incompatible)
         bn = s20;
         fbn = s20;
+
+        us = s21;
+        // :: error: (assignment.type.incompatible)
+        fqn = s21;
+        // :: error: (assignment.type.incompatible)
+        cgn = s21;
+        // :: error: (assignment.type.incompatible)
+        fd = s21;
+        // :: error: (assignment.type.incompatible)
+        iform = s21;
+        // :: error: (assignment.type.incompatible)
+        sn = s21;
+        // :: error: (assignment.type.incompatible)
+        bn = s21;
+        // :: error: (assignment.type.incompatible)
+        fbn = s21;
+
+        us = s22;
+        // :: error: (assignment.type.incompatible)
+        fqn = s22;
+        // :: error: (assignment.type.incompatible)
+        cgn = s22;
+        // :: error: (assignment.type.incompatible)
+        fd = s22;
+        // :: error: (assignment.type.incompatible)
+        iform = s22;
+        // :: error: (assignment.type.incompatible)
+        sn = s22;
+        // :: error: (assignment.type.incompatible)
+        bn = s22;
+        // :: error: (assignment.type.incompatible)
+        fbn = s22;
 
         // Examples from the manual start here
 
