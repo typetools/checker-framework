@@ -285,10 +285,15 @@ task delombok {
     inputs.files file(srcJava)
     outputs.dir file(srcDelomboked)
 
+    // This dependency is required to ensure the checker-qual jar exists,
+    // to prevent lombok from emitting "cannot find symbol" errors for @This
+    // annotations in the test input code.
+    dependsOn project(':checker-qual').tasks.jar
+
     doLast {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: configurations.testCompileClasspath.asPath)
+                classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }
