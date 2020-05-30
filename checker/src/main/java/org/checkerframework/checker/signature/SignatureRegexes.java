@@ -1,6 +1,6 @@
 package org.checkerframework.checker.signature;
 
-/** This class exists to define regexes that can be referenced in qualifier definitions. */
+/** This class defines stringPattern regexes for the Signature Checker. */
 public class SignatureRegexes {
 
     /** Do not instantiate this class. */
