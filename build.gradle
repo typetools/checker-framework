@@ -40,7 +40,6 @@ ext {
 
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities-all-but-javac.jar"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
@@ -238,7 +237,7 @@ task cloneAndBuildDependencies(type: Exec) {
 task maybeCloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
-        !file(afuJar).exists() || !file(stubparserJar).exists()
+        !file(stubparserJar).exists()
         // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
         // the repository does not exist when building checker.jar.
     }
@@ -573,10 +572,6 @@ subprojects {
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
-        // Don't relocate javac.jar:
-        // relocate 'com.sun', 'org.checkeframework.com.sun'
-        // relocate 'javax','org.checkerframework.javax'
-        // relocate 'jdk', 'org.checkerframework.jdk'
 
         // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
