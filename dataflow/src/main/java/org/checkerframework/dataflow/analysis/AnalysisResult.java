@@ -21,12 +21,13 @@ import org.checkerframework.javacutil.BugInCF;
  * providing the abstract values given a node or a tree. Note that it does not keep track of custom
  * results computed by some analysis.
  *
- * @param <A> type of the abstract value that is tracked
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
-public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
+public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
 
     /** Abstract values of nodes. */
-    protected final IdentityHashMap<Node, A> nodeValues;
+    protected final IdentityHashMap<Node, V> nodeValues;
 
     /** Map from AST {@link Tree}s to sets of {@link Node}s. */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
@@ -35,27 +36,27 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    protected final HashMap<Element, A> finalLocalValues;
+    protected final HashMap<Element, V> finalLocalValues;
 
     /** The stores before every method call. */
-    protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
+    protected final IdentityHashMap<Block, TransferInput<V, S>> stores;
 
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
      * @see #runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
      */
-    protected final Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>>
+    protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
             analysisCaches;
 
     /** Initialize with given mappings. */
     protected AnalysisResult(
-            Map<Node, A> nodeValues,
-            IdentityHashMap<Block, TransferInput<A, S>> stores,
+            Map<Node, V> nodeValues,
+            IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            HashMap<Element, A> finalLocalValues,
-            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+            HashMap<Element, V> finalLocalValues,
+            Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.unaryAssignNodeLookup = new IdentityHashMap<>(unaryAssignNodeLookup);
@@ -67,11 +68,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** Initialize with given mappings and empty cache. */
     public AnalysisResult(
-            Map<Node, A> nodeValues,
-            IdentityHashMap<Block, TransferInput<A, S>> stores,
+            Map<Node, V> nodeValues,
+            IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            HashMap<Element, A> finalLocalValues) {
+            HashMap<Element, V> finalLocalValues) {
         this(
                 nodeValues,
                 stores,
@@ -83,7 +84,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** Initialize empty result with specified cache. */
     public AnalysisResult(
-            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+            Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         this(
                 new IdentityHashMap<>(),
                 new IdentityHashMap<>(),
@@ -94,7 +95,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** Combine with another analysis result. */
-    public void combine(AnalysisResult<A, S> other) {
+    public void combine(AnalysisResult<V, S> other) {
         nodeValues.putAll(other.nodeValues);
         mergeTreeLookup(treeLookup, other.treeLookup);
         unaryAssignNodeLookup.putAll(other.unaryAssignNodeLookup);
@@ -117,7 +118,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /** @return the value of effectively final local variables */
-    public HashMap<Element, A> getFinalLocalValues() {
+    public HashMap<Element, V> getFinalLocalValues() {
         return finalLocalValues;
     }
 
@@ -125,7 +126,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available.
      */
-    public @Nullable A getValue(Node n) {
+    public @Nullable V getValue(Node n) {
         return nodeValues.get(n);
     }
 
@@ -133,15 +134,15 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available.
      */
-    public @Nullable A getValue(Tree t) {
+    public @Nullable V getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);
 
         if (nodes == null) {
             return null;
         }
-        A merged = null;
+        V merged = null;
         for (Node aNode : nodes) {
-            A a = getValue(aNode);
+            V a = getValue(aNode);
             if (merged == null) {
                 merged = a;
             } else if (a != null) {
@@ -244,7 +245,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected @Nullable S runAnalysisFor(Node node, boolean before) {
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
-        TransferInput<A, S> transferInput = stores.get(block);
+        TransferInput<V, S> transferInput = stores.get(block);
         if (transferInput == null) {
             return null;
         }
@@ -261,21 +262,21 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * store it in {@code analysisCaches}. The cache is a map from a node to the analysis result of
      * the node.
      */
-    public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
+    public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
             Node node,
             boolean before,
-            TransferInput<A, S> transferInput,
-            IdentityHashMap<Node, A> nodeValues,
-            Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
+            TransferInput<V, S> transferInput,
+            IdentityHashMap<Node, V> nodeValues,
+            Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         assert node != null;
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         assert transferInput != null;
-        Analysis<A, S, ?> analysis = transferInput.analysis;
+        Analysis<V, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
 
         // Prepare cache
-        IdentityHashMap<Node, TransferResult<A, S>> cache;
+        IdentityHashMap<Node, TransferResult<V, S>> cache;
         if (analysisCaches != null) {
             cache = analysisCaches.get(transferInput);
             if (cache == null) {
@@ -300,8 +301,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<A, S> store = transferInput;
-                        TransferResult<A, S> transferResult = null;
+                        TransferInput<V, S> store = transferInput;
+                        TransferResult<V, S> transferResult = null;
                         for (Node n : rb.getContents()) {
                             analysis.currentNode = n;
                             if (n == node && before) {
@@ -336,7 +337,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                             return transferInput.getRegularStore();
                         }
                         analysis.currentNode = node;
-                        TransferResult<A, S> transferResult =
+                        TransferResult<V, S> transferResult =
                                 analysis.callTransferFunction(node, transferInput);
                         return transferResult.getRegularStore();
                     }

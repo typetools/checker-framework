@@ -9,10 +9,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Implementation of a {@link TransferResult} with just one non-exceptional store. The result of
  * {@code getThenStore} and {@code getElseStore} is equal to the only underlying store.
  *
+ * @param <V> the {@link AbstractValue} to be tracked by the analysis
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
-public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S>>
-        extends TransferResult<A, S> {
+public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S>>
+        extends TransferResult<V, S> {
 
     /** The regular result store. */
     protected final S store;
@@ -34,18 +35,18 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      *
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
-    public RegularTransferResult(@Nullable A value, S resultStore, boolean storeChanged) {
+    public RegularTransferResult(@Nullable V value, S resultStore, boolean storeChanged) {
         this(value, resultStore, null, storeChanged);
     }
 
     /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
-    public RegularTransferResult(@Nullable A value, S resultStore) {
+    public RegularTransferResult(@Nullable V value, S resultStore) {
         this(value, resultStore, false);
     }
 
     /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
     public RegularTransferResult(
-            @Nullable A value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
+            @Nullable V value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, resultStore, exceptionalStores, false);
     }
 
@@ -69,7 +70,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * control over the objects is transfered to this class.
      */
     public RegularTransferResult(
-            @Nullable A value,
+            @Nullable V value,
             S resultStore,
             @Nullable Map<TypeMirror, S> exceptionalStores,
             boolean storeChanged) {

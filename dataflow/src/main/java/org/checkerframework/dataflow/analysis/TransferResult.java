@@ -13,9 +13,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p>A {@code TransferResult} contains one or two stores (for 'then' and 'else'), and zero or more
  * stores with a cause ({@link TypeMirror}).
  *
+ * @param <V> the {@link AbstractValue} to be tracked by the analysis
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
-public abstract class TransferResult<A extends AbstractValue<A>, S extends Store<S>> {
+public abstract class TransferResult<V extends AbstractValue<V>, S extends Store<S>> {
 
     /**
      * The stores in case the basic block throws an exception (or {@code null} if the corresponding
@@ -28,19 +29,19 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
      * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with
      * this {@link TransferResult}, or {@code null} if no value has been produced.
      */
-    protected @Nullable A resultValue;
+    protected @Nullable V resultValue;
 
-    public TransferResult(@Nullable A resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
+    public TransferResult(@Nullable V resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
         this.resultValue = resultValue;
         this.exceptionalStores = exceptionalStores;
     }
 
     /** @return the abstract value produced by the transfer function, {@code null} otherwise */
-    public @Nullable A getResultValue() {
+    public @Nullable V getResultValue() {
         return resultValue;
     }
 
-    public void setResultValue(A resultValue) {
+    public void setResultValue(V resultValue) {
         this.resultValue = resultValue;
     }
 

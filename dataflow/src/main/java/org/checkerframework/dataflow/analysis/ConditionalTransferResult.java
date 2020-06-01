@@ -12,8 +12,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
-public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Store<S>>
-        extends TransferResult<A, S> {
+public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Store<S>>
+        extends TransferResult<V, S> {
 
     /** Whether the store changed. */
     private final boolean storeChanged;
@@ -37,18 +37,18 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
      */
     public ConditionalTransferResult(
-            @Nullable A value, S thenStore, S elseStore, boolean storeChanged) {
+            @Nullable V value, S thenStore, S elseStore, boolean storeChanged) {
         this(value, thenStore, elseStore, null, storeChanged);
     }
 
     /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
-    public ConditionalTransferResult(@Nullable A value, S thenStore, S elseStore) {
+    public ConditionalTransferResult(@Nullable V value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
     }
 
     /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
     public ConditionalTransferResult(
-            A value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
+            V value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, thenStore, elseStore, exceptionalStores, false);
     }
 
@@ -72,7 +72,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * through aliases). Complete control over the objects is transfered to this class.
      */
     public ConditionalTransferResult(
-            @Nullable A value,
+            @Nullable V value,
             S thenStore,
             S elseStore,
             @Nullable Map<TypeMirror, S> exceptionalStores,
