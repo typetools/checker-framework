@@ -729,7 +729,7 @@ public class Analysis<
     }
 
     /**
-     * @param n a node {@code n}
+     * @param n a node
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.
@@ -777,9 +777,9 @@ public class Analysis<
 
     /**
      * @param t a tree
-     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     * @return the abstract value for the tree, or {@code null} if no information is available. Note
+     *     that if the analysis has not finished yet, this value might not represent the final value
+     *     for this node.
      */
     public @Nullable V getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node

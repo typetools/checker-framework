@@ -293,9 +293,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * @param node a node
      * @param before indicate before or after the node
      * @param transferInput a transfer input
-     * @param nodeValues node values
-     * @param analysisCaches caches of analysis results
-     * @return store immediately before or after the node {@code node}
+     * @param nodeValues {@link #nodeValues}
+     * @param analysisCaches {@link #analysisCaches}
+     * @return store immediately before or after the given node
      */
     public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
             Node node,

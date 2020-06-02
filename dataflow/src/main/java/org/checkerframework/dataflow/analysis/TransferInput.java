@@ -64,9 +64,9 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
      *
-     * @param n a node {@code n}
+     * @param n a node
      * @param analysis {@link #analysis}
-     * @param to a transfer result {@code to}
+     * @param to a transfer result
      */
     public TransferInput(Node n, Analysis<V, S, ?> analysis, TransferResult<V, S> to) {
         node = n;
@@ -90,9 +90,9 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
      *
-     * @param n a node {@code n}
+     * @param n a node
      * @param analysis {@link #analysis}
-     * @param s a store {@code s}
+     * @param s a store
      */
     public TransferInput(@Nullable Node n, Analysis<V, S, ?> analysis, S s) {
         node = n;
@@ -107,7 +107,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * <p><em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be stored internally and
      * are not allowed to be used elsewhere. Full control of them is transferred to this object.
      *
-     * @param n a node {@code n}
+     * @param n a node
      * @param analysis {@link #analysis}
      * @param s1 'then' result store
      * @param s2 'else' result store
@@ -146,7 +146,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * @param n a node {@code n}
+     * @param n a node
      * @return the abstract value of {@link Node} {@code n}, which is required to be a 'sub-node'
      *     (that is, a direct or indirect child) of the node this transfer input is associated with.
      *     Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value if
