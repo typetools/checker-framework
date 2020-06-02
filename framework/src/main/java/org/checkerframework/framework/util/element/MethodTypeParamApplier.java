@@ -89,7 +89,8 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
             // https://bugs.openjdk.java.net/browse/JDK-8198945
             TargetType.CLASS_EXTENDS,
             // TODO: Test case from Issue 3277 produces invalid position.
-            // Ignore until javac is fixed.
+            // Ignore until this javac bug is fixed:
+            // https://bugs.openjdk.java.net/browse/JDK-8233945
             TargetType.UNKNOWN
         };
     }
