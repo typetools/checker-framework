@@ -31,8 +31,8 @@ public @interface EnsuresMinLenIf {
      * Returns Java expression(s) that are a sequence with the given minimum length after the method
      * returns {@link #result}.
      *
-     * @return Java expression(s) that are a sequence with the given minimum length after the method
-     *     returns {@link #result}
+     * @return an array of Java expression(s), each of which is a sequence with the given minimum
+     *     length after the method returns {@link #result}
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();

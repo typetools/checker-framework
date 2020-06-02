@@ -35,7 +35,7 @@ public @interface SuppressWarningsKeys {
 
     /**
      * Returns array of strings, any one of which causes this checker to suppress a warning when
-     * passed as the argument of {@literal @}{@link SuppressWarnings} .
+     * passed as the argument of {@literal @}{@link SuppressWarnings}.
      *
      * @return array of strings, any one of which causes this checker to suppress a warning when
      *     passed as the argument of {@literal @}{@link SuppressWarnings}

@@ -446,7 +446,7 @@ public class TestUtilities {
     /**
      * Returns the value of system property "emit.test.debug".
      *
-     * @return the value of system property "emit.test.debug".
+     * @return the value of system property "emit.test.debug"
      */
     public static boolean getShouldEmitDebugInfo() {
         return SystemUtil.getBooleanSystemProperty("emit.test.debug");

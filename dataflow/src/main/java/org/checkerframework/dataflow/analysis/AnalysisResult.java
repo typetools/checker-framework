@@ -126,7 +126,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     * available .
+     * available.
      *
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available
@@ -137,7 +137,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     * available .
+     * available.
      *
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available

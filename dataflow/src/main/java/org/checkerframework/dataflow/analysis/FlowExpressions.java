@@ -62,7 +62,7 @@ public class FlowExpressions {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver. .
+     * Can contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
@@ -81,7 +81,7 @@ public class FlowExpressions {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     * Can contain {@link Unknown} as receiver. .
+     * Can contain {@link Unknown} as receiver.
      *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
@@ -200,7 +200,7 @@ public class FlowExpressions {
 
     /**
      * Returns the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
-     * Might contain {@link Unknown}. .
+     * Might contain {@link Unknown}.
      *
      * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
      *     Might contain {@link Unknown}.
@@ -494,7 +494,7 @@ public class FlowExpressions {
 
         /**
          * Returns true if and only if this receiver contains a receiver that is syntactically equal
-         * to {@code other} .
+         * to {@code other}.
          *
          * @return true if and only if this receiver contains a receiver that is syntactically equal
          *     to {@code other}
@@ -981,7 +981,7 @@ public class FlowExpressions {
 
         /**
          * Returns the method call parameters (for inspection only - do not modify any of the
-         * parameters) .
+         * parameters).
          *
          * @return the method call parameters (for inspection only - do not modify any of the
          *     parameters)

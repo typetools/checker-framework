@@ -8,10 +8,9 @@ import java.util.Map;
 public interface TestConfiguration {
     /**
      * Returns a list of source files a CheckerFrameworkPerDirectoryTest should be run over. These
-     * source files will be passed to Javac when the test is run. These are NOT JUnit tests. .
+     * source files will be passed to Javac when the test is run. These are NOT JUnit tests.
      *
-     * @return a list of source files a CheckerFrameworkPerDirectoryTest should be run over. These
-     *     source files will be passed to Javac when the test is run. These are NOT JUnit tests.
+     * @return a list of source files a CheckerFrameworkPerDirectoryTest should be run over
      */
     List<File> getTestSourceFiles();
 
@@ -68,13 +67,13 @@ public interface TestConfiguration {
      * added as followed: List(key1, value1, key2, value2, ..., keyN, valueN) If a value is NULL
      * then it will not appear in the list.
      *
-     * @return the map returned {@link #getOptions}, but flattened into a list.
+     * @return the map returned {@link #getOptions}, but flattened into a list
      */
     List<String> getFlatOptions();
 
     /**
      * Returns true if the TypecheckExecutor should emit debug information on system out, false
-     * otherwise .
+     * otherwise.
      *
      * @return true if the TypecheckExecutor should emit debug information on system out, false
      *     otherwise

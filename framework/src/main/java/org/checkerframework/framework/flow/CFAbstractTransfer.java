@@ -163,10 +163,10 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns the abstract value of a non-leaf tree {@code tree}, as computed by the {@link
-     * AnnotatedTypeFactory}. .
+     * AnnotatedTypeFactory}.
      *
      * @return the abstract value of a non-leaf tree {@code tree}, as computed by the {@link
-     *     AnnotatedTypeFactory}.
+     *     AnnotatedTypeFactory}
      */
     protected V getValueFromFactory(Tree tree, Node node) {
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
@@ -210,10 +210,10 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns an abstract value with the given {@code type} and the annotations from {@code
-     * annotatedValue}. .
+     * annotatedValue}.
      *
      * @return an abstract value with the given {@code type} and the annotations from {@code
-     *     annotatedValue}.
+     *     annotatedValue}
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) {

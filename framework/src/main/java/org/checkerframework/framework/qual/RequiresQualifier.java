@@ -22,9 +22,8 @@ import java.lang.annotation.Target;
 @Repeatable(RequiresQualifier.List.class)
 public @interface RequiresQualifier {
     /**
-     * Returns the Java expressions for which the annotation need to be present
+     * Returns the Java expressions for which the annotation need to be present.
      *
-     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions .
      * @return the Java expressions for which the annotation need to be present
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
@@ -48,7 +47,7 @@ public @interface RequiresQualifier {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface List {
         /**
-         * Return the repeatable annotations.
+         * Returns the repeatable annotations.
          *
          * @return the repeatable annotations
          */

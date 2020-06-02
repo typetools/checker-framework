@@ -853,8 +853,8 @@ public class AnnotationUtils {
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**
-     * Update a map, to add <code>newQual</code> to the set that <code>key</code> maps to. The
-     * mapped-to element is an unmodifiable set.
+     * Update a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to
+     * element is an unmodifiable set.
      *
      * <p>See
      * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
@@ -902,7 +902,7 @@ public class AnnotationUtils {
      * be written on uses of types.
      *
      * @param anno the AnnotationMirror
-     * @return true if anno is a declaration annotation.
+     * @return true if anno is a declaration annotation
      */
     public static boolean isDeclarationAnnotation(AnnotationMirror anno) {
         TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();

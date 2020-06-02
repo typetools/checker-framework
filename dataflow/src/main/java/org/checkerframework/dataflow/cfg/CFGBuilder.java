@@ -331,10 +331,10 @@ public class CFGBuilder {
 
         /**
          * Returns the node contained in this extended node (only applicable if the type is {@code
-         * NODE} or {@code EXCEPTION_NODE}). .
+         * NODE} or {@code EXCEPTION_NODE}).
          *
          * @return the node contained in this extended node (only applicable if the type is {@code
-         *     NODE} or {@code EXCEPTION_NODE}).
+         *     NODE} or {@code EXCEPTION_NODE})
          */
         public Node getNode() {
             assert false;
@@ -343,10 +343,10 @@ public class CFGBuilder {
 
         /**
          * Returns the label associated with this extended node (only applicable if type is {@link
-         * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}). .
+         * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
          *
          * @return the label associated with this extended node (only applicable if type is {@link
-         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
          */
         public Label getLabel() {
             assert false;
@@ -499,7 +499,7 @@ public class CFGBuilder {
         /**
          * Produce a string representation.
          *
-         * @return a string representation.
+         * @return a string representation
          * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
@@ -533,7 +533,7 @@ public class CFGBuilder {
         /**
          * Produce a string representation.
          *
-         * @return a string representation.
+         * @return a string representation
          * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
@@ -1162,10 +1162,10 @@ public class CFGBuilder {
 
         /**
          * Returns a {@link PredecessorHolder} that sets the successor of a single successor block
-         * {@code s}. .
+         * {@code s}.
          *
          * @return a {@link PredecessorHolder} that sets the successor of a single successor block
-         *     {@code s}.
+         *     {@code s}
          */
         protected static PredecessorHolder singleSuccessorHolder(
                 final SingleSuccessorBlockImpl s, final BlockImpl old) {

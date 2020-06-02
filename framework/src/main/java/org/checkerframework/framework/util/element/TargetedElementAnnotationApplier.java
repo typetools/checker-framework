@@ -45,10 +45,10 @@ abstract class TargetedElementAnnotationApplier {
 
     /**
      * Returns the TargetTypes that identify annotations we wish to apply with this object. Any
-     * annotations that have these target types will be passed to handleTargeted. .
+     * annotations that have these target types will be passed to handleTargeted.
      *
      * @return the TargetTypes that identify annotations we wish to apply with this object. Any
-     *     annotations that have these target types will be passed to handleTargeted.
+     *     annotations that have these target types will be passed to handleTargeted
      */
     protected abstract TargetType[] annotatedTargets();
 

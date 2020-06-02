@@ -31,7 +31,7 @@ public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>
 
     /**
      * Returns the initial store to be used by the org.checkerframework.dataflow analysis. {@code
-     * parameters} is only set if the underlying AST is a method. .
+     * parameters} is only set if the underlying AST is a method.
      *
      * @return the initial store to be used by the org.checkerframework.dataflow analysis. {@code
      *     parameters} is only set if the underlying AST is a method.

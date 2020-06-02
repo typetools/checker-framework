@@ -754,22 +754,22 @@ public abstract class AnnotatedTypeMirror {
      * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
-     * @return a shallow copy of this type with annotations.
+     * @return a shallow copy of this type with annotations
      */
     public abstract AnnotatedTypeMirror shallowCopy();
 
     /**
      * Returns whether this type or any component type is a wildcard type for which Java 7 type
-     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType. .
+     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
      *
      * @return whether this type or any component type is a wildcard type for which Java 7 type
-     *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
         return uninferredTypeArgumentScanner.visit(this);
     }
 
-    /** The implementation of the visitor for #containsUninferredTypeArguments */
+    /** The implementation of the visitor for #containsUninferredTypeArguments. */
     private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
             new SimpleAnnotatedTypeScanner<Boolean, Void>() {
                 @Override
@@ -1159,7 +1159,7 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * Returns the receiver type of this executable type; null for static methods and
-         * constructors of top-level classes .
+         * constructors of top-level classes.
          *
          * @return the receiver type of this executable type; null for static methods and
          *     constructors of top-level classes
@@ -1871,10 +1871,9 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * Returns the lower bound of this wildcard. If no lower bound is explicitly declared,
-         * {@code null} is returned. .
+         * returns {@code null}.
          *
-         * @return the lower bound of this wildcard. If no lower bound is explicitly declared,
-         *     {@code null} is returned.
+         * @return the lower bound of this wildcard, or null if none is explicitly declared
          */
         public AnnotatedTypeMirror getSuperBound() {
             if (superBound == null) {
@@ -1900,11 +1899,11 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Returns the upper bound of this wildcard. If no upper bound is explicitly declared, the
-         * upper bound of the type variable to which the wildcard is bound is used. .
+         * Returns the upper bound of this wildcard. If no upper bound is explicitly declared,
+         * returns the upper bound of the type variable to which the wildcard is bound.
          *
-         * @return the upper bound of this wildcard. If no upper bound is explicitly declared, the
-         *     upper bound of the type variable to which the wildcard is bound is used.
+         * @return the upper bound of this wildcard. If no upper bound is explicitly declared,
+         *     returns the upper bound of the type variable to which the wildcard is bound.
          */
         public AnnotatedTypeMirror getExtendsBound() {
             if (extendsBound == null) {

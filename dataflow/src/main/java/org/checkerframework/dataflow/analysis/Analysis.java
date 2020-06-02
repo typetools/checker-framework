@@ -692,7 +692,7 @@ public class Analysis<
 
     /**
      * Returns the transfer input corresponding to the location right before the basic block {@code
-     * b} .
+     * b}.
      *
      * @return the transfer input corresponding to the location right before the basic block {@code
      *     b}
@@ -876,7 +876,7 @@ public class Analysis<
 
     /**
      * Returns the regular exit store, or {@code null}, if there is no such store (because the
-     * method cannot exit through the regular exit block) .
+     * method cannot exit through the regular exit block).
      *
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block)

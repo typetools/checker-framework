@@ -146,7 +146,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the regular result store produced if no exception is thrown by the {@link Node}
-     * corresponding to this transfer function result .
+     * corresponding to this transfer function result.
      *
      * @return the regular result store produced if no exception is thrown by the {@link Node}
      *     corresponding to this transfer function result
@@ -162,7 +162,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the result store produced if the {@link Node} this result belongs to evaluates to
-     * {@code true} .
+     * {@code true}.
      *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
      *     {@code true}
@@ -177,7 +177,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Returns the result store produced if the {@link Node} this result belongs to evaluates to
-     * {@code false} .
+     * {@code false}.
      *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
      *     {@code false}

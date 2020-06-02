@@ -58,7 +58,7 @@ import org.plumelib.reflection.Signatures;
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
-    /** For issuing errors to the user */
+    /** For issuing errors to the user. */
     protected final BaseTypeChecker checker;
 
     // For loading from a source package directory

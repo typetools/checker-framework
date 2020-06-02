@@ -640,7 +640,7 @@ public final class TreeUtils {
 
     /**
      * Returns true if the first statement in the body is a self constructor invocation within a
-     * constructor .
+     * constructor.
      *
      * @return true if the first statement in the body is a self constructor invocation within a
      *     constructor

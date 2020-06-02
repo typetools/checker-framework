@@ -72,7 +72,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
     /**
      * Returns the parameter_index of anno's TypeAnnotationPosition which will actually point to the
-     * type parameter's index in its enclosing type parameter list .
+     * type parameter's index in its enclosing type parameter list.
      *
      * @return the parameter_index of anno's TypeAnnotationPosition which will actually point to the
      *     type parameter's index in its enclosing type parameter list

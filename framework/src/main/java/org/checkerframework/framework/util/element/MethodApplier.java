@@ -53,9 +53,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     /**
      * Returns receiver, returns, and throws. See extract and apply as we also annotate type params.
-     * .
      *
-     * @return receiver, returns, and throws. See extract and apply as we also annotate type params.
+     * @return receiver, returns, and throws
      */
     @Override
     protected TargetType[] annotatedTargets() {

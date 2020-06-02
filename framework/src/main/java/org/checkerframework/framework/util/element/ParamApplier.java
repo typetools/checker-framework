@@ -73,10 +73,10 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
     /**
      * Returns the index of element its parent method's parameter list. Integer.MIN_VALUE if the
-     * element is the receiver parameter. .
+     * element is the receiver parameter.
      *
      * @return the index of element its parent method's parameter list. Integer.MIN_VALUE if the
-     *     element is the receiver parameter.
+     *     element is the receiver parameter
      */
     @Override
     public int getElementIndex() {

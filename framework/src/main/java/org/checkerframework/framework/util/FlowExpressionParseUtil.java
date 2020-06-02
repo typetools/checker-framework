@@ -859,10 +859,10 @@ public class FlowExpressionParseUtil {
 
         /**
          * Returns a {@link FlowExpressionContext} for the class {@code classTree} as seen at the
-         * class declaration. .
+         * class declaration.
          *
          * @return a {@link FlowExpressionContext} for the class {@code classTree} as seen at the
-         *     class declaration.
+         *     class declaration
          */
         public static FlowExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
@@ -934,10 +934,10 @@ public class FlowExpressionParseUtil {
 
         /**
          * Returns a {@link FlowExpressionContext} for the constructor {@code n} (represented as a
-         * {@link Node} as seen at the method use (i.e., at a method call site). .
+         * {@link Node} as seen at the method use (i.e., at a method call site).
          *
          * @return a {@link FlowExpressionContext} for the constructor {@code n} (represented as a
-         *     {@link Node} as seen at the method use (i.e., at a method call site).
+         *     {@link Node} as seen at the method use (i.e., at a method call site)
          */
         public static FlowExpressionContext buildContextForNewClassUse(
                 ObjectCreationNode n, BaseContext checkerContext) {

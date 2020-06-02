@@ -20,7 +20,7 @@ public interface QualifierPolymorphism {
 
     /**
      * Returns the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
-     * otherwise return null .
+     * otherwise return null.
      *
      * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
      *     otherwise return null

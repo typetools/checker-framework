@@ -1156,7 +1156,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a Tree, or null
      * @param defaultFormat the message key, in parentheses
      * @param args arguments for interpolation in the string corresponding to the given message key
-     * @return the first part of the message format output by -Adetailedmsgtext.
+     * @return the first part of the message format output by -Adetailedmsgtext
      */
     private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
         StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
@@ -1227,7 +1227,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param source the object from which to obtain source position information; may be an Element,
      *     a Tree, or null
-     * @return the tree associated with the given source object, or null if none.
+     * @return the tree associated with the given source object, or null if none
      */
     private @Nullable Tree sourceToTree(@Nullable Object source) {
         if (source instanceof Element) {

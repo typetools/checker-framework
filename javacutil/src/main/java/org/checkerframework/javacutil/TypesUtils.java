@@ -653,7 +653,7 @@ public final class TypesUtils {
 
     /**
      * Returns {@code type} as {@code superType} if {@code superType} is a super type of {@code
-     * type}; otherwise, null .
+     * type}; otherwise, null.
      *
      * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code
      *     type}; otherwise, null

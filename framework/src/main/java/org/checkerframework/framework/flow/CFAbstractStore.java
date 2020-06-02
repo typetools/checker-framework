@@ -403,7 +403,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
-     * (e.g. @MonotonicNonNull to @NonNull). Always returns false if sequentialSemantics is true.
+     * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
+     * true.
      *
      * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
      *     (e.g. @MonotonicNonNull to @NonNull)
@@ -497,10 +498,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of a flow expression, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of a flow expression, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(FlowExpressions.Receiver expr) {
         if (expr instanceof FlowExpressions.LocalVariable) {
@@ -527,10 +528,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of a field access, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of a field access, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(FieldAccessNode n) {
         FlowExpressions.FieldAccess fieldAccess =
@@ -540,10 +541,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of a method call, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of a method call, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
         Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n, true);
@@ -555,10 +556,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of a field access, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of a field access, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(ArrayAccessNode n) {
         FlowExpressions.ArrayAccess arrayAccess =
@@ -815,10 +816,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of a local variable, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of a local variable, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(LocalVariableNode n) {
         Element el = n.getElement();
@@ -831,10 +832,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Returns current abstract value of the current object, or {@code null} if no information is
-     * available. .
+     * available.
      *
      * @return current abstract value of the current object, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable V getValue(ThisLiteralNode n) {
         return thisValue;

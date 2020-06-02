@@ -156,10 +156,9 @@ public abstract class CFAbstractAnalysis<
 
     /**
      * Returns an abstract value containing the given {@code annotations} and {@code
-     * underlyingType}. .
+     * underlyingType}.
      *
-     * @return an abstract value containing the given {@code annotations} and {@code
-     *     underlyingType}.
+     * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
      */
     public abstract @Nullable V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);

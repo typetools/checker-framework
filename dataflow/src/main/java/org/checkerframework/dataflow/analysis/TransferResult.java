@@ -58,7 +58,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * Returns the regular result store produced if no exception is thrown by the {@link
-     * org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function result .
+     * org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function result.
      *
      * @return the regular result store produced if no exception is thrown by the {@link
      *     org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function
@@ -68,7 +68,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * Returns the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
-     * this result belongs to evaluates to {@code true} .
+     * this result belongs to evaluates to {@code true}.
      *
      * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
      *     this result belongs to evaluates to {@code true}
@@ -77,7 +77,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * Returns the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
-     * this result belongs to evaluates to {@code false} .
+     * this result belongs to evaluates to {@code false}.
      *
      * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
      *     this result belongs to evaluates to {@code false}
@@ -86,7 +86,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * Returns the store that flows along the outgoing exceptional edge labeled with {@code
-     * exception} (or {@code null} if no special handling is required for exceptional edges) .
+     * exception} (or {@code null} if no special handling is required for exceptional edges).
      *
      * @return the store that flows along the outgoing exceptional edge labeled with {@code
      *     exception} (or {@code null} if no special handling is required for exceptional edges)
@@ -99,9 +99,8 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
-     * Returns a Map of {@link TypeMirror} to {@link Store}, {@code null} otherwise
+     * Returns a Map of {@link TypeMirror} to {@link Store}, {@code null} otherwise.
      *
-     * @see TransferResult#getExceptionalStore(TypeMirror) .
      * @return a Map of {@link TypeMirror} to {@link Store}, {@code null} otherwise
      * @see TransferResult#getExceptionalStore(TypeMirror)
      */
@@ -124,10 +123,10 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * Returns {@code true} if and only if the transfer function returning this transfer result
-     * changed the regularStore, elseStore, or thenStore. .
+     * changed the regularStore, elseStore, or thenStore.
      *
      * @return {@code true} if and only if the transfer function returning this transfer result
-     *     changed the regularStore, elseStore, or thenStore.
+     *     changed the regularStore, elseStore, or thenStore
      */
     public abstract boolean storeChanged();
 }

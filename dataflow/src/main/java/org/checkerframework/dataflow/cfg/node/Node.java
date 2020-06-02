@@ -62,10 +62,10 @@ public abstract class Node {
 
     /**
      * Returns the basic block this node belongs to (or {@code null} if it represents the parameter
-     * of a method). .
+     * of a method).
      *
      * @return the basic block this node belongs to (or {@code null} if it represents the parameter
-     *     of a method).
+     *     of a method)
      */
     public @Nullable Block getBlock() {
         return block;
@@ -142,7 +142,7 @@ public abstract class Node {
 
     /**
      * Returns a collection containing all of the operand {@link Node}s of this {@link Node}, as
-     * well as (transitively) the operands of its operands .
+     * well as (transitively) the operands of its operands.
      *
      * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as
      *     well as (transitively) the operands of its operands

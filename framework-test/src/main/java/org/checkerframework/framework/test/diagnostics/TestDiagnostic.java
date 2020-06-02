@@ -61,8 +61,7 @@ public class TestDiagnostic {
     }
 
     /**
-     * Returns whether or not the printed representation should omit parentheses around the message
-     * .
+     * Returns whether or not the printed representation should omit parentheses around the message.
      *
      * @return whether or not the printed representation should omit parentheses around the message
      */
@@ -72,7 +71,7 @@ public class TestDiagnostic {
 
     /**
      * Returns a String representing the format of this diagnostic as if it appeared in a source
-     * file .
+     * file.
      *
      * @return a String representing the format of this diagnostic as if it appeared in a source
      *     file

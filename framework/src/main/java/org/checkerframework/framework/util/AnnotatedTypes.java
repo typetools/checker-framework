@@ -735,7 +735,7 @@ public class AnnotatedTypes {
      *     subtype of MethodInvocationTree or NewClassTree
      * @param elt the element corresponding to the tree
      * @param preType the (partially annotated) type corresponding to the tree - the result of
-     *     AnnotatedTypes.asMemberOf with the receiver and elt.
+     *     AnnotatedTypes.asMemberOf with the receiver and elt
      * @return the mapping of the type variables to type arguments for this method or constructor
      *     invocation
      */
