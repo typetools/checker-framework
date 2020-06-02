@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -301,6 +303,8 @@ public class FlowExpressions {
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
                         Receiver fieldAccessExpression;
+                        @SuppressWarnings(
+                                "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);
@@ -315,6 +319,11 @@ public class FlowExpressions {
                         receiver = null;
                 }
                 break;
+            case UNARY_PLUS:
+                return internalReprOf(
+                        provider,
+                        ((UnaryTree) receiverTree).getExpression(),
+                        allowNonDeterministic);
             default:
                 receiver = null;
         }
@@ -336,7 +345,12 @@ public class FlowExpressions {
      *     not
      */
     public static Receiver internalReprOfImplicitReceiver(Element ele) {
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        if (enclosingClass == null) {
+            throw new BugInCF(
+                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
+        }
+        TypeMirror enclosingType = enclosingClass.asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
         } else {

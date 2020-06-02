@@ -51,7 +51,7 @@ public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
             final AnnotatedTypeMirror to,
             final AnnotationMirror top) {
         if (from == to) {
-            throw new BugInCF("From == to");
+            throw new BugInCF("from == to: %s", from);
         }
         new AnnotatedTypeReplacer(top).visit(from, to);
     }

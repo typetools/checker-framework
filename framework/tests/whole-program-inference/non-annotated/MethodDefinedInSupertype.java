@@ -1,4 +1,5 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Parent;
+import testlib.wholeprograminference.qual.Sibling1;
 
 abstract class MethodDefinedInSupertype {
 

@@ -87,9 +87,9 @@ public class JavaStubifier {
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
-                // this somehow only removes comments except the
-                // first one, and copyright headers are kept
-                cu.getComments().forEach(Node::remove);
+                // Only remove the "contained" comments so that the copyright comment is not
+                // removed.
+                cu.getAllContainedComments().forEach(Node::remove);
                 mv.visit(cu, null);
                 if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
                         && cu.findAll(AnnotationDeclaration.class).isEmpty()

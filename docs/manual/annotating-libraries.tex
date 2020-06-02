@@ -453,29 +453,57 @@ Section~\ref{creating-a-checker-annotated-jdk}.
 
 \subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
 
-A file being compiled takes precedence over a stub file.  If file \<A.java>
-is being compiled, then any stub for class \<A> is ignored.
-
-A stub file takes precedence over bytecode, for elements in the stub file.
-If a stub file does not mention a method or field, its annotations are
-taken from bytecode.
-An un-annotated type variable in a stub file is used instead of
-annotations on a type variable in bytecode.
-This feature allows stub files to change the effective annotations in
-all possible situations.
-%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
-% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-% warning whenever a stub file overwrites bytecode annotations.
-Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
-a warning whenever a stub file specification is redundant with
-bytecode annotations.
+There are three possible sources of information for a given
+element: source files, stub files, and bytecode files.
+Usually source files take precedence over the other two,
+and stub files take precedence over bytecode.
+In other words:
+\begin{itemize}
+\item
+  If file \<A.java> is being compiled, then by default any stub for class
+  \<A> is ignored.  See below for how to change this behavior and respect
+  both types of annotations.
+\item
+  An un-annotated type variable in a stub file is used instead of
+  annotations on a type variable in bytecode.
+  \\
+  Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get a
+  warning whenever a stub file specification is redundant with bytecode
+  annotations.
+  %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+  % Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+  % warning whenever a stub file overwrites bytecode annotations.
+\item
+  If a stub file does not mention a method or field (and no source is
+  available), its annotations are taken from bytecode.
+\end{itemize}
 
 If a method appears in more than one stub file (or twice in the same
-stub file), then the annotations are merged. If any of the
-methods have different annotations from the same hierarchy on the same type,
-then the annotation from the last declaration is used.
+stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
+
+The command-line option \<-AmergeStubsWithSource> tells the checker to use
+both source files and stub files.  The checker permits only values that are
+permitted by \emph{both} the source and stub annotations.  (This is called
+the greatest lower bound, or GLB, of the types.)
+% Note for maintainers:
+% The choice of GLB is made for the convenience of whole-program inference.
+Do not use \<-AmergeStubsWithSource> if the default qualifier
+is other than top (e.g., the Nullness Checker).
+
+As an example of GLB, suppose the source annotation says the value is in
+the range [1..20] and the stub file says the value is in the range
+[11..30].  Since both sources of information are trusted, the value must be
+in the range [11..20].  Equivalently, the GLB of
+\refqualclasswithparams{common/value/qual}{IntRange}{from=1, to=20} and
+\refqualclasswithparams{common/value/qual}{IntRange}{from=11, to=30} is
+\refqualclasswithparams{common/value/qual}{IntRange}{from=11, to=20}.
+As another example, the GLB of
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2"\}} and
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map2", "map3"\}} is
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2", "map3"\}}
+since the value is known to be a key for all three maps.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}

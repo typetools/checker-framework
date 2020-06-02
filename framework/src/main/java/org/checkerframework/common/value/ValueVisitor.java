@@ -300,6 +300,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      */
     @Override
     public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+        replaceSpecialIntRangeAnnotations(type);
         if (!super.validateType(tree, type)) {
             return false;
         }
