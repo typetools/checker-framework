@@ -419,11 +419,11 @@ public class Analysis<
     }
 
     /**
-     * Call the transfer function for node {@code node}, and set that node as current node first.
+     * Call the transfer function for the given node, and set that node as current node first.
      *
      * @param node a node
      * @param store the input of a transfer function
-     * @return the transfer result for node {@code node}
+     * @return the transfer result for the node
      */
     protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
@@ -730,9 +730,9 @@ public class Analysis<
 
     /**
      * @param n a node
-     * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     * @return the abstract value for the node, or {@code null} if no information is available. Note
+     *     that if the analysis has not finished yet, this value might not represent the final value
+     *     for this node.
      */
     public @Nullable V getValue(Node n) {
         if (isRunning) {

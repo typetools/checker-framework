@@ -64,7 +64,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
      *
-     * @param n a node
+     * @param n {@link #node}
      * @param analysis {@link #analysis}
      * @param to a transfer result
      */
@@ -90,9 +90,9 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
      *
-     * @param n a node
+     * @param n {@link #node}
      * @param analysis {@link #analysis}
-     * @param s a store
+     * @param s {@link #store}
      */
     public TransferInput(@Nullable Node n, Analysis<V, S, ?> analysis, S s) {
         node = n;
@@ -109,8 +109,8 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      *
      * @param n a node
      * @param analysis {@link #analysis}
-     * @param s1 'then' result store
-     * @param s2 'else' result store
+     * @param s1 {@link #thenStore}
+     * @param s2 {@link #elseStore}
      */
     public TransferInput(@Nullable Node n, Analysis<V, S, ?> analysis, S s1, S s2) {
         node = n;
