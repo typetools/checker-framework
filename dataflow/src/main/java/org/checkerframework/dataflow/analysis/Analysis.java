@@ -400,6 +400,9 @@ public class Analysis<
     /**
      * Updates the value of node {@code node} to the value of the {@code transferResult}. Returns
      * true if the node's value changed, or a store was updated.
+     *
+     * @param node a node
+     * @param transferResult the result type of a transfer function
      */
     protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
         V newVal = transferResult.getResultValue();
@@ -416,6 +419,9 @@ public class Analysis<
 
     /**
      * Call the transfer function for node {@code node}, and set that node as current node first.
+     *
+     * @param node a node
+     * @param store the input type of a transfer function
      */
     protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
@@ -678,14 +684,18 @@ public class Analysis<
     /**
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
      * yet).
+     *
+     * @param b a block {@code b}
+     * @return the transfer input for the basic block {@code b}
      */
     public @Nullable TransferInput<V, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
     /**
+     * @param b a block {@code b}
      * @return the transfer input corresponding to the location right before the basic block {@code
-     *     b}.
+     *     b}
      */
     protected @Nullable TransferInput<V, S> getInputBefore(Block b) {
         return inputs.get(b);
@@ -718,6 +728,7 @@ public class Analysis<
     }
 
     /**
+     * @param n a node {@code n}
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.
@@ -743,12 +754,20 @@ public class Analysis<
         return nodeValues.get(n);
     }
 
-    /** Return all current node values. */
+    /**
+     * Return all current node values.
+     *
+     * @return {@link #nodeValues}
+     */
     public IdentityHashMap<Node, V> getNodeValues() {
         return nodeValues;
     }
 
-    /** Set all current node values to the given map. */
+    /**
+     * Set all current node values to the given map.
+     *
+     * @param in the current node values
+     */
     /*package-private*/ void setNodeValues(IdentityHashMap<Node, V> in) {
         assert !isRunning;
         nodeValues.clear();
@@ -756,6 +775,7 @@ public class Analysis<
     }
 
     /**
+     * @param t a {@link Tree} t
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.

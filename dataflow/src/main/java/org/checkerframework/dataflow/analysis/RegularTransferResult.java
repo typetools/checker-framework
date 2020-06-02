@@ -33,18 +33,34 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      * class (including use through aliases). Complete control over the object is transfered to this
      * class.
      *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param storeChanged {@link #storeChanged}
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
     public RegularTransferResult(@Nullable V value, S resultStore, boolean storeChanged) {
         this(value, resultStore, null, storeChanged);
     }
 
-    /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
+    /**
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store)}.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
+     */
     public RegularTransferResult(@Nullable V value, S resultStore) {
         this(value, resultStore, false);
     }
 
-    /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
+    /**
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map)}.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param exceptionalStores {@link #exceptionalStores}
+     * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
+     */
     public RegularTransferResult(
             @Nullable V value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, resultStore, exceptionalStores, false);
@@ -68,6 +84,11 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      * <p><em>Aliasing</em>: {@code resultStore} and any store in {@code exceptionalStores} are not
      * allowed to be used anywhere outside of this class (including use through aliases). Complete
      * control over the objects is transfered to this class.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param exceptionalStores {@link #exceptionalStores}
+     * @param storeChanged {@link #storeChanged}
      */
     public RegularTransferResult(
             @Nullable V value,

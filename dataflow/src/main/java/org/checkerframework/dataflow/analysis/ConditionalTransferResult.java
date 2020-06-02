@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * edge and one for 'else'. The result of {@code getRegularStore} will be the least upper bound of
  * the two underlying stores.
  *
+ * @param <V> the {@link AbstractValue} to be tracked by the analysis
  * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Store<S>>
@@ -32,7 +33,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
      *
      * <p><em>Aliasing</em>: {@code thenStore} and {@code elseStore} are not allowed to be used
      * anywhere outside of this class (including use through aliases). Complete control over the
-     * objects is transfered to this class.
+     * objects is transferred to this class.
      *
      * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
      */
@@ -41,12 +42,27 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
         this(value, thenStore, elseStore, null, storeChanged);
     }
 
-    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
+    /**
+     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store)}.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param thenStore {@link #thenStore}
+     * @param elseStore {@link #elseStore}
+     * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
+     */
     public ConditionalTransferResult(@Nullable V value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
     }
 
-    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
+    /**
+     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map)}.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param thenStore {@link #thenStore}
+     * @param elseStore {@link #elseStore}
+     * @param exceptionalStores {@link #exceptionalStores}
+     * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
+     */
     public ConditionalTransferResult(
             V value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, thenStore, elseStore, exceptionalStores, false);
@@ -69,7 +85,13 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
      *
      * <p><em>Aliasing</em>: {@code thenStore}, {@code elseStore}, and any store in {@code
      * exceptionalStores} are not allowed to be used anywhere outside of this class (including use
-     * through aliases). Complete control over the objects is transfered to this class.
+     * through aliases). Complete control over the objects is transferred to this class.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param thenStore {@link #thenStore}
+     * @param elseStore {@link #elseStore}
+     * @param exceptionalStores {@link #exceptionalStores}
+     * @param storeChanged {@link #storeChanged}
      */
     public ConditionalTransferResult(
             @Nullable V value,

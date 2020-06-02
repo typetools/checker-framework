@@ -49,7 +49,16 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
             analysisCaches;
 
-    /** Initialize with given mappings. */
+    /**
+     * Initialize with given mappings.
+     *
+     * @param nodeValues {@link #nodeValues}
+     * @param stores {@link #stores}
+     * @param treeLookup {@link #treeLookup}
+     * @param unaryAssignNodeLookup {@link #unaryAssignNodeLookup}
+     * @param finalLocalValues {@link #finalLocalValues}
+     * @param analysisCaches {@link #analysisCaches}
+     */
     protected AnalysisResult(
             Map<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
@@ -66,7 +75,15 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         this.analysisCaches = analysisCaches;
     }
 
-    /** Initialize with given mappings and empty cache. */
+    /**
+     * Initialize with given mappings and empty cache.
+     *
+     * @param nodeValues {@link #nodeValues}
+     * @param stores {@link #stores}
+     * @param treeLookup {@link #treeLookup}
+     * @param unaryAssignNodeLookup {@link #unaryAssignNodeLookup}
+     * @param finalLocalValues {@link #finalLocalValues}
+     */
     public AnalysisResult(
             Map<Node, V> nodeValues,
             IdentityHashMap<Block, TransferInput<V, S>> stores,
@@ -82,7 +99,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 new IdentityHashMap<>());
     }
 
-    /** Initialize empty result with specified cache. */
+    /**
+     * Initialize empty result with specified cache.
+     *
+     * @param analysisCaches {@link #analysisCaches}
+     */
     public AnalysisResult(
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         this(
@@ -94,7 +115,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 analysisCaches);
     }
 
-    /** Combine with another analysis result. */
+    /**
+     * Combine with another analysis result.
+     *
+     * @param other a given analysis result
+     */
     public void combine(AnalysisResult<V, S> other) {
         nodeValues.putAll(other.nodeValues);
         mergeTreeLookup(treeLookup, other.treeLookup);
@@ -123,6 +148,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
+     * @param n a {@link Node} n
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
      *     available.
      */
@@ -131,6 +157,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
+     * @param t a {@link Tree} t
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available.
      */
@@ -261,6 +288,15 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * {@code transferInput} is not in {@code analysisCaches}, this method create new cache and
      * store it in {@code analysisCaches}. The cache is a map from a node to the analysis result of
      * the node.
+     *
+     * @param <V> the abstract value type to be tracked by the analysis
+     * @param <S> the store type used in the analysis
+     * @param node a node
+     * @param before indicate before or after the node
+     * @param transferInput a transfer input
+     * @param nodeValues node values
+     * @param analysisCaches caches of analysis results
+     * @return store immediately before or after the node {@code node}
      */
     public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
             Node node,
