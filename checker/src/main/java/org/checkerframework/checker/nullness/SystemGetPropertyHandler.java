@@ -1,17 +1,11 @@
 package org.checkerframework.checker.nullness;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
@@ -30,35 +24,26 @@ public class SystemGetPropertyHandler {
      * If true, client code may clear system properties, and this class (SystemGetPropertyHandler)
      * has no effect.
      */
-    protected final boolean permitClearProperty;
+    private final boolean permitClearProperty;
 
     /** The processing environment. */
-    protected final ProcessingEnvironment env;
+    private final ProcessingEnvironment env;
 
     /** The factory for constructing and looking up types. */
-    protected final NullnessAnnotatedTypeFactory factory;
-
-    /** The checker for issuing errors. */
-    protected final BaseTypeChecker checker;
+    private final NullnessAnnotatedTypeFactory factory;
 
     /** The System.getProperty(String) method. */
-    protected final ExecutableElement systemGetProperty;
+    private final ExecutableElement systemGetProperty;
 
     /** The System.setProperty(String) method. */
-    protected final ExecutableElement systemSetProperty;
-
-    /** The System.clearProperty(String) method. */
-    protected final ExecutableElement systemClearProperty;
-
-    /** The System.setProperties(String) method. */
-    protected final ExecutableElement systemSetProperties;
+    private final ExecutableElement systemSetProperty;
 
     /**
      * System properties that are defined at startup on every JVM.
      *
      * <p>This list is from the Javadoc of System.getProperties, for Java 11.
      */
-    Collection<String> predefinedSystemProperties =
+    public static final Collection<String> predefinedSystemProperties =
             new HashSet<>(
                     Arrays.asList(
                             "java.version",
@@ -96,45 +81,21 @@ public class SystemGetPropertyHandler {
      *
      * @param env the processing environment
      * @param factory the factory for constructing and looking up types
-     * @param checker the checker for issuing errors
+     * @param permitClearProperty if true, client code may clear system properties, and this object
+     *     does nothing
      */
     public SystemGetPropertyHandler(
             ProcessingEnvironment env,
             NullnessAnnotatedTypeFactory factory,
-            BaseTypeChecker checker) {
-        this.permitClearProperty =
-                checker.getLintOption(
-                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
-                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
+            boolean permitClearProperty) {
         this.env = env;
         this.factory = factory;
-        this.checker = checker;
+        this.permitClearProperty = permitClearProperty;
 
         systemGetProperty =
                 TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
         systemSetProperty =
                 TreeUtils.getMethod(java.lang.System.class.getName(), "setProperty", 2, env);
-        systemClearProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
-        systemSetProperties =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperties", 1, env);
-    }
-
-    /**
-     * If the first argument of a method call is a literal, return it; otherwise return null.
-     *
-     * @param tree a method invocation whose first formal parameter is of String type
-     * @return the first argument if it is a literal, otherwise null
-     */
-    private static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
-        List<? extends ExpressionTree> args = tree.getArguments();
-        assert args.size() > 0;
-        ExpressionTree arg = args.get(0);
-        if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
-            String literal = (String) ((LiteralTree) arg).getValue();
-            return literal;
-        }
-        return null;
     }
 
     /**
@@ -149,20 +110,11 @@ public class SystemGetPropertyHandler {
         }
         if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)
                 || TreeUtils.isMethodInvocation(tree, systemSetProperty, env)) {
-            String literal = literalFirstArgument(tree);
+            String literal = NullnessVisitor.literalFirstArgument(tree);
             if (literal != null && predefinedSystemProperties.contains(literal)) {
                 AnnotatedTypeMirror type = method.getReturnType();
                 type.replaceAnnotation(factory.NONNULL);
             }
-        }
-        if (TreeUtils.isMethodInvocation(tree, systemClearProperty, env)) {
-            String literal = literalFirstArgument(tree);
-            if (literal == null || predefinedSystemProperties.contains(literal)) {
-                checker.reportError(tree, "clear.system.property");
-            }
-        }
-        if (TreeUtils.isMethodInvocation(tree, systemSetProperties, env)) {
-            checker.reportError(tree, "clear.system.property");
         }
     }
 }

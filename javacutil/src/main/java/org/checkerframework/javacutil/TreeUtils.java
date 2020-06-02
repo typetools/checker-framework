@@ -875,7 +875,9 @@ public final class TreeUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        assert invoked != null : "@AssumeAssertion(nullness): assumption";
+        if (invoked == null) {
+            return false;
+        }
         return ElementUtils.isMethod(invoked, method, env);
     }
 
