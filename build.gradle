@@ -163,7 +163,8 @@ allprojects {
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
-                // TODO: this is failing on buffalo, but not in CI.
+                // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
+		// on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
                 // options.addBooleanOption('Xwerror', true)
                 options.addStringOption('Xmaxwarns', '99999')
             }
