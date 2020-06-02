@@ -87,7 +87,7 @@ public class JavaStubifier {
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
-                // Only remove the "contained" comments to that the copyright comment is not
+                // Only remove the "contained" comments so that the copyright comment is not
                 // removed.
                 cu.getAllContainedComments().forEach(Node::remove);
                 mv.visit(cu, null);
