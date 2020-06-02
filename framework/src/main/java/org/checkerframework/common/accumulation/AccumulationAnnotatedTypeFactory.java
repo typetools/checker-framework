@@ -74,14 +74,14 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             rejectMalformedAccumulator("not have more than one argument");
         }
         Method value = accDeclaredMethods[0];
-        if (value.getName() != "value") {
-            rejectMalformedAccumulator("name its argument \"value\"");
+        if (value.getName() != "value") { // interned
+            rejectMalformedAccumulator("name its element \"value\"");
         }
         if (!value.getReturnType().isInstance(new String[0])) {
-            rejectMalformedAccumulator("have an argument of type String[]");
+            rejectMalformedAccumulator("have an element of type String[]");
         }
         if (((String[]) value.getDefaultValue()).length != 0) {
-            rejectMalformedAccumulator("must have the empty string array {} as its default value");
+            rejectMalformedAccumulator("must have the empty String array {} as its default value");
         }
 
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
@@ -100,15 +100,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *     replace $MISSING$: "The accumulator annotation Foo must $MISSING$."
      */
     private void rejectMalformedAccumulator(String missing) {
-        throw new UserError(
-                "The accumulator annotation "
-                        + accumulator
-                        + " must "
-                        + missing
-                        + ". "
-                        + "The accumulator type annotation must have exactly one argument, of type String[] with the name "
-                        + "\"value\" and an empty default. See the documentation in "
-                        + "the manual for creating an accumulation checker.");
+        throw new UserError("The accumulator annotation " + accumulator + " must " + missing + ".");
     }
 
     /**
@@ -161,9 +153,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * This tree annotator implements the following rule(s): RRA: If a method returns its receiver,
-     * and the receiver has an accumulation type, then the default type of the method's return value
-     * is the type of the receiver.
+     * This tree annotator implements the following rule(s):
+     *
+     * <dl>
+     *   <dt>RRA
+     *   <dd>If a method returns its receiver, and the receiver has an accumulation type, then the
+     *       default type of the method's return value is the type of the receiver.
+     * </dl>
      */
     protected class AccumulationTreeAnnotator extends TreeAnnotator {
 
@@ -180,7 +176,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
          * Implements rule RRA.
          *
          * @param tree a method invocation tree
-         * @param type the type {@code tree} (i.e. the return type of the invoked method). Is
+         * @param type the type of {@code tree} (i.e. the return type of the invoked method). Is
          *     (possibly) side-effected by this method.
          * @return nothing, works by side-effect on {@code type}
          */
@@ -209,16 +205,15 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Returns all the values that anno has accumulated. This method fails if anno is bottom.
+     * Returns all the values that anno has accumulated.
      *
-     * @param anno an accumulator annotation
-     * @return the list of values the annotation has accumulated
+     * @param anno an accumulator annotation; must not be bottom
+     * @return the list of values the annotation has accumulated; it is a new list, so it is safe
+     *     for clients to side-effect
      */
     public List<String> getAccumulatedValues(AnnotationMirror anno) {
         if (!isAccumulatorAnnotation(anno)) {
-            throw new BugInCF(
-                    "attempted to get accumulated values from an annotation that isn't an accumulator: "
-                            + anno);
+            throw new BugInCF(anno + "isn't an accumulator annotation");
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
@@ -229,7 +224,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * All accumulation analyses share a similar type hierarchy. This hierarchy implements the
+     * All accumulation analyses share a similar type hierarchy. This class implements the
      * subtyping, LUB, and GLB for that hierarchy. The lattice looks like:
      *
      * <pre>

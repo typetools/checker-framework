@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * The default transfer function for an accumulation checker.
  *
  * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
- * method to accumulate a string at a particular program point.
+ * method to add a string to the estimate at a particular program point.
  */
 public class AccumulationTransfer extends CFTransfer {
 
@@ -45,7 +45,7 @@ public class AccumulationTransfer extends CFTransfer {
      * type will also be updated. This chain will continue as long as each receiver is itself a
      * receiver-returning method invocation.
      *
-     * <p>For example, suppose the argument is the expression {@code a.b().c()}, the new value is
+     * <p>For example, suppose {@code node} is the expression {@code a.b().c()}, the new value is
      * "foo", and b and c return their receiver (and are deterministic). Then all of the expressions
      * {@code a}, {@code a.b()}, and {@code a.b().c()} would have their estimates updated to include
      * "foo".
