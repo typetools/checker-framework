@@ -32,7 +32,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
     protected @Nullable V resultValue;
 
     /**
-     * Create a {@link TransferResult(AbstractValue, Map)}, given {@link #resultValue} and {@link
+     * Create a {@link #TransferResult(AbstractValue, Map)}, given {@link #resultValue} and {@link
      * #exceptionalStores}.
      *
      * @param resultValue the abstract value of the {@link
