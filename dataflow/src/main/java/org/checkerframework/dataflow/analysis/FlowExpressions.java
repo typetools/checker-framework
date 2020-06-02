@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -27,22 +28,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
-import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
@@ -163,8 +155,7 @@ public class FlowExpressions {
             return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
-            return new BinaryAccess(
-                    bopn.getType(),
+            return new BinaryOperation(
                     bopn,
                     internalReprOf(provider, bopn.getLeftOperand(), allowNonDeterministic),
                     internalReprOf(provider, bopn.getRightOperand(), allowNonDeterministic));
@@ -1125,43 +1116,64 @@ public class FlowExpressions {
         }
     }
 
-    /** Receiver takes in binary operations. */
-    public static class BinaryAccess extends Receiver {
+    /** FlowExpression.Receiver for binary operations. */
+    public static class BinaryOperation extends Receiver {
 
-        /** The binary node. */
-        protected final BinaryOperationNode node;
-        /** Receiver of the left operator. */
+        /** The binary operation kind. */
+        protected final Kind operationKind;
+        /** Receiver of the left operand. */
         protected final Receiver left;
-        /** Receiver of the right operator. */
+        /** Receiver of the right operand. */
         protected final Receiver right;
 
-        /** Constructor, takes in the BinaryOperationNode and the left and right Receiver. */
-        public BinaryAccess(
-                TypeMirror type, BinaryOperationNode node, Receiver left, Receiver right) {
-            super(type);
-            this.node = node;
+        /**
+         * @param node the binary operation node.
+         * @param left the left operand receiver.
+         * @param right the right operand receiver.
+         */
+        public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
+            super(node.getType());
+            this.operationKind = node.getTree().getKind();
             this.left = left;
             this.right = right;
         }
 
-        /** Get the binary operation node. */
-        public BinaryOperationNode getNode() {
-            return node;
+        /** @return the binary operation kind. */
+        public Kind getOperationKind() {
+            return operationKind;
         }
 
-        /** Get the left receiver. */
+        /** @return the left receiver. */
         public Receiver getLeft() {
             return left;
         }
 
-        /** Get the right receiver. */
+        /** @return the right receiver. */
         public Receiver getRight() {
             return right;
         }
 
+        /** @return true if the binary operation is commutative. */
+        private boolean isCommutative() {
+            switch (operationKind) {
+                case PLUS:
+                case MULTIPLY:
+                case AND:
+                case OR:
+                case XOR:
+                case EQUAL_TO:
+                case NOT_EQUAL_TO:
+                case CONDITIONAL_AND:
+                case CONDITIONAL_OR:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         @Override
         public boolean containsOfClass(Class<? extends Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             return right.containsOfClass(clazz) || left.containsOfClass(clazz);
@@ -1179,14 +1191,14 @@ public class FlowExpressions {
 
         @Override
         public boolean syntacticEquals(Receiver other) {
-            if (!(other instanceof BinaryAccess)) {
+            if (!(other instanceof BinaryOperation)) {
                 return false;
             }
-            if (!node.getClass().equals(((BinaryAccess) other).node.getClass())) {
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!operationKind.equals(biOp.getOperationKind())) {
                 return false;
             }
-            return right.syntacticEquals(((BinaryAccess) other).right)
-                    && left.syntacticEquals(((BinaryAccess) other).left);
+            return right.equals(biOp.right) && left.equals(biOp.left);
         }
 
         @Override
@@ -1197,33 +1209,94 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return Objects.hash(node, left, right);
+            return Objects.hash(operationKind, left, right);
         }
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof BinaryAccess)) {
+            if (!(other instanceof BinaryOperation)) {
                 return false;
             }
-            if (!node.getClass().equals(((BinaryAccess) other).node.getClass())) {
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!operationKind.equals(biOp.getOperationKind())) {
                 return false;
             }
-            if (node instanceof BitwiseAndNode
-                    || node instanceof BitwiseOrNode
-                    || node instanceof BitwiseXorNode
-                    || node instanceof ConditionalAndNode
-                    || node instanceof ConditionalOrNode
-                    || node instanceof EqualToNode
-                    || node instanceof NotEqualNode
-                    || node instanceof NumericalAdditionNode
-                    || node instanceof NumericalMultiplicationNode) {
-                return (right.equals(((BinaryAccess) other).right)
-                                && left.equals(((BinaryAccess) other).left))
-                        || (left.equals(((BinaryAccess) other).right)
-                                && right.equals(((BinaryAccess) other).left));
+            if (isCommutative()) {
+                return (right.equals(biOp.right) && left.equals(biOp.left))
+                        || (left.equals(biOp.right) && right.equals(biOp.left));
             }
-            return right.equals(((BinaryAccess) other).right)
-                    && left.equals(((BinaryAccess) other).left);
+            return right.equals(biOp.right) && left.equals(biOp.left);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            result.append(left.toString());
+
+            switch (operationKind) {
+                case PLUS:
+                    result.append(" + ");
+                    break;
+                case MINUS:
+                    result.append(" - ");
+                    break;
+                case MULTIPLY:
+                    result.append(" * ");
+                    break;
+                case DIVIDE:
+                    result.append(" / ");
+                    break;
+                case REMAINDER:
+                    result.append(" % ");
+                    break;
+                case LEFT_SHIFT:
+                    result.append(" << ");
+                    break;
+                case RIGHT_SHIFT:
+                    result.append(" >> ");
+                    break;
+                case UNSIGNED_RIGHT_SHIFT:
+                    result.append(" >>> ");
+                    break;
+                case AND:
+                    result.append(" & ");
+                    break;
+                case OR:
+                    result.append(" | ");
+                    break;
+                case XOR:
+                    result.append(" ^ ");
+                    break;
+                case CONDITIONAL_AND:
+                    result.append(" && ");
+                    break;
+                case CONDITIONAL_OR:
+                    result.append(" || ");
+                    break;
+                case GREATER_THAN:
+                    result.append(" > ");
+                    break;
+                case GREATER_THAN_EQUAL:
+                    result.append(" >= ");
+                    break;
+                case LESS_THAN:
+                    result.append(" < ");
+                    break;
+                case LESS_THAN_EQUAL:
+                    result.append(" <= ");
+                    break;
+                case EQUAL_TO:
+                    result.append(" == ");
+                    break;
+                case NOT_EQUAL_TO:
+                    result.append(" != ");
+                    break;
+                default:
+                    break;
+            }
+
+            result.append(right.toString());
+            return result.toString();
         }
     }
 
