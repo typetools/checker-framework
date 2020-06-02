@@ -403,6 +403,7 @@ public class Analysis<
      *
      * @param node a node
      * @param transferResult the result type of a transfer function
+     * @return true if the node's value changed, or a store was updated
      */
     protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
         V newVal = transferResult.getResultValue();
@@ -422,6 +423,7 @@ public class Analysis<
      *
      * @param node a node
      * @param store the input type of a transfer function
+     * @return the transfer result for node {@code node}
      */
     protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
