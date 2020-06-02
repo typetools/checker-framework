@@ -8,10 +8,10 @@ This chapter describes how to build a checker for an accumulation analysis.
 If you want to \emph{use} an existing checker, you do not need to read this chapter.
 
 An \emph{accumulation analysis} is a program analysis where the
-analysis abstraction is a monotonically increasing set---that is, the
+analysis abstraction is a monotonically increasing set --- that is, the
 analysis learns new facts, and facts are never retracted.
 Typically, some operation in code is legal
-only when the set is large enough---that is, the estimate has accumulated
+only when the set is large enough --- that is, the estimate has accumulated
 sufficiently many facts.
 
 Accumulation analysis is a special case of typestate analysis in which
@@ -26,7 +26,7 @@ The Checker Framework contains a generic accumulation analysis that you can
 extend to create your own accumulation checker.
 
 Before reading the rest of this chapter, you should
-read the section on creating a checker (Chapter~\ref{creating-a-checker}).
+read how to create a checker (Chapter~\ref{creating-a-checker}).
 The rest of this chapter assumes you have done so.
 
 
@@ -51,7 +51,7 @@ be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 An example of such a qualifier can be found in the Checker Framework's tests:
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
 
-Also a bottom type, analogous to
+Also define a bottom type, analogous to
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
 It should take no arguments, and should be a subtype of the accumulator type you defined earlier.
 
