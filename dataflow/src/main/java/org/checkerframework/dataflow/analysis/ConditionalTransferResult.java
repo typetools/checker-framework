@@ -35,6 +35,10 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
      * anywhere outside of this class (including use through aliases). Complete control over the
      * objects is transferred to this class.
      *
+     * @param value the abstract value produced by the transfer function
+     * @param thenStore {@link #thenStore}
+     * @param elseStore {@link #elseStore}
+     * @param storeChanged {@link #storeChanged}
      * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
      */
     public ConditionalTransferResult(
