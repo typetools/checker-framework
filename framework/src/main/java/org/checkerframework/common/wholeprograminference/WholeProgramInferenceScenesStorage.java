@@ -379,6 +379,9 @@ public class WholeProgramInferenceScenesStorage {
                     }
                 }
             } catch (MirroredTypesException e) {
+                System.err.println(
+                        "A MirroredTypesException was thrown and I don't know what to do about it: "
+                                + e.toString());
             }
         }
 

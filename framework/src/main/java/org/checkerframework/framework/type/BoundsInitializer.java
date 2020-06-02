@@ -474,7 +474,7 @@ public class BoundsInitializer {
         }
 
         /**
-         * If the underlying type of (@code type} has been visited before, return the previous
+         * If the underlying type of {@code type} has been visited before, return the previous
          * AnnotatedTypeMirror. Otherwise, visit {@code type} and return it.
          *
          * @param type type to visit

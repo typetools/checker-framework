@@ -1080,15 +1080,22 @@ public class AnnotatedTypes {
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
-    /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
+    /**
+     * Returns true if the underlying type of this atm is a java.lang.annotation.Annotation.
+     *
+     * @return true if the underlying type of this atm is a java.lang.annotation.Annotation
+     */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
         return TypesUtils.isDeclaredOfName(atm.getUnderlyingType(), annotationClassName);
     }
 
     /**
-     * @return true if atm is an Annotation interface, i.e. an implementation of
-     *     java.lang.annotation.Annotation e.g. @interface MyAnno - implementsAnnotation would
-     *     return true when called on an AnnotatedDeclaredType representing a use of MyAnno
+     * Returns true if atm is an Annotation interface, i.e. an implementation of
+     * java.lang.annotation.Annotation. Given {@code @interface MyAnno}, a call to {@code
+     * implementsAnnotation} returns true when called on an AnnotatedDeclaredType representing a use
+     * of MyAnno.
+     *
+     * @return true if atm is an Annotation interface
      */
     public static boolean implementsAnnotation(final AnnotatedTypeMirror atm) {
         if (atm.getKind() != TypeKind.DECLARED) {
@@ -1128,7 +1135,11 @@ public class AnnotatedTypes {
         return false;
     }
 
-    /** @return true if the typeVar1 and typeVar2 are two uses of the same type variable */
+    /**
+     * Returns true if the typeVar1 and typeVar2 are two uses of the same type variable.
+     *
+     * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
+     */
     public static boolean haveSameDeclaration(
             Types types,
             final AnnotatedTypeVariable typeVar1,

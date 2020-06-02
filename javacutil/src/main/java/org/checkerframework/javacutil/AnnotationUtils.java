@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -52,6 +52,8 @@ public class AnnotationUtils {
     // **********************************************************************
 
     /**
+     * Returns the fully-qualified name of an annotation as a String.
+     *
      * @param annotation the annotation whose name to return
      * @return the fully-qualified name of an annotation as a String
      */
@@ -169,8 +171,8 @@ public class AnnotationUtils {
         }
 
         // while loop depends on SortedSet implementation.
-        SortedSet<AnnotationMirror> s1 = createAnnotationSet();
-        SortedSet<AnnotationMirror> s2 = createAnnotationSet();
+        NavigableSet<AnnotationMirror> s1 = createAnnotationSet();
+        NavigableSet<AnnotationMirror> s2 = createAnnotationSet();
         s1.addAll(c1);
         s2.addAll(c2);
         Iterator<AnnotationMirror> iter1 = s1.iterator();
@@ -463,7 +465,7 @@ public class AnnotationUtils {
      *
      * @return a sorted new set to store {@link AnnotationMirror} as element
      */
-    public static SortedSet<AnnotationMirror> createAnnotationSet() {
+    public static NavigableSet<AnnotationMirror> createAnnotationSet() {
         return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
@@ -478,6 +480,8 @@ public class AnnotationUtils {
     }
 
     /**
+     * Returns the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE.
+     *
      * @param target a location where an annotation can be written
      * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
      */

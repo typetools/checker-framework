@@ -93,7 +93,11 @@ public class StubTypes {
         this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
     }
 
-    /** @return true if stub files are currently being parsed; otherwise, false. */
+    /**
+     * Returns true if stub files are currently being parsed; otherwise, false.
+     *
+     * @return true if stub files are currently being parsed; otherwise, false
+     */
     public boolean isParsing() {
         return parsing;
     }
@@ -338,6 +342,9 @@ public class StubTypes {
     }
 
     /**
+     * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
+     * null} if no such class exists for {@code e}. .
+     *
      * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
      *     null} if no such class exists for {@code e}.
      */
@@ -413,7 +420,11 @@ public class StubTypes {
         }
     }
 
-    /** @return JarURLConnection to "/jdk*" */
+    /**
+     * Returns JarURLConnection to "/jdk*".
+     *
+     * @return JarURLConnection to "/jdk*"
+     */
     private JarURLConnection getJarURLConnectionToJdk() {
         URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         JarURLConnection connection;

@@ -57,6 +57,7 @@ public enum ConversionCategory {
      * Use if the parameter is a type which is capable of encoding a date or time: long, Long,
      * Calendar, and Date. Applicable for conversions t, T.
      */
+    @SuppressWarnings("JdkObsolete")
     TIME(new Class<?>[] {Long.class, Calendar.class, Date.class}, "tT"),
 
     /**

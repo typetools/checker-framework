@@ -61,6 +61,9 @@ public class TestDiagnostic {
     }
 
     /**
+     * Returns whether or not the printed representation should omit parentheses around the message
+     * .
+     *
      * @return whether or not the printed representation should omit parentheses around the message
      */
     public boolean shouldOmitParentheses() {
@@ -68,6 +71,9 @@ public class TestDiagnostic {
     }
 
     /**
+     * Returns a String representing the format of this diagnostic as if it appeared in a source
+     * file .
+     *
      * @return a String representing the format of this diagnostic as if it appeared in a source
      *     file
      */
@@ -105,7 +111,11 @@ public class TestDiagnostic {
                 * filename.hashCode();
     }
 
-    /** @return a representation of this diagnostic as if it appeared in a diagnostics file */
+    /**
+     * Returns a representation of this diagnostic as if it appeared in a diagnostics file.
+     *
+     * @return a representation of this diagnostic as if it appeared in a diagnostics file
+     */
     @Override
     public String toString() {
         if (omitParentheses) {

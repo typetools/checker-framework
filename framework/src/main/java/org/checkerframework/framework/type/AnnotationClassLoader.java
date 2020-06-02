@@ -274,6 +274,7 @@ public class AnnotationClassLoader {
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
      */
+    @SuppressWarnings("JdkObsolete")
     private final boolean checkJarForPackage(final JarFile jar) {
         Enumeration<JarEntry> jarEntries = jar.entries();
 
@@ -568,6 +569,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
+    @SuppressWarnings("JdkObsolete")
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 

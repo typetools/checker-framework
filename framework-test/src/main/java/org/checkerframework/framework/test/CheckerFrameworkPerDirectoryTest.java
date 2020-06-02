@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  *
  * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
- *   /** @param testFiles the files containing test code, which will be type-checked *{@literal /}
+ *   /** {@literal @}param testFiles the files containing test code, which will be type-checked *{@literal /}
  *   public MyTest(List{@literal <}File{@literal >} testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
  *   }
@@ -68,7 +68,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
-    public CheckerFrameworkPerDirectoryTest(
+    protected CheckerFrameworkPerDirectoryTest(
             List<File> testFiles,
             Class<? extends AbstractProcessor> checker,
             String testDir,

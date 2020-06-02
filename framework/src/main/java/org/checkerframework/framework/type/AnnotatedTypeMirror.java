@@ -759,6 +759,9 @@ public abstract class AnnotatedTypeMirror {
     public abstract AnnotatedTypeMirror shallowCopy();
 
     /**
+     * Returns whether this type or any component type is a wildcard type for which Java 7 type
+     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType. .
+     *
      * @return whether this type or any component type is a wildcard type for which Java 7 type
      *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
      */
@@ -912,7 +915,11 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-        /** @return the type argument for this type */
+        /**
+         * Returns the type argument for this type.
+         *
+         * @return the type argument for this type
+         */
         public List<AnnotatedTypeMirror> getTypeArguments() {
             if (typeArgs != null) {
                 return typeArgs;
@@ -1058,7 +1065,11 @@ public abstract class AnnotatedTypeMirror {
         protected final List<AnnotatedTypeMirror> throwsTypes = new ArrayList<>();
         protected final List<AnnotatedTypeVariable> typeVarTypes = new ArrayList<>();
 
-        /** @return true if this type represents a varargs method */
+        /**
+         * Returns true if this type represents a varargs method.
+         *
+         * @return true if this type represents a varargs method
+         */
         public boolean isVarArgs() {
             return this.element.isVarArgs();
         }
@@ -1092,7 +1103,11 @@ public abstract class AnnotatedTypeMirror {
             paramTypes.addAll(params);
         }
 
-        /** @return the parameter types of this executable type */
+        /**
+         * Returns the parameter types of this executable type.
+         *
+         * @return the parameter types of this executable type
+         */
         public List<AnnotatedTypeMirror> getParameterTypes() {
             if (paramTypes.isEmpty()
                     && !((ExecutableType) actualType).getParameterTypes().isEmpty()) { // lazy init
@@ -1143,6 +1158,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
+         * Returns the receiver type of this executable type; null for static methods and
+         * constructors of top-level classes .
+         *
          * @return the receiver type of this executable type; null for static methods and
          *     constructors of top-level classes
          */
@@ -1191,7 +1209,11 @@ public abstract class AnnotatedTypeMirror {
             this.throwsTypes.addAll(thrownTypes);
         }
 
-        /** @return the thrown types of this executable type */
+        /**
+         * Returns the thrown types of this executable type.
+         *
+         * @return the thrown types of this executable type
+         */
         public List<AnnotatedTypeMirror> getThrownTypes() {
             if (throwsTypes.isEmpty()
                     && !((ExecutableType) actualType).getThrownTypes().isEmpty()) { // lazy init
@@ -1212,7 +1234,11 @@ public abstract class AnnotatedTypeMirror {
             typeVarTypes.addAll(types);
         }
 
-        /** @return the type variables of this executable type, if any */
+        /**
+         * Returns the type variables of this executable type, if any.
+         *
+         * @return the type variables of this executable type, if any
+         */
         public List<AnnotatedTypeVariable> getTypeVariables() {
             if (typeVarTypes.isEmpty()
                     && !((ExecutableType) actualType).getTypeVariables().isEmpty()) { // lazy init
@@ -1322,7 +1348,11 @@ public abstract class AnnotatedTypeMirror {
             this.componentType = type;
         }
 
-        /** @return the component type of this array */
+        /**
+         * Returns the component type of this array.
+         *
+         * @return the component type of this array
+         */
         public AnnotatedTypeMirror getComponentType() {
             if (componentType == null) { // lazy init
                 setComponentType(
@@ -1477,7 +1507,11 @@ public abstract class AnnotatedTypeMirror {
             return lowerBound;
         }
 
-        /** @return the lower bound type of this type variable */
+        /**
+         * Returns the lower bound type of this type variable.
+         *
+         * @return the lower bound type of this type variable
+         */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null) { // lazy init
                 BoundsInitializer.initializeBounds(this);
@@ -1836,6 +1870,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
+         * Returns the lower bound of this wildcard. If no lower bound is explicitly declared,
+         * {@code null} is returned. .
+         *
          * @return the lower bound of this wildcard. If no lower bound is explicitly declared,
          *     {@code null} is returned.
          */
@@ -1863,6 +1900,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
+         * Returns the upper bound of this wildcard. If no upper bound is explicitly declared, the
+         * upper bound of the type variable to which the wildcard is bound is used. .
+         *
          * @return the upper bound of this wildcard. If no upper bound is explicitly declared, the
          *     upper bound of the type variable to which the wildcard is bound is used.
          */
@@ -1993,8 +2033,8 @@ public abstract class AnnotatedTypeMirror {
          * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;.
          * For example: {@code <T extends MyObject & Serializable & Comparable<MyObject>>}
          *
-         * <p>The bound {@code MyObject &amp; Serializable &amp; Comparable} is an intersection type
-         * with direct supertypes [MyObject, Serializable, Comparable]
+         * <p>The bound {@code MyObject & Serializable & Comparable} is an intersection type with
+         * direct supertypes [MyObject, Serializable, Comparable]
          *
          * @param type underlying kind of this type
          * @param atypeFactory the factory used to construct this intersection type
