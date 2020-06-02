@@ -12,9 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -363,25 +361,6 @@ public class WholeProgramInferenceScenesStorage {
             TypeKind atmKind = atm.getUnderlyingType().getKind();
             if (hasMatchingTypeKind(atmKind, types)) {
                 return true;
-            }
-
-            try {
-                Class<?>[] names = defaultFor.types();
-                for (Class<?> c : names) {
-                    TypeMirror underlyingtype = atm.getUnderlyingType();
-                    while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
-                        underlyingtype =
-                                ((javax.lang.model.type.ArrayType) underlyingtype)
-                                        .getComponentType();
-                    }
-                    if (c.getCanonicalName().equals(atm.getUnderlyingType().toString())) {
-                        return true;
-                    }
-                }
-            } catch (MirroredTypesException e) {
-                System.err.println(
-                        "A MirroredTypesException was thrown and I don't know what to do about it: "
-                                + e.toString());
             }
         }
 
