@@ -31,6 +31,16 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
      */
     protected @Nullable V resultValue;
 
+    /**
+     * Create a {@link TransferResult(AbstractValue, Map)}, given {@link #resultValue} and {@link
+     * #exceptionalStores}.
+     *
+     * @param resultValue the abstract value of the {@link
+     *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
+     * @param exceptionalStores the stores in case the basic block throws an exception (or {@code
+     *     null} if the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} does not
+     *     throw any exceptions)
+     */
     public TransferResult(@Nullable V resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
         this.resultValue = resultValue;
         this.exceptionalStores = exceptionalStores;
@@ -41,6 +51,12 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
         return resultValue;
     }
 
+    /**
+     * Set the value of {@link #resultValue}.
+     *
+     * @param resultValue the abstract value of the {@link
+     *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
+     */
     public void setResultValue(V resultValue) {
         this.resultValue = resultValue;
     }
