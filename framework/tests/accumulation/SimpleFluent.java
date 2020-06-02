@@ -4,7 +4,7 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 import testaccumulation.qual.*;
 
-/* Simple inference of a fluent builder */
+/* Simple inference of a fluent builder. */
 class SimpleFluent {
     SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) {
         return this;
@@ -20,7 +20,7 @@ class SimpleFluent {
 
     // intentionally does not have an @This annotation
     SimpleFluent c() {
-        return new SimpleFluent();
+        return this;
     }
 
     static void doStuffCorrect(@TestAccumulation({"a", "b"}) SimpleFluent s) {
