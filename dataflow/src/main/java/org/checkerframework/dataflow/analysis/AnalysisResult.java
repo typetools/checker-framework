@@ -148,7 +148,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * @param n a {@link Node} n
+     * @param n a node
      * @return the abstract value for the node, or {@code null} if no information is available.
      */
     public @Nullable V getValue(Node n) {
