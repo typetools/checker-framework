@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.4.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.4.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -687,11 +687,13 @@ Type-checking modes:  enable/disable functionality
   type-checking based no that information; see
   Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
-\item \<-Ainfer>
+\item \<-Ainfer=\emph{outputformat}>
   Output suggested annotations for method signatures and fields.
   These annotations may reduce the number of type-checking
   errors when running type-checking in the future; see
   Section~\ref{whole-program-inference}.
+  Using \<-Ainfer=jaifs> produces \<.jaif> files.
+  Using \<-Ainfer=stubs> produces \<.astub> files.
 \item \<-AshowSuppressWarningKeys>
   With each warning, show all possible keys to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
@@ -727,6 +729,13 @@ Partially-annotated libraries
 \item \<-AstubWarnIfRedundantWithBytecode>
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
+\item \<-AmergeStubsWithSource>
+  If both a stub file and a source file for a class are available, trust
+  both and use the greatest lower bound of their annotations. The default
+  behavior (without this flag) is to ignore types from the stub file if
+  source is available.
+  % note to maintainers: GLB of the two types was chosen to support
+  % using this flag in combination with \<-Ainfer=stubs>.
 % This item is repeated above:
 \item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
