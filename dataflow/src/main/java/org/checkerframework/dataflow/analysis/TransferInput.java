@@ -12,8 +12,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
  * 'then', and the other to 'else'.
  *
- * @param <V> the {@link AbstractValue} to be tracked by the analysis
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
 public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
 

@@ -402,7 +402,7 @@ public class Analysis<
      * true if the node's value changed, or a store was updated.
      *
      * @param node a node
-     * @param transferResult the result type of a transfer function
+     * @param transferResult the transfer result to use
      * @return true if the node's value changed, or a store was updated
      */
     protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
@@ -422,7 +422,7 @@ public class Analysis<
      * Call the transfer function for node {@code node}, and set that node as current node first.
      *
      * @param node a node
-     * @param store the input type of a transfer function
+     * @param store the input of a transfer function
      * @return the transfer result for node {@code node}
      */
     protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
@@ -687,17 +687,16 @@ public class Analysis<
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
      * yet).
      *
-     * @param b a block {@code b}
-     * @return the transfer input for the basic block {@code b}
+     * @param b a block
+     * @return the transfer input for the basic block
      */
     public @Nullable TransferInput<V, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
     /**
-     * @param b a block {@code b}
-     * @return the transfer input corresponding to the location right before the basic block {@code
-     *     b}
+     * @param b a block
+     * @return the transfer input corresponding to the location right before the basic block
      */
     protected @Nullable TransferInput<V, S> getInputBefore(Block b) {
         return inputs.get(b);
@@ -777,7 +776,7 @@ public class Analysis<
     }
 
     /**
-     * @param t a {@link Tree} t
+     * @param t a tree
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
      *     available. Note that if the analysis has not finished yet, this value might not represent
      *     the final value for this node.

@@ -13,8 +13,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p>A {@code TransferResult} contains one or two stores (for 'then' and 'else'), and zero or more
  * stores with a cause ({@link TypeMirror}).
  *
- * @param <V> the {@link AbstractValue} to be tracked by the analysis
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
 public abstract class TransferResult<V extends AbstractValue<V>, S extends Store<S>> {
 

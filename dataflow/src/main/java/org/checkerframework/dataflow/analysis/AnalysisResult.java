@@ -157,9 +157,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * @param t a {@link Tree} t
-     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available.
+     * @param t a tree
+     * @return the abstract value for the tree, or {@code null} if no information is available.
      */
     public @Nullable V getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);

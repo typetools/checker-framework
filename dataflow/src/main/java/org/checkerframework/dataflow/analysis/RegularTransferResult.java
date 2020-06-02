@@ -9,8 +9,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Implementation of a {@link TransferResult} with just one non-exceptional store. The result of
  * {@code getThenStore} and {@code getElseStore} is equal to the only underlying store.
  *
- * @param <V> the {@link AbstractValue} to be tracked by the analysis
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
 public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S>>
         extends TransferResult<V, S> {

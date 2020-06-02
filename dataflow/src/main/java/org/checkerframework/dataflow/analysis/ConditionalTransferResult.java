@@ -10,8 +10,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * edge and one for 'else'. The result of {@code getRegularStore} will be the least upper bound of
  * the two underlying stores.
  *
- * @param <V> the {@link AbstractValue} to be tracked by the analysis
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
 public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Store<S>>
         extends TransferResult<V, S> {
