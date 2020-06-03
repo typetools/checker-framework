@@ -55,14 +55,17 @@ public abstract class Node {
      */
     protected final TypeMirror type;
 
-    public Node(TypeMirror type) {
+    protected Node(TypeMirror type) {
         assert type != null;
         this.type = type;
     }
 
     /**
+     * Returns the basic block this node belongs to (or {@code null} if it represents the parameter
+     * of a method).
+     *
      * @return the basic block this node belongs to (or {@code null} if it represents the parameter
-     *     of a method).
+     *     of a method)
      */
     public @Nullable Block getBlock() {
         return block;
@@ -130,10 +133,17 @@ public abstract class Node {
         this.assignmentContext = assignmentContext;
     }
 
-    /** @return a collection containing all of the operand {@link Node}s of this {@link Node}. */
+    /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}.
+     *
+     * @return a collection containing all of the operand {@link Node}s of this {@link Node}
+     */
     public abstract Collection<Node> getOperands();
 
     /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}, as
+     * well as (transitively) the operands of its operands.
+     *
      * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as
      *     well as (transitively) the operands of its operands
      */

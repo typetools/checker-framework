@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public abstract class ThisLiteralNode extends Node {
 
-    public ThisLiteralNode(TypeMirror type) {
+    protected ThisLiteralNode(TypeMirror type) {
         super(type);
     }
 

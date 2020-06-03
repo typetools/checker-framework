@@ -126,6 +126,9 @@ public class FluentAPIGenerator {
         };
 
         /**
+         * Returns {@code true} if the method was created by this generator and returns {@code
+         * this}.
+         *
          * @param t the annotated type of the method signature
          * @return {@code true} if the method was created by this generator and returns {@code this}
          */

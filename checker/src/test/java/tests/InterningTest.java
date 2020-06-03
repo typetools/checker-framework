@@ -8,7 +8,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Interning Checker, which tests the Interned annotation. */
 public class InterningTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create an InterningTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public InterningTest(List<File> testFiles) {
         super(
                 testFiles,

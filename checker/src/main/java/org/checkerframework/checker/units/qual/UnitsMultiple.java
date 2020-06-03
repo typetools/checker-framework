@@ -16,9 +16,17 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UnitsMultiple {
-    /** @return the base unit to use */
+    /**
+     * Returns the base unit to use.
+     *
+     * @return the base unit to use
+     */
     Class<? extends Annotation> quantity();
 
-    /** @return the scaling prefix */
+    /**
+     * Returns the scaling prefix.
+     *
+     * @return the scaling prefix
+     */
     Prefix prefix() default Prefix.one;
 }

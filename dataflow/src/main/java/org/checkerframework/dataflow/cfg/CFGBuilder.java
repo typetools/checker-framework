@@ -71,7 +71,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -301,7 +300,12 @@ public class CFGBuilder {
         /** Does this node terminate the execution? (e.g., "System.exit()") */
         protected boolean terminatesExecution = false;
 
-        public ExtendedNode(ExtendedNodeType type) {
+        /**
+         * Create a new ExtendedNode.
+         *
+         * @param type the type of this node
+         */
+        protected ExtendedNode(ExtendedNodeType type) {
             this.type = type;
         }
 
@@ -326,8 +330,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns the node contained in this extended node (only applicable if the type is {@code
+         * NODE} or {@code EXCEPTION_NODE}).
+         *
          * @return the node contained in this extended node (only applicable if the type is {@code
-         *     NODE} or {@code EXCEPTION_NODE}).
+         *     NODE} or {@code EXCEPTION_NODE})
          */
         public Node getNode() {
             assert false;
@@ -335,8 +342,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns the label associated with this extended node (only applicable if type is {@link
+         * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         *
          * @return the label associated with this extended node (only applicable if type is {@link
-         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
          */
         public Label getLabel() {
             assert false;
@@ -489,7 +499,7 @@ public class CFGBuilder {
         /**
          * Produce a string representation.
          *
-         * @return a string representation.
+         * @return a string representation
          * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
@@ -523,7 +533,7 @@ public class CFGBuilder {
         /**
          * Produce a string representation.
          *
-         * @return a string representation.
+         * @return a string representation
          * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
@@ -1122,9 +1132,9 @@ public class CFGBuilder {
                     } else {
                         @SuppressWarnings(
                                 "keyfor:assignment.type.incompatible") // ignore keyfor type
-                        Set<Entry<TypeMirror, Set<Block>>> entrySet =
+                        Set<Map.Entry<TypeMirror, Set<Block>>> entrySet =
                                 e.getExceptionalSuccessors().entrySet();
-                        for (final Entry<TypeMirror, Set<Block>> entry : entrySet) {
+                        for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
                             if (entry.getValue().contains(cur)) {
                                 return new PredecessorHolder() {
                                     @Override
@@ -1151,8 +1161,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns a {@link PredecessorHolder} that sets the successor of a single successor block
+         * {@code s}.
+         *
          * @return a {@link PredecessorHolder} that sets the successor of a single successor block
-         *     {@code s}.
+         *     {@code s}
          */
         protected static PredecessorHolder singleSuccessorHolder(
                 final SingleSuccessorBlockImpl s, final BlockImpl old) {
@@ -1339,7 +1352,8 @@ public class CFGBuilder {
                         }
 
                         // exceptional edges
-                        for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions().entrySet()) {
+                        for (Map.Entry<TypeMirror, Set<Label>> entry :
+                                en.getExceptions().entrySet()) {
                             TypeMirror cause = entry.getKey();
                             for (Label label : entry.getValue()) {
                                 Integer target = bindings.get(label);
@@ -1846,8 +1860,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert a {@code node} that might throw the exception {@code cause} after {@code pred} in
-         * the list of extended nodes, or append to the list if {@code pred} is not present.
+         * Insert a {@code node} that might throw the exceptions in {@code causes} after {@code
+         * pred} in the list of extended nodes, or append to the list if {@code pred} is not
+         * present.
          *
          * @param node the node to add
          * @param causes set of exceptions that the node might throw
@@ -1882,6 +1897,7 @@ public class CFGBuilder {
          * @param n the extended node
          * @param pred the desired predecessor
          */
+        @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
         protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
             int index = -1;
             for (int i = 0; i < nodeList.size(); i++) {
@@ -1896,7 +1912,7 @@ public class CFGBuilder {
             if (index != -1) {
                 nodeList.add(index + 1, n);
                 // update bindings
-                for (Entry<Label, Integer> e : bindings.entrySet()) {
+                for (Map.Entry<Label, Integer> e : bindings.entrySet()) {
                     if (e.getValue() >= index + 1) {
                         bindings.put(e.getKey(), e.getValue() + 1);
                     }
@@ -2057,7 +2073,11 @@ public class CFGBuilder {
             };
         }
 
-        /** @return the unboxed tree if necessary, as described in JLS 5.1.8 */
+        /**
+         * Returns the unboxed tree if necessary, as described in JLS 5.1.8.
+         *
+         * @return the unboxed tree if necessary, as described in JLS 5.1.8
+         */
         private Node unboxAsNeeded(Node node, boolean boxed) {
             return boxed ? unbox(node) : node;
         }
@@ -4516,7 +4536,7 @@ public class CFGBuilder {
                 if (!accessedBreakLabels.isEmpty()) {
                     breakLabels = oldBreakLabels;
 
-                    for (Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
+                    for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
                         addLabelForNextNode(access.getValue());
                         extendWithNode(
                                 new MarkerNode(
@@ -4567,7 +4587,7 @@ public class CFGBuilder {
                 if (!accessedContinueLabels.isEmpty()) {
                     continueLabels = oldContinueLabels;
 
-                    for (Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
+                    for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
                         addLabelForNextNode(access.getValue());
                         extendWithNode(
                                 new MarkerNode(

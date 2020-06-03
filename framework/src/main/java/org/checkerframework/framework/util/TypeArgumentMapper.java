@@ -30,7 +30,7 @@ import org.checkerframework.javacutil.Pair;
  * And we pass HashMap and Map to mapTypeArguments, the result would be:
  *
  * <pre>{@code
- * Map(H1 &rArr; M1, H2 &rArr; M2)
+ * Map(H1 => M1, H2 => M2)
  * }</pre>
  *
  * Note, a single type argument in the subtype can map to multiple type parameters in the supertype.
@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.Pair;
  * would have the result:
  *
  * <pre>{@code
- * Map(O1 &rArr; [M1,M2])
+ * Map(O1 => [M1,M2])
  * }</pre>
  *
  * This utility only maps between corresponding type parameters, so the following class:
@@ -95,7 +95,12 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    /** @return a Map(type parameter symbol &rarr; index in type parameter list) */
+    /**
+     * Returns a Map(type parameter symbol &rarr; index in type parameter list).
+     *
+     * @param typeElement a type whose type parameters to summarize
+     * @return a Map(type parameter symbol &rarr; index in type parameter list)
+     */
     private static Map<TypeParameterElement, Integer> getElementToIndex(TypeElement typeElement) {
         Map<TypeParameterElement, Integer> result = new LinkedHashMap<>();
 
@@ -118,7 +123,7 @@ public class TypeArgumentMapper {
      * class B<B1,B2,B3,B4> extends A<B1,B1,B3> {}
      * }</pre>
      *
-     * results in a {@code Map(B1 &rArr; [A1,A2], B2 &rArr; [], B3 &rArr; [A3], B4 &rArr; [])}
+     * results in a {@code Map(B1 => [A1,A2], B2 => [], B3 => [A3], B4 => [])}
      *
      * @return a mapping from the type parameters of subtype to the supertype type parameter's that
      *     to which they are a type argument
@@ -222,8 +227,8 @@ public class TypeArgumentMapper {
      *
      * <pre>{@code
      * interface Map<M1,M2>
-     * class AbstractMap<A1,A2> implements Map<A1,A2>, Iterable<Entry<M1,M2>>
-     * class MyMap<Y1,Y2> extends AbstractMap<Y1,Y2> implements List<Entry<Y1,Y2>>
+     * class AbstractMap<A1,A2> implements Map<A1,A2>, Iterable<Map.Entry<M1,M2>>
+     * class MyMap<Y1,Y2> extends AbstractMap<Y1,Y2> implements List<Map.Entry<Y1,Y2>>
      * }</pre>
      *
      * The path from MyMap to Map would be:
@@ -250,10 +255,9 @@ public class TypeArgumentMapper {
      * @return a set of type records that represents the sequence of directSupertypes between
      *     subtype and target
      */
+    @SuppressWarnings("JdkObsolete") // I tried replacing Stack with ArrayDeque, but tests fail.
     private static List<TypeRecord> depthFirstSearchForSupertype(
             final TypeElement subtype, final TypeElement target, final Types types) {
-        @SuppressWarnings(
-                "JdkObsolete") // I tried replacing Stack with ArrayDeque, but things break.
         Stack<TypeRecord> pathFromRoot = new Stack<>();
         final TypeRecord pathStart = new TypeRecord(subtype, null);
         pathFromRoot.push(pathStart);
@@ -262,6 +266,7 @@ public class TypeArgumentMapper {
     }
 
     /** Computes one level for depthFirstSearchForSupertype then recurses. */
+    @SuppressWarnings("JdkObsolete") // I tried replacing Stack with ArrayDeque, but tests fail.
     private static List<TypeRecord> recursiveDepthFirstSearch(
             final Stack<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
         if (pathFromRoot.isEmpty()) {

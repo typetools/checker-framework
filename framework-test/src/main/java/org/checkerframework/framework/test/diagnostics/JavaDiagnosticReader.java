@@ -77,8 +77,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * Returns all the diagnostics in any of the files.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param readers the files (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnostic> readDiagnostics(Iterable<JavaDiagnosticReader> readers) {
@@ -88,8 +87,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * Reads the entire input file using the given codec and returns the resulting line.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param readers the files (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnosticLine> readDiagnosticLines(
@@ -105,8 +103,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * Reads the entire input file using the given codec and returns the resulting lines, filtering
      * out empty ones produced by JavaDiagnosticReader.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param reader the file (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnosticLine> readDiagnosticLines(JavaDiagnosticReader reader) {
