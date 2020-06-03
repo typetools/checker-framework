@@ -17,24 +17,24 @@ public class TransitiveInheritance {
     public static interface IMid extends ITop {}
 
     // Issue #3287 is that if foo or bar is overridden with a @UIEffect implementation here, the
-    // "skip" in declarations causes the override warning to not be issued
+    // "skip" in declarations causes the override error to not be issued
     // We check both classes and interfaces
     public static class Base extends MidLevel implements IMid {
         @Override
         @UIEffect
-        // :: warning: (override.effect.invalid)
+        // :: error: (override.effect.invalid)
         public void foo() {}
 
         @Override
         @UIEffect
-        // :: warning: (override.effect.invalid)
+        // :: error: (override.effect.invalid)
         public void bar() {}
     }
 
     public static interface IBase extends IMid {
         @Override
         @UIEffect
-        // :: warning: (override.effect.invalid)
+        // :: error: (override.effect.invalid)
         public void bar();
     }
 }
