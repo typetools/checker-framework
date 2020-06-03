@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script runs the Checker Framework's whole-program inference
 # iteratively on a program, adding type annotations to the program, until the
@@ -55,6 +55,11 @@ interactive=
 
 CHECKERBIN=$(dirname "$0")
 
+insert_to_source_args=()
+extra_args=()
+java_files=()
+jaif_files=()
+
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
@@ -64,12 +69,11 @@ read_input() {
 
     # Collect command-line arguments that come before the preprocessor.
     # Assumes that every command line argument starts with a hyphen.
-    insert_to_source_args=""
     for i in "$@"
     do
         case "$1" in
             -*)
-                insert_to_source_args="$insert_to_source_args $1"
+                insert_to_source_args+=( "$1" )
                 shift
             ;;
             *)
@@ -84,22 +88,20 @@ read_input() {
     shift
     shift
 
-    extra_args=""
-    java_files=""
-    jaif_files=""
+    # shellcheck disable=SC2034
     for i in "$@"
     do
         # This function makes the assumption that every extra argument
         # starts with a hyphen. The rest are .java/.jaif files.
         case "$1" in
             -*)
-                extra_args="$extra_args $1"
+                extra_args+=( "$1" )
             ;;
             *.jaif)
-                jaif_files="$jaif_files $1"
+                jaif_files+=( "$1" )
             ;;
             *.java)
-                java_files="$java_files $1"
+                java_files+=( "$1" )
             ;;
         esac
         shift
@@ -114,9 +116,9 @@ infer_and_annotate() {
     rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
     mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
     # If there are .jaif files as input, copy them.
-    for file in $jaif_files;
+    for file in "${jaif_files[@]}";
     do
-        cp $file $WHOLE_PROGRAM_INFERENCE_DIR/
+        cp "$file" "$WHOLE_PROGRAM_INFERENCE_DIR/"
     done
 
     # Perform inference and add annotations from .jaif to .java files until
@@ -129,25 +131,25 @@ infer_and_annotate() {
         mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
-        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
+        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
         echo "About to run: ${command}"
         if [ $interactive ]; then
             echo "Press any key to run command... "
-            read _
+            IFS="" read -r _
         fi
-        ${command} || true
+        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$cp" -processor "$processor" -Ainfer -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
         # See TODO about .unannotated file at the top of this file.
-        for file in $java_files;
+        for file in "${java_files[@]}";
         do
             rm -f "${file}.unannotated"
         done
-        if [ ! `find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty` ]
+        if [ ! "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source $insert_to_source_args -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
+            insert-annotations-to-source "${insert_to_source_args[@]}" -i "$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")" "${java_files[@]}"
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
@@ -166,7 +168,7 @@ clean() {
     rm -rf $PREV_ITERATION_DIR
     rm -rf $TEMP_DIR
     # See TODO about .unannotated file at the top of this file.
-    for file in $java_files;
+    for file in "${java_files[@]}";
         do
             rm -f "${file}.unannotated"
     done
@@ -175,7 +177,7 @@ clean() {
 # Main
 if [ "$#" -lt 3 ]; then
     echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments, received $#."
-    echo "Received the following arguments: $@"
+    echo "Received the following arguments: $*"
     exit 1
 fi
 

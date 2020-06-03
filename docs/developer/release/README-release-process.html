@@ -108,11 +108,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
     Stubparser from JavaParser</a>.
   </li>
-  <li>
-    <b>Rebuild jdk8.jar</b> and upload it to https://github.com/typetools/annotated-libraries.
-    See <a href="https://github.com/typetools/annotated-libraries/blob/master/README.md">the README</a> for instructions.
-    Check that all tests pass (when using the <code>typetools/master</code> branch).
-  </li>
   <li>Update the Checker Framework source code:
     <ul>
       <li>
@@ -161,7 +156,7 @@ TreeAnnotator
         (TODO: Write a command that diffs these classes between the previous and current release.)
         </p>
         <p>
-        A rule of thumb is that any framework change that requires changes to more than one typechecker should be at least a minor version bump.
+        A rule of thumb is that any framework change that requires changes to more than one type-checker should be at least a minor version bump.
         </p>
       </li>
       <li>
@@ -206,8 +201,9 @@ TreeAnnotator
       further each time.
   </li>
   <li> <strong>Update the Gradle plugin.</strong>
-    Make a pull request against kelloggm/checkerframework-gradle-plugin to update the Checker Framework
-    version number by following the instructions in the
+    Make a pull request
+    against <a href="https://github.com/kelloggm/checkerframework-gradle-plugin">kelloggm/checkerframework-gradle-plugin</a>
+    to update the Checker Framework version number by following the instructions in the
     <a href="https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version">documentation</a>.
    </li>
   <li> <strong>Update list of qualifiers in Project Lombok.</strong>
@@ -261,7 +257,7 @@ TreeAnnotator
       </td>
     <tr>
       <td>3.</td>
-      <td><strong>Sign up for a Sonatypes Account</strong><br/>
+      <td><strong>Sign up for a Sonatype Account</strong><br/>
         You will likely want to do this a few days in advance.
         Directions can be found <a href="http://central.sonatype.org/pages/ossrh-guide.html">here</a>.
         Remember to be asked to be added to the org.checkerframework repository by creating
@@ -279,7 +275,7 @@ TreeAnnotator
       <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
         Create a <code>~/.m2/settings.xml</code> file with the contents specified in
         <code>/projects/swlab1/checker-framework/hosting-info/release-settings.txt</code>
-        using the information you just created for your Sonatypes Account on Buffalo or other
+        using the information you just created for your Sonatype Account on Buffalo or other
         network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
       </td>
     </tr>
@@ -435,7 +431,7 @@ git config --global user.email you@example.com</pre>
 
     <h3 id="release_scripts">Release Scripts</h3>
     <p>As mentioned above, in order to release the Checker Framework you must run two scripts,
-      release_build.py and release_push.py but there are supportings scripts and files in the
+      release_build.py and release_push.py but there are supporting scripts and files in the
       release directory.  Some of these files are described below.
     </p>
 
@@ -578,10 +574,10 @@ git config --global user.email you@example.com</pre>
   <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
   <ul>
     <li><strong>Drop the artifacts from Central</strong><br/>
-      You may have staged and then closed the artifacts in the Sonatypes Central repository.  Drop (do NOT release)
+      You may have staged and then closed the artifacts in the Sonatype Central repository.  Drop (do NOT release)
       these artifacts.  See
       <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
-        the Sonatypes OSS Repository Usage Guidelines.
+        the Sonatype OSS Repository Usage Guidelines.
       </a>
     </li>
     <!-- <li><strong>Drop the Maven Artifacts from our Maven repo *** currently unneeded ***</strong>
@@ -636,7 +632,7 @@ git config --global user.email you@example.com</pre>
     errors start happening when we run the script from Buffalo.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
-      <li>Create a Buffalo task to run the release_buld script using the &quot;--auto&quot; option.</li>
+      <li>Create a Buffalo task to run the release_build script using the &quot;--auto&quot; option.</li>
       <li>Observe the output of this task and identify possible errors.</li>
       <li>Fix up all observed errors until the release_build script runs without error.</li>
       <li>We probably want to move the link checking of the development site to the release_build script and
@@ -694,7 +690,11 @@ git config --global user.email you@example.com</pre>
 </body>
 </html>
 
-<!--  LocalWords:  serif px pre CCC JDK AFS PAG mkdir cd svn co
+<!--  LocalWords:  serif px pre CCC JDK AFS PAG mkdir cd svn co EFEFEF ul li Changelog stubparser JavaParser jdk8 GenericAnnotatedTypeFactory CFTransfer CFAbstractTransfer CFAbstractAnalysis CFAnalysis CFAbstractStore CFStore CFAbstractValue CFValue BaseTypeVisitor BaseTypeChecker SourceChecker MultigraphQualifierHierarchy AbstractQualifierPolymorphism AnnotationUtils TreeAnnotator TODO typetools
  -->
-<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile
+<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile kelloggm checkerframework gradle
+ -->
+<!--  LocalWords:  HandlerUtil macOS typecheck www Sonatype typetests html5validator config interm
+ -->
+<!--  LocalWords:  Hevea TEXINPUTS m2 repo py aren changelog changelogs utils OSS symlinks doesn
  -->

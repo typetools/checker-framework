@@ -31,6 +31,7 @@ import org.checkerframework.javacutil.UserError;
  * annotations and their representation as {@link AnnotatedTypeMirror}s.
  */
 public class CFCFGBuilder extends CFGBuilder {
+    /** This class should never be instantiated. Protected to still allow subclasses. */
     protected CFCFGBuilder() {}
 
     /** Build the control flow graph of some code. */

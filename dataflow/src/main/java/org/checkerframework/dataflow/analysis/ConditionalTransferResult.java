@@ -41,12 +41,20 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         this(value, thenStore, elseStore, null, storeChanged);
     }
 
-    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
+    /**
+     * See {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)}.
+     *
+     * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
+     */
     public ConditionalTransferResult(@Nullable A value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
     }
 
-    /** @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean) */
+    /**
+     * See {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)}.
+     *
+     * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
+     */
     public ConditionalTransferResult(
             A value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, thenStore, elseStore, exceptionalStores, false);
@@ -115,7 +123,11 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         return result.toString();
     }
 
-    /** @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged() */
+    /**
+     * See {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged()}.
+     *
+     * @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged()
+     */
     @Override
     public boolean storeChanged() {
         return storeChanged;

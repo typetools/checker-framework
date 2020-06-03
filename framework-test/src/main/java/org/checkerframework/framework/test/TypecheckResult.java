@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Represents the test results from typechecking one or more java files using the given
@@ -96,41 +98,44 @@ public class TypecheckResult {
         return errorHeaders;
     }
 
+    /**
+     * Summarize unexpected and missing diagnostics.
+     *
+     * @return summary of failures
+     */
     public String summarize() {
         if (testFailed) {
-            StringBuilder summaryBuilder = new StringBuilder();
-            summaryBuilder.append(String.join("\n", getErrorHeaders()));
-            summaryBuilder.append("\n");
+            StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
+            summaryBuilder.add(SystemUtil.joinLines(getErrorHeaders()));
 
             if (!unexpectedDiagnostics.isEmpty()) {
-                summaryBuilder.append(
+                summaryBuilder.add(
                         unexpectedDiagnostics.size() == 1
-                                ? "1 unexpected diagnostic was found:\n"
+                                ? "1 unexpected diagnostic was found:"
                                 : unexpectedDiagnostics.size()
-                                        + " unexpected diagnostics were found:\n");
+                                        + " unexpected diagnostics were found:");
 
                 for (TestDiagnostic unexpected : unexpectedDiagnostics) {
-                    summaryBuilder.append(unexpected);
-                    summaryBuilder.append("\n");
+                    summaryBuilder.add(unexpected.toString());
                 }
             }
 
             if (!missingDiagnostics.isEmpty()) {
-                summaryBuilder.append(
+                summaryBuilder.add(
                         missingDiagnostics.size() == 1
-                                ? "1 expected diagnostic was not found:\n"
+                                ? "1 expected diagnostic was not found:"
                                 : missingDiagnostics.size()
-                                        + " expected diagnostics were not found:\n");
+                                        + " expected diagnostics were not found:");
 
                 for (TestDiagnostic missing : missingDiagnostics) {
-                    summaryBuilder.append(missing);
-                    summaryBuilder.append("\n");
+                    summaryBuilder.add(missing.toString());
                 }
             }
 
-            summaryBuilder
-                    .append("While type-checking ")
-                    .append(TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
+            summaryBuilder.add(
+                    "While type-checking "
+                            + TestUtilities.summarizeSourceFiles(
+                                    configuration.getTestSourceFiles()));
             return summaryBuilder.toString();
         }
 

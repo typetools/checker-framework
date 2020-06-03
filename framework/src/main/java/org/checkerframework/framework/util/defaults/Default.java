@@ -27,7 +27,7 @@ public class Default implements Comparable<Default> {
     public int compareTo(Default other) {
         int locationOrder = location.compareTo(other.location);
         if (locationOrder == 0) {
-            return AnnotationUtils.annotationOrdering().compare(anno, other.anno);
+            return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
         } else {
             return locationOrder;
         }

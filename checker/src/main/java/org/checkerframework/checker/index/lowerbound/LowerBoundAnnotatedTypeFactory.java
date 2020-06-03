@@ -43,7 +43,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -148,7 +147,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         AnnotationMirror anm = getLowerBoundAnnotationFromValueType(valueType);
         if (!type.isAnnotatedInHierarchy(UNKNOWN)) {
-            if (!AnnotationUtils.areSameByClass(anm, LowerBoundUnknown.class)) {
+            if (!areSameByClass(anm, LowerBoundUnknown.class)) {
                 type.addAnnotation(anm);
             }
             return;
@@ -205,7 +204,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (possibleValues == null) {
             // possibleValues is null if there is no IntVal annotation on the type - such as
             // when there is a BottomVal annotation. In that case, give this the LBC's bottom type.
-            if (AnnotationUtils.containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+            if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
                 return BOTTOM;
             }
             return UNKNOWN;
@@ -323,8 +322,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private void handleBitWiseComplement(
                 AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-            if (AnnotationUtils.containsSameByClass(
-                    searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+            if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
                 typeDst.addAnnotation(NN);
             }
         }

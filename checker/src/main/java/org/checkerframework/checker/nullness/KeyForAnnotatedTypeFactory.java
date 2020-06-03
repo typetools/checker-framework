@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
@@ -22,6 +23,7 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -33,6 +35,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -47,6 +50,9 @@ public class KeyForAnnotatedTypeFactory
     /** The @{@link KeyForBottom} annotation. */
     protected final AnnotationMirror KEYFORBOTTOM =
             AnnotationBuilder.fromClass(elements, KeyForBottom.class);
+
+    /** The canonical name of the KeyFor class. */
+    protected final String KEYFOR_NAME = KeyFor.class.getCanonicalName();
 
     /** The Map.containsKey method. */
     private final ExecutableElement mapContainsKey =
@@ -65,8 +71,10 @@ public class KeyForAnnotatedTypeFactory
         super(checker, true);
 
         // Add compatibility annotations:
-        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForDecl", KEYFOR);
-        addAliasedAnnotation("org.checkerframework.checker.nullness.compatqual.KeyForType", KEYFOR);
+        addAliasedAnnotation(
+                "org.checkerframework.checker.nullness.compatqual.KeyForDecl", KeyFor.class, true);
+        addAliasedAnnotation(
+                "org.checkerframework.checker.nullness.compatqual.KeyForType", KeyFor.class, true);
 
         this.postInit();
     }
@@ -131,6 +139,20 @@ public class KeyForAnnotatedTypeFactory
             }
             return super.isSubtype(subtype, supertype, top);
         }
+    }
+
+    @Override
+    protected KeyForAnalysis createFlowAnalysis(
+            List<Pair<VariableElement, KeyForValue>> fieldValues) {
+        // Explicitly call the constructor instead of using reflection.
+        return new KeyForAnalysis(checker, this, fieldValues);
+    }
+
+    @Override
+    public KeyForTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<KeyForValue, KeyForStore, KeyForTransfer> analysis) {
+        // Explicitly call the constructor instead of using reflection.
+        return new KeyForTransfer((KeyForAnalysis) analysis);
     }
 
     /*
@@ -204,20 +226,21 @@ public class KeyForAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)
-                    && AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR_NAME)
+                    && AnnotationUtils.areSameByName(subAnno, KEYFOR_NAME)) {
                 List<String> lhsValues = extractValues(superAnno);
                 List<String> rhsValues = extractValues(subAnno);
 
                 return rhsValues.containsAll(lhsValues);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(superAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(superAnno, KEYFOR_NAME)) {
                 superAnno = KEYFOR;
             }
-            if (AnnotationUtils.areSameByName(subAnno, KEYFOR)) {
+            if (AnnotationUtils.areSameByName(subAnno, KEYFOR_NAME)) {
                 subAnno = KEYFOR;
             }
+            // TODO: the erased TypeMirror will be used.  Can we store that already here?
             return super.isSubtype(subAnno, superAnno);
         }
 

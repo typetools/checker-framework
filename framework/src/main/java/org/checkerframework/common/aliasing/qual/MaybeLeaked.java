@@ -20,9 +20,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */
 @Documented
-@DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
+@DefaultQualifierInHierarchy
 @SubtypeOf({LeakedToResult.class})
 @InvisibleQualifier
 public @interface MaybeLeaked {}

@@ -8,6 +8,13 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& apt-get -qqy install \
+  openjdk-8-jdk \
+&& update-java-alternatives --set java-1.8.0-openjdk-amd64
+
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
@@ -20,15 +27,22 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   make \
   maven \
   mercurial \
+  python3-pip \
+  python3-requests \
   unzip \
-  wget \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+  wget
+
+# Ubuntu 18.04 has Maven 3.6.0, but 3.6.1 apparently has better retry
+# behavior to work around network problems.
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& VER=3.6.3 \
+&& mkdir -p $HOME/bin/install \
+&& cd $HOME/bin/install \
+&& wget http://apache.mirrors.pair.com/maven/maven-3/${VER}/binaries/apache-maven-${VER}-bin.tar.gz \
+&& tar xzf apache-maven-${VER}-bin.tar.gz \
+&& (cd /usr/local/bin && ln -sf $HOME/bin/install/apache-maven-${VER}/bin/* .) \
+&& hash -r
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -qqy install \
-  openjdk-8-jdk \
-&& update-java-alternatives --set java-1.8.0-openjdk-amd64 \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

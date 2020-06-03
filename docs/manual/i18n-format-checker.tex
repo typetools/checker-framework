@@ -47,11 +47,11 @@ localization resource and all keys exist in that resource.
 \caption{The
   Internationalization
   Format String Checker type qualifier hierarchy.
-  The type qualifiers are applicable te \<CharSequence> and its subtypes.
+  The type qualifiers are applicable to \<CharSequence> and its subtypes.
   The figure does not show the subtyping rules among different
   \refqualclass{checker/i18nformatter/qual}{I18nFormat}\code{(...)}
   qualifiers; see
-  Section~\ref{i18n-format-conversion-catgeories}.
+  Section~\ref{i18n-format-conversion-categories}.
   All \refqualclass{checker/i18nformatter/qual}{I18nFormatFor} annotations are unrelated by subtyping.
   The qualifiers in gray are used internally by
   the checker and should never be written by a programmer.
@@ -75,7 +75,7 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
   the first argument should be of \code{GENERAL} conversion category,
   the second argument should be of \code{NUMBER} conversion category, and so on.
   Conversion categories such as \code{GENERAL} are described in
-  Section~\ref{i18n-format-conversion-catgeories}.
+  Section~\ref{i18n-format-conversion-categories}.
 
 \item[\refqualclass{checker/i18nformatter/qual}{I18nFormatFor}]
   indicates that the qualified type is a valid i18n format string for use
@@ -110,11 +110,11 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
   to write this annotation.
 \end{description}
 
-\sectionAndLabel{Conversion categories}{i18n-format-conversion-catgeories}
+\sectionAndLabel{Conversion categories}{i18n-format-conversion-categories}
 
 In a message string, the optional second element within the curly braces is
 called a \emph{format type} and must be one of \<number>, \<date>,
-\<time>, and \<choice>. These four format types correspoond to different
+\<time>, and \<choice>. These four format types correspond to different
 conversion categories. \<date> and \<time> correspond to \emph{DATE} in the
 conversion categories figure. \<choice> corresponds to \emph{NUMBER}.
 The format type restricts what arguments are legal.
@@ -431,4 +431,4 @@ method to define the type of the string in the scope of a conditional statement.
 %%  LocalWords:  Timestamp AtomicInteger AtomicLong BigDecimal BigInteger
 %%  LocalWords:  number' foo subformats resource1 key1 mero Abundlenames
 %%  LocalWords:  ResourceBundles MyResource MyFile Apropfiles hasFormat
-%%  LocalWords:  I18nFormatUtil
+%%  LocalWords:  I18nFormatUtil formatter CharSequence I18nInvalidFormat

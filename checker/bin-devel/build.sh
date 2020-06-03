@@ -1,62 +1,51 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo Entering checker/bin-devel/build.sh in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
 
-# Optional argument $1 is one of:
-#  downloadjdk, buildjdk
-# If it is omitted, this script uses downloadjdk.
-export BUILDJDK=$1
-if [[ "${BUILDJDK}" == "" ]]; then
-  export BUILDJDK=downloadjdk
-fi
-
-if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
-  echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
-  exit 1
-fi
+echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
 if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
-  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
+  # shellcheck disable=SC2230
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
+fi
+echo "JAVA_HOME=${JAVA_HOME}"
+
+if [ -d "/tmp/$USER/plume-scripts" ] ; then
+  (cd /tmp/$USER/plume-scripts && git pull -q)
+else
+  mkdir -p /tmp/$USER && (cd /tmp/$USER && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-
-# This does not work:
-#   AT=${AFU}/..
-# because `git clone REPO ../annotation-tools/annotation-file-utilities/..`
-# fails with
-#   fatal: could not create work tree dir '../annotation-tools/annotation-file-utilities/..': File exists
-#   fatal: destination path '../annotation-tools/annotation-file-utilities/..' already exists and is not an empty directory.
-# even if the directory does not exist!
-# The reason is that git creates each element of the path:
-#  .. , ../annotation-tools, ../annotation-tools/annotation-file-utilities
-#  (this is the problem), and../annotation-tools/annotation-file-utilities/.. .
+# Clone the annotated JDK into ../jdk .
+/tmp/$USER/plume-scripts/git-clone-related typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
+# Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/plume-scripts/git-clone-related typetools annotation-tools ${AT}
+/tmp/$USER/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
-  ln -s ${AT} ../annotation-tools
+  ln -s "${AT}" ../annotation-tools
 fi
 
 echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
-(cd ${AT} && ./.travis-build-without-test.sh)
+(cd "${AT}" && ./.travis-build-without-test.sh)
 echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
-/tmp/plume-scripts/git-clone-related typetools stubparser
-
+/tmp/$USER/plume-scripts/git-clone-related typetools stubparser
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
@@ -64,13 +53,11 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 
-# Two options: rebuild the JDK or download a prebuilt JDK.
-if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
-  echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
-else
-  echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
-fi
+# Downloading the gradle wrapper sometimes fails.
+# If so, the next command gets another chance to try the download.
+(./gradlew help || sleep 10) > /dev/null 2>&1
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+echo "running \"./gradlew assemble\" for checker-framework"
+./gradlew assemble --console=plain --warning-mode=all -s --no-daemon -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+
+echo Exiting checker/bin-devel/build.sh in "$(pwd)"

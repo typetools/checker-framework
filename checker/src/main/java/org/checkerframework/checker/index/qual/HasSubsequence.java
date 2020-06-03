@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
@@ -13,10 +16,10 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * <pre><code>
  *  class IntSubArray {
- *  {@literal @}HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
+ *    {@literal @}HasSubsequence(subsequence = "this", from = "this.start", to = "this.end")
  *    int [] array;
- *    int @IndexFor("array") int start;
- *    int @IndexOrHigh("array") int end;
+ *    {@literal @}IndexFor("array") int start;
+ *    {@literal @}IndexOrHigh("array") int end;
  *  }
  * </code></pre>
  *
@@ -53,6 +56,8 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface HasSubsequence {
     /** An expression that evaluates to the subsequence. */

@@ -89,13 +89,29 @@ command-line option.)
 
 \begin{itemize}
 \item
-  \label{nullness-lint-nonnullarraycomponents}%
-  If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
+  \label{nullness-lint-soundArrayCreationNullness}%
+  \label{nullness-lint-nonnullarraycomponents}% temporary, for backward compatibility
+  If you supply the \code{-Alint=soundArrayCreationNullness} command-line
   option, then the checker warns if it encounters an array creation
   with a non-null component type.
   See Section~\ref{nullness-arrays} for a discussion.
   % TODO: this option is temporary and the sound option
   % should become the default.
+
+\item
+  \label{collection-object-parameters-may-be-null}
+  If you supply the
+  \code{-Astubs=collection-object-parameters-may-be-null.astub}
+  command-line option, then in JDK collection classes, the checker
+  unsoundly permits null as an argument for any key or value formal
+  parameter whose type is \<Object> (instead of the element type).
+  See Section~\ref{nullness-collection-arguments}.
+
+\item
+  \label{nullness-lint-trustarraylenzero}%
+  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
+  the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+  annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
 \end{itemize}
 
 \item
@@ -413,30 +429,26 @@ More examples of the use of these annotations appear in the Javadoc for
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
 
-\subsectionAndLabel{Nullness and arrays}{nullness-arrays}
+\subsectionAndLabel{Nullness and array initialization}{nullness-arrays}
 
-Suppose that you declare an array to contain non-null elements.
-Currently, the Nullness Checker does not verify that all the elements of the
-array are initialized to a non-null value.  This is an unsoundness in the
-checker.
-
-To make the Nullness Checker conservatively reject code that may leave a
-non-null value in an array, use the command-line option
-\code{-Alint=forbidnonnullarraycomponents}.  The option is currently disabled
-because it makes the checker issue many false positive errors.
-% TODO: flip the default after collecting more data.
-
-When the \code{-Alint=forbidnonnullarraycomponents} option is supplied,
-the following is not allowed:
+Suppose that you declare an array to contain non-null elements:
 
 \begin{Verbatim}
-  Object [] oa = new Object[10]; // error
+  Object [] oa = new Object[10];
 \end{Verbatim}
 
 \noindent
 (recall that \<Object> means the same thing as \<@NonNull Object>).
+By default, the Nullness Checker unsoundly permits this code.
 
-Instead, your code needs to create a nullable or lazy-nonnull array, initialize
+To make the Nullness Checker conservatively reject code that may leave a
+non-null value in an array, use the command-line option
+\code{-Alint=soundArrayCreationNullness}.  The option is currently disabled
+because it makes the checker issue many false positive errors.
+% TODO: flip the default after collecting more data.
+
+With the option enabled, you can write your code to create a nullable or
+lazy-nonnull array, initialize
 each component, and then assign the result to a non-null array:
 
 \begin{Verbatim}
@@ -455,6 +467,51 @@ then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
+
+\subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
+
+% Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+
+The semantics of
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
+cannot be captured by the nullness type system syntax. The nullness type of the
+returned array depends on the size of the passed parameter. In particular, the
+returned array component is of type \<@NonNull> if the following conditions
+hold:
+
+\begin{itemize}
+  \item The receiver collection's type argument (that is, the element type) is \<@NonNull>, and
+  \item The passed array size is less than or equal to the collection size. The
+    Nullness Checker uses these heuristics to handle the most common cases:
+
+  \begin{itemize}
+    \item the argument has length 0:
+
+      \begin{itemize}
+        \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>, or
+
+        \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
+      \end{itemize}
+
+    \item array creation tree with a collection \<size()> method invocation as argument
+      \<c.toArray(new String[c.size()])>.
+  \end{itemize}
+
+\end{itemize}
+
+Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
+option, a call to \code{Collection.toArray} will be estimated to return an array
+with a non-null component type if the argument is a field access where the field
+declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+annotation.
+This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
+Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
+that annotation.
+
+Note: The nullness of the returned array doesn't depend on the passed array nullness.
+This is a fact about
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+not a limitation of this heuristic.
 
 
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
@@ -491,6 +548,8 @@ though that case could be handled as well, if desired.
 library that your code calls, or your code itself, could perversely change
 the system properties; the Nullness Checker assumes this bizarre coding
 pattern does not happen.)
+(It is better style to use \<System.lineSeparator()> than the call to
+\<System.getProperty("line.separator")> anyway.)
 
 
 \subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
@@ -632,6 +691,27 @@ the distinction between warning suppression and defensive programming.
 % need to be suppressed, so warning suppression needs to be customized for
 % each tool.
 \end{sloppypar}
+
+
+\subsectionAndLabel{Null arguments to collection classes}{nullness-collection-arguments}
+
+For collection methods with \<Object> formal parameter type, such as
+\sunjavadoc{java.base/java/util/Collection.html\#contains(java.lang.Object)}{contains},
+\sunjavadoc{java.base/java/util/AbstractList.html\#indexOf(java.lang.Object)}{indexOf}, and
+\sunjavadoc{java.base/java/util/Collection.html\#remove(java.lang.Object)}{remove},
+the annotated JDK forbids null as an argument.
+
+The reason is that some implementations (like \<ConcurrentHashMap>) throw
+\<NullPointerException> if \<null> is passed.  It would be unsound to
+permit \<null>, because it could lead to a false negative:  the Checker
+Framework issuing no warning even though a NullPointerException can occur
+at run time.
+
+However, many other common implementations permit such calls, so some users
+may wish to sacrifice soundness for a reduced number of false positive
+warnings.  To permit \<null> as an argument to these methods, pass the
+command-line argument
+\<-Astubs=collection-object-parameters-may-be-null.astub>.
 
 
 \sectionAndLabel{Examples}{nullness-example}
@@ -824,6 +904,7 @@ Section~\ref{declaration-annotations-moved}.
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~io.reactivex.annotations.NonNull~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -854,6 +935,7 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~io.reactivex.annotations.Nullable~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
@@ -928,7 +1010,7 @@ as \<@NonNull>.
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
-\href{https://fbinfer.com/docs/eradicate.html}{Eradicate} tools are more
+\href{https://fbinfer.com/docs/eradicate/}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.)
@@ -1921,14 +2003,16 @@ see Section~\ref{nullness-method-annotations}.
 
 \paragraphAndLabel{Source of the type system}{initialization-checking-type-system}
 
-The type system enforced by the Initialization Checker is known as
+The type system enforced by the Initialization Checker is based on
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
 changes its initialization modifiers (``committed'', ``free'', and
 ``unclassified'') to ``initialized'', ``unknown initialization'', and
 ``under initialization''.  Our implementation also has several
 enhancements.  For example, it supports partial initialization (the
 argument to the \<@UnknownInitialization> and \<@UnderInitialization>
-annotations).
+annotations).  The benefit (in terms of reduced false positive
+initialization warnings) from supporting partial initialization is
+greater than the benefit from adopting the Freedom Before Commitment system.
 
 
 
@@ -1946,13 +2030,15 @@ annotations).
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
-% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
+% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
-% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
-% LocalWords:  mymap mykey KeyType ValueType
-% LocalWords:  dereferenced dereference Dereferencing initializers
+% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
+% LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
+% LocalWords:  dereferenced dereference Dereferencing initializers astub
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
-% LocalWords:  forbidnonnullarraycomponents lombok findbugs CurrentClass
-% LocalWords:  NotOnlyInitialized underinitialization
+% LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
+% LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
+% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
+% LocalWords:  ConcurrentHashMap

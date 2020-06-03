@@ -1,7 +1,7 @@
 // Test case for Issue 1415.
 // https://github.com/typetools/checker-framework/issues/1415
 
-@SuppressWarnings("") // Check for crashes.
+@SuppressWarnings("all") // Check for crashes.
 class Issue1415 {
     static class Optional<T> {
         static <T> Optional<T> absent() {

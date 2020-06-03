@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 """
 release_vars.py
@@ -80,9 +80,6 @@ HTTP_PATH_TO_LIVE_SITE = "https://checkerframework.org"
 FILE_PATH_TO_LIVE_SITE = "/cse/www2/types/checker-framework"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
-PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
-SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
 SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_RELEASE_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
@@ -136,38 +133,6 @@ CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
 CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
-CHECKER_BINARY = os.path.join(CHECKER_BIN_DIR, 'checker.jar')
-CHECKER_LIBS_DIR = os.path.join(CHECKER_FRAMEWORK, "checker", "build", "libs")
-CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
-CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
-
-CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
-CHECKER_QUAL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual", "build", "libs")
-CHECKER_QUAL_SOURCE = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-source.jar')
-CHECKER_QUAL_JAVADOC_JAR = os.path.join(CHECKER_QUAL_DIST_DIR, 'checker-qual-'+CF_VERSION+'-javadoc.jar')
-
-CHECKER_QUAL_ANDROID_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "checker-qual-android", "build", "libs")
-CHECKER_QUAL_ANDROID = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'.jar')
-CHECKER_QUAL_ANDROID_SOURCE = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-source.jar')
-CHECKER_QUAL_ANDROID_JAVADOC_JAR = os.path.join(CHECKER_QUAL_ANDROID_DIST_DIR, 'checker-qual-android-'+CF_VERSION+'-javadoc.jar')
-
-JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "build", "libs")
-JAVACUTIL_BINARY = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+".jar")
-JAVACUTIL_SOURCE_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+"-source.jar")
-JAVACUTIL_JAVADOC_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-"+CF_VERSION+"-javadoc.jar")
-
-DATAFLOW_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "dataflow", "build", "libs")
-DATAFLOW_BINARY = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+".jar")
-DATAFLOW_SOURCE_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-source.jar")
-DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-"+CF_VERSION+"-javadoc.jar")
-
-FRAMEWORKTEST_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "framework-test", "build", "libs")
-FRAMEWORKTEST_BINARY = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+".jar")
-FRAMEWORKTEST_SOURCE_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-source.jar")
-FRAMEWORKTEST_JAVADOC_JAR = os.path.join(FRAMEWORKTEST_DIST_DIR, "framework-test-"+CF_VERSION+"-javadoc.jar")
-
-JDK8_BINARY = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar')
-
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
 
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
@@ -180,26 +145,6 @@ PLUME_SCRIPTS = os.path.join(BUILD_DIR, 'plume-scripts')
 CHECKLINK = os.path.join(BUILD_DIR, 'checklink')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 STUBPARSER = os.path.join(BUILD_DIR, 'stubparser')
-
-MAVEN_ARTIFACTS_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-artifacts')
-MAVEN_DEV_REPO = 'file:///cse/www2/types/dev/m2-repo'
-
-MAVEN_POMS_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'poms')
-CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')
-CHECKER_QUAL_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml')
-CHECKER_QUAL7_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQual7Pom.xml')
-CHECKER_QUAL_ANDROID_POM = os.path.join(MAVEN_POMS_DIR, 'checkerQualAndroidPom.xml')
-
-JDK8_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml')
-
-MAVEN_RELEASE_DIR = os.path.join(MAVEN_ARTIFACTS_DIR, 'release')
-CHECKER_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerReleasePom.xml')
-CHECKER_QUAL_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml')
-CHECKER_QUAL_ANDROID_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'checkerQualAndroidReleasePom.xml')
-JDK8_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml')
-JAVACUTIL_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml')
-DATAFLOW_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'dataflowReleasePom.xml')
-FRAMEWORKTEST_BINARY_RELEASE_POM = os.path.join(MAVEN_RELEASE_DIR, 'frameworktestReleasePom.xml')
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)

@@ -27,13 +27,16 @@ import java.lang.annotation.Target;
  * most-concrete class up to SourceChecker? That would make the behavior consistent with e.g. our
  * SupportedOptions. Is there ever a reason where that would be unwanted?
  */
-@Inherited
 @Documented
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
 public @interface SuppressWarningsKeys {
 
     /**
+     * Returns array of strings, any one of which causes this checker to suppress a warning when
+     * passed as the argument of {@literal @}{@link SuppressWarnings}.
+     *
      * @return array of strings, any one of which causes this checker to suppress a warning when
      *     passed as the argument of {@literal @}{@link SuppressWarnings}
      */

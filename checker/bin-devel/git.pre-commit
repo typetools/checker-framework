@@ -22,9 +22,12 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [ "$BRANCH" = "master" ]; then
+        git diff --staged > /tmp/diff.txt
         ./gradlew getPlumeScripts -q
-        (./gradlew requireJavadocPrivate > /tmp/warnings.txt 2>&1) || true
-        checker/bin-devel/.plume-scripts/ci-lint-diff /tmp/warnings.txt
+        (./gradlew requireJavadoc > /tmp/warnings-rjp.txt 2>&1) || true
+        checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-rjp.txt
+        (./gradlew javadocDoclintAll > /tmp/warnings-jda.txt 2>&1) || true
+        checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-jda.txt
     fi
 fi
 

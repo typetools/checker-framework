@@ -33,6 +33,7 @@ local.properties
 api
 build
 dist
+docs/tmpapi/
 stubparser/docs/api
 # Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
 # *.jar
@@ -40,8 +41,10 @@ checker/jdk/jdk*.jar
 checker/jdk/**/*.class
 *.pyc
 checker/build-temp
-checker/bin-devel/.run-google-java-format
 checker/bin-devel/.plume-scripts
+checker/bin-devel/.run-google-java-format
+checker/bin-devel/dockerdir
+checker/src/main/resources/git.properties
 
 # manual files
 bib
@@ -82,6 +85,7 @@ docs/examples/lombok/Out.txt
 docs/examples/lombok/.gradle/
 docs/examples/lombok/lombok.config
 docs/manual/manual.html-e
+docs/tmpapi/
 
 # dataflow manual
 dataflow/manual/dataflow.aux
@@ -119,6 +123,7 @@ checker-qual/src
 checker-qual-android/src
 
 framework/tests/whole-program-inference/annotated/
+/framework/tests/returnsreceiverdelomboked/
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A Utility class for analyzing {@code Element}s. */
@@ -41,11 +43,11 @@ public class ElementUtils {
      * Returns the innermost type element enclosing the given element.
      *
      * @param elem the enclosed element of a class
-     * @return the innermost type element
+     * @return the innermost type element, or null if no type element encloses {@code elem}
      */
-    public static TypeElement enclosingClass(final Element elem) {
+    public static @Nullable TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
+        while (result != null && !isClassElement(result)) {
             @Nullable Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -133,8 +135,10 @@ public class ElementUtils {
      * a method element, the class type of a constructor, or simply the type mirror of the element
      * itself.
      *
+     * @param element the element whose type to obtain
      * @return the type for the element used as a value
      */
+    @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
     public static TypeMirror getType(Element element) {
         if (element.getKind() == ElementKind.METHOD) {
             return ((ExecutableElement) element).getReturnType();
@@ -146,7 +150,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the qualified name of the inner most class enclosing the provided {@code Element}
+     * Returns the qualified name of the innermost class enclosing the provided {@code Element}.
      *
      * @param element an element enclosed by a class, or a {@code TypeElement}
      * @return the qualified {@code Name} of the innermost class enclosing the element
@@ -165,15 +169,18 @@ public class ElementUtils {
         return elem.getQualifiedName();
     }
 
-    /** Returns a verbose name that identifies the element. */
+    /**
+     * Returns a verbose name that identifies the element.
+     *
+     * @param elt the element whose name to obtain
+     * @return the verbose name of the given element
+     */
     public static String getVerboseName(Element elt) {
         Name n = getQualifiedClassName(elt);
         if (n == null) {
             return "Unexpected element: " + elt;
         }
-        if (elt.getKind() == ElementKind.PACKAGE
-                || elt.getKind().isClass()
-                || elt.getKind().isInterface()) {
+        if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
             return n.toString();
         } else {
             return n + "." + elt;
@@ -203,8 +210,10 @@ public class ElementUtils {
     }
 
     /**
-     * A helper method that standarizes types by printing simple names instead of fully qualified
-     * names.
+     * Returns the simple type name, without annotations.
+     *
+     * @param type a type
+     * @return the simple type name, without annotations
      */
     private static String simpleTypeName(TypeMirror type) {
         switch (type.getKind()) {
@@ -216,7 +225,7 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             default:
                 if (type.getKind().isPrimitive()) {
-                    return type.toString();
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
                 }
         }
         throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
@@ -238,6 +247,43 @@ public class ElementUtils {
                 && (elt.getKind() == ElementKind.FIELD
                         || elt.getKind() == ElementKind.LOCAL_VARIABLE)
                 && ((VariableElement) elt).getConstantValue() != null;
+    }
+
+    /**
+     * Checks whether a given element came from a source file.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, even if there is also a source file.
+     *
+     * @param element the element to check, or null
+     * @return true if a source file containing the element is being compiled
+     */
+    public static boolean isElementFromSourceCode(@Nullable Element element) {
+        if (element == null) {
+            return false;
+        }
+        if (element instanceof Symbol.ClassSymbol) {
+            return isElementFromSourceCodeImpl((Symbol.ClassSymbol) element);
+        }
+        return isElementFromSourceCode(element.getEnclosingElement());
+    }
+
+    /**
+     * Checks whether a given ClassSymbol came from a source file.
+     *
+     * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is
+     * a classfile for the given element, even if there is also a source file.
+     *
+     * @param symbol the class to check
+     * @return true if a source file containing the class is being compiled
+     */
+    private static boolean isElementFromSourceCodeImpl(Symbol.ClassSymbol symbol) {
+        // This is a bit of a hack to avoid treating JDK as source files. JDK files' toUri() method
+        // returns just the name of the file (e.g. "Object.java"), but any file actually being
+        // compiled returns a file URI to the source file.
+        return symbol.sourcefile != null
+                && symbol.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
+                && symbol.sourcefile.toUri().toString().startsWith("file:");
     }
 
     /**
@@ -338,9 +384,7 @@ public class ElementUtils {
         // cardinality.  (Does any code depend on the invariant, though?)
         if (origCardinality != names.size() + elements.size()) {
             throw new BugInCF(
-                    String.format(
-                            "Bad sizes: %d != %d + %d",
-                            origCardinality, names.size(), elements.size()));
+                    "Bad sizes: %d != %d + %d", origCardinality, names.size(), elements.size());
         }
         return elements;
     }
@@ -371,10 +415,15 @@ public class ElementUtils {
         }
     }
 
-    /** @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError" */
+    /**
+     * Returns true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError".
+     *
+     * @param element the element to test
+     * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
+     */
     public static boolean isError(Element element) {
         return element.getClass().getName()
-                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError";
+                == "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"; // interned
     }
 
     /**
@@ -489,20 +538,45 @@ public class ElementUtils {
         return types;
     }
 
-    public static boolean isTypeDeclaration(Element elt) {
-        switch (elt.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
+    /** The set of kinds that represent classes. */
+    private static final Set<ElementKind> classElementKinds;
 
-            default:
-                return false;
+    static {
+        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        for (ElementKind kind : ElementKind.values()) {
+            if (kind.isClass() || kind.isInterface()) {
+                classElementKinds.add(kind);
+            }
         }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> classElementKinds() {
+        return classElementKinds;
+    }
+
+    /**
+     * Is the given element kind a class, i.e. a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassElement(Element element) {
+        return classElementKinds().contains(element.getKind());
+    }
+
+    /**
+     * Return true if the element is a type declaration.
+     *
+     * @param elt the element to test
+     * @return true if the argument is a type declaration
+     */
+    public static boolean isTypeDeclaration(Element elt) {
+        return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
     }
 
     /**

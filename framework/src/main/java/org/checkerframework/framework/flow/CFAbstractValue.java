@@ -19,7 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -54,7 +54,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     protected final TypeMirror underlyingType;
     protected final Set<AnnotationMirror> annotations;
 
-    public CFAbstractValue(
+    protected CFAbstractValue(
             CFAbstractAnalysis<V, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
@@ -69,7 +69,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                 : "Encountered invalid type: "
                         + underlyingType
                         + " annotations: "
-                        + PluginUtil.join(", ", annotations);
+                        + SystemUtil.join(", ", annotations);
     }
 
     public static boolean validateSet(
@@ -157,7 +157,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return Objects.hash(getAnnotations(), underlyingType);
     }
 
-    /** @return the string representation as a comma-separated list */
+    /**
+     * Returns the string representation as a comma-separated list.
+     *
+     * @return the string representation as a comma-separated list
+     */
     @SideEffectFree
     @Override
     public String toString() {
@@ -420,7 +424,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         private Set<AnnotationMirror> aSet;
         private Set<AnnotationMirror> bSet;
 
-        public AnnotationSetAndTypeMirrorVisitor(
+        protected AnnotationSetAndTypeMirrorVisitor(
                 TypeMirror result,
                 TypeMirror aTypeMirror,
                 TypeMirror bTypeMirror,

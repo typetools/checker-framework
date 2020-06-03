@@ -322,6 +322,7 @@ public class StubUtil {
      *     recurse on all files contained in it.
      * @param resources the list to add the found stub files to
      */
+    @SuppressWarnings("JdkObsolete") // JarFile.entries()
     private static void addStubFilesToList(File stub, List<StubResource> resources) {
         if (isStub(stub)) {
             resources.add(new FileStubResource(stub));

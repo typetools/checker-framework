@@ -5,14 +5,12 @@ import com.sun.source.tree.Tree;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -31,6 +29,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link I18nFormat} to the type of tree, if it is a {@code String} or {@code char} literal
@@ -74,11 +73,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         this.postInit();
     }
 
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(I18nUnknownFormat.class, I18nFormatBottom.class);
-    }
-
+    /**
+     * Builds a map from a translation file key to its value in the file.
+     *
+     * @return Map from a translation file key to its value in the file
+     */
     private Map<String, String> buildLookup() {
         Map<String, String> result = new HashMap<>();
 
@@ -112,8 +111,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
                         if (in == null) {
                             System.err.println("Couldn't find the properties file: " + name);
-                            // report(Result.failure("propertykeychecker.filenotfound", name),
-                            // null);
+                            // report(null, "propertykeychecker.filenotfound", name);
                             // return Collections.emptySet();
                             continue;
                         }
@@ -142,6 +140,13 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                 System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
             } else {
                 for (String bundleName : namesArr) {
+                    if (!Signatures.isBinaryName(bundleName)) {
+                        System.err.println(
+                                "Malformed resource bundle: <"
+                                        + bundleName
+                                        + "> should be a binary name.");
+                        continue;
+                    }
                     ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
                     if (bundle == null) {
                         System.err.println(
@@ -149,7 +154,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                         + bundleName
                                         + "> for locale <"
                                         + Locale.getDefault()
-                                        + ">");
+                                        + ">.");
                         continue;
                     }
 
