@@ -13,9 +13,22 @@ interface TypeElement {
 // }
 // Writing those annotations on java.lang.Object does not work either, because
 // then vast numbers of toString overrides fail to typecheck.
+// See https://tinyurl.com/cfissue/3094 .
 
 package com.sun.tools.javac.code;
 
 class Type {
   @FullyQualifiedName String toString();
+}
+
+class Symbol {
+  @DotSeparatedIdentifiers Name getQualifiedName();
+
+  @BinaryName Name flatname();
+
+  class ClassSymbol {
+    @DotSeparatedIdentifiers Name getQualifiedName();
+
+    @BinaryName Name flatname();
+  }
 }

@@ -33,13 +33,19 @@ public class SystemGetPropertyHandler {
     /** The System.getProperty(String) method. */
     protected final ExecutableElement systemGetProperty;
 
-    // This list is from the Javadoc of System.getProperties.
-    Collection<String> systemProperties =
+    /**
+     * System properties that are defined at startup on every JVM.
+     *
+     * <p>This list is from the Javadoc of System.getProperties, for Java 11.
+     */
+    Collection<String> predefinedSystemProperties =
             new HashSet<>(
                     Arrays.asList(
                             "java.version",
+                            "java.version.date",
                             "java.vendor",
                             "java.vendor.url",
+                            "java.vendor.version",
                             "java.home",
                             "java.vm.specification.version",
                             "java.vm.specification.vendor",
@@ -55,7 +61,6 @@ public class SystemGetPropertyHandler {
                             "java.library.path",
                             "java.io.tmpdir",
                             "java.compiler",
-                            "java.ext.dirs",
                             "os.name",
                             "os.arch",
                             "os.version",
@@ -82,7 +87,7 @@ public class SystemGetPropertyHandler {
             ExpressionTree arg = args.get(0);
             if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
                 String literal = (String) ((LiteralTree) arg).getValue();
-                if (systemProperties.contains(literal)) {
+                if (predefinedSystemProperties.contains(literal)) {
                     AnnotatedTypeMirror type = method.getReturnType();
                     type.replaceAnnotation(factory.NONNULL);
                 }

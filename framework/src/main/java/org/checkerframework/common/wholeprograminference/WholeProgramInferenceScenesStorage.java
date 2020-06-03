@@ -1,8 +1,8 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Target;
 import java.util.Collections;
@@ -12,9 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -25,41 +28,34 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.io.IndexFileParser;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * This class stores annotations for fields, method return types, and method parameters.
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
- * scenelib.annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file.
- * For example, a class field of a class whose fully-qualified name is {@code my.package.MyClass}
- * will have its inferred type stored in a Scene, and later written into a file named {@code
- * my.package.MyClass.jaif}.
+ * scenelib.annotations.el.AScene}, which {@code writeScenes()} can write into a file. For example,
+ * a class {@code my.package.MyClass} will have its members' inferred types stored in a Scene, and
+ * later written into a file named {@code my.package.MyClass.jaif} if using {@link
+ * OutputFormat#JAIF}, or {@code my.package.MyClass.astub} if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #JAIF_FILES_PATH} directory. Having more information in those initial .jaif files means that the
- * precision achieved by the whole-program inference analysis will be better. {@link
- * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
+ * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
+ * initial .jaif files means that the precision achieved by the whole-program inference analysis
+ * will be better. {@code writeScenes()} rewrites the initial .jaif files, and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage {
 
-    /**
-     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
-     * names of annotations that should not be added to .jaif files for that location.
-     */
-    private final Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore = new HashMap<>();
+    /** Annotations that should not be output to a .jaif or stub file. */
+    private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
     /**
      * Directory where .jaif files will be written to and read from. This directory is relative to
@@ -72,13 +68,13 @@ public class WholeProgramInferenceScenesStorage {
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
-    private final Map<String, AScene> scenes = new HashMap<>();
+    private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
-     * Set representing Scenes that were modified since the last time all Scenes were written into
-     * .jaif files. Each String element of this set is a path to the .jaif file of the corresponding
-     * Scene in the set. It is obtained by passing a class name as argument to the {@link
-     * #getJaifPath} method.
+     * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
+     * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
+     * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+     * {@link #getJaifPath} method.
      *
      * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
      * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
@@ -97,36 +93,21 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Write all modified scenes into .jaif files. (Scenes are modified by the method {@link
+     * Write all modified scenes into files. (Scenes are modified by the method {@link
      * #updateAnnotationSetInScene}.)
+     *
+     * @param outputFormat the output format to use when writing files
+     * @param checker the checker from which this method is called, for naming stub files
      */
-    public void writeScenesToJaif() {
-        // Create .jaif files directory if it doesn't exist already.
+    public void writeScenes(OutputFormat outputFormat, BaseTypeChecker checker) {
+        // Create WPI directory if it doesn't exist already.
         File jaifDir = new File(JAIF_FILES_PATH);
         if (!jaifDir.exists()) {
             jaifDir.mkdirs();
         }
-        // Write scenes into .jaif files.
+        // Write scenes into files.
         for (String jaifPath : modifiedScenes) {
-            try {
-                AScene scene = scenes.get(jaifPath).clone();
-                removeIgnoredAnnosFromScene(scene);
-                new File(jaifPath).delete();
-                scene.prune();
-                if (!scene.isEmpty()) {
-                    // Only write non-empty scenes into .jaif files.
-                    IndexFileWriter.write(scene, new FileWriter(jaifPath));
-                }
-            } catch (IOException e) {
-                throw new UserError(
-                        "Problem while reading file in: "
-                                + jaifPath
-                                + ". Exception message: "
-                                + e.getMessage(),
-                        e);
-            } catch (DefException e) {
-                throw new BugInCF(e);
-            }
+            scenes.get(jaifPath).writeToFile(jaifPath, annosToIgnore, outputFormat, checker);
         }
         modifiedScenes.clear();
     }
@@ -134,8 +115,8 @@ public class WholeProgramInferenceScenesStorage {
     /**
      * Returns the String representing the .jaif path of a class given its name.
      *
-     * @param className the basename of a class
-     * @return the .jaif file path
+     * @param className the simple name of a class
+     * @return the path to the .jaif file
      */
     protected String getJaifPath(String className) {
         String jaifPath = JAIF_FILES_PATH + className + ".jaif";
@@ -149,7 +130,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param jaifPath the .jaif file
      * @return the Scene read from the file, or an empty Scene if the file does not exist
      */
-    protected AScene getScene(String jaifPath) {
+    protected ASceneWrapper getScene(String jaifPath) {
         AScene scene;
         if (!scenes.containsKey(jaifPath)) {
             File jaifFile = new File(jaifPath);
@@ -158,27 +139,51 @@ public class WholeProgramInferenceScenesStorage {
                 try {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
-                    throw new UserError(
-                            "Problem while reading file in: "
-                                    + jaifPath
-                                    + "."
-                                    + " Exception message: "
-                                    + e.getMessage(),
-                            e);
+                    throw new UserError("Problem while reading %s: %s", jaifPath, e.getMessage());
                 }
             }
-            scenes.put(jaifPath, scene);
+            ASceneWrapper wrapper = new ASceneWrapper(scene);
+            scenes.put(jaifPath, wrapper);
+            return wrapper;
         } else {
-            scene = scenes.get(jaifPath);
+            return scenes.get(jaifPath);
         }
-        return scene;
     }
 
-    /** Returns the AClass in an AScene, given a className and a jaifPath. */
-    protected AClass getAClass(String className, String jaifPath) {
+    /**
+     * Returns the scene-lib representation of the given className in the scene identified by the
+     * given jaifPath.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param jaifPath the path to the jaif file that would represent that class (must end in
+     *     ".jaif")
+     * @param classSymbol optionally, the ClassSymbol representing the class. Used to set the symbol
+     *     information stored on an AClass.
+     * @return a version of the scene-lib representation of the class, augmented with symbol
+     *     information if {@code classSymbol} was non-null
+     */
+    protected AClass getAClass(
+            @BinaryName String className, String jaifPath, @Nullable ClassSymbol classSymbol) {
         // Possibly reads .jaif file to obtain a Scene.
-        AScene scene = getScene(jaifPath);
-        return scene.classes.getVivify(className);
+        ASceneWrapper scene = getScene(jaifPath);
+        AClass aClass = scene.getAScene().classes.getVivify(className);
+        scene.updateSymbolInformation(aClass, classSymbol);
+        return aClass;
+    }
+
+    /**
+     * Returns the scene-lib representation of the given className in the scene identified by the
+     * given jaifPath.
+     *
+     * @param className the name of the class to get, in binary form
+     * @param jaifPath the path to the jaif file that would represent that class (must end in
+     *     ".jaif")
+     * @return the scene-lib representation of the class, possibly augmented with symbol information
+     *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
+     *     already been called with a non-null third argument.
+     */
+    protected AClass getAClass(@BinaryName String className, String jaifPath) {
+        return getAClass(className, jaifPath, null);
     }
 
     /**
@@ -225,52 +230,6 @@ public class WholeProgramInferenceScenesStorage {
         }
         updateTypeElementFromATM(rhsATM, lhsATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
-    }
-
-    /**
-     * Removes all annotations that should be ignored from an AScene. (See {@link #shouldIgnore}).
-     */
-    private void removeIgnoredAnnosFromScene(AScene scene) {
-        for (AClass aclass : scene.classes.values()) {
-            for (AField field : aclass.fields.values()) {
-                removeIgnoredAnnosFromATypeElement(field.type, TypeUseLocation.FIELD);
-            }
-            for (AMethod method : aclass.methods.values()) {
-                // Return type
-                removeIgnoredAnnosFromATypeElement(method.returnType, TypeUseLocation.RETURN);
-                // Receiver type
-                removeIgnoredAnnosFromATypeElement(method.receiver.type, TypeUseLocation.RECEIVER);
-                // Parameter type
-                for (AField param : method.parameters.values()) {
-                    removeIgnoredAnnosFromATypeElement(param.type, TypeUseLocation.PARAMETER);
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes all annotations that should be ignored from an ATypeElement. (See {@link
-     * #shouldIgnore}).
-     */
-    private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
-        String firstKey = typeEl.description.toString() + typeEl.tlAnnotationsHere;
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(firstKey, loc));
-        if (annosToIgnoreForLocation != null) {
-            Set<Annotation> annosToRemove = new HashSet<>();
-            for (Annotation anno : typeEl.tlAnnotationsHere) {
-                if (annosToIgnoreForLocation.contains(anno.def().toString())) {
-                    annosToRemove.add(anno);
-                }
-            }
-            typeEl.tlAnnotationsHere.removeAll(annosToRemove);
-        }
-
-        // Recursively remove ignored annotations from inner types
-        if (!typeEl.innerTypes.isEmpty()) {
-            for (ATypeElement innerType : typeEl.innerTypes.values()) {
-                removeIgnoredAnnosFromATypeElement(innerType, loc);
-            }
-        }
     }
 
     /**
@@ -347,9 +306,16 @@ public class WholeProgramInferenceScenesStorage {
      * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
      *
      * <p>TODO: Merge functionality somewhere else with {@link
-     * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
-     * Look into the createQualifierDefaults method before changing anything here. See Issue 683
-     * https://github.com/typetools/checker-framework/issues/683
+     * org.checkerframework.framework.util.defaults.QualifierDefaults}. Look into the
+     * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
+     * QualifierDefaults class linked above) before changing anything here. See
+     * https://github.com/typetools/checker-framework/issues/683 .
+     *
+     * @param am an annotation to test for whether it should be inserted into source code
+     * @param location where the location would be inserted; used to determine if {@code am} is the
+     *     default for that location
+     * @param atm its kind is used to determine if {@code am} is the default for that kind
+     * @return true if am should not be inserted into source code, or if am is invisible
      */
     private boolean shouldIgnore(
             AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
@@ -395,22 +361,6 @@ public class WholeProgramInferenceScenesStorage {
             TypeKind atmKind = atm.getUnderlyingType().getKind();
             if (hasMatchingTypeKind(atmKind, types)) {
                 return true;
-            }
-
-            try {
-                Class<?>[] names = defaultFor.types();
-                for (Class<?> c : names) {
-                    TypeMirror underlyingtype = atm.getUnderlyingType();
-                    while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
-                        underlyingtype =
-                                ((javax.lang.model.type.ArrayType) underlyingtype)
-                                        .getComponentType();
-                    }
-                    if (c.getCanonicalName().equals(atm.getUnderlyingType().toString())) {
-                        return true;
-                    }
-                }
-            } catch (MirroredTypesException e) {
             }
         }
 
@@ -583,5 +533,14 @@ public class WholeProgramInferenceScenesStorage {
                 annosIgnored.add(anno.def().toString());
             }
         }
+    }
+
+    /**
+     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
+     * names of annotations.
+     */
+    public static class AnnotationsInContexts
+            extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {
+        private static final long serialVersionUID = 20200321L;
     }
 }

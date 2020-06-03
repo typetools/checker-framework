@@ -3,6 +3,8 @@ package org.checkerframework.common.value;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -80,7 +82,13 @@ class ValueTypeAnnotator extends TypeAnnotator {
                         typeFactory.createArrayLenRangeAnnotation(Range.create(values)));
             }
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
-            if (!NumberUtils.isIntegral(atm.getUnderlyingType())) {
+            TypeMirror underlyingType = atm.getUnderlyingType();
+            // If the underlying type is neither a primitive integral type nor boxed integral type,
+            // return without making changes. NumberUtils#isIntegral fails if passed a non-primitive
+            // type that is not a declared type, so it cannot be called directly.
+            if (!NumberUtils.isPrimitiveIntegral(underlyingType.getKind())
+                    && (underlyingType.getKind() != TypeKind.DECLARED
+                            || !NumberUtils.isIntegral(underlyingType))) {
                 return;
             }
 
