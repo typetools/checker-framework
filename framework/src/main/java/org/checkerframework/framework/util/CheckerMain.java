@@ -26,8 +26,6 @@ import org.checkerframework.javacutil.SystemUtil;
  * <ul>
  *   <li>add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
  *       Framework.
- *   <li>add {@code jdk8.jar} to the compile time bootclasspath of the javac argument list passed to
- *       javac
  *   <li>parse and implement any special options used by the Checker Framework, e.g., using
  *       "shortnames" for annotation processors
  *   <li>pass all remaining command-line arguments to the real javac
@@ -57,9 +55,6 @@ public class CheckerMain {
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
-
-    /** The path to the annotated jdk jar to use. */
-    protected final File jdkJar;
 
     /** The path to the javacJar to use. */
     protected final File javacJar;
@@ -128,9 +123,6 @@ public class CheckerMain {
 
         this.javacJar = extractFileArg(JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
-        final String jdkJarName = SystemUtil.getJdkJarName();
-        this.jdkJar = extractFileArg(JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
-
         this.compilationBootclasspath = createCompilationBootclasspath(args);
         this.runtimeClasspath = createRuntimeClasspath(args);
         this.jvmOpts = extractJvmOpts(args);
@@ -145,7 +137,7 @@ public class CheckerMain {
     /** Assert that required jars exist. */
     protected void assertValidState() {
         if (SystemUtil.getJreVersion() < 9) {
-            assertFilesExist(Arrays.asList(javacJar, jdkJar, checkerJar, checkerQualJar));
+            assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar));
         } else {
             // TODO: once the jdk11 jars exist, check for them.
             assertFilesExist(Arrays.asList(checkerJar, checkerQualJar));
@@ -169,20 +161,13 @@ public class CheckerMain {
     }
 
     /**
-     * Returns the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
-     * using Java 8.
+     * Returns the compilation bootclasspath from {@code argsList}.
      *
      * @param argsList args to add
-     * @return the compilation bootclasspath from {@code argsList} and appends {@code jdkJar} if
-     *     using Java 8
+     * @return the compilation bootclasspath from {@code argsList}
      */
     protected List<String> createCompilationBootclasspath(final List<String> argsList) {
-        final List<String> extractedBcp = extractBootClassPath(argsList);
-        if (SystemUtil.getJreVersion() == 8) {
-            extractedBcp.add(0, jdkJar.getAbsolutePath());
-        }
-
-        return extractedBcp;
+        return extractBootClassPath(argsList);
     }
 
     protected List<String> createCpOpts(final List<String> argsList) {
@@ -449,10 +434,7 @@ public class CheckerMain {
             // during compilation, but the classes are read by the compiler
             // without loading them.  The compiler assumes that any class on
             // this bootclasspath will be on the bootclasspath of the JVM used
-            // to later run the classfiles that Javac produces.  Our
-            // jdk8.jar classes don't have bodies, so they won't be used at
-            // run time, but other, real definitions of those classes will be
-            // on the classpath at run time.
+            // to later run the classfiles that Javac produces.
             args.add(
                     "-Xbootclasspath/p:"
                             + String.join(File.pathSeparator, compilationBootclasspath));
@@ -630,7 +612,7 @@ public class CheckerMain {
     /**
      * Find the jar file or directory containing the .class file from which cls was loaded.
      *
-     * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
+     * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class
      * @param errIfFromDirectory if false, throw an exception if the file was loaded from a
      *     directory
      */

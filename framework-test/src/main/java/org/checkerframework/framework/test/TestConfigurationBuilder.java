@@ -63,12 +63,6 @@ public class TestConfigurationBuilder {
         }
 
         if (SystemUtil.getJreVersion() == 8) {
-            // Use the annotated JDK for the compile bootclasspath.
-            String jdkJarPath = getJdkJarPathFromProperty();
-            if (notNullOrEmpty(jdkJarPath)) {
-                configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
-            }
-
             configBuilder.addOption("-source", "8").addOption("-target", "8");
         }
 
@@ -113,10 +107,6 @@ public class TestConfigurationBuilder {
                         options,
                         shouldEmitDebugInfo);
         return builder.validateThenBuild(true);
-    }
-
-    private static boolean notNullOrEmpty(String str) {
-        return str != null && !str.isEmpty();
     }
 
     /**
@@ -360,7 +350,11 @@ public class TestConfigurationBuilder {
                 String.join("%n", errors), this);
     }
 
-    /** @return the set of Javac options as a flat list */
+    /**
+     * Returns the set of Javac options as a flat list.
+     *
+     * @return the set of Javac options as a flat list
+     */
     public List<String> flatOptions() {
         return options.getOptionsAsList();
     }
@@ -375,7 +369,11 @@ public class TestConfigurationBuilder {
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 
-    /** @return a list that first has the items from parameter list then the items from iterable */
+    /**
+     * Returns a list that first has the items from parameter list then the items from iterable.
+     *
+     * @return a list that first has the items from parameter list then the items from iterable
+     */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
         final List<T> newList = new ArrayList<>();
@@ -405,14 +403,5 @@ public class TestConfigurationBuilder {
                 System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
         return classpath + File.pathSeparator + globalclasspath;
-    }
-
-    /**
-     * The path to the annotated JDK, looked up from the system property "JDK_JAR".
-     *
-     * @return the value of the system property "JDK_JAR"
-     */
-    public static String getJdkJarPathFromProperty() {
-        return System.getProperty("JDK_JAR");
     }
 }

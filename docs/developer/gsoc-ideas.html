@@ -1292,17 +1292,68 @@ some distinct challenges:
 <p>
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-Java expression</a>.  The parser for these is a hack.  The goal of this
-project is to replace it by calls
-to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.
-For example, the <code>FlowExpressions.Receiver</code> class, which
-represents an AST, should be replaced by the JavaParser AST.
+Java expression</a>.  The representation for these
+(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+class) is a hack.  The goal of this
+project is to remove it.
 </p>
 
 <p>
-This task
-should be straightforward, since JavaParser is already used in other parts
-of the Checker Framework.
+The <code>FlowExpressions.Receiver</code> class is about 1000 lines of code
+that represent an AST.  There is no need for the Checker Framework to
+define its own AST when the JavaParser AST already exists and is
+maintained.  In fact, <code>FlowExpressionParseUtil</code> uses JavaParser,
+but needlessly converts a
+JavaParser <code>Expression</code> into
+a <code>FlowExpressions.Receiver</code>.
+</p>
+
+<p>
+  The goals for the project include:
+</p>
+<ul>
+  <li>
+    Replace every use
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+    by a use of the JavaParser
+    class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
+  </li>
+  <li>
+    Replace every use of a subclass of <code>Receiver</code> (listed in the
+    "Direct Known Subclasses" section of
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>Receiver</code>
+    API documentation)</a> by a use of a
+    <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
+  </li>
+  <li>
+    The <a href="https://checkerframework.org/api/org/checkerframework/framework/util/FlowExpressionParseUtil.html"><code>FlowExpressionParseUtil</code></a>
+    class already uses JavaParser, but it uses <code>ExpressionToReceiverVisitor</code> it to construct
+    a <code>Receiver</code>.  Have it return a
+    JavaParser <code>Expression</code> instead, and delete <code>ExpressionToReceiverVisitor</code>.
+  </li>
+</ul>
+
+<p>
+Direct replacement of the classes is not possible, or we would have done it
+already.  For example, <code>Receiver</code> contains some methods that
+JavaParser lacks, such as <code>isUnassignableByOtherCode</code>.  As a
+first step before doing the tasks listed above, you may want to convert
+these methods from instance methods of <code>Receiver</code> into static
+methods in <code>FlowExpressions</code>, making <code>Receiver</code> more
+like a standard AST that can be replaced by JavaParser classes.
+You also need to decide how to store the <code>type</code> field
+of <code>Receiver</code>, when <code>Receiver</code> is eliminated.
+An
+alternate design (or a partial step in the refactoring process) would be to
+retain the <code>Receiver</code> class, but make it a thin wrapper around
+JavaParser classes that do most of the real work.
+</p>
+
+<p>
+Another aspect of this project is
+fixing <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
+    issues that are labeled "JavaExpression".</a>
 </p>
 
 
@@ -1423,5 +1474,5 @@ currently of interest.
  -->
 <!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn
  -->
-<!--  LocalWords:  rasmud nondet Geffken
+<!--  LocalWords:  rasmud nondet Geffken Dort
  -->

@@ -648,7 +648,7 @@ public class LockAnnotatedTypeFactory
      * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the
      * index of this {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex},
      * then {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy
-     * replaced with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     * replaced with that in {@code annotationInGuardedByHierarchy}.
      *
      * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
      *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.

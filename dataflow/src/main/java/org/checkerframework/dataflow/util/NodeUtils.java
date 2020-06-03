@@ -17,6 +17,9 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NodeUtils {
 
     /**
+     * Returns true iff {@code node} corresponds to a boolean typed expression (either the primitive
+     * type {@code boolean}, or class type {@link java.lang.Boolean}).
+     *
      * @return true iff {@code node} corresponds to a boolean typed expression (either the primitive
      *     type {@code boolean}, or class type {@link java.lang.Boolean})
      */
@@ -42,6 +45,9 @@ public class NodeUtils {
     }
 
     /**
+     * Returns true iff {@code node} is a {@link FieldAccessNode} that is an access to an array's
+     * length.
+     *
      * @return true iff {@code node} is a {@link FieldAccessNode} that is an access to an array's
      *     length
      */

@@ -146,22 +146,38 @@ public final class Result {
         return new Result(Type.merge(r.type, this.type), messages);
     }
 
-    /** @return true if the result is success (not a failure or warning) */
+    /**
+     * Returns true if the result is success (not a failure or warning).
+     *
+     * @return true if the result is success (not a failure or warning)
+     */
     public boolean isSuccess() {
         return type == Type.SUCCESS;
     }
 
-    /** @return true if the result is a failure */
+    /**
+     * Returns true if the result is a failure.
+     *
+     * @return true if the result is a failure
+     */
     public boolean isFailure() {
         return type == Type.FAILURE;
     }
 
-    /** @return true if the result is a warning */
+    /**
+     * Returns true if the result is a warning.
+     *
+     * @return true if the result is a warning
+     */
     public boolean isWarning() {
         return type == Type.WARNING;
     }
 
-    /** @return the message keys associated with the result */
+    /**
+     * Returns the message keys associated with the result.
+     *
+     * @return the message keys associated with the result
+     */
     public List<String> getMessageKeys() {
         List<String> msgKeys = new ArrayList<>(getDiagMessages().size());
         for (DiagMessage msg : getDiagMessages()) {
@@ -171,7 +187,11 @@ public final class Result {
         return Collections.unmodifiableList(msgKeys);
     }
 
-    /** @return an unmodifiable list of the message pairs */
+    /**
+     * Returns an unmodifiable list of the message pairs.
+     *
+     * @return an unmodifiable list of the message pairs
+     */
     public List<DiagMessage> getDiagMessages() {
         return Collections.unmodifiableList(messages);
     }

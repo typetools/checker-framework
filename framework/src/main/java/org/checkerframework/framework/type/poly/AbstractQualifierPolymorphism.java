@@ -93,7 +93,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * @param env the processing environment
      * @param factory the factory for the current checker
      */
-    public AbstractQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+    protected AbstractQualifierPolymorphism(
+            ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         this.atypeFactory = factory;
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());

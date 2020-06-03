@@ -26,7 +26,7 @@ public class SystemUtil {
      * Return a list of Strings, one per line of the file.
      *
      * @param argFile argument file
-     * @return a list of Strings, one per line of the file.
+     * @return a list of Strings, one per line of the file
      * @throws IOException when reading the argFile
      */
     public static List<String> readFile(final File argFile) throws IOException {
@@ -180,36 +180,6 @@ public class SystemUtil {
 
         throw new RuntimeException(
                 "Could not determine version from property java.version=" + jreVersionStr);
-    }
-
-    /**
-     * Determine the version of the JRE that we are currently running and select a jdkX where X is
-     * the version of Java that is being run (e.g. 8, 9, ...)
-     *
-     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 8, 9, ...)
-     */
-    public static String getJdkJarPrefix() {
-        final int jreVersion = getJreVersion();
-        final String prefix;
-
-        if (jreVersion < 8) {
-            throw new AssertionError("Unsupported JRE version: " + jreVersion);
-        } else {
-            prefix = "jdk" + jreVersion;
-        }
-
-        return prefix;
-    }
-
-    /**
-     * Determine the version of the JRE that we are currently running and select a jdkX.jar where X
-     * is the version of Java that is being run (e.g. 8, 9, ...)
-     *
-     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 8, 9, ...)
-     */
-    public static String getJdkJarName() {
-        final String fileName = getJdkJarPrefix() + ".jar";
-        return fileName;
     }
 
     /**

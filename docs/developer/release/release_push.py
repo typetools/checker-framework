@@ -82,7 +82,7 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     Central. This is a reversible step, since artifacts that have not been
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
-    execute("./gradlew deployArtifactsToSonatype", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew deployArtifactsToSonatype --no-parallel", working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
