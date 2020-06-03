@@ -10,6 +10,14 @@ Added new Signature Checker annotations:
   @DotSeparatedIdentifiersOrPrimitiveType
   #IdentifierOrPrimitiveType
 
+Implementation details:
+Changed the types of some fields and methods from array to List:
+QualifierDefaults.validLocationsForUncheckedCodeDefaults()
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
+
 ---------------------------------------------------------------------------
 
 Version 3.4.1, June 1, 2020

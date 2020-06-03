@@ -51,7 +51,11 @@ enum AtmKind {
         this.atmClass = atmClass;
     }
 
-    /** @return the AtmKind corresponding to the class of atm */
+    /**
+     * Returns the AtmKind corresponding to the class of atm.
+     *
+     * @return the AtmKind corresponding to the class of atm
+     */
     public static AtmKind valueOf(final AnnotatedTypeMirror atm) {
         final Class<?> argClass = atm.getClass();
 
@@ -219,6 +223,9 @@ public enum AtmCombo {
     }
 
     /**
+     * Returns the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g.
+     * {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}.
+     *
      * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g.
      *     {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
      */
@@ -227,9 +234,12 @@ public enum AtmCombo {
     }
 
     /**
+     * Returns the AtmCombo corresponding to the pair of the classes for the given
+     * AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
+     * AtmCombo.PRIMITIVE_DECLARED}
+     *
      * @return the AtmCombo corresponding to the pair of the classes for the given
-     *     AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
-     *     AtmCombo.PRIMITIVE_DECLARED}
+     *     AnnotatedTypeMirrors
      */
     public static AtmCombo valueOf(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {

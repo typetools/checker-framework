@@ -12,8 +12,8 @@ import java.util.Map;
  *
  * <pre>{@code
  * Map(
- *    "-AprintAllQualifiers" &rArr; null
- *    "-classpath" &rArr; "myDir1:myDir2"
+ *    "-AprintAllQualifiers" => null
+ *    "-classpath" => "myDir1:myDir2"
  * )
  * }</pre>
  *
@@ -23,7 +23,7 @@ import java.util.Map;
  * needed to make this class usable from the command line.
  */
 public class SimpleOptionMap {
-    /** A Map (optionName &rarr; arg) where arg is null if the option doesn't require any args. */
+    /** A Map from optionName to arg, where arg is null if the option doesn't require any args. */
     private final Map<String, String> options = new LinkedHashMap<>();
 
     /**

@@ -489,16 +489,20 @@ public class Range {
     }
 
     /**
-     * @param other the range to compare.
-     * @return the range with the lowest to and from values of this range and the passed range.
+     * Returns the range with the lowest to and from values of this range and the passed range.
+     *
+     * @param other the range to compare
+     * @return the range with the lowest to and from values of this range and the passed range
      */
     public Range min(Range other) {
         return create(Math.min(this.from, other.from), Math.min(this.to, other.to));
     }
 
     /**
-     * @param other the range to compare.
-     * @return the range with the highest to and from values of this range and the passed range.
+     * Returns the range with the highest to and from values of this range and the passed range.
+     *
+     * @param other the range to compare
+     * @return the range with the highest to and from values of this range and the passed range
      */
     public Range max(Range other) {
         return create(Math.max(this.from, other.from), Math.max(this.to, other.to));

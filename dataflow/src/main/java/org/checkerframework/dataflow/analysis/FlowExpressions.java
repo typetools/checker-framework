@@ -61,6 +61,9 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FlowExpressions {
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -77,6 +80,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -193,6 +199,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     * Might contain {@link Unknown}.
+     *
      * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
      *     Might contain {@link Unknown}.
      */
@@ -430,9 +439,15 @@ public class FlowExpressions {
      * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
      */
     public abstract static class Receiver {
+        /** The type of this expression. */
         protected final TypeMirror type;
 
-        public Receiver(TypeMirror type) {
+        /**
+         * Create a Receiver (a Java AST node representing an expression).
+         *
+         * @param type the type of the expression
+         */
+        protected Receiver(TypeMirror type) {
             assert type != null;
             this.type = type;
         }
@@ -468,14 +483,21 @@ public class FlowExpressions {
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /** @return true if and only if the two receiver are syntactically identical */
+        /**
+         * Returns true if and only if the two receiver are syntactically identical.
+         *
+         * @return true if and only if the two receiver are syntactically identical
+         */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
+         * Returns true if and only if this receiver contains a receiver that is syntactically equal
+         * to {@code other}.
+         *
          * @return true if and only if this receiver contains a receiver that is syntactically equal
-         *     to {@code other}.
+         *     to {@code other}
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
@@ -904,7 +926,11 @@ public class FlowExpressions {
             return false; // not modifiable
         }
 
-        /** @return the value of this literal */
+        /**
+         * Returns the value of this literal.
+         *
+         * @return the value of this literal
+         */
         public @Nullable Object getValue() {
             return value;
         }
@@ -944,12 +970,19 @@ public class FlowExpressions {
             return false;
         }
 
-        /** @return the method call receiver (for inspection only - do not modify) */
+        /**
+         * Returns the method call receiver (for inspection only - do not modify).
+         *
+         * @return the method call receiver (for inspection only - do not modify)
+         */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
+         * Returns the method call parameters (for inspection only - do not modify any of the
+         * parameters).
+         *
          * @return the method call parameters (for inspection only - do not modify any of the
          *     parameters)
          */
@@ -957,7 +990,11 @@ public class FlowExpressions {
             return Collections.unmodifiableList(parameters);
         }
 
-        /** @return the ExecutableElement for the method call */
+        /**
+         * Returns the ExecutableElement for the method call.
+         *
+         * @return the ExecutableElement for the method call
+         */
         public ExecutableElement getElement() {
             return method;
         }
@@ -1191,7 +1228,11 @@ public class FlowExpressions {
             this.initializers = initializers;
         }
 
-        /** @return a list of receivers representing the dimension of this array creation */
+        /**
+         * Returns a list of receivers representing the dimension of this array creation.
+         *
+         * @return a list of receivers representing the dimension of this array creation
+         */
         public List<? extends @Nullable Receiver> getDimensions() {
             return dimensions;
         }

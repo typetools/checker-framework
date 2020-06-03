@@ -33,7 +33,11 @@ public interface Store<S extends Store<S>> {
         ELSE_TO_ELSE, // Else store flows to the else of successor.  Then store is ignored.
     }
 
-    /** @return an exact copy of this store. */
+    /**
+     * Returns an exact copy of this store.
+     *
+     * @return an exact copy of this store
+     */
     S copy();
 
     /**

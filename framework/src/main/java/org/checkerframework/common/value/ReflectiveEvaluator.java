@@ -47,6 +47,9 @@ public class ReflectiveEvaluator {
     }
 
     /**
+     * Returns all possible values that the method may return, or null if the method could not be
+     * evaluated.
+     *
      * @param allArgValues a list of list where the first list corresponds to all possible values
      *     for the first argument. Pass null to indicate that the method has no arguments.
      * @param receiverValues a list of possible receiver values. null indicates that the method has

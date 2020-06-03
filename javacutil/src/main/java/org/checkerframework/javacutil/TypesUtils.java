@@ -129,7 +129,11 @@ public final class TypesUtils {
                                 getQualifiedName((DeclaredType) type).toString()));
     }
 
-    /** @return type represents a Throwable type (e.g. Exception, Error) */
+    /**
+     * Returns true if type represents a Throwable type (e.g. Exception, Error).
+     *
+     * @return true if type represents a Throwable type (e.g. Exception, Error)
+     */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) type;
@@ -648,6 +652,9 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns {@code type} as {@code superType} if {@code superType} is a super type of {@code
+     * type}; otherwise, null.
+     *
      * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code
      *     type}; otherwise, null
      */
