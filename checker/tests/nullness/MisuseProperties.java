@@ -35,6 +35,7 @@ public class MisuseProperties {
         Dictionary<Object, @Nullable Object> d2 = p;
         d2.put("line.separator", null);
 
+        // :: error: (clear.system.property)
         System.setProperties(p); // OK; p has no null values
 
         System.clearProperty("foo.bar"); // OK
@@ -44,6 +45,7 @@ public class MisuseProperties {
 
         // These first few need to be special-cased, I think:
 
+        // :: error: (clear.system.property)
         System.clearProperty("line.separator");
 
         p.remove("line.separator");
