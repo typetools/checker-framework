@@ -592,7 +592,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new QualifierUpperBounds(this);
     }
 
-    /** @return {@link QualifierUpperBounds} for this type factory */
+    /**
+     * Return {@link QualifierUpperBounds} for this type factory.
+     *
+     * @return {@link QualifierUpperBounds} for this type factory
+     */
     public QualifierUpperBounds getQualifierUpperBounds() {
         return qualifierUpperBounds;
     }

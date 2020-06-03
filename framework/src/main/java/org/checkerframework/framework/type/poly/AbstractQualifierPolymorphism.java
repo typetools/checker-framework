@@ -8,7 +8,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -206,16 +205,15 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return;
         }
         AnnotationMirrorMap<AnnotationMirrorSet> matchingMapping = new AnnotationMirrorMap<>();
-        for (Entry<AnnotationMirror, AnnotationMirror> entry : polyQuals.entrySet()) {
-            AnnotationMirror topAnno = entry.getValue();
-            AnnotationMirror polyAnnotation = entry.getKey();
-            AnnotationMirrorSet resolvedType = new AnnotationMirrorSet();
-            AnnotationMirror annoOnOwner = owner.getAnnotationInHierarchy(topAnno);
-            if (annoOnOwner != null) {
-                resolvedType.add(annoOnOwner);
-            }
-            matchingMapping.put(polyAnnotation, resolvedType);
-        }
+        polyQuals.forEach(
+                (polyAnnotation, topAnno) -> {
+                    AnnotationMirrorSet resolvedType = new AnnotationMirrorSet();
+                    AnnotationMirror annoOnOwner = owner.getAnnotationInHierarchy(topAnno);
+                    if (annoOnOwner != null) {
+                        resolvedType.add(annoOnOwner);
+                    }
+                    matchingMapping.put(polyAnnotation, resolvedType);
+                });
         if (!matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
         } else {

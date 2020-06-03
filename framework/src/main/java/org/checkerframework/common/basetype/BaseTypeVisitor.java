@@ -379,7 +379,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code @HasQualifierParameter}. Always issue a warning if the type of a static field is
      * annotated with a polymorphic qualifier.
      *
-     * <p>Issues an error if (@code classTree} extends or implements a class/interface that has a
+     * <p>Issues an error if {@code classTree} extends or implements a class/interface that has a
      * qualifier parameter, but this class does not.
      *
      * @param classTree the ClassTree to check for polymorphic fields
