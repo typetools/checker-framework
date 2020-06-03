@@ -26,7 +26,7 @@ public class SystemUtil {
      * Return a list of Strings, one per line of the file.
      *
      * @param argFile argument file
-     * @return a list of Strings, one per line of the file.
+     * @return a list of Strings, one per line of the file
      * @throws IOException when reading the argFile
      */
     public static List<String> readFile(final File argFile) throws IOException {

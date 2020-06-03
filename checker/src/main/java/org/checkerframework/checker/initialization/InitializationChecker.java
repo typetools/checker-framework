@@ -19,7 +19,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Create a new InitializationChecker. */
-    public InitializationChecker() {}
+    protected InitializationChecker() {}
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {

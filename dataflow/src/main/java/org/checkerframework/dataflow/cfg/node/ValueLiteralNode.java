@@ -26,10 +26,14 @@ public abstract class ValueLiteralNode extends Node {
     /** The tree for the value literal. */
     protected final LiteralTree tree;
 
-    /** @return the value of the literal, null for the null literal */
+    /**
+     * Returns the value of the literal, null for the null literal.
+     *
+     * @return the value of the literal, null for the null literal
+     */
     public abstract @Nullable Object getValue();
 
-    public ValueLiteralNode(LiteralTree tree) {
+    protected ValueLiteralNode(LiteralTree tree) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
     }

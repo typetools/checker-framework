@@ -519,7 +519,11 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /** @return the list of annotations of the non-null type system */
+    /**
+     * Returns the list of annotations of the non-null type system.
+     *
+     * @return the list of annotations of the non-null type system
+     */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }

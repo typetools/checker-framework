@@ -93,7 +93,11 @@ public class StubTypes {
         this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
     }
 
-    /** @return true if stub files are currently being parsed; otherwise, false. */
+    /**
+     * Returns true if stub files are currently being parsed; otherwise, false.
+     *
+     * @return true if stub files are currently being parsed; otherwise, false
+     */
     public boolean isParsing() {
         return parsing;
     }
@@ -318,7 +322,7 @@ public class StubTypes {
      * Parses the outermost enclosing class of {@code e} if there exists a stub file for it and it
      * has not already been parsed.
      *
-     * @param e element whose outermost enclosing class will be parsed.
+     * @param e element whose outermost enclosing class will be parsed
      */
     private void parseEnclosingClass(Element e) {
         if (!shouldParseJdk) {
@@ -338,8 +342,11 @@ public class StubTypes {
     }
 
     /**
+     * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
+     * null} if no such class exists for {@code e}.
+     *
      * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
-     *     null} if no such class exists for {@code e}.
+     *     null} if no such class exists for {@code e}
      */
     private String getOuterMostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
@@ -413,7 +420,11 @@ public class StubTypes {
         }
     }
 
-    /** @return JarURLConnection to "/jdk*" */
+    /**
+     * Returns a JarURLConnection to "/jdk*".
+     *
+     * @return a JarURLConnection to "/jdk*"
+     */
     private JarURLConnection getJarURLConnectionToJdk() {
         URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         JarURLConnection connection;

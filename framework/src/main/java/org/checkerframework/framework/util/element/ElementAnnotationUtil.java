@@ -446,6 +446,7 @@ public class ElementAnnotationUtil {
      *     of some array type
      * @return the type specified by location
      */
+    @SuppressWarnings("JdkObsolete") // error is issued on every operation, must suppress here
     private static AnnotatedTypeMirror getLocationTypeADT(
             AnnotatedDeclaredType type,
             List<TypeAnnotationPosition.TypePathEntry> location,
@@ -478,7 +479,7 @@ public class ElementAnnotationUtil {
         }
 
         // Create a linked list of the location, so removing the first element is easier.
-        // Also, the `tail` operation wouldn't work with a Deque.
+        // Also, the tail() operation wouldn't work with a Deque.
         @SuppressWarnings("JdkObsolete")
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;
