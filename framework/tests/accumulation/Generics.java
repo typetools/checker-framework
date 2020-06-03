@@ -1,5 +1,3 @@
-// Copied from the Object Construction Checker.
-
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.common.returnsreceiver.qual.*;

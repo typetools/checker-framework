@@ -1,5 +1,4 @@
 // test case for issue 20: https://github.com/kelloggm/object-construction-checker/issues/20
-// Copied from the Object Construction Checker.
 
 import java.util.Map;
 

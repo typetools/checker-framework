@@ -42,8 +42,8 @@ public class AccumulationTransfer extends CFTransfer {
      * Updates the estimate of how many things {@code node} has accumulated.
      *
      * <p>If the node is an invocation of a method that returns its receiver, then its receiver's
-     * type will also be updated. This chain will continue as long as each receiver is itself a
-     * receiver-returning method invocation.
+     * type will also be updated. In a chain of method calls, this process will continue as long
+     * as each receiver is itself a receiver-returning method invocation.
      *
      * <p>For example, suppose {@code node} is the expression {@code a.b().c()}, the new value is
      * "foo", and b and c return their receiver (and are deterministic). Then all of the expressions

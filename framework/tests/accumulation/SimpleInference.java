@@ -1,5 +1,3 @@
-// Copied from the Object Construction Checker.
-
 import testaccumulation.qual.*;
 
 class SimpleInference {

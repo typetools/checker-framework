@@ -71,7 +71,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         // Check that the requirements of the accumulator are met.
         Method[] accDeclaredMethods = accumulator.getDeclaredMethods();
         if (accDeclaredMethods.length != 1) {
-            rejectMalformedAccumulator("not have more than one argument");
+            rejectMalformedAccumulator("have exactly one element");
         }
         Method value = accDeclaredMethods[0];
         if (value.getName() != "value") { // interned
@@ -81,7 +81,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             rejectMalformedAccumulator("have an element of type String[]");
         }
         if (((String[]) value.getDefaultValue()).length != 0) {
-            rejectMalformedAccumulator("must have the empty String array {} as its default value");
+            rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
 
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
@@ -100,7 +100,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *     replace $MISSING$: "The accumulator annotation Foo must $MISSING$."
      */
     private void rejectMalformedAccumulator(String missing) {
-        throw new UserError("The accumulator annotation " + accumulator + " must " + missing + ".");
+        throw new BugInCF("The accumulator annotation " + accumulator + " must " + missing + ".");
     }
 
     /**
