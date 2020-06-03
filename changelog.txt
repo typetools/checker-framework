@@ -1,6 +1,6 @@
 Version 3.5.0, July 1, 2020
 
-Fixed Signature Checker so Java keywords are not considered identifiers.
+The Signature Checker no longer considers Java keywords to be identifiers.
 Renamed Signature Checker annotations:
   @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
   @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
@@ -9,6 +9,10 @@ Added new Signature Checker annotations:
   @BinaryNameOrPrimitiveType
   @DotSeparatedIdentifiersOrPrimitiveType
   #IdentifierOrPrimitiveType
+
+The Nullness Checker now treats System.getProperty soundly.  Use
+-Alint=permitClearProperty to disable special treatment of System.getProperty
+and to permit undefining built-in system properties.
 
 Implementation details:
 Changed the types of some fields and methods from array to List:
