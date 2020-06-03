@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -252,9 +252,7 @@ public class TypeArgumentMapper {
      */
     private static List<TypeRecord> depthFirstSearchForSupertype(
             final TypeElement subtype, final TypeElement target, final Types types) {
-        @SuppressWarnings(
-                "JdkObsolete") // I tried replacing Stack with ArrayDeque, but things break.
-        Stack<TypeRecord> pathFromRoot = new Stack<>();
+        ArrayDeque<TypeRecord> pathFromRoot = new ArrayDeque<>();
         final TypeRecord pathStart = new TypeRecord(subtype, null);
         pathFromRoot.push(pathStart);
         final List<TypeRecord> result = recursiveDepthFirstSearch(pathFromRoot, target, types);
@@ -263,12 +261,14 @@ public class TypeArgumentMapper {
 
     /** Computes one level for depthFirstSearchForSupertype then recurses. */
     private static List<TypeRecord> recursiveDepthFirstSearch(
-            final Stack<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
+            final ArrayDeque<TypeRecord> pathFromRoot,
+            final TypeElement target,
+            final Types types) {
         if (pathFromRoot.isEmpty()) {
             return null;
         }
 
-        final TypeRecord currentRecord = pathFromRoot.peek();
+        final TypeRecord currentRecord = pathFromRoot.peekFirst();
         final TypeElement currentElement = currentRecord.element;
 
         if (currentElement.equals(target)) {
@@ -284,22 +284,22 @@ public class TypeArgumentMapper {
             final TypeMirror intface = interfaces.next();
             if (intface.getKind() != TypeKind.NONE) {
                 DeclaredType interfaceDeclared = (DeclaredType) intface;
-                pathFromRoot.push(
+                pathFromRoot.addFirst(
                         new TypeRecord(
                                 (TypeElement) types.asElement(interfaceDeclared),
                                 interfaceDeclared));
                 path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-                pathFromRoot.pop();
+                pathFromRoot.removeFirst();
             }
         }
 
         if (path == null && superclassType.getKind() != TypeKind.NONE) {
             final DeclaredType superclass = (DeclaredType) superclassType;
 
-            pathFromRoot.push(
+            pathFromRoot.addFirst(
                     new TypeRecord((TypeElement) types.asElement(superclass), superclass));
             path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-            pathFromRoot.pop();
+            pathFromRoot.removeFirst();
         }
 
         return path;
