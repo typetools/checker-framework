@@ -29,7 +29,7 @@ public abstract class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeV
      * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with default value being {@code
      * null}.
      */
-    public SimpleAnnotatedTypeVisitor() {
+    protected SimpleAnnotatedTypeVisitor() {
         this(null);
     }
 
@@ -39,7 +39,7 @@ public abstract class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeV
      *
      * @param defaultValue the default value this class should return
      */
-    public SimpleAnnotatedTypeVisitor(R defaultValue) {
+    protected SimpleAnnotatedTypeVisitor(R defaultValue) {
         this.DEFAULT_VALUE = defaultValue;
     }
 

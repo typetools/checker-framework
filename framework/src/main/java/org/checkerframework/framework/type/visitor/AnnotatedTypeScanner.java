@@ -112,7 +112,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * @param defaultResult the result to return if a visit type method is not overridden; it should
      *     be immutable.
      */
-    public AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
+    protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
         if (reduceFunction == null) {
             this.reduceFunction = (r1, r2) -> r1 == null ? r2 : r1;
         } else {
@@ -128,7 +128,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      *
      * @param reduceFunction function used to combine two results
      */
-    public AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction) {
+    protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction) {
         this(reduceFunction, null);
     }
 
@@ -139,7 +139,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * @param defaultResult the result to return if a visit type method is not overridden; it should
      *     be immutable.
      */
-    public AnnotatedTypeScanner(R defaultResult) {
+    protected AnnotatedTypeScanner(R defaultResult) {
         this(null, defaultResult);
     }
 
@@ -147,7 +147,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it
      * is nonnull; otherwise the second result is returned. The default result is {@code null}.
      */
-    public AnnotatedTypeScanner() {
+    protected AnnotatedTypeScanner() {
         this(null, null);
     }
 
