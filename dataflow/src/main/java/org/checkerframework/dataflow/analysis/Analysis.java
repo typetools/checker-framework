@@ -124,7 +124,7 @@ public class Analysis<
         this.currentTree = currentTree;
     }
 
-    // `@code`, not `@link`, because dataflow module doesn't depend on framework moduel.
+    // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph. The transfer function is set by the subclass, e.g., {@code

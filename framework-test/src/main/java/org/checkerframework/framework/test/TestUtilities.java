@@ -80,8 +80,8 @@ public class TestUtilities {
     }
 
     /**
-     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
-     * subdirectory of {@code dir} and also a list of Java files in dir.
+     * Returns a list where each item is a list of Java files, excluding any skip tests. There is
+     * one list for {@code dir}, and one list for each subdirectory of {@code dir}.
      *
      * @param dir directory in which to search for Java files
      * @return a list of list of Java test files
@@ -431,8 +431,8 @@ public class TestUtilities {
     }
 
     /**
-     * Return its boolean value if the system property is set. Return defaultValue if the system
-     * property is not set. Errs if the system property is set to a non-boolean value.
+     * If the system property is set, return its boolean value; otherwise return {@code
+     * defaultValue}. Errs if the system property is set to a non-boolean value.
      *
      * @param key system property to check
      * @param defaultValue value to use if the property is not set
@@ -444,6 +444,11 @@ public class TestUtilities {
         return SystemUtil.getBooleanSystemProperty(key, defaultValue);
     }
 
+    /**
+     * Returns the value of system property "emit.test.debug".
+     *
+     * @return the value of system property "emit.test.debug".
+     */
     public static boolean getShouldEmitDebugInfo() {
         return SystemUtil.getBooleanSystemProperty("emit.test.debug");
     }

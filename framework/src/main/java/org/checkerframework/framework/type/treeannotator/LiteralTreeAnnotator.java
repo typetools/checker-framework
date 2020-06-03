@@ -248,13 +248,17 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                 // Verify that res is not a subtype of any type in nonMatches
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
+                        String matchesOnePerLine = "";
+                        for (Set<? extends AnnotationMirror> match : matches) {
+                            matchesOnePerLine += System.lineSeparator() + "     " + match;
+                        }
                         throw new BugInCF(
                                 SystemUtil.joinLines(
                                         "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy definition:",
-                                        " inferred type for \"" + string + "\" is " + res,
+                                        " the glb of `matches` for \"" + string + "\" is " + res,
                                         " which is a subtype of " + sam,
-                                        " but its pattern does not match the string.",
-                                        "  matches = " + matches,
+                                        " whose pattern does not match \"" + string + "\".",
+                                        "  matches = " + matchesOnePerLine,
                                         "  nonMatches = " + nonMatches));
                     }
                 }
