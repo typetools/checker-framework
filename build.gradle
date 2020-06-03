@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "4.0.4"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "1.1.1"
+    id "net.ltgt.errorprone" version "1.2.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.0.2' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
@@ -40,7 +40,6 @@ ext {
 
     annotationTools = "${parentDir}/annotation-tools"
     afu = "${annotationTools}/annotation-file-utilities"
-    afuJar = "${afu}/annotation-file-utilities-all-but-javac.jar"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
@@ -102,7 +101,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.4.1-SNAPSHOT'
+    version '3.5.0-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -164,16 +163,12 @@ allprojects {
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
-                options.addBooleanOption('Xwerror', true)
+                // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
+                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+                // options.addBooleanOption('Xwerror', true)
                 options.addStringOption('Xmaxwarns', '99999')
             }
         }
-
-        /// TODO: One day we can enable this.  For now, CI jobs require Javadoc on changed lines.
-        // // Turn Javadoc warnings into errors.
-        // tasks.withType(Javadoc) {
-        //     options.addStringOption('Xwerror', '-quiet')
-        // }
 
         // Add standard javac options
         tasks.withType(JavaCompile) {
@@ -238,7 +233,7 @@ task cloneAndBuildDependencies(type: Exec) {
 task maybeCloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
-        !file(afuJar).exists() || !file(stubparserJar).exists()
+        !file(stubparserJar).exists()
         // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
         // the repository does not exist when building checker.jar.
     }
@@ -400,7 +395,7 @@ task requireJavadoc(type: JavaExec) {
 
 
 /**
- * Creates a task named taskName that runs javadoc.
+ * Creates a task named taskName that runs javadoc with the -Xdoclint:all option.
  *
  * @param taskName the name of the task to create
  * @param taskDescription description of the task
@@ -531,7 +526,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
         //  * Uncomment "-Werror"
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.4'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -573,10 +568,6 @@ subprojects {
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
-        // Don't relocate javac.jar:
-        // relocate 'com.sun', 'org.checkeframework.com.sun'
-        // relocate 'javax','org.checkerframework.javax'
-        // relocate 'jdk', 'org.checkerframework.jdk'
 
         // These appear in annotation-file-utilities-all.jar:
         relocate 'org.apache', 'org.checkerframework.org.apache'
@@ -792,6 +783,10 @@ subprojects {
                     '-Xep:MixedMutabilityReturnType:OFF',
                     // Don't want to add a dependency to ErrorProne.
                     '-Xep:AnnotateFormatMethod:OFF',
+                    // Warns for every use of "@checker_framework.manual"
+                    '-Xep:InvalidBlockTag:OFF',
+                    // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
+                    '-Xep:InlineFormatString:OFF',
                     // -Werror halts the build if Error Prone issues a warning, which ensures that
                     // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                     // stops as soon as it one warning, rather than outputting them all.

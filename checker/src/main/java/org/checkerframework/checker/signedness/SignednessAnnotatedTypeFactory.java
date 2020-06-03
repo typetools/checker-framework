@@ -29,7 +29,11 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/** @checker_framework.manual #signedness-checker Signedness Checker */
+/**
+ * The type factory for the Signedness Checker.
+ *
+ * @checker_framework.manual #signedness-checker Signedness Checker
+ */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The @SignednessGlb annotation. */

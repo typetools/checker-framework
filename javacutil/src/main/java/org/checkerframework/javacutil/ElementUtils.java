@@ -169,7 +169,12 @@ public class ElementUtils {
         return elem.getQualifiedName();
     }
 
-    /** Returns a verbose name that identifies the element. */
+    /**
+     * Returns a verbose name that identifies the element.
+     *
+     * @param elt the element whose name to obtain
+     * @return the verbose name of the given element
+     */
     public static String getVerboseName(Element elt) {
         Name n = getQualifiedClassName(elt);
         if (n == null) {
@@ -411,6 +416,8 @@ public class ElementUtils {
     }
 
     /**
+     * Returns true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError".
+     *
      * @param element the element to test
      * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
      */

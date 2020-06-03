@@ -312,7 +312,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *       hierarchy. In this step we combine these two results, always favoring the equality
      *       constraints if there is a conflict. For the above example we would infer the following:
      *       <pre>{@code
-     * T &rArr; @FBCBottom @NonNull String
+     * T => @FBCBottom @NonNull String
      * }</pre>
      *       Another case covered in this step is:
      *       <pre>{@code
