@@ -24,6 +24,10 @@ public interface SpecialBlock extends SingleSuccessorBlock {
         EXCEPTIONAL_EXIT,
     }
 
-    /** @return the type of this special basic block */
+    /**
+     * Returns the type of this special basic block.
+     *
+     * @return the type of this special basic block
+     */
     SpecialBlockType getSpecialType();
 }

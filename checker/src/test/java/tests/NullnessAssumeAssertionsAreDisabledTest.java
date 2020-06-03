@@ -6,10 +6,14 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** JUnit tests for the Nullness Checker. */
-public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkPerDirectoryTest {
+public class NullnessAssumeAssertionsAreDisabledTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
-    public NullnessAssumeAssertionsAreDisabled(List<File> testFiles) {
+    /**
+     * Create a NullnessAssumeAssertionsAreDisabledTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
+    public NullnessAssumeAssertionsAreDisabledTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,

@@ -473,7 +473,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Prints all the fields of a given class
+     * Prints all the fields of a given class.
      *
      * @param aClass the class whose fields should be printed
      * @param printWriter the writer on which to print the fields

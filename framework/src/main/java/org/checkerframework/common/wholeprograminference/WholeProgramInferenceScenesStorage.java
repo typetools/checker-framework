@@ -180,7 +180,7 @@ public class WholeProgramInferenceScenesStorage {
      *     ".jaif")
      * @return the scene-lib representation of the class, possibly augmented with symbol information
      *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
-     *     already been called with a non-null third argument.
+     *     already been called with a non-null third argument
      */
     protected AClass getAClass(@BinaryName String className, String jaifPath) {
         return getAClass(className, jaifPath, null);
@@ -240,7 +240,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @param sourceCodeATM the annotated type on the source code
-     * @param jaifATM the annotated type on the .jaif file.
+     * @param jaifATM the annotated type on the .jaif file
      */
     private void updatesATMWithLUB(
             AnnotatedTypeFactory atf,

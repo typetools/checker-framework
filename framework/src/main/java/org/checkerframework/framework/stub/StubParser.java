@@ -621,7 +621,11 @@ public class StubParser {
         return false;
     }
 
-    /** @return list of AnnotatedTypeVariable of the type's type parameter declarations */
+    /**
+     * Returns list of AnnotatedTypeVariable of the type's type parameter declarations.
+     *
+     * @return list of AnnotatedTypeVariable of the type's type parameter declarations
+     */
     private List<AnnotatedTypeVariable> processType(
             ClassOrInterfaceDeclaration decl, TypeElement elt) {
         recordDeclAnnotation(elt, decl.getAnnotations());

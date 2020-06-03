@@ -500,6 +500,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
+     * Returns true if the effective annotations on the upperBound are above those on the
+     * lowerBound.
+     *
      * @return true if the effective annotations on the upperBound are above those on the lowerBound
      */
     public boolean areBoundsValid(

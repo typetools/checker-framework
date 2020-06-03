@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -264,7 +263,7 @@ public class Analysis<
                     }
 
                     // propagate store to exceptional successors
-                    for (Entry<TypeMirror, Set<Block>> e :
+                    for (Map.Entry<TypeMirror, Set<Block>> e :
                             eb.getExceptionalSuccessors().entrySet()) {
                         TypeMirror cause = e.getKey();
                         S exceptionalStore = transferResult.getExceptionalStore(cause);
@@ -649,7 +648,11 @@ public class Analysis<
             queue.clear();
         }
 
-        /** @see PriorityQueue#isEmpty */
+        /**
+         * See {@link PriorityQueue#isEmpty}.
+         *
+         * @see PriorityQueue#isEmpty
+         */
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -664,7 +667,11 @@ public class Analysis<
             queue.add(block);
         }
 
-        /** @see PriorityQueue#poll */
+        /**
+         * See {@link PriorityQueue#poll}.
+         *
+         * @see PriorityQueue#poll
+         */
         public @Nullable Block poll() {
             return queue.poll();
         }
@@ -684,14 +691,21 @@ public class Analysis<
     }
 
     /**
+     * Returns the transfer input corresponding to the location right before the basic block {@code
+     * b}.
+     *
      * @return the transfer input corresponding to the location right before the basic block {@code
-     *     b}.
+     *     b}
      */
     protected @Nullable TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
-    /** @return the store corresponding to the location right before the basic block {@code b}. */
+    /**
+     * Returns the store corresponding to the location right before the basic block {@code b}.
+     *
+     * @return the store corresponding to the location right before the basic block {@code b}
+     */
     protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {
             case THEN:
@@ -718,9 +732,12 @@ public class Analysis<
     }
 
     /**
+     * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     * available. Note that if the analysis has not finished yet, this value might not represent the
+     * final value for this node.
+     *
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     *     available
      */
     public @Nullable A getValue(Node n) {
         if (isRunning) {
@@ -756,9 +773,12 @@ public class Analysis<
     }
 
     /**
+     * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     * available. Note that if the analysis has not finished yet, this value might not represent the
+     * final value for this node.
+     *
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     *     available
      */
     public @Nullable A getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node
@@ -855,8 +875,11 @@ public class Analysis<
     }
 
     /**
+     * Returns the regular exit store, or {@code null}, if there is no such store (because the
+     * method cannot exit through the regular exit block).
+     *
      * @return the regular exit store, or {@code null}, if there is no such store (because the
-     *     method cannot exit through the regular exit block).
+     *     method cannot exit through the regular exit block)
      */
     @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
@@ -870,7 +893,11 @@ public class Analysis<
         }
     }
 
-    /** @return the exceptional exit store. */
+    /**
+     * Returns the exceptional exit store.
+     *
+     * @return the exceptional exit store
+     */
     @RequiresNonNull("cfg")
     public @Nullable S getExceptionalExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";

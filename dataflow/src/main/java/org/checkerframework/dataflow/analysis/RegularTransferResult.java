@@ -38,12 +38,20 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
         this(value, resultStore, null, storeChanged);
     }
 
-    /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
+    /**
+     * See {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}.
+     *
+     * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
+     */
     public RegularTransferResult(@Nullable A value, S resultStore) {
         this(value, resultStore, false);
     }
 
-    /** @see #RegularTransferResult(AbstractValue, Store, Map, boolean) */
+    /**
+     * See {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}.
+     *
+     * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
+     */
     public RegularTransferResult(
             @Nullable A value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, resultStore, exceptionalStores, false);
@@ -111,7 +119,11 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
         return result.toString();
     }
 
-    /** @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged() */
+    /**
+     * See {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged()}.
+     *
+     * @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged()
+     */
     @Override
     public boolean storeChanged() {
         return storeChanged;
