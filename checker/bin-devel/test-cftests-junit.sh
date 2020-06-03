@@ -6,14 +6,10 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
-echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
-
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo "BUILDJDK=${BUILDJDK}"
 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 # shellcheck disable=SC1090
-source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
+source "$SCRIPTDIR"/build.sh
 
 
 

@@ -64,7 +64,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -111,7 +110,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -175,9 +173,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /** The Object.equals method. */
-    private final ExecutableElement objectEquals;
-
     /** The element for java.util.Vector#copyInto. */
     private final ExecutableElement vectorCopyInto;
 
@@ -216,14 +211,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.objectEquals = TreeUtils.getMethod("java.lang.Object", "equals", 1, env);
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
         targetValueElement =
                 TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
-
-        checkForAnnotatedJdk();
     }
 
     /**
@@ -936,13 +928,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param modifiersTree the modifiers sub-tree of node
      */
     private void warnAboutTypeAnnotationsTooEarly(Tree node, ModifiersTree modifiersTree) {
-        if (node.getKind() == Tree.Kind.VARIABLE
-                && TreeUtils.elementFromDeclaration((VariableTree) node).getKind()
-                        == ElementKind.ENUM_CONSTANT) {
-            // Enums constants are "public static final" by default, so the annotation always
-            // appears to be before public.
-            return;
+
+        // Don't issue warnings about compiler-inserted modifiers.
+        // This simple code completely igonores enum constants and try-with-resources declarations.
+        // It could be made to catch some user errors in those locations, but it doesn't seem worth
+        // the effort to do so.
+        if (node.getKind() == Tree.Kind.VARIABLE) {
+            ElementKind varKind = TreeUtils.elementFromDeclaration((VariableTree) node).getKind();
+            switch (varKind) {
+                case ENUM_CONSTANT:
+                    // Enum constants are "public static final" by default, so the annotation always
+                    // appears to be before "public".
+                    return;
+                case RESOURCE_VARIABLE:
+                    // Try-with-resources variables are "final" by default, so the annotation always
+                    // appears to be before "final".
+                    return;
+                default:
+                    // Nothing to do
+            }
         }
+
         Set<Modifier> modifierSet = modifiersTree.getFlags();
         List<? extends AnnotationTree> annotations = modifiersTree.getAnnotations();
 
@@ -2154,15 +2160,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree) {
+        if (checker.hasOption("showchecks")) {
+            commonAssignmentCheckEndDiagnostic(
+                    (success
+                                    ? "success: actual is subtype of expected"
+                                    : "FAILURE: actual is not subtype of expected")
+                            + (extraMessage == null ? "" : " because " + extraMessage),
+                    varType,
+                    valueType,
+                    valueTree);
+        }
+    }
 
+    /**
+     * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+     *
+     * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
+     * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
+     * customizing the message that is printed.
+     *
+     * @param message the result, plus information about why the result is what it is; may be null
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     */
+    protected final void commonAssignmentCheckEndDiagnostic(
+            String message,
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree) {
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
-                    " %s%s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
-                    (success
-                            ? "success: actual is subtype of expected"
-                            : "FAILURE: actual is not subtype of expected"),
-                    (extraMessage == null ? "" : " because " + extraMessage),
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    message,
                     (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(),
                     valueTree,
@@ -2518,14 +2549,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
             commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
             if (!success) {
-                checker.reportError(
-                        node,
-                        "method.invocation.invalid",
-                        TreeUtils.elementFromUse(node),
-                        treeReceiver.toString(),
-                        methodReceiver.toString());
+                reportMethodInvocabilityError(node, treeReceiver, methodReceiver);
             }
         }
+    }
+
+    /**
+     * Report a method invocability error. Allows checkers to change how the message is output.
+     *
+     * @param node the AST node at which to report the error
+     * @param found the actual type of the receiver
+     * @param expected the expected type of the receiver
+     */
+    protected void reportMethodInvocabilityError(
+            MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
+        checker.reportError(
+                node,
+                "method.invocation.invalid",
+                TreeUtils.elementFromUse(node),
+                found.toString(),
+                expected.toString());
     }
 
     /**
@@ -2534,10 +2577,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>Issue a warning if the annotations on the constructor invocation is a subtype of the
      * constructor result type. This is equivalent to down-casting.
-     *
-     * @param invocation
-     * @param constructor
-     * @param newClassTree
      */
     protected void checkConstructorInvocation(
             AnnotatedDeclaredType invocation,
@@ -2618,9 +2657,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * @return true if both types are type variables and outer contains inner Outer contains inner
-     *     implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <:
-     *     inner.lowerBound }
+     * Returns true if both types are type variables and outer contains inner. Outer contains inner
+     * implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <:
+     * inner.lowerBound}.
+     *
+     * @return true if both types are type variables and outer contains inner
      */
     protected boolean testTypevarContainment(
             final AnnotatedTypeMirror inner, final AnnotatedTypeMirror outer) {
@@ -3721,72 +3762,5 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // r = reduce(scan(node.getImports(), p), r);
         r = reduce(scan(node.getTypeDecls(), p), r);
         return r;
-    }
-
-    // **********************************************************************
-    // Check that the annotated JDK is being used.
-    // **********************************************************************
-
-    /** True if method {@link checkForAnnotatedJdk} has been called. */
-    private static boolean checkedJDK = false;
-
-    // Not all subclasses call this -- only those that have an annotated JDK.
-    /** Warn if the annotated JDK is not being used. */
-    protected void checkForAnnotatedJdk() {
-        if (checkedJDK) {
-            return;
-        }
-        checkedJDK = true;
-        if (PluginUtil.getJreVersion() != 8
-                || checker.hasOption("permitMissingJdk")
-                // temporary, for backward compatibility
-                || checker.hasOption("nocheckjdk")) {
-            return;
-        }
-        TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        List<? extends ExecutableElement> memberMethods =
-                ElementFilter.methodsIn(elements.getAllMembers(objectTE));
-
-        // Look for the @Nullness annotation in Object.equals(@Nullable Object).
-        // If it is found, the user is using the annotated JDK.
-        for (ExecutableElement m : memberMethods) {
-            if (!ElementUtils.isMethod(m, objectEquals, checker.getProcessingEnvironment())) {
-                continue;
-            }
-
-            // We cannot use the AnnotatedTypeMirrors from the Checker Framework, because those only
-            // return the annotations that are used by the current checker.
-
-            // That is, if this code is executed by something other than the Nullness Checker, we
-            // would not find the annotations.  Therefore, we go to the Element and get all
-            // annotations on the parameter.
-
-            // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(),
-            // Nullable.class) or types.typeAnnotationsOf(m.asType()) does not work any more. It
-            // should.
-
-            for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
-                    ((com.sun.tools.javac.code.Symbol) m).getRawTypeAttributes()) {
-                if (tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER
-                        && tc.position.parameter_index == 0
-                        &&
-                        // TODO: using .class would be nicer, but adds a circular dependency on
-                        // the "checker" project.
-                        // tc.type.toString().equals(org.checkerframework.checker.nullness.qual.Nullable.class.getName()) ) {
-                        tc.type
-                                .toString()
-                                .equals("org.checkerframework.checker.nullness.qual.Nullable")) {
-                    return;
-                }
-            }
-
-            String jdkJarName = PluginUtil.getJdkJarName();
-            checker.message(
-                    Kind.WARNING,
-                    "You do not seem to be using the distributed annotated JDK. "
-                            + "To fix the problem, supply javac an argument like:  -Xbootclasspath/p:.../checker/dist/ . "
-                            + "Currently using: "
-                            + jdkJarName);
-        }
     }
 }

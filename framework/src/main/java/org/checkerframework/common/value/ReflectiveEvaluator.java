@@ -21,7 +21,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -47,6 +47,9 @@ public class ReflectiveEvaluator {
     }
 
     /**
+     * Returns all possible values that the method may return, or null if the method could not be
+     * evaluated.
+     *
      * @param allArgValues a list of list where the first list corresponds to all possible values
      *     for the first argument. Pass null to indicate that the method has no arguments.
      * @param receiverValues a list of possible receiver values. null indicates that the method has
@@ -114,7 +117,7 @@ public class ReflectiveEvaluator {
                     return null;
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
-                        String args = PluginUtil.join(", ", arguments);
+                        String args = SystemUtil.join(", ", arguments);
                         checker.reportWarning(
                                 tree,
                                 "method.evaluation.exception",
@@ -326,7 +329,7 @@ public class ReflectiveEvaluator {
                             tree,
                             "constructor.evaluation.failed",
                             typeToCreate,
-                            PluginUtil.join(", ", arguments));
+                            SystemUtil.join(", ", arguments));
                 }
                 return null;
             }

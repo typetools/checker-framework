@@ -78,7 +78,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * Method {@link #typeProcessingOver} must be invoked exactly once, after the last invocation of
      * {@link #typeProcess(TypeElement, TreePath)}.
      */
-    private static boolean hasInvokedTypeProcessingOver = false;
+    private boolean hasInvokedTypeProcessingOver = false;
 
     /** The TaskListener registered for completion of attribution. */
     private final AttributionTaskListener listener = new AttributionTaskListener();

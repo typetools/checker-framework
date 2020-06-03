@@ -108,7 +108,7 @@ Section~\ref{type-refinement-purity}.
 
 \subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
 
-By supplying the \<-Ainfer> command-line option,
+By supplying the \<-Ainfer=\emph{outputformat}> command-line option,
 any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
@@ -300,7 +300,7 @@ skip this section.
 
 The \<infer-and-annotate.sh> script repeatedly runs the following steps:
 \begin{enumerate}
-\item Run the checker with the \<-Ainfer> command-line option to infer
+\item Run the checker with the \<-Ainfer=jaifs> command-line option to infer
   types for fields and method signatures.  The output of this step
   is a \<.jaif> file that records the inferred types.
 \item Insert the inferred annotations in the program.  This step uses the

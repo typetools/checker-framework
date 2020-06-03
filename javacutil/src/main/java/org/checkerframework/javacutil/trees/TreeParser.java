@@ -88,16 +88,16 @@ public class TreeParser {
             return maker.Ident(names.fromString(token));
         }
 
-        Object value = null;
+        Object value;
         try {
             value = Integer.valueOf(token);
         } catch (Exception e2) {
             try {
                 value = Double.valueOf(token);
             } catch (Exception ef) {
+                throw new Error("Can't parse as integer or double: " + token);
             }
         }
-        assert value != null;
         return maker.Literal(value);
     }
 

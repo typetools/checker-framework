@@ -6,8 +6,8 @@ sourceSets {
 }
 
 dependencies {
-    // If this version changes, then the version in maven-artifacts/poms/frameworktestPom.xml
-    // and maven-artifacts/release/frameworktestReleasePom.xml must be changed, too.
+    // If this version changes, then the version
+    // docs/developer/release/maven-artifacts/framework-test-pom.xml must be changed, too.
     implementation  group: 'junit', name: 'junit', version: '4.13'
     implementation project(':javacutil')
 
@@ -17,3 +17,18 @@ dependencies {
 }
 
 jar.archiveBaseName = 'framework-test'
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
+    doLast {
+        mvnDeployToLocalRepo(project, "${pomFiles}/framework-test-pom.xml")
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/framework-test-pom.xml")
+    }
+}

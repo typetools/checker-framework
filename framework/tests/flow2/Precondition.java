@@ -1,6 +1,5 @@
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.qual.RequiresQualifiers;
 import org.checkerframework.framework.test.*;
 import testlib.util.*;
 
@@ -130,11 +129,11 @@ class Precondition {
         @Odd String l4 = f1;
     }
 
-    @RequiresQualifiers({
+    @RequiresQualifier.List({
         @RequiresQualifier(expression = "f1", qualifier = Value.class),
         @RequiresQualifier(expression = "f2", qualifier = Odd.class)
     })
-    void multi_explicit_requiresqualifiers() {
+    void multi_explicit_requiresqualifierlist() {
         @Value String l1 = f1;
         @Odd String l2 = f2;
         // :: error: (assignment.type.incompatible)
@@ -143,7 +142,7 @@ class Precondition {
         @Odd String l4 = f1;
     }
 
-    @RequiresQualifiers({@RequiresQualifier(expression = "--", qualifier = Value.class)})
+    @RequiresQualifier.List({@RequiresQualifier(expression = "--", qualifier = Value.class)})
     // :: error: (flowexpr.parse.error)
     void error2() {}
 
