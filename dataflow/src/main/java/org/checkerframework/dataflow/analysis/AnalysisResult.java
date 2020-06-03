@@ -5,7 +5,6 @@ import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -132,7 +131,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     private static void mergeTreeLookup(
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<Tree, Set<Node>> otherTreeLookup) {
-        for (Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
+        for (Map.Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
             Set<Node> hit = treeLookup.get(entry.getKey());
             if (hit == null) {
                 treeLookup.put(entry.getKey(), entry.getValue());
@@ -142,22 +141,34 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         }
     }
 
-    /** @return the value of effectively final local variables */
+    /**
+     * Returns the value of effectively final local variables.
+     *
+     * @return the value of effectively final local variables
+     */
     public HashMap<Element, V> getFinalLocalValues() {
         return finalLocalValues;
     }
 
     /**
+     * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     * available.
+     *
      * @param n a node
-     * @return the abstract value for the node, or {@code null} if no information is available.
+     * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     *     available
      */
     public @Nullable V getValue(Node n) {
         return nodeValues.get(n);
     }
 
     /**
+     * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     * available.
+     *
      * @param t a tree
-     * @return the abstract value for the tree, or {@code null} if no information is available.
+     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     *     available
      */
     public @Nullable V getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);
@@ -213,7 +224,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         return unaryAssignNodeLookup.get(tree);
     }
 
-    /** @return the store immediately before a given {@link Tree}. */
+    /**
+     * Returns the store immediately before a given {@link Tree}.
+     *
+     * @return the store immediately before a given {@link Tree}
+     */
     public @Nullable S getStoreBefore(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
@@ -231,12 +246,20 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         return merged;
     }
 
-    /** @return the store immediately before a given {@link Node}. */
+    /**
+     * Returns the store immediately before a given {@link Node}.
+     *
+     * @return the store immediately before a given {@link Node}
+     */
     public @Nullable S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
-    /** @return the store immediately after a given {@link Tree}. */
+    /**
+     * Returns the store immediately after a given {@link Tree}.
+     *
+     * @return the store immediately after a given {@link Tree}
+     */
     public @Nullable S getStoreAfter(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
@@ -254,7 +277,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         return merged;
     }
 
-    /** @return the store immediately after a given {@link Node}. */
+    /**
+     * Returns the store immediately after a given {@link Node}.
+     *
+     * @return the store immediately after a given {@link Node}
+     */
     public @Nullable S getStoreAfter(Node node) {
         return runAnalysisFor(node, false);
     }

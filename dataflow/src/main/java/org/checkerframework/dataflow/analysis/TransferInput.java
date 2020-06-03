@@ -140,23 +140,31 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
         }
     }
 
-    /** @return the {@link Node} for this {@link TransferInput}. */
+    /**
+     * Returns the {@link Node} for this {@link TransferInput}.
+     *
+     * @return the {@link Node} for this {@link TransferInput}
+     */
     public @Nullable Node getNode() {
         return node;
     }
 
     /**
+     * Returns the abstract value of node {@code n}, which is required to be a 'sub-node' (that is,
+     * a direct or indirect child) of the node this transfer input is associated with. Furthermore,
+     * {@code n} cannot be a l-value node. Returns {@code null} if no value is available.
+     *
      * @param n a node
-     * @return the abstract value of {@link Node} {@code n}, which is required to be a 'sub-node'
-     *     (that is, a direct or indirect child) of the node this transfer input is associated with.
-     *     Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value if
-     *     available.
+     * @return the abstract value of node {@code n}, or {@code null} if no value is available
      */
     public @Nullable V getValueOfSubNode(Node n) {
         return analysis.getValue(n);
     }
 
     /**
+     * Returns the regular result store produced if no exception is thrown by the {@link Node}
+     * corresponding to this transfer function result.
+     *
      * @return the regular result store produced if no exception is thrown by the {@link Node}
      *     corresponding to this transfer function result
      */
@@ -170,8 +178,11 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
+     * Returns the result store produced if the {@link Node} this result belongs to evaluates to
+     * {@code true}.
+     *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code true}.
+     *     {@code true}
      */
     public S getThenStore() {
         if (store == null) {
@@ -182,8 +193,11 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
+     * Returns the result store produced if the {@link Node} this result belongs to evaluates to
+     * {@code false}.
+     *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code false}.
+     *     {@code false}
      */
     public S getElseStore() {
         if (store == null) {
@@ -196,19 +210,25 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
+     * Returns {@code true} if and only if this transfer input contains two stores that are
+     * potentially not equal. Note that the result {@code true} does not imply that {@code
+     * getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
+     * that {@code getThenStore} or {@code getElseStore} can be used to give more precise results.
+     * Otherwise, if the result is {@code false}, then all three methods {@code getRegularStore},
+     * {@code getThenStore}, and {@code getElseStore} return equivalent stores.
+     *
      * @return {@code true} if and only if this transfer input contains two stores that are
-     *     potentially not equal. Note that the result {@code true} does not imply that {@code
-     *     getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
-     *     that {@code getThenStore} or {@code getElseStore} can be used to give more precise
-     *     results. Otherwise, if the result is {@code false}, then all three methods {@code
-     *     getRegularStore}, {@code getThenStore}, and {@code getElseStore} return equivalent
-     *     stores.
+     *     potentially not equal
      */
     public boolean containsTwoStores() {
         return (thenStore != null && elseStore != null);
     }
 
-    /** @return an exact copy of this store. */
+    /**
+     * Returns an exact copy of this store.
+     *
+     * @return an exact copy of this store
+     */
     public TransferInput<V, S> copy() {
         return new TransferInput<>(this);
     }

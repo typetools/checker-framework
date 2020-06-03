@@ -416,6 +416,8 @@ public class ElementUtils {
     }
 
     /**
+     * Returns true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError".
+     *
      * @param element the element to test
      * @return true if {@code element} is "com.sun.tools.javac.comp.Resolve$SymbolNotFoundError"
      */

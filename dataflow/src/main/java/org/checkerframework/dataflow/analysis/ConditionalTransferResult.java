@@ -141,7 +141,11 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
         return result.toString();
     }
 
-    /** @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged() */
+    /**
+     * See {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged()}.
+     *
+     * @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged()
+     */
     @Override
     public boolean storeChanged() {
         return storeChanged;

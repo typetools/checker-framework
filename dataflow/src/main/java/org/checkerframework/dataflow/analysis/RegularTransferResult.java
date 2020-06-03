@@ -133,7 +133,11 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
         return result.toString();
     }
 
-    /** @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged() */
+    /**
+     * See {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged()}.
+     *
+     * @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged()
+     */
     @Override
     public boolean storeChanged() {
         return storeChanged;

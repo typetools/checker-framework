@@ -15,13 +15,13 @@ import org.checkerframework.javacutil.SystemUtil;
 public class ImmutableTestConfiguration implements TestConfiguration {
 
     /**
-     * Options that should be passed to the compiler. This a {@code Map(optionName &rarr;
+     * Options that should be passed to the compiler. This a {@code Map(optionName =>
      * optionArgumentIfAny)}. E.g.,
      *
      * <pre>{@code
      * Map(
-     *   "-AprintAllQualifiers" &rArr; null
-     *    "-classpath" &rArr; "myDir1:myDir2"
+     *   "-AprintAllQualifiers" => null
+     *    "-classpath" => "myDir1:myDir2"
      * )
      * }</pre>
      */

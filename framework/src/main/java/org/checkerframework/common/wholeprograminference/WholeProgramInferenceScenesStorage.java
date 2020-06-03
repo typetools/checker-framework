@@ -12,9 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -182,7 +180,7 @@ public class WholeProgramInferenceScenesStorage {
      *     ".jaif")
      * @return the scene-lib representation of the class, possibly augmented with symbol information
      *     if {@link #getAClass(String, String, com.sun.tools.javac.code.Symbol.ClassSymbol)} has
-     *     already been called with a non-null third argument.
+     *     already been called with a non-null third argument
      */
     protected AClass getAClass(@BinaryName String className, String jaifPath) {
         return getAClass(className, jaifPath, null);
@@ -242,7 +240,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @param sourceCodeATM the annotated type on the source code
-     * @param jaifATM the annotated type on the .jaif file.
+     * @param jaifATM the annotated type on the .jaif file
      */
     private void updatesATMWithLUB(
             AnnotatedTypeFactory atf,
@@ -363,22 +361,6 @@ public class WholeProgramInferenceScenesStorage {
             TypeKind atmKind = atm.getUnderlyingType().getKind();
             if (hasMatchingTypeKind(atmKind, types)) {
                 return true;
-            }
-
-            try {
-                Class<?>[] names = defaultFor.types();
-                for (Class<?> c : names) {
-                    TypeMirror underlyingtype = atm.getUnderlyingType();
-                    while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
-                        underlyingtype =
-                                ((javax.lang.model.type.ArrayType) underlyingtype)
-                                        .getComponentType();
-                    }
-                    if (c.getCanonicalName().equals(atm.getUnderlyingType().toString())) {
-                        return true;
-                    }
-                }
-            } catch (MirroredTypesException e) {
             }
         }
 

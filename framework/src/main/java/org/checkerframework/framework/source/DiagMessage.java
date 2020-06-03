@@ -41,17 +41,29 @@ public class DiagMessage {
         }
     }
 
-    /** @return the kind of this DiagMessage */
+    /**
+     * Returns the kind of this DiagMessage.
+     *
+     * @return the kind of this DiagMessage
+     */
     public Kind getKind() {
         return this.kind;
     }
 
-    /** @return the message key of this DiagMessage */
+    /**
+     * Returns the message key of this DiagMessage.
+     *
+     * @return the message key of this DiagMessage
+     */
     public @CompilerMessageKey String getMessageKey() {
         return this.messageKey;
     }
 
-    /** @return the customized optional arguments for the message */
+    /**
+     * Returns the customized optional arguments for the message.
+     *
+     * @return the customized optional arguments for the message
+     */
     public Object[] getArgs() {
         return this.args;
     }

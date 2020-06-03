@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import javax.tools.Diagnostic;
@@ -278,7 +277,7 @@ public class TestUtilities {
     public static List<String> optionMapToList(Map<String, String> options) {
         List<String> optionList = new ArrayList<>(options.size() * 2);
 
-        for (Entry<String, String> opt : options.entrySet()) {
+        for (Map.Entry<String, String> opt : options.entrySet()) {
             optionList.add(opt.getKey());
 
             if (opt.getValue() != null) {
@@ -447,7 +446,7 @@ public class TestUtilities {
     /**
      * Returns the value of system property "emit.test.debug".
      *
-     * @return the value of system property "emit.test.debug".
+     * @return the value of system property "emit.test.debug"
      */
     public static boolean getShouldEmitDebugInfo() {
         return SystemUtil.getBooleanSystemProperty("emit.test.debug");
