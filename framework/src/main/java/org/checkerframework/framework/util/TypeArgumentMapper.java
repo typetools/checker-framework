@@ -268,7 +268,7 @@ public class TypeArgumentMapper {
             return null;
         }
 
-        final TypeRecord currentRecord = pathFromRoot.peekFirst();
+        final TypeRecord currentRecord = pathFromRoot.peekLast();
         final TypeElement currentElement = currentRecord.element;
 
         if (currentElement.equals(target)) {
@@ -284,22 +284,22 @@ public class TypeArgumentMapper {
             final TypeMirror intface = interfaces.next();
             if (intface.getKind() != TypeKind.NONE) {
                 DeclaredType interfaceDeclared = (DeclaredType) intface;
-                pathFromRoot.addFirst(
+                pathFromRoot.addLast(
                         new TypeRecord(
                                 (TypeElement) types.asElement(interfaceDeclared),
                                 interfaceDeclared));
                 path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-                pathFromRoot.removeFirst();
+                pathFromRoot.removeLast();
             }
         }
 
         if (path == null && superclassType.getKind() != TypeKind.NONE) {
             final DeclaredType superclass = (DeclaredType) superclassType;
 
-            pathFromRoot.addFirst(
+            pathFromRoot.addLast(
                     new TypeRecord((TypeElement) types.asElement(superclass), superclass));
             path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-            pathFromRoot.removeFirst();
+            pathFromRoot.removeLast();
         }
 
         return path;
@@ -331,6 +331,11 @@ public class TypeArgumentMapper {
         TypeRecord(final TypeElement element, final DeclaredType type) {
             this.element = element;
             this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s => %s]", element, type);
         }
     }
 }
