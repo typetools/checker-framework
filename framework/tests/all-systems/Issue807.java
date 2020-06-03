@@ -13,7 +13,7 @@ class Issue807 {
         // The "new MyEntry" isn't a subtype of "? super MyEntry" in
         // most type systems. Suppress that error, as it's not the
         // point of this test.
-        @SuppressWarnings("")
+        @SuppressWarnings("all")
         Consumer<MyEntry<K, V>> res = e -> action.accept(new MyEntry<>(e));
         return res;
     }

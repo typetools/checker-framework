@@ -115,3 +115,515 @@ mutable collections such as
 <code>List</code>s, where the <code>remove()</code> method makes sound,
 precise analysis very tricky.
 </p>
+
+
+<h3 id="case-study-nullness-bazel">Bazel tool</h3>
+
+<!-- John Field of Google is interested in this. -->
+
+<p>
+This project is related to the
+<a href="https://bazel.build/">Bazel</a> build system, and was
+proposed by its development manager.
+</p>
+
+<p>
+The Bazel codebase contains 1586 occurrences of the <code>@Nullable</code>
+annotation.  This annotation indicates that a variable may hold a null
+value.  This is valuable documentation and helps programmers avoid null
+pointer exceptions that would crash Bazel.  However, these annotations are
+not checked by any tool.  Instead, programmers have to do their best to
+obey the <code>@Nullable</code> specifications in the source code.  This is
+a lost opportunity, since documentation is most useful when it is
+automatically processed and verified.  (For several years, Google tried
+using <a href="http://findbugs.sourceforge.net/">FindBugs</a>, but they
+eventually abandoned it:  its analysis is too weak, suffering too many
+false positives and false negatives.)
+</p>
+
+<p>
+Despite the programmers' best efforts, null pointer exceptions do still
+creep into the code, impacting users.  The Bazel developers would like to
+prevent these.  They want a guarantee, at compile time, that no null
+pointer exceptions will occur at run time.
+</p>
+
+<p>
+Such a tool already exists:  the
+<a href="https://checkerframework.org/manual/#nullness-checker">Nullness
+Checker</a> of the <a href="https://checkerframework.org/">Checker
+Framework</a>.  It runs as a compiler plug-in, and it issues a warning at
+every possible null pointer dereference.  If it issues no warnings, the
+code is guaranteed not to throw a <code>NullPointerException</code> at run time.
+</p>
+
+<p>
+The goal of this project is to do a large-scale case study of the Nullness
+Checker on Bazel.  The main goal is to understand how the Nullness Checker
+can be used on a large-scale industrial codebase.  How many lurking bugs
+does it find?  What
+<a href="https://checkerframework.org/releases/1.9.13/api/org/checkerframework/checker/nullness/qual/Nullable.html"><code>@Nullable</code></a>
+annotations are missing from the codebase because the developers failed to
+write them?  What are its limitations, such as code patterns that it cannot
+recognize as safe?  (You might create new analyses and incorporating them
+into the Nullness Checker, or you might just reporting bugs to the Nullness
+Checker developers for fixing.)  What burdens does it place on users?  Is
+the cost-benefit tradeoff worth the effort &mdash; that is, should Google
+adopt this tool more broadly?  How should it be improved?  Are the most
+needed improvements in the precision of the analysis, or in the UI of the
+tooling?
+</p>
+
+
+<h3 id="case-study-nullness-bcel">BCEL library</h3>
+
+<p>
+  Annotate the BCEL library to express its contracts with respect to nullness.
+  Show that the BCEL library has no null pointer exceptions (or find bugs
+  in BCEL).  There are
+  already <a href="https://github.com/apache/commons-bcel/compare/trunk...typetools:trunk?expand=1">some
+  annotations</a> in BCEL, but they have not been verified as correct by
+  running the Nullness Checker on BCEL.  (Currently, those annotations are
+  trusted when type-checking clients of BCEL.)
+</p>
+
+<p>
+  To get started:
+</p>
+
+<ul>
+  <li>Fork https://github.com/typetools/commons-bcel.git</li>
+  <li>Clone your new fork</li>
+  <li><code>git checkout typecheck-nullness</code></li>
+  <li>mvn verify</li>
+</ul>
+
+<p>
+   Some challenging aspects of this case study are:
+</p>
+
+<ul>
+  <li>
+    There is some poor design that needs to be resolved in discussions with
+    the BCEL maintainers.  For example, consider the <code>copy()</code>
+    method.  Some implementations of <code>copy()</code> return null, but
+    are not documented to do so.  In addition, some implementations
+    of <code>copy()</code> catch and ignore exceptions.  I think it would
+    be nicest to change the methods to never return null, but to throw an
+    exception instead.  (This is no more burdensome to users, who currently
+    have to check for null.)  Alternately, the methods could all be
+    documented to return null.
+  </li>
+</ul>
+
+
+
+<h2 id="your-own-new-type-system">Invent your own new type system</h2>
+
+<p>
+We also welcome your ideas for new type systems.  For example, any run-time
+failure can probably be prevented at compile time with the right
+analysis.  Can you come up with a way to fix your pet peeve?
+</p>
+
+<p>
+It is easiest, but not required, to choose an existing type system from the
+literature, since that means you can skip the design stage and go right to
+implementation.
+</p>
+
+<p>
+This task can be simple or very
+challenging, depending on how ambitious the type system is.  Remember to
+focus on what helps a software developer most!
+</p>
+
+
+
+<h2 id="Bounded-size_strings">Bounded-size strings</h2>
+
+<!-- John Field of Google is interested in this. -->
+
+<p>
+Windows cannot run command lines longer than 8191 characters.  Creating a
+too-long command line causes failures when the program is run on Windows.
+These failures are irritating when discovered during testing, and
+embarrassing or worse when discovered during deployment.  The same command
+line would work on Unix, which has longer command-line limits, and as a
+result developers may not realize that their change to a command can cause
+such a problem.
+</p>
+
+<p>
+Programmers would like to enforce that they don't accidentally pass a
+too-long string to the <code>exec()</code> routine.  The goal of this
+project is to give a compile-time tool that provides such a guarantee.
+</p>
+
+<p>
+Here are two possible solutions.
+</p>
+
+<p>
+<b>Simple solution:</b>
+For each array and list, determine whether its length is known at compile
+time.  The routines that build a command line are only allowed to take such
+constant-length lists, on the assumption that if the length is constant,
+its concatenation is probably short enough.
+</p>
+
+<p>
+<b>More complex solution:</b>
+For each String, have a compile-time estimate of its maximum length.  Only
+permit <code>exec()</code> to be called on strings whose estimate is no more than 8191.
+String concatenation would return a string whose estimated size is the sum
+of the maximums of its arguments, and likewise for concatenating an array
+or list of strings.
+</p>
+
+
+<h2 id="lock-ordering">Lock ordering</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#lock-checker">Lock
+Checker</a> prevents race conditions by ensuring that locks are held when
+they need to be.  It does not prevent deadlocks that can result from locks
+being acquired in the wrong order.  This project would extend the Lock
+Checker to address deadlocks, or create a new checker to do so.
+</p>
+
+<p>
+Suppose that a program contains two different locks.  Suppose that one
+thread tries to acquire lockA then lockB, and another thread tries to
+acquire lockB then lockA, and each thread acquires its first lock.  Then
+both locks will wait forever for the other lock to become available.  The
+program will not make any more progress and is said to
+be <a href="https://en.wikipedia.org/wiki/Deadlock">deadlocked</a>.
+</p>
+
+<p>
+If all threads acquire locks in the same order &mdash; in our example, say
+lockA then lockB &mdash; then deadlocks do not happen.  You will extend the
+Lock Checker to verify this property.
+</p>
+
+
+<h2 id="asm">Upgrade to a newer version of ASM</h2>
+
+<p>
+  The
+  <a href="https://checkerframework.org/annotation-file-utilities/">Annotation
+  File Utilities</a>, or AFU, insert annotations into, and extract
+  annotations from, <code>.java</code> files, <code>.class</code> files,
+  and text files.  These programs were written before the
+  <a href="https://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
+  type annotations.  Therefore, the AFU has its own custom version of ASM
+  that supports type annotations.  Now that ASM 6 has been released and it
+  supports type annotations, the AFU needs to be slightly changed to use
+  the official ASM 6 library instead of its own custom ASM variant.
+</p>
+
+<p>
+  This project is a good way to learn about <code>.class</code> files and
+  Java bytecodes:  how they are stored, and how to manipulate them.
+</p>
+
+<p>
+  (Kush Gupta is working on this project.)
+</p>
+
+
+<h2 id="typestate">Stateful type systems</h2>
+
+<p>
+This project is to improve support for
+<a href="https://checkerframework.org/manual/#typestate-checker">typestate checking</a>
+</p>
+
+<p>
+Ordinarily, a program variable has
+the same type throughout its lifetime from when the variable is declared
+until it goes out of scope. "Typestate"
+permits the type of an object or variable to <em>change</em> in a controlled way.
+Essentially, it is a combination of standard type systems with dataflow
+analysis. For instance, a file object changes from unopened, to opened, to
+closed; certain operations such as writing to the file are only permitted
+when the file is in the opened typestate. Another way of saying this is
+that <code>write</code> is permitted after <code>open</code>, but not after <code>close</code>.
+Typestate
+is applicable to many other types of software properties as well.
+</p>
+
+<p>
+Two <a href="https://checkerframework.org/manual/">typestate checking frameworks</a>
+exist for the Checker Framework.  Neither is being maintained; a new one
+needs to be written.
+</p>
+
+
+<h2 id="analysis_diffs">Tool for analysis diffs</h2>
+<!--
+  This project idea is duplicated at
+  ~mernst/public_html/uw-only/research/potential-research-projects.html .
+-->
+
+<p>
+   Many program analyses are too verbose for a person to read their entire
+   output.  However, after a program change, the analysis results may
+   change only slightly.  An "analysis diff" tool could show the
+   difference between the analysis run on the old code and the analysis run
+   on the new code.
+</p>
+<ul>
+  <li>
+    The analysis diffs may help the programmer to better understand the
+    changes.
+  </li>
+  <li>
+    Bug detection tools. such
+    as <a href="http://findbugs.sourceforge.net/">FindBugs</a> or
+    the <a href="https://checkerframework.org/">Checker Framework</a>, have
+    extremely verbose output when first run on a program.  Programmers
+    could examine and fix only the warnings about code they have changed
+    (and that they are currently thinking about).
+  </li>
+  <li>
+    Tools that always have large output, such as inference tools, could
+    become manageable to users if output is shown in small doses.
+  </li>
+  <li>
+    You can probably think of other uses.
+  </li>
+</ul>
+
+<p>
+  The analysis diff tool would take as input two analysis results (the
+  previous and the current one).  It would output only the new parts of its
+  second input.  (It could optionally output a complete diff between two
+  analysis results.)
+</p>
+
+<p>
+  One challenge is dealing with changed line numbers and other analysis
+  output differences between runs.
+</p>
+
+<p>
+It would be nice to integrate the tool with git pre-commit hooks or GitHub
+pull requests, to enable either of the following functionality (for either
+commits to master or for pull requests):
+</p>
+<ul>
+  <li>
+    Permit only those commits/pulls that do not add any new analysis warnings.
+  </li>
+  <li>
+    Permit only those commits/pulls that are "clean" &mdash; the analysis
+    issues no warnings for any changed line.
+  </li>
+</ul>
+
+<p>
+  A concrete example of an analysis diff tool
+  is <a href="https://github.com/plume-lib/checklink/blob/master/checklink-persistent-errors">checklink-persistent-errors</a>;
+  see the documentation at the top of the file.  That tool only works for
+  one particular analysis, the W3C Link Checker.
+  An analysis diff tool also appears to be built into FindBugs.
+  The goal of this project is to build a general-purpose tool that is easy
+  to apply to new analyses.
+</p>
+
+
+<h2 id="performance">Performance improvements</h2>
+
+<p>
+  The Checker Framework runs much slower than the standard javac compiler
+  &mdash; often 20 times slower!  This is not acceptable as part of a
+  developer's regular process, so we need to speed up the Checker
+  Framework.  This project involves determining the cause of slowness in
+  the Checker Framework, and correcting those problems.
+</p>
+
+<p>
+This is a good way to learn about performance tuning for Java applications.
+</p>
+
+<p>
+  Some concrete tasks include:
+</p>
+
+<ul>
+  <li>Profile the Checker Framework.  Run a profiler such as
+  <a href="https://www.yourkit.com/java/profiler/">YourKit</a> to determine
+  which parts of the Checker Framework consume the most CPU time and memory.
+  </li>
+
+  <li>Perhaps compare a profile of the Checker Framework against a profile
+  of regular javac.  This probably is not necessary because the Checker
+    Framework is so much slower than regular javac.
+  </li>
+
+  <li>Consider interning string values.  The Checker Framework does a fair
+  amount of string manipulation, in part because it reads from resources
+  such as stub files that do not produce <code>Element</code>s.  Interning
+  could save time when doing comparisons.  You can verify the correctness
+  of the optimization by running the
+  <a href="https://checkerframework.org/manual/#interning-checker">Interning
+    Checker</a> on the Checker Framework code.  Compare the run time of the
+  Checker Framework before and after this optimization.
+  </li>
+
+  <li> Based on profiling results, devise other optimizations, implement
+    them, and evaluate them.
+  </li>
+</ul>
+
+
+<h2 id="run-time-checking">Run-time checking</h2>
+
+<p>
+Implement run-time checking to complement compile-time checking.  This will
+let users combine the power of static checking with that of dynamic
+checking.
+</p>
+
+<p>
+Every type system is too strict: it rejects some programs that never go
+wrong at run time. A human must insert a type loophole to make such a
+program type-check.  For example, Java takes this approach with its
+cast operation (and in some other places).
+</p>
+
+<p>
+When doing type-checking, it is desirable to automatically insert run-time
+checks at each operation that the static checker was unable to verify.
+(Again, Java takes exactly this approach.)  This guards against mistakes by
+the human who inserted the type loopholes.  A nice property of this
+approach is that it enables you to prevent errors in a program
+with no type annotations:  whenever the static checker is unable
+to verify an operation, it would insert a dynamic check.  Run-time checking
+would also be useful in verifying whether the suppressed warnings are
+correct &mdash; whether the programmer made a mistake when writing them.
+</p>
+
+<p>
+The annotation processor (the pluggable type-checker) should automatically
+insert the checks, as part of the compilation process.
+</p>
+
+<p>
+There should be various modes for the run-time checks:
+</p>
+<ul>
+  <li>fail immediately.</li>
+  <li>logging, to permit post-mortem debugging without crashing the program.</li>
+</ul>
+
+<p>
+The run-time penalty should be small:  a run-time check is necessary only
+at the location of each cast or suppressed warning.  Everywhere that the
+compile-time checker reports no possible error, there is no need to insert a
+check.  But, it will be an interesting project to determine how to minimize
+the run-time cost.
+</p>
+
+<p>
+Another interesting, and more challenging, design question is whether you need to add and maintain
+a run-time representation of the property being tested.  It's easy to test
+whether a particular value is null, but how do you test whether it is
+tainted, or should be treated as immutable?  For a more concrete example,
+see the discussion of the (not yet implemented)
+[Javari run-time checker](http://pag.csail.mit.edu/pubs/ref-immutability-oopsla2005-abstract.html).
+Adding this run-time support would be an interesting and challenging project.
+</p>
+
+<p>
+We developed a prototype for the
+<a href="https://ece.uwaterloo.ca/~wdietl/publications/pubs/EnerJ11-abstract.html">EnerJ runtime system</a>.
+That code could be used as starting point, or you could start afresh.
+</p>
+
+<p>
+In the short term, this could be prototyped as a source- or
+bytecode-rewriting approach; but integrating it into the type checker is a
+better long-term implementation strategy.
+</p>
+
+
+
+<h2 id="ide-support">IDE and build system support</h2>
+
+<p>
+The Checker Framework comes with support for
+<a href="https://checkerframework.org/manual/#external-tools">external tools</a>,
+including both IDEs (such as an Eclipse plug-in) and build tools
+(instructions for Maven, etc.).
+</p>
+
+<p>
+  These plug-ins and other integration should be improved.
+  We have a number of concrete ideas, but you will also probably come up
+  with some after a few minutes of using the existing IDE plugins!
+</p>
+
+<p>
+  This is only a task for someone who is already an expert, such as someone
+  who has built IDE plugins before or is very familiar with the build system.
+  One reason is that these tools tend to be complex, which can lead to
+  subtle problems.
+  Another reason is that we don't want to be stuck maintaining code written by
+  someone who is just learning how to write an IDE plugin.
+</p>
+
+<p>
+  Rather than modifying the Checker Framework's existing support or
+  building new support from scratch, it may be better to adapt some other
+  project's support for build systems and IDEs.  For instance, you might
+  make <a href="https://github.com/coala/coala">coala</a> support the
+  Checker Framework, or you might adapt the tool integration provided
+  by <a href="http://errorprone.info/">Error Prone</a>.
+</p>
+
+
+<!--
+Integrate the Checker Framework with an IDE such as Eclipse, IntelliJ, IDEA or NetBeans,
+which will make pluggable type-checking easier to use and more attractive to developers.
+
+Some specific projects include:
+  * Create an IDE plug-in that invokes the checker and reports any errors to the developer, just as the IDE currently does for type errors.
+  * Improve the existing Eclipse plug-in.
+  * Add a button to the IDE that hides/shows all annotations of a given variety, to reduce clutter.  This would be useful beyond type annotations.
+  * Implement quick fixes for common errors.
+  * Integrate type inference with the IDE, to make it easier for a developer to add annotations to code.
+  * Improve an IDE's existing refactoring support so that it is aware of, and properly retains, type annotations.
+  * Highlight defaulted types and flow-sensitive type refinements, making error messages easier to understand.
+  * Highlight the parts of the code that influenced flow-sensitive type refinements, again to make errors easier to comprehend.
+
+IDEs that build on the OpenJDK Java compiler could benefit from even tighter integration with the Checker Framework.
+
+This project may entail the following:
+
+  * familiarity with the IDE plug-in development environment, Eclipse PDT or NetBeans plug-in support:  By the end of the project, the developer should be familiar with building reasonably complex IDE plug-ins.
+
+  * UI/UX design:  The developer would design a UI experience that is appealing to developers and integrates well with the developer's workflow!
+-->
+
+
+<h2 id="exhaustive-testing">Model checking of a type system</h2>
+
+<p>
+Design and implement an algorithm to check type soundness of a type system
+by exhaustively verifying the type checker on all programs up to a certain
+size. The challenge lies in efficient enumeration of all programs and
+avoiding redundant checks, and in knowing the expected outcome of the
+tests.  This approach is related to bounded exhaustive
+testing and model checking; for a reference, see
+[Efficient Software Model Checking of Soundness of Type Systems](http://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
+</p>
+
+
+<p>
+A valuable project all by itself would be to compare heavy-weight and
+light-weight type inference this whole-program inference vs. Checker
+Framework Inference vs. Julia, to understand when each one is worth using.
+</p>

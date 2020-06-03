@@ -183,7 +183,12 @@
 
 
 \ifhevea
-\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\small\@print@u{128279}}\fi}
+% Using a Unicode character avoids needing to use an image.  Unfortunately,
+% this Unicode character is not installed on all computers, so use an image
+% anyway.
+% \newcommand{\linkicon}{{\small\@print@u{128279}}}
+\newcommand{\linkicon}{\imgsrc[width="10" height="10"]{chainlink.svg}}
+\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\linkicon}\fi}
 \newcommand{\mksectionAndLabel}[1]
 {\newcommand{\csname #1AndLabel\endcsname}[2]
 {\csname #1\endcsname{##1\label{##2}\selflink{##2}}}}

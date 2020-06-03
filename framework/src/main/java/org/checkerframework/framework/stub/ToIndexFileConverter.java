@@ -56,7 +56,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -177,8 +177,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @param scene the initial scene
      * @param in stubfile contents
      * @param out JAIF representing augmented scene
-     * @throws ParseException
-     * @throws DefException
+     * @throws ParseException if the stub file cannot be parsed
+     * @throws DefException if two different definitions of the same annotation cannot be unified
+     * @throws IOException if there is trouble with file reading or writing
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
@@ -560,7 +561,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             // could be defined in the same stub file
                             return "L" + typeName + ";";
                         }
-                        return "L" + PluginUtil.join("/", name.split("\\.")) + ";";
+                        return "L" + SystemUtil.join("/", name.split("\\.")) + ";";
                     }
 
                     @Override
@@ -619,49 +620,47 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @return fully qualified name of class that {@code className} identifies in the current
      *     context, or null if resolution fails
      */
-    @SuppressWarnings("signature") // problem with annotation on Signatures.addPackage
     private @BinaryName String resolve(@BinaryName String className) {
-        @BinaryName String qualifiedName;
-        Class<?> resolved = null;
 
-        if (pkgName == null) {
-            qualifiedName = className;
-            resolved = loadClass(qualifiedName);
-            if (resolved == null) {
-                // Every Java program implicitly does "import java.lang.*",
-                // so see whether this class is in that package.
-                qualifiedName = Signatures.addPackage("java.lang", className);
-                resolved = loadClass(qualifiedName);
-            }
-        } else {
-            qualifiedName = Signatures.addPackage(pkgName, className);
-            resolved = loadClass(qualifiedName);
-            if (resolved == null) {
-                qualifiedName = className;
-                resolved = loadClass(qualifiedName);
+        if (pkgName != null) {
+            String qualifiedName = Signatures.addPackage(pkgName, className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
             }
         }
 
-        if (resolved == null) {
-            for (String declName : imports) {
-                qualifiedName = mergeImport(declName, className);
-                if (qualifiedName != null) {
-                    return qualifiedName;
-                }
+        {
+            // Every Java program implicitly does "import java.lang.*",
+            // so see whether this class is in that package.
+            String qualifiedName = Signatures.addPackage("java.lang", className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
             }
+        }
+
+        for (String declName : imports) {
+            String qualifiedName = mergeImport(declName, className);
+            if (loadClass(qualifiedName) != null) {
+                return qualifiedName;
+            }
+        }
+
+        if (loadClass(className) != null) {
             return className;
         }
-        return qualifiedName;
+
+        return null;
     }
 
     /**
-     * Combines an import with a name, yielding a fully-qualified name.
+     * Combines an import with a partial binary name, yielding a binary name.
      *
      * @param importName package name or (for an inner class) the outer class name
      * @param className the class name
      * @return fully qualified class name if resolution succeeds, null otherwise
      */
-    private static String mergeImport(String importName, String className) {
+    @SuppressWarnings("signature") // string manipulation of signature strings
+    private static @BinaryName String mergeImport(String importName, @BinaryName String className) {
         if (importName.isEmpty() || importName.equals(className)) {
             return className;
         }
@@ -688,7 +687,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     /**
      * Finds {@link Class} corresponding to a name.
      *
-     * @param className
+     * @param className a class name
      * @return {@link Class} object corresponding to className, or null if none found
      */
     private static Class<?> loadClass(@ClassGetName String className) {

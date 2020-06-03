@@ -3,7 +3,7 @@
 
 import java.io.Serializable;
 
-@SuppressWarnings("") // Check for crashes only
+@SuppressWarnings("all") // Check for crashes only
 abstract class Issue1991Full {
 
     abstract void g(A obj);

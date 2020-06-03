@@ -40,9 +40,6 @@
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />
         <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
-        <property name="maven.artifacts"      value="${checker}/../maven-artifacts" />
-        <property name="checker.binary.poms"  value="${maven.artifacts}/poms" />
-        <property name="checker.release.poms" value="${maven.artifacts}/release/" />
         <property name="release.version.regexp" value="\d\.\d+\.\d+(?:\.\d)" />
 
         <!-- for afu.date.0 and afu.date.1 -->
@@ -134,74 +131,6 @@
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
 
-        <!-- Checker Framework Maven artifacts -->
-
-        <!-- checker -->
-        <update file="${checker.binary.poms}/checkerPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/checkerReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <!-- checker-qual -->
-        <update file="${checker.binary.poms}/checkerQualPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/checkerQualReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <!-- checker-qual-android -->
-        <update file="${checker.binary.poms}/checkerQualAndroidPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/checkerQualAndroidReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <!-- jdk8 -->
-        <update file="${checker.binary.poms}/jdk8Pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/jdk8ReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <!-- compiler plugin -->
-        <update file="${maven.artifacts}/pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <!-- artifacts used in Google's error-prone -->
-        <update file="${checker.binary.poms}/dataflowPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/dataflowReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.binary.poms}/javacutilPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/javacutilReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.binary.poms}/frameworktestPom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <update file="${checker.release.poms}/frameworktestReleasePom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
         <!-- examples -->
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -290,27 +219,6 @@
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
-    </target>
-
-    <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
-        <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
-             At the moment we only have these for the checker artifact. Since the checker artifact source/javadoc
-             jars contain all the resources needed for checker-qual and checker-qual-android artifacts, the sources/javadoc
-             jars for the checker artifact are re-used for the checker-qual and checker-qual-android artifacts.
-
-             For other artifacts, we create dummies with READMEs in them and pass those to Central.
-
-             This is the recommended way of handling this
-             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
-
-        <fail unless="maven.artifacts.dir" message="maven.artifacts.dir property is not set!"  />
-        <fail unless="dest.dir"         message="dest.dir property is not set!" />
-
-        <property name="maven.release.dir" value="${maven.artifacts.dir}/release"/>
-
-        <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
-        <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
-
     </target>
 
     <!-- TODO: Document the params -->

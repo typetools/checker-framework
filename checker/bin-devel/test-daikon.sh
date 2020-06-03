@@ -4,20 +4,22 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
-
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-
-export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
-echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source $SCRIPTDIR/build.sh ${BUILDJDK}
+# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
+# shellcheck disable=SC1090
+source "$SCRIPTDIR"/build.sh
 
 
 # daikon-typecheck: 15 minutes
-/tmp/plume-scripts/git-clone-related codespecs daikon
-
+/tmp/$USER/plume-scripts/git-clone-related codespecs daikon
 cd ../daikon
+git log | head -n 5
 make compile
-time make -C java typecheck
+if [ "$TRAVIS" = "true" ] ; then
+  # Travis kills a job if it runs 10 minutes without output
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck
+else
+  time make -C java typecheck
+fi

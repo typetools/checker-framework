@@ -40,7 +40,6 @@ import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFCFGBuilder;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -147,7 +146,7 @@ public class NullnessVisitor
     private boolean containsSameByName(
             Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
         for (Class<? extends Annotation> q : quals) {
-            if (AnnotationUtils.areSameByClass(anno, q)) {
+            if (atypeFactory.areSameByClass(anno, q)) {
                 return true;
             }
         }
@@ -236,13 +235,14 @@ public class NullnessVisitor
                 && !isNewArrayAllZeroDims(node)
                 && !isNewArrayInToArray(node)
                 && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
-                && checker.getLintOption("forbidnonnullarraycomponents", false)) {
-            checker.report(
-                    Result.failure(
-                            "new.array.type.invalid",
-                            componentType.getAnnotations(),
-                            type.toString()),
-                    node);
+                && (checker.getLintOption("soundArrayCreationNullness", false)
+                        // temporary, for backward compatibility
+                        || checker.getLintOption("forbidnonnullarraycomponents", false))) {
+            checker.reportError(
+                    node,
+                    "new.array.type.invalid",
+                    componentType.getAnnotations(),
+                    type.toString());
         }
 
         return super.visitNewArray(node, p);
@@ -374,10 +374,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
+                checker.reportWarning(node, KNOWN_NONNULL, rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
+                checker.reportWarning(node, KNOWN_NONNULL, leftOp.toString());
             }
         }
     }
@@ -453,7 +453,7 @@ public class NullnessVisitor
     private boolean checkForNullability(
             AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
-            checker.report(Result.failure(errMsg, tree), tree);
+            checker.reportError(tree, errMsg, tree);
             return false;
         }
         return true;
@@ -536,16 +536,14 @@ public class NullnessVisitor
                         containsSameByName(atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
-                    checker.report(
-                            Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                    checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
                     // Note that other consistency checks are made by isValid.
                 }
             }
             if (t.toString().contains("@PolyNull")) {
                 // TODO: this is a hack, but PolyNull gets substituted
                 // afterwards
-                checker.report(
-                        Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
             }
         }
         // TODO: It might be nicer to introduce a framework-level

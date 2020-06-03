@@ -33,7 +33,6 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -137,7 +136,7 @@ public class InitializationVisitor<
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
                     }
-                    checker.report(Result.failure(err, varTree), varTree);
+                    checker.reportError(varTree, err, varTree);
                     return; // prevent issuing another errow about subtyping
                 }
             }
@@ -157,8 +156,8 @@ public class InitializationVisitor<
                     if (atypeFactory.isUnclassified(a)) {
                         continue; // unclassified is allowed
                     }
-                    if (AnnotationUtils.areSameByClass(a, c)) {
-                        checker.report(Result.failure(COMMITMENT_INVALID_FIELD_TYPE, node), node);
+                    if (atypeFactory.areSameByClass(a, c)) {
+                        checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
                         break;
                     }
                 }
@@ -258,12 +257,11 @@ public class InitializationVisitor<
         }
 
         if (!isSubtype) {
-            checker.report(
-                    Result.failure(
-                            COMMITMENT_INVALID_CAST,
-                            annoFormatter.formatAnnotationMirror(exprAnno),
-                            annoFormatter.formatAnnotationMirror(castAnno)),
-                    node);
+            checker.reportError(
+                    node,
+                    COMMITMENT_INVALID_CAST,
+                    annoFormatter.formatAnnotationMirror(exprAnno),
+                    annoFormatter.formatAnnotationMirror(castAnno));
             return p; // suppress cast.unsafe warning
         }
 
@@ -318,10 +316,8 @@ public class InitializationVisitor<
             for (Class<? extends Annotation> c :
                     atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
-                    if (AnnotationUtils.areSameByClass(a, c)) {
-                        checker.report(
-                                Result.failure(COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node),
-                                node);
+                    if (atypeFactory.areSameByClass(a, c)) {
+                        checker.reportError(node, COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node);
                         break;
                     }
                 }
@@ -416,8 +412,7 @@ public class InitializationVisitor<
                 first = false;
                 fieldsString.append(f.getName());
             }
-            checker.report(
-                    Result.failure(COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString), blockNode);
+            checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
         }
     }
 }

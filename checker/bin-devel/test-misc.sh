@@ -4,15 +4,12 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
-
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-
-export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
-echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source $SCRIPTDIR/build.sh ${BUILDJDK}
+# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
+# shellcheck disable=SC1090
+source "$SCRIPTDIR"/build.sh
 
 
 # Code style and formatting
@@ -30,8 +27,8 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
 make -C docs/manual all
 
-(./gradlew requireJavadocPrivate --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-/tmp/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
+(./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-/tmp/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt

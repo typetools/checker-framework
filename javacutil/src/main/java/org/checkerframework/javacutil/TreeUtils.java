@@ -456,15 +456,6 @@ public final class TreeUtils {
         }
 
         switch (tree.getKind()) {
-            case VARIABLE:
-            case METHOD:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case ANNOTATION_TYPE:
-            case TYPE_PARAMETER:
-                return TreeInfo.symbolFor((JCTree) tree);
-
                 // symbol() only works on MethodSelects, so we need to get it manually
                 // for method invocations.
             case METHOD_INVOCATION:
@@ -485,6 +476,11 @@ public final class TreeUtils {
                 return ((JCMemberReference) tree).sym;
 
             default:
+                if (isTypeDeclaration(tree)
+                        || tree.getKind() == Tree.Kind.VARIABLE
+                        || tree.getKind() == Tree.Kind.METHOD) {
+                    return TreeInfo.symbolFor((JCTree) tree);
+                }
                 return TreeInfo.symbol((JCTree) tree);
         }
     }
@@ -627,7 +623,11 @@ public final class TreeUtils {
         }
     }
 
-    /** @return the name of the invoked method */
+    /**
+     * Returns the name of the invoked method.
+     *
+     * @return the name of the invoked method
+     */
     public static Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
         if (expr.getKind() == Tree.Kind.IDENTIFIER) {
@@ -639,6 +639,9 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the first statement in the body is a self constructor invocation within a
+     * constructor.
+     *
      * @return true if the first statement in the body is a self constructor invocation within a
      *     constructor
      */
@@ -798,6 +801,9 @@ public final class TreeUtils {
             default:
                 return null;
         }
+        if (receiver == null) {
+            return null;
+        }
 
         return TreeUtils.withoutParens(receiver);
     }
@@ -806,13 +812,23 @@ public final class TreeUtils {
     // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
-    private static final Set<Tree.Kind> classTreeKinds =
-            EnumSet.of(
-                    Tree.Kind.CLASS,
-                    Tree.Kind.ENUM,
-                    Tree.Kind.INTERFACE,
-                    Tree.Kind.ANNOTATION_TYPE);
+    /** The set of kinds that represent classes. */
+    private static final Set<Tree.Kind> classTreeKinds;
 
+    static {
+        classTreeKinds = EnumSet.noneOf(Tree.Kind.class);
+        for (Tree.Kind kind : Tree.Kind.values()) {
+            if (kind.asInterface() == ClassTree.class) {
+                classTreeKinds.add(kind);
+            }
+        }
+    }
+
+    /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
     public static Set<Tree.Kind> classTreeKinds() {
         return classTreeKinds;
     }
@@ -1094,10 +1110,11 @@ public final class TreeUtils {
     }
 
     /**
-     * @return {@code true} if and only if {@code tree} can have a type annotation.
-     *     <p>TODO: is this implementation precise enough? E.g. does a .class literal work
-     *     correctly?
+     * Return {@code true} if and only if {@code tree} can have a type annotation.
+     *
+     * @return {@code true} if and only if {@code tree} can have a type annotation
      */
+    // TODO: is this implementation precise enough? E.g. does a .class literal work correctly?
     public static boolean canHaveTypeAnnotation(Tree tree) {
         return ((JCTree) tree).type != null;
     }
@@ -1153,6 +1170,8 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if this is a super call to the {@link Enum} constructor.
+     *
      * @param node the method invocation to check
      * @return true if this is a super call to the {@link Enum} constructor
      */
@@ -1174,19 +1193,7 @@ public final class TreeUtils {
      * @return true if the tree is a type declaration
      */
     public static boolean isTypeDeclaration(Tree node) {
-        switch (node.getKind()) {
-                // These tree kinds are always declarations.  Uses of the declared
-                // types have tree kind IDENTIFIER.
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-            case TYPE_PARAMETER:
-                return true;
-
-            default:
-                return false;
-        }
+        return isClassTree(node) || node.getKind() == Tree.Kind.TYPE_PARAMETER;
     }
 
     /**
@@ -1327,7 +1334,11 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
-    /** @return true if the tree is the declaration or use of a local variable */
+    /**
+     * Returns true if the tree is the declaration or use of a local variable.
+     *
+     * @return true if the tree is the declaration or use of a local variable
+     */
     public static boolean isLocalVariable(Tree tree) {
         if (tree.getKind() == Kind.VARIABLE) {
             return elementFromDeclaration((VariableTree) tree).getKind()
@@ -1340,7 +1351,11 @@ public final class TreeUtils {
         return false;
     }
 
-    /** @return the type as a TypeMirror of {@code tree} */
+    /**
+     * Returns the type as a TypeMirror of {@code tree}.
+     *
+     * @return the type as a TypeMirror of {@code tree}
+     */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }

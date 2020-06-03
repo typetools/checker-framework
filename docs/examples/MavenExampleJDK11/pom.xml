@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.0.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.4.1<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -59,9 +59,10 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
           <configuration>
-              <fork>true</fork>
+              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
               <release>11</release>
               <showWarnings>true</showWarnings>
+              <verbose>true</verbose>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>

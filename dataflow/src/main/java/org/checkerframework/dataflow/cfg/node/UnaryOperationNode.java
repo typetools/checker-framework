@@ -21,7 +21,7 @@ public abstract class UnaryOperationNode extends Node {
     protected final UnaryTree tree;
     protected final Node operand;
 
-    public UnaryOperationNode(UnaryTree tree, Node operand) {
+    protected UnaryOperationNode(UnaryTree tree, Node operand) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.operand = operand;

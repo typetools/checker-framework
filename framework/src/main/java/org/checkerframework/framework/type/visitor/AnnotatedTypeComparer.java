@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
- * Both Annotated Type Mirrors must have the same structure or else the various asserts will fail.
+ * Both AnnotatedTypeMirrors must have the same structure.
  *
  * @see AnnotatedTypeScanner
  */
@@ -111,13 +111,12 @@ public abstract class AnnotatedTypeComparer<R>
 
     @Override
     public R visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
-        R r;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-
         visitedNodes.put(type, null);
 
+        R r;
         if (p instanceof AnnotatedTypeVariable) {
             AnnotatedTypeVariable tv = (AnnotatedTypeVariable) p;
             r = scan(type.getLowerBound(), tv.getLowerBound());
@@ -135,17 +134,24 @@ public abstract class AnnotatedTypeComparer<R>
 
     @Override
     public R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedWildcardType : p;
-        AnnotatedWildcardType w = (AnnotatedWildcardType) p;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-
         visitedNodes.put(type, null);
-        R r = scan(type.getExtendsBound(), w.getExtendsBound());
-        visitedNodes.put(type, r);
-        r = scanAndReduce(type.getSuperBound(), w.getSuperBound(), r);
-        visitedNodes.put(type, r);
+
+        R r;
+        if (p instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType w = (AnnotatedWildcardType) p;
+            r = scan(type.getExtendsBound(), w.getExtendsBound());
+            visitedNodes.put(type, r);
+            r = scanAndReduce(type.getSuperBound(), w.getSuperBound(), r);
+            visitedNodes.put(type, r);
+        } else {
+            r = scan(type.getExtendsBound(), p.getErased());
+            visitedNodes.put(type, r);
+            r = scanAndReduce(type.getSuperBound(), p.getErased(), r);
+            visitedNodes.put(type, r);
+        }
         return r;
     }
 

@@ -1,5 +1,5 @@
-// This file, javadoc.astub, models the JavaDoc classes in the JDK's
-// com.sun.javadoc package, which are not exposed by ct.sym and therefore
+// This file, javadoc.astub, models the JavaDoc classes in the JDK 8's
+// com.sun.javadoc package, which were renamed/removed in JDK 11 and therefore
 // cannot be part of an annotated JDK.
 // It is annotated for the Value and Nullness checkers.
 

@@ -13,9 +13,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
-    <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.0.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.4.1<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -29,11 +28,6 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>${checkerFrameworkVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.checkerframework</groupId>
-      <artifactId>jdk8</artifactId>
       <version>${checkerFrameworkVersion}</version>
     </dependency>
     <dependency>
@@ -72,13 +66,14 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
           <configuration>
-              <fork>true</fork>
+              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
               <!-- If using JDK 8, add source and target. -->
               <source>1.8</source>
               <target>1.8</target>
               <!-- If using JDK 11, remove source and target and uncomment "release" below. -->
               <!-- <release>11</release> -->
               <showWarnings>true</showWarnings>
+              <verbose>true</verbose>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
@@ -106,8 +101,6 @@
               <compilerArgs>
                   <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
                   <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
-                  <!-- location of the annotated JDK 8, which comes from a Maven dependency -->
-                  <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!-- -Awarns treats Checker Framework errors as warnings -->
                   <!-- <arg>-Awarns</arg> -->
                   <!--

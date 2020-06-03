@@ -58,8 +58,8 @@ import org.plumelib.reflection.Signatures;
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 public class AnnotationClassLoader {
-    // For issuing errors to the user
-    private final BaseTypeChecker checker;
+    /** For issuing errors to the user. */
+    protected final BaseTypeChecker checker;
 
     // For loading from a source package directory
     /** The package name. */
@@ -139,23 +139,31 @@ public class AnnotationClassLoader {
 
         classLoader = getClassLoader();
 
+        URL localResourceURL;
         if (classLoader != null) {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = classLoader.getResource(packageNameWithSlashes);
+            localResourceURL = classLoader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
             // resourceURL =
             // Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
         } else {
+            // Signal failure to find resource
+            localResourceURL = null;
+        }
+
+        if (localResourceURL == null) {
             // if the application classloader is not accessible (which means the
             // checker class was loaded using the bootstrap classloader)
+            // or if the classloader didn't find the package,
             // then scan the classpaths to find a jar or directory which
             // contains the qual package and set the resource URL to that jar or
             // qual directory
-            resourceURL = getURLFromClasspaths();
+            localResourceURL = getURLFromClasspaths();
         }
+        resourceURL = localResourceURL;
 
         supportedBundledAnnotationClasses = new LinkedHashSet<>();
 
@@ -266,6 +274,7 @@ public class AnnotationClassLoader {
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
      */
+    @SuppressWarnings("JdkObsolete")
     private final boolean checkJarForPackage(final JarFile jar) {
         Enumeration<JarEntry> jarEntries = jar.entries();
 
@@ -560,6 +569,7 @@ public class AnnotationClassLoader {
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
+    @SuppressWarnings("JdkObsolete")
     private final Set<@BinaryName String> getBundledAnnotationNamesFromJar(final JarFile jar) {
         Set<@BinaryName String> annos = new LinkedHashSet<>();
 

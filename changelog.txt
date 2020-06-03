@@ -1,9 +1,147 @@
+Version 3.5.0, July 1, 2020
+
+Implementation details:
+Changed the types of some fields and methods from array to List:
+QualifierDefaults.validLocationsForUncheckedCodeDefaults()
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
+
 ---------------------------------------------------------------------------
 
-Version 3.1.0, January 2, 2020
+Version 3.4.1, June 1, 2020
+
+-Ainfer now takes an argument:
+ * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
+ * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
+
+New command-line option:
+  -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
+Closed issues:
+2893, 3021, 3128, 3160, 3232, 3277, 3285, 3289, 3295, 3302, 3305, 3307, 3310,
+3316, 3318, 3329.
+
+---------------------------------------------------------------------------
+
+Version 3.4.0, May 3, 2020
+
+The annotated jdk8.jar is no longer used.  You should remove any occurrence of
+  -Xbootclasspath/p:.../jdk8.jar
+from your build scripts.  Annotations for JDK 8 are included in checker.jar.
+
+The Returns Receiver Checker enables documenting and checking that a method
+returns its receiver (i.e., the `this` parameter).
+
+Closed issues:
+3267, 3263, 3217, 3212, 3201, 3111, 3010, 2943, 2930.
+
+---------------------------------------------------------------------------
+
+Version 3.3.0, April 1, 2020
+
+New command-line options:
+  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+  the type of Collections.toArray.
+
+Renamings:
+  -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
+    The old name works temporarily but will be removed in a future release.
+
+For collection methods with `Object` formal parameter type, such as
+contains, indexOf, and remove, the annotated JDK now forbids null as an
+argument.  To make the Nullness Checker permit null, pass
+`-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
+
+The argument to @SuppressWarnings can be a substring of a message key that
+extends at each end to a period or an end of the key.  (Previously, any
+substring worked, including the empty string which suppressed all warnings.
+Use "all" to suppress all warnings.)
+
+All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
+`@EnsuresNonNullIf`, ...).
+
+Renamed wrapper annotations (which users should not write):
+ * `@DefaultQualifiers` => `@DefaultQualifier.List`
+ * `@EnsuresQualifiersIf` => `@EnsuresQualifierIf.List`
+ * `@EnsuresQualifiers` => `@EnsuresQualifier.List`
+ * `@RequiresQualifiers` => `@RequiresQualifier.List`
+
+Implementation details:
+ * Removed `@DefaultInUncheckedCodeFor` and
+   `@DefaultQualifierInHierarchyInUncheckedCode`.
+ * Renamings:
+   applyUncheckedCodeDefaults() to applyConservativeDefaults()
+   useUncheckedCodeDefault() to useConservativeDefault()
+   AnnotatedTypeReplacer to AnnotatedTypeCopierWithReplacement
+   AnnotatedTypeMerger to AnnotatedTypeReplacer
+ * Deprecated the `framework.source.Result` class; use `DiagMessage` or
+   `List<DiagMessage>` instead.  If you were creating a `Result` just to
+   pass it to `report`, then call new methods `reportError` and
+   `reportWarning` instead.
+ * AbstractTypeProcessor#typeProcessingOver() always gets called.
+
+Closed issues:
+1307, 1881, 1929, 2432, 2793, 3040, 3046, 3050, 3056, 3083, 3124, 3126, 3129,
+3132, 3139, 3149, 3150, 3167, 3189.
+
+---------------------------------------------------------------------------
+
+Version 3.2.0, March 2, 2020
+
+@SuppressWarnings("initialization") suppresses only warnings whose key
+contains "initialization".  Previously, it suppressed all warnings issued
+by the Nullness Checker or the Initialization Checker.
+
+Closed issues:
+2719, 3001, 3020, 3069, 3093, 3120.
+
+---------------------------------------------------------------------------
+
+Version 3.1.1, February 3, 2020
+
+New command-line options:
+  -AassumeDeterministic Unsoundly assume that every method is deterministic
+  -AassumePure Unsoundly assume that every method is pure
+
+Renamed -Anocheckjdk to -ApermitMissingJdk.
+The old version still works, for backward compatibility.
+
+Renamed -Alint=forbidnonnullarraycomponents to
+-Alint=soundArrayCreationNullness.  The old version still works, for
+backward compatibility.
+
+Implementation details:
+ * Deprecated QualifierHierarchy#getTypeQualifiers.
+ * Deprecated Analysis#Analysis(ProcessingEnvironment) and Analysis#Analysis(T,
+   int, ProcessingEnvironment); use Analysis#Analysis(), Analysis#Analysis(int),
+   Analysis#Analysis(T), and Analysis#Analysis(T, int) instead.
+ * Renamed SourceChecker#getMessages to getMessagesProperties.
+ * Renamed one overload of SourceChecker.printMessages to printOrStoreMessage.
+
+Closed issues:
+2181, 2975, 3018, 3022, 3032, 3036, 3037, 3038, 3041, 3049, 3055, 3076.
+
+---------------------------------------------------------------------------
+
+Version 3.1.0, January 3, 2020
 
 Command-line option -AprintGitProperties prints information about the git
 repository from which the Checker Framework was compiled.
+
+Implementation details:
+ * Removed static cache in AnnotationUtils#areSameByClass and added
+   AnnotatedTypeFactory#areSameByClass that uses an instance cache.
+ * Removed static cache in AnnotationBuilder#fromName and #fromClass.
+ * ContractsUtils#getPreconditions takes an ExecutableElement as an argument.
+ * ContractsUtils#getContracts returns a Set.
+ * Moved ContractUtils.Contract to outer level.
+ * Renamed ConditionalPostcondition#annoResult to ConditionalPostcondition#resultValue.
+
+Closed issues:
+2867, 2897, 2972.
 
 ---------------------------------------------------------------------------
 
@@ -18,7 +156,6 @@ Implementation details:
  * Deprecated AnnotatedTypes#isTypeAnnotation and AnnotatedTypes#hasTypeQualifierElementTypes.
 
 Closed issues:
-
 945, 1224, 2024, 2744, 2809, 2815, 2818, 2830, 2840, 2853, 2854, 2865, 2873,
 2874, 2878, 2880, 2886, 2888, 2900, 2905, 2919, 2923.
 
