@@ -82,7 +82,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * @return the type of the lambda parameter or null if paramElement is not a lambda parameter
+     * Returns the type of the lambda parameter, or null if paramElement is not a lambda parameter.
+     *
+     * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
      */
     private static AnnotatedTypeMirror inferLambdaParamAnnotations(
             AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
