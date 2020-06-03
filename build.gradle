@@ -164,7 +164,7 @@ allprojects {
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
                 // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
-		// on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
                 // options.addBooleanOption('Xwerror', true)
                 options.addStringOption('Xmaxwarns', '99999')
             }
@@ -526,7 +526,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
         //  * Uncomment "-Werror"
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.4'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -783,6 +783,10 @@ subprojects {
                     '-Xep:MixedMutabilityReturnType:OFF',
                     // Don't want to add a dependency to ErrorProne.
                     '-Xep:AnnotateFormatMethod:OFF',
+                    // Warns for every use of "@checker_framework.manual"
+                    '-Xep:InvalidBlockTag:OFF',
+                    // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
+                    '-Xep:InlineFormatString:OFF',
                     // -Werror halts the build if Error Prone issues a warning, which ensures that
                     // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                     // stops as soon as it one warning, rather than outputting them all.

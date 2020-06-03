@@ -2693,10 +2693,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>Issue a warning if the annotations on the constructor invocation is a subtype of the
      * constructor result type. This is equivalent to down-casting.
-     *
-     * @param invocation
-     * @param constructor
-     * @param newClassTree
      */
     protected void checkConstructorInvocation(
             AnnotatedDeclaredType invocation,
@@ -2777,9 +2773,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * @return true if both types are type variables and outer contains inner Outer contains inner
-     *     implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <:
-     *     inner.lowerBound }
+     * Returns true if both types are type variables and outer contains inner. Outer contains inner
+     * implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <:
+     * inner.lowerBound}.
+     *
+     * @return true if both types are type variables and outer contains inner
      */
     protected boolean testTypevarContainment(
             final AnnotatedTypeMirror inner, final AnnotatedTypeMirror outer) {
