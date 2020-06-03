@@ -8,7 +8,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Index Checker. */
 public class IndexTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create an IndexTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public IndexTest(List<File> testFiles) {
         super(
                 testFiles,

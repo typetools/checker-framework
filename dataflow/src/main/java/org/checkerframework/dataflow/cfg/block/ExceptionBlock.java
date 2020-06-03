@@ -18,11 +18,19 @@ import org.checkerframework.dataflow.qual.Pure;
  */
 public interface ExceptionBlock extends SingleSuccessorBlock {
 
-    /** @return the node of this block */
+    /**
+     * Returns the node of this block.
+     *
+     * @return the node of this block
+     */
     @Pure
     Node getNode();
 
-    /** @return the list of exceptional successor blocks as an unmodifiable map */
+    /**
+     * Returns the list of exceptional successor blocks as an unmodifiable map.
+     *
+     * @return the list of exceptional successor blocks as an unmodifiable map
+     */
     @Pure
     Map<TypeMirror, Set<Block>> getExceptionalSuccessors();
 }

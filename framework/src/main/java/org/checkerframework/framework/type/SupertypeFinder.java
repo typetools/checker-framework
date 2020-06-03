@@ -40,7 +40,11 @@ import org.checkerframework.javacutil.TypesUtils;
 class SupertypeFinder {
 
     // Version of method below for declared types
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
@@ -50,7 +54,11 @@ class SupertypeFinder {
     }
 
     // Version of method above for all types
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public static final List<? extends AnnotatedTypeMirror> directSuperTypes(
             AnnotatedTypeMirror type) {
         SupertypeFindingVisitor supertypeFindingVisitor =

@@ -12,7 +12,11 @@ import testlib.lubglb.I18nFormatterLubGlbChecker;
 
 public class I18nFormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create an I18nFormatterLubGlbCheckerTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public I18nFormatterLubGlbCheckerTest(List<File> testFiles) {
         super(
                 testFiles,

@@ -101,9 +101,11 @@ public class PurityUtils {
     }
 
     /**
+     * Returns the types of purity of the method {@code methodTree}.
+     *
      * @param provider how to get annotations
      * @param methodTree a method to test
-     * @return the types of purity of the method {@code methodTree}.
+     * @return the types of purity of the method {@code methodTree}
      */
     public static EnumSet<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, MethodTree methodTree) {
@@ -115,11 +117,13 @@ public class PurityUtils {
     }
 
     /**
+     * Returns the types of purity of the method {@code methodElement}.
+     *
      * @param provider how to get annotations
      * @param methodElement a method to test
-     * @return the types of purity of the method {@code methodElement}. TODO: should the return type
-     *     be an EnumSet?
+     * @return the types of purity of the method {@code methodElement}
      */
+    // TODO: should the return type be an EnumSet?
     public static EnumSet<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, Element methodElement) {
         AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);

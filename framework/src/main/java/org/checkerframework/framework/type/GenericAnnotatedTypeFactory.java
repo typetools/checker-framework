@@ -196,7 +196,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker);
 
         this.everUseFlow = useFlow;
@@ -264,7 +264,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param checker the checker to which this type factory belongs
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, flowByDefault);
     }
 
@@ -882,7 +882,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return returnStatementStores.get(methodTree);
     }
 
-    /** @return the store immediately before a given {@link Tree}. */
+    /**
+     * Returns the store immediately before a given {@link Tree}.
+     *
+     * @return the store immediately before a given {@link Tree}
+     */
     public Store getStoreBefore(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(tree);
@@ -895,7 +899,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    /** @return the store immediately before a given Set of {@link Node}s. */
+    /**
+     * Returns the store immediately before a given Set of {@link Node}s.
+     *
+     * @return the store immediately before a given Set of {@link Node}s
+     */
     public Store getStoreBefore(Set<Node> nodes) {
         Store merge = null;
         for (Node aNode : nodes) {
@@ -909,7 +917,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately before a given {@link Node}. */
+    /**
+     * Returns the store immediately before a given {@link Node}.
+     *
+     * @return the store immediately before a given {@link Node}
+     */
     public Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
@@ -924,7 +936,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return store;
     }
 
-    /** @return the store immediately after a given {@link Tree}. */
+    /**
+     * Returns the store immediately after a given {@link Tree}.
+     *
+     * @return the store immediately after a given {@link Tree}
+     */
     public Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
@@ -933,7 +949,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return getStoreAfter(nodes);
     }
 
-    /** @return the store immediately after a given set of {@link Node}s. */
+    /**
+     * Returns the store immediately after a given set of {@link Node}s.
+     *
+     * @return the store immediately after a given set of {@link Node}s
+     */
     public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
@@ -947,7 +967,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately after a given {@link Node}. */
+    /**
+     * Returns the store immediately after a given {@link Node}.
+     *
+     * @return the store immediately after a given {@link Node}
+     */
     public Store getStoreAfter(Node node) {
         Store res =
                 AnalysisResult.runAnalysisFor(
@@ -960,8 +984,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
+     * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
+     *
      * @return the {@link Node}s for a given {@link Tree}
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);
@@ -991,7 +1017,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /** @return the value of effectively final local variables */
+    /**
+     * Returns the value of effectively final local variables.
+     *
+     * @return the value of effectively final local variables
+     */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
     }

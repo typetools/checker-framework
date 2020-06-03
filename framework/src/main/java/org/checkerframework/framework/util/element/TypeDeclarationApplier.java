@@ -29,7 +29,13 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     public static final int SUPERCLASS_INDEX = -1;
 
-    /** @return true if type is an annotated declared type and element is a ClassSymbol */
+    /**
+     * Returns true if type is an annotated declared type and element is a ClassSymbol.
+     *
+     * @param type a type
+     * @param element an element
+     * @return true if type is an annotated declared type and element is a ClassSymbol
+     */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return type instanceof AnnotatedDeclaredType && element instanceof Symbol.ClassSymbol;
     }
