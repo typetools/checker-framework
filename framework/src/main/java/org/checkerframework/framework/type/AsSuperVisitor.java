@@ -68,7 +68,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
         if (result == null) {
             throw new BugInCF(
-                    "AsSuperVisitor returned null.\ntype: %s\nsuperType: %s", type, copySuperType);
+                    "AsSuperVisitor returned null.%ntype: %s%nsuperType: %s", type, copySuperType);
         }
 
         return (T) result;
@@ -137,8 +137,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         return String.format(
-                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.\ntype: %s"
-                        + "\nsuperType: %s",
+                "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%n"
+                        + "type: %s%nsuperType: %s",
                 type.getKind(), superType.getKind(), type, superType);
     }
 
@@ -153,7 +153,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         throw new BugInCF(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
-                        + "\ntype: %s\nsuperType: %s",
+                        + "%ntype: %s%nsuperType: %s",
                 type, superType);
     }
 
@@ -368,7 +368,13 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitDeclared_Typevar(
             AnnotatedDeclaredType type, AnnotatedTypeVariable superType, Void p) {
-        AnnotatedTypeMirror upperBound = visit(type, superType.getUpperBound(), p).asUse();
+        // setUpperBound() may have a side effect on parameter "type" when the upper bound of
+        // "superType" equals to "type" (referencing the same object: changes will be shared)
+        // copy before visiting to avoid
+        // without fix, this would fail:
+        // https://github.com/typetools/checker-framework/blob/ed340b2dfa1e51bbc0a7313f22638179d15bf2df/checker/tests/nullness/Issue2432b.java
+        AnnotatedTypeMirror typeCopy = type.deepCopy();
+        AnnotatedTypeMirror upperBound = visit(typeCopy, superType.getUpperBound(), p).asUse();
         superType.setUpperBound(upperBound);
 
         AnnotatedTypeMirror lowerBound = asSuperTypevarLowerBound(type, superType, p).asUse();
@@ -443,7 +449,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             }
             if (found == null) {
                 throw new BugInCF(
-                        "AsSuperVisitor visitIntersection_Intersection:\ntype: %s superType: %s",
+                        "AsSuperVisitor visitIntersection_Intersection:%ntype: %s superType: %s",
                         type, superType);
             }
         }
@@ -468,7 +474,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         throw new BugInCF(
-                "AsSuperVisitor visitIntersection_Primitive:\ntype: %s superType: %s",
+                "AsSuperVisitor visitIntersection_Primitive:%ntype: %s superType: %s",
                 type, superType);
     }
 
@@ -495,7 +501,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         throw new BugInCF(
-                "AsSuperVisitor visitIntersection_Union:\ntype: %s\nsuperType: %s",
+                "AsSuperVisitor visitIntersection_Union:%ntype: %s%nsuperType: %s",
                 type, superType);
     }
 

@@ -39,7 +39,8 @@ public abstract class AggregateChecker extends SourceChecker {
      */
     protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
-    public AggregateChecker() {
+    /** Create a new AggregateChecker. */
+    protected AggregateChecker() {
         Collection<Class<? extends SourceChecker>> checkerClasses = getSupportedCheckers();
 
         checkers = new ArrayList<>(checkerClasses.size());
@@ -123,6 +124,7 @@ public abstract class AggregateChecker extends SourceChecker {
         for (SourceChecker checker : checkers) {
             checker.typeProcessingOver();
         }
+        super.typeProcessingOver();
     }
 
     @Override

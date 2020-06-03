@@ -187,7 +187,7 @@ public class Resolver {
      * for name resolution.
      *
      * @param name the name of the field
-     * @param type the type of the receiver (i.e., the type in which to look for the field).
+     * @param type the type of the receiver (i.e., the type in which to look for the field)
      * @param path the tree path to the local scope
      * @return the element for the field, {@code null} otherwise
      */
@@ -376,7 +376,19 @@ public class Resolver {
         return methodContext;
     }
 
-    /** Reflectively set a field. */
+    /**
+     * Reflectively set a field.
+     *
+     * @param receiver the receiver in which to set the field
+     * @param fieldName name of field to set
+     * @param value new value for field
+     * @throws NoSuchFieldException if the field does not exist in the receiver
+     * @throws IllegalAccessException if the field is not accessible
+     */
+    @SuppressWarnings({
+        "nullness:argument.type.incompatible",
+        "interning:argument.type.incompatible"
+    }) // assume that the fields all accept null and uninterned values
     private void setField(Object receiver, String fieldName, @Nullable Object value)
             throws NoSuchFieldException, IllegalAccessException {
         Field f = receiver.getClass().getDeclaredField(fieldName);

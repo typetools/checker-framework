@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collector;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug10 {
     public static <T> Collector<T, ?, List<T>> least(int k, Comparator<? super T> comparator) {
         return Collector.of(

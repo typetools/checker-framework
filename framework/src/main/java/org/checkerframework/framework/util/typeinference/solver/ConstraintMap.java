@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
  * <p>This really consists of these things:
  *
  * <ol>
- *   <li>a Map({@code target &rArr; constraints for target})
+ *   <li>a Map({@code target => constraints for target})
  *   <li>Methods to easily build up the constraints in the map
  *   <li>A getter for the constraints of individual targets.
  * </ol>
@@ -48,6 +48,9 @@ public class ConstraintMap {
     }
 
     /**
+     * Returns the set of all targets passed to the constructor of this constraint map (a target
+     * will appear in this list whether or not it has any constraints added).
+     *
      * @return the set of all targets passed to the constructor of this constraint map (a target
      *     will appear in this list whether or not it has any constraints added)
      */

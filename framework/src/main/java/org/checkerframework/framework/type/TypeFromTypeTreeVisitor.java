@@ -254,7 +254,6 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             throw new BugInCF(
                     "TypeFromTree.forTypeVariable: should only be called on type variables");
         }
-
         TypeVariable typeVar = (TypeVariable) type.getUnderlyingType();
         TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
         Element elt = tpe.getGenericElement();
@@ -268,6 +267,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 // of type parameter declarations (`TypeParameterTree`), so this recursive call
                 // to `visit` will return a declaration ATV.  So we must copy the result and set
                 // its `isDeclaration` field to `false`.
+                if (cls.getTypeParameters().isEmpty()) {
+                    // The type parameters in the source tree were already erased.
+                    // The element already contains all necessary information and we can return
+                    // that.
+                    return type;
+                }
                 AnnotatedTypeMirror result =
                         visit(cls.getTypeParameters().get(idx), f).shallowCopy();
                 ((AnnotatedTypeVariable) result).setDeclaration(false);

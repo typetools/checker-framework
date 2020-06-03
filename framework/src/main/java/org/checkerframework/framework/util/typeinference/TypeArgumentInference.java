@@ -46,10 +46,9 @@ public interface TypeArgumentInference {
      * @param methodElem the element for the declaration of the method being invoked
      * @param methodType the declaration type of method elem
      * @return a mapping between the Java type parameter and the annotated type that was inferred
-     *     for it
-     *     <p>Note: We use the Java TypeVariable type because this uniquely identifies a declaration
-     *     where as two uses of an AnnotatedTypeVariable may be uses of the same declaration but are
-     *     not .equals to each other.
+     *     for it. Note: We use the Java TypeVariable type because this uniquely identifies a
+     *     declaration where as two uses of an AnnotatedTypeVariable may be uses of the same
+     *     declaration but are not .equals to each other.
      */
     public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
             final AnnotatedTypeFactory typeFactory,

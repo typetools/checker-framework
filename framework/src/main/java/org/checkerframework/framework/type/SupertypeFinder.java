@@ -40,7 +40,11 @@ import org.checkerframework.javacutil.TypesUtils;
 class SupertypeFinder {
 
     // Version of method below for declared types
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
                 new SupertypeFindingVisitor(type.atypeFactory);
@@ -50,7 +54,11 @@ class SupertypeFinder {
     }
 
     // Version of method above for all types
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * See {@link Types#directSupertypes(TypeMirror)}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public static final List<? extends AnnotatedTypeMirror> directSuperTypes(
             AnnotatedTypeMirror type) {
         SupertypeFindingVisitor supertypeFindingVisitor =
@@ -153,12 +161,8 @@ class SupertypeFinder {
             if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
                 if (!type.wasRaw()) {
                     throw new BugInCF(
-                            "AnnotatedDeclaredType's element has a different number of type parameters than type.\n"
-                                    + "type="
-                                    + type
-                                    + "\n"
-                                    + "element="
-                                    + typeElement);
+                            "AnnotatedDeclaredType's element has a different number of type parameters than type.%ntype=%s%nelement=%s",
+                            type, typeElement);
                 }
             }
 

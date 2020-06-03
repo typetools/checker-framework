@@ -11,16 +11,16 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
@@ -58,29 +58,7 @@ public class Analysis<
     protected @Nullable T transferFunction;
 
     /** The current control flow graph to perform the analysis on. */
-    protected @Nullable ControlFlowGraph cfg;
-
-    /**
-     * The associated processing environment.
-     *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
-     *     next major update
-     */
-    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#env when this field is
-    // being removed.
-    @Deprecated protected final @Nullable ProcessingEnvironment env;
-
-    /**
-     * Instance of the types utility.
-     *
-     * @deprecated as {@code types} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this field will be removed in
-     *     next major update
-     */
-    // TODO: Remove @SuppressWarnings("HidingField") in CFAbstractAnalysis#types when this field is
-    // being removed.
-    @Deprecated protected final @Nullable Types types;
+    protected @MonotonicNonNull ControlFlowGraph cfg;
 
     /** Then stores before every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> thenStores;
@@ -145,55 +123,26 @@ public class Analysis<
         this.currentTree = currentTree;
     }
 
+    // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
-     *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this helper constructor will be
-     *     removed in next major update. Use {@link #Analysis()}, {@link #Analysis(TransferFunction,
-     *     int)}, {@link #Analysis(TransferFunction)} or {@link #Analysis(int)} instead
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(ProcessingEnvironment env) {
-        this(null, -1, env);
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      */
     public Analysis() {
         this(null, -1);
     }
 
+    // `@code`, not `@link`, because dataflow module doesn't depend on framework moduel.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph. The transfer function is set by the subclass, e.g., {@link
+     * flow graph. The transfer function is set by the subclass, e.g., {@code
      * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(int maxCountBeforeWidening) {
         this(null, maxCountBeforeWidening);
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph, given a transfer function.
-     *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
-     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
-     * @param transfer transfer function
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(T transfer, ProcessingEnvironment env) {
-        this(transfer, -1, env);
     }
 
     /**
@@ -210,40 +159,10 @@ public class Analysis<
      * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
      * flow graph, given a transfer function.
      *
-     * @deprecated as {@code env} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this constructor will be removed
-     *     in next major update. Use {@link #Analysis(TransferFunction, int)} instead.
-     * @param transfer transfer function
-     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
-     * @param env associated processing environment
-     */
-    @Deprecated
-    public Analysis(@Nullable T transfer, int maxCountBeforeWidening, ProcessingEnvironment env) {
-        this.env = env;
-        this.types = env.getTypeUtils();
-        this.transferFunction = transfer;
-        this.maxCountBeforeWidening = maxCountBeforeWidening;
-        this.thenStores = new IdentityHashMap<>();
-        this.elseStores = new IdentityHashMap<>();
-        this.blockCount = maxCountBeforeWidening == -1 ? null : new IdentityHashMap<>();
-        this.inputs = new IdentityHashMap<>();
-        this.storesAtReturnStatements = new IdentityHashMap<>();
-        this.worklist = new Worklist();
-        this.nodeValues = new IdentityHashMap<>();
-        this.finalLocalValues = new HashMap<>();
-    }
-
-    /**
-     * Construct an object that can perform a org.checkerframework.dataflow analysis over a control
-     * flow graph, given a transfer function.
-     *
      * @param transfer transfer function
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
     public Analysis(@Nullable T transfer, int maxCountBeforeWidening) {
-        // The initialization of env and types can be removed in next version.
-        this.env = null;
-        this.types = null;
         this.transferFunction = transfer;
         this.maxCountBeforeWidening = maxCountBeforeWidening;
         this.thenStores = new IdentityHashMap<>();
@@ -266,36 +185,6 @@ public class Analysis<
     }
 
     /**
-     * Get the types utility.
-     *
-     * @deprecated as {@link #getTypes()} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
-     *     next major update
-     * @return {@link #types}
-     */
-    @Deprecated
-    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getTypes() when this
-    // method is being removed.
-    public @Nullable Types getTypes() {
-        return types;
-    }
-
-    /**
-     * Get the processing environment.
-     *
-     * @deprecated as {@link #getEnv()} is moved to {@link
-     *     org.checkerframework.framework.flow.CFAbstractAnalysis}, this method will be removed in
-     *     next major update
-     * @return {@link #env}
-     */
-    @Deprecated
-    // TODO: Remove @SuppressWarnings("deprecation") in CFAbstractAnalysis#getEnv() when this method
-    // is being removed.
-    public @Nullable ProcessingEnvironment getEnv() {
-        return env;
-    }
-
-    /**
      * Perform the actual analysis.
      *
      * @param cfg the control flow graph used to perform analysis
@@ -313,7 +202,7 @@ public class Analysis<
             }
         } finally {
             assert isRunning;
-            // In case preformatAnalysisHelper crashed, reset isRunning to false.
+            // In case performAnalysisBlock crashed, reset isRunning to false.
             isRunning = false;
         }
     }
@@ -374,7 +263,7 @@ public class Analysis<
                     }
 
                     // propagate store to exceptional successors
-                    for (Entry<TypeMirror, Set<Block>> e :
+                    for (Map.Entry<TypeMirror, Set<Block>> e :
                             eb.getExceptionalSuccessors().entrySet()) {
                         TypeMirror cause = e.getKey();
                         S exceptionalStore = transferResult.getExceptionalStore(cause);
@@ -562,7 +451,12 @@ public class Analysis<
         return transferResult;
     }
 
-    /** Initialize the analysis with a new control flow graph. */
+    /**
+     * Initialize the analysis with a new control flow graph.
+     *
+     * @param cfg the control flow graph to use
+     */
+    @EnsuresNonNull("this.cfg")
     protected void init(ControlFlowGraph cfg) {
         thenStores.clear();
         elseStores.clear();
@@ -729,6 +623,7 @@ public class Analysis<
 
         /** Comparator to allow priority queue to order blocks by their depth-first order. */
         public class DFOComparator implements Comparator<Block> {
+            @SuppressWarnings("unboxing.of.nullable")
             @Override
             public int compare(Block b1, Block b2) {
                 return depthFirstOrder.get(b1) - depthFirstOrder.get(b2);
@@ -753,7 +648,11 @@ public class Analysis<
             queue.clear();
         }
 
-        /** @see PriorityQueue#isEmpty */
+        /**
+         * See {@link PriorityQueue#isEmpty}.
+         *
+         * @see PriorityQueue#isEmpty
+         */
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -768,7 +667,11 @@ public class Analysis<
             queue.add(block);
         }
 
-        /** @see PriorityQueue#poll */
+        /**
+         * See {@link PriorityQueue#poll}.
+         *
+         * @see PriorityQueue#poll
+         */
         public @Nullable Block poll() {
             return queue.poll();
         }
@@ -788,14 +691,21 @@ public class Analysis<
     }
 
     /**
+     * Returns the transfer input corresponding to the location right before the basic block {@code
+     * b}.
+     *
      * @return the transfer input corresponding to the location right before the basic block {@code
-     *     b}.
+     *     b}
      */
     protected @Nullable TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
-    /** @return the store corresponding to the location right before the basic block {@code b}. */
+    /**
+     * Returns the store corresponding to the location right before the basic block {@code b}.
+     *
+     * @return the store corresponding to the location right before the basic block {@code b}
+     */
     protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {
             case THEN:
@@ -822,9 +732,12 @@ public class Analysis<
     }
 
     /**
+     * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     * available. Note that if the analysis has not finished yet, this value might not represent the
+     * final value for this node.
+     *
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     *     available
      */
     public @Nullable A getValue(Node n) {
         if (isRunning) {
@@ -860,9 +773,12 @@ public class Analysis<
     }
 
     /**
+     * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     * available. Note that if the analysis has not finished yet, this value might not represent the
+     * final value for this node.
+     *
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available. Note that if the analysis has not finished yet, this value might not represent
-     *     the final value for this node.
+     *     available
      */
     public @Nullable A getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node
@@ -924,10 +840,15 @@ public class Analysis<
         return ct;
     }
 
-    /** The transfer results for each return node in the CFG. */
-    public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
+    /**
+     * The transfer results for each return node in the CFG.
+     *
+     * @return the transfer results for each return node in the CFG
+     */
+    @RequiresNonNull("cfg")
+    public List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> getReturnStatementStores() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
+        List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<A, S> store = storesAtReturnStatements.get(returnNode);
             result.add(Pair.of(returnNode, store));
@@ -938,7 +859,10 @@ public class Analysis<
     /**
      * The result of running the analysis. This is only available once the analysis finished
      * running.
+     *
+     * @return the result of running the analysis
      */
+    @RequiresNonNull("cfg")
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
@@ -951,9 +875,13 @@ public class Analysis<
     }
 
     /**
+     * Returns the regular exit store, or {@code null}, if there is no such store (because the
+     * method cannot exit through the regular exit block).
+     *
      * @return the regular exit store, or {@code null}, if there is no such store (because the
-     *     method cannot exit through the regular exit block).
+     *     method cannot exit through the regular exit block)
      */
+    @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
@@ -965,10 +893,20 @@ public class Analysis<
         }
     }
 
-    /** @return the exceptional exit store. */
-    public S getExceptionalExitStore() {
+    /**
+     * Returns the exceptional exit store.
+     *
+     * @return the exceptional exit store
+     */
+    @RequiresNonNull("cfg")
+    public @Nullable S getExceptionalExitStore() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock()).getRegularStore();
-        return exceptionalExitStore;
+        SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
+        if (inputs.containsKey(exceptionalExitBlock)) {
+            S exceptionalExitStore = inputs.get(exceptionalExitBlock).getRegularStore();
+            return exceptionalExitStore;
+        } else {
+            return null;
+        }
     }
 }
