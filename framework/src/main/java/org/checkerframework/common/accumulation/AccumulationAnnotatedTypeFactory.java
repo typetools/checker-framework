@@ -266,6 +266,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
             List<String> a1Val = getAccumulatedValues(a1);
             List<String> a2Val = getAccumulatedValues(a2);
+            // Avoid creating new annotation objects in the common case.
+            if (a1Val.containsAll(a2Val)) {
+                return a1;
+            }
+            if (a2Val.containsAll(a1Val)) {
+                return a2;
+            }
             a1Val.addAll(a2Val);
             return createAccumulatorAnnotation(a1Val);
         }
@@ -285,6 +292,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
             List<String> a1Val = getAccumulatedValues(a1);
             List<String> a2Val = getAccumulatedValues(a2);
+            // Avoid creating new annotation objects in the common case.
+            if (a1Val.containsAll(a2Val)) {
+                return a2;
+            }
+            if (a2Val.containsAll(a1Val)) {
+                return a1;
+            }
             a1Val.retainAll(a2Val);
             return createAccumulatorAnnotation(a1Val);
         }

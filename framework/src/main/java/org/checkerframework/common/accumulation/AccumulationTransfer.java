@@ -112,6 +112,9 @@ public class AccumulationTransfer extends CFTransfer {
         if (oldAnno == null) {
             oldAnno = typeFactory.top;
         }
+        if (newValues.isEmpty()) {
+            return oldAnno;
+        }
         AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(newValues);
         // For accumulation type systems, GLB is union.
         return typeFactory.getQualifierHierarchy().greatestLowerBound(oldAnno, newAnno);
