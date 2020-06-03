@@ -247,7 +247,10 @@ public class TypeArgumentMapper {
      * listing it in the implements clause. We prioritize finding a path through the list of
      * interfaces first since this will be the shorter path.
      *
-     * @return a set of type records that represents the sequence of directSupertypes between
+     * @param subtype the start of the resulting sequence
+     * @param target the end of the resulting sequence
+     * @param types utility methods for operating on types
+     * @return a list of type records that represents the sequence of directSupertypes between
      *     subtype and target
      */
     private static List<TypeRecord> depthFirstSearchForSupertype(
@@ -259,7 +262,15 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    /** Computes one level for depthFirstSearchForSupertype then recurses. */
+    /**
+     * Computes one level for depthFirstSearchForSupertype then recurses.
+     *
+     * @param pathFromRoot the path so far
+     * @param target the end of the resulting path
+     * @param types utility methods for operating on types
+     * @return a list of type records that extends pathFromRoot (a sequence of directSupertypes) to
+     *     target
+     */
     private static List<TypeRecord> recursiveDepthFirstSearch(
             final ArrayDeque<TypeRecord> pathFromRoot,
             final TypeElement target,
