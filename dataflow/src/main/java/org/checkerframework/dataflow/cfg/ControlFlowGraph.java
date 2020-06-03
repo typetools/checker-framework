@@ -100,9 +100,12 @@ public class ControlFlowGraph {
     }
 
     /**
+     * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+     * trees that don't produce a value.
+     *
      * @param t a tree
-     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds. Returns
-     *     null for trees that don't produce a value.
+     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+     *     trees that don't produce a value
      */
     public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
@@ -112,7 +115,11 @@ public class ControlFlowGraph {
         }
     }
 
-    /** @return the entry block of the control flow graph. */
+    /**
+     * Returns the entry block of the control flow graph.
+     *
+     * @return the entry block of the control flow graph
+     */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
     }
@@ -129,12 +136,20 @@ public class ControlFlowGraph {
         return exceptionalExitBlock;
     }
 
-    /** @return the AST this CFG corresponds to. */
+    /**
+     * Returns the AST this CFG corresponds to.
+     *
+     * @return the AST this CFG corresponds to
+     */
     public UnderlyingAST getUnderlyingAST() {
         return underlyingAST;
     }
 
-    /** @return the set of all basic block in this control flow graph */
+    /**
+     * Returns the set of all basic block in this control flow graph.
+     *
+     * @return the set of all basic block in this control flow graph
+     */
     public Set<Block> getAllBlocks() {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
@@ -163,9 +178,11 @@ public class ControlFlowGraph {
     }
 
     /**
+     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
+     * postorder sequence. Blocks may appear more than once in the sequence.
+     *
      * @return the list of all basic block in this control flow graph in reversed depth-first
-     *     postorder sequence.
-     *     <p>Blocks may appear more than once in the sequence.
+     *     postorder sequence
      */
     public List<Block> getDepthFirstOrderedBlocks() {
         List<Block> dfsOrderResult = new ArrayList<>();
@@ -217,12 +234,20 @@ public class ControlFlowGraph {
         return succs;
     }
 
-    /** @return the copied tree-lookup map */
+    /**
+     * Returns the copied tree-lookup map.
+     *
+     * @return the copied tree-lookup map
+     */
     public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
-    /** @return the copied lookup-map of the assign node for unary operation */
+    /**
+     * Returns the copied lookup-map of the assign node for unary operation.
+     *
+     * @return the copied lookup-map of the assign node for unary operation
+     */
     public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
         return new IdentityHashMap<>(unaryAssignNodeLookup);
     }

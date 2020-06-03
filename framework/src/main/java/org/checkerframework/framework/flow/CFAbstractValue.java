@@ -54,7 +54,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     protected final TypeMirror underlyingType;
     protected final Set<AnnotationMirror> annotations;
 
-    public CFAbstractValue(
+    protected CFAbstractValue(
             CFAbstractAnalysis<V, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
@@ -157,7 +157,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return Objects.hash(getAnnotations(), underlyingType);
     }
 
-    /** @return the string representation as a comma-separated list */
+    /**
+     * Returns the string representation as a comma-separated list.
+     *
+     * @return the string representation as a comma-separated list
+     */
     @SideEffectFree
     @Override
     public String toString() {
@@ -420,7 +424,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         private Set<AnnotationMirror> aSet;
         private Set<AnnotationMirror> bSet;
 
-        public AnnotationSetAndTypeMirrorVisitor(
+        protected AnnotationSetAndTypeMirrorVisitor(
                 TypeMirror result,
                 TypeMirror aTypeMirror,
                 TypeMirror bTypeMirror,
