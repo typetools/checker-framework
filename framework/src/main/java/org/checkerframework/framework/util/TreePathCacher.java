@@ -25,6 +25,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     private TreePath path;
 
     /**
+     * Returns true if the tree is cached.
+     *
      * @param target the tree to search for
      * @return true if the tree is cached
      */
@@ -33,6 +35,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     }
 
     /**
+     * Adds the given key and value to the cache.
+     *
      * @param target the tree to add
      * @param path the path to cache
      */

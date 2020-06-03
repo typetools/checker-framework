@@ -1,4 +1,4 @@
-@SuppressWarnings("")
+@SuppressWarnings("all")
 class SuperThis {
     class Super {}
 

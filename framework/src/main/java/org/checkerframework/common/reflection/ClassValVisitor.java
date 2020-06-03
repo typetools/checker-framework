@@ -8,7 +8,6 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -47,10 +46,11 @@ class ClassNameValidator extends BaseTypeValidator {
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
             List<String> classNames =
-                    ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation(classVal);
+                    ((ClassValAnnotatedTypeFactory) atypeFactory)
+                            .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
-                    checker.report(Result.failure("illegal.classname", className, type), tree);
+                    checker.reportError(tree, "illegal.classname", className, type);
                 }
             }
         }

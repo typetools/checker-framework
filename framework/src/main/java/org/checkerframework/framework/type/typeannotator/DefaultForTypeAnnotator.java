@@ -140,29 +140,32 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         // the type. Do this before looking at kind or class, as this information
         // is more specific.
 
-        String qname = null;
+        String qname;
         if (type.getKind() == TypeKind.DECLARED) {
             qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType()).toString();
         } else if (type.getKind().isPrimitive()) {
             qname = type.getUnderlyingType().toString();
+        } else {
+            qname = null;
         }
 
-        if (qname != null && types.containsKey(qname)) {
-            Set<AnnotationMirror> fnd = types.get(qname);
-            type.addMissingAnnotations(fnd);
+        if (qname != null) {
+            Set<AnnotationMirror> fromQname = types.get(qname);
+            if (fromQname != null) {
+                type.addMissingAnnotations(fromQname);
+            }
         }
 
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
-
-        if (typeKinds.containsKey(type.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
-            type.addMissingAnnotations(fnd);
+        Set<AnnotationMirror> fromKind = typeKinds.get(type.getKind());
+        if (fromKind != null) {
+            type.addMissingAnnotations(fromKind);
         } else if (!atmClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
-            if (atmClasses.containsKey(t)) {
-                Set<AnnotationMirror> fnd = atmClasses.get(t);
-                type.addMissingAnnotations(fnd);
+            Set<AnnotationMirror> fromClass = atmClasses.get(t);
+            if (fromClass != null) {
+                type.addMissingAnnotations(fromClass);
             }
         }
 

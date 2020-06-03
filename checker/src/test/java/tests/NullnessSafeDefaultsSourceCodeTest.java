@@ -13,13 +13,17 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker when using safe defaults for unannotated source code. */
 public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NullnessSafeDefaultsSourceCodeTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NullnessSafeDefaultsSourceCodeTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AuseDefaultsForUncheckedCode=source",
+                "-AuseConservativeDefaultsForUncheckedCode=source",
                 "-cp",
                 "dist/checker.jar:tests/build/testclasses/",
                 "-Anomsgtext");
@@ -36,7 +40,8 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
         List<String> customizedOptions1 =
                 customizeOptions(
                         Arrays.asList(
-                                "-AuseDefaultsForUncheckedCode=source,bytecode", "-Anomsgtext"));
+                                "-AuseConservativeDefaultsForUncheckedCode=source,bytecode",
+                                "-Anomsgtext"));
         TestConfiguration config1 =
                 buildDefaultConfiguration(
                         "tests/nullness-safedefaultssourcecodelib",

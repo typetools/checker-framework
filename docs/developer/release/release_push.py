@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 """
 release_push.py
@@ -82,52 +82,7 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
     Central. This is a reversible step, since artifacts that have not been
     released can be dropped, which for our purposes is equivalent to never
     having staged them."""
-    pgp_user = "checker-framework-dev@googlegroups.com"
-    pgp_passphrase = read_first_line(PGP_PASSPHRASE_FILE)
-
-    mvn_dist = os.path.join(MAVEN_ARTIFACTS_DIR, "dist")
-    execute("mkdir -p " + mvn_dist)
-
-    # build Jar files with only readmes for artifacts that don't have sources/javadocs
-    ant_cmd = "ant -f release.xml -Ddest.dir=%s -Dmaven.artifacts.dir=%s jar-maven-extras" % (mvn_dist, MAVEN_ARTIFACTS_DIR)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
-    # At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_BINARY_RELEASE_POM, CHECKER_BINARY,
-                            CHECKER_SOURCE, CHECKER_JAVADOC,
-                            pgp_user, pgp_passphrase)
-
-    # checker.jar is a superset of checker-qual.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_SOURCE),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
-                            pgp_user, pgp_passphrase)
-
-    # checker.jar is a superset of checker-qual-andriod.jar, so use the same javadoc jar
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_ANDROID_RELEASE_POM,
-                            CHECKER_QUAL_ANDROID,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_ANDROID_SOURCE),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
-                            pgp_user, pgp_passphrase)
-
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
-                            pgp_user, pgp_passphrase)
-
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVACUTIL_BINARY_RELEASE_POM, JAVACUTIL_BINARY,
-                            JAVACUTIL_SOURCE_JAR, JAVACUTIL_JAVADOC_JAR,
-                            pgp_user, pgp_passphrase)
-
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
-                            DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
-                            pgp_user, pgp_passphrase)
-
-    mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, FRAMEWORKTEST_BINARY_RELEASE_POM, FRAMEWORKTEST_BINARY,
-                            FRAMEWORKTEST_SOURCE_JAR, FRAMEWORKTEST_JAVADOC_JAR,
-                            pgp_user, pgp_passphrase)
-
-    delete_path(mvn_dist)
+    execute("./gradlew deployArtifactsToSonatype --no-parallel", working_dir=CHECKER_FRAMEWORK)
 
 def is_file_empty(filename):
     "Returns true if the given file has size 0."
@@ -310,7 +265,7 @@ def main(argv):
 
         print_step("3b: Run Maven sanity test on development release.")
         if auto or prompt_yes_no("Run Maven sanity test on development repo?", True):
-            maven_sanity_check("maven-dev", MAVEN_DEV_REPO, new_checker_version)
+            maven_sanity_check("maven-dev", "", new_checker_version)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
@@ -480,6 +435,13 @@ def main(argv):
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
                          get_announcement_email(new_checker_version))
+
+        print_step("Push Step 12. Update the Checker Framework Gradle plugin.") # MANUAL
+        continue_or_exit("Please update the Checker Framework Gradle plugin:\n"+
+                         "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n")
+
+        print_step("Push Step 13. Prep for next Checker Framework release.") # MANUAL
+        continue_or_exit("Increment the last number of the Checker Framework version and add -SNAPSHOT")
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

@@ -25,11 +25,9 @@ including people who wish to edit its source code or make pull requests.
     <ul>
       <li><a href="#Directory_structure">Directory structure</a></li>
       <li><a href="#Build_tasks">Build tasks</a></li>
+      <li><a href="#tests">Testing the Checker Framework</a></li>
       <li><a href="#Code_style">Code style</a></li>
-      <li><a href="#IDE_configuration">IDE configuration</a>
-        <ul>
-          <li><a href="#Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</a></li>
-        </ul></li>
+      <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
@@ -38,6 +36,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
+      <li><a href="#testing-optimizations">Testing optimizations</a></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
@@ -99,9 +98,8 @@ wrapper</a>.
 Frequently-used tasks:
 </p>
 <ul>
-  <li> <code>assemble</code>: builds all jars except <code>jdk8.jar</code>, including javadoc jars and fat jars that contain all dependencies.
+  <li> <code>assemble</code>: builds all jars.
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
-  <li> <code>buildJdk</code>: builds <code>jdk8.jar</code>.
   <li> <code>allTests</code>: runs all tests.
   <li> <code>reformat</code>: reformats Java files.
   <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
@@ -116,6 +114,13 @@ framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
 the <code>framework</code> project.
 Alternatively, running <code>:framework:allTests</code> from the
 main directory or any subproject runs the <code>allTests</code> task only in the <code>framework</code> project.
+</p>
+
+
+<h2 id="tests">Testing the Checker Framework</h2>
+
+<p>
+For writing new test cases, see file <a href="https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README"><code>checker/tests/README</code></a>.
 </p>
 
 
@@ -146,51 +151,25 @@ Authorship (and who has made changes recently) can be obtained from the
 version control system, such as by running <code>git annotate <em>filename</em></code>.
 </p>
 
+<p>
+  Every class, method, and field (even private ones) must have a
+  descriptive Javadoc comment.
+</p>
 
 
 <h2 id="IDE_configuration">IDE configuration</h2>
 
-<h3 id="Configure_Eclipse_to_edit_the_Checker_Framework">Configure Eclipse to edit the Checker Framework</h3>
+After <a href="../manual/manual.html">cloning and building all projects from their sources</a>,
+import them as gradle projects.
 
-<p>
-These instructions are relevant if you use Eclipse as your IDE.
-</p>
-
-<ol>
-<li> <a href="../manual/manual.html">Clone and build all projects from their sources.</a>
-</li>
-<li> Download Eclipse from
-the <a href="https://www.eclipse.org/downloads/">official Eclipse website</a>
-and install it.
-</li>
-<li> Run Eclipse.
-</li>
-<li> Enter the main Eclipse working screen and in the &ldquo;File&rdquo; menu,
-select &ldquo;Import&rdquo; &rArr; &ldquo;General&rdquo; &rArr; &ldquo;Existing
-Projects into Workspace&rdquo;.
-</li>
-<li> After the &ldquo;Import Projects&rdquo; window appears, select &ldquo;Select
-Root Directory&rdquo;, and select the parent of the <code>$CHECKERFRAMEWORK</code> directory.
-</li>
-<li> Ensure &ldquo;Search for nested projects&rdquo; is selected in the Options panel.
-</li>
-<li> Select all the projects in the folder except for &ldquo;personalblog-demo&rdquo;,
-then select &ldquo;Finish&rdquo; to import the projects.
-</li>
-</ol>
-
-<p>
-Eclipse should successfully build all the imported projects.
-If Eclipse reports any errors, ensure you followed the instructions for
-<a href="../manual/manual.html">cloning and building all projects.</a>
-</p>
+If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11.
 
 
 <h2 id="pull-requests">Pull requests</h2>
 
 <p>
 Each pull request should address a single concern, rather than (say)
-addressing multiple concerns such as fixing a bug, adding a feature, and
+addressing multiple concerns such as fixing a bug, adding a feature, <em>and</em>
 changing formatting.  Focusing each pull request on a single concern makes
 the commit easier to understand and review.  It also makes the commit
 history (after the pull request is merged) easier to understand and (if
@@ -198,31 +177,54 @@ necessary) revert.
 </p>
 
 <p>
-Don't forget to update the changelog if you make changes that are worthy of
-telling developers about.  This makes it much easier for someone to make a
-release.
+The pull request title should clearly explain the change.  It will be used
+as the commit message for your change.  If the pull request fixes an issue
+in the issue tracker, its title should end with "; fixes #NNN" where NNN is
+the fixed issue.
 </p>
 
 <p>
-Work on a branch if you are going to submit a pull request.
-This enables others to make changes directly to your branch when that
-is more efficient than leaving comments in a pull request.
+  Your pull request (whether it is a bug fix or a new feature) should
+  include tests that fail before your change and pass afterward.
+</p>
+
+<p>
+If you make a user-visible change, update the manual (or add a new section)
+and add a brief description at the top of the changelog
+(file <code>changelog.txt</code>).
+</p>
+
+<p>
+To reduce iterations of code review, please follow
+the <a href="#code-style">coding conventions</a>.
+Also enable <a href="#ci">continuous integration</a> on your fork of the Checker
+Framework and ensure that it passes before you open a pull request.
+</p>
+
+<p>
+  It is good style to create a branch (in your fork of the Checker
+  Framework GitHub repository) for each independent change.  Do not make
+  changes to your <code>master</code> branch.
+</p>
+
+<p>
+If you make related changes in the <code>checker-framework</code>
+and <code>checker-framework-inference</code> repositories, use the <em>same
+branch name</em> for each.  The continuous integration framework will find
+and use that branch when running tests.
+</p>
+
+<p>
+Please ensure that your GitHub account profile contains your complete name.
+This is necessary to include you in
+the <a href="https://checkerframework.org/manual/#credits">list of
+contributors</a>.
 </p>
 
 <p>
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
-    Ernst's advice about creating GitHub pull requests</a>.
-</p>
-
-<p>
-When there are related changes in the <code>checker-framework</code>
-and <code>checker-framework-inference</code> repositories, use the same
-branch name for each.  The continuous integration framework uses a branch
-of the same name when possible.  If you use different branch names
-in <code>checker-framework</code>
-and <code>checker-framework-inference</code>, then the continuous
-integration tests for both will fail and may mask problems.
+Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 
@@ -254,23 +256,16 @@ too busy to do so, you should recognize that and move on.
 <p>
 The Checker Framework has continuous integration jobs that run in Azure
 Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
+We recommend Azure Pipelines.
 </p>
-
-<p>
-  To enable Travis CI continuous integration for your fork:
-</p>
-<ul>
-  <li>Browse to <a href="https://travis-ci.com/">travis-ci.com</a></li>
-  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
-  <li>Click settings</li>
-  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
-</ul>
 
 <p>
   To enable Azure Pipelines continuous integration for your fork:
+  (This is a summary of the <a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops">Azure
+  Pipelines getting started directions</a>.)
 </p>
 <ul>
-  <li>Go to dev.azure.com.
+  <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
       (You might need to create a (free) account.)</li>
   <li>Click "Create a project to get started"</li>
   <li>Click "public".</li>
@@ -286,6 +281,16 @@ Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
   <li>Click "run".</li>
 </ul>
 
+<p>
+  To enable Travis CI continuous integration for your fork:
+</p>
+<ul>
+  <li>Browse to <a href="https://travis-ci.com/">travis-ci.com</a></li>
+  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
+  <li>Click settings</li>
+  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
+</ul>
+
 
 <h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
 
@@ -298,6 +303,21 @@ This is usually because the CI service performed more tests than you ran locally
 First, examine the CI service's logs, which contain diagnostic output from the
 failing command.  You can determine which command was run from the logs, or
 from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+</p>
+
+
+<h2 id="testing-optimizations">Testing optimizations</h2>
+
+<p>
+To test an optimization that should speed up type-checking, see
+the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
+of the Azure Pipelines CI job.  Compare the run time of this stage (or of
+the entire <code>daikon_jdk8</code> job) between the master branch and a
+branch with your improvements.
+</p>
+
+<p>
+You can also compare run times of the Checker Framework test suite.
 </p>
 
 
@@ -354,7 +374,7 @@ See a separate document about the
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn
  -->
 <!--  LocalWords:  subproject personalblog changelog
  -->

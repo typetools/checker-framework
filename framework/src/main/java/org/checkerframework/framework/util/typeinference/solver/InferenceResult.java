@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference.solver;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
@@ -12,13 +11,17 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 
 /**
- * Represents the result from inferring type arguments. InferenceResult is a map from: ({@code
- * Target type variable &rArr; inferred type or target})
+ * Represents the result from inferring type arguments. InferenceResult is a map from: target type
+ * variable to (inferred type or target).
  */
 public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
     private static final long serialVersionUID = 6911459752070485818L;
 
-    /** @return the set of targets that still don't have an inferred argument */
+    /**
+     * Returns the set of targets that still don't have an inferred argument.
+     *
+     * @return the set of targets that still don't have an inferred argument
+     */
     public Set<TypeVariable> getRemainingTargets(
             final Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
         final LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
@@ -38,7 +41,12 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         return remainingTargets;
     }
 
-    /** @return true if we have inferred a concrete type for all targets */
+    /**
+     * Returns true if we have inferred a concrete type for all targets.
+     *
+     * @param targets type variables to check
+     * @return true if we have inferred a concrete type for all targets
+     */
     public boolean isComplete(final Set<TypeVariable> targets) {
         for (final TypeVariable target : targets) {
             final InferredValue inferred = this.get(target);
@@ -65,7 +73,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         boolean grew = true;
         while (grew) {
             grew = false;
-            for (final Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
+            for (final Map.Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
                 final TypeVariable target = inferred.getKey();
                 final InferredValue value = inferred.getValue();
 
@@ -94,7 +102,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
     public Map<TypeVariable, AnnotatedTypeMirror> toAtmMap() {
         final Map<TypeVariable, AnnotatedTypeMirror> result = new LinkedHashMap<>(this.size());
-        for (final Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
+        for (final Map.Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
             final InferredValue inferredValue = entry.getValue();
             if (inferredValue instanceof InferredType) {
                 result.put(entry.getKey(), ((InferredType) inferredValue).type);

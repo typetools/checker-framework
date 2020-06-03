@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -24,6 +25,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -83,6 +85,9 @@ public class NullnessAnnotatedTypeFactory
     /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
+    /** The Class.getCanonicalName() method. */
+    protected final ExecutableElement classGetCanonicalName;
+
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
@@ -104,6 +109,8 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.NonNull",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
                     "io.reactivex.annotations.NonNull",
+                    // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/NonNull.java
+                    "io.reactivex.rxjava3.annotations.NonNull",
                     // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.Nonnull",
                     // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
@@ -150,6 +157,8 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
                     "io.reactivex.annotations.Nullable",
+                    // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/Nullable.java
+                    "io.reactivex.rxjava3.annotations.Nullable",
                     // https://jcp.org/en/jsr/detail?id=305
                     "javax.annotation.CheckForNull",
                     "javax.annotation.Nullable",
@@ -201,10 +210,14 @@ public class NullnessAnnotatedTypeFactory
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
+        classGetCanonicalName =
+                TreeUtils.getMethod(
+                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
+
         postInit();
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(checker, this);
     }
 
     @Override
@@ -295,8 +308,18 @@ public class NullnessAnnotatedTypeFactory
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
 
+        // Special cases for method invocations with specific arguments.
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
+        // `MyClass.class.getCanonicalName()` is non-null.
+        if (TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
+            ExpressionTree receiver = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
+            if (TreeUtils.isClassLiteral(receiver)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                type.replaceAnnotation(NONNULL);
+            }
+        }
+
         return mType;
     }
 
@@ -475,7 +498,11 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /** @return the list of annotations of the non-null type system */
+    /**
+     * Returns the list of annotations of the non-null type system.
+     *
+     * @return the list of annotations of the non-null type system
+     */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }

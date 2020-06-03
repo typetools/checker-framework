@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-@SuppressWarnings("") // Just check for crashes.
+@SuppressWarnings("all") // Just check for crashes.
 public class Bug8 {
 
     static <T1, K1, V1> Collector<T1, ?, MyMap<K1, V1>> toImmutableMap(

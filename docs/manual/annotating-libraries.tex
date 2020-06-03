@@ -33,9 +33,10 @@ You can write annotations for a library, and make them known to a checker, in tw
   Write annotations in a copy of the library's source code (for instance,
   in a fork of the library's GitHub project).  In addition to writing
   annotations, adjust the build system to run pluggable-type-checking when
-  compiling (see \chapterpageref{external-tools}).
+  compiling (see \chapterpageref{external-tools}).  Now, when you compile
+  the library, the resulting \<.jar> file contains type annotations.
 
-  Then, when doing pluggable type-checking,
+  When checking a client of the library,
   put the annotated library's \<.jar> file on the classpath, as explained in
   Section~\ref{annotated-libraries-using}.
   %% You only need to do this if for some reason you don't trust the
@@ -65,7 +66,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Then, when doing pluggable type-checking,
+  Then, when check a client of the library,
   supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
@@ -200,10 +201,10 @@ the correctness and completeness of your annotations.
 
 An alternative is to
 only annotate method signatures.  The alternative is quicker but more
-error-prone, and there is no difference from the point of view of clients,
+error-prone.  There is no difference from the point of view of clients,
 who can only see annotations on public methods and fields.  When you
-compile the library, the type-checker will probably issue warnings, but if
-you supply \<-Awarns>, you don't have to suppress those warnings and the
+compile the library, the type-checker will probably issue warnings; you can
+supply \<-Awarns> so that the
 compiler will still produce \<.class> files.
 
 
@@ -227,7 +228,7 @@ This section describes how to create an annotated library.
   \item
     If it exists, but you want to add annotations for a different checker:
 
-    Clone its repository from \url{https://github.com/typetools/}, tweak
+    Clone its repository from \url{https://github.com/typetools/}, and tweak
     its buildfile to run an additional checker.
 
   \item
@@ -247,7 +248,7 @@ This section describes how to create an annotated library.
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      pass the \<-AuseDefaultsForUncheckedCode=source,bytecode>
+      pass the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
       run every pluggable type-checker for which any
@@ -269,9 +270,9 @@ This section describes how to create an annotated library.
   % This is a strong recomendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
   When you annotate a file, annotate the whole thing, not just a few of its
-  methods.  Once the file is fully annotated, add an
+  methods.  Add an
   \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
-  annotation to its class(es), or augment an existing \<@AnnotatedFor>
+  annotation to each class declaration, or augment an existing \<@AnnotatedFor>
   annotation.
 
 \item
@@ -295,11 +296,14 @@ This section describes how to create an annotated library.
     the Maven Central Repository.
 
   \item
-    Encourage the library's maintainers to accept your annotations into its
-    main version control repository.  This will make the annotations easier
+    Optionally, encourage the library's maintainers to accept your annotations into its
+    main version control repository.  This suggestion will be most
+    compelling if you have already reported bugs in the library that were
+    revealed by pluggable type-checking.  Once the annotations are in the
+    main version control repository, they will be easier
     to maintain, the library will obtain the correctness guarantees of
-    pluggable type-checking, and there will be no need for the Checker
-    Framework to include an annotated version of the library.
+    pluggable type-checking, and there will be no need
+    to distribute an annotated version of the library.
 
     If the library maintainers do not accept the annotations, then
     periodically, such as when a new version of the library is released,
@@ -315,100 +319,31 @@ This section describes how to create an annotated library.
 
 \sectionAndLabel{Creating an annotated JDK}{annotating-jdk}
 
-This section tells how to create an annotated JDK for a new type system.
-Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
-annotations for the JDK for an existing type system.
-
 When you create a new checker, you need to also supply annotations for
-parts of the JDK, either as stub files or as source code that will be
-compiled and its annotations inserted into the JDK\@.  This
+parts of the JDK\@.  You can do so either as stub files or in a copy of the
+JDK source code.  This
 section describes the latter approach.
 It assumes that you have already followed the instructions for building the
 Checker Framework from source (Section~\ref{build-source}).
+(Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
+JDK annotations for an existing type system.)
 
-Because there are two versions of the annotated JDK, you need to write your
-annotations in two places.
-
-For \textbf{JDK 11}, edit files in repository \url{https://github.com/typetools/jdk}.
-That is all you need to do.
-
-The rest of this section gives instructions for \textbf{JDK 8}.
-
-If you are adding annotations to an existing annotated JDK, then you only
-need to follow the last two steps.
-
-\begin{enumerate}
-\item
-Get Java 8 source code (must be version 8)
-\begin{enumerate}
-\item Download JDK8 from Oracle
-\item Open the downloaded tar (\<tar -xvzf>)
-\item Unzip the contained \<src.zip> (resulting in folders: \<com/>, \<java/>, \<javax/>, \<launcher/>, \<org/>)
-\end{enumerate}
-
-\item
-Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
-\begin{enumerate}
-\item \<mkdir \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
-  \<cd \$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/> \\
-  \code{echo "include ../Makefile.jdk" > Makefile}
-
-\item Add \textit{mychecker} to
-  \<\$CHECKERFRAMEWORK/checker/jdk/MakeFile> in the  definition of
-  \<CHECKER\_DIRS> and in the definition of \<ANNOTATED\_CLASSES> (don't forget
-  to add a closing parenthesis at the end of the definition of \<ANNOTATED\_CLASSES>!).
-
-\end{enumerate}
-
-\item
-For each file you want to annotate, copy the JDK version into the
-directory
-\<\$CHECKERFRAMEWORK/checker/jdk/\textit{mychecker}/src/>, using
-the same directory structure as the JDK\@.
+Edit files in repository \url{https://github.com/typetools/jdk}.  Add
+an \<@AnnotatedFor()> annotation to each file you annotate.
 
 Whenever you add a file, fully annotate it, as described in
 Section~\ref{library-tips}.
 
 If you are only annotating fields and method signatures (but not
 ensuring that method bodies type-check), then you don't need to suppress
-warnings, because the JDK is built using the \<-Awarns> command-line
-option.
-
-\item
-Build the annotated JDK\@.  There are two ways:
-\begin{itemize}
-\item
-  Pass a flag.
-  Run \<./gradlew buildJdk -PuseLocalJdk>
-  % Is any more advice needed here, such as supplying -PuseLocalJdk to
-  % other commands?
-\item
-  Make a setting in the buildfile.
-  Set \<jdkShaHash> to \<`local'> in \<checker/build.gradle>, then
-  run \<./gradlew buildJdk>
-\end{itemize}
-
-(First, be sure you have followed the instructions for building the Checker
-Framework from source (Section~\ref{build-source})
-including running \<./gradlew cloneAndBuildDependencies>.)
-
-You may receive a compilation error because your files use a part of the
-JDK that is not in the annotated JDK\@.  If the missing part is relatively
-small, please add it.  If the missing part is large, then you can make
-small changes to the JDK source code, such as commenting out a method body.
-(Use \</*> and \<*/> on their own lines, so that the diffs are minimal.)
-
-To upload a compiled version of the annotated JDK, for use by other people,
-see \url{https://github.com/typetools/annotated-libraries}.
-
-\end{enumerate}
+warnings, because the JDK is not type-checked.
 
 
 \sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}
 
-If you completely annotate a library, then you can compile it using a
-pluggable type-checker, and include the resulting \<.jar> file on your
-classpath.  You get a guarantee that the library contains no errors.
+If you \emph{completely} annotate a library, then you can compile it using a
+pluggable type-checker.  You get a guarantee that the library contains no
+errors (that is, it is consistent with the specifications you wrote).
 
 The rest of this section tells you how to compile a library if you
 \emph{partially} annotate it:  that is, you write annotations for some of its
@@ -417,7 +352,7 @@ classes but not others.
 method signatures but do not type-check the bodies.
 See Section~\ref{library-tips}.)
 
-There are two concerns:
+Here are two concerns you may have when partially annotating a library:
 
 \begin{itemize}
 \item
@@ -436,14 +371,14 @@ There are two concerns:
 
 
 
-\subsectionAndLabel{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument}{AuseDefaultsForUncheckedCodesource}
+\subsectionAndLabel{The \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument}{AuseConservativeDefaultsForUncheckedCodesource}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
+argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For classes without \<@AnnotatedFor>, the checker uses
-unchecked code defaults
+conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}
@@ -453,7 +388,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
+the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
@@ -467,7 +402,7 @@ that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
+using the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -476,10 +411,12 @@ is run.
 
 \sectionAndLabel{Using stub classes}{stub}
 
-A stub file contains ``stub classes'' that contain annotated signatures,
-but no method bodies.  A
+A ``stub class'' is Java source code that is allowed to omit certain parts,
+such as method bodies.  (See Section~\ref{stub-format} for details
+about the stub file format.)  You use a stub file to write annotations
+for a library, when you cannot edit and recompile the library.  A
 checker uses the annotated signatures at compile time, instead of or in
-addition to annotations that appear in the library.
+addition to annotations that appear in the library's \<.class> files.
 
 Section~\ref{annotating-jdk} explains how you should choose between
 creating stub classes or creating an annotated library.
@@ -509,39 +446,64 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-The \<-Astubs> argument is for stub files that users create.
-A checker automatically reads some of its own stub files; see
+A checker automatically reads some of its own stub files, even without a
+\<-Astubs> command-line argument; see
 Section~\ref{creating-a-checker-annotated-jdk}.
 
+
+\subsectionAndLabel{Multiple specifications for a method}{stub-multiple-specifications}
+
+There are three possible sources of information for a given
+element: source files, stub files, and bytecode files.
+Usually source files take precedence over the other two,
+and stub files take precedence over bytecode.
+In other words:
+\begin{itemize}
+\item
+  If file \<A.java> is being compiled, then by default any stub for class
+  \<A> is ignored.  See below for how to change this behavior and respect
+  both types of annotations.
+\item
+  An un-annotated type variable in a stub file is used instead of
+  annotations on a type variable in bytecode.
+  \\
+  Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get a
+  warning whenever a stub file specification is redundant with bytecode
+  annotations.
+  %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
+  % Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+  % warning whenever a stub file overwrites bytecode annotations.
+\item
+  If a stub file does not mention a method or field (and no source is
+  available), its annotations are taken from bytecode.
+\end{itemize}
+
 If a method appears in more than one stub file (or twice in the same
-stub file), then the annotations are merged. If any of the
-methods have different annotations from the same hierarchy on the same type,
-then the annotation from the last declaration is used.
+stub file), then, for each type hierarchy, the last annotation read is used.
 
-% \textbf{The following is not implemented yet}
-% A library writers should create a file \code{library.astub} on the
-% classpath (in the resources directory or the binary jars).
-% The Checker Framework automatically imports all the stub files named
-% \code{library.astub} found in the classpath.
+The annotated JDK is read as a stub file.
 
-If both bytecode and a stub file provide information for the same
-element, the stub file information is used. In particular, an
-un-annotated type variable in a stub file is used instead of
-annotations on a type variable in bytecode.
-This feature allows stub files to change the effective annotations in
-all possible situations.
-%% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
-% Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
-% warning whenever a stub file overwrites bytecode annotations.
-Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get
-a warning whenever a stub file specification is redundant with
-bytecode annotations.
+The command-line option \<-AmergeStubsWithSource> tells the checker to use
+both source files and stub files.  The checker permits only values that are
+permitted by \emph{both} the source and stub annotations.  (This is called
+the greatest lower bound, or GLB, of the types.)
+% Note for maintainers:
+% The choice of GLB is made for the convenience of whole-program inference.
+Do not use \<-AmergeStubsWithSource> if the default qualifier
+is other than top (e.g., the Nullness Checker).
 
-A file being compiled takes precedence over a stub file.  If file \<A.java>
-is being compiled, then any stub for class \<A> is ignored.
-
-When a stub file is provided by the author of a checker, the stub file is used
-automatically, with no need for the user to supply a command-line option.
+As an example of GLB, suppose the source annotation says the value is in
+the range [1..20] and the stub file says the value is in the range
+[11..30].  Since both sources of information are trusted, the value must be
+in the range [11..20].  Equivalently, the GLB of
+\refqualclasswithparams{common/value/qual}{IntRange}{from=1, to=20} and
+\refqualclasswithparams{common/value/qual}{IntRange}{from=11, to=30} is
+\refqualclasswithparams{common/value/qual}{IntRange}{from=11, to=20}.
+As another example, the GLB of
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2"\}} and
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map2", "map3"\}} is
+\refqualclasswithparams{checker/nullness/qual}{KeyFor}{\{"map1", "map2", "map3"\}}
+since the value is known to be a key for all three maps.
 
 
 \subsectionAndLabel{Stub file format}{stub-format}
@@ -634,6 +596,32 @@ slow down the Checker Framework, because it parses the stub files each time
 it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
+
+Alternatively, you can minimize source files to make them more suitable as stub files.
+Use the \<JavaStubifier> to convert, in-place, all \<.java> files in given directories into
+minimal stub files.
+
+\begin{Verbatim}
+  mkdir project-stubs
+  cp -R project/src project-stubs
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.JavaStubifier project-stubs
+  find project-stubs -type f -name "*.java" -exec rename 's/.java$/.astub/' {} \;
+\end{Verbatim}
+
+Supply it a list of directories to process. Replacement happens in-place, so make sure to
+process a copy of your sources.
+
+You can now provide \<project-stubs> as a stub directory using \<-Astubs=project-stubs> as
+an additional command-line option.
+
+If you wish to use a single stub file, rather than a stub directory,
+you can concatenate all the minimized \<.java> files into a single \<.astub> file:
+
+\begin{Verbatim}
+find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
+\end{Verbatim}
+
+% That file will contain many non-unique import statements, but that shouldn't be harmful.
 
 
 \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
@@ -771,16 +759,16 @@ read whether the library's annotations are parsed.
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
 % LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
+% LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
+%%  LocalWords:  TypeSystem2 TypeSystem3 AuseConservativeDefaultsForUncheckedCode ln
 %  LocalWords:  mychecker DIRS README TypeSystem un debugJSR org boolean
 %  LocalWords:  AstubWarnIfOverwritesBytecode Awarns AssumeAssertion
-%%  LocalWords:  Makefile buildJdk PuseLocalJdk jdkShaHash AonlyDefs
-%%  LocalWords:  AuseDefaultsForUncheckedCodesource
+%%  LocalWords:  Makefile PuseLocalJdk jdkShaHash AonlyDefs
+%%  LocalWords:  AuseConservativeDefaultsForUncheckedCodesource
 %%  LocalWords:  AstubWarnIfNotFoundIgnoresClasses

@@ -7,7 +7,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class SignednessTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a SignednessTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public SignednessTest(List<File> testFiles) {
         super(
                 testFiles,

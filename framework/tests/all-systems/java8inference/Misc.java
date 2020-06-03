@@ -1,4 +1,4 @@
-@SuppressWarnings({"unchecked", ""})
+@SuppressWarnings({"unchecked", "all"}) // check for crashes
 class Misc<T> {
     Misc<? super T> forward;
 

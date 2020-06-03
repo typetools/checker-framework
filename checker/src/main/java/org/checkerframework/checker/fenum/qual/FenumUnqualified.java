@@ -18,10 +18,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
-@SubtypeOf({FenumTop.class})
-@DefaultQualifierInHierarchy
-@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({}) // empty target prevents programmers from writing this in a program
+@SubtypeOf({FenumTop.class})
+@DefaultQualifierInHierarchy
+@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
 public @interface FenumUnqualified {}

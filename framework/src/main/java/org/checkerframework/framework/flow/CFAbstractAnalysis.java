@@ -2,10 +2,12 @@ package org.checkerframework.framework.flow;
 
 import java.util.List;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -58,12 +60,28 @@ public abstract class CFAbstractAnalysis<
     /** Initial abstract types for fields. */
     protected final List<Pair<VariableElement, V>> fieldValues;
 
-    public CFAbstractAnalysis(
+    /** The associated processing environment. */
+    protected final ProcessingEnvironment env;
+
+    /** Instance of the types utility. */
+    protected final Types types;
+
+    /**
+     * Create a CFAbstractAnalysis.
+     *
+     * @param checker a checker that contains command-line arguments and other information
+     * @param factory an annotated type factory to introduce type and dataflow rules
+     * @param fieldValues initial abstract types for fields
+     * @param maxCountBeforeWidening number of times a block can be analyzed before widening
+     */
+    protected CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues,
             int maxCountBeforeWidening) {
-        super(null, maxCountBeforeWidening, checker.getProcessingEnvironment());
+        super(maxCountBeforeWidening);
+        env = checker.getProcessingEnvironment();
+        types = env.getTypeUtils();
         qualifierHierarchy = factory.getQualifierHierarchy();
         typeHierarchy = factory.getTypeHierarchy();
         dependentTypesHelper = factory.getDependentTypesHelper();
@@ -74,7 +92,7 @@ public abstract class CFAbstractAnalysis<
         this.fieldValues = fieldValues;
     }
 
-    public CFAbstractAnalysis(
+    protected CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
@@ -95,15 +113,27 @@ public abstract class CFAbstractAnalysis<
         return fieldValues;
     }
 
-    /** @return the transfer function to be used by the analysis */
+    /**
+     * Returns the transfer function to be used by the analysis.
+     *
+     * @return the transfer function to be used by the analysis
+     */
     public T createTransferFunction() {
         return atypeFactory.createFlowTransferFunction(this);
     }
 
-    /** @return an empty store of the appropriate type */
+    /**
+     * Returns an empty store of the appropriate type.
+     *
+     * @return an empty store of the appropriate type
+     */
     public abstract S createEmptyStore(boolean sequentialSemantics);
 
-    /** @return an identical copy of the store {@code s}. */
+    /**
+     * Returns an identical copy of the store {@code s}.
+     *
+     * @return an identical copy of the store {@code s}
+     */
     public abstract S createCopiedStore(S s);
 
     /**
@@ -125,8 +155,10 @@ public abstract class CFAbstractAnalysis<
     }
 
     /**
-     * @return an abstract value containing the given {@code annotations} and {@code
-     *     underlyingType}.
+     * Returns an abstract value containing the given {@code annotations} and {@code
+     * underlyingType}.
+     *
+     * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
      */
     public abstract @Nullable V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);
@@ -168,5 +200,23 @@ public abstract class CFAbstractAnalysis<
         annos.remove(f);
         annos.add(anno);
         return createAbstractValue(annos, underlyingType);
+    }
+
+    /**
+     * Get the types utility.
+     *
+     * @return {@link #types}
+     */
+    public Types getTypes() {
+        return types;
+    }
+
+    /**
+     * Get the processing environment.
+     *
+     * @return {@link #env}
+     */
+    public ProcessingEnvironment getEnv() {
+        return env;
     }
 }

@@ -1,9 +1,9 @@
-/*This stub file will be read first*/
+// This stub file will be read first.
 
 import org.checkerframework.checker.nullness.qual.*;
 
 package java.util;
-public interface List<@Nullable T> {}  // overrules annotated jdk
+public interface List<@Nullable T> {}  // overrules annotated JDK
 
 package java.lang;
 
@@ -12,10 +12,10 @@ public final class String {
      public @Nullable String substring(@NonNull int beginIndex);
      String(@Nullable String arg0);
      void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3);
-//Used to test stub file warnings
+// Used to test stub file warnings.
      void thisMethodIsNotReal(String s);
 }
-//The rest of these are used to test stub file warnings
+// The rest of these are used to test stub file warnings.
 public class NotARealClass{}
 package not.real;
 public class NotARealClassInNotRealPackage{}

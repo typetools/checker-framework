@@ -13,7 +13,7 @@ class Issue1102Decl extends Issue1102Base {
     }
 }
 
-@SuppressWarnings("") // Only interested in possible crash
+@SuppressWarnings("all") // Only interested in possible crash
 class Issue1102Use<U extends Issue1102Base & Issue1102Itf> {
     U f;
 

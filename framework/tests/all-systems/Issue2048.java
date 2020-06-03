@@ -11,7 +11,7 @@ class Issue2048 {
     interface Fooer<R extends Foo> {}
 
     class Use<T> {
-        @SuppressWarnings("") // Check for crashes.
+        @SuppressWarnings("all") // Check for crashes.
         void foo(Fooer<? extends T> fooer) {}
     }
 }

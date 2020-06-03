@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,20 +53,17 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
+    /** The element utilities to use. */
     private final Elements elements;
+    /** The type utilities to use. */
     private final Types types;
 
+    /** The type element of the annotation. */
     private final TypeElement annotationElt;
+    /** The type of the annotation. */
     private final DeclaredType annotationType;
+    /** A mapping from element to AnnotationValue. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
-
-    /**
-     * Caching for annotation creation. Each annotation has no values; that is, getElementValues
-     * returns an empty map. This may be in conflict with the annotation's definition, which might
-     * contain elements (annotation fields).
-     */
-    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Create a new AnnotationBuilder for the given annotation and environment (with no
@@ -86,7 +82,7 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
@@ -128,13 +124,13 @@ public class AnnotationBuilder {
      * <p>This method raises an user error if the annotation corresponding to the class could not be
      * loaded.
      *
-     * <p>Clients can use {@link #fromName} and check the result for null manually, if the error
-     * from this method is not desired. This method is provided as a convenience to create an
-     * AnnotationMirror from scratch in a checker's code.
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
+     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
+     * code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
-     * @return an {@link AnnotationMirror} of type given type
+     * @return an {@link AnnotationMirror} of the given type
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
@@ -164,10 +160,6 @@ public class AnnotationBuilder {
      *     be loaded
      */
     public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
-        AnnotationMirror res = annotationsFromNames.get(name);
-        if (res != null) {
-            return res;
-        }
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -182,15 +174,10 @@ public class AnnotationBuilder {
         }
         AnnotationMirror result =
                 new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
-        annotationsFromNames.put(name, result);
         return result;
     }
 
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationsFromNames.clear();
-    }
-
+    /** Whether or not {@link #build()} has been called. */
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {
@@ -567,7 +554,13 @@ public class AnnotationBuilder {
         }
     }
 
-    private AnnotationValue createValue(final Object obj) {
+    /**
+     * Create an AnnotationValue -- a value for an annotation element/field.
+     *
+     * @param obj the value to be stored in an annotation element/field
+     * @return an AnnotationValue for the given Java value
+     */
+    private static AnnotationValue createValue(final Object obj) {
         return new CheckerFrameworkAnnotationValue(obj);
     }
 

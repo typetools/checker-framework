@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Checker Framework organization: GSoC ideas 2019</title>
+  <title>Checker Framework organization: GSoC ideas 2020</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href=
@@ -11,7 +11,7 @@
 
 <img src="https://checkerframework.org/CFLogo.png" alt="Checker Framework logo" />
 
-<h1>GSoC ideas 2019</h1> <!-- omit from toc -->
+<h1>GSoC ideas 2020</h1> <!-- omit from toc -->
 
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
@@ -20,55 +20,40 @@
     <ul>
       <li><a href="#get-started">How to get started: do a case study</a></li>
       <li><a href="#ask-questions">How to get help and ask questions</a></li>
+      <li><a href="#types-of-projects">Types of projects</a></li>
       <li><a href="#apply">How to apply</a></li>
     </ul></li>
-  <li><a href="#case-studies">Case studies</a>
+  <li><a href="#evaluate-type-system">Evaluate a type system or a Checker Framework feature</a>
     <ul>
-      <li><a href="#library-annotations">Library annotations</a>
-        <ul>
-          <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
-        </ul></li>
       <li><a href="#case-study-signature">Signature strings</a></li>
-      <li><a href="#case-study-android-support">Android support annotations</a></li>
       <li><a href="#case-study-signedness">Signed and unsigned numbers</a></li>
       <li><a href="#optional-case-study">Java's Optional class</a></li>
-      <li><a href="#case-study-nullness">Null pointer exceptions</a>
-        <ul>
-          <li><a href="#case-study-nullness-guava">Guava library</a></li>
-          <li><a href="#case-study-nullness-bazel">Bazel tool</a></li>
-          <li><a href="#case-study-nullness-bcel">BCEL library</a></li>
-        </ul></li>
-      <li><a href="#index-errors">Improving error messages</a></li>
+      <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
+      <li><a href="#determinism">Determinism</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
+      <li><a href="#case-study-android-support">Android support annotations</a></li>
     </ul></li>
-  <li><a href="#new-type-systems">New type systems</a>
+  <li><a href="#annotate-library">Annotate a library</a>
+    <ul>
+      <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
+      <li><a href="#case-study-nullness-guava">Guava library</a></li>
+    </ul></li>
+  <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
       <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
-      <li><a href="#Make_programs_deterministic">Make programs deterministic</a></li>
       <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
-      <li><a href="#Bounded-size_strings">Bounded-size strings</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
-      <li><a href="#lock-ordering">Lock ordering</a></li>
       <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
-      <li><a href="#typestate">Stateful type systems</a></li>
-      <li><a href="#your-own-new-type-system">Invent your own new type system</a></li>
     </ul></li>
-  <li><a href="#cf-other">Type system enhancements and tools</a>
+  <li><a href="#cf-other">Enhance the toolset</a>
     <ul>
-      <li><a href="#annotated-jdk">JDK annotations</a></li>
+      <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#flow-expression-parser">Flow expression parser</a></li>
-      <li><a href="#asm">Upgrade to a newer version of ASM</a></li>
-      <li><a href="#analysis_diffs">Tool for analysis diffs</a></li>
-      <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
       <li><a href="#Purity_analysis">Purity (side effect) analysis</a></li>
       <li><a href="#javadoc">Javadoc support</a></li>
-      <li><a href="#performance">Performance improvements</a></li>
-      <li><a href="#run-time-checking">Run-time checking</a></li>
-      <li><a href="#ide-support">IDE and build system support</a></li>
-      <li><a href="#exhaustive-testing">Model checking of a type system</a></li>
     </ul></li>
 </ul>
 <!-- end toc -->
@@ -77,7 +62,7 @@
 
 <p>
   The <a href="https://checkerframework.org/">Checker Framework</a> is an
-  innovative programming tool that helps you prevent bugs at development
+  innovative programming tool that prevents bugs at development
   time, before they escape to production.
 </p>
 
@@ -85,8 +70,8 @@
   Java's type system prevents some bugs, such as <code>int count =
   "hello";</code>.  However, it does not prevent other bugs, such as null
   pointer dereferences, concurrency errors, disclosure of private
-  information, incorrect internationalization, out-of-bounds indices, and
-  so forth.  <em>Pluggable type-checking</em> replaces a
+  information, incorrect internationalization, out-of-bounds indices, etc.
+  <em>Pluggable type-checking</em> replaces a
   programming language's built-in type system with a more powerful,
   expressive one.
 </p>
@@ -121,7 +106,9 @@
   impact.  It makes code more robust and secure, which is a socially
   important purpose.  Past GSOC students have had great success.
   (David Lazar became a graduate student at MIT; multiple students
-  have published papers in scientific conferences.)  You will
+  have published papers in scientific conferences, such
+  as <a href="https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html">Vlastimil
+  Dort at ISSTA 2018</a>.)  You will
   get to scratch your own itch by creating tools that solve problems that
   frustrate you.  And, we have a lot of fun on this project!
 </p>
@@ -130,7 +117,7 @@
   <b>Prerequisites:</b> You should be very comfortable with the Java
   programming language and its type system.  You should know how a type
   system helps you and where it can hinder you.  You should be willing to
-  dive into and understand a moderately-sized codebase.
+  dive into a moderately-sized codebase.
   You should understand fundamental object-oriented programming concepts,
   such as
   <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle">behavioral
@@ -160,34 +147,40 @@ You can find more potential projects in the
 
 <p>
   To <b>get started</b>, first do a case study of using the Checker
-  Framework.  Do this before submitting your proposal.
+  Framework:  that is, run the Checker Framework on some program.
+  A case study gives you experience in using the Checker
+  Framework, and it may reveal bugs in either the Checker Framework or in
+  the program it is analyzing.
+</p>
+
+<p>
+  Do the case study before submitting your proposal.
+  You might want to start with a small program such as from your
+  coursework, then repeat the process with an open-source program or library.
 </p>
 <ol>
   <li>
     <a href="https://checkerframework.org/manual/#installation">Install</a>
     the Checker Framework.
   <li>
-    Choose a library or program to type-check.
-    <br/>
-    This should be an already-existing
-    program; it should not be newly-written code, nor a set of tiny
-    benchmarks that aim to expose corner cases.
-    <!-- (Corner cases are great to
-    discover, but they are only worth addressing if they come up in real code.)
-    -->
+    <a href="https://checkerframework.org/manual/#how-to-read-this-manual">Review
+    the Checker Framework documentation.</a>
+  <li>
+    Choose an existing library or program to type-check.
+    Choose a program that is at least 1000 lines long.
     The library or program should be under active maintenance; don't choose one
     that has not had a commit in several years.
     You will find the case study easier if you are already familiar with
     the program, or if it is written in good style.
-    <br/>
-    If you need ideas of what program to annotate, you could
-    see <a href="#library-annotations">library annotations</a> below.
-    Don't choose part of the JDK as your first case study.
   <li>
     Choose one type system, from
     among <a href="https://checkerframework.org/manual/#introduction">those
     distributed with the Checker Framework</a>, that is appropriate for the
     program.
+  <li>
+    If the program is hosted on GitHub, fork it and create a branch for
+    your work.  (Leave the master branch unchanged
+    from upstream.)
   <li>
     Annotate the program, based on its documentation.
     <br/>
@@ -195,6 +188,8 @@ You can find more potential projects in the
     program, such as inserting/removing whitespace or sorting
     the <code>import</code> statements.  Doing so bloats the size of the
     diffs and makes it hard to understand the essential changes.
+  <li>
+    Change the build system so that building the annotated branch runs the type-checker.
   <li>
     Run the type-checker.  If it issues
     warnings, <a href="https://checkerframework.org/manual/#handling-warnings">correct them</a>.
@@ -208,17 +203,15 @@ You can find more potential projects in the
         to suppress a warning.  Convince yourself that both branches can
         execute, or else don't add the <code>if</code> statement.
       <li>If you add a <code>@SuppressWarnings</code> annotation,
+	<a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-smallest-scope">write
+	it on the smallest possible scope</a> and
         <a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
         why</a> the checker warning is a false positive and you are certain
         the code is safe.
     </ul>
   <li>
     Share it with us so that
-    we can evaluate it and give you feedback.  (If the code compiles
-    without type-checking warnings, and you didn't
-    use <code>@SuppressWarnings</code>, then the annotations are correct,
-    your program is correct, and you don't need feedback.  Congratulations!
-    You can try a more significant case study.)
+    we can evaluate it and give you feedback.
 
     <p>
     Share the case study as soon
@@ -235,28 +228,14 @@ You can find more potential projects in the
         line.
     </ul>
     The best way to give all this information is a pointer to your GitHub
-    fork of the library.  In your fork, the master branch will be unchanged
-    from upstream.  You will create a new branch that contains the
-    annotated version.  The only differences between the two branches
-    should be related to the annotations you wrote.  Building the annotated
-    branch should run the type-checker.
-    It is helpful to create a pull request from the annotated to the
-    unannotated branch in your fork; you won't merge this pull request, but
-    it enables you and others to view and comment on your changes.
+    fork of the library.
 </ol>
-
-<p>
-Once you have done this work on a small program such as from your
-coursework, you can repeat the process with an open-source program or library.
-</p>
 
 <p>
 The primary result of your case study is that you will discover bugs in the
 subject program, or you will verify that it has no bugs (of some particular
-type).  If you found bugs in open-source code, report them to the program's
-maintainer, and let us know when they are resolved.  If you verified
-open-source code to be correct, that is great too; let us know and point us
-at the fully-annotated, verified program.
+type).  If you find bugs in open-source code, report them to the program's
+maintainer, and let us know when they are resolved.
 </p>
 
 <p>
@@ -265,27 +244,35 @@ or usability problems in the Checker Framework.  Please
 <a href="https://checkerframework.org/manual/#reporting-bugs">report them</a>.
 We'll try to fix them, or they might give you inspiration for
 improvements you would like to make to the Checker Framework this summer.
-You can also try to fix them yourself and submit a
+</p>
+
+<p>
+You can also try to fix problems yourself and submit a
 <a href="https://github.com/typetools/checker-framework/pulls">pull
-  request</a>, but that is <em>not</em> a requirement.
+  request</a>, but that is <em>not</em> a requirement; most successful GSOC
+  applicants had not submitted a successful pull request before being selected.
+(Some GSOC projects have a requirement to fix an issue in the issue tracker.
+We do not, because it is unproductive.
+Don't try to start fixing issues before you
+understand the Checker Framework from the user point of view, which will
+not happen until you have completed a case study on an open-source program.)
 You may discuss your ideas with us by sending mail
 to <a href="https://groups.google.com/forum/#!forum/checker-framework-gsoc">checker-framework-gsoc@googlegroups.com</a>.
 </p>
 
 <p>
-  Note that we do <em>not</em> recommend that you run many different checkers on
-  small, artificial programs.  Instead, run one checker on a more
-  substantial program.
-  </p>
-
-<p>
-Why should you start with a case study, instead of diving right into fixing
+  Why should you start with a case study?
+  <!-- , instead of diving right into fixing
 bugs, designing a new type system, or making other changes to the Checker
 Framework?
+-->
 Before you can contribute to any project, you must
 understand the tool from a user point of view, including its strengths,
-weaknesses, and how to use it.  Therefore, you need to complete a
-substantive case study first.
+weaknesses, and how to use it.
+A case study is the best way to
+learn about the Checker Framework, determine whether you would enjoy
+joining the project during the summer, and show your aptitude so that you
+will be chosen for the summer.
 </p>
 
 
@@ -293,17 +280,25 @@ substantive case study first.
 
 <p>
 We are very happy to answer your questions, and we are eager to interact
-with you.
-Before you ask a question, read these &ldquo;getting started&rdquo;
-instructions (that is, this file) and search in the
+with you!  It's OK to have questions, and your questions can lead to
+improvements in the documentation and the tool.
+</p>
+
+<p>
+Before you ask a question, read this file and the
+<a href="https://checkerframework.org/manual/#troubleshooting">"Troubleshooting"
+  section</a> of the Checker Framework manual
+  (including <a href="https://checkerframework.org/manual/#reporting-bugs">"How
+  to report problems"</a>),
+and also search in the
 <a href="https://checkerframework.org/manual/">Checker Framework manual</a>
 for the answer.
 Don't send us a message
 that says nothing but &ldquo;please guide me&rdquo;
-or &ldquo;tell me how to fix this bug&rdquo;.  Such a message shows
-that you haven't thought about the problem and haven't tried to solve it
-yourself.  It also shows that you have not read this document, and we don't
-want to work with people who cannot read instructions!
+or &ldquo;tell me how to fix this bug&rdquo;.  Such a message disqualifies
+you from participating in GSOC, because it shows that you do not read
+instructions, and you haven't thought about the problem nor
+tried to solve it.
 </p>
 
 <p>
@@ -321,9 +316,11 @@ descriptive subject line; don't put multiple different topics in a single
 email message; start a new thread with a new subject line
 when you change the topic; don't clutter discussions with irrelevant
 remarks; don't use screenshots (unless there is a problem with a GUI), but
-instead cut-and-paste the code into your message; if you are making a guess, clearly indicate that it is a guess and
+instead cut-and-paste the output or code into your message;
+if you are making a guess, clearly indicate that it is a guess and
 your grounds for it.  If you violate these basic rules, you will
-look unprofessional, and we don't want you to give a bad impression.  Bug
+demonstrate that you don't read instructions and you don't act
+professionally.  Bug
 reports should be
 <a href="https://checkerframework.org/manual/#reporting-bugs">complete</a>
 and should usually be
@@ -331,14 +328,34 @@ and should usually be
 to the issue tracker.
 </p>
 
-<p>
-Some GSOC projects have a requirement to fix an issue in the issue tracker.
-We do not, because it is unproductive.
-Don't try to start fixing issues before you
-understand the Checker Framework from the user point of view, which will
-not happen until you have completed a case study on an open-source program.
-</p>
 
+<h2 id="types-of-projects">Types of projects</h2>
+
+<p>
+  Here are some possible focuses for a project:
+</p>
+<ul>
+  <li>
+    <a href="#evaluate-type-system">Evaluate</a> a recently-written type
+    system, or a feature used by multiple type systems.
+  </li>
+  <li>
+    <a href="#annotate-library">Annotate</a> a popular library, so that it
+    is easier to type-check clients of the library.
+  </li>
+  <li>
+    <a href="#create-new-type-system">Create</a> a new type system, to
+    prevent some Java programming error.
+  </li>
+  <li>
+    <a href="#cf-other">Enhance</a> a type system or the Checker Framework
+    itself.
+  </li>
+</ul>
+
+<p>
+This document gives a few suggestions in each category.
+</p>
 
 
 <h2 id="apply">How to apply</h2>
@@ -347,7 +364,7 @@ not happen until you have completed a case study on an open-source program.
   To <b>apply</b>, you will submit a single PDF through the Google Summer
   of Code website.  This PDF should contain two main parts.  We suggest
   that you number the parts and subparts to ensure that you don't forget anything, and
-  that we don't overlook anything in your application.  You might find it
+  to ensure that we don't overlook anything when reading your application.  You might find it
   easiest to create multiple PDFs for the different parts, then concatenate
   them before uploading to the website, but how you create your proposal is
   entirely up to you.
@@ -358,42 +375,48 @@ not happen until you have completed a case study on an open-source program.
     summer.  You might propose to do a project listed on this webpage, or
     you might propose a different project.
 
-      <p>The proposal should have a descriptive title, both in the PDF and
-      in the GSoC submission system.  Don't use a title like "Checker
-      Proposal" or "Proposal for GSoC".
-      Don't distract from content with gratuitous graphics.
+    <p>The proposal should have a descriptive title, both in the PDF and in
+      the GSoC submission system.  Don't use a title like "Checker
+      Proposal" or "Proposal for GSoC".  Don't distract from content with
+      gratuitous graphics.
+
+    <p>List the tasks or subparts that are required to complete your
+    project.  This will help you discover a part that you had forgotten.
+    We do not require a detailed timeline, because you don't yet
+    know enough to create one.
+    </p>
+
+    <p>
+    If you want to do a
+    case study, say what program you will do your case study on.
 
     <p>If you want to create a new type system (whether one proposed on
-    this webpage or one of your own devising), then your proposal should be
+    this webpage or one of your own devising), then your proposal should include
     the type system's user manual.  You don't have to integrate it in the Checker
     Framework repository (in other words, use any word processor or text
     editor you want to create a PDF file you will submit), but you should describe
     your proposed checker's <a href="https://checkerframework.org/manual/#creating-parts-of-a-checker">parts</a>
-    in precise English or simple formalisms and you should follow the
+    in precise English or simple formalisms, and you should follow the
     suggested <a href="https://checkerframework.org/manual/#creating-documenting-a-checker">structure</a>.
-
-    <p>List the tasks or subparts that are required to complete your
-    project.  This will help you discover a part that you had forgotten.
-    We do not require a detailed timeline, because at this point, you don't
-    know enough to create one.
-    </p>
-
-    <p>Never literally cut-and-paste text that was not written by you, because
-    that would be plagiarism.  If you quote from text written by someone
-    else, give proper credit.</p>
 
     <p>
     If you want to do exactly what is already listed on this page, then
     just say that (but be specific about which one!), and it will not hurt
-    your chances of being selected.  However, you might have specific ideas
+    your chances of being selected.  However, show us what progress you
+    have made so far.  You might also give specific ideas
     about extensions, about details that are not mentioned on this webpage,
-    about implementation strategies, and so forth.  If you want to do a
-    case study, say what program you will do your case study on.  Don't
+    about implementation strategies, and so forth.
+    </p>
+
+    <p>Never literally cut-and-paste text that was not written by you, because
+    that would be plagiarism.  If you quote from text written by someone
+    else, give proper credit.
+    Don't
     submit a proposal that is just a rearrangement of text that already
     appears on this page or in the Checker Framework manual, because it does
-    not help us to assess your likelihood of being successful.  (You can
-    propose an idea that's here, but show what progress you have made.)
+    not help us to assess your likelihood of being successful.
     </p>
+
   </li>
 
   <li>Your qualifications.  Please convince us that you
@@ -470,192 +493,47 @@ after the application deadline has passed.
 </p>
 
 
-<h1 id="case-studies">Case studies</h1>
+<h1 id="evaluate-type-system">Evaluate a type system or a Checker Framework feature</h1>
 
 <p>
-These projects take an existing type-checker, apply it to a
-codebase (you can choose your favorite one, or you can ask for
-suggestions), and determine whether the type system is easy to use and
-whether it is effective in revealing or preventing defects.
-Case studies are our most important source of new ideas and improvements:
-our most useful features have arisen as a result of an observation made
-during a case study.  Many people have started out &ldquo;just&rdquo; doing a case
-study but have ended up making deep, fundamental contributions and even
-publishing scientific papers about their discoveries.
+  These projects evaluate a recently-written type system or a feature used
+  by multiple type systems.
+  Using the type systems on real code is our most important source of new ideas and improvements.
+  Many people have started out &ldquo;just&rdquo; doing a case
+  study but have ended up making deep, fundamental contributions and even
+  publishing scientific papers about their discoveries.
 </p>
 
 <p>
-You should do a small case study during the application process (or maybe a
-large one, depending on your ambition).  A case study is the best way to
-learn about the Checker Framework, determine whether you would enjoy
-joining the project during the summer, and show your aptitude so that you
-will be chosen for the summer.
+One possible outcome is to identify
+  weaknesses in the type-checker so that we can improve it.  Another
+  possible outcome is to provide evidence that the type-checker is
+  effective and convince more users to adopt it.  You will probably
+  also discover defects (bugs) in the codebase being type-checked.
 </p>
 
-<p>
-A set of large case studies is one possible summer task.  The most common
-choice is case studies of a recently-written type system, to determine its
-usability.  Another choice is to annotate popular libraries for an existing
-type system, to make it more usable.
-</p>
-
-<p>
-Here are a few suggestions, but a case study of any type system
-distributed with the Checker Framework is of value.
-</p>
-
-
-<h2 id="library-annotations">Library annotations</h2>
-
-<p>
-When type-checking a method call, the Checker Framework uses the method
-declaration's annotations.
-This means that in order to type-check code that uses a library, the
-Checker Framework needs an annotated version of the library.
-</p>
-
-<p>
-The Checker Framework comes with a
-few <a href="https://search.maven.org/search?q=annotatedlib">annotated
-libraries</a>.  Increasing this number will make the Checker Framework even
-more useful, and easier to use.
-</p>
-
-<p>
-After you have <a href="#choose-a-library">chosen a library</a>,
-fork the library's source code, adjust
-its <a href="https://checkerframework.org/manual/#external-tools">build
-system</a> to run the Checker Framework, and add annotations to it until
-the type-checker issues no warnings.
-</p>
-
-<p>
-Before you get started, be sure to read
-<a href="https://checkerframework.org/manual/#get-started-with-legacy-code">How
-to get started annotating legacy code</a>.  More generally, read the
-<a href="https://checkerframework.org/manual/#how-to-read-this-manual">relevant
-sections of the Checker Framework manual</a>.
-</p>
-
-
-<h3 id="choose-a-library">Choosing a library to annotate</h3>
-
-<p>
-There are several ways to <b>choose a library</b> to annotate:
-</p>
-<ul>
-  <li>
-    Choose a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
-      Java library</a>.
-  </li>
-  <li>
-    Choose a library that you need annotations for.  That is, choose a
-    library that is used by a program (or another library) that you have
-    tried to annotate.
-  </li>
-  <li>
-    Choose one of the suggestions below.
-  </li>
-</ul>
-
-<p>
-  Whatever library you choose, you will need to deeply understand its
-  source code.  You will find it easier to work with a library that is
-  well-designed and well-documented.
-</p>
-
-<p>
-  You should choose a library that is
-  not <a href="https://github.com/typetools/checker-framework/tree/master/checker/lib">already
-    annotated</a>.  There are two exceptions to this.
-</p>
-<ul>
-  <li>
-    A library might be annotated for one type system, but you add
-    annotations for a different type system.  One advantage of this is that
-    the library's build system is already set up to run the Checker
-    Framework.  You can tell which type systems a library is annotated for
-    by examining its source code.
-  </li>
-  <li>
-    A library might be annotated, but the annotations have not been
-    verified by running the type-checker on the library source code.  You
-    would verify that the annotations in the library are correct.
-  </li>
-</ul>
 
 
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Show that the <a href="https://asm.ow2.org/">ASM library</a>, or
-the <a href="https://commons.apache.org/proper/commons-bcel/">BCEL
-library</a>, properly handles signature strings (or find bugs in them).
+Determine whether the <a href="https://asm.ow2.org/">ASM library</a>, or
+some other library, properly handles signature strings.
 </p>
-
-<p>
-  To get started:
-</p>
-
-<ul>
-  <li>Fork https://github.com/typetools/commons-bcel.git</li>
-  <li>Clone your new fork</li>
-  <li><code>git checkout typecheck-signature</code></li>
-  <li>mvn verify</li>
-</ul>
 
 <p>
    Some challenging aspects of this case study are:
 </p>
 <ul>
   <li>
-    The Signature String Checker needs to be enhanced to precisely handle code like
-        <code>someString.replace('.', '/')</code>
-      which converts from <code>@ClassGetName</code> to <code>@FieldDescriptor</code>.  It also converts from <code>@FullyQualifiedName</code> to <code>@BinaryName</code>, but only for non-anonymous classes.
-      The full rules for that, and for other calls such
-      as <code>someString.replace('/', '.')</code>, need to be worked out
-        and implemented.
+    Some libraries define their own new signature string formats (!), which
+    you need to define in the Signature String Checker.
   </li>
   <li>
-    ASM and BCEL define their own new signature string formats (!), which need to be
-    defined.  If they are not defined, then warnings need to be suppressed
-    and the guarantee is weaker.  (Defining them could be a second part of
-    the case study.)
-  </li>
-  <li>
-    Some of ASM's and BCEL's documentation is incorrect, and in other cases the
+    Sometimes the library's documentation is incorrect, and in other cases the
     string format is not defined.
   </li>
-  <li>
-    The BCEL codebase has been partially annotated, but we are not sure the
-    annotations are 100% correct.
-  </li>
 </ul>
-
-
-<h2 id="case-study-android-support">Android support annotations</h2>
-
-<p>
-Android uses its own annotations that are similar to some in the Checker
-Framework.  Examples include the
-<a href="https://tips.seebrock3r.me/annotations-to-support-your-contracts-609ff259d5df">Android
-  Studio support annotations</a>,
-  including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
-  and others.
-</p>
-
-<p>
-The goal of this project is to implement support for these annotations.
-That is probably as simple as creating aliased annotations
-by calling method <code>addAliasedAnnotation()</code>
-in <a href="https://checkerframework.org/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html">AnnotatedTypeFactory</a>.
-</p>
-
-<p>
-  Then, do a case study to show the utility (or not) of
-  pluggable type-checking, by comparison with how Android Studio currently
-  checks the annotations.
-</p>
 
 
 <h2 id="case-study-signedness">Signed and unsigned numbers</h2>
@@ -734,7 +612,7 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
   Your case studies will show the need for enhancements to the Signedness
   Checker.  For example, the Signedness Checker does not currently handle
   boxed integers and BigInteger; these haven't yet come up in case studies
-  but could be worthwhile enhancements.  There may also be the need to
+  but could be worthwhile enhancements.  You may also need to
   write more annotations for libraries such as the JDK.
 </p>
 
@@ -760,191 +638,54 @@ the <a href="https://checkerframework.org/manual/#optional-checker">Optional
     Checker</a>, which warns programmers who
 have misused <code>Optional</code>.
 Another goal is to extend the Optional Checker to make it more precise or
-to detect other mis-uses of Optional.
+to detect other misuses of <code>Optional</code>.
 </p>
 
 
-<h2 id="case-study-nullness">Null pointer exceptions</h2>
+<h2 id="Whole-program_type_inference">Whole-program type inference</h2>
 
 <p>
-These are just some suggestions; many other libraries need annotations.
-</p>
-
-
-<h3 id="case-study-nullness-guava">Guava library</h3>
-
-<p>
-  Guava is already partially annotated with nullness annotations &mdash; in
-  part by Guava's developers, and in part by the Checker Framework team.
-  However, Guava does not yet type-check without errors.  Doing so could
-  find more errors (the Checker Framework has found nullness and indexing
-  errors in Guava in the past) and would be a good case study to learn the
-  limitations of the Nullness Checker.
-</p>
-
-
-<h3 id="case-study-nullness-bazel">Bazel tool</h3>
-
-<!-- John Field of Google is interested in this. -->
-
-<p>
-This project is related to the
-<a href="https://bazel.build/">Bazel</a> build system, and was
-proposed by its development manager.
+A type system is useful because it prevents certain errors.  The downside
+of a type system is the effort required to write the types.  Type inference
+is the process of writing the types for a program.
 </p>
 
 <p>
-The Bazel codebase contains 1586 occurrences of the <code>@Nullable</code>
-annotation.  This annotation indicates that a variable may hold a null
-value.  This is valuable documentation and helps programmers avoid null
-pointer exceptions that would crash Bazel.  However, these annotations are
-not checked by any tool.  Instead, programmers have to do their best to
-obey the <code>@Nullable</code> specifications in the source code.  This is
-a lost opportunity, since documentation is most useful when it is
-automatically processed and verified.  (For several years, Google tried
-using <a href="http://findbugs.sourceforge.net/">FindBugs</a>, but they
-eventually abandoned it:  its analysis is too weak, suffering too many
-false positives and false negatives.)
+The Checker Framework includes
+a <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
+    inference</a> that inserts type qualifiers in the user's program.
+It works well on some programs, but needs more enhancements to work well on
+all programs.
+</p>
+
+
+<h2 id="determinism">Determinism</h2>
+
+<p>
+Programs are easier to use and debug if their output is deterministic.  For
+example, it is easier to test a deterministic program, because
+nondeterminism can lead to flaky tests that sometimes succeed and sometimes
+fail.  As another example, it is easier for a user or programmer to compare
+two deterministic executions than two nondeterministic executions.
 </p>
 
 <p>
-Despite the programmers' best efforts, null pointer exceptions do still
-creep into the code, impacting users.  The Bazel developers would like to
-prevent these.  They want a guarantee, at compile time, that no null
-pointer exceptions will occur at run time.
+  We have created a prototype Determinism Checker.  It is documented in
+  this <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
+  manual chapter</a>, and its implementation is in
+<a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">t-rasmud/nondet-checker</a>.
+You will do a case study of this type system.
 </p>
 
-<p>
-Such a tool already exists:  the
-<a href="https://checkerframework.org/manual/#nullness-checker">Nullness
-Checker</a> of the <a href="https://checkerframework.org/">Checker
-Framework</a>.  It runs as a compiler plug-in, and it issues a warning at
-every possible null pointer dereference.  If it issues no warnings, the
-code is guaranteed not to throw a <code>NullPointerException</code> at run time.
-</p>
-
-<p>
-The goal of this project is to do a large-scale case study of the Nullness
-Checker on Bazel.  The main goal is to understand how the Nullness Checker
-can be used on a large-scale industrial codebase.  How many lurking bugs
-does it find?  What
-<a href="https://checkerframework.org/releases/1.9.13/api/org/checkerframework/checker/nullness/qual/Nullable.html"><code>@Nullable</code></a>
-annotations are missing from the codebase because the developers failed to
-write them?  What are its limitations, such as code patterns that it cannot
-recognize as safe?  (You might create new analyses and incorporating them
-into the Nullness Checker, or you might just reporting bugs to the Nullness
-Checker developers for fixing.)  What burdens does it place on users?  Is
-the cost-benefit tradeoff worth the effort &mdash; that is, should Google
-adopt this tool more broadly?  How should it be improved?  Are the most
-needed improvements in the precision of the analysis, or in the UI of the
-tooling?
-</p>
-
-
-<h3 id="case-study-nullness-bcel">BCEL library</h3>
-
-<p>
-  Annotate the BCEL library to express its contracts with respect to nullness.
-  Show that the BCEL library has no null pointer exceptions (or find bugs
-  in BCEL).  There are
-  already <a href="https://github.com/apache/commons-bcel/compare/trunk...typetools:trunk?expand=1">some
-  annotations</a> in BCEL, but they have not been verified as correct by
-  running the Nullness Checker on BCEL.  (Currently, those annotations are
-  trusted when type-checking clients of BCEL.)
-</p>
-
-<p>
-  To get started:
-</p>
-
-<ul>
-  <li>Fork https://github.com/typetools/commons-bcel.git</li>
-  <li>Clone your new fork</li>
-  <li><code>git checkout typecheck-nullness</code></li>
-  <li>mvn verify</li>
-</ul>
-
-<p>
-   Some challenging aspects of this case study are:
-</p>
-
-<ul>
-  <li>
-    There is some poor design that needs to be resolved in discussions with
-    the BCEL maintainers.  For example, consider the <code>copy()</code>
-    method.  Some implementations of <code>copy()</code> return null, but
-    are not documented to do so.  In addition, some implementations
-    of <code>copy()</code> catch and ignore exceptions.  I think it would
-    be nicest to change the methods to never return null, but to throw an
-    exception instead.  (This is no more burdensome to users, who currently
-    have to check for null.)  Alternately, the methods could all be
-    documented to return null.
-  </li>
-</ul>
-
-
-<h2 id="index-errors">Improving error messages</h2>
-
-<p>
-Compiler writers have come to realize that clarity of error
-messages is as important as the speed of the executable
-(<a href="http://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
-<a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>
-<a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
-</p>
-
-<p>
-The goal of this project is to improve a compiler's error messages.  One
-example (not the only possible one) is the Checker Framework.  Here are
-some distinct challenges:
-</p>
-<ul>
-  <li>
-    Some type errors can be more concisely or clearly expressed than the
-    standard "found type A, expected type B" message.
-  </li>
-  <li>
-    Some types are complex.  The error message could explain them, or link
-    to the manual, or give suggested fixes.
-  </li>
-  <li>
-    Compiler messages currently show
-    the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
-    type</a>, which may be different than what the user wrote due to
-    defaulting, inference, and syntactic sugar.  For example, a user-written
-    <code>@IndexFor("a")</code> annotation is syntactic sugar for
-    <code>@NonNegative @LTLengthOf("a")</code>, and those types are
-    the ones that currently appear in error messages.
-    It would be good to show simpler types or ones that the user wrote.
-  </li>
-  <li>
-    Some checkers combine multiple cooperating type systems;
-    the <a href="https://checkerframework.org/manual/#nullness-checker">Nullness
-    Checker</a> and
-    the <a href="https://checkerframework.org/manual/#index-checker">Index
-    Checker</a> are examples.  If there is a problem with a variable's
-    lower bound type, then its upper bound type should not be shown in the
-    error message.  This will make the message shorter and more specific,
-    and avoid distracting the user with irrelevant information.
-  </li>
-  <li>
-    When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
-  </li>
-</ul>
-
-<p>
-It would be reasonable to start by improving the
-<a href="https://checkerframework.org/manual/#index-checker">Index
-  Checker</a>'s error messages, which frequently stymie users.  Then,
-  generalize the results to other type systems.
-</p>
 
 <h2 id="sound-by-default">Sound checking by default</h2>
 
 <p>
 By default, the Checker Framework is
 <a href="https://checkerframework.org/manual/#unsound-by-default">unsound
-in several circumstances</a>.  &ldquo;Unsound&rdquo; means that the Checker Framework
+  in</a> <a href="https://checkerframework.org/manual/#nullness-lint">several</a>
+<a href="https://github.com/typetools/checker-framework/issues/986">circumstances</a>.
+&ldquo;Unsound&rdquo; means that the Checker Framework
 may report no warning even though the program can misbehave at run time.
 </p>
 
@@ -959,9 +700,19 @@ use the checker at all, or would force them to simply disable those checks.
 
 <p>
 We would like to do studies of these command-line options to see whether
-our guess is right.  Is it prohibitive to enable sound checking?  Or can we
+our concern is justified.  Is it prohibitive to enable sound checking?  Or can we
 think of enhancements that would let us turn on those checks that are
 currently disabled by default?
+</p>
+
+<p>
+There is no need to annotate new code for this project.  Just use existing
+annotated codebases, such as those that are type-checked as part of the
+Checker
+Framework's <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml">Azure
+    Pipeline</a>.  In other words, you can start by enabling Azure
+Pipelines for your fork and then changing the default behavior in a
+branch.  The Azure Pipelines job will show you what new warnings appear.
 </p>
 
 
@@ -1006,7 +757,136 @@ currently disabled by default?
 </p>
 
 
-<h1 id="new-type-systems">New type systems</h1>
+<h2 id="case-study-android-support">Android support annotations</h2>
+
+<p>
+Android uses its own annotations that are similar to some in the Checker
+Framework.  Examples include the
+<a href="https://tips.seebrock3r.me/annotations-to-support-your-contracts-609ff259d5df">Android
+  Studio support annotations</a>,
+  including <code>@NonNull</code>, <code>@IntRange</code>, <code>@IntDef</code>,
+  and others.
+</p>
+
+<p>
+The goal of this project is to implement support for these annotations.
+That is probably as simple as creating aliased annotations
+by calling method <code>addAliasedAnnotation()</code>
+in <a href="https://checkerframework.org/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html">AnnotatedTypeFactory</a>.
+</p>
+
+<p>
+  Then, do a case study to show the utility (or not) of
+  pluggable type-checking, by comparison with how Android Studio currently
+  checks the annotations.
+</p>
+
+
+<h1 id="annotate-library">Annotate a library</h1>
+
+<p>
+  These projects annotate a library, so that it is easier to
+  type-check clients of the library.  Another benefit is that this may find
+  bugs in the library.  It can also give evidence for the usefulness of
+  pluggable type-checking, or point out ways to improve the Checker
+  Framework.
+</p>
+
+
+<p>
+When type-checking a method call, the Checker Framework uses the method
+declaration's annotations.
+This means that in order to type-check code that uses a library, the
+Checker Framework needs an annotated version of the library.
+</p>
+
+<p>
+The Checker Framework comes with a
+few <a href="https://search.maven.org/search?q=annotatedlib">annotated
+libraries</a>.  Increasing this number will make the Checker Framework even
+more useful, and easier to use.
+</p>
+
+<p>
+After you have <a href="#choose-a-library">chosen a library</a>,
+fork the library's source code, adjust
+its <a href="https://checkerframework.org/manual/#external-tools">build
+system</a> to run the Checker Framework, and add annotations to it until
+the type-checker issues no warnings.
+</p>
+
+<p>
+Before you get started, be sure to read
+<a href="https://checkerframework.org/manual/#get-started-with-legacy-code">How
+to get started annotating legacy code</a>.  More generally, read the
+<a href="https://checkerframework.org/manual/#how-to-read-this-manual">relevant
+sections of the Checker Framework manual</a>.
+</p>
+
+
+<h2 id="choose-a-library">Choosing a library to annotate</h2>
+
+<p>
+There are several ways to <b>choose a library</b> to annotate:
+</p>
+<ul>
+  <li>
+The best way to choose a library is to try to annotate a program and notice
+that library annotations are needed in order to type-check the program.
+</li>
+<li>
+Alternately, you can
+    choose a <a href="https://docs.google.com/spreadsheets/d/17x_jKkGquEFq7LBQhS9HGXiG7iIl2AlXoPGfB6N5_bw">popular
+      Java library</a>.
+</li>
+</ul>
+
+<p>
+  When annotating a library, it is important to type-check both the library
+  and at least one client that uses it.  Type-checking the client will
+  ensure that the library annotations are accurate.
+</p>
+
+<p>
+  Whatever library you choose, you will need to deeply understand its
+  source code.  You will find it easier to work with a library that is
+  well-designed and well-documented.
+</p>
+
+<p>
+  You should choose a library that is
+  not <a href="https://search.maven.org/search?q=org.checkerframework.annotatedlib">already
+    annotated</a>.  There are two exceptions to this.
+</p>
+<ul>
+  <li>
+    A library might be annotated for one type system, but you add
+    annotations for a different type system.  One advantage of this is that
+    the library's build system is already set up to run the Checker
+    Framework.  You can tell which type systems a library is annotated for
+    by examining its source code.
+  </li>
+  <li>
+    A library might be annotated, but the annotations have not been
+    verified by running the type-checker on the library source code.  You
+    would verify that the annotations in the library are correct.
+  </li>
+</ul>
+
+
+<h2 id="case-study-nullness-guava">Guava library</h2>
+
+<p>
+  Guava is already partially annotated with nullness annotations &mdash; in
+  part by Guava's developers, and in part by the Checker Framework team.
+  However, Guava does not yet type-check without errors.  Doing so could
+  find more errors (the Checker Framework has found nullness and indexing
+  errors in Guava in the past) and would be a good case study to learn the
+  limitations of the Nullness Checker.
+</p>
+
+
+<h1 id="create-new-type-system">Create a new type system</h1>
 
 <p>
 The Checker Framework is shipped with <a href="https://checkerframework.org/manual/#introduction">about 20 type-checkers</a>.  Users can
@@ -1052,7 +932,8 @@ The contract of <code>peek()</code> is that it returns a non-null value if the q
 
 <p>
 To handle this code precisely, the Nullness Checker needs to know, for each queue, whether it is empty.
-This is analogous to how the Nullness Checker tracks whether a particular value is a key in a map.
+This is analogous to how the Nullness Checker tracks whether a particular
+value <a href="https://checkerframework.org/manual/#map-key-checker">is a key in a map</a>.
 </p>
 
 <p>
@@ -1084,98 +965,6 @@ You can test that by running the Nullness Checker on the file, and when you are 
 </p>
 
 
-<h2 id="Make_programs_deterministic">Make programs deterministic</h2>
-
-<p>
-Programs are easier to use and debug if their output is deterministic.  For
-example, it is easier to test a deterministic program, because
-nondeterminism can lead to flaky tests that sometimes succeed and sometimes
-fail.  As another example, it is easier for a user or programmer to compare
-two deterministic executions than two nondeterministic executions.
-</p>
-
-<p>
-A number of Java methods return nondeterministic results, making any
-program that uses them potentially nondeterministic.  Here are a few
-examples:
-</p>
-<dl>
-<dt>iteration over <code>HashMap</code>s and <code>HashSet</code>s</dt>
-<dd>solution:  sort, or iterate over <code>LinkedHashMaps</code> and <code>LinkedHashSets</code></dd>
-<dt><code>File.list()</code></dt>
-<dd>solution:  sort the resulting list</dd>
-<dt><code>Object.toString()</code>, <code>Object.hashCode()</code></dt>
-<dd>solution:  use overriding implementations</dd>
-<dt><code>new Random()</code></dt>
-<dd>solution:  call it with a fixed seed</dd>
-<dt>time and date functions</dt>
-<dd>solution:  don't make the program result depend on these</dd>
-</dl>
-
-<p>
-You can find more examples of non-deterministic specifications,
-and suggestions for how to avoid them, in the
-<a href="https://randoop.github.io/randoop/manual/index.html#nondeterminism">Randoop
-manual</a> and in the ICST 2016 paper
-<a href="http://mir.cs.illinois.edu/marinov/publications/ShiETAL16NonDex.pdf">Detecting
-assumptions on deterministic implementations of non-deterministic
-specifications</a> by A. Shi, A. Gyori, O. Legunsen, and D. Marinov, which
-presents the NonDex tool.
-</p>
-
-<p>
-The NonDex tool works dynamically, which means that it cannot detect all
-user-visible nondeterminism nor give a guarantee of correctness &mdash; a
-guarantee that the program is deterministic from the user's point of
-view.
-</p>
-
-<p>
-The goal of this project is to create a tool, based on a type system, that
-gives a guarantee.  The tool would report to the user all possible
-nondeterminism in a program, so that the user can fix the program before it
-causes problems during testing or in the field.
-</p>
-
-<p>
-More concretely, this problem can be handled by creating two simple type
-systems that indicate whether a given value is deterministic.
-In each diagram, the supertype appears above the subtype.
-</p>
-
-<pre>
-    @PossiblyNonDeterministic            @PossiblyNonDeterministicOrder
-              |                                       |
-        @Deterministic                       @DeterministicOrder
-</pre>
-
-<p>
-The programmer would annotate routines that are expected to take
-deterministic inputs.  (An example could be all printing routines.)  Then,
-the type system would issue a warning whenever one of those routines is
-called on a possibly non-deterministic value.
-</p>
-
-<p>
-The standard library would have annotations for
-</p>
-<ul>
-  <li>methods that return non-deterministic results</li>
-  <li>methods like sort that convert nondeterministically-ordered collections into deterministically-ordered ones</li>
-</ul>
-
-<p>
-You can find
-a <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
-manual chapter</a> that documents a possible design for a Determinism
-Checker.  It differs slightly from the above proposal, for instance by
-having a single type hierarchy instead of two.  That type system
-is <a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">implemented</a>,
-so your best choice for this project is to do a case study of it, which
-could lead to design work to improve it.
-</p>
-
-
 <h2 id="custom-tainting-checking">Custom tainting checking</h2>
 
 <p>
@@ -1195,10 +984,10 @@ In order to be useful in a particular domain, a user must customize it:
 
 <p>
 The first part of this project is to make this customization easier to do
-&mdash; preferably, a user does not have to change any code in the Checker
-Framework, as is currently the case for the
+&mdash; preferably, a user will not have to change any code in the Checker
+Framework (the
 <a href="https://checkerframework.org/manual/#subtyping-checker">Subtyping
-Checker</a>.
+Checker</a> already works this way).
 As part of making customization easier, a user should be able to specify
 multiple levels of taint &mdash; many information classification hierarchies
 have more than two levels (for example, the US government separates classified
@@ -1233,48 +1022,6 @@ For some microbenchmarks, see the Juliette test suite for Java from CWE.
 </p>
 
 
-
-
-<h2 id="Bounded-size_strings">Bounded-size strings</h2>
-
-<!-- John Field of Google is interested in this. -->
-
-<p>
-Windows cannot run command lines longer than 8191 characters.  Creating a
-too-long command line causes failures when the program is run on Windows.
-These failures are irritating when discovered during testing, and
-embarrassing or worse when discovered during deployment.  The same command
-line would work on Unix, which has longer command-line limits, and as a
-result developers may not realize that their change to a command can cause
-such a problem.
-</p>
-
-<p>
-Programmers would like to enforce that they don't accidentally pass a
-too-long string to the <code>exec()</code> routine.  The goal of this
-project is to give a compile-time tool that provides such a guarantee.
-</p>
-
-<p>
-Here are two possible solutions.
-</p>
-
-<p>
-<b>Simple solution:</b>
-For each array and list, determine whether its length is known at compile
-time.  The routines that build a command line are only allowed to take such
-constant-length lists, on the assumption that if the length is constant,
-its concatenation is probably short enough.
-</p>
-
-<p>
-<b>More complex solution:</b>
-For each String, have a compile-time estimate of its maximum length.  Only
-permit <code>exec()</code> to be called on strings whose estimate is no more than 8191.
-String concatenation would return a string whose estimated size is the sum
-of the maximums of its arguments, and likewise for concatenating an array
-or list of strings.
-</p>
 
 
 <h2 id="overflow">Overflow checking</h2>
@@ -1334,7 +1081,7 @@ that is, the Index Checker's approximation to it is unsound.
 
 <p>
 This project involves removing this unsoundness by implementing a type system to track when an
-integer value might overflow &mdash but this only matters for values that
+integer value might overflow &mdash; but this only matters for values that
 are used as an array index.
 That is, checking can be restricted to computations that involve an operand
 of type <code>@IntRange</code>).
@@ -1384,42 +1131,17 @@ a loop (but maybe other approaches are possible):
 </ul>
 
 
-<h2 id="lock-ordering">Lock ordering</h2>
-
-<p>
-The <a href="https://checkerframework.org/manual/#lock-checker">Lock
-Checker</a> prevents race conditions by ensuring that locks are held when
-they need to be.  It does not prevent deadlocks that can result from locks
-being acquired in the wrong order.  This project would extend the Lock
-Checker to address deadlocks, or create a new checker to do so.
-</p>
-
-<p>
-Suppose that a program contains two different locks.  Suppose that one
-thread tries to acquire lockA then lockB, and another thread tries to
-acquire lockB then lockA, and each thread acquires its first lock.  Then
-both locks will wait forever for the other lock to become available.  The
-program will not make any more progress and is said to
-be <a href="https://en.wikipedia.org/wiki/Deadlock">deadlocked</a>.
-</p>
-
-<p>
-If all threads acquire locks in the same order &mdash; in our example, say
-lockA then lockB &mdash; then deadlocks do not happen.  You will extend the
-Lock Checker to verify this property.
-</p>
-
-
 <h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
 
 <p>
 The <a href="https://checkerframework.org/manual/#index-checker">Index
-Checker</a> is currently restricted to fixed-size data structures.
-A fixed-size data structure is one whose length cannot be changed once it is created;
-examples of fixed-size data structures are arrays and Strings.
-This limitation prevents the Index Checker from verifying indexing operations on mutable-size data structures,
-like Lists, that have add or remove methods. Since these kind of collections are common
-in practice, this is a severe limitation for the Index Checker.
+Checker</a> is currently restricted to fixed-size data structures.  A
+fixed-size data structure is one whose length cannot be changed once it is
+created, such as arrays and Strings.  This limitation prevents the Index
+Checker from verifying indexing operations on mutable-size data structures,
+like Lists, that have <code>add</code> or <code>remove</code>
+methods. Since these kind of collections are common in practice, this is a
+severe limitation for the Index Checker.
 </p>
 
 <p>
@@ -1513,78 +1235,56 @@ differences from the real Nullness checker:
 
 
 
-<h2 id="typestate">Stateful type systems</h2>
+<h1 id="cf-other">Enhance the toolset</h1>
+
+
+<h2 id="index-errors">Improving error messages</h2>
 
 <p>
-This project is to improve support for
-<a href="https://checkerframework.org/manual/#typestate-checker">typestate checking</a>
+Compiler writers have come to realize that clarity of error
+messages is as important as the speed of the executable
+(<a href="http://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+<a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
+<a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
 
 <p>
-Ordinarily, a program variable has
-the same type throughout its lifetime from when the variable is declared
-until it goes out of scope. “Typestate”
-permits the type of an object or variable to <em>change</em> in a controlled way.
-Essentially, it is a combination of standard type systems with dataflow
-analysis. For instance, a file object changes from unopened, to opened, to
-closed; certain operations such as writing to the file are only permitted
-when the file is in the opened typestate. Another way of saying this is
-that <code>write</code> is permitted after <code>open</code>, but not after <code>close</code>.
-Typestate
-is applicable to many other types of software properties as well.
+The goal of this project is to improve a compiler's error messages.  Here are
+some distinct challenges:
 </p>
-
-<p>
-Two <a href="https://checkerframework.org/manual/">typestate checking frameworks</a>
-exist for the Checker Framework.  Neither is being maintained; a new one
-needs to be written.
-</p>
-
-
-<h2 id="your-own-new-type-system">Invent your own new type system</h2>
-
-<p>
-We also welcome your ideas for new type systems.  For example, any run-time
-failure can probably be prevented at compile time with the right
-analysis.  Can you come up with a way to fix your pet peeve?
-</p>
-
-<p>
-It is easiest, but not required, to choose an existing type system from the
-literature, since that means you can skip the design stage and go right to
-implementation.
-</p>
-
-<p>
-This task can be simple or very
-challenging, depending on how ambitious the type system is.  Remember to
-focus on what helps a software developer most!
-</p>
-
-
-
-<h1 id="cf-other">Type system enhancements and tools</h1>
-
-
-<h2 id="annotated-jdk">JDK annotations</h2>
-
-<p>
-The JDK is the most important library to annotate, and the Checker
-Framework ships with partial annotations for it.
-These are scattered in multiple locations:  in multiple subdirectories of
-<a href="https://github.com/typetools/checker-framework/tree/master/checker/jdk"><code>checker/jdk/</code></a>,
-and in files <code>jdk.astub</code> under
-<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/org/checkerframework/checker"><code>checker/src/org/checkerframework/checker/</code></a>
-</p>
-
-<p>
-The goal of this project is to put the annotations in a single place:  a
-new clone of the JDK repository.  The effort can be partially annotated
-&mdash; say, by using
-the <a href="https://checkerframework.org/annotation-file-utilities/">Annotation
-File Utilities</a> to move annotations around, or enhancing the Annotation
-File Utilities if they are not up to the task) and partially done manually.
-</p>
+<ul>
+  <li>
+    Some type errors can be more concisely or clearly expressed than the
+    standard "found type A, expected type B" message.
+  </li>
+  <li>
+    Some types are complex.  The error message could explain them, or link
+    to the manual, or give suggested fixes.
+  </li>
+  <li>
+    Compiler messages currently show
+    the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
+    type</a>, which may be different than what the user wrote due to
+    defaulting, inference, and syntactic sugar.  For example, a user-written
+    <code>@IndexFor("a")</code> annotation is syntactic sugar for
+    <code>@NonNegative @LTLengthOf("a")</code>, and those types are
+    the ones that currently appear in error messages.
+    It might be good to show simpler types or ones that the user wrote.
+  </li>
+  <li>
+    Some checkers combine multiple cooperating type systems;
+    the <a href="https://checkerframework.org/manual/#nullness-checker">Nullness
+    Checker</a> and
+    the <a href="https://checkerframework.org/manual/#index-checker">Index
+    Checker</a> are examples.  If there is a problem with a variable's
+    lower bound type, then its upper bound type should not be shown in the
+    error message.  This will make the message shorter and more specific,
+    and avoid distracting the user with irrelevant information.
+  </li>
+  <li>
+    When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
+  </li>
+</ul>
 
 
 <h2 id="flow-expression-parser">Flow expression parser</h2>
@@ -1592,188 +1292,68 @@ File Utilities if they are not up to the task) and partially done manually.
 <p>
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-Java expression</a>.  The parser for these is a hack.  The goal of this
-project is to replace it by calls
-to <a href="https://github.com/javaparser/javaparser">JavaParser</a>.
-For example, the <code>FlowExpressions.Receiver</code> class, which
-represents an AST, should be replaced by the JavaParser AST.
+Java expression</a>.  The representation for these
+(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+class) is a hack.  The goal of this
+project is to remove it.
 </p>
 
 <p>
-This task
-should be straightforward, since JavaParser is already used in other parts
-of the Checker Framework.
-</p>
-
-
-<h2 id="asm">Upgrade to a newer version of ASM</h2>
-
-<p>
-  The
-  <a href="https://checkerframework.org/annotation-file-utilities/">Annotation
-  File Utilities</a>, or AFU, insert annotations into, and extract
-  annotations from, <code>.java</code> files, <code>.class</code> files,
-  and text files.  These programs were written before the
-  <a href="https://asm.ow2.org/">ASM</a> bytecode library supported Java 8's
-  type annotations.  Therefore, the AFU has its own custom version of ASM
-  that supports type annotations.  Now that ASM 6 has been released and it
-  supports type annotations, the AFU needs to be slightly changed to use
-  the official ASM 6 library instead of its own custom ASM variant.
+The <code>FlowExpressions.Receiver</code> class is about 1000 lines of code
+that represent an AST.  There is no need for the Checker Framework to
+define its own AST when the JavaParser AST already exists and is
+maintained.  In fact, <code>FlowExpressionParseUtil</code> uses JavaParser,
+but needlessly converts a
+JavaParser <code>Expression</code> into
+a <code>FlowExpressions.Receiver</code>.
 </p>
 
 <p>
-  This project is a good way to learn about <code>.class</code> files and
-  Java bytecodes:  how they are stored, and how to manipulate them.
-</p>
-
-
-<h2 id="analysis_diffs">Tool for analysis diffs</h2>
-<!--
-  This project idea is duplicated at
-  ~mernst/public_html/uw-only/research/potential-research-projects.html .
--->
-
-<p>
-   Many program analyses are too verbose for a person to read their entire
-   output.  However, after a program change, the analysis results may
-   change only slightly.  An "analysis diff" tool could show the
-   difference between the analysis run on the old code and the analysis run
-   on the new code.
+  The goals for the project include:
 </p>
 <ul>
   <li>
-    The analysis diffs may help the programmer to better understand the
-    changes.
+    Replace every use
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+    by a use of the JavaParser
+    class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
   </li>
   <li>
-    Bug detection tools. such
-    as <a href="http://findbugs.sourceforge.net/">FindBugs</a> or
-    the <a href="https://checkerframework.org/">Checker Framework</a>, have
-    extremely verbose output when first run on a program.  Programmers
-    could examine and fix only the warnings about code they have changed
-    (and that they are currently thinking about).
+    Replace every use of a subclass of <code>Receiver</code> (listed in the
+    "Direct Known Subclasses" section of
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>Receiver</code>
+    API documentation)</a> by a use of a
+    <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
   </li>
   <li>
-    Tools that always have large output, such as inference tools, could
-    become manageable to users if output is shown in small doses.
-  </li>
-  <li>
-    You can probably think of other uses.
+    The <a href="https://checkerframework.org/api/org/checkerframework/framework/util/FlowExpressionParseUtil.html"><code>FlowExpressionParseUtil</code></a>
+    class already uses JavaParser, but it uses <code>ExpressionToReceiverVisitor</code> it to construct
+    a <code>Receiver</code>.  Have it return a
+    JavaParser <code>Expression</code> instead, and delete <code>ExpressionToReceiverVisitor</code>.
   </li>
 </ul>
 
 <p>
-  The analysis diff tool would take as input two analysis results (the
-  previous and the current one).  It would output only the new parts of its
-  second input.  (It could optionally output a complete diff between two
-  analysis results.)
+Direct replacement of the classes is not possible, or we would have done it
+already.  For example, <code>Receiver</code> contains some methods that
+JavaParser lacks, such as <code>isUnassignableByOtherCode</code>.  As a
+first step before doing the tasks listed above, you may want to convert
+these methods from instance methods of <code>Receiver</code> into static
+methods in <code>FlowExpressions</code>, making <code>Receiver</code> more
+like a standard AST that can be replaced by JavaParser classes.
+You also need to decide how to store the <code>type</code> field
+of <code>Receiver</code>, when <code>Receiver</code> is eliminated.
+An
+alternate design (or a partial step in the refactoring process) would be to
+retain the <code>Receiver</code> class, but make it a thin wrapper around
+JavaParser classes that do most of the real work.
 </p>
 
 <p>
-  One challenge is dealing with changed line numbers and other analysis
-  output differences between runs.
-</p>
-
-<p>
-It would be nice to integrate the tool with git pre-commit hooks or GitHub
-pull requests, to enable either of the following functionality (for either
-commits to master or for pull requests):
-</p>
-<ul>
-  <li>
-    Permit only those commits/pulls that do not add any new analysis warnings.
-  </li>
-  <li>
-    Permit only those commits/pulls that are "clean" &mdash; the analysis
-    issues no warnings for any changed line.
-  </li>
-</ul>
-
-<p>
-  A concrete example of an analysis diff tool
-  is <a href="https://github.com/plume-lib/checklink/blob/master/checklink-persistent-errors">checklink-persistent-errors</a>;
-  see the documentation at the top of the file.  That tool only works for
-  one particular analysis, the W3C Link Checker.
-  An analysis diff tool also appears to be built into FindBugs.
-  The goal of this project is to build a general-purpose tool that is easy
-  to apply to new analyses.
-</p>
-
-
-<h2 id="Whole-program_type_inference">Whole-program type inference</h2>
-
-<p>
-A type system is useful because it prevents certain errors.  The downside
-of a type system is the effort required to write the types.  Type inference
-is the process of writing the types for a program.
-</p>
-
-<p>
-Type-<em>checking</em> is a modular, or local, analysis.  For example, given a
-procedure in which types have been written, a type-checker can verify the
-procedure's types without examining the implementation of any other
-procedure.
-</p>
-
-<p>
-By contrast, type <em>inference</em> is a non-local, whole-program analysis.  For
-example, to determine what type should be written for a procedure's formal
-parameter, it is necessary to examine the type of the argument at every
-call to that procedure.  At every call, to determine the type of some argument A, it
-may be necessary to know the types of the formal parameters to the
-procedure that contains A, and so forth.  It is possible to resolve this
-seemingly-infinite regress, but only by examining the entire program in the
-worst case.
-</p>
-
-<p>
-The differences between type checking and type inference means that they
-are usually written in very different ways.  Type inference is usually done
-by first collecting all of the constraints for the entire program, then
-passing them to a specialized solver.  Writing a type inference tool is
-harder.  Worst of all, it's annoying to encode all the type rules twice in
-different ways:  once for the type checker and once for the type inference.
-</p>
-
-<p>
-As a result, many type systems have a type checker but no type inference
-tool.  This makes programmers reluctant to use these type systems, which denies
-programmers the benefits of type-checking.
-</p>
-
-<p>
-The goal of this project is to automatically create type inference tools
-from type-checking tools, so that it is not necessary for the type system
-designer to implement the type system twice in different ways.
-</p>
-
-<p>
-A key insight is that the type-checker already encodes all knowledge about
-what is a legal, well-typed program.  How can we exploit that for the
-purpose of type inference as well as type-checking?  The idea is to
-iteratively run the type-checker, multiple times, observing what types are
-passed around the program and what errors occur.  Each iteration collects
-more information, until there is nothing more to learn.
-</p>
-
-<p>
-This approach has some disadvantages:  it is theoretically slower, and
-theoretically less accurate, than a purpose-built type inference tool for
-each type system.  However, it has the major advantage that it requires no
-extra work to implement a type inference tool.  Furthermore, maybe it works
-well enough in practice.
-</p>
-
-<p>
-A prototype implementation of this idea already exists, but it needs to be
-evaluated in order to discover its flaws, improve its design, and discover
-how accurate it is in practice.
-</p>
-
-<p>
-A valuable project all by itself would be to compare heavy-weight and
-light-weight type inference this whole-program inference vs. Checker
-Framework Inference vs. Julia, to understand when each one is worth using.
+Another aspect of this project is
+fixing <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
+    issues that are labeled "JavaExpression".</a>
 </p>
 
 
@@ -1834,8 +1414,8 @@ need to design a new one.
 
 <p>
 Perhaps one of these existing side effect analyses could be used:
- https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes
- http://www2.informatik.uni-freiburg.de/~geffken/GeffkenST14.pdf
+<a href="https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes">Soot</a>,
+<a href="https://pdfs.semanticscholar.org/d2bd/29e20c99a10ab9d0c5ecf3acaf15606407d1.pdf">Geffken</a>.
 </p>
 
 <!--
@@ -1859,194 +1439,6 @@ Javadoc, showing the signatures after applying defaulting rules.
 There are other type-annotation-related improvements to Javadoc that can be
 explored, e.g. using JavaScript to show or hide only the type annotations
 currently of interest.
-</p>
-
-
-<h2 id="performance">Performance improvements</h2>
-
-<p>
-  The Checker Framework runs much slower than the standard javac compiler
-  &mdash; often 20 times slower!  This is not acceptable as part of a
-  developer's regular process, so we need to speed up the Checker
-  Framework.  This project involves determining the cause of slowness in
-  the Checker Framework, and correcting those problems.
-</p>
-
-<p>
-This is a good way to learn about performance tuning for Java applications.
-</p>
-
-<p>
-  Some concrete tasks include:
-</p>
-
-<ul>
-  <li>Profile the Checker Framework.  Run a profiler such as
-  <a href="https://www.yourkit.com/java/profiler/">YourKit</a> to determine
-  which parts of the Checker Framework consume the most CPU time and memory.
-  </li>
-
-  <li>Perhaps compare a profile of the Checker Framework against a profile
-  of regular javac.  This probably is not necessary because the Checker
-    Framework is so much slower than regular javac.
-  </li>
-
-  <li>Consider interning string values.  The Checker Framework does a fair
-  amount of string manipulation, in part because it reads from resources
-  such as stub files that do not produce <code>Element</code>s.  Interning
-  could save time when doing comparisons.  You can verify the correctness
-  of the optimization by running the
-  <a href="https://checkerframework.org/manual/#interning-checker">Interning
-    Checker</a> on the Checker Framework code.  Compare the run time of the
-  Checker Framework before and after this optimization.
-  </li>
-
-  <li> Based on profiling results, devise other optimizations, implement
-    them, and evaluate them.
-  </li>
-</ul>
-
-
-<h2 id="run-time-checking">Run-time checking</h2>
-
-<p>
-Implement run-time checking to complement compile-time checking.  This will
-let users combine the power of static checking with that of dynamic
-checking.
-</p>
-
-<p>
-Every type system is too strict: it rejects some programs that never go
-wrong at run time. A human must insert a type loophole to make such a
-program type-check.  For example, Java takes this approach with its
-cast operation (and in some other places).
-</p>
-
-<p>
-When doing type-checking, it is desirable to automatically insert run-time
-checks at each operation that the static checker was unable to verify.
-(Again, Java takes exactly this approach.)  This guards against mistakes by
-the human who inserted the type loopholes.  A nice property of this
-approach is that it enables you to prevent errors in a program
-with no type annotations:  whenever the static checker is unable
-to verify an operation, it would insert a dynamic check.  Run-time checking
-would also be useful in verifying whether the suppressed warnings are
-correct &mdash; whether the programmer made a mistake when writing them.
-</p>
-
-<p>
-The annotation processor (the pluggable type-checker) should automatically
-insert the checks, as part of the compilation process.
-</p>
-
-<p>
-There should be various modes for the run-time checks:
-</p>
-<ul>
-  <li>fail immediately.</li>
-  <li>logging, to permit post-mortem debugging without crashing the program.</li>
-</ul>
-
-<p>
-The run-time penalty should be small:  a run-time check is necessary only
-at the location of each cast or suppressed warning.  Everywhere that the
-compile-time checker reports no possible error, there is no need to insert a
-check.  But, it will be an interesting project to determine how to minimize
-the run-time cost.
-</p>
-
-<p>
-Another interesting, and more challenging, design question is whether you need to add and maintain
-a run-time representation of the property being tested.  It's easy to test
-whether a particular value is null, but how do you test whether it is
-tainted, or should be treated as immutable?  For a more concrete example,
-see the discussion of the (not yet implemented)
-[Javari run-time checker](http://pag.csail.mit.edu/pubs/ref-immutability-oopsla2005-abstract.html).
-Adding this run-time support would be an interesting and challenging project.
-</p>
-
-<p>
-We developed a prototype for the
-<a href="https://ece.uwaterloo.ca/~wdietl/publications/pubs/EnerJ11-abstract.html">EnerJ runtime system</a>.
-That code could be used as starting point, or you could start afresh.
-</p>
-
-<p>
-In the short term, this could be prototyped as a source- or
-bytecode-rewriting approach; but integrating it into the type checker is a
-better long-term implementation strategy.
-</p>
-
-
-
-<h2 id="ide-support">IDE and build system support</h2>
-
-<p>
-The Checker Framework comes with support for
-<a href="https://checkerframework.org/manual/#external-tools">external tools</a>,
-including both IDEs (such as an Eclipse plug-in) and build tools
-(instructions for Maven, etc.).
-</p>
-
-<p>
-  These plug-ins and other integration should be improved.
-  We have a number of concrete ideas, but you will also probably come up
-  with some after a few minutes of using the existing IDE plugins!
-</p>
-
-<p>
-  This is only a task for someone who is already an expert, such as someone
-  who has built IDE plugins before or is very familiar with the build system.
-  One reason is that these tools tend to be complex, which can lead to
-  subtle problems.
-  Another reason is that we don't want to be stuck maintaining code written by
-  someone who is just learning how to write an IDE plugin.
-</p>
-
-<p>
-  Rather than modifying the Checker Framework's existing support or
-  building new support from scratch, it may be better to adapt some other
-  project's support for build systems and IDEs.  For instance, you might
-  make <a href="https://github.com/coala/coala">coala</a> support the
-  Checker Framework, or you might adapt the tool integration provided
-  by <a href="http://errorprone.info/">Error Prone</a>.
-</p>
-
-
-<!--
-Integrate the Checker Framework with an IDE such as Eclipse, IntelliJ, IDEA or NetBeans,
-which will make pluggable type-checking easier to use and more attractive to developers.
-
-Some specific projects include:
-  * Create an IDE plug-in that invokes the checker and reports any errors to the developer, just as the IDE currently does for type errors.
-  * Improve the existing Eclipse plug-in.
-  * Add a button to the IDE that hides/shows all annotations of a given variety, to reduce clutter.  This would be useful beyond type annotations.
-  * Implement quick fixes for common errors.
-  * Integrate type inference with the IDE, to make it easier for a developer to add annotations to code.
-  * Improve an IDE's existing refactoring support so that it is aware of, and properly retains, type annotations.
-  * Highlight defaulted types and flow-sensitive type refinements, making error messages easier to understand.
-  * Highlight the parts of the code that influenced flow-sensitive type refinements, again to make errors easier to comprehend.
-
-IDEs that build on the OpenJDK Java compiler could benefit from even tighter integration with the Checker Framework.
-
-This project may entail the following:
-
-  * familiarity with the IDE plug-in development environment, Eclipse PDT or NetBeans plug-in support:  By the end of the project, the developer should be familiar with building reasonably complex IDE plug-ins.
-
-  * UI/UX design:  The developer would design a UI experience that is appealing to developers and integrates well with the developer's workflow!
--->
-
-
-<h2 id="exhaustive-testing">Model checking of a type system</h2>
-
-<p>
-Design and implement an algorithm to check type soundness of a type system
-by exhaustively verifying the type checker on all programs up to a certain
-size. The challenge lies in efficient enumeration of all programs and
-avoiding redundant checks, and in knowing the expected outcome of the
-tests.  This approach is related to bounded exhaustive
-testing and model checking; for a reference, see
-[Efficient Software Model Checking of Soundness of Type Systems](http://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
 </p>
 
 
@@ -2078,7 +1470,9 @@ testing and model checking; for a reference, see
  -->
 <!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
-<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode
+<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn
  -->
-<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs
+<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn
+ -->
+<!--  LocalWords:  rasmud nondet Geffken Dort
  -->

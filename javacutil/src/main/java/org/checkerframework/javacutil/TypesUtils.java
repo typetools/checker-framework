@@ -23,6 +23,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -41,7 +42,7 @@ public final class TypesUtils {
      * @param type the declared type
      * @return the name corresponding to that type
      */
-    public static Name getQualifiedName(DeclaredType type) {
+    public static @DotSeparatedIdentifiers Name getQualifiedName(DeclaredType type) {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }
@@ -128,7 +129,11 @@ public final class TypesUtils {
                                 getQualifiedName((DeclaredType) type).toString()));
     }
 
-    /** @return type represents a Throwable type (e.g. Exception, Error) */
+    /**
+     * Returns true if type represents a Throwable type (e.g. Exception, Error).
+     *
+     * @return true if type represents a Throwable type (e.g. Exception, Error)
+     */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) type;
@@ -350,7 +355,7 @@ public final class TypesUtils {
             if (w.isSuperBound()) { // returns true if w is unbound
                 Symtab syms = Symtab.instance(context);
                 // w.bound is null if the wildcard is from bytecode.
-                return w.bound == null ? syms.objectType : w.bound.bound;
+                return w.bound == null ? syms.objectType : w.bound.getUpperBound();
             } else {
                 return wildUpperBound(w.type, env);
             }
@@ -517,9 +522,6 @@ public final class TypesUtils {
             TypeMirror tm1, TypeMirror tm2, ProcessingEnvironment processingEnv) {
         Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
         Type t2 = TypeAnnotationUtils.unannotatedType(tm2);
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
-        com.sun.tools.javac.code.Types types =
-                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
         // Handle the 'null' type manually (not done by types.lub).
         if (t1.getKind() == TypeKind.NULL) {
             return t2;
@@ -529,24 +531,25 @@ public final class TypesUtils {
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType) t1;
-            Type bound = (Type) wc1.getExtendsBound();
-            if (bound == null) {
+            t1 = (Type) wc1.getExtendsBound();
+            if (t1 == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
                 return elements.getTypeElement("java.lang.Object").asType();
             }
-            t1 = bound;
         }
         if (t2.getKind() == TypeKind.WILDCARD) {
             WildcardType wc2 = (WildcardType) t2;
-            Type bound = (Type) wc2.getExtendsBound();
-            if (bound == null) {
+            t2 = (Type) wc2.getExtendsBound();
+            if (t2 == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
                 return elements.getTypeElement("java.lang.Object").asType();
             }
-            t2 = bound;
         }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
             // Special case if the two types are equal.
             return t1;
@@ -642,18 +645,16 @@ public final class TypesUtils {
      */
     public static @Nullable TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
-        switch (element.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                return (TypeElement) element;
-            default:
-                return null;
+        if (ElementUtils.isClassElement(element)) {
+            return (TypeElement) element;
         }
+        return null;
     }
 
     /**
+     * Returns {@code type} as {@code superType} if {@code superType} is a super type of {@code
+     * type}; otherwise, null.
+     *
      * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code
      *     type}; otherwise, null
      */

@@ -4,9 +4,10 @@
 # So check for both the error message and make sure it is for the right assignment.
 all: clean
 	- ../../../gradlew build > Out.txt 2>&1
-	grep -qF "User.java:9: error: [argument.type.incompatible] incompatible types in argument." Out.txt && \
-		grep -qF "Foo.java:12: error: [assignment.type.incompatible] incompatible types in assignment." Out.txt && \
-		grep -qF "y = null; // error" Out.txt
+	(grep -qF "User.java:9: error: [argument.type.incompatible] incompatible types in argument." Out.txt \
+	  && grep -qF "Foo.java:12: error: [assignment.type.incompatible] incompatible types in assignment." Out.txt \
+	  && grep -qF "y = null; // error" Out.txt) \
+	 || (echo "===== start of Out.txt =====" && cat Out.txt && echo "===== end of Out.txt =====" && false)
 
 clean:
 	../../../gradlew clean

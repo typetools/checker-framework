@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.constantpropagation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
@@ -10,7 +9,6 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.constantpropagation.Constant.Type;
 
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
@@ -29,7 +27,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
         if (contents.containsKey(n)) {
             return contents.get(n);
         }
-        return new Constant(Type.TOP);
+        return new Constant(Constant.Type.TOP);
     }
 
     public void mergeInformation(Node n, Constant val) {
@@ -60,7 +58,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
         Map<Node, Constant> newContents = new HashMap<>();
 
         // go through all of the information of the other class
-        for (Entry<Node, Constant> e : other.contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
             Node n = e.getKey();
             Constant otherVal = e.getValue();
             if (contents.containsKey(n)) {
@@ -72,7 +70,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
             }
         }
 
-        for (Entry<Node, Constant> e : contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             Node n = e.getKey();
             Constant thisVal = e.getValue();
             if (!other.contents.containsKey(n)) {
@@ -99,7 +97,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
         }
         ConstantPropagationStore other = (ConstantPropagationStore) o;
         // go through all of the information of the other object
-        for (Entry<Node, Constant> e : other.contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
             Node n = e.getKey();
             Constant otherVal = e.getValue();
             if (otherVal.isBottom()) {
@@ -114,7 +112,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
             }
         }
         // go through all of the information of the this object
-        for (Entry<Node, Constant> e : contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             Node n = e.getKey();
             Constant thisVal = e.getValue();
             if (thisVal.isBottom()) {
@@ -132,7 +130,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     @Override
     public int hashCode() {
         int s = 0;
-        for (Entry<Node, Constant> e : contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             if (!e.getValue().isBottom()) {
                 s += e.hashCode();
             }
@@ -144,7 +142,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     public String toString() {
         // only output local variable information
         Map<Node, Constant> smallerContents = new HashMap<>();
-        for (Entry<Node, Constant> e : contents.entrySet()) {
+        for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             if (e.getKey() instanceof LocalVariableNode) {
                 smallerContents.put(e.getKey(), e.getValue());
             }

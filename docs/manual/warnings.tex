@@ -51,7 +51,7 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
-  the \code{-AuseDefaultsForUncheckedCode=source} command-line
+  the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
   the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}), or
@@ -136,8 +136,16 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 %END LATEX
 
 \noindent
-You are allowed to use any substring of a message key.  Beware writing a very
-short messagekey, because it might suppress more warnings than you expect.
+You are allowed to use any substring of a message key, so long as the
+substring extends at each end to a period or an end of the key.  For
+example, to suppress a warning with message key
+\code{"assignment.type.incompatible"}, you could use
+\<@SuppressWarnings("assignment")>,
+\<@SuppressWarnings("assignment.type")>,
+\<@SuppressWarnings("type.incompatible")>, or other variants.
+We recommend using
+the longest possible message key; a short message might suppress more
+warnings than you expect.
 
 If the \emph{checkername} part is omitted, the \<@SuppressWarnings> applies
 to all checkers.
@@ -297,20 +305,20 @@ example, ``a.f was checked above and no subsequent side effect can affect it''.
 Here are some terse examples from libraries in \href{https://github.com/plume-lib/}{plume-lib}:
 
 \begin{Verbatim}
-@SuppressWarnings("purity") // side effect to local state of type BitSet
 @SuppressWarnings("cast") // cast is redundant (except when checking nullness)
 @SuppressWarnings("interning") // FbType.FREE is interned but is not annotated
 @SuppressWarnings("interning") // equality testing optimization
 @SuppressWarnings("nullness") // used portion of array is non-null
 @SuppressWarnings("nullness") // oi.factory is a static method, so null first argument is OK
+@SuppressWarnings("purity") // side effect to local state of type BitSet
 \end{Verbatim}
 
 A particularly good (and concise) justification is to reference an issue in
 the issue tracker, as in these two from \href{https://plse.cs.washington.edu/daikon/}{Daikon}:
 
 \begin{Verbatim}
-@SuppressWarnings("keyfor") // https://tinyurl.com/cfissue/877
 @SuppressWarnings("flowexpr.parse.error") // https://tinyurl.com/cfissue/862
+@SuppressWarnings("keyfor") // https://tinyurl.com/cfissue/877
 \end{Verbatim}
 
 \noindent
@@ -794,7 +802,7 @@ annotations, those compatibility annotations are no longer necessary.
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
-% LocalWords:  AuseDefaultsForUncheckedCode checkerframework askipuses
+% LocalWords:  AuseConservativeDefaultsForUncheckedCode checkerframework askipuses
 %%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
 %%  LocalWords:  assumeassertion askipdefs alint compat substring
 % LocalWords:  AcheckPurityAnnotations

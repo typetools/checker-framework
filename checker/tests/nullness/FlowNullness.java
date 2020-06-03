@@ -201,7 +201,7 @@ public class FlowNullness {
         class MyClass {
             @org.checkerframework.dataflow.qual.Pure
             public boolean equals(@Nullable Object o) {
-                return true;
+                return o != null;
             }
 
             void test(@Nullable Object a, @Nullable Object b) {}

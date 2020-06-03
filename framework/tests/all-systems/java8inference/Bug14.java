@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.RandomAccess;
 import java.util.stream.Collector;
 
-@SuppressWarnings({"unchecked", ""})
+@SuppressWarnings({"unchecked", "all"})
 public class Bug14 {
     private static final Collector<Object, ?, ImmutableList<Object>> TO_IMMUTABLE_LIST =
             Collector.of(

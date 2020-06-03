@@ -12,16 +12,14 @@
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
-mydir="`dirname $0`"
-case `uname -s` in
+mydir="$(dirname "$0")"
+case $(uname -s) in
     CYGWIN*)
-      mydir=`cygpath -m $mydir`
+      mydir=$(cygpath -m "$mydir")
       ;;
 esac
 
 binaryDir="${mydir}"/../dist
-
-jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
@@ -58,9 +56,8 @@ eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
-     "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.cp=${JAVA_HOME}/lib/tools.jar " \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     ${args}
+     "${args}"

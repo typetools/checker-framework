@@ -1,4 +1,4 @@
-@SuppressWarnings("")
+@SuppressWarnings("all")
 public class Issue2717 {
 
     interface Tree {}

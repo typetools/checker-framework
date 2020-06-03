@@ -4,15 +4,22 @@ package testlib.lubglb;
 // https://github.com/typetools/checker-framework/issues/691
 // https://github.com/typetools/checker-framework/issues/756
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.formatter.FormatterAnnotatedTypeFactory;
 import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.formatter.FormatterTreeUtil;
+import org.checkerframework.checker.formatter.FormatterVisitor;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -24,6 +31,40 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * also tests the implementation of LUB computation in the Formatter Checker.
  */
 public class FormatterLubGlbChecker extends FormatterChecker {
+
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new FormatterVisitor(this) {
+            @Override
+            protected FormatterLubGlbAnnotatedTypeFactory createTypeFactory() {
+                return new FormatterLubGlbAnnotatedTypeFactory(checker);
+            }
+        };
+    }
+
+    /** FormatterLubGlbAnnotatedTypeFactory */
+    private static class FormatterLubGlbAnnotatedTypeFactory extends FormatterAnnotatedTypeFactory {
+
+        /**
+         * Constructor
+         *
+         * @param checker checker
+         */
+        public FormatterLubGlbAnnotatedTypeFactory(BaseTypeChecker checker) {
+            super(checker);
+            postInit();
+        }
+
+        @Override
+        protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+            return new HashSet<>(
+                    Arrays.asList(
+                            FormatBottom.class,
+                            Format.class,
+                            InvalidFormat.class,
+                            UnknownFormat.class));
+        }
+    }
 
     @SuppressWarnings("checkstyle:localvariablename")
     @Override

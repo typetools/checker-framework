@@ -5,8 +5,23 @@ repositories {
 dependencies {
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    // Keep version number in sync with ../maven-artifacts/release/javacutilReleasePom.xml .
-    compile 'org.plumelib:plume-util:1.0.10'
+    // Keep version number in sync with docs/developer/release/maven-artifacts/javacutil-pom.xml.
+    implementation 'org.plumelib:plume-util:1.1.4'
 
-    compileOnly project(':checker-qual')
+    implementation project(':checker-qual')
+}
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
+    doLast {
+        mvnDeployToLocalRepo(project, "${pomFiles}/javacutil-pom.xml")
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/javacutil-pom.xml")
+    }
 }
