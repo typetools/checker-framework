@@ -1,5 +1,4 @@
 // A simple test that the fluent API logic in the Accumulation Checker works.
-// Copied from the Object Construction Checker.
 
 import org.checkerframework.common.returnsreceiver.qual.*;
 import testaccumulation.qual.*;
@@ -38,6 +37,17 @@ class SimpleFluent {
                 .c()
                 // :: error: method.invocation.invalid
                 .build();
+    }
+
+    static void mixFluentAndNonFluent(SimpleFluent s1) {
+        s1.a().b();
+        s1.build();
+    }
+
+    static void mixFluentAndNonFluentWrong(SimpleFluent s) {
+        s.a(); // .b()
+        // :: error: method.invocation.invalid
+        s.build();
     }
 
     static void fluentLoop(SimpleFluent t) {

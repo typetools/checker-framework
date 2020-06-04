@@ -42,18 +42,22 @@ public class AccumulationTransfer extends CFTransfer {
      * Updates the estimate of how many things {@code node} has accumulated.
      *
      * <p>If the node is an invocation of a method that returns its receiver, then its receiver's
-     * type will also be updated. In a chain of method calls, this process will continue as long
-     * as each receiver is itself a receiver-returning method invocation.
+     * type will also be updated. In a chain of method calls, this process will continue as long as
+     * each receiver is itself a receiver-returning method invocation.
      *
      * <p>For example, suppose {@code node} is the expression {@code a.b().c()}, the new value is
-     * "foo", and b and c return their receiver (and are deterministic). Then all of the expressions
-     * {@code a}, {@code a.b()}, and {@code a.b().c()} would have their estimates updated to include
-     * "foo".
+     * "foo", and b and c return their receiver. Then all of the expressions {@code a}, {@code
+     * a.b()}, and {@code a.b().c()} would have their estimates updated to include "foo". Note that
+     * due to what kind of values can be held in the store, this information is lost outside the
+     * method chain. That is, the returns-receiver propagated information is lost outside the
+     * expression in which the returns-receiver method invocations are nested.
      *
-     * <p>If any method in the chain is non-deterministic, its estimate will not be updated (but the
-     * types of any deterministic methods, and the first receiver expression that is not an
-     * invocation of a method that returns its receiver ({@code a} in the example), will be
-     * updated).
+     * <p>As a concrete example, consider the Called Methods accumulation checker: if {@code build}
+     * requires a, b, and c to be called, then {@code foo.a().b().c().build();} will typecheck (they
+     * are in one fluent method chain), but {@code foo.a().b().c(); foo.build();} will not - the
+     * store does not keep the information that a, b, and c have been called outside the chain.
+     * {@code foo}'s type will be {@CalledMethods("a")}, because only {@code a()} was called on
+     * {@code foo} directly.
      *
      * @param node the node whose estimate should be expanded
      * @param result the transfer result containing the store to be modified
