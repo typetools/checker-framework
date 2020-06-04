@@ -258,7 +258,6 @@ public class TypeArgumentMapper {
      * @return a list of type records that represents the sequence of directSupertypes between
      *     subtype and target
      */
-    @SuppressWarnings("JdkObsolete") // I tried replacing Stack with ArrayDeque, but tests fail.
     private static List<TypeRecord> depthFirstSearchForSupertype(
             final TypeElement subtype, final TypeElement target, final Types types) {
         ArrayDeque<TypeRecord> pathFromRoot = new ArrayDeque<>();
