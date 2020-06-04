@@ -23,7 +23,7 @@ public abstract class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirec
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
-    public FrameworkPerDirectoryTest(
+    protected FrameworkPerDirectoryTest(
             List<File> testFiles,
             Class<? extends AbstractProcessor> checker,
             String testDir,

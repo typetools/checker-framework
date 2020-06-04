@@ -98,12 +98,18 @@ public class FieldInvariants {
         return list;
     }
 
-    /** @return true if there is a qualifier for each field in {@code fields} */
+    /**
+     * Returns true if there is a qualifier for each field in {@code fields}.
+     *
+     * @return true if there is a qualifier for each field in {@code fields}
+     */
     public boolean isWellFormed() {
         return qualifiers.size() == fields.size();
     }
 
     /**
+     * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
+     *
      * @param superInvar the value to check for being a super invariant
      * @param factory the type factory
      * @return null if {@code superInvar} is a super invariant, otherwise returns the error message

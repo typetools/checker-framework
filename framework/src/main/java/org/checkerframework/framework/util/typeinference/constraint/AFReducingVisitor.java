@@ -45,7 +45,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     public final Class<? extends AFConstraint> reducerType;
     public final AnnotatedTypeFactory typeFactory;
 
-    public AFReducingVisitor(
+    protected AFReducingVisitor(
             final Class<? extends AFConstraint> reducerType,
             final AnnotatedTypeFactory typeFactory) {
         this.reducerType = reducerType;

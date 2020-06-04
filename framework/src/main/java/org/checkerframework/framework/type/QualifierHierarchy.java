@@ -40,7 +40,11 @@ public abstract class QualifierHierarchy {
         return getTopAnnotations().size();
     }
 
-    /** @return the top (ultimate super) type qualifiers in the type system */
+    /**
+     * Returns the top (ultimate super) type qualifiers in the type system.
+     *
+     * @return the top (ultimate super) type qualifiers in the type system
+     */
     public abstract Set<? extends AnnotationMirror> getTopAnnotations();
 
     /**
@@ -55,10 +59,17 @@ public abstract class QualifierHierarchy {
      */
     public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
-    /** @return the bottom type qualifier in the hierarchy */
+    /**
+     * Returns the bottom type qualifier in the hierarchy.
+     *
+     * @return the bottom type qualifier in the hierarchy
+     */
     public abstract Set<? extends AnnotationMirror> getBottomAnnotations();
 
     /**
+     * Returns the polymorphic qualifier for that hierarchy or {@code null} if there is no
+     * polymorphic qualifier in that hierarchy.
+     *
      * @param start any qualifier from the type hierarchy
      * @return the polymorphic qualifier for that hierarchy or {@code null} if there is no
      *     polymorphic qualifier in that hierarchy

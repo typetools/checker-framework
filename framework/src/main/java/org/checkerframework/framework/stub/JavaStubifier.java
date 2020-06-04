@@ -187,7 +187,7 @@ public class JavaStubifier {
         /**
          * Remove the whole node if it is private or package private.
          *
-         * @param node Node to inspect
+         * @param node a Node to inspect
          * @return true if the node was removed
          */
         private boolean removeIfPrivateOrPkgPrivate(NodeWithAccessModifiers<?> node) {
@@ -205,7 +205,7 @@ public class JavaStubifier {
         /**
          * Remove the whole node if it is private.
          *
-         * @param node Node to inspect
+         * @param node a Node to inspect
          * @return true if the node was removed
          */
         private boolean removeIfPrivate(NodeWithAccessModifiers<?> node) {

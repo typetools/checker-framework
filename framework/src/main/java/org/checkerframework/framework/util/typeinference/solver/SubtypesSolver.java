@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
@@ -31,8 +30,8 @@ public class SubtypesSolver {
      *
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraints the set of constraints for all targets
-     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers
-     *     concrete types and will not infer that the target is equivalent to another target
+     * @return a mapping from target to inferred type. Note this class always infers concrete types
+     *     and will not infer that the target is equivalent to another target.
      */
     public InferenceResult solveFromSubtypes(
             final Set<TypeVariable> remainingTargets,
@@ -83,7 +82,7 @@ public class SubtypesSolver {
             // but we may have primary annotations that need to be GLBed
             AnnotationMirrorMap<AnnotationMirrorSet> primaries = subtypes.primaries;
             if (subtypes.types.size() == 1) {
-                final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry =
+                final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry =
                         subtypes.types.entrySet().iterator().next();
                 AnnotatedTypeMirror supertype = entry.getKey().deepCopy();
 
@@ -148,7 +147,7 @@ public class SubtypesSolver {
             InferenceResult solution,
             final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
 
-        for (final Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
+        for (final Map.Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
                 targetSubtypes.targets.entrySet()) {
             final InferredValue subtargetInferredGlb = solution.get(subtypeTarget.getKey());
 
@@ -168,6 +167,8 @@ public class SubtypesSolver {
     }
 
     /**
+     * Returns the GLB of annos.
+     *
      * @param annos a set of annotations in the same annotation hierarchy
      * @param qualifierHierarchy the qualifier of the annotation hierarchy
      * @return the GLB of annos

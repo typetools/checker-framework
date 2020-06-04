@@ -248,6 +248,9 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Returns true if methodCalled is varargs method invocation and its varargs arguments are not
+     * passed in an array, false otherwise.
+     *
      * @return true if methodCalled is varargs method invocation and its varargs arguments are not
      *     passed in an array, false otherwise
      */

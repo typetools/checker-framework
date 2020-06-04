@@ -95,7 +95,11 @@ public @interface EnsuresLTLengthOf {
     @PostconditionAnnotation(qualifier = LTLengthOf.class)
     @InheritedAnnotation
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         EnsuresLTLengthOf[] value();
     }
 }

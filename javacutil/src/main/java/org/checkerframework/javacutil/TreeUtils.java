@@ -623,7 +623,11 @@ public final class TreeUtils {
         }
     }
 
-    /** @return the name of the invoked method */
+    /**
+     * Returns the name of the invoked method.
+     *
+     * @return the name of the invoked method
+     */
     public static Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
         if (expr.getKind() == Tree.Kind.IDENTIFIER) {
@@ -635,6 +639,9 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the first statement in the body is a self constructor invocation within a
+     * constructor.
+     *
      * @return true if the first statement in the body is a self constructor invocation within a
      *     constructor
      */
@@ -875,7 +882,9 @@ public final class TreeUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        assert invoked != null : "@AssumeAssertion(nullness): assumption";
+        if (invoked == null) {
+            return false;
+        }
         return ElementUtils.isMethod(invoked, method, env);
     }
 
@@ -1103,10 +1112,11 @@ public final class TreeUtils {
     }
 
     /**
-     * @return {@code true} if and only if {@code tree} can have a type annotation.
-     *     <p>TODO: is this implementation precise enough? E.g. does a .class literal work
-     *     correctly?
+     * Return {@code true} if and only if {@code tree} can have a type annotation.
+     *
+     * @return {@code true} if and only if {@code tree} can have a type annotation
      */
+    // TODO: is this implementation precise enough? E.g. does a .class literal work correctly?
     public static boolean canHaveTypeAnnotation(Tree tree) {
         return ((JCTree) tree).type != null;
     }
@@ -1162,6 +1172,8 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if this is a super call to the {@link Enum} constructor.
+     *
      * @param node the method invocation to check
      * @return true if this is a super call to the {@link Enum} constructor
      */
@@ -1324,7 +1336,11 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
-    /** @return true if the tree is the declaration or use of a local variable */
+    /**
+     * Returns true if the tree is the declaration or use of a local variable.
+     *
+     * @return true if the tree is the declaration or use of a local variable
+     */
     public static boolean isLocalVariable(Tree tree) {
         if (tree.getKind() == Kind.VARIABLE) {
             return elementFromDeclaration((VariableTree) tree).getKind()
@@ -1337,7 +1353,11 @@ public final class TreeUtils {
         return false;
     }
 
-    /** @return the type as a TypeMirror of {@code tree} */
+    /**
+     * Returns the type as a TypeMirror of {@code tree}.
+     *
+     * @return the type as a TypeMirror of {@code tree}
+     */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }
