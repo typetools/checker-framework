@@ -118,6 +118,19 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
+     * Creates a new instance of the accumulator annotation that contains exactly one value.
+     *
+     * @param value the argument to the annotation.
+     * @return an annotation mirror representing the accumulator annotation with {@code value} as
+     *     its argument
+     */
+    public AnnotationMirror createAccumulatorAnnotation(String value) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
+        builder.setValue("value", Collections.singletonList(value));
+        return builder.build();
+    }
+
+    /**
      * Returns true if the return type of the given method invocation tree has an @This annotation
      * from the Returns Receiver Checker.
      *
@@ -183,7 +196,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             if (returnsThis(tree)) {
                 // There is a @This annotation on the return type of the invoked method.
-
                 ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree.getMethodSelect());
                 AnnotatedTypeMirror receiverType =
                         receiverTree == null ? null : getAnnotatedType(receiverTree);
