@@ -2713,34 +2713,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 paramUpperBound, (AnnotatedWildcardType) typeArg);
             }
 
+            Tree reportErrorToTree;
             if (typeargTrees == null || typeargTrees.isEmpty()) {
-                // The type arguments were inferred and we mark the whole method.
-                // The inference fails if we provide invalid arguments,
-                // therefore issue an error for the arguments.
-                // I hope this is less confusing for users.
-                commonAssignmentCheck(
-                        paramUpperBound, typeArg, toptree, "type.argument.type.incompatible");
+                // The type arguments were inferred, report the error on the method invocation.
+                reportErrorToTree = toptree;
             } else {
-                commonAssignmentCheck(
-                        paramUpperBound,
-                        typeArg,
-                        typeargTrees.get(typeargs.indexOf(typeArg)),
-                        "type.argument.type.incompatible");
+                reportErrorToTree = typeargTrees.get(typeargs.indexOf(typeArg));
             }
+
+            checkHasQualifierParameterAsTypeArgument(typeArg, toptree);
+            commonAssignmentCheck(
+                    paramUpperBound, typeArg, reportErrorToTree, "type.argument.type.incompatible");
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
                 FoundRequired fr = FoundRequired.of(typeArg, bounds);
-                if (typeargTrees == null || typeargTrees.isEmpty()) {
-                    // The type arguments were inferred and we mark the whole method.
-                    checker.reportError(
-                            toptree, "type.argument.type.incompatible", fr.found, fr.required);
-                } else {
-                    checker.reportError(
-                            typeargTrees.get(typeargs.indexOf(typeArg)),
-                            "type.argument.type.incompatible",
-                            fr.found,
-                            fr.required);
-                }
+                checker.reportError(
+                        reportErrorToTree,
+                        "type.argument.type.incompatible",
+                        fr.found,
+                        fr.required);
+            }
+        }
+    }
+
+    /**
+     * Reports an error if the type argument has a qualifier parameter.
+     *
+     * @param typeArgument type argument
+     * @param reportError Tree to which to report the error
+     */
+    private void checkHasQualifierParameterAsTypeArgument(
+            AnnotatedTypeMirror typeArgument, Tree reportError) {
+        for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            if (atypeFactory.hasQualifierParameterInHierarchy(typeArgument, top)) {
+                checker.reportError(reportError, "type.argument.invalid.hasqualparam", top);
             }
         }
     }
