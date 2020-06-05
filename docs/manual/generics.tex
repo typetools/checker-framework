@@ -998,6 +998,29 @@ on the same class for the same hierarchy.
 %
 % \<@Untainted TaintedBuffer> is an invalid type.
 
+\subsectionAndLabel{Types with qualifier parameters as type arguments}{class-qual-param-type-arg}
+
+Types with qualifier parameters are forbidden as type arguments because type variables are not treated
+as invariant. For example:
+
+\begin{Verbatim}
+    @HasQualifierParameter(Tainted.class)
+    interface Buffer {
+        void append(@PolyTainted String s);
+    }
+
+    public class ClassQPTypeVarTest {
+        <T> @Tainted T cast(T param) {
+            return param;
+        }
+
+        void bug(@Untainted Buffer b, @Tainted String s) {
+            cast(b).append(s);  // error
+        }
+    }
+
+
+\end{Verbatim}
 
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
