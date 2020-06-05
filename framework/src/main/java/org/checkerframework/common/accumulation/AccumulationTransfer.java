@@ -56,8 +56,8 @@ public class AccumulationTransfer extends CFTransfer {
      * requires a, b, and c to be called, then {@code foo.a().b().c().build();} will typecheck (they
      * are in one fluent method chain), but {@code foo.a().b().c(); foo.build();} will not - the
      * store does not keep the information that a, b, and c have been called outside the chain.
-     * {@code foo}'s type will be {@code &#064;CalledMethods("a")}, because only {@code a()} was
-     * called on {@code foo} directly.
+     * {@code foo}'s type will be {@code CalledMethods("a")}, because only {@code a()} was called on
+     * {@code foo} directly.
      *
      * @param node the node whose estimate should be expanded
      * @param result the transfer result containing the store to be modified
