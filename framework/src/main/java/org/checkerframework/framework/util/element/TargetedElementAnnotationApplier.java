@@ -44,15 +44,20 @@ abstract class TargetedElementAnnotationApplier {
     protected final Element element;
 
     /**
+     * Returns the TargetTypes that identify annotations we wish to apply with this object. Any
+     * annotations that have these target types will be passed to handleTargeted.
+     *
      * @return the TargetTypes that identify annotations we wish to apply with this object. Any
-     *     annotations that have these target types will be passed to handleTargeted.
+     *     annotations that have these target types will be passed to handleTargeted
      */
     protected abstract TargetType[] annotatedTargets();
 
     /**
-     * @return the TargetTypes that identify annotations that are valid but we wish to ignore. Any
-     *     annotations that have these target types will be passed to handleValid, providing they
-     *     aren't also in annotatedTargets.
+     * Returns the TargetTypes that identify annotations that are valid but we wish to ignore. Any
+     * annotations that have these target types will be passed to handleValid, providing they aren't
+     * also in annotatedTargets.
+     *
+     * @return the TargetTypes that identify annotations that are valid but we wish to ignore
      */
     protected abstract TargetType[] validTargets();
 
@@ -107,6 +112,8 @@ abstract class TargetedElementAnnotationApplier {
     protected void handleValid(List<Attribute.TypeCompound> valid) {}
 
     /**
+     * This implementation reports all invalid annotations as errors.
+     *
      * @param invalid the list of annotations that were returned by getRawTypeAttributes and were
      *     not handled by handleTargeted or handleValid
      */
@@ -147,7 +154,7 @@ abstract class TargetedElementAnnotationApplier {
      *
      * @param typeCompounds annotations to sift through, should be those returned by
      *     getRawTypeAttributes
-     * @return a {@literal Map<TargetClass &rArr; Annotations>.}
+     * @return a {@literal Map<TargetClass => Annotations>.}
      */
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
             final Iterable<Attribute.TypeCompound> typeCompounds) {

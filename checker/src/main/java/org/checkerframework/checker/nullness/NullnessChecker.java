@@ -28,13 +28,14 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // learn what advice to give programmers about avoid false positive warnings.
     // See issue #986: https://github.com/typetools/checker-framework/issues/986
     "soundArrayCreationNullness",
-    // old name for soundArrayCreationNullness; temporary, for backward compatibility
+    // Old name for soundArrayCreationNullness, for backward compatibility; remove in January 2021.
     "forbidnonnullarraycomponents",
-    NullnessChecker.LINT_TRUSTARRAYLENZERO
+    NullnessChecker.LINT_TRUSTARRAYLENZERO,
+    NullnessChecker.LINT_PERMITCLEARPROPERTY
 })
 public class NullnessChecker extends InitializationChecker {
 
-    /** Should we be strict about initialization of {@link MonotonicNonNull} variables. */
+    /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
     public static final String LINT_NOINITFORMONOTONICNONNULL = "noInitForMonotonicNonNull";
 
     /** Default for {@link #LINT_NOINITFORMONOTONICNONNULL}. */
@@ -57,6 +58,15 @@ public class NullnessChecker extends InitializationChecker {
 
     /** Default for {@link #LINT_TRUSTARRAYLENZERO}. */
     public static final boolean LINT_DEFAULT_TRUSTARRAYLENZERO = false;
+
+    /**
+     * If true, client code may clear system properties. If false (the default), some calls to
+     * {@code System.getProperty} are refined to return @NonNull.
+     */
+    public static final String LINT_PERMITCLEARPROPERTY = "permitClearProperty";
+
+    /** Default for {@link #LINT_PERMITCLEARPROPERTY}. */
+    public static final boolean LINT_DEFAULT_PERMITCLEARPROPERTY = false;
 
     /*
     @Override

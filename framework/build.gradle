@@ -25,12 +25,24 @@ dependencies {
     implementation project(':dataflow')
     implementation project(':javacutil')
     implementation files("${stubparserJar}")
-    implementation files("${afuJar}")
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google', module: 'javac'
+    }
     implementation project(':checker-qual')
-    // As of 2019/12/16, the version of reflection-util in the Annotation
-    // File Utilities takes priority over this version, in the fat jar
-    // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:0.2.2'
+    implementation 'org.plumelib:plume-util:1.1.4'
+
+    // TODO: org.checkerframework.annotatedlib:guava:28.2-jre requires the below dependency.
+    // Get the version number from the "compile dependencies" section of
+    // https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
+    implementation 'com.google.errorprone:error_prone_annotations:2.3.4'
+    implementation ('org.checkerframework.annotatedlib:guava:28.2-jre') {
+        // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+        exclude group: 'org.checkerframework'
+
+    }
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
@@ -46,12 +58,6 @@ dependencies {
 
 task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
     doLast {
-        if (!file(afuJar).exists()) {
-            if (!file(stubparserJar).exists()) {
-                throw new GradleException("${afuJar} and ${stubparserJar} do not exist. Try running './gradlew cloneAndBuildDependencies'")
-            }
-            throw new GradleException("${afuJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
-        }
         if (!file(stubparserJar).exists()) {
             throw new GradleException("${stubparserJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
         }
@@ -281,10 +287,15 @@ task delombok {
     inputs.files file(srcJava)
     outputs.dir file(srcDelomboked)
 
+    // This dependency is required to ensure the checker-qual jar exists,
+    // to prevent lombok from emitting "cannot find symbol" errors for @This
+    // annotations in the test input code.
+    dependsOn project(':checker-qual').tasks.jar
+
     doLast {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: configurations.testCompileClasspath.asPath)
+                classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }

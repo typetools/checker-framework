@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     /** The type factory to use. */
-    protected final ValueAnnotatedTypeFactory atypeFactory;
+    final ValueAnnotatedTypeFactory atypeFactory;
 
     /** @param factory the MultiGraphFactory to use to construct this */
     public ValueQualifierHierarchy(

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -628,7 +627,7 @@ public abstract class UBQualifier {
                 return;
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
-            for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
                 String sequence = entry.getKey();
                 Set<OffsetEquation> lubOffsets = entry.getValue();
                 Set<OffsetEquation> thisOffsets = this.map.get(sequence);
@@ -976,7 +975,7 @@ public abstract class UBQualifier {
          */
         private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
             Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
                 Set<OffsetEquation> offsets = new HashSet<>(entry.getValue().size());
                 for (OffsetEquation eq : entry.getValue()) {
                     OffsetEquation newEq = f.compute(eq);

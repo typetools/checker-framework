@@ -183,7 +183,11 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    /** Creates NullnessAnnotatedTypeFactory. */
+    /**
+     * Creates a NullnessAnnotatedTypeFactory.
+     *
+     * @param checker the associated {@link NullnessChecker}
+     */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -209,7 +213,12 @@ public class NullnessAnnotatedTypeFactory
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
+        boolean permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
+        systemGetPropertyHandler =
+                new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
 
         classGetCanonicalName =
                 TreeUtils.getMethod(
@@ -510,7 +519,11 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /** @return the list of annotations of the non-null type system */
+    /**
+     * Returns the list of annotations of the non-null type system.
+     *
+     * @return the list of annotations of the non-null type system
+     */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }

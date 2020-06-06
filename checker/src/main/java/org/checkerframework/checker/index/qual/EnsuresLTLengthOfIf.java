@@ -100,7 +100,11 @@ public @interface EnsuresLTLengthOfIf {
     @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
     @InheritedAnnotation
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         EnsuresLTLengthOfIf[] value();
     }
 }
