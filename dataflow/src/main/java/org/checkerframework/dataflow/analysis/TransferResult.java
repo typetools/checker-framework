@@ -32,13 +32,6 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
     protected final @Nullable Map<TypeMirror, S> exceptionalStores;
 
     /**
-     * Create a new TransferResult.
-     *
-     * @param resultValue the abstract value of the node, or {@code null} if no value has been
-     *     produced
-     * @param exceptionalStores the stores to use if the basic block throws an exception
-     */
-    /**
      * Create a {@link #TransferResult(AbstractValue, Map)}, given {@link #resultValue} and {@link
      * #exceptionalStores}.
      *
