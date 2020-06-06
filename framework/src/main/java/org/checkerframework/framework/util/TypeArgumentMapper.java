@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -252,28 +252,39 @@ public class TypeArgumentMapper {
      * listing it in the implements clause. We prioritize finding a path through the list of
      * interfaces first since this will be the shorter path.
      *
-     * @return a set of type records that represents the sequence of directSupertypes between
+     * @param subtype the start of the resulting sequence
+     * @param target the end of the resulting sequence
+     * @param types utility methods for operating on types
+     * @return a list of type records that represents the sequence of directSupertypes between
      *     subtype and target
      */
-    @SuppressWarnings("JdkObsolete") // I tried replacing Stack with ArrayDeque, but tests fail.
     private static List<TypeRecord> depthFirstSearchForSupertype(
             final TypeElement subtype, final TypeElement target, final Types types) {
-        Stack<TypeRecord> pathFromRoot = new Stack<>();
+        ArrayDeque<TypeRecord> pathFromRoot = new ArrayDeque<>();
         final TypeRecord pathStart = new TypeRecord(subtype, null);
         pathFromRoot.push(pathStart);
         final List<TypeRecord> result = recursiveDepthFirstSearch(pathFromRoot, target, types);
         return result;
     }
 
-    /** Computes one level for depthFirstSearchForSupertype then recurses. */
-    @SuppressWarnings("JdkObsolete") // I tried replacing Stack with ArrayDeque, but tests fail.
+    /**
+     * Computes one level for depthFirstSearchForSupertype then recurses.
+     *
+     * @param pathFromRoot the path so far
+     * @param target the end of the resulting path
+     * @param types utility methods for operating on types
+     * @return a list of type records that extends pathFromRoot (a sequence of directSupertypes) to
+     *     target
+     */
     private static List<TypeRecord> recursiveDepthFirstSearch(
-            final Stack<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
+            final ArrayDeque<TypeRecord> pathFromRoot,
+            final TypeElement target,
+            final Types types) {
         if (pathFromRoot.isEmpty()) {
             return null;
         }
 
-        final TypeRecord currentRecord = pathFromRoot.peek();
+        final TypeRecord currentRecord = pathFromRoot.peekLast();
         final TypeElement currentElement = currentRecord.element;
 
         if (currentElement.equals(target)) {
@@ -289,22 +300,22 @@ public class TypeArgumentMapper {
             final TypeMirror intface = interfaces.next();
             if (intface.getKind() != TypeKind.NONE) {
                 DeclaredType interfaceDeclared = (DeclaredType) intface;
-                pathFromRoot.push(
+                pathFromRoot.addLast(
                         new TypeRecord(
                                 (TypeElement) types.asElement(interfaceDeclared),
                                 interfaceDeclared));
                 path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-                pathFromRoot.pop();
+                pathFromRoot.removeLast();
             }
         }
 
         if (path == null && superclassType.getKind() != TypeKind.NONE) {
             final DeclaredType superclass = (DeclaredType) superclassType;
 
-            pathFromRoot.push(
+            pathFromRoot.addLast(
                     new TypeRecord((TypeElement) types.asElement(superclass), superclass));
             path = recursiveDepthFirstSearch(pathFromRoot, target, types);
-            pathFromRoot.pop();
+            pathFromRoot.removeLast();
         }
 
         return path;
@@ -336,6 +347,11 @@ public class TypeArgumentMapper {
         TypeRecord(final TypeElement element, final DeclaredType type) {
             this.element = element;
             this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s => %s]", element, type);
         }
     }
 }
