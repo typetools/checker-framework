@@ -1,9 +1,10 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-public class UniqueConstructorTest{
+public class UniqueConstructorTest {
     // No need for @SuppressWarnings()
-    @Unique UniqueConstructorTest(){
-        // Doesn't raise unique.leaked error since it's a top parent class (@Unique Object subclass by default)
+    @Unique UniqueConstructorTest() {
+        // Doesn't raise unique.leaked error since it's a top parent class (@Unique Object subclass
+        // by default)
     }
 }
 
