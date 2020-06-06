@@ -29,6 +29,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -38,6 +39,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -76,6 +78,15 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
+    /** The System.clearProperty(String) method. */
+    private final ExecutableElement systemClearProperty;
+
+    /** The System.setProperties(String) method. */
+    private final ExecutableElement systemSetProperties;
+
+    /** True if checked code may clear system properties. */
+    private final boolean permitClearProperty;
+
     /**
      * Create a new NullnessVisitor.
      *
@@ -94,6 +105,15 @@ public class NullnessVisitor
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
+        systemClearProperty =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
+        systemSetProperties =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperties", 1, env);
+
+        this.permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
     }
 
     @Override
@@ -426,6 +446,41 @@ public class NullnessVisitor
             }
         }
         return super.visitTypeCast(node, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        if (!permitClearProperty) {
+            ProcessingEnvironment env = checker.getProcessingEnvironment();
+            if (TreeUtils.isMethodInvocation(node, systemClearProperty, env)) {
+                String literal = literalFirstArgument(node);
+                if (literal == null
+                        || SystemGetPropertyHandler.predefinedSystemProperties.contains(literal)) {
+                    checker.reportError(node, "clear.system.property");
+                }
+            }
+            if (TreeUtils.isMethodInvocation(node, systemSetProperties, env)) {
+                checker.reportError(node, "clear.system.property");
+            }
+        }
+        return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * If the first argument of a method call is a literal, return it; otherwise return null.
+     *
+     * @param tree a method invocation whose first formal parameter is of String type
+     * @return the first argument if it is a literal, otherwise null
+     */
+    /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+        List<? extends ExpressionTree> args = tree.getArguments();
+        assert args.size() > 0;
+        ExpressionTree arg = args.get(0);
+        if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
+            String literal = (String) ((LiteralTree) arg).getValue();
+            return literal;
+        }
+        return null;
     }
 
     // ///////////// Utility methods //////////////////////////////
