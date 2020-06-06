@@ -1,16 +1,23 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-class ParentUniqueClass {
-
+public class UniqueConstructorTest{
     // No need for @SuppressWarnings()
-    @Unique ParentUniqueClass() {
-        // Doesn't raise unique.leaked error since it's a parent class (top of heirarchy)
+    @Unique UniqueConstructorTest(){
+        // Doesn't raise unique.leaked error since it's a top parent class (@Unique Object subclass by default)
     }
 }
 
-class ChildUniqueClass extends ParentUniqueClass {
+class ParentClass extends UniqueConstructorTest {
 
+    ParentClass() {
+        // Doesn't raise unique.leaked error since it's a non unique class with a unique parent
+    }
+}
+
+class ChildUniqueClass extends ParentClass {
+
+    // ::error: (unique.leaked)
     @Unique ChildUniqueClass() {
-        // Doesn't raise unique.leaked error since its parent is @Unique
+        // Raises unique.leaked error since its parent is not unique
     }
 }
