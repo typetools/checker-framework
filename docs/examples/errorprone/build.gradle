@@ -4,21 +4,16 @@
 
 plugins {
     id 'java'
-    id 'net.ltgt.errorprone' version '0.8.1'
+    id 'net.ltgt.errorprone' version '1.2.1'
     // Checker Framework pluggable type-checking
-    id 'org.checkerframework' version '0.3.28' apply false
+    id 'org.checkerframework' version '0.5.4'
 }
 
 apply plugin: 'org.checkerframework'
 
 dependencies {
-    errorprone 'com.google.errorprone:error_prone_core:2.3.3'
-    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
-
-    compileOnly 'org.checkerframework:checker-qual:2.11.0'
-    testCompileOnly 'org.checkerframework:checker-qual:2.11.0'
-    checkerFramework 'org.checkerframework:checker:2.11.0'
-    checkerFrameworkAnnotatedJDK 'org.checkerframework:jdk8:2.11.0'
+    // Must use at least version 2.4.0 of Error Prone.
+    errorprone 'com.google.errorprone:error_prone_core:2.4.0'
 }
 
 repositories {
