@@ -27,7 +27,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
 
     /**
      * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
-     * with passing {@code null} to {@link #exceptionalStores}.
+     * using {@code null} for {@link #exceptionalStores}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
      * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
@@ -51,7 +51,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
 
     /**
      * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
-     * with passing {@code false} to {@link #storeChanged} and {@code null} to {@link
+     * using {@code false} for {@link #storeChanged} and {@code null} for {@link
      * #exceptionalStores}.
      *
      * @param value the abstract value produced by the transfer function
@@ -64,7 +64,8 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
     }
 
     /**
-     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map)}.
+     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+     * using {@code false} for {@link #storeChanged}.
      *
      * @param value the abstract value produced by the transfer function
      * @param thenStore {@link #thenStore}
@@ -82,7 +83,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
      * the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to {@code
      * true} and {@code elseStore} otherwise.
      *
-     * <p>For the meaning of storeChanged, see {@link
+     * <p>For the meaning of {@code storeChanged}, see {@link
      * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
