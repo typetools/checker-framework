@@ -22,8 +22,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     private final boolean storeChanged;
 
     /**
-     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
-     * {@code null} to {@link #exceptionalStores}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using
+     * {@code null} for {@link #exceptionalStores}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
      * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
@@ -44,8 +44,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     }
 
     /**
-     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
-     * {@code null} to {@link #exceptionalStores} and {@code false} to {@link #storeChanged}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using
+     * {@code null} for {@link #exceptionalStores} and {@code false} for {@link #storeChanged}.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}
@@ -56,8 +56,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     }
 
     /**
-     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
-     * {@code false} to {@link #storeChanged}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using
+     * {@code false} for {@link #storeChanged}.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}
@@ -74,7 +74,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      * corresponding {@link org.checkerframework.dataflow.cfg.node.Node} is a boolean node, then
      * {@code resultStore} is used for both the 'then' and 'else' edge.
      *
-     * <p>For the meaning of storeChanged, see {@link
+     * <p>For the meaning of {@code storeChanged}, see {@link
      * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
