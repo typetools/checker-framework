@@ -26,10 +26,13 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
     protected final S elseStore;
 
     /**
-     * <em>Exceptions</em>: If the corresponding {@link org.checkerframework.dataflow.cfg.node.Node}
-     * throws an exception, then it is assumed that no special handling is necessary and the store
-     * before the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} will be passed
-     * along any exceptional edge.
+     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+     * with passing {@code null} to {@link #exceptionalStores}.
+     *
+     * <p><em>Exceptions</em>: If the corresponding {@link
+     * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
+     * special handling is necessary and the store before the corresponding {@link
+     * org.checkerframework.dataflow.cfg.node.Node} will be passed along any exceptional edge.
      *
      * <p><em>Aliasing</em>: {@code thenStore} and {@code elseStore} are not allowed to be used
      * anywhere outside of this class (including use through aliases). Complete control over the
@@ -47,7 +50,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
     }
 
     /**
-     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store)}.
+     * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+     * with passing {@code false} to {@link #storeChanged} and {@code null} to {@link
+     * #exceptionalStores}.
      *
      * @param value the abstract value produced by the transfer function
      * @param thenStore {@link #thenStore}

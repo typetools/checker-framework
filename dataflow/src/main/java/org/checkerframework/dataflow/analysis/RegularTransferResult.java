@@ -22,7 +22,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     private final boolean storeChanged;
 
     /**
-     * *
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
+     * {@code null} to {@link #exceptionalStores}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
      * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
@@ -30,8 +31,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      * org.checkerframework.dataflow.cfg.node.Node} will be passed along any exceptional edge.
      *
      * <p><em>Aliasing</em>: {@code resultStore} is not allowed to be used anywhere outside of this
-     * class (including use through aliases). Complete control over the object is transfered to this
-     * class.
+     * class (including use through aliases). Complete control over the object is transferred to
+     * this class.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}
@@ -43,7 +44,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     }
 
     /**
-     * Create a new {@link #RegularTransferResult(AbstractValue, Store)}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
+     * {@code null} to {@link #exceptionalStores} and {@code false} to {@link #storeChanged}.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}
@@ -54,7 +56,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     }
 
     /**
-     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map)}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, with passing
+     * {@code false} to {@link #storeChanged}.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}
