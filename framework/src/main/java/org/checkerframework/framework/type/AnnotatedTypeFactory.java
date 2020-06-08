@@ -2102,6 +2102,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedExecutableType memberType = getAnnotatedType(methodElt); // get unsubstituted type
 
+        // since viewpoint adaption may introduce new poly annotation which should not be resolved,
+        // firstly do poly resolution
         methodFromUsePreSubstitution(tree, memberType);
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptMethod(receiverType, methodElt, memberType);
