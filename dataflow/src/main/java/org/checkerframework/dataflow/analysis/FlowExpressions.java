@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -59,6 +61,9 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FlowExpressions {
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -75,6 +80,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -162,7 +170,12 @@ public class FlowExpressions {
             receiver = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
-            ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
+            MethodInvocationTree t = mn.getTree();
+            if (t == null) {
+                throw new BugInCF("Unexpected null tree for node: " + mn);
+            }
+            assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
+            ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
@@ -186,6 +199,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     * Might contain {@link Unknown}.
+     *
      * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
      *     Might contain {@link Unknown}.
      */
@@ -244,6 +260,7 @@ public class FlowExpressions {
                 break;
             case METHOD_INVOCATION:
                 MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
+                assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
                 if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
                     List<Receiver> parameters = new ArrayList<>();
@@ -278,7 +295,13 @@ public class FlowExpressions {
                     receiver = new ThisReference(typeOfId);
                     break;
                 }
+                assert TreeUtils.isUseOfElement(identifierTree)
+                        : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
+                if (ElementUtils.isClassElement(ele)) {
+                    receiver = new ClassName(ele.asType());
+                    break;
+                }
                 switch (ele.getKind()) {
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
@@ -289,6 +312,8 @@ public class FlowExpressions {
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
                         Receiver fieldAccessExpression;
+                        @SuppressWarnings(
+                                "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);
@@ -299,16 +324,15 @@ public class FlowExpressions {
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
-                    case CLASS:
-                    case ENUM:
-                    case ANNOTATION_TYPE:
-                    case INTERFACE:
-                        receiver = new ClassName(ele.asType());
-                        break;
                     default:
                         receiver = null;
                 }
                 break;
+            case UNARY_PLUS:
+                return internalReprOf(
+                        provider,
+                        ((UnaryTree) receiverTree).getExpression(),
+                        allowNonDeterministic);
             default:
                 receiver = null;
         }
@@ -330,7 +354,12 @@ public class FlowExpressions {
      *     not
      */
     public static Receiver internalReprOfImplicitReceiver(Element ele) {
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        if (enclosingClass == null) {
+            throw new BugInCF(
+                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
+        }
+        TypeMirror enclosingType = enclosingClass.asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
         } else {
@@ -362,17 +391,18 @@ public class FlowExpressions {
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
             return new ClassName(expressionType);
         }
+        assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        if (ElementUtils.isClassElement(ele)) {
+            // o instanceof MyClass.InnerClass
+            // o instanceof MyClass.InnerInterface
+            TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+            return new ClassName(selectType);
+        }
         switch (ele.getKind()) {
             case METHOD:
             case CONSTRUCTOR:
                 return internalReprOf(provider, memberSelectTree.getExpression());
-            case CLASS: // o instanceof MyClass.InnerClass
-            case ENUM:
-            case INTERFACE: // o instanceof MyClass.InnerInterface
-            case ANNOTATION_TYPE:
-                TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
-                return new ClassName(selectType);
             case ENUM_CONSTANT:
             case FIELD:
                 TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
@@ -389,9 +419,9 @@ public class FlowExpressions {
      * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
      * @return list of Receiver objects for the formal parameters of the method in which path is
-     *     enclosed
+     *     enclosed, {@code null} otherwise
      */
-    public static List<Receiver> getParametersOfEnclosingMethod(
+    public static @Nullable List<Receiver> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
         MethodTree methodTree = TreeUtils.enclosingMethod(path);
         if (methodTree == null) {
@@ -409,9 +439,15 @@ public class FlowExpressions {
      * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
      */
     public abstract static class Receiver {
+        /** The type of this expression. */
         protected final TypeMirror type;
 
-        public Receiver(TypeMirror type) {
+        /**
+         * Create a Receiver (a Java AST node representing an expression).
+         *
+         * @param type the type of the expression
+         */
+        protected Receiver(TypeMirror type) {
             assert type != null;
             this.type = type;
         }
@@ -447,14 +483,21 @@ public class FlowExpressions {
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /** @return true if and only if the two receiver are syntactically identical */
+        /**
+         * Returns true if and only if the two receiver are syntactically identical.
+         *
+         * @return true if and only if the two receiver are syntactically identical
+         */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
+         * Returns true if and only if this receiver contains a receiver that is syntactically equal
+         * to {@code other}.
+         *
          * @return true if and only if this receiver contains a receiver that is syntactically equal
-         *     to {@code other}.
+         *     to {@code other}
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
@@ -470,6 +513,16 @@ public class FlowExpressions {
          */
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
+        }
+
+        /**
+         * Print this verbosely, for debugging.
+         *
+         * @return a verbose printed representation of this
+         */
+        public String debugToString() {
+            return String.format(
+                    "Receiver (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
         }
     }
 
@@ -506,7 +559,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof FieldAccess)) {
                 return false;
             }
@@ -552,7 +605,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz) || receiver.containsOfClass(clazz);
+            return getClass() == clazz || receiver.containsOfClass(clazz);
         }
 
         @Override
@@ -573,7 +626,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return obj instanceof ThisReference;
         }
 
@@ -589,7 +642,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -626,7 +679,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ClassName)) {
                 return false;
             }
@@ -646,7 +699,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -676,7 +729,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return obj == this;
         }
 
@@ -697,7 +750,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -725,7 +778,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof LocalVariable)) {
                 return false;
             }
@@ -762,7 +815,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -790,15 +843,29 @@ public class FlowExpressions {
         }
     }
 
+    /** FlowExpression.Receiver for literals. */
     public static class ValueLiteral extends Receiver {
 
-        protected final Object value;
+        /** The value of the literal. */
+        protected final @Nullable Object value;
 
+        /**
+         * Creates a ValueLiteral from the node with the given type.
+         *
+         * @param type type of the literal
+         * @param node the literal represents by this {@link ValueLiteral}
+         */
         public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
             super(type);
             value = node.getValue();
         }
 
+        /**
+         * Creates a ValueLiteral where the value is {@code value} that has the given type.
+         *
+         * @param type type of the literal
+         * @param value the literal value
+         */
         public ValueLiteral(TypeMirror type, Object value) {
             super(type);
             this.value = value;
@@ -806,7 +873,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            return getClass().equals(clazz);
+            return getClass() == clazz;
         }
 
         @Override
@@ -820,7 +887,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ValueLiteral)) {
                 return false;
             }
@@ -836,7 +903,10 @@ public class FlowExpressions {
             if (TypesUtils.isString(type)) {
                 return "\"" + value + "\"";
             } else if (type.getKind() == TypeKind.LONG) {
+                assert value != null : "@AssumeAssertion(nullness): invariant";
                 return value.toString() + "L";
+            } else if (type.getKind() == TypeKind.CHAR) {
+                return "\'" + value + "\'";
             }
             return value == null ? "null" : value.toString();
         }
@@ -856,7 +926,12 @@ public class FlowExpressions {
             return false; // not modifiable
         }
 
-        public Object getValue() {
+        /**
+         * Returns the value of this literal.
+         *
+         * @return the value of this literal
+         */
+        public @Nullable Object getValue() {
             return value;
         }
     }
@@ -881,7 +956,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -895,12 +970,19 @@ public class FlowExpressions {
             return false;
         }
 
-        /** @return the method call receiver (for inspection only - do not modify) */
+        /**
+         * Returns the method call receiver (for inspection only - do not modify).
+         *
+         * @return the method call receiver (for inspection only - do not modify)
+         */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
+         * Returns the method call parameters (for inspection only - do not modify any of the
+         * parameters).
+         *
          * @return the method call parameters (for inspection only - do not modify any of the
          *     parameters)
          */
@@ -908,7 +990,11 @@ public class FlowExpressions {
             return Collections.unmodifiableList(parameters);
         }
 
-        /** @return the ExecutableElement for the method call */
+        /**
+         * Returns the ExecutableElement for the method call.
+         *
+         * @return the ExecutableElement for the method call
+         */
         public ExecutableElement getElement() {
             return method;
         }
@@ -976,7 +1062,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
@@ -1036,7 +1122,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
-            if (getClass().equals(clazz)) {
+            if (getClass() == clazz) {
                 return true;
             }
             if (receiver.containsOfClass(clazz)) {
@@ -1091,7 +1177,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ArrayAccess)) {
                 return false;
             }
@@ -1121,7 +1207,7 @@ public class FlowExpressions {
         /**
          * List of dimensions expressions. {code null} means that there is no dimension expression.
          */
-        protected final List<@Nullable Receiver> dimensions;
+        protected final List<? extends @Nullable Receiver> dimensions;
         /** List of initializers. */
         protected final List<Receiver> initializers;
 
@@ -1134,13 +1220,20 @@ public class FlowExpressions {
          * @param initializers list of initializer expressions
          */
         public ArrayCreation(
-                TypeMirror type, List<@Nullable Receiver> dimensions, List<Receiver> initializers) {
+                TypeMirror type,
+                List<? extends @Nullable Receiver> dimensions,
+                List<Receiver> initializers) {
             super(type);
             this.dimensions = dimensions;
             this.initializers = initializers;
         }
 
-        public List<Receiver> getDimensions() {
+        /**
+         * Returns a list of receivers representing the dimension of this array creation.
+         *
+         * @return a list of receivers representing the dimension of this array creation
+         */
+        public List<? extends @Nullable Receiver> getDimensions() {
             return dimensions;
         }
 
@@ -1151,12 +1244,12 @@ public class FlowExpressions {
         @Override
         public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
             for (Receiver n : dimensions) {
-                if (n != null && n.getClass().equals(clazz)) {
+                if (n != null && n.getClass() == clazz) {
                     return true;
                 }
             }
             for (Receiver n : initializers) {
-                if (n.getClass().equals(clazz)) {
+                if (n.getClass() == clazz) {
                     return true;
                 }
             }
@@ -1179,7 +1272,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (!(obj instanceof ArrayCreation)) {
                 return false;
             }
@@ -1206,16 +1299,11 @@ public class FlowExpressions {
             StringBuilder sb = new StringBuilder();
             sb.append("new " + type);
             if (!dimensions.isEmpty()) {
-                boolean needComma = false;
-                sb.append(" [");
                 for (Receiver dim : dimensions) {
-                    if (needComma) {
-                        sb.append(", ");
-                    }
+                    sb.append("[");
                     sb.append(dim == null ? "" : dim);
-                    needComma = true;
+                    sb.append("]");
                 }
-                sb.append("]");
             }
             if (!initializers.isEmpty()) {
                 boolean needComma = false;

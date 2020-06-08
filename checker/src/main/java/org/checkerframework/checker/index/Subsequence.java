@@ -40,7 +40,7 @@ public class Subsequence {
      * annotation, unlike getSubsequenceFromReceiver.
      *
      * @param varTree some tree
-     * @param factory AnnotatedTypeFactory
+     * @param factory an AnnotatedTypeFactory
      * @return null or a new Subsequence from the declaration of {@code varTree}
      */
     public static Subsequence getSubsequenceFromTree(Tree varTree, AnnotatedTypeFactory factory) {
@@ -83,7 +83,7 @@ public class Subsequence {
      * of {@code rec} or null if there is not such annotation.
      *
      * @param rec some tree
-     * @param factory AnnotatedTypeFactory
+     * @param factory an AnnotatedTypeFactory
      * @param currentPath the path at which to viewpoint adapt the subsequence
      * @param context the context in which to viewpoint adapt the subsequence
      * @return null or a new Subsequence from the declaration of {@code varTree}
@@ -115,10 +115,10 @@ public class Subsequence {
     private static String standardizeAndViewpointAdapt(
             String s, TreePath currentPath, FlowExpressionContext context) {
         try {
-            s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
+            return FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
         } catch (FlowExpressionParseException e) {
+            return s;
         }
-        return s;
     }
 
     /**

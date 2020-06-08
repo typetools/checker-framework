@@ -89,13 +89,29 @@ command-line option.)
 
 \begin{itemize}
 \item
-  \label{nullness-lint-nonnullarraycomponents}%
-  If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
+  \label{nullness-lint-soundArrayCreationNullness}%
+  \label{nullness-lint-nonnullarraycomponents}% temporary, for backward compatibility
+  If you supply the \code{-Alint=soundArrayCreationNullness} command-line
   option, then the checker warns if it encounters an array creation
   with a non-null component type.
   See Section~\ref{nullness-arrays} for a discussion.
   % TODO: this option is temporary and the sound option
   % should become the default.
+
+\item
+  \label{collection-object-parameters-may-be-null}
+  If you supply the
+  \code{-Astubs=collection-object-parameters-may-be-null.astub}
+  command-line option, then in JDK collection classes, the checker
+  unsoundly permits null as an argument for any key or value formal
+  parameter whose type is \<Object> (instead of the element type).
+  See Section~\ref{nullness-collection-arguments}.
+
+\item
+  \label{nullness-lint-trustarraylenzero}%
+  If you supply the \code{-Alint=trustArrayLenZero} command-line option, then
+  the checker will trust \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+  annotations. See Section~\ref{nullness-collection-toarray} for a discussion.
 \end{itemize}
 
 \item
@@ -110,6 +126,32 @@ command-line option.)
   unnecessary and might indicate a programmer error or misunderstanding.
   The lint option is disabled by default because sometimes such checks are
   part of ordinary defensive programming.
+\end{itemize}
+
+\item
+  Options that enable checking modes:
+
+\begin{itemize}
+\item
+  If you supply the \code{-Alint=permitClearProperty} command-line option,
+  then the checker permits calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.setProperties()}
+  and calls to
+  \sunjavadoc{java.base/java/lang/System.html\#clearProperty()}{System.clearProperty()}
+  that might clear one of the built-in properties.
+
+  By default, the checker forbids calls to those methods, and also
+  special-cases type-checking of calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
+  and
+  \sunjavadoc{java.base/java/lang/System.html\#setProperty(java.lang.String)}{System.setProperty(String)}.
+  A call to one of these methods
+  can return null in general, but by default the Nullness Checker treats it
+  as returning non-null if the argument is one of the literal strings
+  listed in the documentation of
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
+  To make this behavior sound, the Nullness Checker forbids calls that
+  might clear any built-in property, as described above.
 \end{itemize}
 
 \end{enumerate}
@@ -266,7 +308,7 @@ This annotation is checked by a Map Key Checker
 (\chapterpageref{map-key-checker}) that the Nullness Checker
 invokes.  The \refqualclass{checker/nullness/qual}{KeyFor} annotation enables
 the Nullness Checker to treat calls to
-\sunjavadoc{java/util/Map.html\#get-java.lang.Object-}{\code{Map.get}}
+\sunjavadoc{java.base/java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
 precisely rather than assuming it may always return null.  In particular,
 a call \<mymap.get(mykey)> returns a non-\<null> value if two conditions
 are satisfied:
@@ -369,11 +411,11 @@ The Nullness Checker supports a form of conditional nullness types, via the
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
-Consider \sunjavadoc{java/lang/Class.html}{java.lang.Class}.
+Consider \sunjavadoc{java.base/java/lang/Class.html}{java.lang.Class}.
 Method
-\sunjavadoc{java/lang/Class.html\#getComponentType--}{Class.getComponentType()}
+\sunjavadoc{java.base/java/lang/Class.html\#getComponentType()}{Class.getComponentType()}
 may return null, but it is specified to return a non-null value if
-\sunjavadoc{java/lang/Class.html\#isArray--}{Class.isArray()} is
+\sunjavadoc{java.base/java/lang/Class.html\#isArray()}{Class.isArray()} is
 true.
 You could declare this relationship in the following way (this particular
 example is already
@@ -401,9 +443,9 @@ uses such a pattern:
     }
 \end{Verbatim}
 
-Another example is \sunjavadoc{java/util/Queue.html\#peek--}{Queue.peek}
-and \sunjavadoc{java/util/Queue.html\#poll--}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Collection.html\#isEmpty--}{isEmpty}
+Another example is \sunjavadoc{java.base/java/util/Queue.html\#peek()}{Queue.peek}
+and \sunjavadoc{java.base/java/util/Queue.html\#poll()}{Queue.poll}, which return
+non-null if \sunjavadoc{java.base/java/util/Collection.html\#isEmpty()}{isEmpty}
 returns false.
 
 The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
@@ -413,30 +455,26 @@ More examples of the use of these annotations appear in the Javadoc for
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
 
-\subsectionAndLabel{Nullness and arrays}{nullness-arrays}
+\subsectionAndLabel{Nullness and array initialization}{nullness-arrays}
 
-Suppose that you declare an array to contain non-null elements.
-Currently, the Nullness Checker does not verify that all the elements of the
-array are initialized to a non-null value.  This is an unsoundness in the
-checker.
-
-To make the Nullness Checker conservatively reject code that may leave a
-non-null value in an array, use the command-line option
-\code{-Alint=forbidnonnullarraycomponents}.  The option is currently disabled
-because it makes the checker issue many false positive errors.
-% TODO: flip the default after collecting more data.
-
-When the \code{-Alint=forbidnonnullarraycomponents} option is supplied,
-the following is not allowed:
+Suppose that you declare an array to contain non-null elements:
 
 \begin{Verbatim}
-  Object [] oa = new Object[10]; // error
+  Object [] oa = new Object[10];
 \end{Verbatim}
 
 \noindent
 (recall that \<Object> means the same thing as \<@NonNull Object>).
+By default, the Nullness Checker unsoundly permits this code.
 
-Instead, your code needs to create a nullable or lazy-nonnull array, initialize
+To make the Nullness Checker conservatively reject code that may leave a
+non-null value in an array, use the command-line option
+\code{-Alint=soundArrayCreationNullness}.  The option is currently disabled
+because it makes the checker issue many false positive errors.
+% TODO: flip the default after collecting more data.
+
+With the option enabled, you can write your code to create a nullable or
+lazy-nonnull array, initialize
 each component, and then assign the result to a non-null array:
 
 \begin{Verbatim}
@@ -456,6 +494,51 @@ then write a \<@SuppressWarnings> annotation.
 % TODO: explain more aspects, give more examples.
 
 
+\subsectionAndLabel{Nullness and conversions from collections to arrays}{nullness-collection-toarray}
+
+% Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
+
+The semantics of
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
+cannot be captured by the nullness type system syntax. The nullness type of the
+returned array depends on the size of the passed parameter. In particular, the
+returned array component is of type \<@NonNull> if the following conditions
+hold:
+
+\begin{itemize}
+  \item The receiver collection's type argument (that is, the element type) is \<@NonNull>, and
+  \item The passed array size is less than or equal to the collection size. The
+    Nullness Checker uses these heuristics to handle the most common cases:
+
+  \begin{itemize}
+    \item the argument has length 0:
+
+      \begin{itemize}
+        \item an empty array initializer, e.g. \<c.toArray(new String[] \{\})>, or
+
+        \item array creation tree of size 0, e.g. \<c.toArray(new String[0])>.
+      \end{itemize}
+
+    \item array creation tree with a collection \<size()> method invocation as argument
+      \<c.toArray(new String[c.size()])>.
+  \end{itemize}
+
+\end{itemize}
+
+Additionally, when you supply the \code{-Alint=trustArrayLenZero} command-line
+option, a call to \code{Collection.toArray} will be estimated to return an array
+with a non-null component type if the argument is a field access where the field
+declaration has a \refqualclasswithparams{common/value/qual}{ArrayLen}{0}
+annotation.
+This trusts the \<@ArrayLen(0)> annotation, but does not verify it. Run the
+Constant Value Checker (see \chapterpageref{constant-value-checker}) to verify
+that annotation.
+
+Note: The nullness of the returned array doesn't depend on the passed array nullness.
+This is a fact about
+\sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])},
+not a limitation of this heuristic.
+
 
 \subsectionAndLabel{Run-time checks for nullness}{nullness-runtime-checks}
 
@@ -464,33 +547,6 @@ When you perform a run-time check for nullness, such as \<if (x != null)
 \<@NonNull>.  The refinement lasts until the end of the scope of the test
 or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
-
-
-\subsectionAndLabel{Additional details}{nullness-additional-details}
-
-The Nullness Checker does some special checks in certain circumstances, in
-order to soundly reduce the number of warnings that it produces.
-
-For example, a call to
-\sunjavadoc{java/lang/System.html\#getProperty-java.lang.String-}{System.getProperty(String)}
-can return null in general, but it will not return null if the argument is
-one of the built-in-keys listed in the documentation of
-\sunjavadoc{java/lang/System.html\#getProperties--}{System.getProperties()}.
-The Nullness Checker is aware of this fact, so you do not have to suppress
-a warning for a call like \<System.getProperty("line.separator")>.  The
-warning is still issued for code like this:
-
-\begin{Verbatim}
-  final String s = "line.separator";
-  nonNullvar = System.getProperty(s);
-\end{Verbatim}
-
-\noindent
-though that case could be handled as well, if desired.
-(Suppression of the warning is, strictly speaking, not sound, because a
-library that your code calls, or your code itself, could perversely change
-the system properties; the Nullness Checker assumes this bizarre coding
-pattern does not happen.)
 
 
 \subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
@@ -632,6 +688,27 @@ the distinction between warning suppression and defensive programming.
 % need to be suppressed, so warning suppression needs to be customized for
 % each tool.
 \end{sloppypar}
+
+
+\subsectionAndLabel{Null arguments to collection classes}{nullness-collection-arguments}
+
+For collection methods with \<Object> formal parameter type, such as
+\sunjavadoc{java.base/java/util/Collection.html\#contains(java.lang.Object)}{contains},
+\sunjavadoc{java.base/java/util/AbstractList.html\#indexOf(java.lang.Object)}{indexOf}, and
+\sunjavadoc{java.base/java/util/Collection.html\#remove(java.lang.Object)}{remove},
+the annotated JDK forbids null as an argument.
+
+The reason is that some implementations (like \<ConcurrentHashMap>) throw
+\<NullPointerException> if \<null> is passed.  It would be unsound to
+permit \<null>, because it could lead to a false negative:  the Checker
+Framework issuing no warning even though a NullPointerException can occur
+at run time.
+
+However, many other common implementations permit such calls, so some users
+may wish to sacrifice soundness for a reduced number of false positive
+warnings.  To permit \<null> as an argument to these methods, pass the
+command-line argument
+\<-Astubs=collection-object-parameters-may-be-null.astub>.
 
 
 \sectionAndLabel{Examples}{nullness-example}
@@ -824,6 +901,7 @@ Section~\ref{declaration-annotations-moved}.
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~io.reactivex.annotations.NonNull~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -854,6 +932,7 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~io.reactivex.annotations.Nullable~ \\ \hline
+ ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
@@ -928,7 +1007,7 @@ as \<@NonNull>.
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
-\href{https://fbinfer.com/docs/eradicate.html}{Eradicate} tools are more
+\href{https://fbinfer.com/docs/eradicate/}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.)
@@ -1059,7 +1138,7 @@ tool like the Checker Framework.)
 
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
-\sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
+\sunjavadoc{java.base/java/util/Optional.html}{\code{Optional<T>}}
 class provides a partial solution:  a programmer must call the \<get> method to
 access the value, and the designers of \<Optional> hope that the syntactic
 occurrence of the \<get> method will remind programmers to first check that
@@ -1119,11 +1198,8 @@ value.  Your code can suffer a NullPointerException when using a
 The Nullness Checker prevents this problem by warning you anytime that you
 may be accessing an uninitialized field.  This check is useful because it
 prevents errors in your code.  However, the analysis can be confusing to
-understand.  If you wish to disable the initialization checks, pass the
-command-line argument \<-AsuppressWarnings=uninitialized> when running the
-Nullness Checker.  You will no longer get a guarantee of no null pointer
-exceptions, but you can still use the Nullness Checker to find most of the
-null pointer problems in your code.
+understand.  If you wish to disable the initialization checks, see
+Section~\ref{initialization-checking-suppressing-warnings}.
 
 
 An object is partially initialized from the time that its constructor starts until its constructor
@@ -1306,12 +1382,12 @@ The Initialization Checker issues an error if the constructor fails to initializ
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se10/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1391,16 +1467,16 @@ class A {
        // However, if this constructor is invoked as part of 'new B()', then
        // the fields of B are not yet initialized.
        // If we would type 'this' as @Initialized, then the following call is valid:
-       foo();
+       doSomething();
    }
-   void foo() {}
+   void doSomething() {}
 }
 
 class B extends A {
    @NonNull String b;
    @Override
-   void foo() {
-       // Dereferencing 'b' is ok, since 'this' is @Initialized and 'b' @NonNull.
+   void doSomething() {
+       // Dereferencing 'b' is ok, because 'this' is @Initialized and 'b' @NonNull.
        // However, when executing 'new B()', this line throws a null-pointer exception.
        b.toString();
    }
@@ -1768,7 +1844,7 @@ consider a doubly linked list:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se10/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -1814,7 +1890,7 @@ If your code calls an instance method from a constructor, you may see a
 message such as the following:
 
 \begin{Verbatim}
-Foo.java:123: error: call to initHelper() not allowed on the given receiver.
+MyFile.java:123: error: call to initHelper() not allowed on the given receiver.
     initHelper();
               ^
   found   : @UnderInitialization(com.google.Bar.class) @NonNull MyClass
@@ -1883,25 +1959,32 @@ initialization was actually complete, then the receiver should have type
 \end{sloppypar}
 
 
-\subsectionAndLabel{More details about initialization checking}{initialization-checking}
+\subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
+To suppress most warnings related to partially-initialized values, use the
+``initialization.''~(note the trailing period) warning suppression key.  You
+can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
+class, or pass the command-line argument
+\<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
+(For more about suppressing warnings, see
+\chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
+of no null pointer exceptions, but you can still use the Nullness Checker
+to find most of the null pointer problems in your code.
 
-\paragraphAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
+This suppresses warnings that are specific to the Initialization Checker,
+but does not suppress warnings issued by the Checker Framework itself, such
+as about assignments or method overriding.
 
-\begin{sloppypar}
-You can suppress warnings related to partially-initialized objects with
-\<@SuppressWarnings("initialization")>.
-This can be placed on a single field; on a constructor; or on a class to
-suppress all initialization warnings for all constructors.
-\end{sloppypar}
-
-To disable initialization checking, supply the command-line argument
-\<-AsuppressWarnings=uninitialized>.  Do \emph{not} use
-\<-AsuppressWarnings=initialization>, because doing so will disable all
-nullness checking as well as all initialization checking.  (That is because
+It is not possible to completely disable initialization checking while
+retaining nullness checking.  The ``initialization'' warning suppression
+key (without a period) has the same effect as the ``nullness'' key:  both
+of them disable all nullness and initialization checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
-that are aggregated together.)
+that are aggregated together.
+
+
+\subsectionAndLabel{More details about initialization checking}{initialization-checking}
 
 
 \paragraphAndLabel{Use of method annotations}{initialization-checking-method-annotations}
@@ -1917,14 +2000,16 @@ see Section~\ref{nullness-method-annotations}.
 
 \paragraphAndLabel{Source of the type system}{initialization-checking-type-system}
 
-The type system enforced by the Initialization Checker is known as
+The type system enforced by the Initialization Checker is based on
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
 changes its initialization modifiers (``committed'', ``free'', and
 ``unclassified'') to ``initialized'', ``unknown initialization'', and
 ``under initialization''.  Our implementation also has several
 enhancements.  For example, it supports partial initialization (the
 argument to the \<@UnknownInitialization> and \<@UnderInitialization>
-annotations).
+annotations).  The benefit (in terms of reduced false positive
+initialization warnings) from supporting partial initialization is
+greater than the benefit from adopting the Freedom Before Commitment system.
 
 
 
@@ -1942,13 +2027,16 @@ annotations).
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
-% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
+% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
-% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
-% LocalWords:  mymap mykey KeyType ValueType
-% LocalWords:  dereferenced dereference Dereferencing initializers
+% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
+% LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
+% LocalWords:  dereferenced dereference Dereferencing initializers astub
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
-% LocalWords:  forbidnonnullarraycomponents lombok findbugs CurrentClass
-% LocalWords:  NotOnlyInitialized underinitialization
+% LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
+% LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
+% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
+% LocalWords:  ConcurrentHashMap permitClearProperty setProperties
+% LocalWords:  clearProperty

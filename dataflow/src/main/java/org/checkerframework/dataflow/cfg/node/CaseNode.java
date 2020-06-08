@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -18,13 +19,24 @@ import javax.lang.model.util.Types;
  */
 public class CaseNode extends Node {
 
+    /** The tree for this node. */
     protected final CaseTree tree;
+    /** The switch expression. */
     protected final Node switchExpr;
+    /** The case expression to match the switch expression against. */
     protected final Node caseExpr;
 
+    /**
+     * Create a new CaseNode.
+     *
+     * @param tree the tree for this node
+     * @param switchExpr the switch expression
+     * @param caseExpr the case expression to match the switch expression against
+     * @param types a factory of utility methods for operating on types
+     */
     public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
         super(types.getNoType(TypeKind.NONE));
-        assert tree.getKind().equals(Kind.CASE);
+        assert tree.getKind() == Kind.CASE;
         this.tree = tree;
         this.switchExpr = switchExpr;
         this.caseExpr = caseExpr;
@@ -54,7 +66,7 @@ public class CaseNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof CaseNode)) {
             return false;
         }

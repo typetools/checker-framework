@@ -1,59 +1,51 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo Entering $0
+echo Entering checker/bin-devel/build.sh in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
 
-# Optional argument $1 is one of:
-#  downloadjdk, buildjdk
-# If it is omitted, this script uses downloadjdk.
-export BUILDJDK=$1
-if [[ "${BUILDJDK}" == "" ]]; then
-  export BUILDJDK=downloadjdk
-fi
-
-if [[ "${BUILDJDK}" != "buildjdk" && "${BUILDJDK}" != "downloadjdk" ]]; then
-  echo "Bad argument '${BUILDJDK}'; should be omitted or one of: downloadjdk, buildjdk."
-  exit 1
-fi
+echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
-JAVA_HOME=${JAVA_HOME:-`which javac|xargs readlink -f|xargs dirname|xargs dirname`}
-export JAVA_HOME
-
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-    || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info typetools`
-
-
-## Build annotation-tools (Annotation File Utilities)
-if [ -d ../annotation-tools ] ; then
-    git -C ../annotation-tools pull -q || true
+if [ "$(uname)" == "Darwin" ] ; then
+  export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
-    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools annotation-tools`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
+  # shellcheck disable=SC2230
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
+fi
+echo "JAVA_HOME=${JAVA_HOME}"
+
+if [ -d "/tmp/$USER/plume-scripts" ] ; then
+  (cd /tmp/$USER/plume-scripts && git pull -q)
+else
+  mkdir -p /tmp/$USER && (cd /tmp/$USER && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
-echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
-(cd ../annotation-tools/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
+# Clone the annotated JDK into ../jdk .
+/tmp/$USER/plume-scripts/git-clone-related typetools jdk
+
+AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
+# Don't use `AT=${AFU}/..` which causes a git failure.
+AT=$(dirname "${AFU}")
+
+## Build annotation-tools (Annotation File Utilities)
+/tmp/$USER/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
+if [ ! -d ../annotation-tools ] ; then
+  ln -s "${AT}" ../annotation-tools
+fi
+
+echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
+(cd "${AT}" && ./.travis-build-without-test.sh)
+echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
-if [ -d ../stubparser ] ; then
-    git -C ../stubparser pull
-else
-    [ -d /tmp/plume-scripts ] || (cd /tmp && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git)
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools stubparser`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-    (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
-fi
-
+/tmp/$USER/plume-scripts/git-clone-related typetools stubparser
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
@@ -61,13 +53,11 @@ echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 
-# Two options: rebuild the JDK or download a prebuilt JDK.
-if [[ "${BUILDJDK}" == "downloadjdk" ]]; then
-  echo "running \"./gradlew assemble\" for checker-framework"
-  ./gradlew assemble printJdkJarManifest --console=plain --warning-mode=all -s --no-daemon
-else
-  echo "running \"./gradlew assemble -PuseLocalJdk\" for checker-framework"
-  ./gradlew assemble -PuseLocalJdk --console=plain --warning-mode=all -s --no-daemon
-fi
+# Downloading the gradle wrapper sometimes fails.
+# If so, the next command gets another chance to try the download.
+(./gradlew help || sleep 10) > /dev/null 2>&1
 
-echo Exiting $0
+echo "running \"./gradlew assemble\" for checker-framework"
+./gradlew assemble --console=plain --warning-mode=all -s --no-daemon -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+
+echo Exiting checker/bin-devel/build.sh in "$(pwd)"

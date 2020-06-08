@@ -26,8 +26,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>What type qualifiers on the field are considered depends on the checker; for instance, the
  * {@link org.checkerframework.checker.nullness.NullnessChecker} considers {@link NonNull}. The
- * initialization type system (called "freedom before commitment") is not used on its own, but in
- * conjunction with some other type-system that wants to ensure safe initialization.
+ * initialization type system is not used on its own, but in conjunction with some other type-system
+ * that wants to ensure safe initialization.
  *
  * <p>When an expression has type {@code @UnderInitialization}, then no aliases that are typed
  * differently may exist.
@@ -36,10 +36,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #underinitialization-examples Examples of the @UnderInitialization
  *     annotation
  */
-@SubtypeOf(UnknownInitialization.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UnknownInitialization.class)
 public @interface UnderInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been initialized at least

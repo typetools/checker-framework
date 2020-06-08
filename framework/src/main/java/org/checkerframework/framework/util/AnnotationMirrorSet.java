@@ -13,8 +13,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * AnnotationUtils#areSame} rather than equals.
  *
  * <p>For example, the specification for the contains(Object o) method says: "returns true if and
- * only if this collection contains at least one element e such that (o == null ? e == null : o
- * .equals(e))." The specification for {@link AnnotationMirrorSet#contains} is "returns true if and
+ * only if this collection contains at least one element e such that (o == null ? e == null :
+ * o.equals(e))." The specification for {@link AnnotationMirrorSet#contains} is "returns true if and
  * only if this collection contains at least one element e such that (o == null ? e == null :
  * AnnotationUtils.areSame(o, e))".
  *
@@ -22,7 +22,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
-    private Set<AnnotationMirror> shadowSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
+
+    /** Backing set. */
+    private Set<AnnotationMirror> shadowSet =
+            new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
 
     /** Default constructor. */
     public AnnotationMirrorSet() {}
@@ -104,7 +107,7 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils.annotationOrdering());
+        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
         for (Object o : c) {
             if (contains(o)) {
                 newSet.add((AnnotationMirror) o);
@@ -143,5 +146,10 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
         AnnotationMirrorSet newSet = new AnnotationMirrorSet();
         newSet.add(value);
         return newSet;
+    }
+
+    @Override
+    public String toString() {
+        return shadowSet.toString();
     }
 }

@@ -16,13 +16,23 @@ public class BugInCF extends RuntimeException {
 
     /**
      * Constructs a new CheckerError with a detail message composed from the given arguments, and
-     * with no cause (use this at the root cause).
+     * with no cause (use the current callstack as the root cause).
      *
      * @param fmt the format string
      * @param args the arguments for the format string
      */
     public BugInCF(String fmt, Object... args) {
         this(String.format(fmt, args), new Throwable());
+    }
+
+    /**
+     * Constructs a new CheckerError with the specified cause.
+     *
+     * @param cause the cause; its detail message will be used and must be non-null
+     */
+    @SuppressWarnings("nullness")
+    public BugInCF(Throwable cause) {
+        this(cause.getMessage(), new Throwable());
     }
 
     /**

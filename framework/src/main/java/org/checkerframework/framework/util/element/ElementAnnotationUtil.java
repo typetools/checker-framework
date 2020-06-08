@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -61,10 +61,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + PluginUtil.join(", ", types)
+                            + SystemUtil.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + PluginUtil.join(", ", elements)
+                            + SystemUtil.join(", ", elements)
                             + " ) ");
         }
 
@@ -84,8 +84,10 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
-    static void addAnnotationsFromElement(
+    static void addDeclarationAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
+        // The code here should be similar to
+        // org.checkerframework.framework.type.TypeFromMemberVisitor.visitVariable
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         if (innerType != type) {
             for (AnnotationMirror annotation : annotations) {
@@ -285,22 +287,13 @@ public class ElementAnnotationUtil {
      * @param annos all of the element annotations, TypeCompounds, for type
      */
     static void annotateViaTypeAnnoPosition(
-            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos) {
+            final AnnotatedTypeMirror type, final Collection<TypeCompound> annos)
+            throws UnexpectedAnnotationLocationException {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
                 new IdentityHashMap<>();
         for (final TypeCompound anno : annos) {
-            AnnotatedTypeMirror target;
-            try {
-                target = getTypeAtLocation(type, anno.position.location, anno, false);
-            } catch (UnexpectedAnnotationLocationException ex) {
-                // There's a bug in Java 8 compiler that creates bad bytecode such that an
-                // annotation on a lambda parameter is applied to a method parameter. (This bug has
-                // been fixed in Java 9.) If this happens, then the location could refer to a
-                // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
-                // might be on the classpath, catch this exception and ignore the type.
-                // TODO: Issue an error if this annotation is from Java 9+ bytecode.
-                continue;
-            }
+            AnnotatedTypeMirror target =
+                    getTypeAtLocation(type, anno.position.location, anno, false);
             if (target.getKind() == TypeKind.WILDCARD) {
                 addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
             } else {
@@ -453,6 +446,7 @@ public class ElementAnnotationUtil {
      *     of some array type
      * @return the type specified by location
      */
+    @SuppressWarnings("JdkObsolete") // error is issued on every operation, must suppress here
     private static AnnotatedTypeMirror getLocationTypeADT(
             AnnotatedDeclaredType type,
             List<TypeAnnotationPosition.TypePathEntry> location,
@@ -485,7 +479,7 @@ public class ElementAnnotationUtil {
         }
 
         // Create a linked list of the location, so removing the first element is easier.
-        // Also, the `tail` operation wouldn't work with a Deque.
+        // Also, the tail() operation wouldn't work with a Deque.
         @SuppressWarnings("JdkObsolete")
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;
@@ -545,7 +539,7 @@ public class ElementAnnotationUtil {
         }
 
         if (!location.isEmpty()
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.WILDCARD) {
             if (AnnotatedTypes.hasExplicitExtendsBound(type)) {
                 return getTypeAtLocation(type.getExtendsBound(), tail(location));
             } else if (AnnotatedTypes.hasExplicitSuperBound(type)) {
@@ -575,7 +569,7 @@ public class ElementAnnotationUtil {
             TypeCompound anno)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.ARRAY)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.ARRAY) {
             AnnotatedTypeMirror comptype = type.getComponentType();
             return getTypeAtLocation(comptype, tail(location), anno, true);
         } else {
@@ -605,9 +599,7 @@ public class ElementAnnotationUtil {
             AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
-                && location.get(0)
-                        .tag
-                        .equals(TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT)) {
+                && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
             AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
             return getTypeAtLocation(supertype, tail(location));
         } else {
@@ -623,7 +615,7 @@ public class ElementAnnotationUtil {
 
     /** Exception indicating an invalid location for an annotation was found. */
     @SuppressWarnings("serial")
-    static class UnexpectedAnnotationLocationException extends Exception {
+    public static class UnexpectedAnnotationLocationException extends Exception {
 
         /**
          * Creates an UnexpectedAnnotationLocationException.

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.block;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /** Implementation of a regular basic block. */
@@ -39,7 +40,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
     }
 
     @Override
-    public BlockImpl getRegularSuccessor() {
+    public @Nullable BlockImpl getRegularSuccessor() {
         return successor;
     }
 

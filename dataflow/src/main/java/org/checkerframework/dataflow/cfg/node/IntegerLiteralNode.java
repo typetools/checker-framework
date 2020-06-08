@@ -4,6 +4,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for an integer literal. For example:
@@ -14,9 +15,14 @@ import java.util.Collections;
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 
+    /**
+     * Create a new IntegerLiteralNode.
+     *
+     * @param t the tree for the literal value
+     */
     public IntegerLiteralNode(LiteralTree t) {
         super(t);
-        assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+        assert t.getKind() == Tree.Kind.INT_LITERAL;
     }
 
     @Override
@@ -30,7 +36,7 @@ public class IntegerLiteralNode extends ValueLiteralNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         // test that obj is a IntegerLiteralNode
         if (!(obj instanceof IntegerLiteralNode)) {
             return false;

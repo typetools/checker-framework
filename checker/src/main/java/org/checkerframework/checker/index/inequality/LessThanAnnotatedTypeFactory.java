@@ -83,10 +83,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             List<String> subList = getLessThanExpressions(subAnno);
-            List<String> superList = getLessThanExpressions(superAnno);
             if (subList == null) {
                 return true;
-            } else if (superList == null) {
+            }
+            List<String> superList = getLessThanExpressions(superAnno);
+            if (superList == null) {
                 return false;
             }
 
@@ -127,6 +128,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
+     * Returns true if {@code left} is less than {@code right}.
+     *
      * @param left the first tree to compare
      * @param right the second tree to compare
      * @return is left less than right?
@@ -136,7 +139,13 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
     }
 
-    /** @return is left less than right? */
+    /**
+     * Returns true if {@code left} is less than {@code right}.
+     *
+     * @param left the first value to compare (an annotation)
+     * @param right the second value to compare (an expression)
+     * @return is left less than right?
+     */
     public static boolean isLessThan(AnnotationMirror left, String right) {
         List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
@@ -145,7 +154,13 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return expressions.contains(right);
     }
 
-    /** @return {@code smaller < bigger}, using information from the Value Checker */
+    /**
+     * Returns true if {@code smaller < bigger}.
+     *
+     * @param smaller the first value to compare
+     * @param bigger the second value to compare
+     * @return {@code smaller < bigger}, using information from the Value Checker
+     */
     public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
         Long smallerValue = ValueCheckerUtils.getMinValue(smaller, getValueAnnotatedTypeFactory());
         if (smallerValue == null) {
@@ -168,7 +183,13 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return smallerValue < minValueOfBigger;
     }
 
-    /** Returns the minimum value of {@code expressions} at {@code tree}. */
+    /**
+     * Returns the minimum value of {@code expression} at {@code tree}.
+     *
+     * @param expression the expression whose minimum value to retrieve
+     * @param tree where to determine the value
+     * @param path the path to {@code tree}
+     */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
         Receiver expressionRec;
         try {
@@ -220,13 +241,25 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return Long.MIN_VALUE;
     }
 
-    /** @return is left less than or equal to right? */
+    /**
+     * Returns true if left is less than or equal to right.
+     *
+     * @param left the first value to compare
+     * @param right the second value to compare
+     * @return is left less than or equal to right?
+     */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
         return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
     }
 
-    /** @return is left less than or equal to right? */
+    /**
+     * Returns true if left is less than or equal to right.
+     *
+     * @param left the first value to compare
+     * @param right the second value to compare
+     * @return is left less than or equal to right?
+     */
     public static boolean isLessThanOrEqual(AnnotationMirror left, String right) {
         List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {

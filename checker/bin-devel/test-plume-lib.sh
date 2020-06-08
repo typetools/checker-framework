@@ -4,21 +4,48 @@ set -e
 set -o verbose
 set -o xtrace
 export SHELLOPTS
+echo "SHELLOPTS=${SHELLOPTS}"
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info typetools`
+# Optional argument $1 is the group.
+GROUPARG=$1
+echo "GROUPARG=$GROUPARG"
+# These are all the Java projects at https://github.com/plume-lib
+if [[ "${GROUPARG}" == "bcel-util" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "bibtex-clean" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "html-pretty-print" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "icalavailable" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "multi-version-control" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "options" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "plume-util" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "require-javadoc" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "signature-util" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "all" ]] || [[ "${GROUPARG}" == "" ]]; then
+    if java -version 2>&1 | grep version | grep 1.8 ; then
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util require-javadoc)
+    else
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util)
+    fi
+fi
+if [ -z ${PACKAGES+x} ]; then
+  echo "Bad group argument '${GROUPARG}'"
+  exit 1
+fi
+echo "PACKAGES=" "${PACKAGES[@]}"
 
-export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
-echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source $SCRIPTDIR/build.sh ${BUILDJDK}
+# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
+# shellcheck disable=SC1090
+source "$SCRIPTDIR"/build.sh
 
 
-# plume-lib-typecheck: 15 minutes
-REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetests plume-lib-typecheck`
-BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-(cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
-
-(cd ../plume-lib-typecheck && ./.travis-build.sh)
+echo "PACKAGES=" "${PACKAGES[@]}"
+for PACKAGE in "${PACKAGES[@]}"; do
+  echo "PACKAGE=${PACKAGE}"
+  PACKAGEDIR="/tmp/${PACKAGE}"
+  rm -rf "${PACKAGEDIR}"
+  /tmp/$USER/plume-scripts/git-clone-related plume-lib "${PACKAGE}" "${PACKAGEDIR}"
+  echo "About to call ./gradlew --console=plain -PcfLocal assemble"
+  (cd "${PACKAGEDIR}" && ./gradlew --console=plain -PcfLocal assemble)
+done

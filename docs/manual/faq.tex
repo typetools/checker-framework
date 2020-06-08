@@ -40,6 +40,7 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
+\\ \ref{faq-warnings-square-brackets}: What do square brackets mean in a Checker Framework warning message?
 \\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker guarantee that my code is correct?
 \\ \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code?
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
@@ -80,7 +81,10 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-tool-section}: Tool questions}
 \\ \ref{faq-pluggable-type-checking}: How does pluggable type-checking work?
 \\ \ref{faq-classpath-to-use-annotated-library}: What classpath is needed to use an annotated library?
+\\ \ref{faq-classfile-annotations}: Why do \<.class> files contain more annotations than the source code?
 \\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
+\\ \ref{faq-cf-is-slow}: The Checker Framework runs too slowly
+
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
@@ -466,6 +470,19 @@ If nothing else explains it, then ask on the
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
   list}.  Be sure to say what you think it means or what specific part does
 not make sense to you, and what you have already done to try to understand it.
+
+
+\subsectionAndLabel{What do square brackets mean in a Checker Framework warning message?}{faq-warnings-square-brackets}
+
+In a message like this:
+
+\begin{Verbatim}
+  found   : ? extends T extends @UnknownKeyFor Object
+  required: [extends @UnknownKeyFor Object super @UnknownKeyFor null]
+\end{Verbatim}
+
+\noindent
+the square brackets enclose the upper and lower bounds that the type parameter needs to be within.
 
 
 \subsectionAndLabel{Can a pluggable type-checker guarantee that my code is correct?}{faq-no-absolute-guarantee}
@@ -1316,7 +1333,7 @@ Here are some style guidelines:
 
 Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
 declared with
-\<\sunjavadocanno{java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
+\<\sunjavadocanno{java.base/java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
 these type annotations are available to tools at run time.  Such run-time
 tools could check the annotations (like an \<assert> statement), type-check
 dynamically-loaded code, check casts and \<instanceof> operations, resolve
@@ -1328,9 +1345,9 @@ accommodate them in the future.
 increase in heap size).
 
 For the purpose of static checking at compile time,
-\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
 retention would be sufficient.  Note that
-\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
 retention would not be sufficient, because of separate compilation: when
 type-checking a class, the compiler needs to read the annotations on
 libraries that it uses, and separately-compiled libraries are available to
@@ -1471,19 +1488,16 @@ Framework's annotations.
 
 \subsectionAndLabel{Why do \<.class> files contain more annotations than the source code?}{faq-classfile-annotations}
 
-You may notice annotations such as \<@Pure> and \<@SideEffectFree> in
-compiled \<.class> files even though the source code contains no
-annotations.  These annotations are propagated from annotated libraries,
-such as the JDK, to your code.
+A \<.class> file contains an annotation on every type, as computed by
+defaulting rules; see Section~\ref{effective-qualifier}.
 
 When an overridden method has a side effect annotation, the overriding
-method must have one too.  If you do not write one explicitly, the Checker
-Framework could issue a warning, or it could automatically add the missing
-annotation.  It does the latter, for annotations declared with the
-\refqualclass{framework/qual}{InheritedAnnotation} meta-annotation.
-
-In addition, defaulted and inferred type qualifiers are written into
-\<.class> files; see Section~\ref{effective-qualifier}.
+method must have one too.  However, if the side effect annotation is
+declared with the \refqualclass{framework/qual}{InheritedAnnotation}
+meta-annotation, the Checker Framework automatically adds the missing
+annotation.  This is the case for most side effect annotations --- these
+annotations are propagated from annotated libraries, such as the JDK, to
+your code.
 
 
 \subsectionAndLabel{Is there a type-checker for managing checked and unchecked exceptions?}{faq-checked-exceptions}
@@ -1502,6 +1516,33 @@ effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
 type-and-effect system that is distributed with the Checker Framework.
 
 
+\subsectionAndLabel{The Checker Framework runs too slowly}{faq-cf-is-slow}
+
+Using a pluggable type-checker increases compile times by a factor of 2-5.
+Slow compilation speed is probably the worst thing about the Checker
+Framework.
+
+If the Checker Framework is too slow for you to run on every compilation,
+you can run it periodically, such as in a Git commit hook or in continuous
+integration.
+
+The Checker Framework team does not currently have the resources to fix
+performance problems, but we welcome community contributions.
+
+Here are some reasons that the Checker Framework is so slow.
+\begin{itemize}
+\item
+  It has to do all the same work as the compiler does, such as resolving
+  overloading/overriding/generics and type-checking.  It does so for
+  richer, user-defined type systems whereas \<javac> hard-codes one type
+  system.
+\item
+  Its implementation has some inefficiencies.  For example, when running a
+  compound or aggregate checker, it makes multiple passes over the program
+  rather than just one.
+\end{itemize}
+
+
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
@@ -1514,7 +1555,7 @@ variety (for details about the guarantee, see
 Section~\ref{checker-guarantees}).
 
 An alternate approach is to use a bug detector such as
-\href{https://errorprone.info//}{Error Prone},
+\href{https://errorprone.info/}{Error Prone},
 \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
 \href{https://pmd.github.io/}{PMD}~\cite{Copeland2005}, or the
@@ -1656,7 +1697,7 @@ than the Nullness Checker.
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
 
-JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
+JDK 8 introduced the \sunjavadoc{java.base/java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
 The Optional Checker (see Chapter~\ref{optional-checker}) guarantees that
 programmers use \<Optional> correctly.
@@ -1667,7 +1708,7 @@ nullness and \<Optional> and the benefits of each.
 
 \subsectionAndLabel{How does pluggable type-checking compare with JML?}{faq-jml}
 
-\href{http://www.eecs.ucf.edu/~leavens/JML//index.shtml}{JML}, the Java Modeling
+\href{http://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
 specifications.
 
@@ -1760,4 +1801,5 @@ third-party tools.  The Checker Framework is one such tool.
 %%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
 %%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 %%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
-%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr
+%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
+% LocalWords:  checkers'' covariance'' contravariance''

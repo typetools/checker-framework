@@ -10,9 +10,11 @@ import java.lang.annotation.Target;
 /**
  * Method declaration annotation used to indicate that this method may be invoked on an uninterned
  * object and that it returns an interned object.
+ *
+ * @checker_framework.manual #interning-checker Interning Checker
  */
 @Documented
-@Inherited
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface InternMethod {}

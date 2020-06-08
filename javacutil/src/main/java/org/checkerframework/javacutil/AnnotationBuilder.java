@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,20 +53,17 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AnnotationBuilder {
 
+    /** The element utilities to use. */
     private final Elements elements;
+    /** The type utilities to use. */
     private final Types types;
 
+    /** The type element of the annotation. */
     private final TypeElement annotationElt;
+    /** The type of the annotation. */
     private final DeclaredType annotationType;
+    /** A mapping from element to AnnotationValue. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
-
-    /**
-     * Caching for annotation creation. Each annotation has no values; that is, getElementValues
-     * returns an empty map. This may be in conflict with the annotation's definition, which might
-     * contain elements (annotation fields).
-     */
-    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames =
-            Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Create a new AnnotationBuilder for the given annotation and environment (with no
@@ -76,6 +72,7 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param anno the class of the annotation to build
      */
+    @SuppressWarnings("nullness") // getCanonicalName expected to be non-null
     public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
         this(env, anno.getCanonicalName());
     }
@@ -85,7 +82,7 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the name of the annotation to build
+     * @param name the fully-qualified name of the annotation to build
      */
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
@@ -127,22 +124,24 @@ public class AnnotationBuilder {
      * <p>This method raises an user error if the annotation corresponding to the class could not be
      * loaded.
      *
-     * <p>Clients can use {@link #fromName} and check the result for null manually, if the error
-     * from this method is not desired. This method is provided as a convenience to create an
-     * AnnotationMirror from scratch in a checker's code.
+     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
+     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
+     * code.
      *
      * @param elements the element utilities to use
      * @param aClass the annotation class
-     * @return an {@link AnnotationMirror} of type given type
+     * @return an {@link AnnotationMirror} of the given type
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
-        AnnotationMirror res = fromName(elements, aClass.getCanonicalName());
+        String name = aClass.getCanonicalName();
+        assert name != null : "@AssumeAssertion(nullness): assumption";
+        AnnotationMirror res = fromName(elements, name);
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
                             + "ensure the class is on the compilation classpath",
-                    aClass.getCanonicalName());
+                    name);
         }
         return res;
     }
@@ -161,10 +160,6 @@ public class AnnotationBuilder {
      *     be loaded
      */
     public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
-        AnnotationMirror res = annotationsFromNames.get(name);
-        if (res != null) {
-            return res;
-        }
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -179,15 +174,10 @@ public class AnnotationBuilder {
         }
         AnnotationMirror result =
                 new CheckerFrameworkAnnotationMirror(annoType, Collections.emptyMap());
-        annotationsFromNames.put(name, result);
         return result;
     }
 
-    // TODO: hack to clear out static state.
-    public static void clear() {
-        annotationsFromNames.clear();
-    }
-
+    /** Whether or not {@link #build()} has been called. */
     private boolean wasBuilt = false;
 
     private void assertNotBuilt() {
@@ -362,7 +352,9 @@ public class AnnotationBuilder {
             TypeMirror componentType = typeFromClass(clazz.getComponentType());
             return types.getArrayType(componentType);
         } else {
-            TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
             if (element == null) {
                 throw new BugInCF("Unrecognized class: " + clazz);
             }
@@ -474,8 +466,10 @@ public class AnnotationBuilder {
         return this;
     }
 
+    /** Find the VariableElement for the given enum. */
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
+        assert enumClass != null : "@AssumeAssertion(nullness): assumption";
         TypeElement enumClassElt = elements.getTypeElement(enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
@@ -504,9 +498,8 @@ public class AnnotationBuilder {
         throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
     }
 
-    // TODO: this method always returns true and no-one ever looks at the return
-    // value.
-    private boolean checkSubtype(TypeMirror expected, Object givenValue) {
+    /** @throws BugInCF if the type of {@code givenValue} is not the same as {@code expected} */
+    private void checkSubtype(TypeMirror expected, Object givenValue) {
         if (expected.getKind().isPrimitive()) {
             expected = types.boxedClass((PrimitiveType) expected).asType();
         }
@@ -514,7 +507,7 @@ public class AnnotationBuilder {
         if (expected.getKind() == TypeKind.DECLARED
                 && TypesUtils.isClass(expected)
                 && givenValue instanceof TypeMirror) {
-            return true;
+            return;
         }
 
         TypeMirror found;
@@ -540,42 +533,47 @@ public class AnnotationBuilder {
                 isSubtype = false;
             }
         } else {
-            found = elements.getTypeElement(givenValue.getClass().getCanonicalName()).asType();
+            String name = givenValue.getClass().getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            found = elements.getTypeElement(name).asType();
             isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
+        }
+        if (!isSubtype) {
+            // Annotations in stub files sometimes are the same type, but Types#isSubtype fails
+            // anyways.
+            isSubtype = found.toString().equals(expected.toString());
         }
 
         if (!isSubtype) {
-            if (types.isSameType(found, expected)) {
-                throw new BugInCF(
-                        "given value differs from expected, but same string representation; "
-                                + "this is likely a bootclasspath/classpath issue; "
-                                + "found: "
-                                + found);
-            } else {
-                throw new BugInCF(
-                        "given value differs from expected; "
-                                + "found: "
-                                + found
-                                + "; expected: "
-                                + expected);
-            }
+            throw new BugInCF(
+                    "given value differs from expected; "
+                            + "found: "
+                            + found
+                            + "; expected: "
+                            + expected);
         }
-
-        return true;
     }
 
-    private AnnotationValue createValue(final Object obj) {
+    /**
+     * Create an AnnotationValue -- a value for an annotation element/field.
+     *
+     * @param obj the value to be stored in an annotation element/field
+     * @return an AnnotationValue for the given Java value
+     */
+    private static AnnotationValue createValue(final Object obj) {
         return new CheckerFrameworkAnnotationValue(obj);
     }
 
     /** Implementation of AnnotationMirror used by the Checker Framework. */
     /* default visibility to allow access from within package. */
     static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
-
-        private @Interned String toStringVal;
+        /** The interned toString value. */
+        private @Nullable @Interned String toStringVal;
+        /** The annotation type. */
         private final DeclaredType annotationType;
+        /** The element values. */
         private final Map<ExecutableElement, AnnotationValue> elementValues;
-
+        /** The annotation name. */
         // default visibility to allow access from within package.
         final @Interned String annotationName;
 
@@ -633,10 +631,14 @@ public class AnnotationBuilder {
         }
     }
 
+    /** Implementation of AnnotationValue used by the Checker Framework. */
     private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
+        /** The value. */
         private final Object value;
-        private @Interned String toStringVal;
+        /** The interned value of toString. */
+        private @Nullable @Interned String toStringVal;
 
+        /** Create an annotation value. */
         CheckerFrameworkAnnotationValue(Object obj) {
             this.value = obj;
         }
@@ -649,9 +651,10 @@ public class AnnotationBuilder {
         @SideEffectFree
         @Override
         public String toString() {
-            if (toStringVal != null) {
-                return toStringVal;
+            if (this.toStringVal != null) {
+                return this.toStringVal;
             }
+            String toStringVal;
             if (value instanceof String) {
                 toStringVal = "\"" + value + "\"";
             } else if (value instanceof Character) {
@@ -666,7 +669,7 @@ public class AnnotationBuilder {
                         sb.append(", ");
                     }
                     isFirst = false;
-                    sb.append(o.toString());
+                    sb.append(Objects.toString(o));
                 }
                 sb.append('}');
                 toStringVal = sb.toString();
@@ -683,8 +686,8 @@ public class AnnotationBuilder {
             } else {
                 toStringVal = value.toString();
             }
-            toStringVal = toStringVal.intern();
-            return toStringVal;
+            this.toStringVal = toStringVal.intern();
+            return this.toStringVal;
         }
 
         @SuppressWarnings("unchecked")
@@ -721,7 +724,7 @@ public class AnnotationBuilder {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             // System.out.printf("Calling CFAV.equals()%n");
             if (!(obj instanceof AnnotationValue)) {
                 return false;

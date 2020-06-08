@@ -29,7 +29,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -43,7 +43,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -133,12 +132,12 @@ public class LockAnnotatedTypeFactory
     /**
      * Returns the value of Class.forName, or null if Class.forName would throw an exception.
      *
-     * @param an annotation's fully-qualified name
+     * @param annotationClassName an annotation's fully-qualified name
      * @return an annotation class or null
      */
     @SuppressWarnings("unchecked") // cast to generic type
     private Class<? extends Annotation> classForNameOrNull(
-            @FullyQualifiedName String annotationClassName) {
+            @ClassGetName String annotationClassName) {
         try {
             return (Class<? extends Annotation>) Class.forName(annotationClassName);
         } catch (Exception e) {
@@ -156,9 +155,8 @@ public class LockAnnotatedTypeFactory
                 List<DependentTypesError> superErrors = new ArrayList<>();
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
-                        checker.report(
-                                Result.failure("lock.expression.not.final", error.expression),
-                                errorTree);
+                        checker.reportError(
+                                errorTree, "lock.expression.not.final", error.expression);
                     } else {
                         superErrors.add(error);
                     }
@@ -506,7 +504,7 @@ public class LockAnnotatedTypeFactory
      * multiple errors being issued for the same method (as would occur if
      * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations). If no
      * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
-     * default for unchecked code.
+     * conservative default.
      *
      * @param element the method element
      * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
@@ -526,14 +524,14 @@ public class LockAnnotatedTypeFactory
             int count = sideEffectAnnotationPresent.size();
 
             if (count == 0) {
-                return defaults.applyUncheckedCodeDefaults(element)
+                return defaults.applyConservativeDefaults(element)
                         ? SideEffectAnnotation.MAYRELEASELOCKS
                         : SideEffectAnnotation.RELEASESNOLOCKS;
             }
 
             if (count > 1 && issueErrorIfMoreThanOnePresent) {
                 // TODO: Turn on after figuring out how this interacts with inherited annotations.
-                // checker.report(Result.failure("multiple.sideeffect.annotations"), element);
+                // checker.reportError(element, "multiple.sideeffect.annotations");
             }
 
             SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);
@@ -556,7 +554,7 @@ public class LockAnnotatedTypeFactory
      * annotation in the given AnnotatedTypeMirror. Assumes atm is non-null and contains a
      * {@code @GuardSatisfied} annotation.
      *
-     * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation
+     * @param atm an AnnotatedTypeMirror containing a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
      */
     // package-private
@@ -568,7 +566,7 @@ public class LockAnnotatedTypeFactory
      * Returns the index (that is, the {@code value} element) on the given {@code @GuardSatisfied}
      * annotation. Assumes am is non-null and is a GuardSatisfied annotation.
      *
-     * @param am AnnotationMirror for a GuardSatisfied annotation
+     * @param am an AnnotationMirror for a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
      */
     // package-private
@@ -650,7 +648,7 @@ public class LockAnnotatedTypeFactory
      * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the
      * index of this {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex},
      * then {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy
-     * replaced with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     * replaced with that in {@code annotationInGuardedByHierarchy}.
      *
      * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
      *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.

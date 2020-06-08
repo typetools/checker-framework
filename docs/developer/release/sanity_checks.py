@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 """
 releaseutils.py
@@ -76,9 +76,8 @@ def javac_sanity_check(checker_framework_website, release_version):
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     """
-       Download the Checker Framework maven plugin from the given repository.  Download the
-       MavenExample example for the Maven plugin and run the NullnessChecker on it.  If we don't
-       encounter the expected errors fail.
+       Run the Maven sanity check with the local artifacts or from the repo at
+       repo_url.
     """
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
@@ -87,15 +86,6 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
     execute("mkdir -p " + maven_sanity_dir)
 
-    path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
-    print("This script will now delete your Maven Checker Framework artifacts.\n" +
-          "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
-          "will need to be re-downloaded the next time you need them.  This will be " +
-          "done automatically by Maven next time you use the plugin.")
-
-    if os.path.isdir(path_to_artifacts):
-        delete_path(path_to_artifacts)
-
     maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
     output_log = os.path.join(maven_example_dir, "output.log")
 
@@ -103,14 +93,22 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
 
     execute(get_example_dir_cmd)
+    path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
+    if repo_url != "":
+        print("This script will now delete your Maven Checker Framework artifacts.\n" +
+            "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
+            "will need to be re-downloaded the next time you need them.  This will be " +
+            "done automatically by Maven next time you use the plugin.")
 
-    maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
-    add_repo_information(maven_example_pom, repo_url)
+        if os.path.isdir(path_to_artifacts):
+            delete_path(path_to_artifacts)
+        maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
+        add_repo_information(maven_example_pom, repo_url)
 
     os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
-
-    delete_path(path_to_artifacts)
+    if repo_url != "":
+        delete_path(path_to_artifacts)
 
 def check_results(title, output_log, expected_errors):
     """Verify the given actual output of a sanity check against the given

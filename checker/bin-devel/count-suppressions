@@ -18,11 +18,11 @@
 debug=0
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    SED=gsed
-    GREP=ggrep
+    SED="gsed"
+    GREP="ggrep"
 else
-    SED=sed
-    GREP=grep
+    SED="sed"
+    GREP="grep"
 fi
 
 if [ "$#" -ne 1 ]; then
@@ -51,18 +51,19 @@ echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 # This grep command captures a few stray lines; users should ignore them.
-${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > ${greplines}
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > "${greplines}"
 ## Don't output a total, to avoid people using this approximate count.
 # echo -n "Total: "
 # cat ${greplines} | wc -l
-cat ${greplines} \
+# shellcheck disable=SC2002
+cat "${greplines}" \
     | ${SED} 's/.*\/\/ //g' \
     | ${SED} "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
     | ${SED} 's/\([^0-9]\): [^:].*/\1/' \
     | ${SED} 's/ \+$//' \
     | sort | uniq -c | sort -rg
 if [ "$debug" -eq "0" ]; then
-  rm -f ${greplines}
+  rm -f "${greplines}"
 else
-  echo Output is in: ${greplines}
+  echo Output is in: "${greplines}"
 fi

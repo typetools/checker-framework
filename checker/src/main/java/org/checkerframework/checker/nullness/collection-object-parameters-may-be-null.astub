@@ -1,0 +1,255 @@
+// This file is a workaround for https://tinyurl.com/cfissue/1326 .
+// For documentation, see
+// https://checkerframework.org/manual/#collection-object-parameters-may-be-null .
+
+// This file relaxes the specifications for the following methods when they are documented to
+// possibly throw NPE.  It does not change the specifications when they are documented to definitely
+// throw NPE.
+// containsAll(Collection)
+// containsKey(Object)
+// contains(Object)
+// containsValue(Object)
+// get(Object)
+// getOrDefault(Object, V)
+// indexOf(Object)
+// lastIndexOf(Object)
+// removeAll(Collection)
+// removeFirstOccurrence(Object)
+// removeLastOccurrence(Object)
+// remove(Object)
+// remove(Object, Object)
+// retainAll(Collection)
+
+// The following exceptions don't need to appear in this file, because their specifications in the
+// annotated JDK already permit null.
+//
+// Here are all the null-friendly classes (every instance permits null elements).
+//
+// Lists:
+//   ArrayList
+//   LinkedList
+//   Vector
+//     Stack
+// Maps:
+//   HashMap
+//     LinkedHashMap
+//     PrinterStateReasons
+//   IdentityHashMap
+//   WeakHashMap
+// Sets:
+//   HashSet
+//     JobStateReasons
+//     LinkedHashSet
+//
+// Here are some methods whose specification is ambiguous: says "such that o.equals(e)" or "such
+// that Objects.equals(o, e)".  The annotated JDK interprets this to say that null is a permitted
+// value.
+//
+//   ArrayBlockingQueue
+//   ArrayDeque
+//   BlockingDeque
+//   BlockingQueue
+//   ConcurrentLinkedDeque
+//   ConcurrentLinkedQueue
+//   ConcurrentSkipListSet
+//   CopyOnWriteArrayList
+//   CopyOnWriteArraySet
+//   LinkedBlockingDeque
+//   LinkedBlockingQueue
+//   LinkedTransferQueue
+//   PriorityBlockingQueue
+//   PriorityQueue
+//     contains
+//     remove
+//
+//   ArrayDeque
+//   BlockingDeque
+//     removeFirstOccurrence
+//     removeLastOccurrence
+//
+//   Collections
+//     frequency
+//
+// Special cases:
+//   EnumMap:
+//     "Attempts to insert a null key will throw NullPointerException. Attempts to test for the
+//     presence of a null key or to remove one will, however, function properly. Null values are
+//     permitted."
+//   EnumSet:
+//     "Null elements are not permitted.  Attempts to insert a null element will throw
+//     NullPointerException.  Attempts to test for the presence of a null element or to remove one
+//     will, however, function properly."
+
+//
+// Many additional method implementations are null-safe, but the specification does not guarantee
+// that all overriding implementations in subclasses will be.
+
+
+package java.util;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+
+class AbstractCollection<E> {
+    @Pure public boolean contains(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+    @Pure public boolean containsAll(Collection<?> c);
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
+    public int indexOf(@Nullable Object o);
+    public int lastIndexOf(@Nullable Object o);
+}
+
+class AbstractMap<K, V> {
+    public boolean containsValue(@Nullable Object value);
+    public boolean containsKey(@Nullable Object key);
+    public @Nullable V get(@Nullable Object key);
+    public @Nullable V remove(@Nullable Object key);
+}
+
+class AbstractSet<E> {
+  public boolean removeAll(Collection<?> c);
+}
+
+public interface Collection<E> extends Iterable<E> {
+    boolean contains(@Nullable Object o);
+    boolean remove(@Nullable Object o);
+    boolean containsAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
+}
+
+public interface Deque<E> extends Queue<E> {
+    boolean removeFirstOccurrence(@Nullable Object o);
+    boolean removeLastOccurrence(@Nullable Object o);
+    boolean remove(@Nullable Object o);
+    boolean contains(@Nullable Object o);
+}
+
+public interface List<E> extends Collection<E> {
+    boolean contains(@Nullable Object o);
+    boolean remove(@Nullable Object o);
+    boolean containsAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
+    int indexOf(@Nullable Object o);
+    int lastIndexOf(@Nullable Object o);
+}
+
+public interface Map<K, V> {
+    boolean containsKey(@Nullable Object key);
+    boolean containsValue(@Nullable Object value);
+    @Nullable V get(@Nullable Object key);
+    @Nullable V remove(@Nullable Object key);
+    default V getOrDefault(@Nullable Object key, V defaultValue);
+    default boolean remove(@Nullable Object key, @Nullable Object value);
+    }
+
+public interface Set<E> extends Collection<E> {
+    @Pure boolean contains(@Nullable Object o);
+    boolean remove(@Nullable Object o);
+    @Pure boolean containsAll(Collection<?> c);
+    boolean retainAll(Collection<?> c);
+    boolean removeAll(Collection<?> c);
+}
+
+public class TreeMap<K,V>
+    extends AbstractMap<K,V>
+    implements NavigableMap<K,V>, Cloneable, java.io.Serializable
+{
+    public boolean containsKey(@Nullable Object key);
+    public boolean containsValue(@Nullable Object value);
+    public @Nullable V get(@Nullable Object key);
+    public @Nullable V remove(@Nullable Object key);
+}
+
+public class TreeSet<E> extends AbstractSet<E>
+    implements NavigableSet<E>, Cloneable, java.io.Serializable
+{
+    public boolean contains(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+}
+
+class Vector<E> {
+    public synchronized boolean containsAll(Collection<?> c);
+    public synchronized boolean removeAll(Collection<?> c);
+    public synchronized boolean retainAll(Collection<?> c);
+}
+
+package java.util.concurrent;
+
+public class ArrayBlockingQueue<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public class ConcurrentLinkedDeque<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public class ConcurrentLinkedQueue<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public interface ConcurrentMap<K,V> extends Map<K,V> {
+    boolean remove(@Nullable Object key, @Nullable Object value);
+}
+
+public class ConcurrentSkipListSet<E>
+    extends AbstractSet<E>
+    implements NavigableSet<E>, Cloneable, java.io.Serializable {
+    public boolean contains(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+    public boolean removeAll(Collection<?> c);
+}
+
+public class CopyOnWriteArrayList<E>
+    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+    public int indexOf(@Nullable Object o);
+    public int lastIndexOf(@Nullable Object o);
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public class CopyOnWriteArraySet<E>
+    extends AbstractSet<E>
+    implements java.io.Serializable {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
+    implements BlockingQueue<E> {
+    public boolean remove(@Nullable Object o);
+}
+
+class LinkedBlockingDeque<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+class LinkedBlockingQueue<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+class LinkedTransferQueue<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+class PriorityBlockingQueue<E> {
+    public boolean removeAll(Collection<?> c);
+    public boolean retainAll(Collection<?> c);
+}
+
+public class SynchronousQueue<E> extends AbstractQueue<E>
+    implements BlockingQueue<E>, java.io.Serializable {
+    public boolean contains(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+}

@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,10 +66,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -97,12 +94,12 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.reflection.Signatures;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -198,7 +195,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker);
 
         this.everUseFlow = useFlow;
@@ -208,6 +205,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
 
@@ -265,7 +263,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param checker the checker to which this type factory belongs
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, flowByDefault);
     }
 
@@ -275,6 +273,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses.clear();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
         this.initializationStore = null;
@@ -395,14 +394,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Analysis")
-                            .replace("Subchecker", "Analysis");
             FlowAnalysis result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
                             new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
                             new Object[] {checker, this, fieldValues});
             if (result != null) {
@@ -442,14 +436,9 @@ public abstract class GenericAnnotatedTypeFactory<
         Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                    checkerClass
-                            .getName()
-                            .replace("Checker", "Transfer")
-                            .replace("Subchecker", "Transfer");
             TransferFunction result =
                     BaseTypeChecker.invokeConstructorFor(
-                            classToLoad,
+                            BaseTypeChecker.getRelatedClassName(checkerClass, "Transfer"),
                             new Class<?>[] {analysis.getClass()},
                             new Object[] {analysis});
             if (result != null) {
@@ -496,8 +485,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
      * created {@link QualifierDefaults}. Subclasses should override {@link
-     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} or {@link
-     * GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)} to add more
+     * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} to add more
      * defaults or use different defaults.
      *
      * @return the QualifierDefaults object
@@ -512,7 +500,6 @@ public abstract class GenericAnnotatedTypeFactory<
         QualifierDefaults defs = createQualifierDefaults();
         addCheckedCodeDefaults(defs);
         addCheckedStandardDefaults(defs);
-        addUncheckedCodeDefaults(defs);
         addUncheckedStandardDefaults(defs);
         checkForDefaultQualifierInHierarchy(defs);
 
@@ -526,15 +513,6 @@ public abstract class GenericAnnotatedTypeFactory<
     protected QualifierDefaults createQualifierDefaults() {
         return new QualifierDefaults(elements, this);
     }
-
-    /** Defines alphabetical sort ordering for qualifiers. */
-    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING =
-            new Comparator<Class<? extends Annotation>>() {
-                @Override
-                public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-                    return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-                }
-            };
 
     /**
      * Creates and returns a string containing the number of qualifiers and the canonical class
@@ -554,9 +532,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Create a list of the supported qualifiers and sort the list
         // alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>();
-        sortedSupportedQuals.addAll(stq);
-        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<>(stq);
+        sortedSupportedQuals.sort(Comparator.comparing(Class::getCanonicalName));
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
@@ -611,46 +588,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Adds default qualifiers for code that is not type-checked by reading
-     * {@code @DefaultInUncheckedCodeFor} and {@code @DefaultQualifierInHierarchyInUncheckedCode}
-     * meta-annotations. Then it applies the standard unchecked code defaults, if a default was not
-     * specified for a particular location.
-     *
-     * <p>Standard unchecked code default are: <br>
-     * top: {@code TypeUseLocation.RETURN,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUND}<br>
-     * bottom: {@code TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND}<br>
-     *
-     * <p>If {@code @DefaultQualifierInHierarchyInUncheckedCode} code is not found or a default for
-     * {@code TypeUseLocation.Otherwise} is not used, the defaults for checked code will be applied
-     * to locations without a default for unchecked code.
-     *
-     * <p>Subclasses may override this method to add defaults that cannot be specified with a
-     * {@code @DefaultInUncheckedCodeFor} or {@code @DefaultQualifierInHierarchyInUncheckedCode}
-     * meta-annotations or to change the standard defaults.
-     *
-     * @param defs {@link QualifierDefaults} object to which defaults are added
-     */
-    protected void addUncheckedCodeDefaults(QualifierDefaults defs) {
-        for (Class<? extends Annotation> annotation : getSupportedTypeQualifiers()) {
-            DefaultInUncheckedCodeFor defaultInUncheckedCodeFor =
-                    annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
-
-            if (defaultInUncheckedCodeFor != null) {
-                final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
-                defs.addUncheckedCodeDefaults(
-                        AnnotationBuilder.fromClass(elements, annotation), locations);
-            }
-
-            if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class)
-                    != null) {
-                defs.addUncheckedCodeDefault(
-                        AnnotationBuilder.fromClass(elements, annotation),
-                        TypeUseLocation.OTHERWISE);
-            }
-        }
-    }
-
-    /**
      * Adds standard unchecked defaults that do not conflict with previously added defaults.
      *
      * @param defs {@link QualifierDefaults} object to which defaults are added
@@ -674,8 +611,6 @@ public abstract class GenericAnnotatedTypeFactory<
                             + getSortedQualifierNames());
         }
 
-        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an
-        // unchecked default for TypeUseLocation.OTHERWISE.
         // If a default unchecked code qualifier isn't specified, the defaults
         // for checked code will be used.
     }
@@ -778,8 +713,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Store store = getStoreBefore(tree);
             Value value = store.getValue(receiver);
             if (value != null) {
-                annotationMirror =
-                        AnnotationUtils.getAnnotationByClass(value.getAnnotations(), clazz);
+                annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
             }
         }
         // If the specific annotation wasn't in the store, look in the type factory.
@@ -896,6 +830,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
+    /** A mapping from methods (or other code blocks) to their exceptional exit store. */
+    protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+
     /** A mapping from methods to a list with all return statements and the corresponding store. */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
             returnStatementStores;
@@ -910,21 +847,45 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the regular exit store for a method or another code block (such as static
      * initializers).
      *
+     * @param tree a MethodTree or other code block, such as a static initializer
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public @Nullable Store getRegularExitStore(Tree t) {
-        return regularExitStores.get(t);
+    public @Nullable Store getRegularExitStore(Tree tree) {
+        return regularExitStores.get(tree);
     }
 
-    /** @return all return node and store pairs for a given method */
+    /**
+     * Returns the exceptional exit store for a method or another code block (such as static
+     * initializers).
+     *
+     * @param tree a MethodTree or other code block, such as a static initializer
+     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     */
+    public @Nullable Store getExceptionalExitStore(Tree tree) {
+        return exceptionalExitStores.get(tree);
+    }
+
+    /**
+     * Returns a list of all return statements of {@code method} paired with their corresponding
+     * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
+     * returned.
+     *
+     * @param methodTree method whose return statements should be returned
+     * @return a list of all return statements of {@code method} paired with their corresponding
+     *     {@link TransferResult} or an empty list if {@code method} has no return statements
+     */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
     }
 
-    /** @return the store immediately before a given {@link Tree}. */
+    /**
+     * Returns the store immediately before a given {@link Tree}.
+     *
+     * @return the store immediately before a given {@link Tree}
+     */
     public Store getStoreBefore(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(tree);
@@ -937,7 +898,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    /** @return the store immediately before a given Set of {@link Node}s. */
+    /**
+     * Returns the store immediately before a given Set of {@link Node}s.
+     *
+     * @return the store immediately before a given Set of {@link Node}s
+     */
     public Store getStoreBefore(Set<Node> nodes) {
         Store merge = null;
         for (Node aNode : nodes) {
@@ -951,7 +916,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately before a given {@link Node}. */
+    /**
+     * Returns the store immediately before a given {@link Node}.
+     *
+     * @return the store immediately before a given {@link Node}
+     */
     public Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
@@ -966,7 +935,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return store;
     }
 
-    /** @return the store immediately after a given {@link Tree}. */
+    /**
+     * Returns the store immediately after a given {@link Tree}.
+     *
+     * @return the store immediately after a given {@link Tree}
+     */
     public Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
@@ -975,7 +948,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return getStoreAfter(nodes);
     }
 
-    /** @return the store immediately after a given set of {@link Node}s. */
+    /**
+     * Returns the store immediately after a given set of {@link Node}s.
+     *
+     * @return the store immediately after a given set of {@link Node}s
+     */
     public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
@@ -989,7 +966,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately after a given {@link Node}. */
+    /**
+     * Returns the store immediately after a given {@link Node}.
+     *
+     * @return the store immediately after a given {@link Node}
+     */
     public Store getStoreAfter(Node node) {
         Store res =
                 AnalysisResult.runAnalysisFor(
@@ -1002,8 +983,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
+     * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
+     *
      * @return the {@link Node}s for a given {@link Tree}
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);
@@ -1026,14 +1009,18 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
-            if (node.getClass().equals(kind)) {
+            if (node.getClass() == kind) {
                 return kind.cast(node);
             }
         }
         return null;
     }
 
-    /** @return the value of effectively final local variables */
+    /**
+     * Returns the value of effectively final local variables.
+     *
+     * @return the value of effectively final local variables
+     */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
     }
@@ -1045,6 +1032,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
+            exceptionalExitStores = new IdentityHashMap<>();
             returnStatementStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
         }
@@ -1263,12 +1251,20 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(method, exceptionalExitStore);
+            }
             returnStatementStores.put(method, analysis.getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
             // TODO: Postconditions?
@@ -1277,6 +1273,10 @@ public abstract class GenericAnnotatedTypeFactory<
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else {
             assert false : "Unexpected AST kind: " + ast.getKind();
@@ -1432,8 +1432,13 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptConstructor(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    protected void constructorFromUsePreSubstitution(
+            NewClassTree tree, AnnotatedExecutableType type) {
+        poly.resolve(tree, type);
     }
 
     @Override
@@ -1473,8 +1478,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
-     * typically simply pass the boolean to calls to super.
+     * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
+     * implementations typically simply pass the boolean to calls to super.
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1554,6 +1559,15 @@ public abstract class GenericAnnotatedTypeFactory<
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
+    /**
+     * To add annotations to the type of method or constructor parameters, add a {@link
+     * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
+     * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
+     * Void)}.
+     *
+     * @param elt an element
+     * @param type the type obtained from {@code elt}
+     */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         addAnnotationsFromDefaultQualifierForUse(elt, type);
@@ -1571,8 +1585,15 @@ public abstract class GenericAnnotatedTypeFactory<
         if (dependentTypesHelper != null) {
             dependentTypesHelper.viewpointAdaptMethod(tree, method);
         }
-        poly.resolve(tree, method);
         return mType;
+    }
+
+    @Override
+    public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+        super.methodFromUsePreSubstitution(tree, type);
+        if (tree instanceof MethodInvocationTree) {
+            poly.resolve((MethodInvocationTree) tree, type);
+        }
     }
 
     @Override
@@ -1650,6 +1671,11 @@ public abstract class GenericAnnotatedTypeFactory<
                         "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
+            String vizClassName = opts[0];
+            if (!Signatures.isBinaryName(vizClassName)) {
+                throw new UserError(
+                        "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
+            }
 
             Map<String, Object> args = processCFGVisualizerOption(opts);
             if (!args.containsKey("verbose")) {
@@ -1659,7 +1685,7 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("checkerName", getCheckerName());
 
             CFGVisualizer<Value, Store, TransferFunction> res =
-                    BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+                    BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
             res.init(args);
             return res;
         }
@@ -1667,13 +1693,15 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /* A simple utility method to determine a short checker name to be
-     * used by CFG visualizations.
+    /**
+     * A simple utility method to determine a short checker name to be used by CFG visualizations.
      */
     private String getCheckerName() {
         String checkerName = checker.getClass().getSimpleName();
-        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        if (checkerName.endsWith("Checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Checker".length());
+        } else if (checkerName.endsWith("Subchecker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "Subchecker".length());
         }
         return checkerName;
     }

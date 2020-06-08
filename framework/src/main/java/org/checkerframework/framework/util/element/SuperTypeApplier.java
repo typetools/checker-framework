@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 
 /**
  * When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the
@@ -21,8 +23,8 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      * @param subtypeElement element that may have annotations to apply to supertypes
      */
     public static void annotateSupers(
-            List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
-            TypeElement subtypeElement) {
+            List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement)
+            throws UnexpectedAnnotationLocationException {
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
             // Offset i by -1 since typeIndex should start from -1.
@@ -67,13 +69,21 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         this.index = index;
     }
 
-    /** @return the type_index that should represent supertype */
+    /**
+     * Returns the type_index that should represent supertype.
+     *
+     * @return the type_index that should represent supertype
+     */
     @Override
     public int getElementIndex() {
         return index;
     }
 
-    /** @return the type_index of anno's TypeAnnotationPosition */
+    /**
+     * Returns the type_index of anno's TypeAnnotationPosition.
+     *
+     * @return the type_index of anno's TypeAnnotationPosition
+     */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         int typeIndex = anno.getPosition().type_index;
@@ -83,13 +93,21 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         return typeIndex == 0xffff ? -1 : typeIndex;
     }
 
-    /** @return TargetType.CLASS_EXTENDS */
+    /**
+     * Returns TargetType.CLASS_EXTENDS.
+     *
+     * @return TargetType.CLASS_EXTENDS
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
-    /** @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND */
+    /**
+     * Returns TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND.
+     *
+     * @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND
+     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -97,14 +115,19 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         };
     }
 
-    /** @return the TypeCompounds (annotations) of the subclass */
+    /**
+     * Returns the TypeCompounds (annotations) of the subclass.
+     *
+     * @return the TypeCompounds (annotations) of the subclass
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return subclassSymbol.getRawTypeAttributes();
     }
 
     @Override
-    protected void handleTargeted(List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
         ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
     }
 

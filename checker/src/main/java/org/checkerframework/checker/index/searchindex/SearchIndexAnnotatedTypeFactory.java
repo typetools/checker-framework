@@ -102,8 +102,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     new HashSet<>(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1));
             combinedArrays.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2));
 
-            if (AnnotationUtils.areSameByClass(a1, NegativeIndexFor.class)
-                    || AnnotationUtils.areSameByClass(a2, NegativeIndexFor.class)) {
+            if (areSameByClass(a1, NegativeIndexFor.class)
+                    || areSameByClass(a2, NegativeIndexFor.class)) {
                 return createNegativeIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
             } else {
                 return createSearchIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
@@ -143,8 +143,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return UNKNOWN;
             }
 
-            if (AnnotationUtils.areSameByClass(a1, SearchIndexFor.class)
-                    || AnnotationUtils.areSameByClass(a2, SearchIndexFor.class)) {
+            if (areSameByClass(a1, SearchIndexFor.class)
+                    || areSameByClass(a2, SearchIndexFor.class)) {
                 return createSearchIndexFor(
                         Arrays.asList(arrayIntersection.toArray(new String[0])));
             } else {
@@ -155,16 +155,16 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByClass(superAnno, SearchIndexUnknown.class)) {
+            if (areSameByClass(superAnno, SearchIndexUnknown.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SearchIndexBottom.class)) {
+            if (areSameByClass(subAnno, SearchIndexBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(subAnno, SearchIndexUnknown.class)) {
+            if (areSameByClass(subAnno, SearchIndexUnknown.class)) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(superAnno, SearchIndexBottom.class)) {
+            if (areSameByClass(superAnno, SearchIndexBottom.class)) {
                 return false;
             }
 
@@ -177,8 +177,8 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Subtyping requires:
             //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
             //  * subtype's arrays are a superset of supertype's arrays
-            return ((AnnotationUtils.areSameByClass(subAnno, NegativeIndexFor.class)
-                            || AnnotationUtils.areSameByClass(superAnno, SearchIndexFor.class))
+            return ((areSameByClass(subAnno, NegativeIndexFor.class)
+                            || areSameByClass(superAnno, SearchIndexFor.class))
                     && subArrays.containsAll(superArrays));
         }
     }

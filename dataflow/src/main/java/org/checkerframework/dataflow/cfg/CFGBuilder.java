@@ -71,10 +71,11 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -209,6 +210,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class CFGBuilder {
 
+    /** This class should never be instantiated. Protected to still allow subclasses. */
     protected CFGBuilder() {}
 
     /** Build the control flow graph of some code. */
@@ -268,8 +270,8 @@ public class CFGBuilder {
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             MethodTree tree,
-            ClassTree classTree,
-            ProcessingEnvironment env) {
+            @Nullable ClassTree classTree,
+            @Nullable ProcessingEnvironment env) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return build(root, underlyingAST, false, false, env);
     }
@@ -293,12 +295,17 @@ public class CFGBuilder {
         protected BlockImpl block;
 
         /** Type of this node. */
-        protected ExtendedNodeType type;
+        protected final ExtendedNodeType type;
 
         /** Does this node terminate the execution? (e.g., "System.exit()") */
         protected boolean terminatesExecution = false;
 
-        public ExtendedNode(ExtendedNodeType type) {
+        /**
+         * Create a new ExtendedNode.
+         *
+         * @param type the type of this node
+         */
+        protected ExtendedNode(ExtendedNodeType type) {
             this.type = type;
         }
 
@@ -323,8 +330,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns the node contained in this extended node (only applicable if the type is {@code
+         * NODE} or {@code EXCEPTION_NODE}).
+         *
          * @return the node contained in this extended node (only applicable if the type is {@code
-         *     NODE} or {@code EXCEPTION_NODE}).
+         *     NODE} or {@code EXCEPTION_NODE})
          */
         public Node getNode() {
             assert false;
@@ -332,8 +342,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns the label associated with this extended node (only applicable if type is {@link
+         * ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         *
          * @return the label associated with this extended node (only applicable if type is {@link
-         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
          */
         public Label getLabel() {
             assert false;
@@ -350,15 +363,21 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            return "ExtendedNode(" + type + ")";
+            throw new BugInCF("DO NOT CALL ExtendedNode.toString(). Write your own.");
         }
     }
 
     /** An extended node of type {@code NODE}. */
     protected static class NodeHolder extends ExtendedNode {
 
-        protected Node node;
+        /** The node to hold. */
+        protected final Node node;
 
+        /**
+         * Construct a NodeHolder for the given Node.
+         *
+         * @param node the node to hold
+         */
         public NodeHolder(Node node) {
             super(ExtendedNodeType.NODE);
             this.node = node;
@@ -378,20 +397,32 @@ public class CFGBuilder {
     /** An extended node of type {@code EXCEPTION_NODE}. */
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
-        protected Node node;
+        /** The node to hold. */
+        protected final Node node;
 
         /**
          * Map from exception type to labels of successors that may be reached as a result of that
          * exception.
          */
-        protected Map<TypeMirror, Set<Label>> exceptions;
+        protected final Map<TypeMirror, Set<Label>> exceptions;
 
+        /**
+         * Construct a NodeWithExceptionsHolder for the given node and exceptions.
+         *
+         * @param node the node to hold
+         * @param exceptions the exceptions to hold
+         */
         public NodeWithExceptionsHolder(Node node, Map<TypeMirror, Set<Label>> exceptions) {
             super(ExtendedNodeType.EXCEPTION_NODE);
             this.node = node;
             this.exceptions = exceptions;
         }
 
+        /**
+         * Get the exceptions for the node.
+         *
+         * @return exceptions for the node
+         */
         public Map<TypeMirror, Set<Label>> getExceptions() {
             return exceptions;
         }
@@ -417,12 +448,22 @@ public class CFGBuilder {
      */
     protected static class ConditionalJump extends ExtendedNode {
 
-        protected Label trueSucc;
-        protected Label falseSucc;
+        /** The true successor label. */
+        protected final Label trueSucc;
+        /** The false successor label. */
+        protected final Label falseSucc;
 
+        /** The true branch flow rule. */
         protected Store.FlowRule trueFlowRule;
+        /** The false branch flow rule. */
         protected Store.FlowRule falseFlowRule;
 
+        /**
+         * Construct a ConditionalJump.
+         *
+         * @param trueSucc true successor label
+         * @param falseSucc false successor label
+         */
         public ConditionalJump(Label trueSucc, Label falseSucc) {
             super(ExtendedNodeType.CONDITIONAL_JUMP);
             assert trueSucc != null;
@@ -455,17 +496,29 @@ public class CFGBuilder {
             falseFlowRule = rule;
         }
 
+        /**
+         * Produce a string representation.
+         *
+         * @return a string representation
+         * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
+         */
         @Override
         public String toString() {
-            return "TwoTargetConditionalJump(" + getThenLabel() + "," + getElseLabel() + ")";
+            return "TwoTargetConditionalJump(" + getThenLabel() + ", " + getElseLabel() + ")";
         }
     }
 
     /** An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}. */
     protected static class UnconditionalJump extends ExtendedNode {
 
-        protected Label jumpTarget;
+        /** The jump target label. */
+        protected final Label jumpTarget;
 
+        /**
+         * Construct an UnconditionalJump.
+         *
+         * @param jumpTarget the jump target label
+         */
         public UnconditionalJump(Label jumpTarget) {
             super(ExtendedNodeType.UNCONDITIONAL_JUMP);
             assert jumpTarget != null;
@@ -477,6 +530,12 @@ public class CFGBuilder {
             return jumpTarget;
         }
 
+        /**
+         * Produce a string representation.
+         *
+         * @return a string representation
+         * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
+         */
         @Override
         public String toString() {
             return "JumpMarker(" + getLabel() + ")";
@@ -534,11 +593,18 @@ public class CFGBuilder {
      * specific types.
      */
     protected static class TryCatchFrame implements TryFrame {
-        protected Types types;
+        /** The Types utilities. */
+        protected final Types types;
 
         /** An ordered list of pairs because catch blocks are ordered. */
-        protected List<Pair<TypeMirror, Label>> catchLabels;
+        protected final List<Pair<TypeMirror, Label>> catchLabels;
 
+        /**
+         * Construct a TryCatchFrame.
+         *
+         * @param types the Types utilities
+         * @param catchLabels the catch labels
+         */
         public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
             this.types = types;
             this.catchLabels = catchLabels;
@@ -546,19 +612,15 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
             if (this.catchLabels.isEmpty()) {
-                sb.append("TryCatchFrame: no catch labels.\n");
+                return "TryCatchFrame: no catch labels.";
             } else {
-                sb.append("TryCatchFrame: ");
+                StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
+                for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
+                    sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
+                }
+                return sb.toString();
             }
-            for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
-                sb.append(ptml.first.toString());
-                sb.append(" -> ");
-                sb.append(ptml.second.toString());
-                sb.append('\n');
-            }
-            return sb.toString();
         }
 
         /**
@@ -637,17 +699,21 @@ public class CFGBuilder {
 
     /** A TryFinallyFrame applies to exceptions of any type. */
     protected static class TryFinallyFrame implements TryFrame {
-        protected Label finallyLabel;
+        /** The finally label. */
+        protected final Label finallyLabel;
 
+        /**
+         * Construct a TryFinallyFrame.
+         *
+         * @param finallyLabel finally label
+         */
         public TryFinallyFrame(Label finallyLabel) {
             this.finallyLabel = finallyLabel;
         }
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("TryFinallyFrame: finallyLabel: " + finallyLabel + '\n');
-            return sb.toString();
+            return "TryFinallyFrame: finallyLabel: " + finallyLabel;
         }
 
         @Override
@@ -663,18 +729,31 @@ public class CFGBuilder {
      * fall-through) to a single Label.
      */
     protected static class TryStack {
-        protected Label exitLabel;
-        protected ArrayDeque<TryFrame> frames;
+        /** The exit label. */
+        protected final Label exitLabel;
+        /** The try frames. */
+        protected final ArrayDeque<TryFrame> frames;
 
+        /**
+         * Construct a TryStack.
+         *
+         * @param exitLabel exit label
+         */
         public TryStack(Label exitLabel) {
             this.exitLabel = exitLabel;
             this.frames = new ArrayDeque<>();
         }
 
+        /**
+         * Push a new frame.
+         *
+         * @param frame the frame to push
+         */
         public void pushFrame(TryFrame frame) {
             frames.addFirst(frame);
         }
 
+        /** Pop a frame. */
         public void popFrame() {
             frames.removeFirst();
         }
@@ -698,15 +777,15 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("TryStack: exitLabel: " + this.exitLabel + '\n');
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
+            sj.add("TryStack: exitLabel: " + this.exitLabel);
             if (this.frames.isEmpty()) {
-                sb.append("No TryFrames.\n");
+                sj.add("No TryFrames.");
             }
             for (TryFrame tf : this.frames) {
-                sb.append(tf.toString());
+                sj.add(tf.toString());
             }
-            return sb.toString();
+            return sj.toString();
         }
     }
 
@@ -738,6 +817,8 @@ public class CFGBuilder {
         }
 
         @Override
+        @SuppressWarnings(
+                "keyfor:contracts.conditional.postcondition.not.satisfied") // get adds everything
         public boolean containsKey(Object key) {
             return true;
         }
@@ -868,6 +949,16 @@ public class CFGBuilder {
             }
 
             // remove useless conditional blocks
+            /* Issue 3267 revealed that this is a dangerous optimization:
+               it merges a block that evaluates one condition onto an unrelated following block,
+               which can also be a condition. The then/else stores from the first block are still
+               set, leading to incorrect results for the then/else stores in the following block.
+               The correct result would be to merge the then/else stores from the previous block.
+               However, as this is late in the CFG construction, I didn't see how to add e.g. a
+               dummy variable declaration node in a dummy regular block, which would cause a merge.
+               So for now, let's not perform this optimization.
+               It would be interesting to know how large the impact of this optimization is.
+
             worklist = cfg.getAllBlocks();
             for (Block c : worklist) {
                 BlockImpl cur = (BlockImpl) c;
@@ -884,6 +975,7 @@ public class CFGBuilder {
                     }
                 }
             }
+            */
 
             // merge consecutive basic blocks if possible
             worklist = cfg.getAllBlocks();
@@ -1038,9 +1130,11 @@ public class CFGBuilder {
                     if (e.getSuccessor() == cur) {
                         return singleSuccessorHolder(e, cur);
                     } else {
-                        Set<Entry<TypeMirror, Set<Block>>> entrySet =
+                        @SuppressWarnings(
+                                "keyfor:assignment.type.incompatible") // ignore keyfor type
+                        Set<Map.Entry<TypeMirror, Set<Block>>> entrySet =
                                 e.getExceptionalSuccessors().entrySet();
-                        for (final Entry<TypeMirror, Set<Block>> entry : entrySet) {
+                        for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
                             if (entry.getValue().contains(cur)) {
                                 return new PredecessorHolder() {
                                     @Override
@@ -1067,8 +1161,11 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns a {@link PredecessorHolder} that sets the successor of a single successor block
+         * {@code s}.
+         *
          * @return a {@link PredecessorHolder} that sets the successor of a single successor block
-         *     {@code s}.
+         *     {@code s}
          */
         protected static PredecessorHolder singleSuccessorHolder(
                 final SingleSuccessorBlockImpl s, final BlockImpl old) {
@@ -1255,7 +1352,8 @@ public class CFGBuilder {
                         }
 
                         // exceptional edges
-                        for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions().entrySet()) {
+                        for (Map.Entry<TypeMirror, Set<Label>> entry :
+                                en.getExceptions().entrySet()) {
                             TypeMirror cause = entry.getKey();
                             for (Label label : entry.getValue()) {
                                 Integer target = bindings.get(label);
@@ -1361,12 +1459,11 @@ public class CFGBuilder {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
             for (ExtendedNode n : nodeList) {
-                sb.append(nodeToString(n));
-                sb.append("\n");
+                sj.add(nodeToString(n));
             }
-            return sb.toString();
+            return sj.toString();
         }
 
         protected String nodeToString(ExtendedNode n) {
@@ -1374,7 +1471,7 @@ public class CFGBuilder {
                 ConditionalJump t = (ConditionalJump) n;
                 return "TwoTargetConditionalJump("
                         + resolveLabel(t.getThenLabel())
-                        + ","
+                        + ", "
                         + resolveLabel(t.getElseLabel())
                         + ")";
             } else if (n.getType() == ExtendedNodeType.UNCONDITIONAL_JUMP) {
@@ -1387,7 +1484,7 @@ public class CFGBuilder {
         private String resolveLabel(Label label) {
             Integer index = bindings.get(label);
             if (index == null) {
-                return "null";
+                return "unbound label: " + label;
             }
             return nodeToString(nodeList.get(index));
         }
@@ -1471,7 +1568,7 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /** Nested scopes of try-catch blocks in force at the current program point. */
-        private TryStack tryStack;
+        private final TryStack tryStack;
 
         /**
          * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value
@@ -1763,8 +1860,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert a {@code node} that might throw the exception {@code cause} after {@code pred} in
-         * the list of extended nodes, or append to the list if {@code pred} is not present.
+         * Insert a {@code node} that might throw the exceptions in {@code causes} after {@code
+         * pred} in the list of extended nodes, or append to the list if {@code pred} is not
+         * present.
          *
          * @param node the node to add
          * @param causes set of exceptions that the node might throw
@@ -1799,6 +1897,7 @@ public class CFGBuilder {
          * @param n the extended node
          * @param pred the desired predecessor
          */
+        @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
         protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
             int index = -1;
             for (int i = 0; i < nodeList.size(); i++) {
@@ -1813,7 +1912,7 @@ public class CFGBuilder {
             if (index != -1) {
                 nodeList.add(index + 1, n);
                 // update bindings
-                for (Entry<Label, Integer> e : bindings.entrySet()) {
+                for (Map.Entry<Label, Integer> e : bindings.entrySet()) {
                     if (e.getValue() >= index + 1) {
                         bindings.put(e.getKey(), e.getValue() + 1);
                     }
@@ -1974,7 +2073,11 @@ public class CFGBuilder {
             };
         }
 
-        /** @return the unboxed tree if necessary, as described in JLS 5.1.8 */
+        /**
+         * Returns the unboxed tree if necessary, as described in JLS 5.1.8.
+         *
+         * @return the unboxed tree if necessary, as described in JLS 5.1.8
+         */
         private Node unboxAsNeeded(Node node, boolean boxed) {
             return boxed ? unbox(node) : node;
         }
@@ -2704,12 +2807,11 @@ public class CFGBuilder {
          * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          *
          * @param tree the field access tree containing the receiver
-         * @param classTree the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
         private Node getReceiver(ExpressionTree tree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-            if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
             } else {
@@ -3281,23 +3383,31 @@ public class CFGBuilder {
 
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
-            SwitchBuilder builder = new SwitchBuilder(tree, p);
+            SwitchBuilder builder = new SwitchBuilder(tree);
             builder.build();
             return null;
         }
 
+        /** Helper class for handling switch statements. */
         private class SwitchBuilder {
+            /** The switch tree. */
             private final SwitchTree switchTree;
+            /** The labels for the case bodies. */
             private final Label[] caseBodyLabels;
-            private final Void p;
+            /** The Node for the switch expression. */
             private Node switchExpr;
 
-            private SwitchBuilder(SwitchTree tree, Void p) {
+            /**
+             * Construct a SwitchBuilder.
+             *
+             * @param tree switch tree
+             */
+            private SwitchBuilder(SwitchTree tree) {
                 this.switchTree = tree;
                 this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
-                this.p = p;
             }
 
+            /** Build up the CFG for the switchTree. */
             public void build() {
                 TryFinallyScopeCell oldBreakTargetL = breakTargetL;
                 breakTargetL = new TryFinallyScopeCell(new Label());
@@ -3318,13 +3428,13 @@ public class CFGBuilder {
                 extendWithNode(variableNode);
 
                 ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
-                handleArtificialTree(variable);
+                handleArtificialTree(variableUse);
 
                 LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
                 variableUseNode.setInSource(false);
                 extendWithNode(variableUseNode);
 
-                Node switchExprNode = unbox(scan(switchTree.getExpression(), p));
+                Node switchExprNode = unbox(scan(switchTree.getExpression(), null));
 
                 AssignmentTree assign =
                         treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
@@ -3336,7 +3446,9 @@ public class CFGBuilder {
 
                 extendWithNode(
                         new MarkerNode(
-                                switchTree, "start of switch statement", env.getTypeUtils()));
+                                switchTree,
+                                "start of switch statement #" + switchTree.hashCode(),
+                                env.getTypeUtils()));
 
                 Integer defaultIndex = null;
                 for (int i = 0; i < cases; ++i) {
@@ -3356,6 +3468,12 @@ public class CFGBuilder {
 
                 addLabelForNextNode(breakTargetL.peekLabel());
                 breakTargetL = oldBreakTargetL;
+
+                extendWithNode(
+                        new MarkerNode(
+                                switchTree,
+                                "end of switch statement #" + switchTree.hashCode(),
+                                env.getTypeUtils()));
             }
 
             private void buildCase(CaseTree tree, int index) {
@@ -3365,14 +3483,14 @@ public class CFGBuilder {
 
                 ExpressionTree exprTree = tree.getExpression();
                 if (exprTree != null) {
-                    Node expr = scan(exprTree, p);
+                    Node expr = scan(exprTree, null);
                     CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
                     extendWithNode(test);
                     extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
                 }
                 addLabelForNextNode(thisBodyL);
                 for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
+                    scan(stmt, null);
                 }
                 extendWithExtendedNode(new UnconditionalJump(nextBodyL));
                 addLabelForNextNode(nextCaseL);
@@ -3886,13 +4004,6 @@ public class CFGBuilder {
             } else {
                 Element element = TreeUtils.elementFromUse(tree);
                 switch (element.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                    case TYPE_PARAMETER:
-                        node = new ClassNameNode(tree);
-                        break;
                     case FIELD:
                         // Note that "this"/"super" is a field, but not a field access.
                         if (element.getSimpleName().contentEquals("this")) {
@@ -3911,6 +4022,10 @@ public class CFGBuilder {
                         node = new PackageNameNode(tree);
                         break;
                     default:
+                        if (ElementUtils.isTypeDeclaration(element)) {
+                            node = new ClassNameNode(tree);
+                            break;
+                        }
                         throw new BugInCF("bad element kind " + element.getKind());
                 }
             }
@@ -4170,23 +4285,15 @@ public class CFGBuilder {
             Node expr = scan(tree.getExpression(), p);
             if (!TreeUtils.isFieldAccess(tree)) {
                 // Could be a selector of a class or package
-                Node result = null;
                 Element element = TreeUtils.elementFromUse(tree);
-                switch (element.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                        result = extendWithNode(new ClassNameNode(tree, expr));
-                        break;
-                    case PACKAGE:
-                        result = extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
-                        break;
-                    default:
-                        assert false : "Unexpected element kind: " + element.getKind();
-                        return null;
+                if (ElementUtils.isClassElement(element)) {
+                    return extendWithNode(new ClassNameNode(tree, expr));
+                } else if (element.getKind() == ElementKind.PACKAGE) {
+                    return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                } else {
+                    assert false : "Unexpected element kind: " + element.getKind();
+                    return null;
                 }
-                return result;
             }
 
             Node node = new FieldAccessNode(tree, expr);
@@ -4247,7 +4354,11 @@ public class CFGBuilder {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
 
-            extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
+            extendWithNode(
+                    new MarkerNode(
+                            tree,
+                            "start of try statement #" + tree.hashCode(),
+                            env.getTypeUtils()));
 
             // TODO: Should we handle try-with-resources blocks by also generating code
             // for automatically closing the resources?
@@ -4310,13 +4421,19 @@ public class CFGBuilder {
                 extendWithNode(
                         new MarkerNode(
                                 tree,
-                                "start of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                "start of catch block for "
+                                        + c.getParameter().getType()
+                                        + " #"
+                                        + tree.hashCode(),
                                 env.getTypeUtils()));
                 scan(c, p);
                 extendWithNode(
                         new MarkerNode(
                                 tree,
-                                "end of catch block for " + c.getClass() + " #" + tree.hashCode(),
+                                "end of catch block for "
+                                        + c.getParameter().getType()
+                                        + " #"
+                                        + tree.hashCode(),
                                 env.getTypeUtils()));
 
                 catchIndex++;
@@ -4355,7 +4472,7 @@ public class CFGBuilder {
                     extendWithNode(
                             new MarkerNode(
                                     tree,
-                                    "start of finally block for Throwable",
+                                    "start of finally block for Throwable #" + tree.hashCode(),
                                     env.getTypeUtils()));
 
                     scan(finallyBlock, p);
@@ -4366,7 +4483,8 @@ public class CFGBuilder {
                             extendWithNodeWithException(
                                     new MarkerNode(
                                             tree,
-                                            "end of finally block for Throwable",
+                                            "end of finally block for Throwable #"
+                                                    + tree.hashCode(),
                                             env.getTypeUtils()),
                                     throwableType);
 
@@ -4418,7 +4536,7 @@ public class CFGBuilder {
                 if (!accessedBreakLabels.isEmpty()) {
                     breakLabels = oldBreakLabels;
 
-                    for (Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
+                    for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
                         addLabelForNextNode(access.getValue());
                         extendWithNode(
                                 new MarkerNode(
@@ -4469,7 +4587,7 @@ public class CFGBuilder {
                 if (!accessedContinueLabels.isEmpty()) {
                     continueLabels = oldContinueLabels;
 
-                    for (Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
+                    for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
                         addLabelForNextNode(access.getValue());
                         extendWithNode(
                                 new MarkerNode(
@@ -4682,8 +4800,8 @@ public class CFGBuilder {
         /**
          * Create assignment node which represent increment or decrement.
          *
-         * @param target Target tree for assignment node. If it's null, corresponding assignment
-         *     tree will be generated.
+         * @param target tree for assignment node. If it's null, corresponding assignment tree will
+         *     be generated.
          * @param expr expression node to be incremented or decremented
          * @param isIncrement true when it's increment
          * @return assignment node for corresponding increment or decrement

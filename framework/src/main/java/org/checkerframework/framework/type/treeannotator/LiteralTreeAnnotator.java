@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
@@ -166,12 +167,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             throw new BugInCF(
-                    "LiteralTreeAnnotator: invalid update of treeKinds "
-                            + treeKinds
-                            + " at "
-                            + treeKind
-                            + " with "
-                            + theQual);
+                    "LiteralTreeAnnotator: tried to add mapping %s=%s to %s",
+                    treeKind, theQual, treeKinds);
         }
     }
 
@@ -243,23 +240,25 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
                     nonMatches.add(sam);
                 }
             }
-            Set<? extends AnnotationMirror> res = null;
             if (!matches.isEmpty()) {
-                res = matches.get(0);
+                Set<? extends AnnotationMirror> res = matches.get(0);
                 for (Set<? extends AnnotationMirror> sam : matches) {
                     res = qualHierarchy.greatestLowerBounds(res, sam);
                 }
                 // Verify that res is not a subtype of any type in nonMatches
                 for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
+                        String matchesOnePerLine = "";
+                        for (Set<? extends AnnotationMirror> match : matches) {
+                            matchesOnePerLine += System.lineSeparator() + "     " + match;
+                        }
                         throw new BugInCF(
-                                String.join(
-                                        System.lineSeparator(),
+                                SystemUtil.joinLines(
                                         "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy definition:",
-                                        " inferred type for \"" + string + "\" is " + res,
+                                        " the glb of `matches` for \"" + string + "\" is " + res,
                                         " which is a subtype of " + sam,
-                                        " but its pattern does not match the string.",
-                                        "  matches = " + matches,
+                                        " whose pattern does not match \"" + string + "\".",
+                                        "  matches = " + matchesOnePerLine,
                                         "  nonMatches = " + nonMatches));
                     }
                 }

@@ -92,7 +92,11 @@ public enum I18nConversionCategory {
         return new HashSet<>(Arrays.asList(a));
     }
 
-    /** @return true if a is a subset of b */
+    /**
+     * Return true if a is a subset of b.
+     *
+     * @return true if a is a subset of b
+     */
     public static boolean isSubsetOf(I18nConversionCategory a, I18nConversionCategory b) {
         return intersect(a, b) == a;
     }

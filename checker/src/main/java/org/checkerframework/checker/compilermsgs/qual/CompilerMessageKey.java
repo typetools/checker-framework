@@ -13,8 +13,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
  */
-@SubtypeOf(UnknownCompilerMessageKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(UnknownCompilerMessageKey.class)
 public @interface CompilerMessageKey {}

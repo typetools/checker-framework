@@ -1,4 +1,6 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Parent;
+import testlib.wholeprograminference.qual.Sibling1;
+import testlib.wholeprograminference.qual.Sibling2;
 
 public class LUBAssignmentTest {
     // The default type for fields is @DefaultType.

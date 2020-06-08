@@ -18,11 +18,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor(
         value = {TypeUseLocation.UPPER_BOUND, TypeUseLocation.LOWER_BOUND},
         types = Void.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
-@SubtypeOf({})
 public @interface MaybeAliased {}

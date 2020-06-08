@@ -21,6 +21,7 @@ public class Issue1922 {
         // :: error: (type.argument.type.incompatible)
         @Nullable @KeyFor("someMap") String myKey = Issue1922.<@KeyFor("someMap") String>findKey(someMap.keySet(), "Foo");
 
+        // :: error: (argument.type.incompatible)
         Object value = someMap.get(myKey);
         return value.toString();
     }

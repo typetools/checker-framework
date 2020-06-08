@@ -8,6 +8,7 @@ import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -16,12 +17,20 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
-            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new ClassTypeParamApplier(type, element, typeFactory).extractAndApply();
     }
 
-    /** @return true if element represents a type parameter for a class */
+    /**
+     * Returns true if element represents a type parameter for a class.
+     *
+     * @param type ignored
+     * @param element the element that might be a type parameter
+     * @return true if element represents a type parameter for a class
+     */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER
                 && element.getEnclosingElement() instanceof Symbol.ClassSymbol;
@@ -47,19 +56,31 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
         enclosingClass = (Symbol.ClassSymbol) element.getEnclosingElement();
     }
 
-    /** @return TargetType.CLASS_TYPE_PARAMETER */
+    /**
+     * Returns TargetType.CLASS_TYPE_PARAMETER.
+     *
+     * @return TargetType.CLASS_TYPE_PARAMETER
+     */
     @Override
     protected TargetType lowerBoundTarget() {
         return TargetType.CLASS_TYPE_PARAMETER;
     }
 
-    /** @return TargetType.CLASS_TYPE_PARAMETER_BOUND */
+    /**
+     * Returns TargetType.CLASS_TYPE_PARAMETER_BOUND.
+     *
+     * @return TargetType.CLASS_TYPE_PARAMETER_BOUND
+     */
     @Override
     protected TargetType upperBoundTarget() {
         return TargetType.CLASS_TYPE_PARAMETER_BOUND;
     }
 
-    /** @return the index of element in the type parameter list of its enclosing class */
+    /**
+     * Returns the index of element in the type parameter list of its enclosing class.
+     *
+     * @return the index of element in the type parameter list of its enclosing class
+     */
     @Override
     public int getElementIndex() {
         return enclosingClass.getTypeParameters().indexOf(element);
@@ -70,7 +91,11 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
         return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
-    /** @return the raw type attributes of the enclosing class */
+    /**
+     * Returns the raw type attributes of the enclosing class.
+     *
+     * @return the raw type attributes of the enclosing class
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return enclosingClass.getRawTypeAttributes();

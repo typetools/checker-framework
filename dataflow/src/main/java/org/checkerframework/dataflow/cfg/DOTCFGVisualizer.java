@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -19,12 +20,14 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
+@SuppressWarnings("initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
         extends AbstractCFGVisualizer<A, S, T> {
@@ -32,8 +35,8 @@ public class DOTCFGVisualizer<
     /** The output directory. */
     protected String outDir;
 
-    /** Initialized in {@link #init(Map)}. Use it as a part of the name of the output dot file. */
-    protected String checkerName;
+    /** The (optional) checker name. Used as a part of the name of the output dot file. */
+    protected @Nullable String checkerName;
 
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
@@ -42,9 +45,14 @@ public class DOTCFGVisualizer<
     protected static final String leftJustifiedTerminator = "\\l";
 
     @Override
+    @SuppressWarnings("nullness") // assume arguments are set correctly
     public void init(Map<String, Object> args) {
         super.init(args);
         this.outDir = (String) args.get("outdir");
+        if (this.outDir == null) {
+            throw new BugInCF(
+                    "outDir should never be null, provide it in args when calling DOTCFGVisualizer.init(args).");
+        }
         this.checkerName = (String) args.get("checkerName");
         this.generated = new HashMap<>();
     }
@@ -71,25 +79,25 @@ public class DOTCFGVisualizer<
         return res;
     }
 
+    @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
-        sbDotNodes
-                .append("    node [shape=rectangle];")
-                .append(lineSeparator)
-                .append(lineSeparator);
+        sbDotNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Definition of all nodes including their labels.
-        for (Block v : blocks) {
+        for (@KeyFor("processOrder") Block v : blocks) {
             sbDotNodes.append("    ").append(v.getId()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
                 sbDotNodes.append("shape=oval ");
+            } else {
+                sbDotNodes.append("shape=rectangle ");
             }
             sbDotNodes.append("label=\"");
             if (verbose) {
@@ -101,18 +109,16 @@ public class DOTCFGVisualizer<
             if (strBlock.length() == 0) {
                 if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                     // The footer of the conditional block.
-                    sbDotNodes.append(" \",];").append(lineSeparator);
+                    sbDotNodes.append("\"];").append(lineSeparator);
                 } else {
                     // The footer of the block which has no content and is not a special or
                     // conditional block.
-                    sbDotNodes.append("?? empty ?? \",];").append(lineSeparator);
+                    sbDotNodes.append("?? empty ??\"];").append(lineSeparator);
                 }
             } else {
-                sbDotNodes.append(strBlock).append(" \",];").append(lineSeparator);
+                sbDotNodes.append(strBlock).append("\"];").append(lineSeparator);
             }
         }
-
-        sbDotNodes.append(lineSeparator);
         return sbDotNodes.toString();
     }
 
@@ -129,6 +135,12 @@ public class DOTCFGVisualizer<
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
         return super.visualizeSpecialBlockHelper(sbb, "");
+    }
+
+    @Override
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        // No extra content in DOT output.
+        return "";
     }
 
     @Override
@@ -180,8 +192,10 @@ public class DOTCFGVisualizer<
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
         }
-        outFile.append("-");
-        outFile.append(checkerName);
+        if (checkerName != null && !checkerName.isEmpty()) {
+            outFile.append('-');
+            outFile.append(checkerName);
+        }
         outFile.append(".dot");
 
         // make path safe for Windows

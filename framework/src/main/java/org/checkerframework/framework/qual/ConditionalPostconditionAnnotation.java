@@ -1,6 +1,7 @@
 package org.checkerframework.framework.qual;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,13 +9,21 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that an annotation E is a conditional postcondition annotation,
- * i.e., E is a type-specialized version of {@link EnsuresQualifierIf}.
+ * i.e., E is a type-specialized version of {@link EnsuresQualifierIf} or {@link
+ * EnsuresQualifierIf.List}.
  *
- * <p>The annotation E that is meta-annotated as {@link ConditionalPostconditionAnnotation} must
- * have an element called {@code expression} that is an array of {@code String}s of the same format
- * and with the same meaning as the value {@code expression} in {@link EnsuresQualifierIf}. E must
- * also have an element {@code result} with the same meaning as the element {@code result} in {@link
- * EnsuresQualifierIf}.
+ * <ul>
+ *   <li>If E is a type-specialized version of {@link EnsuresQualifierIf}, it must have
+ *       <ul>
+ *         <li>an element {@code expression} that is an array of {@code String}s, analogous to
+ *             {@link EnsuresQualifierIf#expression()}, and
+ *         <li>an element {@code result} with the same meaning as {@link
+ *             EnsuresQualifierIf#result()}.
+ *       </ul>
+ *   <li>If E is a type-specialized version of {@link EnsuresQualifierIf.List}, it must have an
+ *       element {@code value} that is an array of conditional postcondition annotations, analogous
+ *       to {@link EnsuresQualifierIf.List#value()}.
+ * </ul>
  *
  * <p>The established postcondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation E has elements annotated by {@link QualifierArgument}, their values
@@ -52,8 +61,9 @@ import java.lang.annotation.Target;
  * @see EnsuresQualifier
  * @see QualifierArgument
  */
-@Target({ElementType.ANNOTATION_TYPE})
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.ANNOTATION_TYPE})
 public @interface ConditionalPostconditionAnnotation {
     /**
      * The qualifier that will be established as a postcondition.

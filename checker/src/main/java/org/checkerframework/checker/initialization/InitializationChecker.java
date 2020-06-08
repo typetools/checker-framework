@@ -19,13 +19,14 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Create a new InitializationChecker. */
-    public InitializationChecker() {}
+    protected InitializationChecker() {}
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
-        // This key suppresses *all* warnings, not just those related to initialization.
-        result.add("initialization");
+        // The key "initialization" is not useful here: it suppresses *all* warnings, not just those
+        // related to initialization.  Instead, if the user writes
+        // @SuppressWarnings("initialization"), let that match keys containing that string.
         result.add("fbc");
         return result;
     }
@@ -34,7 +35,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public static List<VariableTree> getAllFields(ClassTree clazz) {
         List<VariableTree> fields = new ArrayList<>();
         for (Tree t : clazz.getMembers()) {
-            if (t.getKind().equals(Tree.Kind.VARIABLE)) {
+            if (t.getKind() == Tree.Kind.VARIABLE) {
                 VariableTree vt = (VariableTree) t;
                 fields.add(vt);
             }

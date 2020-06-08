@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -25,7 +26,9 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *      )
  *      public boolean tryShiftIndex(&#64;NonNegative int x) {
  *          int newEnd = end - x;
- *          if (newEnd &#60; 0) return false;
+ *          if (newEnd &#60; 0) {
+ *             return false;
+ *          }
  *          end = newEnd;
  *          return true;
  *      }
@@ -53,6 +56,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
 @InheritedAnnotation
+@Repeatable(EnsuresLTLengthOfIf.List.class)
 public @interface EnsuresLTLengthOfIf {
     /**
      * Java expression(s) that are less than the length of the given sequences after the method
@@ -77,8 +81,30 @@ public @interface EnsuresLTLengthOfIf {
      * This expression plus each of the expressions is less than the length of the sequence after
      * the method returns the given result. The {@code offset} element must ether be empty or the
      * same length as {@code targetValue}.
+     *
+     * @return the offset expressions
      */
     @JavaExpression
     @QualifierArgument("offset")
     String[] offset() default {};
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresLTLengthOfIf} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresLTLengthOfIf} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @ConditionalPostconditionAnnotation(qualifier = LTLengthOf.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
+        EnsuresLTLengthOfIf[] value();
+    }
 }

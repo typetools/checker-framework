@@ -5,7 +5,6 @@ import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -14,6 +13,7 @@ import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -105,7 +105,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     private static void mergeTreeLookup(
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<Tree, Set<Node>> otherTreeLookup) {
-        for (Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
+        for (Map.Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
             Set<Node> hit = treeLookup.get(entry.getKey());
             if (hit == null) {
                 treeLookup.put(entry.getKey(), entry.getValue());
@@ -115,22 +115,32 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    /** @return the value of effectively final local variables */
+    /**
+     * Returns the value of effectively final local variables.
+     *
+     * @return the value of effectively final local variables
+     */
     public HashMap<Element, A> getFinalLocalValues() {
         return finalLocalValues;
     }
 
     /**
+     * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     * available.
+     *
      * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable A getValue(Node n) {
         return nodeValues.get(n);
     }
 
     /**
+     * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     * available.
+     *
      * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available.
+     *     available
      */
     public @Nullable A getValue(Tree t) {
         Set<Node> nodes = treeLookup.get(t);
@@ -173,14 +183,25 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return treeLookup.get(tree);
     }
 
-    /** @return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}. */
+    /**
+     * Return the corresponding {@link AssignmentNode} for a given {@link UnaryTree}.
+     *
+     * @param tree a unary tree
+     * @return the corresponding assignment node
+     */
     public AssignmentNode getAssignForUnaryTree(UnaryTree tree) {
-        assert unaryAssignNodeLookup.containsKey(tree) : tree + " is not in unaryAssignNodeLookup";
+        if (!unaryAssignNodeLookup.containsKey(tree)) {
+            throw new Error(tree + " is not in unaryAssignNodeLookup");
+        }
         return unaryAssignNodeLookup.get(tree);
     }
 
-    /** @return the store immediately before a given {@link Tree}. */
-    public S getStoreBefore(Tree tree) {
+    /**
+     * Returns the store immediately before a given {@link Tree}.
+     *
+     * @return the store immediately before a given {@link Tree}
+     */
+    public @Nullable S getStoreBefore(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
             return null;
@@ -197,13 +218,21 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return merged;
     }
 
-    /** @return the store immediately before a given {@link Node}. */
-    public S getStoreBefore(Node node) {
+    /**
+     * Returns the store immediately before a given {@link Node}.
+     *
+     * @return the store immediately before a given {@link Node}
+     */
+    public @Nullable S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
-    /** @return the store immediately after a given {@link Tree}. */
-    public S getStoreAfter(Tree tree) {
+    /**
+     * Returns the store immediately after a given {@link Tree}.
+     *
+     * @return the store immediately after a given {@link Tree}
+     */
+    public @Nullable S getStoreAfter(Tree tree) {
         Set<Node> nodes = getNodesForTree(tree);
         if (nodes == null) {
             return null;
@@ -220,8 +249,12 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return merged;
     }
 
-    /** @return the store immediately after a given {@link Node}. */
-    public S getStoreAfter(Node node) {
+    /**
+     * Returns the store immediately after a given {@link Node}.
+     *
+     * @return the store immediately after a given {@link Node}
+     */
+    public @Nullable S getStoreAfter(Node node) {
         return runAnalysisFor(node, false);
     }
 
@@ -233,8 +266,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * <p>If the given {@link Node} cannot be reached (in the control flow graph), then {@code null}
      * is returned.
      */
-    protected S runAnalysisFor(Node node, boolean before) {
+    protected @Nullable S runAnalysisFor(Node node, boolean before) {
         Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         TransferInput<A, S> transferInput = stores.get(block);
         if (transferInput == null) {
             return null;
@@ -260,6 +294,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             Map<TransferInput<A, S>, IdentityHashMap<Node, TransferResult<A, S>>> analysisCaches) {
         assert node != null;
         Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         assert transferInput != null;
         Analysis<A, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
@@ -277,6 +312,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
 
         if (analysis.isRunning) {
+            assert analysis.currentInput != null : "@AssumeAssertion(nullness): invariant";
             return analysis.currentInput.getRegularStore();
         }
         analysis.setNodeValues(nodeValues);
@@ -312,8 +348,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
                         }
                         // This point should never be reached. If the block of 'node' is
                         // 'block', then 'node' must be part of the contents of 'block'.
-                        assert false;
-                        return null;
+                        throw new BugInCF("Unexpected code");
                     }
 
                 case EXCEPTION_BLOCK:
@@ -333,11 +368,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
                 default:
                     // Only regular blocks and exceptional blocks can hold nodes.
-                    assert false;
-                    break;
+                    throw new BugInCF("Unexpected code");
             }
-
-            return null;
         } finally {
             analysis.currentNode = oldCurrentNode;
             analysis.isRunning = false;

@@ -19,7 +19,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ClassNameNode extends Node {
 
-    protected final Tree tree;
+    /** The tree for this node. */
+    protected final @Nullable Tree tree;
+
     /** The class named by this node. */
     protected final Element element;
 
@@ -30,16 +32,18 @@ public class ClassNameNode extends Node {
         super(TreeUtils.typeOf(tree));
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
+        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = null;
     }
 
+    /**
+     * Create a new ClassNameNode.
+     *
+     * @param tree the class tree for this node
+     */
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
-        assert tree.getKind() == Tree.Kind.CLASS
-                || tree.getKind() == Tree.Kind.ENUM
-                || tree.getKind() == Tree.Kind.INTERFACE
-                || tree.getKind() == Tree.Kind.ANNOTATION_TYPE;
         this.tree = tree;
         this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;
@@ -48,6 +52,7 @@ public class ClassNameNode extends Node {
     public ClassNameNode(MemberSelectTree tree, Node parent) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
+        assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;
     }
@@ -63,12 +68,13 @@ public class ClassNameNode extends Node {
         return element;
     }
 
-    public Node getParent() {
+    /** The parent node of the current node. */
+    public @Nullable Node getParent() {
         return parent;
     }
 
     @Override
-    public Tree getTree() {
+    public @Nullable Tree getTree() {
         return tree;
     }
 
@@ -83,16 +89,13 @@ public class ClassNameNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ClassNameNode)) {
             return false;
         }
         ClassNameNode other = (ClassNameNode) obj;
-        if (getParent() == null) {
-            return other.getParent() == null && getElement().equals(other.getElement());
-        } else {
-            return getParent().equals(other.getParent()) && getElement().equals(other.getElement());
-        }
+        return Objects.equals(getParent(), other.getParent())
+                && getElement().equals(other.getElement());
     }
 
     @Override

@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -46,7 +45,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -59,7 +57,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -88,9 +85,9 @@ public class TypeArgInferenceUtil {
 
         } else {
             throw new BugInCF(
-                    "TypeArgumentInference.relationsFromMethodArguments:\n"
-                            + "couldn't determine arguments from tree: "
-                            + methodInvocation);
+                    "TypeArgumentInference.relationsFromMethodArguments:%n"
+                            + "couldn't determine arguments from tree: %s",
+                    methodInvocation);
         }
 
         final List<AnnotatedTypeMirror> argTypes = new ArrayList<>(argTrees.size());
@@ -183,6 +180,10 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof NewClassTree) {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
+            if (newClassTree.getEnclosingExpression() instanceof NewClassTree
+                    && (newClassTree.getEnclosingExpression() == path.getLeaf())) {
+                return null;
+            }
             ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
             AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             res =
@@ -199,9 +200,9 @@ public class TypeArgInferenceUtil {
             if (enclosing.getKind() == Kind.METHOD) {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
-                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> fninf =
-                        atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing);
-                res = fninf.second.getReturnType();
+                AnnotatedExecutableType fninf =
+                        atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+                res = fninf.getReturnType();
             }
 
         } else if (assignmentContext instanceof VariableTree) {
@@ -334,7 +335,11 @@ public class TypeArgInferenceUtil {
         }
     }
 
-    /** @return true if the type contains a use of a type variable from methodType */
+    /**
+     * Returns true if the type contains a use of a type variable from methodType.
+     *
+     * @return true if the type contains a use of a type variable from methodType
+     */
     private static boolean containsUninferredTypeParameter(
             AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
@@ -365,8 +370,8 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr;
-     * annotations in hierarchy}).
+     * Take a set of annotations and separate them into a mapping of {@code hierarchy top =>
+     * annotations in hierarchy}.
      */
     public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
             final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
@@ -470,9 +475,9 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Create a copy of toModify. In the copy, for each pair {@code typeVariable &rArr; annotated
-     * type} replace uses of typeVariable with the corresponding annotated type using normal
-     * substitution rules (@see TypeVariableSubstitutor). Return the copy.
+     * Create a copy of toModify. In the copy, for each pair {@code typeVariable => annotated type}
+     * replace uses of typeVariable with the corresponding annotated type using normal substitution
+     * rules (@see TypeVariableSubstitutor). Return the copy.
      */
     public static AnnotatedTypeMirror substitute(
             Map<TypeVariable, AnnotatedTypeMirror> substitutions,
@@ -539,7 +544,8 @@ public class TypeArgInferenceUtil {
         Types types = env.getTypeUtils();
         Map<TypeVariable, TypeMirror> fromReturn =
                 getMappingFromReturnType(invocation, methodType, env);
-        for (Entry<TypeVariable, AnnotatedTypeMirror> entry : new ArrayList<>(result.entrySet())) {
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
+                new ArrayList<>(result.entrySet())) {
             TypeVariable typeVariable = entry.getKey();
             if (!fromReturn.containsKey(typeVariable)) {
                 continue;
@@ -564,7 +570,11 @@ public class TypeArgInferenceUtil {
         return result;
     }
 
-    /** @return true if actual and inferred are captures of the same wildcard or declared type. */
+    /**
+     * Returns true if actual and inferred are captures of the same wildcard or declared type.
+     *
+     * @return true if actual and inferred are captures of the same wildcard or declared type
+     */
     private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred, Types types) {
         if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
             return true;

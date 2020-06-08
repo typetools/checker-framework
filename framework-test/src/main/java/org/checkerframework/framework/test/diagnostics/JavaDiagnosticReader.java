@@ -35,9 +35,13 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
         for (Object file : files) {
             if (file instanceof JavaFileObject) {
-                readers.add(new JavaDiagnosticReader((JavaFileObject) file, JAVA_COMMENT_CODEC));
+                readers.add(
+                        new JavaDiagnosticReader(
+                                (JavaFileObject) file, TestDiagnosticUtils::fromJavaSourceLine));
             } else if (file instanceof File) {
-                readers.add(new JavaDiagnosticReader((File) file, JAVA_COMMENT_CODEC));
+                readers.add(
+                        new JavaDiagnosticReader(
+                                (File) file, TestDiagnosticUtils::fromJavaSourceLine));
             } else {
                 throw new IllegalArgumentException(
                         String.format(
@@ -57,7 +61,11 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
         for (File file : files) {
-            readers.add(new JavaDiagnosticReader(file, DIAGNOSTIC_FILE_CODEC));
+            readers.add(
+                    new JavaDiagnosticReader(
+                            file,
+                            (filename, line, lineNumber) ->
+                                    TestDiagnosticUtils.fromDiagnosticFileLine(line)));
         }
         return readDiagnostics(readers);
     }
@@ -69,8 +77,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * Returns all the diagnostics in any of the files.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param readers the files (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnostic> readDiagnostics(Iterable<JavaDiagnosticReader> readers) {
@@ -80,8 +87,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * Reads the entire input file using the given codec and returns the resulting line.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param readers the files (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnosticLine> readDiagnosticLines(
@@ -97,8 +103,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * Reads the entire input file using the given codec and returns the resulting lines, filtering
      * out empty ones produced by JavaDiagnosticReader.
      *
-     * @param file the file (Java or Diagnostics format) to read
-     * @param codec a codec corresponding to the file type being read
+     * @param reader the file (Java or Diagnostics format) to read
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnosticLine> readDiagnosticLines(JavaDiagnosticReader reader) {
@@ -129,28 +134,17 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * possible formats: one for Java source code, and one for Diagnostic files.
      */
     private interface DiagnosticCodec {
-        public TestDiagnosticLine convertLine(String filename, long lineNumber, String line);
+
+        /**
+         * Converts the specified line of the file into a {@link TestDiagnosticLine}.
+         *
+         * @param filename name of the file
+         * @param line the text of the line to convert to a TestDiagnosticLine
+         * @param lineNumber the line number of the line
+         * @return TestDiagnosticLine corresponding to {@code line}
+         */
+        TestDiagnosticLine convertLine(String filename, String line, long lineNumber);
     }
-
-    /** Parses a string that was written as a comment in a Java file. */
-    private static final DiagnosticCodec JAVA_COMMENT_CODEC =
-            new DiagnosticCodec() {
-                @Override
-                public TestDiagnosticLine convertLine(
-                        String filename, long lineNumber, String line) {
-                    return TestDiagnosticUtils.fromJavaSourceLine(filename, line, lineNumber);
-                }
-            };
-
-    /** Parses a string that was written as a line in a Diagnostic File. */
-    private static final DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
-            new DiagnosticCodec() {
-                @Override
-                public TestDiagnosticLine convertLine(
-                        String filename, long lineNumber, String line) {
-                    return TestDiagnosticUtils.fromDiagnosticFileLine(line);
-                }
-            };
 
     ///
     /// End of static methods, start of per-instance state
@@ -251,7 +245,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 close();
             }
 
-            return codec.convertLine(filename, currentLineNumber, current);
+            return codec.convertLine(filename, current, currentLineNumber);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

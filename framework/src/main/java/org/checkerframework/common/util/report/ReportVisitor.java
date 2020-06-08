@@ -13,11 +13,9 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import java.lang.annotation.Annotation;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -35,7 +33,6 @@ import org.checkerframework.common.util.report.qual.ReportOverride;
 import org.checkerframework.common.util.report.qual.ReportReadWrite;
 import org.checkerframework.common.util.report.qual.ReportUse;
 import org.checkerframework.common.util.report.qual.ReportWrite;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -74,29 +71,11 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
     }
 
-    @Override
-    protected BaseAnnotatedTypeFactory createTypeFactory() {
-        return new ReportAnnotatedTypeFactory(checker);
-    }
-
-    private static class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-
-        public ReportAnnotatedTypeFactory(BaseTypeChecker checker) {
-            super(checker);
-            postInit();
-        }
-
-        @Override
-        protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-            return getBundledTypeQualifiersWithoutPolyAll();
-        }
-    }
-
     @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void scan(Tree tree, Void p) {
         if ((tree != null) && (treeKinds != null) && treeKinds.contains(tree.getKind())) {
-            checker.report(Result.failure("Tree.Kind." + tree.getKind()), tree);
+            checker.reportError(tree, "Tree.Kind." + tree.getKind());
         }
         return super.scan(tree, p);
     }
@@ -113,15 +92,14 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         while (loop != null) {
             boolean report = this.atypeFactory.getDeclAnnotation(loop, ReportUse.class) != null;
             if (report) {
-                checker.report(
-                        Result.failure(
-                                "usage",
-                                node,
-                                ElementUtils.getVerboseName(loop),
-                                loop.getKind(),
-                                ElementUtils.getVerboseName(member),
-                                member.getKind()),
-                        node);
+                checker.reportError(
+                        node,
+                        "usage",
+                        node,
+                        ElementUtils.getVerboseName(loop),
+                        loop.getKind(),
+                        ElementUtils.getVerboseName(member),
+                        member.getKind());
                 break;
             } else {
                 if (loop.getKind() == ElementKind.PACKAGE) {
@@ -154,8 +132,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
-                checker.report(
-                        Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
+                checker.reportError(node, "inherit", node, ElementUtils.getVerboseName(sup));
             }
         }
         super.processClassTree(node);
@@ -182,8 +159,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(
-                    Result.failure("override", node, ElementUtils.getVerboseName(method)), node);
+            checker.reportError(node, "override", node, ElementUtils.getVerboseName(method));
         }
         return super.visitMethod(node, p);
     }
@@ -213,8 +189,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(
-                    Result.failure("methodcall", node, ElementUtils.getVerboseName(method)), node);
+            checker.reportError(node, "methodcall", node, ElementUtils.getVerboseName(method));
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -226,9 +201,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.report(
-                    Result.failure("fieldreadwrite", node, ElementUtils.getVerboseName(member)),
-                    node);
+            checker.reportError(node, "fieldreadwrite", node, ElementUtils.getVerboseName(member));
         }
         return super.visitMemberSelect(node, p);
     }
@@ -239,9 +212,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.report(
-                    Result.failure("fieldreadwrite", node, ElementUtils.getVerboseName(member)),
-                    node);
+            checker.reportError(node, "fieldreadwrite", node, ElementUtils.getVerboseName(member));
         }
         return super.visitIdentifier(node, p);
     }
@@ -252,8 +223,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
         if (report) {
-            checker.report(
-                    Result.failure("fieldwrite", node, ElementUtils.getVerboseName(member)), node);
+            checker.reportError(node, "fieldwrite", node, ElementUtils.getVerboseName(member));
         }
         return super.visitAssignment(node, p);
     }
@@ -287,8 +257,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(
-                    Result.failure("creation", node, ElementUtils.getVerboseName(member)), node);
+            checker.reportError(node, "creation", node, ElementUtils.getVerboseName(member));
         }
         return super.visitNewClass(node, p);
     }
@@ -317,7 +286,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         if (node != null && modifiers != null) {
             for (Modifier mod : node.getFlags()) {
                 if (modifiers.contains(mod)) {
-                    checker.report(Result.failure("Modifier." + mod), node);
+                    checker.reportError(node, "Modifier." + mod);
                 }
             }
         }

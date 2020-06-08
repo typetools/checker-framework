@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.element.ClassTypeParamApplier;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.framework.util.element.MethodApplier;
 import org.checkerframework.framework.util.element.MethodTypeParamApplier;
 import org.checkerframework.framework.util.element.ParamApplier;
@@ -23,6 +24,7 @@ import org.checkerframework.framework.util.element.TypeDeclarationApplier;
 import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -72,16 +74,41 @@ public class ElementAnnotationApplier {
             final AnnotatedTypeMirror type,
             final Element element,
             final AnnotatedTypeFactory typeFactory) {
-        applyInternal(type, element, typeFactory);
+        try {
+            applyInternal(type, element, typeFactory);
+        } catch (UnexpectedAnnotationLocationException e) {
+            reportInvalidLocation(element, typeFactory);
+        }
         // Also copy annotations from type parameters to their uses.
         new TypeVarAnnotator().visit(type, typeFactory);
+    }
+
+    /** Issues an "invalid.annotation.location.bytecode warning. */
+    private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
+        Element report = element;
+        if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
+            report = element.getEnclosingElement();
+        }
+        // There's a bug in Java 8 compiler that creates bad bytecode such that an
+        // annotation on a lambda parameter is applied to a method parameter. (This bug has
+        // been fixed in Java 9.) If this happens, then the location could refer to a
+        // location, such as a type argument, that doesn't exist. Since Java 8 bytecode
+        // might be on the classpath, catch this exception and ignore the type.
+        // TODO: Issue an error if this annotation is from Java 9+ bytecode.
+        if (!typeFactory.checker.hasOption("ignoreInvalidAnnotationLocations")) {
+            typeFactory.checker.reportWarning(
+                    element,
+                    "invalid.annotation.location.bytecode",
+                    ElementUtils.getVerboseName(report));
+        }
     }
 
     /** Same as apply except that annotations aren't copied from type parameter declarations. */
     private static void applyInternal(
             final AnnotatedTypeMirror type,
             final Element element,
-            final AnnotatedTypeFactory typeFactory) {
+            final AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
 
         if (element == null) {
             throw new BugInCF("ElementAnnotationUtil.apply: element cannot be null");
@@ -138,7 +165,11 @@ public class ElementAnnotationApplier {
      */
     public static void annotateSupers(
             List<AnnotatedDeclaredType> supertypes, TypeElement subtypeElement) {
-        SuperTypeApplier.annotateSupers(supertypes, subtypeElement);
+        try {
+            SuperTypeApplier.annotateSupers(supertypes, subtypeElement);
+        } catch (UnexpectedAnnotationLocationException e) {
+            reportInvalidLocation(subtypeElement, supertypes.get(0).atypeFactory);
+        }
     }
 
     /**
@@ -188,7 +219,13 @@ public class ElementAnnotationApplier {
             if (type.getAnnotations().isEmpty()
                     && type.getUpperBound().getAnnotations().isEmpty()
                     && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+                try {
+                    ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+                } catch (UnexpectedAnnotationLocationException e) {
+                    // The above is the second call to applyInternal on this type and element, so
+                    // any errors were already reported by the first call. (See the only use of this
+                    // class.)
+                }
             }
             return super.visitTypeVariable(type, factory);
         }

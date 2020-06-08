@@ -16,14 +16,17 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
+    /** Apply annotations from {@code element} to {@code type}. */
     public static void apply(
-            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+            AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new ParamApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -69,8 +72,11 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
+     * Returns the index of element its parent method's parameter list. Integer.MIN_VALUE if the
+     * element is the receiver parameter.
+     *
      * @return the index of element its parent method's parameter list. Integer.MIN_VALUE if the
-     *     element is the receiver parameter.
+     *     element is the receiver parameter
      */
     @Override
     public int getElementIndex() {
@@ -96,19 +102,31 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         return paramIndex;
     }
 
-    /** @return the parameter index of anno's TypeAnnotationPosition */
+    /**
+     * Returns the parameter index of anno's TypeAnnotationPosition.
+     *
+     * @return the parameter index of anno's TypeAnnotationPosition
+     */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         return anno.getPosition().parameter_index;
     }
 
-    /** @return {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER} */
+    /**
+     * Returns {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER}.
+     *
+     * @return {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER}
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER};
     }
 
-    /** @return any annotation TargetType that can be found on a method */
+    /**
+     * Returns any annotation TargetType that can be found on a method.
+     *
+     * @return any annotation TargetType that can be found on a method
+     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -137,7 +155,11 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         };
     }
 
-    /** @return the TypeCompounds (annotations) of the enclosing method for this parameter */
+    /**
+     * Returns the TypeCompounds (annotations) of the enclosing method for this parameter.
+     *
+     * @return the TypeCompounds (annotations) of the enclosing method for this parameter
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return enclosingMethod.getRawTypeAttributes();
@@ -183,7 +205,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      *     == getIndex
      */
     @Override
-    protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
+    protected void handleTargeted(final List<TypeCompound> targeted)
+            throws UnexpectedAnnotationLocationException {
 
         final List<TypeCompound> formalParams = new ArrayList<>();
         Map<TargetType, List<TypeCompound>> targetToAnnos =
@@ -199,7 +222,12 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         }
     }
 
-    /** @return true if element represents the receiver parameter of a method */
+    /**
+     * Returns true if element represents the receiver parameter of a method.
+     *
+     * @param element an element
+     * @return true if element represents the receiver parameter of a method
+     */
     private boolean isReceiver(final Element element) {
         return element.getKind() == ElementKind.PARAMETER
                 && element.getSimpleName().contentEquals("this");
@@ -231,8 +259,9 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     @Override
-    public void extractAndApply() {
-        ElementAnnotationUtil.addAnnotationsFromElement(type, element.getAnnotationMirrors());
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
+        ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
+                type, element.getAnnotationMirrors());
         super.extractAndApply();
     }
 }

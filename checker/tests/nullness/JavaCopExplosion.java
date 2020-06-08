@@ -67,7 +67,7 @@ class Explosion {
         Integer z;
         Integer y;
         @NonNull Integer nnz = 3;
-        z = new Integer(5);
+        z = Integer.valueOf(5);
         try {
             x = 3;
             x = 5;

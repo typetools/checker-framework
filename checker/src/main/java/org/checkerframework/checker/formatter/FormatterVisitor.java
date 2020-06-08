@@ -158,7 +158,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             for (int i = 0; i < args.size(); i++) {
                 ExpressionTree arg = args.get(i);
                 if (!(arg instanceof IdentifierTree
-                        && ((IdentifierTree) arg).getName().equals(params.get(i).getName()))) {
+                        && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
                     return false;
                 }
             }
@@ -181,7 +181,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         // than required, but a warning is issued."
         // The format.missing.arguments warning is issued here for assignments.
         // For method calls, it is issued in visitMethodInvocation.
-        if (AnnotationUtils.areSameByName(rhs, atypeFactory.FORMAT)
+        if (rhs != null
+                && lhs != null
+                && AnnotationUtils.areSameByName(rhs, atypeFactory.FORMAT)
                 && AnnotationUtils.areSameByName(lhs, atypeFactory.FORMAT)) {
             ConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
@@ -189,12 +191,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
 
             if (rhsArgTypes.length < lhsArgTypes.length) {
-                checker.report(
-                        org.checkerframework.framework.source.Result.warning(
-                                "format.missing.arguments",
-                                varType.toString(),
-                                valueType.toString()),
-                        valueTree);
+                checker.reportWarning(
+                        valueTree,
+                        "format.missing.arguments",
+                        varType.toString(),
+                        valueType.toString());
             }
         }
     }

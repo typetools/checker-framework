@@ -18,15 +18,15 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** The corresponding node. */
     // TODO: explain when the node is changed.
-    protected Node node;
+    protected @Nullable Node node;
 
     /**
      * The regular result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S store;
 
@@ -34,9 +34,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'then' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S thenStore;
 
@@ -44,9 +44,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The 'else' result store (or {@code null} if none is present). The following invariant is
      * maintained:
      *
-     * <pre>{@code
+     * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * }</pre>
+     * </code></pre>
      */
     protected final @Nullable S elseStore;
 
@@ -57,7 +57,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The stores returned by any methods of {@code to} will be stored
-     * internally and are not allowed to be used elsewhere. Full control of them is transfered to
+     * internally and are not allowed to be used elsewhere. Full control of them is transferred to
      * this object.
      *
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
@@ -80,12 +80,12 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given a store and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The store {@code s} will be stored internally and is not allowed to be
-     * used elsewhere. Full control over {@code s} is transfered to this object.
+     * used elsewhere. Full control over {@code s} is transferred to this object.
      *
      * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
      * from within this {@link TransferInput}.
      */
-    public TransferInput(Node n, Analysis<A, S, ?> analysis, S s) {
+    public TransferInput(@Nullable Node n, Analysis<A, S, ?> analysis, S s) {
         node = n;
         this.analysis = analysis;
         store = s;
@@ -96,9 +96,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * Create a {@link TransferInput}, given two stores and a node-value mapping.
      *
      * <p><em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be stored internally and
-     * are not allowed to be used elsewhere. Full control of them is transfered to this object.
+     * are not allowed to be used elsewhere. Full control of them is transferred to this object.
      */
-    public TransferInput(Node n, Analysis<A, S, ?> analysis, S s1, S s2) {
+    public TransferInput(@Nullable Node n, Analysis<A, S, ?> analysis, S s1, S s2) {
         node = n;
         this.analysis = analysis;
         thenStore = s1;
@@ -111,6 +111,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         this.node = from.node;
         this.analysis = from.analysis;
         if (from.store == null) {
+            assert from.thenStore != null && from.elseStore != null
+                    : "@AssumeAssertion(nullness): invariant";
             thenStore = from.thenStore.copy();
             elseStore = from.elseStore.copy();
             store = null;
@@ -120,27 +122,38 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    /** @return the {@link Node} for this {@link TransferInput}. */
-    public Node getNode() {
+    /**
+     * Returns the {@link Node} for this {@link TransferInput}.
+     *
+     * @return the {@link Node} for this {@link TransferInput}
+     */
+    public @Nullable Node getNode() {
         return node;
     }
 
     /**
-     * @return the abstract value of {@link Node} {@code n}, which is required to be a 'sub-node'
-     *     (that is, a direct or indirect child) of the node this transfer input is associated with.
-     *     Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value if
-     *     available.
+     * Returns the abstract value of {@link Node} {@code n}, which is required to be a 'sub-node'
+     * (that is, a direct or indirect child) of the node this transfer input is associated with.
+     * Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value is
+     * available.
+     *
+     * @return the abstract value of {@link Node} {@code n}, or {@code null} if no value is
+     *     available
      */
     public @Nullable A getValueOfSubNode(Node n) {
         return analysis.getValue(n);
     }
 
     /**
+     * Returns the regular result store produced if no exception is thrown by the {@link Node}
+     * corresponding to this transfer function result.
+     *
      * @return the regular result store produced if no exception is thrown by the {@link Node}
      *     corresponding to this transfer function result
      */
     public S getRegularStore() {
         if (store == null) {
+            assert thenStore != null && elseStore != null : "@AssumeAssertion(nullness): invariant";
             return thenStore.leastUpperBound(elseStore);
         } else {
             return store;
@@ -148,22 +161,30 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
+     * Returns the result store produced if the {@link Node} this result belongs to evaluates to
+     * {@code true}.
+     *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code true}.
+     *     {@code true}
      */
     public S getThenStore() {
         if (store == null) {
+            assert thenStore != null : "@AssumeAssertion(nullness): invariant";
             return thenStore;
         }
         return store;
     }
 
     /**
+     * Returns the result store produced if the {@link Node} this result belongs to evaluates to
+     * {@code false}.
+     *
      * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code false}.
+     *     {@code false}
      */
     public S getElseStore() {
         if (store == null) {
+            assert elseStore != null : "@AssumeAssertion(nullness): invariant";
             return elseStore;
         }
         // copy the store such that it is the same as the result of getThenStore
@@ -172,19 +193,25 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
+     * Returns {@code true} if and only if this transfer input contains two stores that are
+     * potentially not equal. Note that the result {@code true} does not imply that {@code
+     * getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
+     * that {@code getThenStore} or {@code getElseStore} can be used to give more precise results.
+     * Otherwise, if the result is {@code false}, then all three methods {@code getRegularStore},
+     * {@code getThenStore}, and {@code getElseStore} return equivalent stores.
+     *
      * @return {@code true} if and only if this transfer input contains two stores that are
-     *     potentially not equal. Note that the result {@code true} does not imply that {@code
-     *     getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
-     *     that {@code getThenStore} or {@code getElseStore} can be used to give more precise
-     *     results. Otherwise, if the result is {@code false}, then all three methods {@code
-     *     getRegularStore}, {@code getThenStore}, and {@code getElseStore} return equivalent
-     *     stores.
+     *     potentially not equal
      */
     public boolean containsTwoStores() {
         return (thenStore != null && elseStore != null);
     }
 
-    /** @return an exact copy of this store. */
+    /**
+     * Returns an exact copy of this store.
+     *
+     * @return an exact copy of this store
+     */
     public TransferInput<A, S> copy() {
         return new TransferInput<>(this);
     }
@@ -197,8 +224,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public TransferInput<A, S> leastUpperBound(TransferInput<A, S> other) {
         if (store == null) {
-            S newThenStore = thenStore.leastUpperBound(other.getThenStore());
-            S newElseStore = elseStore.leastUpperBound(other.getElseStore());
+            S newThenStore = getThenStore().leastUpperBound(other.getThenStore());
+            S newElseStore = getElseStore().leastUpperBound(other.getElseStore());
             return new TransferInput<>(node, analysis, newThenStore, newElseStore);
         } else {
             if (other.store == null) {
@@ -212,7 +239,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o instanceof TransferInput) {
             @SuppressWarnings("unchecked")
             TransferInput<A, S> other = (TransferInput<A, S>) o;

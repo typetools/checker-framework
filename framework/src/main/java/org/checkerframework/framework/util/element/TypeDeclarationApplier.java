@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
@@ -8,6 +9,7 @@ import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Apply annotations to a declared type based on its declaration. */
@@ -16,7 +18,8 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     public static void apply(
             final AnnotatedTypeMirror type,
             final Element element,
-            final AnnotatedTypeFactory typeFactory) {
+            final AnnotatedTypeFactory typeFactory)
+            throws UnexpectedAnnotationLocationException {
         new TypeDeclarationApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -26,7 +29,13 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     public static final int SUPERCLASS_INDEX = -1;
 
-    /** @return true if type is an annotated declared type and element is a ClassSymbol */
+    /**
+     * Returns true if type is an annotated declared type and element is a ClassSymbol.
+     *
+     * @param type a type
+     * @param element an element
+     * @return true if type is an annotated declared type and element is a ClassSymbol
+     */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return type instanceof AnnotatedDeclaredType && element instanceof Symbol.ClassSymbol;
     }
@@ -83,7 +92,8 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      * @param extendsAndImplementsAnnos annotations with a TargetType of CLASS_EXTENDS
      */
     @Override
-    protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos) {
+    protected void handleTargeted(List<TypeCompound> extendsAndImplementsAnnos)
+            throws UnexpectedAnnotationLocationException {
         if (TypesUtils.isAnonymous(typeSymbol.type)) {
             // If this is an anonymous class, then the annotations after "new" but before the
             // class name are stored as super class annotations. Treat them as annotations on the
@@ -99,12 +109,12 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
     /** Adds extends/implements and class annotations to type. Annotates type parameters. */
     @Override
-    public void extractAndApply() {
+    public void extractAndApply() throws UnexpectedAnnotationLocationException {
         // ensures that we check that there only valid target types on this class, there are no
         // "targeted" locations
         super.extractAndApply();
 
-        // Annotate raw types //TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?
+        // Annotate raw types // TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?
         type.addAnnotations(typeSymbol.getAnnotationMirrors());
 
         ElementAnnotationUtil.applyAllElementAnnotations(

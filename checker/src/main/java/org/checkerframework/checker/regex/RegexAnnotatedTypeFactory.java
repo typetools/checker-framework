@@ -132,7 +132,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(
+        return getBundledTypeQualifiers(
                 Regex.class, PartialRegex.class,
                 RegexBottom.class, UnknownRegex.class);
     }

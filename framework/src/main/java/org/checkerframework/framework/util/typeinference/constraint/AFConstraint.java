@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
@@ -13,7 +14,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * TUConstraints during type argument inference.
  *
  * <p>Subclasses of AFConstraint represent the following types of constraints found in
- * (https://docs.oracle.com/javase/specs/jls/se10/html/jls-15.html#jls-15.12.2.7)
+ * (https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.7)
  *
  * <p>A 《 F and F 》 A both imply that A is convertible to F. F 《 A and A 》 F both imply that F is
  * convertible to A (this may happen due to wildcard/typevar bounds and recursive types) A = F
@@ -36,7 +37,7 @@ public abstract class AFConstraint {
     public final AnnotatedTypeMirror formalParameter;
 
     /** Create a constraint for type arguments for a methodd invocation or new class invocation. */
-    public AFConstraint(
+    protected AFConstraint(
             final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter) {
         this.argument = argument;
         this.formalParameter = formalParameter;
@@ -44,10 +45,13 @@ public abstract class AFConstraint {
     }
 
     /**
+     * Returns true if this constraint can't be broken up into other constraints or further
+     * simplified. In general, if either argument or formal parameter is a use of the type
+     * parameters we are inferring over then the constraint cannot be reduced further.
+     *
      * @param targets the type parameters whose arguments we are trying to solve for
      * @return true if this constraint can't be broken up into other constraints or further
-     *     simplified In general, if either argument or formal parameter is a use of the type
-     *     parameters we are inferring over then the constraint cannot be reduced further
+     *     simplified
      */
     public boolean isIrreducible(final Set<TypeVariable> targets) {
         return TypeArgInferenceUtil.isATarget(argument, targets)
@@ -55,7 +59,7 @@ public abstract class AFConstraint {
     }
 
     @Override
-    public boolean equals(Object thatObject) {
+    public boolean equals(@Nullable Object thatObject) {
         if (this == thatObject) {
             return true;
         } // else
@@ -89,11 +93,11 @@ public abstract class AFConstraint {
      * that have been solved with their arguments.
      *
      * <p>That is: Let S be a partial solution to our inference (i.e. we have inferred type
-     * arguments for some types) Let S be a map {@code (T0 &rArr; A0, T1 &rArr; A1, ..., TN &rArr;
-     * AN)} where Ti is a type parameter and Ai is its solved argument. For all uses of Ti in this
-     * constraint, replace them with Ai.
+     * arguments for some types) Let S be a map {@code (T0 => A0, T1 => A1, ..., TN => AN)} where Ti
+     * is a type parameter and Ai is its solved argument. For all uses of Ti in this constraint,
+     * replace them with Ai.
      *
-     * <p>For the mapping {@code (T0 &rArr; A0)}, the following constraint: {@code ArrayList<T0> <<
+     * <p>For the mapping {@code (T0 => A0)}, the following constraint: {@code ArrayList<T0> <<
      * List<T1>}
      *
      * <p>Becomes: {@code ArrayList<A0> << List<T1>}

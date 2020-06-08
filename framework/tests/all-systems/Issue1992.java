@@ -4,7 +4,7 @@
 import java.util.List;
 import java.util.function.Function;
 
-@SuppressWarnings("") // Check for crashes only
+@SuppressWarnings("all") // Check for crashes only
 class Issue1992 {
 
     interface A {}

@@ -1,12 +1,10 @@
 buildscript {
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        mavenCentral()
     }
     dependencies {
         // Create OSGI bundles
-        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0"
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.0"
     }
 }
 
@@ -51,4 +49,19 @@ compileJava {
 
 clean {
     delete file('src/')
+}
+
+task deployArtifactsToLocalRepo(dependsOn: jar) {
+    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
+    doLast {
+        mvnDeployToLocalRepo(project, "${pomFiles}/checker-qual-pom.xml")
+    }
+}
+
+task deployArtifactsToSonatype {
+    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
+    dependsOn ('jar', 'sourcesJar', 'javadocJar')
+    doLast {
+        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/checker-qual-pom.xml")
+    }
 }

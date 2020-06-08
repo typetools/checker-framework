@@ -21,6 +21,7 @@ public class ArrayCreationNode extends Node {
 
     /** The tree is null when an array is created for variable arity method calls. */
     protected final @Nullable NewArrayTree tree;
+
     /**
      * The length of this list is the number of dimensions in the array. Each element is the size of
      * the given dimension.
@@ -57,7 +58,7 @@ public class ArrayCreationNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public @Nullable Tree getTree() {
         return tree;
     }
 
@@ -98,7 +99,7 @@ public class ArrayCreationNode extends Node {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ArrayCreationNode)) {
             return false;
         }

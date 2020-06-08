@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -46,7 +46,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Create a UBQualifier from the given annotation, with an extra offset
+     * Create a UBQualifier from the given annotation, with an extra offset.
      *
      * @param am the annotation to turn into a UBQualifier
      * @param offset the extra offset; may be null
@@ -177,7 +177,7 @@ public abstract class UBQualifier {
      * an explanation of how node is added as an offset.
      *
      * @param node a Node
-     * @param factory AnnotatedTypeFactory
+     * @param factory an AnnotatedTypeFactory
      * @return a copy of this qualifier with node added as an offset
      */
     public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
@@ -435,7 +435,7 @@ public abstract class UBQualifier {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (this == o) {
                 return true;
             }
@@ -627,7 +627,7 @@ public abstract class UBQualifier {
                 return;
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
-            for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
                 String sequence = entry.getKey();
                 Set<OffsetEquation> lubOffsets = entry.getValue();
                 Set<OffsetEquation> thisOffsets = this.map.get(sequence);
@@ -712,7 +712,7 @@ public abstract class UBQualifier {
          * this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override
@@ -726,7 +726,7 @@ public abstract class UBQualifier {
          * in a copy of this object.
          *
          * @param node a Node
-         * @param factory AnnotatedTypeFactory
+         * @param factory an AnnotatedTypeFactory
          * @return a copy of this qualifier with node add as an offset
          */
         @Override
@@ -975,7 +975,7 @@ public abstract class UBQualifier {
          */
         private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
             Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
                 Set<OffsetEquation> offsets = new HashSet<>(entry.getValue().size());
                 for (OffsetEquation eq : entry.getValue()) {
                     OffsetEquation newEq = f.compute(eq);

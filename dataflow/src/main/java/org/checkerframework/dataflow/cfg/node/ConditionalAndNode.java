@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a conditional and expression:
@@ -13,9 +14,16 @@ import java.util.Objects;
  */
 public class ConditionalAndNode extends BinaryOperationNode {
 
+    /**
+     * Create a new ConditionalAndNode.
+     *
+     * @param tree the conditional-and tree for this node
+     * @param left the first argument
+     * @param right the second argument
+     */
     public ConditionalAndNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind().equals(Kind.CONDITIONAL_AND);
+        assert tree.getKind() == Kind.CONDITIONAL_AND;
     }
 
     @Override
@@ -29,7 +37,7 @@ public class ConditionalAndNode extends BinaryOperationNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof ConditionalAndNode)) {
             return false;
         }

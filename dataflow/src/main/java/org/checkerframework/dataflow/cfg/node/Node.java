@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * A node in the abstract representation used for Java code inside a basic block.
@@ -54,14 +55,17 @@ public abstract class Node {
      */
     protected final TypeMirror type;
 
-    public Node(TypeMirror type) {
+    protected Node(TypeMirror type) {
         assert type != null;
         this.type = type;
     }
 
     /**
+     * Returns the basic block this node belongs to (or {@code null} if it represents the parameter
+     * of a method).
+     *
      * @return the basic block this node belongs to (or {@code null} if it represents the parameter
-     *     of a method).
+     *     of a method)
      */
     public @Nullable Block getBlock() {
         return block;
@@ -78,6 +82,7 @@ public abstract class Node {
      *
      * @return the corresponding {@link Tree} or {@code null}.
      */
+    @Pure
     public abstract @Nullable Tree getTree();
 
     /**
@@ -100,6 +105,8 @@ public abstract class Node {
      */
     public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
+    /** Is the node an lvalue or not? */
+    @Pure
     public boolean isLValue() {
         return lvalue;
     }
@@ -117,7 +124,8 @@ public abstract class Node {
         inSource = inSrc;
     }
 
-    public AssignmentContext getAssignmentContext() {
+    /** The assignment context for the node. */
+    public @Nullable AssignmentContext getAssignmentContext() {
         return assignmentContext;
     }
 
@@ -125,10 +133,17 @@ public abstract class Node {
         this.assignmentContext = assignmentContext;
     }
 
-    /** @return a collection containing all of the operand {@link Node}s of this {@link Node}. */
+    /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}.
+     *
+     * @return a collection containing all of the operand {@link Node}s of this {@link Node}
+     */
     public abstract Collection<Node> getOperands();
 
     /**
+     * Returns a collection containing all of the operand {@link Node}s of this {@link Node}, as
+     * well as (transitively) the operands of its operands.
+     *
      * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as
      *     well as (transitively) the operands of its operands
      */

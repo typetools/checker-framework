@@ -15,6 +15,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,14 +89,23 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected final Set<Class<? extends Annotation>> initAnnos;
 
     /**
+     * String representation of all initialization annotations.
+     *
+     * <p>{@link UnknownInitialization} {@link UnderInitialization} {@link Initialized} {@link
+     * FBCBottom}
+     *
+     * <p>This is used to quickly check of an AnnotationMirror is one of the initialization
+     * annotations without having to repeatedly convert them to strings.
+     */
+    protected final Set<String> initAnnoNames;
+
+    /**
      * Create a new InitializationAnnotatedTypeFactory.
      *
      * @param checker the checker to which the new type factory belongs
      */
-    public InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
+    protected InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
-
-        Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
         INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
         UNDER_INITALIZATION = AnnotationBuilder.fromClass(elements, UnderInitialization.class);
@@ -103,12 +113,21 @@ public abstract class InitializationAnnotatedTypeFactory<
         FBCBOTTOM = AnnotationBuilder.fromClass(elements, FBCBottom.class);
         UNKNOWN_INITIALIZATION = AnnotationBuilder.fromClass(elements, UnknownInitialization.class);
 
+        Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>(4);
         tempInitAnnos.add(UnderInitialization.class);
         tempInitAnnos.add(Initialized.class);
         tempInitAnnos.add(UnknownInitialization.class);
         tempInitAnnos.add(FBCBottom.class);
 
         initAnnos = Collections.unmodifiableSet(tempInitAnnos);
+
+        Set<String> tempInitAnnoNames = new HashSet<>(4);
+        tempInitAnnoNames.add(AnnotationUtils.annotationName(UNKNOWN_INITIALIZATION));
+        tempInitAnnoNames.add(AnnotationUtils.annotationName(UNDER_INITALIZATION));
+        tempInitAnnoNames.add(AnnotationUtils.annotationName(INITIALIZED));
+        tempInitAnnoNames.add(AnnotationUtils.annotationName(FBCBOTTOM));
+
+        initAnnoNames = Collections.unmodifiableSet(tempInitAnnoNames);
 
         // No call to postInit() because this class is abstract.
         // Its subclasses must call postInit().
@@ -126,10 +145,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        return AnnotationUtils.areSameByName(anno, UNKNOWN_INITIALIZATION)
-                || AnnotationUtils.areSameByName(anno, UNDER_INITALIZATION)
-                || AnnotationUtils.areSameByName(anno, INITIALIZED)
-                || AnnotationUtils.areSameByName(anno, FBCBOTTOM);
+        return initAnnoNames.contains(AnnotationUtils.annotationName(anno));
     }
 
     /*
@@ -137,7 +153,11 @@ public abstract class InitializationAnnotatedTypeFactory<
      * commitment type-system.
      */
 
-    /** @return the list of annotations that is forbidden for the constructor return type */
+    /**
+     * Returns the list of annotations that is forbidden for the constructor return type.
+     *
+     * @return the list of annotations that is forbidden for the constructor return type
+     */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();
     }
@@ -254,7 +274,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnderInitialization}
      */
     public boolean isFree(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnderInitialization.class);
+        return areSameByClass(anno, UnderInitialization.class);
     }
 
     /**
@@ -264,7 +284,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return true if {@code anno} is {@link UnknownInitialization}
      */
     public boolean isUnclassified(AnnotationMirror anno) {
-        return AnnotationUtils.areSameByClass(anno, UnknownInitialization.class);
+        return areSameByClass(anno, UnknownInitialization.class);
     }
 
     /**
@@ -327,15 +347,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         return anno.hasEffectiveAnnotation(Initialized.class);
     }
 
-    @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
     /** Are all fields committed-only? */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
-            if (!member.getKind().equals(Tree.Kind.VARIABLE)) {
+            if (member.getKind() != Tree.Kind.VARIABLE) {
                 continue;
             }
             VariableTree var = (VariableTree) member;
@@ -421,7 +436,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
             while (searchPath.getParentPath() != null
-                    && searchPath.getParentPath() != enclosingClass) {
+                    && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
                     return searchPath.getLeaf();
@@ -731,7 +746,14 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        public InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
+        /**
+         * Create an InitializationQualifierHierarchy.
+         *
+         * @param f a factory to create to create a {@link
+         *     org.checkerframework.framework.util.GraphQualifierHierarchy}
+         * @param arg seems to be ignored
+         */
+        protected InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
             super(f, arg);
         }
 

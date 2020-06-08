@@ -76,7 +76,7 @@ class Binaries {
         if (true) {
             g = "B";
         }
-        @StringVal({"AC", "BC"}) String h = g + "C";
+        @StringVal({"nullC", "AC", "BC"}) String h = g + "C";
     }
 
     public void subtract() {
@@ -319,6 +319,34 @@ class Binaries {
         // TODO
         // :: error: (assignment.type.incompatible)
         @BoolVal(true) boolean b = (s != null);
+    }
+
+    public void nullConcatenation(@StringVal({"a", "b"}) String arg) {
+        String n1 = null;
+        String n2 = "null";
+        String k = "const";
+
+        // @StringVal("nullnull") String a1 = n1 + null;
+        @StringVal("nullnull") String a2 = n1 + "null";
+        // @StringVal("nullnull") String a3 = n1 + n1;
+        @StringVal("nullnull") String a4 = n1 + n2;
+        @StringVal({"nullconst", "nullnull"}) String a5 = n1 + k;
+        @StringVal("nullconst") String a6 = n1 + "const";
+
+        @StringVal("nullnull") String b1 = n2 + null;
+        @StringVal("nullnull") String b2 = n2 + "null";
+        @StringVal("nullnull") String b3 = n2 + n1;
+        @StringVal("nullnull") String b4 = n2 + n2;
+        @StringVal({"nullconst", "nullnull"}) String b5 = n2 + k;
+        @StringVal("nullconst") String b6 = n2 + "const";
+
+        @StringVal({"anull", "bnull", "nullnull"}) String c1 = arg + null;
+        @StringVal({"anull", "bnull", "nullnull"}) String c2 = arg + "null";
+        @StringVal({"anull", "bnull", "nullnull"}) String c3 = arg + n1;
+        @StringVal({"anull", "bnull", "nullnull"}) String c4 = arg + n2;
+        @StringVal({"aconst", "anull", "bconst", "bnull", "nullconst", "nullnull"}) String c5 = arg + k;
+        @StringVal({"aconst", "bconst", "nullconst"}) String c6 = arg + "const";
+        @StringVal({"a2147483647", "b2147483647", "null2147483647"}) String c7 = arg + Integer.MAX_VALUE;
     }
 
     public void conditionalComparisions() {
