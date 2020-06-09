@@ -200,7 +200,7 @@ public class SystemUtil {
      *
      * @returns the pathname to the tools.jar file, or null
      */
-    private static @Nullable String getToolsJar() {
+    public static @Nullable String getToolsJar() {
 
         if (getJreVersion() <= 8) {
             return null;
