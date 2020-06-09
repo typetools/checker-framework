@@ -272,11 +272,12 @@ public class ValueCheckerUtils {
     }
 
     /**
-     * Returns the input list with duplicates removed, and sorted.
+     * Returns a list with the same contents as its argument, but without duplicates. May return its
+     * argument if its argument has no duplicates, but is not guaranteed to do so.
      *
      * @param <T> the type of elements in {@code values}
      * @param values a list of values
-     * @return the values, sorted and with duplicates removed
+     * @return the values, with duplicates removed
      */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
