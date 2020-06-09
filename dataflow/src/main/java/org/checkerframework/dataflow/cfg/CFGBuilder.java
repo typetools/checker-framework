@@ -3963,10 +3963,11 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
-            assert tree.getCondition() != null;
-            unbox(scan(tree.getCondition(), p));
-            ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
-            extendWithExtendedNode(cjump);
+            if (tree.getCondition() != null) {
+                unbox(scan(tree.getCondition(), p));
+                ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
+                extendWithExtendedNode(cjump);
+            }
 
             // Loop body
             addLabelForNextNode(loopEntry);
