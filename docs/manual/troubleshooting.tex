@@ -171,6 +171,20 @@ error: SourceChecker.typeProcess: unexpected Throwable (OutOfMemoryError) while 
 then either give the JVM more memory when running the Checker Framework, or
 split your files and methods into smaller ones, or both.
 
+\item
+Versions of \ahref{https://errorprone.info/}{Error Prone} before 2.4.0 are
+incompatible with the Checker Framework.  Those versions of Error Prone
+use an outdated version of the Checker Framework's dataflow analysis
+library, which conflicts with the Checker Framework itself.
+
+If you wish to use both Error Prone and the Checker Framework, then use
+Error Prone version 2.4.0 or later.
+If you cannot upgrade to Error Prone 2.4.0 or later, there is a way to
+still use both tools.  The
+\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
+  plugin documentation} shows how to do so if you use the Gradle build
+system.
+
 \end{itemize}
 
 
