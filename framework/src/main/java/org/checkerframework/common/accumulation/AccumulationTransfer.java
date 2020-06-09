@@ -96,7 +96,7 @@ public class AccumulationTransfer extends CFTransfer {
 
                 // The receiver is itself a method call, so recurse to propagate this new
                 // information to its receiver.
-                invokedMethod = (MethodInvocationTree) receiverTree();
+                invokedMethod = (MethodInvocationTree) receiverTree;
                 receiver = ((MethodInvocationNode) receiver).getTarget().getReceiver();
             }
         }
