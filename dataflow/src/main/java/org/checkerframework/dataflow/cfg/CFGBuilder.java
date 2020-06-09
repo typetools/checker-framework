@@ -3483,6 +3483,7 @@ public class CFGBuilder {
 
                 ExpressionTree exprTree = tree.getExpression();
                 if (exprTree != null) {
+                    // non-default cases
                     Node expr = scan(exprTree, null);
                     CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
                     extendWithNode(test);
@@ -3587,17 +3588,15 @@ public class CFGBuilder {
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
-            }
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
 
             // Condition
             addLabelForNextNode(conditionStart);
-            if (tree.getCondition() != null) {
-                unbox(scan(tree.getCondition(), p));
-                ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
-                extendWithExtendedNode(cjump);
-            }
+            assert tree.getCondition() != null;
+            unbox(scan(tree.getCondition(), p));
+            ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
+            extendWithExtendedNode(cjump);
 
             // Loop exit
             addLabelForNextNode(loopExit);
@@ -3764,9 +3763,8 @@ public class CFGBuilder {
 
                 translateAssignment(variable, new LocalVariableNode(variable), nextCall);
 
-                if (statement != null) {
-                    scan(statement, p);
-                }
+                assert statement != null;
+                scan(statement, p);
 
                 // Loop back edge
                 addLabelForNextNode(updateStart);
@@ -3863,9 +3861,8 @@ public class CFGBuilder {
                 Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
                 extendWithNodeWithException(arrayAccessNode, npeElement.asType());
 
-                if (statement != null) {
-                    scan(statement, p);
-                }
+                assert statement != null;
+                scan(statement, p);
 
                 // Loop back edge
                 addLabelForNextNode(updateStart);
@@ -3974,9 +3971,8 @@ public class CFGBuilder {
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
-            }
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
 
             // Update
             addLabelForNextNode(updateStart);
@@ -4168,10 +4164,9 @@ public class CFGBuilder {
             List<? extends ExpressionTree> initializers = tree.getInitializers();
 
             List<Node> dimensionNodes = new ArrayList<>();
-            if (dimensions != null) {
-                for (ExpressionTree dim : dimensions) {
-                    dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-                }
+            assert dimensions != null;
+            for (ExpressionTree dim : dimensions) {
+                dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
             }
 
             List<Node> initializerNodes = new ArrayList<>();
@@ -4917,17 +4912,15 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
-            if (tree.getCondition() != null) {
-                unbox(scan(tree.getCondition(), p));
-                ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
-                extendWithExtendedNode(cjump);
-            }
+            assert tree.getCondition() != null;
+            unbox(scan(tree.getCondition(), p));
+            ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
+            extendWithExtendedNode(cjump);
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
-            }
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
             extendWithExtendedNode(new UnconditionalJump(conditionStart));
 
             // Loop exit
