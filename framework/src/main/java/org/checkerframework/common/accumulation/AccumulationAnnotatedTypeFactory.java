@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
@@ -51,36 +53,60 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     private final Class<? extends Annotation> accumulator;
 
     /**
-     * Create an annotated type factory for an accumulation checker.
+     * The predicate annotation for this accumulation analysis, or null if predicates are not
+     * supported. A predicate annotation must have a single element named "value" of type String.
+     */
+    private final @MonotonicNonNull Class<? extends Annotation> predicate;
+
+    /**
+     * Create an annotated type factory for an accumulation checker, with predicate support.
      *
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
-     *     argument named "value" whose type is a String array.
+     *     element named "value" whose type is a String array.
      * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
      *     accumulator}. The bottom type should be an annotation with no arguments.
+     * @param predicate the predicate annotation. Either null (if predicates are not supported), or
+     *     an annotation with a single element named "value" whose type is a String.
      */
     protected AccumulationAnnotatedTypeFactory(
             BaseTypeChecker checker,
             Class<? extends Annotation> accumulator,
-            Class<? extends Annotation> bottom) {
+            Class<? extends Annotation> bottom,
+            @Nullable Class<? extends Annotation> predicate) {
         super(checker);
 
         this.accumulator = accumulator;
-
         // Check that the requirements of the accumulator are met.
         Method[] accDeclaredMethods = accumulator.getDeclaredMethods();
         if (accDeclaredMethods.length != 1) {
             rejectMalformedAccumulator("have exactly one element");
         }
-        Method value = accDeclaredMethods[0];
-        if (value.getName() != "value") { // interned
+        Method accValue = accDeclaredMethods[0];
+        if (accValue.getName() != "value") { // interned
             rejectMalformedAccumulator("name its element \"value\"");
         }
-        if (!value.getReturnType().isInstance(new String[0])) {
+        if (!accValue.getReturnType().isInstance(new String[0])) {
             rejectMalformedAccumulator("have an element of type String[]");
         }
-        if (((String[]) value.getDefaultValue()).length != 0) {
+        if (((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
+        }
+
+        this.predicate = predicate;
+        // If there is a predicate annotation, check that its requirements are met.
+        if (predicate != null) {
+            Method[] predDeclaredMethods = predicate.getDeclaredMethods();
+            if (predDeclaredMethods.length != 1) {
+                rejectMalformedPredicate("have exactly one element");
+            }
+            Method predValue = accDeclaredMethods[0];
+            if (predValue.getName() != "value") { // interned
+                rejectMalformedPredicate("name its element \"value\"");
+            }
+            if (!predValue.getReturnType().isInstance(new String())) {
+                rejectMalformedPredicate("have an element of type String");
+            }
         }
 
         this.bottom = AnnotationBuilder.fromClass(elements, bottom);
@@ -93,13 +119,54 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
+     * Create an annotated type factory for an accumulation checker, without predicate support.
+     *
+     * @param checker the checker
+     * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
+     *     element named "value" whose type is a String array.
+     * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
+     *     accumulator}. The bottom type should be an annotation with no arguments.
+     */
+    protected AccumulationAnnotatedTypeFactory(
+            BaseTypeChecker checker,
+            Class<? extends Annotation> accumulator,
+            Class<? extends Annotation> bottom) {
+        this(checker, accumulator, bottom, null);
+    }
+
+    /**
      * Common error message for malformed accumulator annotation.
      *
      * @param missing what is missing from the accumulator, suitable for use in this string to
      *     replace $MISSING$: "The accumulator annotation Foo must $MISSING$."
      */
     private void rejectMalformedAccumulator(String missing) {
-        throw new BugInCF("The accumulator annotation " + accumulator + " must " + missing + ".");
+        rejectMalformedAnno("accumulator", accumulator, missing);
+    }
+
+    /**
+     * Common error message for malformed predicate annotation.
+     *
+     * @param missing what is missing from the predicate, suitable for use in this string to replace
+     *     $MISSING$: "The predicate annotation Foo must $MISSING$."
+     */
+    private void rejectMalformedPredicate(String missing) {
+        rejectMalformedAnno("predicate", predicate, missing);
+    }
+
+    /**
+     * Common error message implementation. Call rejectMalformedAccumulator or
+     * rejectMalformedPredicate as appropriate, rather than this method directly.
+     *
+     * @param annoTypeName the display name for the type of malformed annotation, such as
+     *     "accumulator"
+     * @param anno the malformed annotation
+     * @param missing what is missing from the annotation, suitable for use in this string to
+     *     replace $MISSING$: "The accumulator annotation Foo must $MISSING$."
+     */
+    private void rejectMalformedAnno(
+            String annoTypeName, Class<? extends Annotation> anno, String missing) {
+        throw new BugInCF("The " + annoTypeName + " annotation " + anno + " must " + missing + ".");
     }
 
     /**
