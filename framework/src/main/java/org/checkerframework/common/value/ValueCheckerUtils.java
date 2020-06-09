@@ -271,7 +271,11 @@ public class ValueCheckerUtils {
 
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         Set<T> set = new TreeSet<>(values);
-        return new ArrayList<>(set);
+        if (values.size() == set.size()) {
+            return values;
+        } else {
+            return new ArrayList<>(set);
+        }
     }
 
     /**
