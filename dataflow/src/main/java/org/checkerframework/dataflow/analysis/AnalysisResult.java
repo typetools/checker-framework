@@ -117,7 +117,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Combine with another analysis result.
      *
-     * @param other a given analysis result
+     * @param other an analysis result to combine with this
      */
     public void combine(AnalysisResult<V, S> other) {
         nodeValues.putAll(other.nodeValues);

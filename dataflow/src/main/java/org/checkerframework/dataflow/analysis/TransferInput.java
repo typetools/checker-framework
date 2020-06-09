@@ -240,7 +240,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      * of {@link Store}.
      *
      * @param other a transfer input
-     * @return the result transfer input containing the least upper bound
+     * @return the least upper bound of this and {@code other}
      */
     public TransferInput<V, S> leastUpperBound(TransferInput<V, S> other) {
         if (store == null) {

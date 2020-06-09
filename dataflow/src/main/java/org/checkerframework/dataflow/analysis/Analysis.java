@@ -401,7 +401,7 @@ public class Analysis<
      * true if the node's value changed, or a store was updated.
      *
      * @param node a node
-     * @param transferResult the transfer result to use
+     * @param transferResult the new transfer result to use as {@code node}'s value
      * @return true if the node's value changed, or a store was updated
      */
     protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
@@ -418,7 +418,7 @@ public class Analysis<
     }
 
     /**
-     * Call the transfer function for the given node, and set that node as current node first.
+     * Call the transfer function for node {@code node}, and set that node as current node first.
      *
      * @param node a node
      * @param store the input of a transfer function
@@ -694,7 +694,7 @@ public class Analysis<
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
      * yet).
      *
-     * @param b a block
+     * @param b a basic block
      * @return the transfer input for the basic block
      */
     public @Nullable TransferInput<V, S> getInput(Block b) {
@@ -705,7 +705,7 @@ public class Analysis<
      * Returns the transfer input corresponding to the location right before the basic block {@code
      * b}.
      *
-     * @param b a block
+     * @param b a basic block
      * @return the transfer input corresponding to the location right before the basic block {@code
      *     b}
      */
@@ -775,7 +775,7 @@ public class Analysis<
     /**
      * Return all current node values.
      *
-     * @return {@link #nodeValues}
+     * @return all current node values
      */
     public IdentityHashMap<Node, V> getNodeValues() {
         return nodeValues;
