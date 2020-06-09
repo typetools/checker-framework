@@ -109,7 +109,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param values the arguments to the annotation. The values can contain duplicates and can be
      *     in any order.
      * @return an annotation mirror representing the accumulator annotation with {@code values}'s
-     *     arguments, or top if {@code values} is empty
+     *     arguments; this is top if {@code values} is empty
      */
     public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
@@ -149,7 +149,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Is the given annotation an accumulator annotation?
+     * Is the given annotation an accumulator annotation? Returns false if the argument is {@link
+     * #bottom}.
      *
      * @param anm an annotation mirror
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
@@ -228,7 +229,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
-            return new ArrayList<>();
+            return new ArrayList<>(0);
         } else {
             return values;
         }
