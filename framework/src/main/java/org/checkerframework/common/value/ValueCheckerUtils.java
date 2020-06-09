@@ -274,6 +274,7 @@ public class ValueCheckerUtils {
     /**
      * Returns the input list with duplicates removed, and sorted.
      *
+     * @param <T> the type of elements in {@code values}
      * @param values a list of values
      * @return the values, sorted and with duplicates removed
      */
