@@ -195,10 +195,10 @@ public class SystemUtil {
     }
 
     /**
-     * Return the pathname to the tools.jar file, or null if it does not exist. Returns null on Java
-     * 9 and later.
+     * Returns the pathname to the tools.jar file, or null if it does not exist. Returns null on
+     * Java 9 and later.
      *
-     * @returns the pathname to the tools.jar file, or null
+     * @return the pathname to the tools.jar file, or null
      */
     public static @Nullable String getToolsJar() {
 
