@@ -221,7 +221,7 @@ public class SystemUtil {
             throw new Error(
                     String.format(
                             "File does not exist: %s ; JAVA_HOME=%s ; java.home=%s",
-                            javaHome, System.getProperty("java.home")));
+                            toolsJarFilename, javaHome, System.getProperty("java.home")));
         }
         return javaHome + File.separator + "lib" + File.separator + "tools.jar";
     }
