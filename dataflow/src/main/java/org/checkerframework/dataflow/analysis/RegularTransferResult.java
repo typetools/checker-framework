@@ -9,10 +9,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Implementation of a {@link TransferResult} with just one non-exceptional store. The result of
  * {@code getThenStore} and {@code getElseStore} is equal to the only underlying store.
  *
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
-public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S>>
-        extends TransferResult<A, S> {
+public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S>>
+        extends TransferResult<V, S> {
 
     /** The regular result store. */
     protected final S store;
@@ -21,7 +22,8 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
     private final boolean storeChanged;
 
     /**
-     * *
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+     * null} for {@link #exceptionalStores}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
      * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then it is assumed that no
@@ -29,31 +31,41 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * org.checkerframework.dataflow.cfg.node.Node} will be passed along any exceptional edge.
      *
      * <p><em>Aliasing</em>: {@code resultStore} is not allowed to be used anywhere outside of this
-     * class (including use through aliases). Complete control over the object is transfered to this
-     * class.
+     * class (including use through aliases). Complete control over the object is transferred to
+     * this class.
      *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param storeChanged {@link #storeChanged}
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
-    public RegularTransferResult(@Nullable A value, S resultStore, boolean storeChanged) {
+    public RegularTransferResult(@Nullable V value, S resultStore, boolean storeChanged) {
         this(value, resultStore, null, storeChanged);
     }
 
     /**
-     * See {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+     * null} for {@link #exceptionalStores} and {@code false} for {@link #storeChanged}.
      *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
-    public RegularTransferResult(@Nullable A value, S resultStore) {
+    public RegularTransferResult(@Nullable V value, S resultStore) {
         this(value, resultStore, false);
     }
 
     /**
-     * See {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}.
+     * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+     * false} for {@link #storeChanged}.
      *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param exceptionalStores {@link #exceptionalStores}
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
     public RegularTransferResult(
-            @Nullable A value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
+            @Nullable V value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, resultStore, exceptionalStores, false);
     }
 
@@ -62,7 +74,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * corresponding {@link org.checkerframework.dataflow.cfg.node.Node} is a boolean node, then
      * {@code resultStore} is used for both the 'then' and 'else' edge.
      *
-     * <p>For the meaning of storeChanged, see {@link
+     * <p>For the meaning of {@code storeChanged}, see {@link
      * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
      *
      * <p><em>Exceptions</em>: If the corresponding {@link
@@ -75,9 +87,14 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * <p><em>Aliasing</em>: {@code resultStore} and any store in {@code exceptionalStores} are not
      * allowed to be used anywhere outside of this class (including use through aliases). Complete
      * control over the objects is transfered to this class.
+     *
+     * @param value the abstract value produced by the transfer function
+     * @param resultStore {@link #store}
+     * @param exceptionalStores {@link #exceptionalStores}
+     * @param storeChanged {@link #storeChanged}
      */
     public RegularTransferResult(
-            @Nullable A value,
+            @Nullable V value,
             S resultStore,
             @Nullable Map<TypeMirror, S> exceptionalStores,
             boolean storeChanged) {

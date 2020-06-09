@@ -42,12 +42,12 @@ import org.checkerframework.javacutil.Pair;
  * An implementation of an iterative algorithm to solve a org.checkerframework.dataflow problem,
  * given a control flow graph and a transfer function.
  *
- * @param <A> the abstract value type to be tracked by the analysis
+ * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
  * @param <T> the transfer function type that is used to approximated runtime behavior
  */
 public class Analysis<
-        A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
+        V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>> {
 
     /** Is the analysis currently running? */
     protected boolean isRunning = false;
@@ -81,19 +81,19 @@ public class Analysis<
     /**
      * The transfer inputs before every basic block (assumed to be 'no information' if not present).
      */
-    protected final IdentityHashMap<Block, TransferInput<A, S>> inputs;
+    protected final IdentityHashMap<Block, TransferInput<V, S>> inputs;
 
     /** The stores after every return statement. */
-    protected final IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
+    protected final IdentityHashMap<ReturnNode, TransferResult<V, S>> storesAtReturnStatements;
 
     /** The worklist used for the fix-point iteration. */
     protected final Worklist worklist;
 
     /** Abstract values of nodes. */
-    protected final IdentityHashMap<Node, A> nodeValues;
+    protected final IdentityHashMap<Node, V> nodeValues;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    public final HashMap<Element, A> finalLocalValues;
+    public final HashMap<Element, V> finalLocalValues;
 
     /**
      * The node that is currently handled in the analysis (if it is running). The following
@@ -112,7 +112,7 @@ public class Analysis<
     protected @Nullable Tree currentTree;
 
     /** The current transfer input when the analysis is running. */
-    protected @Nullable TransferInput<A, S> currentInput;
+    protected @Nullable TransferInput<V, S> currentInput;
 
     /** The tree that is currently being looked at. */
     public @Nullable Tree getCurrentTree() {
@@ -215,10 +215,10 @@ public class Analysis<
                     RegularBlock rb = (RegularBlock) b;
 
                     // apply transfer function to contents
-                    TransferInput<A, S> inputBefore = getInputBefore(rb);
+                    TransferInput<V, S> inputBefore = getInputBefore(rb);
                     assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
-                    TransferResult<A, S> transferResult = null;
+                    TransferResult<V, S> transferResult = null;
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
                     for (Node n : rb.getContents()) {
@@ -245,11 +245,11 @@ public class Analysis<
                     ExceptionBlock eb = (ExceptionBlock) b;
 
                     // apply transfer function to content
-                    TransferInput<A, S> inputBefore = getInputBefore(eb);
+                    TransferInput<V, S> inputBefore = getInputBefore(eb);
                     assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
                     Node node = eb.getNode();
-                    TransferResult<A, S> transferResult = callTransferFunction(node, currentInput);
+                    TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
                     boolean addToWorklistAgain = updateNodeValues(node, transferResult);
 
                     // propagate store to successor
@@ -295,9 +295,9 @@ public class Analysis<
                     ConditionalBlock cb = (ConditionalBlock) b;
 
                     // get store before
-                    TransferInput<A, S> inputBefore = getInputBefore(cb);
+                    TransferInput<V, S> inputBefore = getInputBefore(cb);
                     assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
-                    TransferInput<A, S> input = inputBefore.copy();
+                    TransferInput<V, S> input = inputBefore.copy();
 
                     // propagate store to successor
                     Block thenSucc = cb.getThenSuccessor();
@@ -315,7 +315,7 @@ public class Analysis<
                     SpecialBlock sb = (SpecialBlock) b;
                     Block succ = sb.getSuccessor();
                     if (succ != null) {
-                        TransferInput<A, S> input = getInputBefore(b);
+                        TransferInput<V, S> input = getInputBefore(b);
                         assert input != null : "@AssumeAssertion(nullness): invariant";
                         propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
                     }
@@ -334,7 +334,7 @@ public class Analysis<
     protected void propagateStoresTo(
             Block succ,
             @Nullable Node node,
-            TransferInput<A, S> currentInput,
+            TransferInput<V, S> currentInput,
             Store.FlowRule flowRule,
             boolean addToWorklistAgain) {
         switch (flowRule) {
@@ -399,13 +399,17 @@ public class Analysis<
     /**
      * Updates the value of node {@code node} to the value of the {@code transferResult}. Returns
      * true if the node's value changed, or a store was updated.
+     *
+     * @param node a node
+     * @param transferResult the new transfer result to use as {@code node}'s value
+     * @return true if the node's value changed, or a store was updated
      */
-    protected boolean updateNodeValues(Node node, TransferResult<A, S> transferResult) {
-        A newVal = transferResult.getResultValue();
+    protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
+        V newVal = transferResult.getResultValue();
         boolean nodeValueChanged = false;
 
         if (newVal != null) {
-            A oldVal = nodeValues.get(node);
+            V oldVal = nodeValues.get(node);
             nodeValues.put(node, newVal);
             nodeValueChanged = !Objects.equals(oldVal, newVal);
         }
@@ -415,8 +419,12 @@ public class Analysis<
 
     /**
      * Call the transfer function for node {@code node}, and set that node as current node first.
+     *
+     * @param node a node
+     * @param store the input of a transfer function
+     * @return the transfer result for the node
      */
-    protected TransferResult<A, S> callTransferFunction(Node node, TransferInput<A, S> store) {
+    protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         if (node.isLValue()) {
             // TODO: should the default behavior be to return either a regular
@@ -426,7 +434,7 @@ public class Analysis<
         }
         store.node = node;
         currentNode = node;
-        TransferResult<A, S> transferResult = node.accept(transferFunction, store);
+        TransferResult<V, S> transferResult = node.accept(transferFunction, store);
         currentNode = null;
         if (node instanceof ReturnNode) {
             // save a copy of the store to later check if some property held at
@@ -441,7 +449,7 @@ public class Analysis<
                 LocalVariableNode lhs = (LocalVariableNode) lhst;
                 Element elem = lhs.getElement();
                 if (ElementUtils.isEffectivelyFinal(elem)) {
-                    A resval = transferResult.getResultValue();
+                    V resval = transferResult.getResultValue();
                     if (resval != null) {
                         finalLocalValues.put(elem, resval);
                     }
@@ -685,8 +693,11 @@ public class Analysis<
     /**
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if none exists
      * yet).
+     *
+     * @param b a basic block
+     * @return the transfer input for the basic block
      */
-    public @Nullable TransferInput<A, S> getInput(Block b) {
+    public @Nullable TransferInput<V, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
@@ -694,10 +705,11 @@ public class Analysis<
      * Returns the transfer input corresponding to the location right before the basic block {@code
      * b}.
      *
+     * @param b a basic block
      * @return the transfer input corresponding to the location right before the basic block {@code
      *     b}
      */
-    protected @Nullable TransferInput<A, S> getInputBefore(Block b) {
+    protected @Nullable TransferInput<V, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
@@ -732,14 +744,14 @@ public class Analysis<
     }
 
     /**
-     * Returns the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     * Returns the abstract value for node {@code n}, or {@code null} if no information is
      * available. Note that if the analysis has not finished yet, this value might not represent the
      * final value for this node.
      *
-     * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
-     *     available
+     * @param n a node
+     * @return the abstract value for node {@code n}, or {@code null} if no information is available
      */
-    public @Nullable A getValue(Node n) {
+    public @Nullable V getValue(Node n) {
         if (isRunning) {
             // we do not yet have a org.checkerframework.dataflow fact about the current node
             if (currentNode == null
@@ -760,27 +772,35 @@ public class Analysis<
         return nodeValues.get(n);
     }
 
-    /** Return all current node values. */
-    public IdentityHashMap<Node, A> getNodeValues() {
+    /**
+     * Return all current node values.
+     *
+     * @return all current node values
+     */
+    public IdentityHashMap<Node, V> getNodeValues() {
         return nodeValues;
     }
 
-    /** Set all current node values to the given map. */
-    /*package-private*/ void setNodeValues(IdentityHashMap<Node, A> in) {
+    /**
+     * Set all current node values to the given map.
+     *
+     * @param in the current node values
+     */
+    /*package-private*/ void setNodeValues(IdentityHashMap<Node, V> in) {
         assert !isRunning;
         nodeValues.clear();
         nodeValues.putAll(in);
     }
 
     /**
-     * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     * available. Note that if the analysis has not finished yet, this value might not represent the
-     * final value for this node.
+     * Returns the abstract value for {@code t}, or {@code null} if no information is available.
+     * Note that if the analysis has not finished yet, this value might not represent the final
+     * value for this node.
      *
-     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     *     available
+     * @param t a tree
+     * @return the abstract value for {@code t}, or {@code null} if no information is available
      */
-    public @Nullable A getValue(Tree t) {
+    public @Nullable V getValue(Tree t) {
         // we do not yet have a org.checkerframework.dataflow fact about the current node
         if (t == currentTree) {
             return null;
@@ -789,12 +809,12 @@ public class Analysis<
         if (nodesCorrespondingToTree == null) {
             return null;
         }
-        A merged = null;
+        V merged = null;
         for (Node aNode : nodesCorrespondingToTree) {
             if (aNode.isLValue()) {
                 return null;
             }
-            A a = getValue(aNode);
+            V a = getValue(aNode);
             if (merged == null) {
                 merged = a;
             } else if (a != null) {
@@ -846,11 +866,11 @@ public class Analysis<
      * @return the transfer results for each return node in the CFG
      */
     @RequiresNonNull("cfg")
-    public List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> getReturnStatementStores() {
+    public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
-        List<Pair<ReturnNode, @Nullable TransferResult<A, S>>> result = new ArrayList<>();
+        List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            TransferResult<A, S> store = storesAtReturnStatements.get(returnNode);
+            TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
             result.add(Pair.of(returnNode, store));
         }
         return result;
@@ -863,7 +883,7 @@ public class Analysis<
      * @return the result of running the analysis
      */
     @RequiresNonNull("cfg")
-    public AnalysisResult<A, S> getResult() {
+    public AnalysisResult<V, S> getResult() {
         assert !isRunning;
         assert cfg != null : "@AssumeAssertion(nullness): invariant";
         return new AnalysisResult<>(
