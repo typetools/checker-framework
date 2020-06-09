@@ -271,6 +271,12 @@ public class ValueCheckerUtils {
         return NumberUtils.castNumbers(newType, doubles);
     }
 
+    /**
+     * Returns the input list with duplicates removed, and sorted.
+     *
+     * @param a list of values
+     * @return the values, sorted and with duplicates removed
+     */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
         if (Comparators.isInStrictOrder(values, Ordering.<T>natural())) {
