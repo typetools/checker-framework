@@ -202,7 +202,7 @@ public class SystemUtil {
      */
     public static @Nullable String getToolsJar() {
 
-        if (getJreVersion() <= 8) {
+        if (getJreVersion() > 8) {
             return null;
         }
 
@@ -213,8 +213,15 @@ public class SystemUtil {
                 javaHome = javaHomeProperty.substring(javaHomeProperty.length() - 4);
             } else {
                 // Could also determine the location of javac on the path...
-                throw new Error("Can't infer Java home");
+                throw new Error("Can't infer Java home; java.home=" + javaHomeProperty);
             }
+        }
+        String toolsJarFilename = javaHome + File.separator + "lib" + File.separator + "tools.jar";
+        if (!new File(toolsJarFilename).exists()) {
+            throw new Error(
+                    String.format(
+                            "File does not exist: %s ; JAVA_HOME=%s ; java.home=%s",
+                            javaHome, System.getProperty("java.home")));
         }
         return javaHome + File.separator + "lib" + File.separator + "tools.jar";
     }

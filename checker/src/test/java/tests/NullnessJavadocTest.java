@@ -18,7 +18,7 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                toolsJar(),
+                toolsJarList(),
                 "-Anomsgtext");
     }
 
@@ -27,7 +27,7 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
      *
      * @returns a list that contains the pathname to the tools.jar file, if it exists
      */
-    private static List<String> toolsJar() {
+    private static List<String> toolsJarList() {
         String toolsJar = SystemUtil.getToolsJar();
         if (toolsJar == null) {
             return Collections.emptyList();
