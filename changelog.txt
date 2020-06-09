@@ -1,5 +1,10 @@
 Version 3.5.0, July 1, 2020
 
+Use "allcheckers:" instead of "all:" as a prefix in a warning suppression key.
+Writing `@SuppressWarnings("allcheckers")` means the same thing as
+`@SuppressWarnings("all")`, unless the `-ArequirePrefixInWarningSuppressions`
+command-line argument is supplied.  See the manual for details.
+
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
