@@ -193,4 +193,29 @@ public class SystemUtil {
         Options options = Options.instance(ctx);
         return options.get(Option.RELEASE);
     }
+
+    /**
+     * Return the pathname to the tools.jar file, or null if it does not exist. Returns null on Java
+     * 9 and later.
+     *
+     * @returns the pathname to the tools.jar file, or null
+     */
+    private static @Nullable String getToolsJar() {
+
+        if (getJreVersion() <= 8) {
+            return null;
+        }
+
+        String javaHome = System.getenv("JAVA_HOME");
+        if (javaHome == null) {
+            String javaHomeProperty = System.getProperty("java.home");
+            if (javaHomeProperty.endsWith(File.separator + "jre")) {
+                javaHome = javaHomeProperty.substring(javaHomeProperty.length() - 4);
+            } else {
+                // Could also determine the location of javac on the path...
+                throw new Error("Can't infer Java home");
+            }
+        }
+        return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+    }
 }
