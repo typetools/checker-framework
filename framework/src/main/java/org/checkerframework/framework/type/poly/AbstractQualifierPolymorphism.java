@@ -235,18 +235,23 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * If the primary annotation of {@code actualType} is a polymorphic qualifier, then it is mapped
+     * If the primary annotation of {@code polyType} is a polymorphic qualifier, then it is mapped
      * to the primary annotation of {@code type} and the map is returned. Otherwise, an empty map is
      * returned.
+     *
+     * @param type type with qualifier to us in the map
+     * @param polyType type that may have polymorphic qualifiers
+     * @return a mapping from the polymorphic qualifiers in {@code polyType} to the qualifiers in
+     *     {@code type}
      */
     private AnnotationMirrorMap<AnnotationMirror> mapQualifierToPoly(
-            AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
+            AnnotatedTypeMirror type, AnnotatedTypeMirror polyType) {
         AnnotationMirrorMap<AnnotationMirror> result = new AnnotationMirrorMap<>();
 
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
             AnnotationMirror top = kv.getValue();
             AnnotationMirror poly = kv.getKey();
-            if (actualType.hasAnnotation(poly)) {
+            if (polyType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
                     result.put(poly, typeQual);
@@ -385,6 +390,10 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         /**
          * Calls {@link #visit(AnnotatedTypeMirror, AnnotatedTypeMirror)} for each type in {@code
          * types}.
+         *
+         * @param types AnnotateTypeMirrors used to find instantiations
+         * @param polyTypes AnnotatedTypeMirrors that may have polymorphic qualifiers
+         * @return a mapping of polymorphic qualifiers to their instantiations
          */
         private AnnotationMirrorMap<AnnotationMirror> visit(
                 Iterable<? extends AnnotatedTypeMirror> types,
