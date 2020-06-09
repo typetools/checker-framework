@@ -274,7 +274,7 @@ public class ValueCheckerUtils {
     /**
      * Returns the input list with duplicates removed, and sorted.
      *
-     * @param a list of values
+     * @param values a list of values
      * @return the values, sorted and with duplicates removed
      */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
