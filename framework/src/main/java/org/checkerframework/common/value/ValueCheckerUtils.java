@@ -1,9 +1,9 @@
 package org.checkerframework.common.value;
 
 import com.google.common.collect.Comparators;
-import com.google.common.collect.Ordering;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -281,7 +281,7 @@ public class ValueCheckerUtils {
      */
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-        if (Comparators.isInStrictOrder(values, Ordering.<T>natural())) {
+        if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
             return values;
         }
 
