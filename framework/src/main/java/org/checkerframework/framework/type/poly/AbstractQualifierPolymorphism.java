@@ -172,7 +172,10 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                         javaReturntype instanceof Type.JCPrimitiveType
                                 || atypeFactory.types.isSubtype(javaReturntype, javaLhstype);
 
-                boolean polyIsSuper = atypeFactory.types.isSubtype(javaLhstype, javaReturntype);
+                boolean polyIsSuper =
+                        !(javaReturntype instanceof Type.ArrayType)
+                                && // isSubtype cannot handle this
+                                atypeFactory.types.isSubtype(javaLhstype, javaReturntype);
 
                 // only perform receiver-sensitive poly resolution when return type is erased
                 // subtype of lhs
