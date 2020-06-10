@@ -512,7 +512,7 @@ public class StubTypes {
                 jdkStubFiles.put(s, path);
             }
         } catch (IOException e) {
-            throw new BugInCF("File Not Found", e);
+            throw new BugInCF("prepJdkFromFile(" + resourceURL + ")", e);
         }
     }
 
