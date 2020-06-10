@@ -29,13 +29,13 @@ file to be checked is AssertNonNullTest.java in directory
 $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
-  cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ./gradlew compileJava) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  cd $CHECKERFRAMEWORK
+  ./gradlew compileJava && checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 or (to build distribution files)
 
-  cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ./gradlew assemble) && $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  cd $CHECKERFRAMEWORK
+  ./gradlew assemble && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
