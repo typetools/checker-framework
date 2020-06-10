@@ -8,7 +8,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Value Checker's interactions with the Index Checker. */
 public class ValueIndexInteractionTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a ValueIndexInteractionTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public ValueIndexInteractionTest(List<File> testFiles) {
         super(
                 testFiles,

@@ -54,6 +54,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     }
 
     /**
+     * Returns the string representation of a single AnnotationMirror, without showing full package
+     * names.
+     *
      * @param anno the annotation mirror to convert
      * @return the string representation of a single AnnotationMirror, without showing full package
      *     names
