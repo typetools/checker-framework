@@ -350,7 +350,11 @@ public class TestConfigurationBuilder {
                 String.join("%n", errors), this);
     }
 
-    /** @return the set of Javac options as a flat list */
+    /**
+     * Returns the set of Javac options as a flat list.
+     *
+     * @return the set of Javac options as a flat list
+     */
     public List<String> flatOptions() {
         return options.getOptionsAsList();
     }
@@ -365,7 +369,11 @@ public class TestConfigurationBuilder {
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 
-    /** @return a list that first has the items from parameter list then the items from iterable */
+    /**
+     * Returns a list that first has the items from parameter list then the items from iterable.
+     *
+     * @return a list that first has the items from parameter list then the items from iterable
+     */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
         final List<T> newList = new ArrayList<>();
