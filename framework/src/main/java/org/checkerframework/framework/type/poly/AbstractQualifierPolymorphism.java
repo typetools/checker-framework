@@ -332,7 +332,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
          *
          * <p>Uses reference equality rather than equals because the visitor may visit two types
          * that are structurally equal, but not actually the same. For example, the wildcards in
-         * Pair<?,?> may be equal, but they both should be visited.
+         * {@code Pair<?,?>} may be equal, but they both should be visited.
          */
         private final Set<AnnotatedTypeMirror> visitedTypes =
                 Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
