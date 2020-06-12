@@ -2721,7 +2721,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 reportErrorToTree = typeargTrees.get(typeargs.indexOf(typeArg));
             }
 
-            checkHasQualifierParameterAsTypeArgument(typeArg, toptree);
+            checkHasQualifierParameterAsTypeArgument(typeArg, paramUpperBound, toptree);
             commonAssignmentCheck(
                     paramUpperBound, typeArg, reportErrorToTree, "type.argument.type.incompatible");
 
@@ -2740,12 +2740,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Reports an error if the type argument has a qualifier parameter.
      *
      * @param typeArgument type argument
+     * @param typeParameterUpperBound upper bound of the type parameter
      * @param reportError Tree to which to report the error
      */
     private void checkHasQualifierParameterAsTypeArgument(
-            AnnotatedTypeMirror typeArgument, Tree reportError) {
+            AnnotatedTypeMirror typeArgument,
+            AnnotatedTypeMirror typeParameterUpperBound,
+            Tree reportError) {
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
-            if (atypeFactory.hasQualifierParameterInHierarchy(typeArgument, top)) {
+            if (atypeFactory.hasQualifierParameterInHierarchy(typeArgument, top)
+                    && !getTypeFactory()
+                            .hasQualifierParameterInHierarchy(typeParameterUpperBound, top)) {
                 checker.reportError(reportError, "type.argument.invalid.hasqualparam", top);
             }
         }

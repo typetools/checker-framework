@@ -3582,6 +3582,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public Set<AnnotationMirror> getQualifierParameterHierarchies(
             AnnotatedTypeMirror annotatedType) {
+        while (annotatedType.getKind() == TypeKind.TYPEVAR
+                || annotatedType.getKind() == TypeKind.WILDCARD) {
+            if (annotatedType.getKind() == TypeKind.TYPEVAR) {
+                annotatedType = ((AnnotatedTypeVariable) annotatedType).getUpperBound();
+            } else if (annotatedType.getKind() == TypeKind.WILDCARD) {
+                annotatedType = ((AnnotatedWildcardType) annotatedType).getSuperBound();
+            }
+        }
+
         if (annotatedType.getKind() != TypeKind.DECLARED) {
             return Collections.emptySet();
         }
