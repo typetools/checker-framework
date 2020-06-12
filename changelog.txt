@@ -1,5 +1,8 @@
 Version 3.5.0, July 1, 2020
 
+It is no longer necessary to pass -Astubs=checker.jar/javadoc.astub when
+compiling a program that uses Javadoc classes.
+
 The Signature Checker no longer considers Java keywords to be identifiers.
 Renamed Signature Checker annotations:
   @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
@@ -10,9 +13,9 @@ Added new Signature Checker annotations:
   @DotSeparatedIdentifiersOrPrimitiveType
   #IdentifierOrPrimitiveType
 
-The Nullness Checker now treats System.getProperty soundly.  Use
--Alint=permitClearProperty to disable special treatment of System.getProperty
-and to permit undefining built-in system properties.
+The Nullness Checker now treats `System.getProperty()` soundly.  Use
+`-Alint=permitClearProperty` to disable special treatment of
+`System.getProperty()` and to permit undefining built-in system properties.
 
 Implementation details:
 Changed the types of some fields and methods from array to List:
