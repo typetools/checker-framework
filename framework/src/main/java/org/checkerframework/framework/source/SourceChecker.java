@@ -385,6 +385,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The @SuppressWarnings key that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_KEY = "all";
 
+    /** The @SuppressWarnings key prefix that will suppress warnings for all checkers. */
+    public static final String SUPPRESS_ALL_KEY_PREFIX = "allcheckers";
+
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
     public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY =
             "unneeded.suppression";
@@ -1191,14 +1194,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Returns the most specific warning suppression key for the warning/error being printed. This
-     * is {@code msg} prefixed by a checker name (or "all") and a colon.
+     * is {@code msg} prefixed by a checker name (or "allcheckers") and a colon.
      *
      * @param messageKey the simple, checker-specific error message key
      * @return the most specific warning suppression key for the warning/error being printed
      */
     private String suppressionKey(String messageKey) {
         if (hasOption("showSuppressWarningKeys")) {
-            return this.getSuppressWarningsKeys() + ":" + messageKey;
+            Collection<String> prefixes = this.getSuppressWarningsKeys();
+            prefixes.remove(SUPPRESS_ALL_KEY);
+            return prefixes + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the
             // warning key that is printed.
@@ -1208,8 +1213,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return defaultKey + ":" + messageKey;
             } else if (keys.isEmpty()) {
                 keys.remove(SUPPRESS_ALL_KEY);
+                keys.remove(SUPPRESS_ALL_KEY_PREFIX);
                 if (keys.isEmpty()) {
-                    return SUPPRESS_ALL_KEY + ":" + messageKey;
+                    return SUPPRESS_ALL_KEY_PREFIX + ":" + messageKey;
                 } else {
                     String firstKey = keys.iterator().next();
                     return firstKey + ":" + messageKey;
@@ -1809,6 +1815,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
         // It's not clear for which checker "all" is intended, so never report it as unused.
         checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY_PREFIX);
 
         // Is the name of the checker required to suppress a warning?
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
@@ -1837,7 +1844,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 } else {
                     // User-written error key contains ":".
                     String userCheckerKey = userKey.substring(0, colonPos);
-                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY)
+                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY_PREFIX)
                             || !checkerKeys.contains(userCheckerKey)) {
                         // This user-written key is for some other checker
                         continue;
@@ -1965,6 +1972,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
+        if (requirePrefix) {
+            checkerKeys.remove(SUPPRESS_ALL_KEY);
+        }
 
         // Check each value of the user-written @SuppressWarnings annotation.
         for (String userKey : userSwKeys) {
@@ -1981,7 +1991,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             } else {
                 // User-written error key contains ":".
                 String userCheckerKey = userKey.substring(0, colonPos);
-                if (!checkerKeys.contains(userCheckerKey)) {
+                if (!checkerKeys.contains(userCheckerKey)
+                        || userCheckerKey.equals(SUPPRESS_ALL_KEY)) {
                     continue;
                 }
                 userKey = userKey.substring(colonPos + 1);
@@ -2220,6 +2231,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
         result.add(SUPPRESS_ALL_KEY);
+        result.add(SUPPRESS_ALL_KEY_PREFIX);
 
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {
