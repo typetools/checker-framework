@@ -5,6 +5,9 @@ Writing `@SuppressWarnings("allcheckers")` means the same thing as
 `@SuppressWarnings("all")`, unless the `-ArequirePrefixInWarningSuppressions`
 command-line argument is supplied.  See the manual for details.
 
+It is no longer necessary to pass -Astubs=checker.jar/javadoc.astub when
+compiling a program that uses Javadoc classes.
+
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
