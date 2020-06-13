@@ -19,9 +19,17 @@ public interface Block {
         EXCEPTION_BLOCK,
     }
 
-    /** @return the type of this basic block */
+    /**
+     * Returns the type of this basic block.
+     *
+     * @return the type of this basic block
+     */
     BlockType getType();
 
-    /** @return the unique identifier of this block */
+    /**
+     * Returns the unique identifier of this block.
+     *
+     * @return the unique identifier of this block
+     */
     long getId();
 }

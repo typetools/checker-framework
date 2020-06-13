@@ -195,7 +195,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker);
 
         this.everUseFlow = useFlow;
@@ -205,6 +205,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
 
@@ -262,7 +263,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param checker the checker to which this type factory belongs
      */
-    public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
+    protected GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, flowByDefault);
     }
 
@@ -272,6 +273,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.scannedClasses.clear();
         this.flowResult = null;
         this.regularExitStores = null;
+        this.exceptionalExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
         this.initializationStore = null;
@@ -828,6 +830,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
+    /** A mapping from methods (or other code blocks) to their exceptional exit store. */
+    protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+
     /** A mapping from methods to a list with all return statements and the corresponding store. */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
             returnStatementStores;
@@ -842,21 +847,45 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the regular exit store for a method or another code block (such as static
      * initializers).
      *
+     * @param tree a MethodTree or other code block, such as a static initializer
      * @return the regular exit store, or {@code null}, if there is no such store (because the
      *     method cannot exit through the regular exit block).
      */
-    public @Nullable Store getRegularExitStore(Tree t) {
-        return regularExitStores.get(t);
+    public @Nullable Store getRegularExitStore(Tree tree) {
+        return regularExitStores.get(tree);
     }
 
-    /** @return all return node and store pairs for a given method */
+    /**
+     * Returns the exceptional exit store for a method or another code block (such as static
+     * initializers).
+     *
+     * @param tree a MethodTree or other code block, such as a static initializer
+     * @return the exceptional exit store, or {@code null}, if there is no such store.
+     */
+    public @Nullable Store getExceptionalExitStore(Tree tree) {
+        return exceptionalExitStores.get(tree);
+    }
+
+    /**
+     * Returns a list of all return statements of {@code method} paired with their corresponding
+     * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
+     * returned.
+     *
+     * @param methodTree method whose return statements should be returned
+     * @return a list of all return statements of {@code method} paired with their corresponding
+     *     {@link TransferResult} or an empty list if {@code method} has no return statements
+     */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
     }
 
-    /** @return the store immediately before a given {@link Tree}. */
+    /**
+     * Returns the store immediately before a given {@link Tree}.
+     *
+     * @return the store immediately before a given {@link Tree}
+     */
     public Store getStoreBefore(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(tree);
@@ -869,7 +898,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    /** @return the store immediately before a given Set of {@link Node}s. */
+    /**
+     * Returns the store immediately before a given Set of {@link Node}s.
+     *
+     * @return the store immediately before a given Set of {@link Node}s
+     */
     public Store getStoreBefore(Set<Node> nodes) {
         Store merge = null;
         for (Node aNode : nodes) {
@@ -883,7 +916,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately before a given {@link Node}. */
+    /**
+     * Returns the store immediately before a given {@link Node}.
+     *
+     * @return the store immediately before a given {@link Node}
+     */
     public Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
@@ -898,7 +935,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return store;
     }
 
-    /** @return the store immediately after a given {@link Tree}. */
+    /**
+     * Returns the store immediately after a given {@link Tree}.
+     *
+     * @return the store immediately after a given {@link Tree}
+     */
     public Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
@@ -907,7 +948,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return getStoreAfter(nodes);
     }
 
-    /** @return the store immediately after a given set of {@link Node}s. */
+    /**
+     * Returns the store immediately after a given set of {@link Node}s.
+     *
+     * @return the store immediately after a given set of {@link Node}s
+     */
     public Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
@@ -921,7 +966,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return merge;
     }
 
-    /** @return the store immediately after a given {@link Node}. */
+    /**
+     * Returns the store immediately after a given {@link Node}.
+     *
+     * @return the store immediately after a given {@link Node}
+     */
     public Store getStoreAfter(Node node) {
         Store res =
                 AnalysisResult.runAnalysisFor(
@@ -934,8 +983,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
+     * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
+     *
      * @return the {@link Node}s for a given {@link Tree}
+     * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
      */
     public Set<Node> getNodesForTree(Tree tree) {
         return flowResult.getNodesForTree(tree);
@@ -965,7 +1016,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
-    /** @return the value of effectively final local variables */
+    /**
+     * Returns the value of effectively final local variables.
+     *
+     * @return the value of effectively final local variables
+     */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
     }
@@ -977,6 +1032,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
+            exceptionalExitStores = new IdentityHashMap<>();
             returnStatementStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
         }
@@ -1195,12 +1251,20 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(method, exceptionalExitStore);
+            }
             returnStatementStores.put(method, analysis.getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
             // TODO: Postconditions?
@@ -1209,6 +1273,10 @@ public abstract class GenericAnnotatedTypeFactory<
             Store regularExitStore = analysis.getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+            Store exceptionalExitStore = analysis.getExceptionalExitStore();
+            if (exceptionalExitStore != null) {
+                exceptionalExitStores.put(block.getCode(), exceptionalExitStore);
             }
         } else {
             assert false : "Unexpected AST kind: " + ast.getKind();

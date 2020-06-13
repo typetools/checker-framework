@@ -7,10 +7,9 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo "BUILDJDK=${BUILDJDK}"
 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 # shellcheck disable=SC1090
-source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
+source "$SCRIPTDIR"/build.sh
 
 
 # Code style and formatting
@@ -29,7 +28,7 @@ source "$SCRIPTDIR"/build.sh "${BUILDJDK}"
 make -C docs/manual all
 
 (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-/tmp/$USER/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
 
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-/tmp/$USER/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt

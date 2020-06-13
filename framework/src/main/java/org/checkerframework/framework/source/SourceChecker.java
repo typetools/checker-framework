@@ -28,6 +28,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.UtilPlume;
@@ -197,7 +198,8 @@ import org.plumelib.util.UtilPlume;
     // to be output.
     "resolveReflection",
 
-    // Whether to use .jaif files whole-program inference
+    // Whether to use whole-program inference. Takes an argument to specify the output format:
+    // "-Ainfer=stubs" or "-Ainfer=jaifs".
     "infer",
 
     // With each warning, in addition to the concrete error key,
@@ -245,6 +247,11 @@ import org.plumelib.util.UtilPlume;
     // Whether to print warnings about stub files that are redundant with the annotations from
     // bytecode.
     "stubWarnIfRedundantWithBytecode",
+    // With this option, annotations in stub files are used EVEN IF THE SOURCE FILE IS
+    // PRESENT. Only use this option when you intend to store types in stub files rather than
+    // directly in source code, such as during whole-program inference. The annotations in the
+    // stub files will be glb'd with those in the source code before local inference begins.
+    "mergeStubsWithSource",
     // Already listed above, but worth noting again in this section:
     // "useConservativeDefaultsForUncheckedCode"
 
@@ -293,6 +300,10 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
     "permitMissingJdk",
     "nocheckjdk", // temporary, for backward compatibility
+
+    // Parse all JDK files at startup rather than as needed.
+    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    "parseAllJdk",
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
@@ -356,7 +367,10 @@ import org.plumelib.util.UtilPlume;
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
-    "resourceStats"
+    "resourceStats",
+
+    // Parse all JDK files at startup rather than as needed.
+    "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
@@ -462,8 +476,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * The string that separates the checker name from the option name in a "-A" command-line
      * argument. This string may only consist of valid Java identifier part characters, because it
      * will be used within the key of an option.
-     *
-     * @see #activeOptions
      */
     protected static final String OPTION_SEPARATOR = "_";
 
@@ -487,7 +499,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
         // Keep in sync with check in checker-framework/build.gradle and text in installation
         // section of manual.
-        int jreVersion = PluginUtil.getJreVersion();
+        int jreVersion = SystemUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
                     "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
@@ -513,7 +525,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /// Getters and setters
     ///
 
-    /** @return the {@link ProcessingEnvironment} that was supplied to this checker */
+    /**
+     * Returns the {@link ProcessingEnvironment} that was supplied to this checker.
+     *
+     * @return the {@link ProcessingEnvironment} that was supplied to this checker
+     */
     @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
@@ -530,7 +546,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.parentChecker = parentChecker;
     }
 
-    /** @return the parent checker of the current checker */
+    /**
+     * Returns the parent checker of the current checker.
+     *
+     * @return the parent checker of the current checker
+     */
     public SourceChecker getParentChecker() {
         return this.parentChecker;
     }
@@ -564,7 +584,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return upstreamCheckerNames;
     }
 
-    /** @return the {@link CFContext} used by this checker */
+    /**
+     * Returns the {@link CFContext} used by this checker.
+     *
+     * @return the {@link CFContext} used by this checker
+     */
     public CFContext getContext() {
         return this;
     }
@@ -853,8 +877,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (p.getCompilationUnit() != currentRoot) {
             setRoot(p.getCompilationUnit());
             if (hasOption("filenames")) {
-                // Add timestamp to indicate how long operations are taking
-                message(NOTE, new java.util.Date().toString());
+                // TODO: Have a command-line option to turn the timestamps on/off too, because
+                // they are nondeterministic across runs.
+
+                // Add timestamp to indicate how long operations are taking.
+                // Duplicate messages are suppressed, so this might not appear in front of every "
+                // is type-checking " message (when a file takes less than a second to type-check).
+                message(NOTE, Instant.now().toString());
                 message(
                         NOTE,
                         "%s is type-checking %s",
@@ -1127,7 +1156,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a Tree, or null
      * @param defaultFormat the message key, in parentheses
      * @param args arguments for interpolation in the string corresponding to the given message key
-     * @return the first part of the message format output by -Adetailedmsgtext.
+     * @return the first part of the message format output by -Adetailedmsgtext
      */
     private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
         StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
@@ -1198,7 +1227,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param source the object from which to obtain source position information; may be an Element,
      *     a Tree, or null
-     * @return the tree associated with the given source object, or null if none.
+     * @return the tree associated with the given source object, or null if none
      */
     private @Nullable Tree sourceToTree(@Nullable Object source) {
         if (source instanceof Element) {
@@ -1720,8 +1749,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /**
+     * Returns collection of lower-case string keys that a checker honors for suppressing warnings
+     * and errors that it issues. Each such key suppresses all warnings issued by the checker.
+     *
      * @return collection of lower-case string keys that a checker honors for suppressing warnings
-     *     and errors that it issues. Each such key suppresses all warnings issued by the checker.
+     *     and errors that it issues
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
@@ -2205,7 +2237,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return result;
     }
 
-    /** @return the default warning suppression key for this checker based on the checker name */
+    /**
+     * Returns the default warning suppression key for this checker based on the checker name.
+     *
+     * @return the default warning suppression key for this checker based on the checker name
+     */
     private String getDefaultWarningSuppressionKey() {
         String className = this.getClass().getSimpleName();
         int indexOfChecker = className.lastIndexOf("Checker");

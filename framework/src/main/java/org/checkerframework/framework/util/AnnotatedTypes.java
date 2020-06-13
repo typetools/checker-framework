@@ -52,7 +52,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -530,7 +530,7 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        PluginUtil.joinLines(
+                        SystemUtil.joinLines(
                                 "Type arguments of a declaration should be type variables",
                                 "enclosingClassOfElem=" + enclosingClassOfElem,
                                 "enclosingType=" + enclosingType,
@@ -542,7 +542,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    PluginUtil.joinLines(
+                    SystemUtil.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
@@ -735,7 +735,7 @@ public class AnnotatedTypes {
      *     subtype of MethodInvocationTree or NewClassTree
      * @param elt the element corresponding to the tree
      * @param preType the (partially annotated) type corresponding to the tree - the result of
-     *     AnnotatedTypes.asMemberOf with the receiver and elt.
+     *     AnnotatedTypes.asMemberOf with the receiver and elt
      * @return the mapping of the type variables to type arguments for this method or constructor
      *     invocation
      */
@@ -1080,15 +1080,22 @@ public class AnnotatedTypes {
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
-    /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
+    /**
+     * Returns true if the underlying type of this atm is a java.lang.annotation.Annotation.
+     *
+     * @return true if the underlying type of this atm is a java.lang.annotation.Annotation
+     */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
         return TypesUtils.isDeclaredOfName(atm.getUnderlyingType(), annotationClassName);
     }
 
     /**
-     * @return true if atm is an Annotation interface, i.e. an implementation of
-     *     java.lang.annotation.Annotation e.g. @interface MyAnno - implementsAnnotation would
-     *     return true when called on an AnnotatedDeclaredType representing a use of MyAnno
+     * Returns true if atm is an Annotation interface, i.e. an implementation of
+     * java.lang.annotation.Annotation. Given {@code @interface MyAnno}, a call to {@code
+     * implementsAnnotation} returns true when called on an AnnotatedDeclaredType representing a use
+     * of MyAnno.
+     *
+     * @return true if atm is an Annotation interface
      */
     public static boolean implementsAnnotation(final AnnotatedTypeMirror atm) {
         if (atm.getKind() != TypeKind.DECLARED) {
@@ -1128,7 +1135,11 @@ public class AnnotatedTypes {
         return false;
     }
 
-    /** @return true if the typeVar1 and typeVar2 are two uses of the same type variable */
+    /**
+     * Returns true if the typeVar1 and typeVar2 are two uses of the same type variable.
+     *
+     * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
+     */
     public static boolean haveSameDeclaration(
             Types types,
             final AnnotatedTypeVariable typeVar1,
@@ -1242,7 +1253,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            PluginUtil.joinLines(
+                            SystemUtil.joinLines(
                                     "Unexpected AnnotatedTypeMirror with no primary annotation.",
                                     "toSearch=" + toSearch,
                                     "top=" + top,

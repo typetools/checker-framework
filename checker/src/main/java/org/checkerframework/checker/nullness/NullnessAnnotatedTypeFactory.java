@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -25,6 +26,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -83,6 +85,9 @@ public class NullnessAnnotatedTypeFactory
 
     /** Determines the nullness type of calls to {@link java.util.Collection#toArray()}. */
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
+
+    /** The Class.getCanonicalName() method. */
+    protected final ExecutableElement classGetCanonicalName;
 
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
@@ -178,7 +183,11 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    /** Creates NullnessAnnotatedTypeFactory. */
+    /**
+     * Creates a NullnessAnnotatedTypeFactory.
+     *
+     * @param checker the associated {@link NullnessChecker}
+     */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -204,7 +213,16 @@ public class NullnessAnnotatedTypeFactory
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
+        boolean permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
+        systemGetPropertyHandler =
+                new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
+
+        classGetCanonicalName =
+                TreeUtils.getMethod(
+                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
 
         postInit();
 
@@ -300,8 +318,18 @@ public class NullnessAnnotatedTypeFactory
         ParameterizedExecutableType mType = super.methodFromUse(tree);
         AnnotatedExecutableType method = mType.executableType;
 
+        // Special cases for method invocations with specific arguments.
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
+        // `MyClass.class.getCanonicalName()` is non-null.
+        if (TreeUtils.isMethodInvocation(tree, classGetCanonicalName, processingEnv)) {
+            ExpressionTree receiver = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
+            if (TreeUtils.isClassLiteral(receiver)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                type.replaceAnnotation(NONNULL);
+            }
+        }
+
         return mType;
     }
 
@@ -491,7 +519,11 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /** @return the list of annotations of the non-null type system */
+    /**
+     * Returns the list of annotations of the non-null type system.
+     *
+     * @return the list of annotations of the non-null type system
+     */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }

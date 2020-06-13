@@ -4,9 +4,9 @@
 
 plugins {
     id 'java'
-    id "io.freefair.lombok" version "4.1.5"
+    id "io.freefair.lombok" version "5.1.0"
     // Checker Framework pluggable type-checking
-    id 'org.checkerframework' version '0.4.14' apply false
+    id 'org.checkerframework' version '0.5.4' apply false
 }
 
 apply plugin: 'org.checkerframework'
@@ -16,8 +16,6 @@ dependencies {
     compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
     testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
     checkerFramework files(cfHome + "/checker/dist/checker.jar")
-    // only needed for JDK 8
-    checkerFrameworkAnnotatedJDK files(cfHome + "/checker/dist/jdk8.jar")
 }
 
 repositories {

@@ -305,7 +305,7 @@ Here is a good way to proceed.
   Annotate parts of the JDK, if relevant
   (Section~\ref{creating-a-checker-annotated-jdk}).
 
-  Write test cases for at least some of the annotated JDK methods to ensure
+  Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
 
 \item
@@ -864,9 +864,9 @@ optional, and many checker classes do not have one.)
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled.  The checker uses
-\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
 and
-\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-org.checkerframework.framework.source.Result-java.lang.Object:A-}
+\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
 to issue errors.
 
 Also, the checker class follows the factory method pattern to
@@ -1666,27 +1666,19 @@ following two lines at the beginning of the constructor for your subtype of
 \end{Verbatim}
 
 
-\sectionAndLabel{Annotated JDK}{creating-a-checker-annotated-jdk}
+\sectionAndLabel{Annotated JDK and other annotated libraries}{creating-a-checker-annotated-jdk}
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
-uses the JDK\@.  You need to write your annotations twice:  once for JDK 8
-and once for JDK 11.
-
-For JDK 11, write your annotations in
-\url{https://github.com/typetools/jdk}.
-
-For JDK 8, as described in Section~\ref{annotating-libraries}, you can
-supply annotations in Java files that will be compiled to \<.class> files,
-or as stub files (partial Java source files).
-It's easier to start out with stub files.  If you need to annotate many
-classes (say, more than 20 or so), then you should create an annotated JDK.
+uses the JDK\@.  You have two options:
 
 \begin{itemize}
 \item
-To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
+  Write JDK annotations in a fork of
+  \url{https://github.com/typetools/jdk}.
 \item
-To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
+  Write JDK annotations as stub files (partial Java source files).
+  Create a file \<jdk.astub> in
 the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
 or classes that only exist in certain JDK versions.
 It will be automatically used by the
@@ -1793,6 +1785,9 @@ in LSP (Language Server Protocol) format.
 
 \item \code{-ApermitMissingJdk}:
   don't issue an error if no annotated JDK can be found.
+
+\item \code{-AparseAllJdk}:
+  parse all JDK files at startup rather than as needed.
 
 \item \code{-AstubDebug}:
   Print debugging messages while processing stub files.

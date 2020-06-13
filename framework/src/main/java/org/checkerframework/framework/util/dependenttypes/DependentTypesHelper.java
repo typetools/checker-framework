@@ -52,7 +52,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -248,6 +248,9 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Returns true if methodCalled is varargs method invocation and its varargs arguments are not
+     * passed in an array, false otherwise.
+     *
      * @return true if methodCalled is varargs method invocation and its varargs arguments are not
      *     passed in an array, false otherwise
      */
@@ -748,7 +751,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = PluginUtil.joinLines(errors);
+        String error = SystemUtil.joinLines(errors);
         checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 

@@ -19,6 +19,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public interface QualifierPolymorphism {
 
     /**
+     * Returns the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
+     * otherwise return null.
+     *
      * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
      *     otherwise return null
      */
@@ -35,7 +38,12 @@ public interface QualifierPolymorphism {
         return null;
     }
 
-    /** @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation. */
+    /**
+     * Returns true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation.
+     *
+     * @param qual an annotation
+     * @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation
+     */
     static boolean hasPolymorphicQualifier(AnnotationMirror qual) {
         return getPolymorphicQualifier(qual) != null;
     }

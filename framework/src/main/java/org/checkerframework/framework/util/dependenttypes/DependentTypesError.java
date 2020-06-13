@@ -17,6 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class DependentTypesError {
 
     /** How elements of this class are formatted. */
+    @SuppressWarnings("InlineFormatString") // https://github.com/google/error-prone/issues/1650
     private static final String FORMAT_STRING = "[error for expression: %s; error: %s]";
     /** Regular expression for unparsing string representations of this class (gross). */
     private static final Pattern ERROR_PATTERN =
@@ -102,7 +103,8 @@ public class DependentTypesError {
 
     @Override
     public String toString() {
-        return String.format(FORMAT_STRING, expression, error);
+        // Empty string concatenation is to maybe work around Error Prone's InlineFormatString.
+        return String.format(FORMAT_STRING + "", expression, error);
     }
 
     /**

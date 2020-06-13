@@ -13,17 +13,18 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
-                A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
-        extends AbstractCFGVisualizer<A, S, T> {
+                V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+        extends AbstractCFGVisualizer<V, S, T> {
 
     @Override
     public Map<String, Object> visualize(
-            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
         String stringGraph = visualizeGraph(cfg, entry, analysis);
         Map<String, Object> res = new HashMap<>();
         res.put("stringGraph", stringGraph);
@@ -33,7 +34,7 @@ public class StringCFGVisualizer<
     @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
-            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
         StringBuilder sbStringNodes = new StringBuilder();
         sbStringNodes.append(lineSeparator);
 
@@ -66,7 +67,7 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
         return super.visualizeBlockHelper(bb, analysis, lineSeparator);
     }
 
@@ -76,16 +77,24 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        return "ConditionalBlock: then: "
+                + cbb.getThenSuccessor().getId()
+                + ", else: "
+                + cbb.getElseSuccessor().getId();
+    }
+
+    @Override
+    public String visualizeBlockTransferInput(Block bb, Analysis<V, S, T> analysis) {
         return super.visualizeBlockTransferInputHelper(bb, analysis, lineSeparator);
     }
 
     @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
         StringBuilder sbBlockNode = new StringBuilder();
         sbBlockNode.append(t.toString()).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
         if (analysis != null) {
-            A value = analysis.getValue(t);
+            V value = analysis.getValue(t);
             if (value != null) {
                 sbBlockNode.append(" > ").append(value.toString());
             }
@@ -94,32 +103,32 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreThisVal(A value) {
+    public String visualizeStoreThisVal(V value) {
         return storeEntryIndent + "this > " + value + lineSeparator;
     }
 
     @Override
-    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value) {
+    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
         return storeEntryIndent + localVar + " > " + value + lineSeparator;
     }
 
     @Override
-    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value) {
+    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
         return storeEntryIndent + fieldAccess + " > " + value + lineSeparator;
     }
 
     @Override
-    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value) {
+    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
         return storeEntryIndent + arrayValue + " > " + value + lineSeparator;
     }
 
     @Override
-    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
+    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
         return storeEntryIndent + methodCall + " > " + value + lineSeparator;
     }
 
     @Override
-    public String visualizeStoreClassVals(FlowExpressions.ClassName className, A value) {
+    public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
         return storeEntryIndent + className + " > " + value + lineSeparator;
     }
 

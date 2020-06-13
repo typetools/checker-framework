@@ -37,13 +37,20 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifier.List.class)
 public @interface EnsuresQualifier {
     /**
+     * Returns the Java expressions for which the qualifier holds after successful method
+     * termination.
+     *
      * @return the Java expressions for which the qualifier holds after successful method
      *     termination
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** @return the qualifier that is guaranteed to hold on successful termination of the method */
+    /**
+     * Returns the qualifier that is guaranteed to hold on successful termination of the method.
+     *
+     * @return the qualifier that is guaranteed to hold on successful termination of the method
+     */
     Class<? extends Annotation> qualifier();
 
     /**
@@ -57,7 +64,11 @@ public @interface EnsuresQualifier {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @InheritedAnnotation
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         EnsuresQualifier[] value();
     }
 }

@@ -1,3 +1,47 @@
+Version 3.5.0, July 1, 2020
+
+The Nullness Checker now treats System.getProperty soundly.  Use
+-Alint=permitClearProperty to disable special treatment of System.getProperty
+and to permit undefining built-in system properties.
+
+Implementation details:
+Changed the types of some fields and methods from array to List:
+QualifierDefaults.validLocationsForUncheckedCodeDefaults()
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
+QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
+QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
+
+---------------------------------------------------------------------------
+
+Version 3.4.1, June 1, 2020
+
+-Ainfer now takes an argument:
+ * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
+ * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
+ * -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
+
+New command-line option:
+  -AmergeStubsWithSource If both a stub file and a source file are available, use both.
+
+Closed issues:
+2893, 3021, 3128, 3160, 3232, 3277, 3285, 3289, 3295, 3302, 3305, 3307, 3310,
+3316, 3318, 3329.
+
+---------------------------------------------------------------------------
+
+Version 3.4.0, May 3, 2020
+
+The annotated jdk8.jar is no longer used.  You should remove any occurrence of
+  -Xbootclasspath/p:.../jdk8.jar
+from your build scripts.  Annotations for JDK 8 are included in checker.jar.
+
+The Returns Receiver Checker enables documenting and checking that a method
+returns its receiver (i.e., the `this` parameter).
+
+Closed issues:
+3267, 3263, 3217, 3212, 3201, 3111, 3010, 2943, 2930.
+
 ---------------------------------------------------------------------------
 
 Version 3.3.0, April 1, 2020

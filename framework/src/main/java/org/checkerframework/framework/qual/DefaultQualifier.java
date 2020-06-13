@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * &nbsp; @DefaultQualifier(NonNull.class)
- * &nbsp; @DefaultQualifier(value = Interned.class, locations = ALL_EXCEPT_LOCALS)
+ * &nbsp; @DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)
  * &nbsp; @DefaultQualifier(Tainted.class)
  * &nbsp; class MyClass { ... }
  * </pre>
@@ -56,7 +56,11 @@ public @interface DefaultQualifier {
      */
     Class<? extends Annotation> value();
 
-    /** @return the locations to which the annotation should be applied */
+    /**
+     * Returns the locations to which the annotation should be applied.
+     *
+     * @return the locations to which the annotation should be applied
+     */
     TypeUseLocation[] locations() default {TypeUseLocation.ALL};
 
     /**
@@ -77,7 +81,11 @@ public @interface DefaultQualifier {
         ElementType.PARAMETER
     })
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         DefaultQualifier[] value();
     }
 }

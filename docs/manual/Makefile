@@ -27,6 +27,7 @@ signedness-checker.tex \
 aliasing-checker.tex \
 purity-checker.tex \
 constant-value-checker.tex \
+returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -73,7 +74,9 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	cd ../.. && ./gradlew getPlumeScripts
 
 .PHONY: contributors.tex
-contributors.tex: ../../checker/bin-devel/.plume-scripts
+contributors.tex:
+# Update plume-scripts even if it is already cloned
+	cd ../.. && ./gradlew getPlumeScripts
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
