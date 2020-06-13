@@ -10,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -38,7 +38,7 @@ public abstract class CFAbstractAnalysis<
                 V extends CFAbstractValue<V>,
                 S extends CFAbstractStore<V, S>,
                 T extends CFAbstractTransfer<V, S, T>>
-        extends Analysis<V, S, T> {
+        extends ForwardAnalysisImpl<V, S, T> {
     /** The qualifier hierarchy for which to track annotations. */
     protected final QualifierHierarchy qualifierHierarchy;
 
