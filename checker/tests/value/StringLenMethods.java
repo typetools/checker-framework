@@ -1,5 +1,6 @@
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
 class StringLenMethods {
