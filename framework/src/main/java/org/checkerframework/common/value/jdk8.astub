@@ -1,8 +1,0 @@
-import org.checkerframework.common.value.qual.*;
-
-package java.awt.image;
-
-class ColorModel {
-   public int @PolyValue [] getComponents(int pixel, int @PolyValue [] components, int offset);
-   public int @PolyValue [] getComponents(Object pixel, int @PolyValue [] components, int offset);
-}
