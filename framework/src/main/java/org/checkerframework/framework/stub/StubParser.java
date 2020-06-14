@@ -1455,8 +1455,7 @@ public class StubParser {
         }
         if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
             // This might be a false positive warning.  The stub parser permits a stub file to omit
-            // the access specifier, but private and package-private methods aren't in the
-            // TypeElement.
+            // the access specifier, but package-private methods aren't in the TypeElement.
             stubWarnNotFound(
                     "Package-private method "
                             + wantedMethodString
