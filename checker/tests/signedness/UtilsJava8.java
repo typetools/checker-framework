@@ -1,4 +1,6 @@
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.Unsigned;
+import org.checkerframework.common.value.qual.IntRange;
 
 // Test Java 8 unsigned utils
 public class UtilsJava8 {
