@@ -8,6 +8,7 @@ public class UtilsJava8 {
             @Signed long slong,
             @Unsigned int uint,
             @Signed int sint,
+            @IntRange(from = 2, to = 36) int radix,
             char[] buf,
             String s) {
 
@@ -16,9 +17,9 @@ public class UtilsJava8 {
         long resLong;
 
         // :: error: (argument.type.incompatible)
-        resString = Long.toUnsignedString(slong, sint);
+        resString = Long.toUnsignedString(slong, radix);
 
-        resString = Long.toUnsignedString(ulong, sint);
+        resString = Long.toUnsignedString(ulong, radix);
 
         // :: error: (argument.type.incompatible)
         resString = Long.toUnsignedString(slong);
@@ -26,9 +27,9 @@ public class UtilsJava8 {
         resString = Long.toUnsignedString(ulong);
 
         // :: error: (assignment.type.incompatible)
-        slong = Long.parseUnsignedLong(s, sint);
+        slong = Long.parseUnsignedLong(s, radix);
 
-        ulong = Long.parseUnsignedLong(s, sint);
+        ulong = Long.parseUnsignedLong(s, radix);
 
         // :: error: (assignment.type.incompatible)
         slong = Long.parseUnsignedLong(s);
@@ -75,9 +76,9 @@ public class UtilsJava8 {
         ulong = Long.remainderUnsigned(ulong, ulong);
 
         // :: error: (argument.type.incompatible)
-        resString = Integer.toUnsignedString(sint, sint);
+        resString = Integer.toUnsignedString(sint, radix);
 
-        resString = Integer.toUnsignedString(uint, sint);
+        resString = Integer.toUnsignedString(uint, radix);
 
         // :: error: (argument.type.incompatible)
         resString = Integer.toUnsignedString(sint);
@@ -85,9 +86,9 @@ public class UtilsJava8 {
         resString = Integer.toUnsignedString(uint);
 
         // :: error: (assignment.type.incompatible)
-        sint = Integer.parseUnsignedInt(s, sint);
+        sint = Integer.parseUnsignedInt(s, radix);
 
-        uint = Integer.parseUnsignedInt(s, sint);
+        uint = Integer.parseUnsignedInt(s, radix);
 
         // :: error: (assignment.type.incompatible)
         sint = Integer.parseUnsignedInt(s);
