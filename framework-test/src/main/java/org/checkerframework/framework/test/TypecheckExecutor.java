@@ -67,8 +67,9 @@ public class TypecheckExecutor {
         nonJvmOptions.add("100000");
         nonJvmOptions.add("-Xlint:deprecation");
 
-        nonJvmOptions.add("-ApermitMissingJdk");
-        nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
+        //        nonJvmOptions.add("-ApermitMissingJdk");
+        // temporary, for backward compatibility; renamed -Anocheckjdk to -ApermitMissingJdk
+        //        nonJvmOptions.add("-Anocheckjdk");
 
         options.addAll(nonJvmOptions);
 
