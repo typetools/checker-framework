@@ -39,13 +39,14 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$SCRIPTDIR"/build.sh
 
+jar -tf checker/build/libs/checker-3.5.0-SNAPSHOT.jar
 
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
   PACKAGEDIR="/tmp/${PACKAGE}"
   rm -rf "${PACKAGEDIR}"
-  /tmp/$USER/plume-scripts/git-clone-related plume-lib "${PACKAGE}" "${PACKAGEDIR}"
+  "/tmp/$USER/plume-scripts/git-clone-related" plume-lib "${PACKAGE}" "${PACKAGEDIR}"
   echo "About to call ./gradlew --console=plain -PcfLocal assemble"
   (cd "${PACKAGEDIR}" && ./gradlew --console=plain -PcfLocal assemble)
 done
