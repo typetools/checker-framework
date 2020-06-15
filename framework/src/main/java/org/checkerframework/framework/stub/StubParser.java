@@ -1741,9 +1741,11 @@ public class StubParser {
 
     /**
      * Converts {@code number} to {@code expectedKind}.
-     * <p>
-     * {@code @interface Anno { long value();})
-     * {@code @Anno(1)}
+     *
+     * <pre><code>
+     * &nbsp; @interface Anno { long value(); }
+     * &nbsp; @Anno(1)
+     * </code></pre>
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      */
