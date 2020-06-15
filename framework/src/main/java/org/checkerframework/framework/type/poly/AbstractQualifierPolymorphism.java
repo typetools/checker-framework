@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -24,8 +25,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
@@ -76,14 +77,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     private PolyCollector collector = new PolyCollector();
 
     /** Resolves each polymorphic qualifier by replacing it with its instantiation. */
-    private AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirror>> replacer =
-            new Replacer();
+    private final SimpleAnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirror>> replacer;
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
      * bottom qualifiers.
      */
-    private Completer completer = new Completer();
+    private final SimpleAnnotatedTypeScanner<Void, Void> completer;
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -98,6 +98,34 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.atypeFactory = factory;
         this.qualHierarchy = factory.getQualifierHierarchy();
         this.topQuals = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
+
+        this.completer =
+                new SimpleAnnotatedTypeScanner<>(
+                        (type, p) -> {
+                            for (Entry<AnnotationMirror, AnnotationMirror> entry :
+                                    polyQuals.entrySet()) {
+                                AnnotationMirror poly = entry.getKey();
+                                AnnotationMirror top = entry.getValue();
+                                if (type.hasAnnotation(poly)) {
+                                    type.removeAnnotation(poly);
+                                    if (type.getKind() != TypeKind.TYPEVAR
+                                            && type.getKind() != TypeKind.WILDCARD) {
+                                        // Do not add qualifiers to type variables and
+                                        // wildcards
+                                        type.addAnnotation(
+                                                this.qualHierarchy.getBottomAnnotation(top));
+                                    }
+                                }
+                            }
+                            return null;
+                        });
+
+        this.replacer =
+                new SimpleAnnotatedTypeScanner<>(
+                        (type, map) -> {
+                            replace(type, map);
+                            return null;
+                        });
     }
 
     /**
@@ -288,39 +316,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     protected abstract void replace(
             AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements);
-
-    /** Replaces each polymorphic qualifier with its instantiation. */
-    class Replacer extends AnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirror>> {
-        @Override
-        public Void scan(
-                AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
-            replace(type, replacements);
-            return super.scan(type, replacements);
-        }
-    }
-
-    /**
-     * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
-     * top qualifiers.
-     */
-    class Completer extends AnnotatedTypeScanner<Void, Void> {
-        @Override
-        protected Void scan(AnnotatedTypeMirror type, Void p) {
-            for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : polyQuals.entrySet()) {
-                AnnotationMirror top = pqentry.getValue();
-                AnnotationMirror poly = pqentry.getKey();
-
-                if (type.hasAnnotation(poly)) {
-                    type.removeAnnotation(poly);
-                    if (type.getKind() != TypeKind.TYPEVAR && type.getKind() != TypeKind.WILDCARD) {
-                        // Do not add qualifiers to type variables and wildcards
-                        type.addAnnotation(qualHierarchy.getBottomAnnotation(top));
-                    }
-                }
-            }
-            return super.scan(type, p);
-        }
-    }
 
     /**
      * A helper class that resolves the polymorphic qualifiers with the most restrictive qualifier.
