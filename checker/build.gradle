@@ -2,7 +2,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-	    // TODO: There is probably a better way to refer to the framework's build/generated/resources/ directory.
+            // TODO: There is probably a better way to refer to the framework's build/generated/resources/ directory.
             srcDirs += ['src/main/java', "${buildDir}/generated/resources", "${buildDir}/../../framework/build/generated/resources"]
         }
     }
