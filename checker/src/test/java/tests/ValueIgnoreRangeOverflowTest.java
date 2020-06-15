@@ -3,25 +3,25 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ValueNonNullStringsConcatenationTest extends FrameworkPerDirectoryTest {
+/** Tests the constant value propagation type system without overflow. */
+public class ValueIgnoreRangeOverflowTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public ValueNonNullStringsConcatenationTest(List<File> testFiles) {
+    public ValueIgnoreRangeOverflowTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
-                "value-non-null-strings-concatenation",
+                "value",
                 "-Anomsgtext",
                 "-Astubs=statically-executable.astub",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,
-                "-A" + ValueChecker.NON_NULL_STRINGS_CONCATENATION);
+                "-A" + ValueChecker.IGNORE_RANGE_OVERFLOW);
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"all-systems", "value-non-null-strings-concatenation"};
+        return new String[] {"value", "all-systems", "value-ignore-range-overflow"};
     }
 }
