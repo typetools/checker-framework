@@ -8,5 +8,9 @@ class ArrayIndex {
         if (a[i + 1] != null) {
             a[i + 1].hashCode();
         }
+        if (a[i + 1] != null) {
+            // :: error: (dereference.of.nullable)
+            a[i].hashCode();
+        }
     }
 }

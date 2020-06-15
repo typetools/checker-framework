@@ -474,7 +474,7 @@ public class FlowExpressions {
          * Returns true if and only if the value this expression stands for cannot be changed (with
          * respect to ==) by a method call. This is the case for local variables, the self reference
          * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
-         * true.
+         * true. Binary operation depends on its left and right operands.
          *
          * @see #isUnmodifiableByOtherCode
          */
@@ -1138,22 +1138,95 @@ public class FlowExpressions {
             this.right = right;
         }
 
-        /** @return the binary operation kind. */
+        /**
+         * Returns the operator of this binary operation.
+         *
+         * @return the binary operation kind.
+         */
         public Kind getOperationKind() {
             return operationKind;
         }
 
-        /** @return the left receiver. */
+        /**
+         * Returns the left operand of this binary operation.
+         *
+         * @return the left receiver.
+         */
         public Receiver getLeft() {
             return left;
         }
 
-        /** @return the right receiver. */
+        /**
+         * Returns the right operand of this binary operation.
+         *
+         * @return the right receiver.
+         */
         public Receiver getRight() {
             return right;
         }
 
-        /** @return true if the binary operation is commutative. */
+        @Override
+        public boolean containsOfClass(Class<? extends Receiver> clazz) {
+            if (getClass() == clazz) {
+                return true;
+            }
+            return left.containsOfClass(clazz) || right.containsOfClass(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return left.isUnassignableByOtherCode() && right.isUnassignableByOtherCode();
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return left.isUnmodifiableByOtherCode() && right.isUnmodifiableByOtherCode();
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof BinaryOperation)) {
+                return false;
+            }
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!(operationKind == biOp.getOperationKind())) {
+                return false;
+            }
+            return left.equals(biOp.left) && right.equals(biOp.right);
+        }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return left.containsModifiableAliasOf(store, other)
+                    || right.containsModifiableAliasOf(store, other);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(operationKind, left, right);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof BinaryOperation)) {
+                return false;
+            }
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!(operationKind == biOp.getOperationKind())) {
+                return false;
+            }
+            if (isCommutative()) {
+                return (left.equals(biOp.left) && right.equals(biOp.right))
+                        || (left.equals(biOp.right) && right.equals(biOp.left));
+            }
+            return left.equals(biOp.left) && right.equals(biOp.right);
+        }
+
+        /**
+         * Check if the binary operation is commutative. e.g. x + y == y + x.
+         *
+         * @return true if the binary operation is commutative.
+         */
         private boolean isCommutative() {
             switch (operationKind) {
                 case PLUS:
@@ -1169,63 +1242,6 @@ public class FlowExpressions {
                 default:
                     return false;
             }
-        }
-
-        @Override
-        public boolean containsOfClass(Class<? extends Receiver> clazz) {
-            if (getClass() == clazz) {
-                return true;
-            }
-            return right.containsOfClass(clazz) || left.containsOfClass(clazz);
-        }
-
-        @Override
-        public boolean isUnassignableByOtherCode() {
-            return right.isUnassignableByOtherCode() && left.isUnassignableByOtherCode();
-        }
-
-        @Override
-        public boolean isUnmodifiableByOtherCode() {
-            return right.isUnmodifiableByOtherCode() && left.isUnmodifiableByOtherCode();
-        }
-
-        @Override
-        public boolean syntacticEquals(Receiver other) {
-            if (!(other instanceof BinaryOperation)) {
-                return false;
-            }
-            BinaryOperation biOp = (BinaryOperation) other;
-            if (!operationKind.equals(biOp.getOperationKind())) {
-                return false;
-            }
-            return right.equals(biOp.right) && left.equals(biOp.left);
-        }
-
-        @Override
-        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
-            return right.containsModifiableAliasOf(store, other)
-                    || left.containsModifiableAliasOf(store, other);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(operationKind, left, right);
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof BinaryOperation)) {
-                return false;
-            }
-            BinaryOperation biOp = (BinaryOperation) other;
-            if (!operationKind.equals(biOp.getOperationKind())) {
-                return false;
-            }
-            if (isCommutative()) {
-                return (right.equals(biOp.right) && left.equals(biOp.left))
-                        || (left.equals(biOp.right) && right.equals(biOp.left));
-            }
-            return right.equals(biOp.right) && left.equals(biOp.left);
         }
 
         @Override
@@ -1292,7 +1308,7 @@ public class FlowExpressions {
                     result.append(" != ");
                     break;
                 default:
-                    break;
+                    throw new BugInCF("Type of the receiver is not a binary operation.");
             }
 
             result.append(right.toString());
