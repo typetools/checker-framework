@@ -262,7 +262,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
-     * Returns annotation set that is the combination of the two annotations. The annotations are
+     * Returns annotation that is the combination of the two annotations. The annotations are
      * instantiations for {@code polyQual}.
      *
      * <p>The combination is typically their least upper bound. (It could be the GLB in the case
@@ -271,7 +271,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * @param polyQual polymorphic qualifier for which {@code a1} and {@code a2} are instantiations
      * @param a1 an annotation that is an instantiation of {@code polyQual}
      * @param a2 an annotation that is an instantiation of {@code polyQual}
-     * @return a annotation that is the combination of the two annotations
+     * @return an annotation that is the combination of the two annotations
      */
     protected abstract AnnotationMirror combine(
             AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2);
