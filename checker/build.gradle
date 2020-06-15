@@ -26,6 +26,8 @@ dependencies {
     testannotationsImplementation project(':checker-qual')
 }
 
+processResources.dependsOn(':framework:copyAndMinimizeAnnotatedJdkFiles')
+
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
