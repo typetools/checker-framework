@@ -246,14 +246,15 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     /**
      * If a tree is can be found for the declaration of the type variable {@code type}, then a
      * {@link AnnotatedTypeVariable} is returned with explicit annotations from the type variables
-     * declared bounds. If a tree cannot be found, then {@code type} is returned.
+     * declared bounds. If a tree cannot be found, then {@code type}, converted to a use, is
+     * returned.
      *
      * @param type type variable used to find declaration tree
      * @param f annotated type factory
      * @return the AnnotatedTypeVariable from the declaration of {@code type} or {@code type} if no
      *     tree is found.
      */
-    private AnnotatedTypeMirror getTypeVariableFromDeclaration(
+    private AnnotatedTypeVariable getTypeVariableFromDeclaration(
             AnnotatedTypeVariable type, AnnotatedTypeFactory f) {
         TypeVariable typeVar = type.getUnderlyingType();
         TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
