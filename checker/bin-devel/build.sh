@@ -21,20 +21,20 @@ fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
 if [ -d "/tmp/$USER/plume-scripts" ] ; then
-  (cd /tmp/$USER/plume-scripts && git pull -q)
+  (cd "/tmp/$USER/plume-scripts" && git pull -q)
 else
-  mkdir -p /tmp/$USER && (cd /tmp/$USER && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
+  mkdir -p "/tmp/$USER" && (cd "/tmp/$USER" && (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git || git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git))
 fi
 
 # Clone the annotated JDK into ../jdk .
-/tmp/$USER/plume-scripts/git-clone-related typetools jdk
+"/tmp/$USER/plume-scripts/git-clone-related" typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-/tmp/$USER/plume-scripts/git-clone-related typetools annotation-tools "${AT}"
+"/tmp/$USER/plume-scripts/git-clone-related" typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
   ln -s "${AT}" ../annotation-tools
 fi
@@ -45,7 +45,7 @@ echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
 
 
 ## Build stubparser
-/tmp/$USER/plume-scripts/git-clone-related typetools stubparser
+"/tmp/$USER/plume-scripts/git-clone-related" typetools stubparser
 echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 (cd ../stubparser/ && ./.travis-build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
