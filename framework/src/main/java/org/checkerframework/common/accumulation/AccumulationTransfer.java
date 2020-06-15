@@ -47,18 +47,24 @@ public class AccumulationTransfer extends CFTransfer {
      *
      * <p>For example, suppose {@code node} is the expression {@code a.b().c()}, the new value
      * (added by the accumulation analysis because of the {@code .c()} call) is "foo", and b and c
-     * return their receiver. Then all of the expressions {@code a.b().c()}, {@code a.b()}, and
-     * {@code a} would have their estimates updated to include "foo". Note that due to what kind of
-     * values can be held in the store, this information is lost outside the method chain. That is,
-     * the returns-receiver propagated information is lost outside the expression in which the
-     * returns-receiver method invocations are nested.
+     * return their receiver. This method will directly update the estimate of {@code a.b().c()} to
+     * include "foo". In addition, the estimates for the expressions {@code a.b()} and {@code a}
+     * would have their estimates updated to include "foo", because c and b (respectively) return
+     * their receivers. Note that due to what kind of values can be held in the store, this
+     * information is lost outside the method chain. That is, the returns-receiver propagated
+     * information is lost outside the expression in which the returns-receiver method invocations
+     * are nested.
      *
      * <p>As a concrete example, consider the Called Methods accumulation checker: if {@code build}
      * requires a, b, and c to be called, then {@code foo.a().b().c().build();} will typecheck (they
      * are in one fluent method chain), but {@code foo.a().b().c(); foo.build();} will not -- the
      * store does not keep the information that a, b, and c have been called outside the chain.
      * {@code foo}'s type will be {@code CalledMethods("a")}, because only {@code a()} was called on
-     * {@code foo} directly.
+     * {@code foo} directly. For such code to typecheck, the Called Methods accumulation checker
+     * uses an additional rule: the return type of a receiver-returning method {@code rr()} is
+     * {@code CalledMethods("rr")}. This rule is implemented directly in the {@link
+     * org.checkerframework.framework.type.treeannotator.TreeAnnotator} subclass defined in the
+     * Called Methods type factory.
      *
      * @param node the node whose estimate should be expanded
      * @param result the transfer result containing the store to be modified
@@ -75,10 +81,14 @@ public class AccumulationTransfer extends CFTransfer {
 
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
-            Node receiver = methodInvocationNode.getTarget().getReceiver();
-            MethodInvocationTree invokedMethod = (MethodInvocationTree) tree;
+            while (methodInvocationNode != null) {
 
-            while (receiver != null && typeFactory.returnsThis(invokedMethod)) {
+                Node receiver = methodInvocationNode.getTarget().getReceiver();
+
+                if (receiver == null || !typeFactory.returnsThis((MethodInvocationTree) tree)) {
+                    break;
+                }
+
                 // Note that this call doesn't do anything if receiver is a method call
                 // that is not deterministic, though it can still continue to recurse.
                 insertIntoStores(result, receiver, newAnno);
@@ -93,11 +103,7 @@ public class AccumulationTransfer extends CFTransfer {
                     // end of the chain of calls has been reached.
                     break;
                 }
-
-                // The receiver is itself a method call, so recurse to propagate this new
-                // information to its receiver.
-                invokedMethod = (MethodInvocationTree) receiverTree;
-                receiver = ((MethodInvocationNode) receiver).getTarget().getReceiver();
+                methodInvocationNode = (MethodInvocationNode) receiver;
             }
         }
     }
