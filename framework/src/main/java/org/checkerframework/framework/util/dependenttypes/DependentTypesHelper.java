@@ -835,23 +835,21 @@ public class DependentTypesHelper {
         /** Create ExpressionErrorChecker. */
         private ExpressionErrorChecker() {
             super(
+                    (AnnotatedTypeMirror type, Void aVoid) -> {
+                        List<DependentTypesError> errors = new ArrayList<>();
+                        for (AnnotationMirror am : type.getAnnotations()) {
+                            if (isExpressionAnno(am)) {
+                                errors.addAll(checkForError(am));
+                            }
+                        }
+                        return errors;
+                    },
                     (r1, r2) -> {
                         List<DependentTypesError> newList = new ArrayList<>(r1);
                         newList.addAll(r2);
                         return newList;
                     },
                     Collections.emptyList());
-        }
-
-        @Override
-        protected List<DependentTypesError> defaultAction(AnnotatedTypeMirror type, Void aVoid) {
-            List<DependentTypesError> errors = new ArrayList<>();
-            for (AnnotationMirror am : type.getAnnotations()) {
-                if (isExpressionAnno(am)) {
-                    errors.addAll(checkForError(am));
-                }
-            }
-            return errors;
         }
     }
 
@@ -913,14 +911,9 @@ public class DependentTypesHelper {
         }
         boolean b =
                 new SimpleAnnotatedTypeScanner<>(
-                                (type, p) -> {
-                                    for (AnnotationMirror am : type.getAnnotations()) {
-                                        if (isExpressionAnno(am)) {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                },
+                                (type, p) ->
+                                        type.getAnnotations().stream()
+                                                .anyMatch(this::isExpressionAnno),
                                 Boolean::logicalOr,
                                 false)
                         .visit(atm);

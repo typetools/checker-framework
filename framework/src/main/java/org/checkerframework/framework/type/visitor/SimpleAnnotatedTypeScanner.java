@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * An {@link AnnotatedTypeScanner} that scans an {@link AnnotatedTypeMirror} and performs some
  * {@link #defaultAction} on each type. The defaultAction can be passed to the constructor {@link
- * #SimpleAnnotatedTypeScanner(DefaultAction)} or this class can be extended an {@link
+ * #SimpleAnnotatedTypeScanner(DefaultAction)} or this class can be extended and {@link
  * #defaultAction} can be overridden.
  *
  * <p>If the default action does not return a result, then {@code R} should be {@link Void}. If the

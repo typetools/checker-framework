@@ -35,12 +35,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * </ul>
  *
  * The {@link #reduce} method combines the results of visiting child types. It can be specified by
- * passing an {@link Reduce} object to one of the constructors or by overriden the method directly.
+ * passing an {@link Reduce} object to one of the constructors or by overriding the method directly.
  * If it is not otherwise specified, the reduce returns the first result if it is not null;
  * otherwise, the second result is returned. If the default result is nonnull and reduce never
  * returns null, then both parameters passed to reduce will be nonnull.
  *
- * <p>When overridden a visitAnnotatedTypeMirror method, the returned expression should be {@code
+ * <p>When overriding a visitAnnotatedTypeMirror method, the returned expression should be {@code
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
  * scanned.
  *

@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -102,20 +103,21 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.completer =
                 new SimpleAnnotatedTypeScanner<>(
                         (type, p) -> {
-                            polyQuals.forEach(
-                                    (poly, top) -> {
-                                        if (type.hasAnnotation(poly)) {
-                                            type.removeAnnotation(poly);
-                                            if (type.getKind() != TypeKind.TYPEVAR
-                                                    && type.getKind() != TypeKind.WILDCARD) {
-                                                // Do not add qualifiers to type variables and
-                                                // wildcards
-                                                type.addAnnotation(
-                                                        this.qualHierarchy.getBottomAnnotation(
-                                                                top));
-                                            }
-                                        }
-                                    });
+                            for (Entry<AnnotationMirror, AnnotationMirror> entry :
+                                    polyQuals.entrySet()) {
+                                AnnotationMirror poly = entry.getKey();
+                                AnnotationMirror top = entry.getValue();
+                                if (type.hasAnnotation(poly)) {
+                                    type.removeAnnotation(poly);
+                                    if (type.getKind() != TypeKind.TYPEVAR
+                                            && type.getKind() != TypeKind.WILDCARD) {
+                                        // Do not add qualifiers to type variables and
+                                        // wildcards
+                                        type.addAnnotation(
+                                                this.qualHierarchy.getBottomAnnotation(top));
+                                    }
+                                }
+                            }
                             return null;
                         });
 
