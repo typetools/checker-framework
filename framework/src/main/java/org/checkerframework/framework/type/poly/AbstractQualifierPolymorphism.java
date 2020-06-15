@@ -8,7 +8,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -103,7 +102,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         this.completer =
                 new SimpleAnnotatedTypeScanner<>(
                         (type, p) -> {
-                            for (Entry<AnnotationMirror, AnnotationMirror> entry :
+                            for (Map.Entry<AnnotationMirror, AnnotationMirror> entry :
                                     polyQuals.entrySet()) {
                                 AnnotationMirror poly = entry.getKey();
                                 AnnotationMirror top = entry.getValue();
