@@ -109,7 +109,6 @@ public class AnnotatedTypeCopier
         }
 
         final AnnotatedDeclaredType copy = (AnnotatedDeclaredType) makeCopy(original);
-        maybeCopyPrimaryAnnotations(original, copy);
         originalToCopy.put(original, copy);
 
         if (original.wasRaw()) {
@@ -141,7 +140,6 @@ public class AnnotatedTypeCopier
         }
 
         final AnnotatedIntersectionType copy = (AnnotatedIntersectionType) makeCopy(original);
-        maybeCopyPrimaryAnnotations(original, copy);
         originalToCopy.put(original, copy);
 
         if (original.supertypes != null) {
@@ -164,7 +162,6 @@ public class AnnotatedTypeCopier
         }
 
         final AnnotatedUnionType copy = (AnnotatedUnionType) makeCopy(original);
-        maybeCopyPrimaryAnnotations(original, copy);
         originalToCopy.put(original, copy);
 
         if (original.alternatives != null) {
@@ -187,7 +184,6 @@ public class AnnotatedTypeCopier
         }
 
         final AnnotatedExecutableType copy = (AnnotatedExecutableType) makeCopy(original);
-        maybeCopyPrimaryAnnotations(original, copy);
         originalToCopy.put(original, copy);
 
         copy.setElement(original.getElement());
@@ -230,7 +226,6 @@ public class AnnotatedTypeCopier
         }
 
         final AnnotatedArrayType copy = (AnnotatedArrayType) makeCopy(original);
-        maybeCopyPrimaryAnnotations(original, copy);
         originalToCopy.put(original, copy);
 
         copy.setComponentType(visit(original.getComponentType(), originalToCopy));
