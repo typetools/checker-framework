@@ -30,7 +30,7 @@ dependencies {
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
     implementation('org.checkerframework:annotation-file-utilities:*') {
-        exclude group: 'com.google', module: 'javac'
+        exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
     implementation 'org.plumelib:reflection-util:0.2.2'
@@ -346,6 +346,7 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
 clean {
     delete("tests/whole-program-inference/annotated")
     delete("tests/returnsreceiverdelomboked")
+    delete('dist')
 }
 
 
