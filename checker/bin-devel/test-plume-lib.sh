@@ -39,8 +39,6 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$SCRIPTDIR"/build.sh
 
-jar -tf checker/build/libs/checker-3.5.0-SNAPSHOT.jar
-
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
