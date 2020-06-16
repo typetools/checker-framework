@@ -42,8 +42,8 @@ public class AccumulationTransfer extends CFTransfer {
      * Updates the estimate of how many things {@code node} has accumulated.
      *
      * <p>If the node is an invocation of a method that returns its receiver, then its receiver's
-     * type will also be updated. In a chain of method calls, this process will continue as long as
-     * each receiver is itself a receiver-returning method invocation.
+     * type will also be updated. In a chain of method calls, this process will continue backward as
+     * long as each receiver is itself a receiver-returning method invocation.
      *
      * <p>For example, suppose {@code node} is the expression {@code a.b().c()}, the new value
      * (added by the accumulation analysis because of the {@code .c()} call) is "foo", and b and c
@@ -59,8 +59,8 @@ public class AccumulationTransfer extends CFTransfer {
      * requires a, b, and c to be called, then {@code foo.a().b().c().build();} will typecheck (they
      * are in one fluent method chain), but {@code foo.a().b().c(); foo.build();} will not -- the
      * store does not keep the information that a, b, and c have been called outside the chain.
-     * {@code foo}'s type will be {@code CalledMethods("a")}, because only {@code a()} was called on
-     * {@code foo} directly. For such code to typecheck, the Called Methods accumulation checker
+     * {@code foo}'s type will be {@code CalledMethods("a")}, because only {@code a()} was called
+     * directly on {@code foo}. For such code to typecheck, the Called Methods accumulation checker
      * uses an additional rule: the return type of a receiver-returning method {@code rr()} is
      * {@code CalledMethods("rr")}. This rule is implemented directly in the {@link
      * org.checkerframework.framework.type.treeannotator.TreeAnnotator} subclass defined in the
@@ -90,14 +90,13 @@ public class AccumulationTransfer extends CFTransfer {
                 }
 
                 // Note that this call doesn't do anything if receiver is a method call
-                // that is not deterministic, though it can still continue to recurse.
+                // that is not deterministic, though the code below can still continue to recurse.
                 insertIntoStores(result, receiver, newAnno);
 
                 Tree receiverTree = receiver.getTree();
-                // Check for null, because the tree could be
-                // implicit (when calling an instance method on the class itself).
-                // In that case, do not attempt to refine either -- the receiver is
-                // not a method invocation, anyway.
+                // Check for null, because the tree could be implicit (when calling an instance
+                // method on the class itself).  In that case, do not attempt to refine either --
+                // the receiver is not a method invocation, anyway.
                 if (receiverTree == null || receiverTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
                     // Do not continue, because the receiver isn't a method invocation itself. The
                     // end of the chain of calls has been reached.
