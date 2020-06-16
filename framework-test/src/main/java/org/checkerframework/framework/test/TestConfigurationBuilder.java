@@ -3,6 +3,8 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,8 +95,43 @@ public class TestConfigurationBuilder {
             Iterable<String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
+        return buildDefaultConfiguration(
+                testSourcePath,
+                testSourceFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
+    }
+
+    /**
+     * This is the default configuration used by Checker Framework JUnit tests.
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
+     * @param testSourceFiles the Java files that compose the test
+     * @param classpathExtra extra entries for the classpath, needed to compile the source files
+     * @param processors the checkers or other annotation processors to run over the testSourceFiles
+     * @param options the options to the compiler/processors
+     * @param shouldEmitDebugInfo whether or not debug information should be emitted
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
+     */
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            Iterable<File> testSourceFiles,
+            Collection<String> classpathExtra,
+            Iterable<String> processors,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
 
         String classPath = getDefaultClassPath();
+        if (!classpathExtra.isEmpty()) {
+            classPath +=
+                    System.getProperty("path.separator")
+                            + String.join(System.getProperty("path.separator"), classpathExtra);
+        }
+
         File outputDir = getOutputDirFromProperty();
 
         TestConfigurationBuilder builder =
@@ -131,7 +168,12 @@ public class TestConfigurationBuilder {
         List<String> processors = Arrays.asList(checkerName);
 
         return buildDefaultConfiguration(
-                testSourcePath, javaFiles, processors, options, shouldEmitDebugInfo);
+                testSourcePath,
+                javaFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
     }
 
     /** The list of files that contain Java diagnostics to compare against. */

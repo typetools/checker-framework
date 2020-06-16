@@ -13,15 +13,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p>A {@code TransferResult} contains one or two stores (for 'then' and 'else'), and zero or more
  * stores with a cause ({@link TypeMirror}).
  *
- * @param <S> the {@link Store} used to keep track of intermediate results
+ * @param <V> type of the abstract value that is tracked
+ * @param <S> the store type used in the analysis
  */
-public abstract class TransferResult<A extends AbstractValue<A>, S extends Store<S>> {
+public abstract class TransferResult<V extends AbstractValue<V>, S extends Store<S>> {
 
     /**
      * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with
      * this {@link TransferResult}, or {@code null} if no value has been produced.
      */
-    protected @Nullable A resultValue;
+    protected @Nullable V resultValue;
 
     /**
      * The stores in case the basic block throws an exception (or {@code null} if the corresponding
@@ -31,14 +32,16 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     protected final @Nullable Map<TypeMirror, S> exceptionalStores;
 
     /**
-     * Create a new TransferResult.
+     * Create a new TransferResult, given {@link #resultValue} and {@link #exceptionalStores}.
      *
-     * @param resultValue the abstract value of the node, or {@code null} if no value has been
-     *     produced
-     * @param exceptionalStores the stores to use if the basic block throws an exception
+     * @param resultValue the abstract value of the {@link
+     *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
+     * @param exceptionalStores the stores in case the basic block throws an exception (or {@code
+     *     null} if the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} does not
+     *     throw any exceptions)
      */
     protected TransferResult(
-            @Nullable A resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
+            @Nullable V resultValue, @Nullable Map<TypeMirror, S> exceptionalStores) {
         this.resultValue = resultValue;
         this.exceptionalStores = exceptionalStores;
     }
@@ -48,11 +51,17 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
      *
      * @return the abstract value produced by the transfer function, {@code null} otherwise
      */
-    public @Nullable A getResultValue() {
+    public @Nullable V getResultValue() {
         return resultValue;
     }
 
-    public void setResultValue(A resultValue) {
+    /**
+     * Set the value of {@link #resultValue}.
+     *
+     * @param resultValue the abstract value of the {@link
+     *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
+     */
+    public void setResultValue(V resultValue) {
         this.resultValue = resultValue;
     }
 
