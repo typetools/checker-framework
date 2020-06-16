@@ -112,7 +112,7 @@ then you would suppress its error messages with
 \code{@SuppressWarnings("mynifty")}.  (An exception is the Subtyping
 Checker, for which you use the annotation name; see
 Section~\ref{subtyping-using}.)
-Sometimes, a checker honors \emph{checkername} arguments; use
+Sometimes, a checker honors multiple \emph{checkername} arguments; use
 the \code{-AshowSuppressWarningKeys} command-line option to see them.
 Using \code{"all"} as the checkername applies to all checkers; this is not
 recommended, except for messages common to all checkers such as
@@ -121,7 +121,7 @@ purity-related messages when using \<-AcheckPurityAnnotations>.
 The argument \emph{messagekey} is the message key for the error.
 Each warning message from the compiler gives the most specific
 suppression key that can be used to suppress that warning.
-An example is \<dereference.of.nullable> in
+An example is ``\<dereference.of.nullable>'' in
 
 %BEGIN LATEX
 \begin{smaller}
@@ -153,9 +153,8 @@ If the \emph{messagekey} part is omitted, the \<@SuppressWarnings> applies
 to all messages (it suppresses all warnings from the given checker).
 
 With the \code{-ArequirePrefixInWarningSuppressions} command-line
-option, a warning is only suppressed if the key is in the
-\code{"\emph{checkername}"} or
-\code{"\emph{checkername}:\emph{messagekey}"}
+option, the Checker Framework only suppresses warnings when the key is in
+the \code{"\emph{checkername}"} or \code{"\emph{checkername}:\emph{messagekey}"}
 format, as in
 \<@SuppressWarnings("nullness")> or
 \<@SuppressWarnings("nullness:assignment.type.incompatible")>.
