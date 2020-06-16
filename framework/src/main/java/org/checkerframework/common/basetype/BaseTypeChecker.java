@@ -603,8 +603,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 (processingEnv != null
                         && processingEnv.getOptions() != null
                         && processingEnv.getOptions().containsKey("dumpOnErrors"));
-        System.err.println(new RuntimeException().toString());
         if (dumpOnErrors) {
+            System.err.println(new RuntimeException().toString());
             for (StackTraceElement elem : trace) {
                 System.err.println("\tat " + elem);
             }
