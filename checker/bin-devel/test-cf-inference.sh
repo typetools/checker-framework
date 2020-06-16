@@ -16,8 +16,8 @@ source "$SCRIPTDIR"/build.sh
 ## script rather than in ./test/downstream.sh because it is most likely to fail,
 ## and it's helpful to see that only it, not other downstream tests, failed.
 
-/tmp/$USER/plume-scripts/git-clone-related typetools checker-framework-inference
+"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework-inference
 
-export AFU="${AFU:-$(cd ../annotation-tools/annotation-file-utilities && pwd -P)}"
+export AFU="${AFU:-$(cd ../annotation-tools/annotation-file-utilities >/dev/null 2>&1 && pwd -P)}"
 export PATH=$AFU/scripts:$PATH
 (cd ../checker-framework-inference && ./.travis-build.sh)

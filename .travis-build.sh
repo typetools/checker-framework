@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering $(cd "$(dirname "$0")" && pwd -P)/$(basename "$0") in $(pwd)"
+echo "Entering $(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"
 
 
 # Fail the whole script if any command fails
@@ -71,4 +71,4 @@ case  $GROUP  in
 esac
 
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0") in $(pwd)"
+echo Exiting "$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"

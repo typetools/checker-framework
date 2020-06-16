@@ -149,7 +149,8 @@ infer_and_annotate() {
         if [ ! "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source "${insert_to_source_args[@]}" -i "$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")" "${java_files[@]}"
+            # shellcheck disable=SC2046
+            insert-annotations-to-source "${insert_to_source_args[@]}" -i $(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif") "${java_files[@]}"
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.

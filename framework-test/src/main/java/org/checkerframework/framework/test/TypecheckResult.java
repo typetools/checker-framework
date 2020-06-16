@@ -169,32 +169,4 @@ public class TypecheckResult {
                 missingDiagnostics,
                 new ArrayList<>(unexpectedDiagnostics));
     }
-
-    public static TypecheckResult fromCompilationResultsExpectedDiagnostics(
-            TestConfiguration configuration,
-            CompilationResult result,
-            List<TestDiagnostic> expectedDiagnostics) {
-
-        boolean usingAnomsgtxt = configuration.getOptions().containsKey("-Anomsgtext");
-        final Set<TestDiagnostic> actualDiagnostics =
-                TestDiagnosticUtils.fromJavaxDiagnosticList(
-                        result.getDiagnostics(), usingAnomsgtxt);
-
-        final Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
-        unexpectedDiagnostics.addAll(actualDiagnostics);
-        unexpectedDiagnostics.removeAll(expectedDiagnostics);
-
-        final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
-        missingDiagnostics.removeAll(actualDiagnostics);
-
-        boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
-
-        return new TypecheckResult(
-                configuration,
-                result,
-                expectedDiagnostics,
-                testFailed,
-                missingDiagnostics,
-                new ArrayList<>(unexpectedDiagnostics));
-    }
 }
