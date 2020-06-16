@@ -91,6 +91,7 @@ public class AccumulationTransfer extends CFTransfer {
 
                 // Note that this call doesn't do anything if receiver is a method call
                 // that is not deterministic, though the code below can still continue to recurse.
+                // (The code above tested that `tree` returns `this` but did not test `receiver`.)
                 insertIntoStores(result, receiver, newAnno);
 
                 Tree receiverTree = receiver.getTree();
