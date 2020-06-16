@@ -9,6 +9,10 @@ class SimpleFluent {
         return this;
     }
 
+    @This SimpleFluent build2(@TestAccumulation({"a", "b"}) SimpleFluent this) {
+        return this;
+    }
+
     @This SimpleFluent a() {
         return this;
     }
@@ -59,5 +63,47 @@ class SimpleFluent {
             i--;
             s = new SimpleFluent();
         }
+    }
+
+    static void m1(SimpleFluent s) {
+        s.c().a().b().build();
+    }
+
+    static void m2(SimpleFluent s) {
+        s.c().a().b();
+        // :: error: method.invocation.invalid
+        s.c().build();
+    }
+
+    static void m3(SimpleFluent s) {
+        s.c().a().b().build();
+        // :: error: method.invocation.invalid
+        s.c().a().build();
+    }
+
+    static void m4(SimpleFluent s) {
+        s.c().a().b().build2().build();
+    }
+
+    static void m5(SimpleFluent s) {
+        s.a().c();
+        s.b().build();
+    }
+
+    static void m6(SimpleFluent s) {
+        // :: error: method.invocation.invalid
+        s.a().c().b().build();
+    }
+
+    static void m7(SimpleFluent s) {
+        // :: error: method.invocation.invalid
+        s.a().b().build().c().b().build();
+    }
+
+    static void m8(SimpleFluent s) {
+        // :: error: method.invocation.invalid
+        s.a().build().c().a().b().build();
+        // :: error: method.invocation.invalid
+        s.build();
     }
 }
