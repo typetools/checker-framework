@@ -5,7 +5,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -15,7 +17,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -71,62 +72,41 @@ public class AccumulationTransfer extends CFTransfer {
      * @param values the new accumulation values
      */
     public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
+        List<String> valuesAsList = Arrays.asList(values);
+        // If dataflow has already recorded information about the target, fetch it and integrate
+        // it into the list of values in the new annotation.
+        CFValue flowValue = result.getResultValue();
+        if (flowValue != null) {
+            Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
+            for (AnnotationMirror anno : flowAnnos) {
+                List<String> oldFlowValues =
+                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+                if (oldFlowValues != null) {
+                    // This looks a little strange, because valuesAsList cannot be modified directly
+                    // -
+                    // it is actually an array. getValueOfAnnotationWithStringArgument returns a
+                    // new,
+                    // modifiable list, so it is safe to modify its return value.
+                    oldFlowValues.addAll(valuesAsList);
+                    valuesAsList = oldFlowValues;
+                }
+            }
+        }
+
+        AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(valuesAsList);
+        insertIntoStores(result, node, newAnno);
+
         Tree tree = node.getTree();
         if (tree == null) {
             return;
         }
-        AnnotatedTypeMirror oldType = typeFactory.getAnnotatedType(tree);
-        AnnotationMirror newAnno = getUnionAnno(oldType, Arrays.asList(values));
-        insertIntoStores(result, node, newAnno);
-
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
             MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
-            while (methodInvocationNode != null) {
-
-                Node receiver = methodInvocationNode.getTarget().getReceiver();
-
-                if (receiver == null || !typeFactory.returnsThis((MethodInvocationTree) tree)) {
-                    break;
-                }
-
-                // Note that this call doesn't do anything if receiver is a method call
-                // that is not deterministic, though the code below can still continue to recurse.
-                // (The code above tested that `tree` returns `this` but did not test `receiver`.)
-                insertIntoStores(result, receiver, newAnno);
-
-                Tree receiverTree = receiver.getTree();
-                // Check for null, because the tree could be implicit (when calling an instance
-                // method on the class itself).  In that case, do not attempt to refine either --
-                // the receiver is not a method invocation, anyway.
-                if (receiverTree == null || receiverTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
-                    // Do not continue, because the receiver isn't a method invocation itself. The
-                    // end of the chain of calls has been reached.
-                    break;
-                }
-                methodInvocationNode = (MethodInvocationNode) receiver;
+            Node receiver = methodInvocationNode.getTarget().getReceiver();
+            if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
+                accumulate(receiver, result, values);
             }
         }
-    }
-
-    /**
-     * Unions the values in oldType with the values in newValues to produce a single accumulator
-     * type qualifier.
-     *
-     * @param oldType an annotated type mirror whose values should be included
-     * @param newValues new values to include
-     * @return an annotation representing all the values
-     */
-    private AnnotationMirror getUnionAnno(AnnotatedTypeMirror oldType, List<String> newValues) {
-        AnnotationMirror oldAnno = oldType.getAnnotationInHierarchy(typeFactory.top);
-        if (oldAnno == null) {
-            oldAnno = typeFactory.top;
-        }
-        if (newValues.isEmpty()) {
-            return oldAnno;
-        }
-        AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(newValues);
-        // For accumulation type systems, GLB is union.
-        return typeFactory.getQualifierHierarchy().greatestLowerBound(oldAnno, newAnno);
     }
 
     /**
