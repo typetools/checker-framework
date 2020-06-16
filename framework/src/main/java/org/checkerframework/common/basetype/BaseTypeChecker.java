@@ -626,7 +626,14 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         /** Stores the stack trace till the point the checker encounters an error. */
         StackTraceElement[] trace;
 
-        /** Constructor method for checker message without stack trace storage. */
+        /**
+         * Constructor method for checker message without stack trace storage.
+         *
+         * @param kind kind of diagnostic
+         * @param message error message that needs to be printed
+         * @param source tree element causing the error
+         * @param checker the type-checker in use
+         */
         private CheckerMessage(
                 Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
             this.kind = kind;
@@ -635,7 +642,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             this.checker = checker;
         }
 
-        /** Constructor method for checker message if stack trace needs to be stored. */
+        /**
+         * Constructor method for checker message if stack trace needs to be stored.
+         *
+         * @param kind kind of diagnostic, for example, error or warning
+         * @param message error message that needs to be printed
+         * @param source tree element causing the error
+         * @param checker the type-checker in use
+         * @param trace the stack trace when the checker encounters an error
+         */
         private CheckerMessage(
                 Diagnostic.Kind kind,
                 String message,
