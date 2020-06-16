@@ -5,8 +5,7 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs = ['src/main/java']
-            exclude '**/*.java'
+            srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
         }
     }
     testannotations
