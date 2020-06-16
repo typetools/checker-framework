@@ -403,6 +403,11 @@ public class TestUtilities {
      */
     public static void assertResultsAreValid(TypecheckResult testResult) {
         if (testResult.didTestFail()) {
+            if (getShouldEmitDebugInfo()) {
+                System.out.println("---------------- start of javac ouput ----------------");
+                System.out.println(testResult.getCompilationResult().getJavacOutput());
+                System.out.println("---------------- end of javac ouput ----------------");
+            }
             Assert.fail(testResult.summarize());
         }
     }
