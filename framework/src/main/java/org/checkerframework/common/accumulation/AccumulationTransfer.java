@@ -83,10 +83,8 @@ public class AccumulationTransfer extends CFTransfer {
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
                 if (oldFlowValues != null) {
                     // This looks a little strange, because valuesAsList cannot be modified directly
-                    // -
-                    // it is actually an array. getValueOfAnnotationWithStringArgument returns a
-                    // new,
-                    // modifiable list, so it is safe to modify its return value.
+                    // - it is actually an array. getValueOfAnnotationWithStringArgument returns a
+                    // new, modifiable list, so it is safe to modify its return value.
                     oldFlowValues.addAll(valuesAsList);
                     valuesAsList = oldFlowValues;
                 }
