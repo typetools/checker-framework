@@ -2458,46 +2458,39 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * A scanner that indicates whether any (sub-)types have the same toString but different verbose
      * toString.
      */
-    private static SimpleAnnotatedTypeScanner<Boolean, Void> checkContainsSameToString =
-            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                /** Maps from a type's toString to its verbose toString. */
-                Map<String, String> map = new HashMap<>();
-
-                @Override
-                protected Boolean reduce(Boolean r1, Boolean r2) {
-                    r1 = r1 == null ? false : r1;
-                    r2 = r2 == null ? false : r2;
-                    return r1 || r2;
-                }
-
-                @Override
-                protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
-                    if (type == null) {
-                        return false;
-                    }
-                    String simple = type.toString();
-                    String verbose = map.get(simple);
-                    if (verbose == null) {
-                        map.put(simple, type.toString(true));
-                        return false;
-                    } else {
-                        return !verbose.equals(type.toString(true));
-                    }
-                }
-            };
+    private static SimpleAnnotatedTypeScanner<Boolean, Map<String, String>>
+            checkContainsSameToString =
+                    new SimpleAnnotatedTypeScanner<>(
+                            (AnnotatedTypeMirror type, Map<String, String> map) -> {
+                                if (type == null) {
+                                    return false;
+                                }
+                                String simple = type.toString();
+                                String verbose = map.get(simple);
+                                if (verbose == null) {
+                                    map.put(simple, type.toString(true));
+                                    return false;
+                                } else {
+                                    return !verbose.equals(type.toString(true));
+                                }
+                            },
+                            Boolean::logicalOr,
+                            false);
 
     /**
      * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
      * are the same but their verbose toStrings differ.
+     *
+     * @param atms annotated type mirrors to compare
+     * @return true iff there are two annotated types (anywhere in any ATM) such that their
+     *     toStrings are the same but their verbose toStrings differ.
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
+        Map<String, String> simpleToVerbose = new HashMap<>();
         for (AnnotatedTypeMirror atm : atms) {
-            Boolean result = checkContainsSameToString.visit(atm);
-            if (result != null && result) {
+            if (checkContainsSameToString.visit(atm, simpleToVerbose)) {
                 return true;
             }
-            // Call reset to clear the visitor history, but not the map from Strings to types.
-            checkContainsSameToString.reset();
         }
 
         return false;
