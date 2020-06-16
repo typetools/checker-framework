@@ -323,6 +323,10 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
     "showInferenceSteps",
 
+    // Output stack trace when checker encounters errors
+    // org.checkerframework.common.basetype.BaseTypeChecker.printStackTrace()
+    "dumpOnErrors",
+
     /// Visualizing the CFG
 
     // Implemented in the wrapper rather than this file, but worth noting here.

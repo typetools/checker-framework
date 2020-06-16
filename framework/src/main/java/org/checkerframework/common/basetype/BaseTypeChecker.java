@@ -565,10 +565,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
         assert this.currentRoot == root;
+        StackTraceElement[] trace = new RuntimeException().getStackTrace();
         if (messageStore == null) {
             super.printOrStoreMessage(kind, message, source, root);
+            this.printStackTrace(trace);
+
         } else {
-            CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this);
+            CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
             messageStore.add(checkerMessage);
         }
     }
@@ -584,6 +587,26 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (messageStore != null) {
             for (CheckerMessage msg : messageStore) {
                 super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit);
+                this.printStackTrace(msg.trace);
+            }
+        }
+    }
+
+    /**
+     * Prints given stack trace of runtime exception if -AdumpOnErrors flag is passed as compilation
+     * argument
+     *
+     * @param trace stack trace when the checker encounters an error
+     */
+    private void printStackTrace(StackTraceElement[] trace) {
+        boolean dumpOnErrors =
+                (processingEnv != null
+                        && processingEnv.getOptions() != null
+                        && processingEnv.getOptions().containsKey("dumpOnErrors"));
+        System.err.println(new RuntimeException().toString());
+        if (dumpOnErrors) {
+            for (StackTraceElement elem : trace) {
+                System.err.println("\tat " + elem);
             }
         }
     }
@@ -600,12 +623,27 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
          */
         final BaseTypeChecker checker;
 
+        StackTraceElement[] trace;
+
         private CheckerMessage(
                 Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
             this.kind = kind;
             this.message = message;
             this.source = source;
             this.checker = checker;
+        }
+
+        private CheckerMessage(
+                Diagnostic.Kind kind,
+                String message,
+                Tree source,
+                BaseTypeChecker checker,
+                StackTraceElement[] trace) {
+            this.kind = kind;
+            this.message = message;
+            this.source = source;
+            this.checker = checker;
+            this.trace = trace;
         }
 
         @Override
