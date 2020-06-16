@@ -583,7 +583,7 @@ subprojects {
     if (!project.name.startsWith('checker-qual')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
-            commandLine "bash", "-c", "find . \\( -name jdk11 -o -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+            commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
