@@ -342,7 +342,9 @@ public class BackwardAnalysisImpl<
                             if (n == node && !before) {
                                 return store.getRegularStore();
                             }
-                            TransferResult<V, S> transferResult = callTransferFunction(n, store);
+                            // Copy the store to preserve to change the state in {@link #inputs}
+                            TransferResult<V, S> transferResult =
+                                    callTransferFunction(n, store.copy());
                             if (n == node) {
                                 return transferResult.getRegularStore();
                             }

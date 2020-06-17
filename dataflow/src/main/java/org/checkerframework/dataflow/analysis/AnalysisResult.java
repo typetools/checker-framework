@@ -133,7 +133,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * Merge all entries from otherTreeLookup into treeLookup. Merge sets if already present.
      *
      * @param treeLookup a map from abstract syntax trees to sets of nodes
-     * @param otherTreeLookup another treeLookup waiting for being merged into {@code treeLookup}
+     * @param otherTreeLookup another treeLookup that will be merged into {@code treeLookup}
      */
     private static void mergeTreeLookup(
             IdentityHashMap<Tree, Set<Node>> treeLookup,
