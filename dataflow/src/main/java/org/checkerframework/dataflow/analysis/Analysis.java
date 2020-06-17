@@ -59,18 +59,22 @@ public interface Analysis<
     /**
      * Runs the analysis again within the block of {@code node} and returns the store at the
      * location of {@code node}. If {@code before} is true, then the store immediately before the
-     * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
-     * If {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a
-     * map of a block of node to the cached analysis result. If the cache for {@code transferInput}
-     * is not in {@code analysisCaches}, this method create new cache and store it in {@code
-     * analysisCaches}. The cache is a map of a node to the analysis result of the node.
+     * {@link Node} {@code node} is returned. Otherwise, the store immediately after {@code node} is
+     * returned. If {@code analysisCaches} is not null, this method uses a cache. {@code
+     * analysisCaches} is a map of a block of node to the cached analysis result. If the cache for
+     * {@code transferInput} is not in {@code analysisCaches}, this method creates new cache and
+     * stores it in {@code analysisCaches}. The cache is a map of nodes to the analysis results of
+     * the nodes.
      *
      * @param node the node to analyze
-     * @param before the boolean value to indicate which store to return
+     * @param before the boolean value to indicate which store to return (if it is true, return the
+     *     store immediately before {@code node}; otherwise, the store after {@code node} is
+     *     returned)
      * @param transferInput the transfer input of the block of this node
      * @param nodeValues abstract values of nodes
      * @param analysisCaches caches of analysis results
-     * @return the store at the location of node after running the analysis
+     * @return the store before or after {@code node} (depends on the value of {@code before}) after
+     *     running the analysis
      */
     S runAnalysisFor(
             Node node,

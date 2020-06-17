@@ -406,31 +406,9 @@ public class TypeArgInferenceUtil {
     private static class TypeVariableFinder
             extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
 
-        @Override
-        protected Boolean scan(
-                Iterable<? extends AnnotatedTypeMirror> types, Collection<TypeVariable> typeVars) {
-            if (types == null) {
-                return false;
-            }
-            Boolean result = false;
-            boolean first = true;
-            for (AnnotatedTypeMirror type : types) {
-                result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
-                first = false;
-            }
-            return result;
-        }
-
-        @Override
-        protected Boolean reduce(Boolean r1, Boolean r2) {
-            if (r1 == null) {
-                return r2 != null && r2;
-
-            } else if (r2 == null) {
-                return r1;
-            }
-
-            return r1 || r2;
+        /** Create TypeVariableFinder. */
+        protected TypeVariableFinder() {
+            super(Boolean::logicalOr, false);
         }
 
         @Override

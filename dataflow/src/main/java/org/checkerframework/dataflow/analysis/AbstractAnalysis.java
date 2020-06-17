@@ -307,7 +307,9 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Call the transfer function for node {@code node}, and set that node as current node first.
+     * Call the transfer function for node {@code node}, and set that node as current node first. Be
+     * careful that {@code store} may be shared between nodes in a block. Passing a copied store to
+     * avoid the accident changing.
      *
      * @param node the given node
      * @param store the transfer input

@@ -249,18 +249,17 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Visualize the transfer input before a block.
+     * Visualize the transfer input before the given block.
      *
      * @param bb the block
      * @param analysis the current analysis
      * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
      *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
      *     StringCFGVisualizer} to simply add a new line
-     * @return the String representation of the transfer input of the block
+     * @return the visualization of the transfer input before the given block
      */
     protected String visualizeBlockTransferInputBeforeHelper(
             Block bb, Analysis<V, S, T> analysis, String escapeString) {
-
         if (analysis == null) {
             throw new BugInCF(
                     "analysis must be non-null when visualizing the transfer input of a block.");
@@ -302,14 +301,14 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Visualize the transfer input after the block.
+     * Visualize the transfer input after the given block.
      *
-     * @param bb the block
+     * @param bb the given block
      * @param analysis the current analysis
      * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
      *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
      *     StringCFGVisualizer} to simply add a new line
-     * @return the String representation of the transfer input of the block
+     * @return the visualization of the transfer input after the given block
      */
     protected String visualizeBlockTransferInputAfterHelper(
             Block bb, Analysis<V, S, T> analysis, String escapeString) {
