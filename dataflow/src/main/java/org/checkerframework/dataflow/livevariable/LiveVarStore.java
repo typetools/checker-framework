@@ -101,8 +101,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
     @Override
     public LiveVarStore copy() {
-        Set<LiveVar> liveVarSetCopy = new HashSet<>(liveVarSet);
-        return new LiveVarStore(liveVarSetCopy);
+        return new LiveVarStore(new HashSet<>(liveVarSet));
     }
 
     @Override
