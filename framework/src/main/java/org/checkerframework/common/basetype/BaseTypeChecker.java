@@ -565,10 +565,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
         assert this.currentRoot == root;
-        StackTraceElement[] trace = new RuntimeException().getStackTrace();
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         if (messageStore == null) {
             super.printOrStoreMessage(kind, message, source, root);
-            this.printStackTrace(trace);
+            printStackTrace(trace);
 
         } else {
             CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
@@ -587,7 +587,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (messageStore != null) {
             for (CheckerMessage msg : messageStore) {
                 super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit);
-                this.printStackTrace(msg.trace);
+                printStackTrace(msg.trace);
             }
         }
     }
@@ -599,14 +599,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @param trace stack trace when the checker encounters an error
      */
     private void printStackTrace(StackTraceElement[] trace) {
-        boolean dumpOnErrors =
-                (processingEnv != null
-                        && processingEnv.getOptions() != null
-                        && processingEnv.getOptions().containsKey("dumpOnErrors"));
+        boolean dumpOnErrors = getBooleanOption("dumpOnErrors", false);
         if (dumpOnErrors) {
-            System.err.println(new RuntimeException().toString());
             for (StackTraceElement elem : trace) {
-                System.err.println("\tat " + elem);
+                String msg = "\tat " + elem;
+                message(Diagnostic.Kind.NOTE, msg);
             }
         }
     }
@@ -624,7 +621,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final BaseTypeChecker checker;
 
         /** Stores the stack trace till the point the checker encounters an error. */
-        StackTraceElement[] trace;
+        final StackTraceElement @Nullable [] trace;
 
         /**
          * Constructor method for checker message without stack trace storage.
@@ -636,10 +633,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
          */
         private CheckerMessage(
                 Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
-            this.kind = kind;
-            this.message = message;
-            this.source = source;
-            this.checker = checker;
+            this(kind, message, source, checker, null);
         }
 
         /**
@@ -656,7 +650,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 String message,
                 Tree source,
                 BaseTypeChecker checker,
-                StackTraceElement[] trace) {
+                StackTraceElement @Nullable [] trace) {
             this.kind = kind;
             this.message = message;
             this.source = source;
