@@ -3,6 +3,7 @@ package org.checkerframework.framework.stub;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
@@ -75,7 +76,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
+import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -88,7 +89,7 @@ import org.checkerframework.javacutil.Pair;
  * ProcessingEnvironment, Map, Map)}, which side-effects its last two arguments.
  *
  * <p>The constructor acts in two parts. First, it calls the Stub Parser to parse a stub file. Then,
- * itis walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  */
 public class StubParser {
 
@@ -621,7 +622,11 @@ public class StubParser {
         return false;
     }
 
-    /** @return list of AnnotatedTypeVariable of the type's type parameter declarations */
+    /**
+     * Returns list of AnnotatedTypeVariable of the type's type parameter declarations.
+     *
+     * @return list of AnnotatedTypeVariable of the type's type parameter declarations
+     */
     private List<AnnotatedTypeVariable> processType(
             ClassOrInterfaceDeclaration decl, TypeElement elt) {
         recordDeclAnnotation(elt, decl.getAnnotations());
@@ -660,7 +665,7 @@ public class StubParser {
 
         annotateTypeParameters(decl, elt, atypes, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -690,7 +695,7 @@ public class StubParser {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
-        putNew(atypes, elt, type);
+        putMerge(atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -814,7 +819,7 @@ public class StubParser {
         }
 
         // Store the type.
-        putNew(atypes, elt, methodType);
+        putMerge(atypes, elt, methodType);
         typeParameters.removeAll(methodType.getTypeVariables());
     }
 
@@ -854,6 +859,7 @@ public class StubParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
+                putMerge(atypes, paramElt, paramType);
             }
         }
     }
@@ -893,8 +899,8 @@ public class StubParser {
 
     /**
      * Add the annotations from {@code type} to {@code atype}. Type annotations that parsed as
-     * declaration annotations (ie those in {@code declAnnos} are applied to the innermost component
-     * type.
+     * declaration annotations (i.e., type annotations in {@code declAnnos} are applied to the
+     * innermost component type.
      *
      * @param atype annotated type to which to add annotations
      * @param type parsed type
@@ -936,8 +942,8 @@ public class StubParser {
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
-     *   <li>any type annotations that parsed as declaration annotations (ie those in {@code
-     *       declAnnos}).
+     *   <li>any type annotations that parsed as declaration annotations (i.e., type annotations in
+     *       {@code declAnnos}).
      * </ol>
      *
      * @param atype annotated type to which to add annotations
@@ -956,7 +962,9 @@ public class StubParser {
             return;
         }
 
-        clearAnnotations(atype, typeDef);
+        if (mightHaveTypeArguments(atype)) {
+            clearAnnotations(atype, typeDef);
+        }
 
         // Primary annotations for the type of a variable declaration are not stored in typeDef, but
         // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
@@ -1051,6 +1059,33 @@ public class StubParser {
         }
     }
 
+    /**
+     * Returns true if atype might have type arguments that {@link
+     * #clearAnnotations(AnnotatedTypeMirror, Type)} might need to remove.
+     *
+     * @param atype the type to check
+     * @return a conservative approximation of whether atype might have type arguments
+     */
+    private boolean mightHaveTypeArguments(AnnotatedTypeMirror atype) {
+        switch (atype.getKind()) {
+            case DECLARED:
+                AnnotatedDeclaredType adtype = (AnnotatedDeclaredType) atype;
+                return !adtype.getTypeArguments().isEmpty();
+            case WILDCARD:
+            case TYPEVAR:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Process the field declaration in decl, and attach any type qualifiers to the type of elt in
+     * {@link #atypes}
+     *
+     * @param decl the declaration in the stub file
+     * @param elt the element representing that same declaration
+     */
     private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private fields of the jdk.  They can't be referenced outside of the jdk
@@ -1073,25 +1108,29 @@ public class StubParser {
         }
         assert fieldVarDecl != null;
         annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations());
-        putNew(atypes, elt, fieldType);
+        putMerge(atypes, elt, fieldType);
     }
 
     /**
      * Adds the annotations present on the declaration of an enum constant to the ATM of that
      * constant.
+     *
+     * @param decl the enum constant, in Javaparser AST form (the source of annotations)
+     * @param elt the enum constant declaration, as an element (the destination for annotations)
      */
     private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
         recordDeclAnnotationFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations());
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations());
-        putNew(atypes, elt, enumConstType);
+        putMerge(atypes, elt, enumConstType);
     }
 
     /**
      * Returns the innermost component type of {@code type}.
      *
      * @param type array type
+     * @return the innermost component type of {@code type}
      */
     private AnnotatedTypeMirror innermostComponentType(AnnotatedArrayType type) {
         AnnotatedTypeMirror componentType = type;
@@ -1214,7 +1253,7 @@ public class StubParser {
                     stubWarnNotFound("Annotations on intersection types are not yet supported");
                 }
             }
-            putNew(atypes, paramType.getUnderlyingType().asElement(), paramType);
+            putMerge(atypes, paramType.getUnderlyingType().asElement(), paramType);
         }
     }
 
@@ -1387,7 +1426,8 @@ public class StubParser {
 
     /**
      * Looks for method element in the typeElt and returns it if the element has the same signature
-     * as provided method declaration. In case method element is not found it returns null.
+     * as provided method declaration. Returns null, and possibly issues a warning, if method
+     * element is not found.
      *
      * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
@@ -1413,12 +1453,22 @@ public class StubParser {
                 return method;
             }
         }
-        stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
-        if (debugStubParser) {
-            stubDebug(String.format("  Here are the methods of %s:", typeElt));
-            for (ExecutableElement method :
-                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("    %s", method));
+        if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
+            // This might be a false positive warning.  The stub parser permits a stub file to omit
+            // the access specifier, but package-private methods aren't in the TypeElement.
+            stubWarnNotFound(
+                    "Package-private method "
+                            + wantedMethodString
+                            + " not found in type "
+                            + typeElt);
+        } else {
+            stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
+            if (debugStubParser) {
+                stubDebug(String.format("  Here are the methods of %s:", typeElt));
+                for (ExecutableElement method :
+                        ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                    stubDebug(String.format("    %s", method));
+                }
             }
         }
         return null;
@@ -1703,9 +1753,11 @@ public class StubParser {
 
     /**
      * Converts {@code number} to {@code expectedKind}.
-     * <p>
-     * {@code @interface Anno { long value();})
-     * {@code @Anno(1)}
+     *
+     * <pre><code>
+     * &nbsp; @interface Anno { long value(); }
+     * &nbsp; @Anno(1)
+     * </code></pre>
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      */
@@ -1964,7 +2016,7 @@ public class StubParser {
      * @param key the key for the map
      * @param newType the new type for the key
      */
-    private void putNew(
+    private void putMerge(
             Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror newType) {
         if (key == null) {
             throw new BugInCF("StubParser: key is null");

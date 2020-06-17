@@ -1,4 +1,4 @@
-package tests;
+package tests.wpirunners;
 
 import java.io.File;
 import java.util.List;
@@ -14,12 +14,16 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(WholeProgramInferenceTest.class)
-public class WholeProgramInferenceTest extends FrameworkPerDirectoryTest {
-
+@Category(WholeProgramInferenceJaifsTest.class)
+public class WholeProgramInferenceJaifsTest extends FrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceTest(List<File> testFiles) {
-        super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext", "-Ainfer");
+    public WholeProgramInferenceJaifsTest(List<File> testFiles) {
+        super(
+                testFiles,
+                WholeProgramInferenceTestChecker.class,
+                "value",
+                "-Anomsgtext",
+                "-Ainfer=jaifs");
     }
 
     @Parameters

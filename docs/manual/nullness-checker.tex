@@ -128,6 +128,32 @@ command-line option.)
   part of ordinary defensive programming.
 \end{itemize}
 
+\item
+  Options that enable checking modes:
+
+\begin{itemize}
+\item
+  If you supply the \code{-Alint=permitClearProperty} command-line option,
+  then the checker permits calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.setProperties()}
+  and calls to
+  \sunjavadoc{java.base/java/lang/System.html\#clearProperty()}{System.clearProperty()}
+  that might clear one of the built-in properties.
+
+  By default, the checker forbids calls to those methods, and also
+  special-cases type-checking of calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
+  and
+  \sunjavadoc{java.base/java/lang/System.html\#setProperty(java.lang.String)}{System.setProperty(String)}.
+  A call to one of these methods
+  can return null in general, but by default the Nullness Checker treats it
+  as returning non-null if the argument is one of the literal strings
+  listed in the documentation of
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
+  To make this behavior sound, the Nullness Checker forbids calls that
+  might clear any built-in property, as described above.
+\end{itemize}
+
 \end{enumerate}
 
 
@@ -521,35 +547,6 @@ When you perform a run-time check for nullness, such as \<if (x != null)
 \<@NonNull>.  The refinement lasts until the end of the scope of the test
 or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
-
-
-\subsectionAndLabel{Additional details}{nullness-additional-details}
-
-The Nullness Checker does some special checks in certain circumstances, in
-order to soundly reduce the number of warnings that it produces.
-
-For example, a call to
-\sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
-can return null in general, but it will not return null if the argument is
-one of the built-in-keys listed in the documentation of
-\sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
-The Nullness Checker is aware of this fact, so you do not have to suppress
-a warning for a call like \<System.getProperty("line.separator")>.  The
-warning is still issued for code like this:
-
-\begin{Verbatim}
-  final String s = "line.separator";
-  nonNullvar = System.getProperty(s);
-\end{Verbatim}
-
-\noindent
-though that case could be handled as well, if desired.
-(Suppression of the warning is, strictly speaking, not sound, because a
-library that your code calls, or your code itself, could perversely change
-the system properties; the Nullness Checker assumes this bizarre coding
-pattern does not happen.)
-(It is better style to use \<System.lineSeparator()> than the call to
-\<System.getProperty("line.separator")> anyway.)
 
 
 \subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
@@ -2041,4 +2038,5 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
 % LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
 % LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
-% LocalWords:  ConcurrentHashMap
+% LocalWords:  ConcurrentHashMap permitClearProperty setProperties
+% LocalWords:  clearProperty

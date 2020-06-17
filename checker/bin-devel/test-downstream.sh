@@ -22,5 +22,5 @@ source "$SCRIPTDIR"/build.sh
 ##  * guava is run as a separate CI project
 
 # Checker Framework demos
-/tmp/$USER/plume-scripts/git-clone-related typetools checker-framework.demos
+"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon

@@ -1,4 +1,4 @@
-package tests;
+package tests.wpirunners;
 
 import java.io.File;
 import java.util.List;
@@ -7,12 +7,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
-/** Tests that the annotations output by {@link WholeProgramInferenceTest} are correct. */
-@Category(WholeProgramInferenceTest.class)
-public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTest {
-
+/**
+ * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,
+ * which ensures that with the annotations inserted, the errors are no longer issued.
+ */
+@Category(WholeProgramInferenceJaifsTest.class)
+public class WholeProgramInferenceJaifsValidationTest extends FrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceValidationTest(List<File> testFiles) {
+    public WholeProgramInferenceJaifsValidationTest(List<File> testFiles) {
         super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext");
     }
 
@@ -22,7 +24,7 @@ public class WholeProgramInferenceValidationTest extends FrameworkPerDirectoryTe
         // See wholeProgramInferenceTests task.
         if (!new File("tests/whole-program-inference/annotated/").exists()) {
             throw new RuntimeException(
-                    WholeProgramInferenceTest.class + " must be run before this test.");
+                    WholeProgramInferenceJaifsTest.class + " must be run before this test.");
         }
         super.run();
     }

@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -59,6 +61,9 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FlowExpressions {
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -75,6 +80,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     * Can contain {@link Unknown} as receiver.
+     *
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
@@ -191,6 +199,9 @@ public class FlowExpressions {
     }
 
     /**
+     * Returns the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     * Might contain {@link Unknown}.
+     *
      * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
      *     Might contain {@link Unknown}.
      */
@@ -301,6 +312,8 @@ public class FlowExpressions {
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
                         Receiver fieldAccessExpression;
+                        @SuppressWarnings(
+                                "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                         if (ElementUtils.isStatic(ele)) {
                             fieldAccessExpression = new ClassName(enclosingType);
@@ -315,6 +328,11 @@ public class FlowExpressions {
                         receiver = null;
                 }
                 break;
+            case UNARY_PLUS:
+                return internalReprOf(
+                        provider,
+                        ((UnaryTree) receiverTree).getExpression(),
+                        allowNonDeterministic);
             default:
                 receiver = null;
         }
@@ -336,7 +354,12 @@ public class FlowExpressions {
      *     not
      */
     public static Receiver internalReprOfImplicitReceiver(Element ele) {
-        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        if (enclosingClass == null) {
+            throw new BugInCF(
+                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
+        }
+        TypeMirror enclosingType = enclosingClass.asType();
         if (ElementUtils.isStatic(ele)) {
             return new ClassName(enclosingType);
         } else {
@@ -416,9 +439,15 @@ public class FlowExpressions {
      * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
      */
     public abstract static class Receiver {
+        /** The type of this expression. */
         protected final TypeMirror type;
 
-        public Receiver(TypeMirror type) {
+        /**
+         * Create a Receiver (a Java AST node representing an expression).
+         *
+         * @param type the type of the expression
+         */
+        protected Receiver(TypeMirror type) {
             assert type != null;
             this.type = type;
         }
@@ -454,14 +483,21 @@ public class FlowExpressions {
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /** @return true if and only if the two receiver are syntactically identical */
+        /**
+         * Returns true if and only if the two receiver are syntactically identical.
+         *
+         * @return true if and only if the two receiver are syntactically identical
+         */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
+         * Returns true if and only if this receiver contains a receiver that is syntactically equal
+         * to {@code other}.
+         *
          * @return true if and only if this receiver contains a receiver that is syntactically equal
-         *     to {@code other}.
+         *     to {@code other}
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
@@ -890,7 +926,11 @@ public class FlowExpressions {
             return false; // not modifiable
         }
 
-        /** @return the value of this literal */
+        /**
+         * Returns the value of this literal.
+         *
+         * @return the value of this literal
+         */
         public @Nullable Object getValue() {
             return value;
         }
@@ -930,12 +970,19 @@ public class FlowExpressions {
             return false;
         }
 
-        /** @return the method call receiver (for inspection only - do not modify) */
+        /**
+         * Returns the method call receiver (for inspection only - do not modify).
+         *
+         * @return the method call receiver (for inspection only - do not modify)
+         */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
+         * Returns the method call parameters (for inspection only - do not modify any of the
+         * parameters).
+         *
          * @return the method call parameters (for inspection only - do not modify any of the
          *     parameters)
          */
@@ -943,7 +990,11 @@ public class FlowExpressions {
             return Collections.unmodifiableList(parameters);
         }
 
-        /** @return the ExecutableElement for the method call */
+        /**
+         * Returns the ExecutableElement for the method call.
+         *
+         * @return the ExecutableElement for the method call
+         */
         public ExecutableElement getElement() {
             return method;
         }
@@ -1177,7 +1228,11 @@ public class FlowExpressions {
             this.initializers = initializers;
         }
 
-        /** @return a list of receivers representing the dimension of this array creation */
+        /**
+         * Returns a list of receivers representing the dimension of this array creation.
+         *
+         * @return a list of receivers representing the dimension of this array creation
+         */
         public List<? extends @Nullable Receiver> getDimensions() {
             return dimensions;
         }

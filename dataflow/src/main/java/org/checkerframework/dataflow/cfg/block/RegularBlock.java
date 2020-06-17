@@ -16,11 +16,19 @@ import org.checkerframework.dataflow.qual.Pure;
  */
 public interface RegularBlock extends SingleSuccessorBlock {
 
-    /** @return the unmodifiable sequence of {@link Node}s. */
+    /**
+     * Returns the unmodifiable sequence of {@link Node}s.
+     *
+     * @return the unmodifiable sequence of {@link Node}s
+     */
     @Pure
     List<Node> getContents();
 
-    /** @return the regular successor block */
+    /**
+     * Returns the regular successor block.
+     *
+     * @return the regular successor block
+     */
     @Pure
     @Nullable Block getRegularSuccessor();
 
