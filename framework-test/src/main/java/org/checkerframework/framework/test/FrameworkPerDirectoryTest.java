@@ -6,7 +6,8 @@ import javax.annotation.processing.AbstractProcessor;
 
 /**
  * The same as {@link org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest} except
- * the annotated JDK is not required.
+ * the annotated JDK is not used (because the {@code annotated-jdk} resource is under {@code
+ * checker/}, not {@code framework/}).
  */
 public abstract class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirectoryTest {
 
@@ -16,7 +17,7 @@ public abstract class FrameworkPerDirectoryTest extends CheckerFrameworkPerDirec
      * <p>{@link TestConfigurationBuilder#getDefaultConfigurationBuilder(String, File, String,
      * Iterable, Iterable, List, boolean)} adds additional checker options.
      *
-     * <p>These tests do not require the annotated JDK.
+     * <p>These tests do not use the annotated JDK.
      *
      * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use
