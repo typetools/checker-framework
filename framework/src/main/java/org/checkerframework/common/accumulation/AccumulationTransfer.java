@@ -83,10 +83,8 @@ public class AccumulationTransfer extends CFTransfer {
                 List<String> oldFlowValues =
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
                 if (oldFlowValues != null) {
-                    // This looks a little strange, because valuesAsList cannot be modified directly
-                    // since it is actually an array. getValueOfAnnotationWithStringArgument returns
-                    // a
-                    // new, modifiable list, so it is safe to modify its return value.
+                    // valuesAsList cannot have its length changed -- it is backed by an array.
+                    // getValueOfAnnotationWithStringArgument returns a new, modifiable list.
                     oldFlowValues.addAll(valuesAsList);
                     valuesAsList = oldFlowValues;
                 }
@@ -97,12 +95,8 @@ public class AccumulationTransfer extends CFTransfer {
         insertIntoStores(result, node, newAnno);
 
         Tree tree = node.getTree();
-        if (tree == null) {
-            return;
-        }
-        if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
-            Node receiver = methodInvocationNode.getTarget().getReceiver();
+        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
+            Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
             if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
                 accumulate(receiver, result, values);
             }
