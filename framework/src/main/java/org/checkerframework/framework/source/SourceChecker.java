@@ -382,10 +382,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-    /** The message key that will suppress warnings a warning with any message key. */
+    /** The message key that will suppress all warnings (it matches any message key). */
     public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
 
-    /** The suppression string prefix that will suppress warnings for any checkers */
+    /** The suppression string prefix that will suppress warnings for all checkers. */
     public static final String SUPPRESS_ALL_PREFIX = "allcheckers";
 
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
@@ -2220,7 +2220,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
         if (!hasOption("requirePrefixInWarningSuppressions")) {
-            // If prefixes are required in SuppressWarningsKey, then a message key be itself does
+            // If prefixes are required in SuppressWarningsKey, then a message key by itself does
             // not suppress a warning and is therefor not a suppress warning key.
             result.add(SUPPRESS_ALL_MESSAGE_KEY);
         }
