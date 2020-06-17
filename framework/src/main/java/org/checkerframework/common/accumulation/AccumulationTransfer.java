@@ -78,15 +78,15 @@ public class AccumulationTransfer extends CFTransfer {
         CFValue flowValue = result.getResultValue();
         if (flowValue != null) {
             Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
+            assert flowAnnos.size() <= 1;
             for (AnnotationMirror anno : flowAnnos) {
                 List<String> oldFlowValues =
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
                 if (oldFlowValues != null) {
                     // This looks a little strange, because valuesAsList cannot be modified directly
-                    // -
-                    // it is actually an array. getValueOfAnnotationWithStringArgument returns a
-                    // new,
-                    // modifiable list, so it is safe to modify its return value.
+                    // since it is actually an array. getValueOfAnnotationWithStringArgument returns
+                    // a
+                    // new, modifiable list, so it is safe to modify its return value.
                     oldFlowValues.addAll(valuesAsList);
                     valuesAsList = oldFlowValues;
                 }
