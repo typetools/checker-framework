@@ -42,8 +42,6 @@ public final class SubtypingChecker extends BaseTypeChecker {
     public static Collection<String> getSuppressWarningsKeys(
             SourceVisitor<?, ?> visitor, Collection<String> superSupportedTypeQualifiers) {
         TreeSet<String> result = new TreeSet<>(superSupportedTypeQualifiers);
-        result.add(SUPPRESS_ALL_MESSAGE_KEY); // Is this always already in
-        // superSupportedTypeQualifiers?
 
         Set<Class<? extends Annotation>> annos =
                 ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
