@@ -6,7 +6,7 @@ import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * A type-checker for preventing fixed-length sequences such as arrays or strings from being
@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "lowerbound"})
+@SuppressWarningsPrefix({"index", "lowerbound"})
 public class LowerBoundChecker extends BaseTypeChecker {
     private HashSet<String> collectionBaseTypeNames;
 
