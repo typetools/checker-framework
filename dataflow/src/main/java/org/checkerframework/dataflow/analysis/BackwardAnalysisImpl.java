@@ -33,6 +33,8 @@ public class BackwardAnalysisImpl<
                 T extends BackwardTransferFunction<V, S>>
         extends AbstractAnalysis<V, S, T> implements BackwardAnalysis<V, S, T> {
 
+    // TODO: Add widening support like what the forward analysis does.
+
     /** Out stores after every basic block (assumed to be 'no information' if not present). */
     protected final IdentityHashMap<Block, S> outStores;
 
