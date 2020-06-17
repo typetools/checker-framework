@@ -382,11 +382,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-    /** The @SuppressWarnings key that will suppress warnings for all checkers. */
-    public static final String SUPPRESS_ALL_KEY = "all";
+    /** The message key that will suppress warnings a warning with any message key. */
+    public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
 
-    /** The @SuppressWarnings key prefix that will suppress warnings for all checkers. */
-    public static final String SUPPRESS_ALL_KEY_PREFIX = "allcheckers";
+    /** The suppression string prefix that will suppress warnings for any checkers */
+    public static final String SUPPRESS_ALL_PREFIX = "allcheckers";
 
     /** The @SuppressWarnings key emitted when an unused warning suppression is found. */
     public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY =
@@ -1200,28 +1200,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @return the most specific warning suppression key for the warning/error being printed
      */
     private String suppressionKey(String messageKey) {
+        Collection<String> prefixes = this.getSuppressWarningsKeys();
+        prefixes.remove(SUPPRESS_ALL_MESSAGE_KEY);
         if (hasOption("showSuppressWarningKeys")) {
-            Collection<String> prefixes = this.getSuppressWarningsKeys();
-            prefixes.remove(SUPPRESS_ALL_KEY);
             return prefixes + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the
             // warning key that is printed.
             String defaultKey = getDefaultWarningSuppressionKey();
-            Collection<String> keys = getSuppressWarningsKeys();
-            if (keys.contains(defaultKey)) {
+            if (prefixes.contains(defaultKey)) {
                 return defaultKey + ":" + messageKey;
-            } else if (keys.isEmpty()) {
-                keys.remove(SUPPRESS_ALL_KEY);
-                keys.remove(SUPPRESS_ALL_KEY_PREFIX);
-                if (keys.isEmpty()) {
-                    return SUPPRESS_ALL_KEY_PREFIX + ":" + messageKey;
-                } else {
-                    String firstKey = keys.iterator().next();
-                    return firstKey + ":" + messageKey;
-                }
+            } else if (prefixes.isEmpty()) {
+                return SUPPRESS_ALL_PREFIX + ":" + messageKey;
             } else {
-                return messageKey;
+                String firstKey = prefixes.iterator().next();
+                return firstKey + ":" + messageKey;
             }
         } else {
             return messageKey;
@@ -1814,8 +1807,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected void warnUnneededSuppressions(
             Set<Element> elementsSuppress, Set<String> checkerKeys, Set<String> errorKeys) {
         // It's not clear for which checker "all" is intended, so never report it as unused.
-        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY);
-        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_KEY_PREFIX);
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_MESSAGE_KEY);
+        checkerKeys.remove(SourceChecker.SUPPRESS_ALL_PREFIX);
 
         // Is the name of the checker required to suppress a warning?
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
@@ -1844,8 +1837,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 } else {
                     // User-written error key contains ":".
                     String userCheckerKey = userKey.substring(0, colonPos);
-                    if (userCheckerKey.equals(SourceChecker.SUPPRESS_ALL_KEY_PREFIX)
-                            || !checkerKeys.contains(userCheckerKey)) {
+                    if (!checkerKeys.contains(userCheckerKey)) {
                         // This user-written key is for some other checker
                         continue;
                     }
@@ -1972,9 +1964,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
-        if (requirePrefix) {
-            checkerKeys.remove(SUPPRESS_ALL_KEY);
-        }
 
         // Check each value of the user-written @SuppressWarnings annotation.
         for (String userKey : userSwKeys) {
@@ -1990,9 +1979,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 }
             } else {
                 // User-written error key contains ":".
-                String userCheckerKey = userKey.substring(0, colonPos);
-                if (!checkerKeys.contains(userCheckerKey)
-                        || userCheckerKey.equals(SUPPRESS_ALL_KEY)) {
+                String userKeyPrefix = userKey.substring(0, colonPos);
+                if (!checkerKeys.contains(userKeyPrefix)
+                        || userKeyPrefix.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
                     continue;
                 }
                 userKey = userKey.substring(colonPos + 1);
@@ -2230,8 +2219,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected final Collection<String> getStandardSuppressWarningsKeys() {
         // TreeSet ensures keys are returned in a consistent order.
         Set<String> result = new TreeSet<>();
-        result.add(SUPPRESS_ALL_KEY);
-        result.add(SUPPRESS_ALL_KEY_PREFIX);
+        if (!hasOption("requirePrefixInWarningSuppressions")) {
+            // If prefixes are required in SuppressWarningsKey, then a message key be itself does
+            // not suppress a warning and is therefor not a suppress warning key.
+            result.add(SUPPRESS_ALL_MESSAGE_KEY);
+        }
+        result.add(SUPPRESS_ALL_PREFIX);
 
         SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
         if (annotation != null) {

@@ -15,17 +15,9 @@ import java.lang.annotation.Target;
  * <p>In order for this annotation to have an effect, it must be placed on the declaration of a
  * class that extends {@link SourceChecker}.
  *
- * <p>For example, warnings issued by the Nullness Checker can be suppressed using
- * {@code @SuppressWarnings("nullness")} because {@link
- * org.checkerframework.checker.nullness.NullnessChecker} is annotated with
- * {@code @SuppressWarningsKey("nullness")}.
- *
- * <p>TODO: the previous paragraph about the Nullness Checker is out-of-date. We only consider this
- * meta-annotation on the most-concrete SourceChecker subclass and only use the suppression keys
- * listed there. For the Nullness Checker we add multiple suppression keys along the hierarchy.
- * Should we change the semantics of this annotation to look for it on all classes from the
- * most-concrete class up to SourceChecker? That would make the behavior consistent with e.g. our
- * SupportedOptions. Is there ever a reason where that would be unwanted?
+ * <p>If this annotation is not present on a checker class, then the name of the checker is used by
+ * default. (The name of the checker is the part of the checker classname that comes before Checker
+ * or Subchecker. If the checker classname is not of this form, then the classname is used.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
