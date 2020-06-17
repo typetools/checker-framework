@@ -125,20 +125,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      */
     protected List<DiagMessage> isValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
-        SimpleAnnotatedTypeScanner<List<DiagMessage>, Void> scanner =
-                new SimpleAnnotatedTypeScanner<List<DiagMessage>, Void>() {
-                    @Override
-                    protected List<DiagMessage> defaultAction(
-                            AnnotatedTypeMirror type, Void aVoid) {
-                        return isTopLevelValidType(qualifierHierarchy, type);
-                    }
-
-                    @Override
-                    protected List<DiagMessage> reduce(List<DiagMessage> r1, List<DiagMessage> r2) {
-                        return DiagMessage.mergeLists(r1, r2);
-                    }
-                };
-        return scanner.visit(type);
+        SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy> scanner =
+                new SimpleAnnotatedTypeScanner<>(
+                        (atm, q) -> isTopLevelValidType(q, atm),
+                        DiagMessage::mergeLists,
+                        Collections.emptyList());
+        return scanner.visit(type, qualifierHierarchy);
     }
 
     /**
@@ -500,6 +492,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
+     * Returns true if the effective annotations on the upperBound are above those on the
+     * lowerBound.
+     *
      * @return true if the effective annotations on the upperBound are above those on the lowerBound
      */
     public boolean areBoundsValid(

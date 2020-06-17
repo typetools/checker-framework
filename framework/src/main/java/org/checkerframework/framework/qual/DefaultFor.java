@@ -24,16 +24,26 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface DefaultFor {
-    /** @return the locations to which the annotation should be applied */
+    /**
+     * Returns the locations to which the annotation should be applied.
+     *
+     * @return the locations to which the annotation should be applied
+     */
     TypeUseLocation[] value() default {};
 
-    /** @return {@link TypeKind}s of types for which an annotation should be implicitly added */
+    /**
+     * Returns {@link TypeKind}s of types for which an annotation should be implicitly added.
+     *
+     * @return {@link TypeKind}s of types for which an annotation should be implicitly added
+     */
     TypeKind[] typeKinds() default {};
 
     /**
-     * @return {@link Class}es for which an annotation should be applied. For example, if
-     *     {@code @MyAnno} is meta-annotated with {@code @DefaultFor(classes=String.class)}, then
-     *     every occurrence of {@code String} is actually {@code @MyAnno String}.
+     * Returns {@link Class}es for which an annotation should be applied. For example, if
+     * {@code @MyAnno} is meta-annotated with {@code @DefaultFor(classes=String.class)}, then every
+     * occurrence of {@code String} is actually {@code @MyAnno String}.
+     *
+     * @return {@link Class}es for which an annotation should be applied
      */
     Class<?>[] types() default {};
 }

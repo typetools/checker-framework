@@ -12,7 +12,11 @@ import testlib.NestedAggregateChecker;
 
 public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NestedAggregateCheckerTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NestedAggregateCheckerTest(List<File> testFiles) {
         super(
                 testFiles,

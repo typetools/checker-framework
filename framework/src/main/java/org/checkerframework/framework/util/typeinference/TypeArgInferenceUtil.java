@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -336,7 +335,11 @@ public class TypeArgInferenceUtil {
         }
     }
 
-    /** @return true if the type contains a use of a type variable from methodType */
+    /**
+     * Returns true if the type contains a use of a type variable from methodType.
+     *
+     * @return true if the type contains a use of a type variable from methodType
+     */
     private static boolean containsUninferredTypeParameter(
             AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
@@ -367,8 +370,8 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr;
-     * annotations in hierarchy}).
+     * Take a set of annotations and separate them into a mapping of {@code hierarchy top =>
+     * annotations in hierarchy}.
      */
     public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
             final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
@@ -403,31 +406,9 @@ public class TypeArgInferenceUtil {
     private static class TypeVariableFinder
             extends AnnotatedTypeScanner<Boolean, Collection<TypeVariable>> {
 
-        @Override
-        protected Boolean scan(
-                Iterable<? extends AnnotatedTypeMirror> types, Collection<TypeVariable> typeVars) {
-            if (types == null) {
-                return false;
-            }
-            Boolean result = false;
-            boolean first = true;
-            for (AnnotatedTypeMirror type : types) {
-                result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
-                first = false;
-            }
-            return result;
-        }
-
-        @Override
-        protected Boolean reduce(Boolean r1, Boolean r2) {
-            if (r1 == null) {
-                return r2 != null && r2;
-
-            } else if (r2 == null) {
-                return r1;
-            }
-
-            return r1 || r2;
+        /** Create TypeVariableFinder. */
+        protected TypeVariableFinder() {
+            super(Boolean::logicalOr, false);
         }
 
         @Override
@@ -472,9 +453,9 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Create a copy of toModify. In the copy, for each pair {@code typeVariable &rArr; annotated
-     * type} replace uses of typeVariable with the corresponding annotated type using normal
-     * substitution rules (@see TypeVariableSubstitutor). Return the copy.
+     * Create a copy of toModify. In the copy, for each pair {@code typeVariable => annotated type}
+     * replace uses of typeVariable with the corresponding annotated type using normal substitution
+     * rules (@see TypeVariableSubstitutor). Return the copy.
      */
     public static AnnotatedTypeMirror substitute(
             Map<TypeVariable, AnnotatedTypeMirror> substitutions,
@@ -541,7 +522,8 @@ public class TypeArgInferenceUtil {
         Types types = env.getTypeUtils();
         Map<TypeVariable, TypeMirror> fromReturn =
                 getMappingFromReturnType(invocation, methodType, env);
-        for (Entry<TypeVariable, AnnotatedTypeMirror> entry : new ArrayList<>(result.entrySet())) {
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
+                new ArrayList<>(result.entrySet())) {
             TypeVariable typeVariable = entry.getKey();
             if (!fromReturn.containsKey(typeVariable)) {
                 continue;
@@ -566,7 +548,11 @@ public class TypeArgInferenceUtil {
         return result;
     }
 
-    /** @return true if actual and inferred are captures of the same wildcard or declared type. */
+    /**
+     * Returns true if actual and inferred are captures of the same wildcard or declared type.
+     *
+     * @return true if actual and inferred are captures of the same wildcard or declared type
+     */
     private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred, Types types) {
         if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
             return true;

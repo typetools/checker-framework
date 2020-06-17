@@ -28,6 +28,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -524,7 +525,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /// Getters and setters
     ///
 
-    /** @return the {@link ProcessingEnvironment} that was supplied to this checker */
+    /**
+     * Returns the {@link ProcessingEnvironment} that was supplied to this checker.
+     *
+     * @return the {@link ProcessingEnvironment} that was supplied to this checker
+     */
     @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
@@ -541,7 +546,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.parentChecker = parentChecker;
     }
 
-    /** @return the parent checker of the current checker */
+    /**
+     * Returns the parent checker of the current checker.
+     *
+     * @return the parent checker of the current checker
+     */
     public SourceChecker getParentChecker() {
         return this.parentChecker;
     }
@@ -575,7 +584,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return upstreamCheckerNames;
     }
 
-    /** @return the {@link CFContext} used by this checker */
+    /**
+     * Returns the {@link CFContext} used by this checker.
+     *
+     * @return the {@link CFContext} used by this checker
+     */
     public CFContext getContext() {
         return this;
     }
@@ -870,7 +883,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 // Add timestamp to indicate how long operations are taking.
                 // Duplicate messages are suppressed, so this might not appear in front of every "
                 // is type-checking " message (when a file takes less than a second to type-check).
-                message(NOTE, new java.util.Date().toString());
+                message(NOTE, Instant.now().toString());
                 message(
                         NOTE,
                         "%s is type-checking %s",
@@ -1143,7 +1156,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a Tree, or null
      * @param defaultFormat the message key, in parentheses
      * @param args arguments for interpolation in the string corresponding to the given message key
-     * @return the first part of the message format output by -Adetailedmsgtext.
+     * @return the first part of the message format output by -Adetailedmsgtext
      */
     private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
         StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
@@ -1214,7 +1227,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param source the object from which to obtain source position information; may be an Element,
      *     a Tree, or null
-     * @return the tree associated with the given source object, or null if none.
+     * @return the tree associated with the given source object, or null if none
      */
     private @Nullable Tree sourceToTree(@Nullable Object source) {
         if (source instanceof Element) {
@@ -1736,8 +1749,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     ///
 
     /**
+     * Returns collection of lower-case string keys that a checker honors for suppressing warnings
+     * and errors that it issues. Each such key suppresses all warnings issued by the checker.
+     *
      * @return collection of lower-case string keys that a checker honors for suppressing warnings
-     *     and errors that it issues. Each such key suppresses all warnings issued by the checker.
+     *     and errors that it issues
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
@@ -2221,7 +2237,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         return result;
     }
 
-    /** @return the default warning suppression key for this checker based on the checker name */
+    /**
+     * Returns the default warning suppression key for this checker based on the checker name.
+     *
+     * @return the default warning suppression key for this checker based on the checker name
+     */
     private String getDefaultWarningSuppressionKey() {
         String className = this.getClass().getSimpleName();
         int indexOfChecker = className.lastIndexOf("Checker");

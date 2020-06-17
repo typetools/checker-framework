@@ -304,7 +304,7 @@ public class UnitsRelationsTools {
      * Creates an AnnotationMirror representing a unit defined by annoClass, with no prefix.
      *
      * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
-     * {@link #buildAnnoMirrorWithNoPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+     * {@link #buildAnnoMirrorWithNoPrefix(ProcessingEnvironment, CharSequence)}.
      *
      * @param env checker Processing Environment, provided as a parameter in init() of a
      *     UnitsRelations implementation

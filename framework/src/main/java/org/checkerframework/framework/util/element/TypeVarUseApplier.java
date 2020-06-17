@@ -42,6 +42,9 @@ public class TypeVarUseApplier {
     };
 
     /**
+     * Returns true if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type
+     * variable component, and the element is not a TYPE_PARAMETER.
+     *
      * @return true if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type
      *     variable component, and the element is not a TYPE_PARAMETER
      */
@@ -111,8 +114,7 @@ public class TypeVarUseApplier {
      * Applies the bound annotations from the declaration of the type parameter and then applies the
      * explicit annotations written on the type variable.
      *
-     * @throws UnexpectedAnnotationLocationException if invalid location for an annotation was
-     *     found.
+     * @throws UnexpectedAnnotationLocationException if invalid location for an annotation was found
      */
     public void extractAndApply() throws UnexpectedAnnotationLocationException {
         ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
@@ -224,7 +226,12 @@ public class TypeVarUseApplier {
         return annotations;
     }
 
-    /** @return annotations on an element that apply to variable declarations */
+    /**
+     * Returns annotations on an element that apply to variable declarations.
+     *
+     * @param variableElem the element whose annotations to check
+     * @return annotations on an element that apply to variable declarations
+     */
     private static List<Attribute.TypeCompound> getVariableAnnos(final Element variableElem) {
         final VarSymbol varSymbol = (VarSymbol) variableElem;
         final List<Attribute.TypeCompound> annotations = new ArrayList<>();
@@ -293,7 +300,12 @@ public class TypeVarUseApplier {
         return result;
     }
 
-    /** @return the annotations on the return type of the input ExecutableElement */
+    /**
+     * Returns the annotations on the return type of the input ExecutableElement.
+     *
+     * @param methodElem the method whose return type annotations to return
+     * @return the annotations on the return type of the input ExecutableElement
+     */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
             throw new BugInCF(

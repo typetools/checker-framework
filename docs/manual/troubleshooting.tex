@@ -172,19 +172,18 @@ then either give the JVM more memory when running the Checker Framework, or
 split your files and methods into smaller ones, or both.
 
 \item
-\ahref{https://errorprone.info/}{Error Prone} uses the Checker Framework's
-dataflow analysis library.
-Unfortunately, Error Prone uses an old version of the library, so you
-cannot use both Error Prone and the current Checker Framework (because each
-one depends on a different version of the dataflow library).
+Versions of \ahref{https://errorprone.info/}{Error Prone} before 2.4.0 are
+incompatible with the Checker Framework.  Those versions of Error Prone
+use an outdated version of the Checker Framework's dataflow analysis
+library, which conflicts with the Checker Framework itself.
 
-Until the Error Prone tool is \ahref{https://github.com/google/error-prone/issues/1404}{fixed},
-you can use an older version of the Checker Framework (the one that Error
-Prone is built on), or you can use a switch that causes your build to use either
-Error Prone or the Checker Framework, but not both.
-The
+If you wish to use both Error Prone and the Checker Framework, then use
+Error Prone version 2.4.0 or later.
+If you cannot upgrade to Error Prone 2.4.0 or later, there is a way to
+still use both tools.  The
 \ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
-  plugin documentation} shows how to do the latter for Gradle.
+  plugin documentation} shows how to do so if you use the Gradle build
+system.
 
 \end{itemize}
 
@@ -739,11 +738,13 @@ If you use the bash shell, put the following command in your
 in the JRE rather than in the JDK, but you need the JDK installed to build
 the Checker Framework anyway.)
 % Can someone give a simpler command?
+% Command taken from:
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}

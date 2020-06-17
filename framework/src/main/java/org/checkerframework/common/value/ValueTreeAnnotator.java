@@ -352,6 +352,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
 
     /**
+     * Returns the Range of the Math.min or Math.max method, or null if the argument is none of
+     * these methods or their arguments are not annotated in ValueChecker hierarchy.
+     *
      * @return the Range of the Math.min or Math.max method, or null if the argument is none of
      *     these methods or their arguments are not annotated in ValueChecker hierarchy
      */

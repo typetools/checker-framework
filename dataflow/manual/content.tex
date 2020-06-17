@@ -343,7 +343,7 @@ following a boolean-valued expression.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class TransferInput<A extends AbstractValue<A>,
+class TransferInput<V extends AbstractValue<V>,
         S extends Store<S>>
 \end{verbatim}
 
@@ -359,12 +359,12 @@ single store.
 
 \begin{verbatim}
 package class org.checkerframework.dataflow.analysis;
-abstract TransferResult<A extends AbstractValue<A>,
+abstract TransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
-class ConditionalTransferResult<A extends AbstractValue<A>,
+class ConditionalTransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
     extends TransferResult<A, S>
-class RegularTransferResult<A extends AbstractValue<A>,
+class RegularTransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
     extends TransferResult<A, S>
 \end{verbatim}
@@ -376,7 +376,7 @@ A TransferFunction is a NodeVisitor that takes an input and produces an output.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-interface TransferFunction<A extends AbstractValue<A>,
+interface TransferFunction<V extends AbstractValue<V>,
         S extends Store<S>>
     extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>
 \end{verbatim}
@@ -426,7 +426,7 @@ analyses are supported.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class Analysis<A extends AbstractValue<A>,
+class Analysis<V extends AbstractValue<V>,
         S extends Store<S>,
         T extends TransferFunction<A, S>>
 \end{verbatim}
@@ -477,7 +477,7 @@ or after any Tree.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class AnalysisResult<A extends AbstractValue<A>,
+class AnalysisResult<V extends AbstractValue<V>,
         S extends Store<S>>
 \end{verbatim}
 

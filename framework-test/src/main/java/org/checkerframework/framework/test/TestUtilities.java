@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import javax.tools.Diagnostic;
@@ -278,7 +277,7 @@ public class TestUtilities {
     public static List<String> optionMapToList(Map<String, String> options) {
         List<String> optionList = new ArrayList<>(options.size() * 2);
 
-        for (Entry<String, String> opt : options.entrySet()) {
+        for (Map.Entry<String, String> opt : options.entrySet()) {
             optionList.add(opt.getKey());
 
             if (opt.getValue() != null) {
@@ -401,9 +400,16 @@ public class TestUtilities {
      * <p>In a checker, we treat a more specific error message as subsumed by a general one. For
      * example, "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the
      * test framework; the exact error key is expected.
+     *
+     * @param testResult the result of type-checking
      */
     public static void assertResultsAreValid(TypecheckResult testResult) {
         if (testResult.didTestFail()) {
+            if (getShouldEmitDebugInfo()) {
+                System.out.println("---------------- start of javac ouput ----------------");
+                System.out.println(testResult.getCompilationResult().getJavacOutput());
+                System.out.println("---------------- end of javac ouput ----------------");
+            }
             Assert.fail(testResult.summarize());
         }
     }
@@ -447,7 +453,7 @@ public class TestUtilities {
     /**
      * Returns the value of system property "emit.test.debug".
      *
-     * @return the value of system property "emit.test.debug".
+     * @return the value of system property "emit.test.debug"
      */
     public static boolean getShouldEmitDebugInfo() {
         return SystemUtil.getBooleanSystemProperty("emit.test.debug");

@@ -299,7 +299,7 @@ public class ValueTransfer extends CFTransfer {
      *
      * @param subNode node
      * @param valueAnno annotation mirror
-     * @return the numerical values in valueAnno casted to the type of subNode.
+     * @return the numerical values in valueAnno casted to the type of subNode
      */
     private List<? extends Number> getNumericalValues(Node subNode, AnnotationMirror valueAnno) {
 

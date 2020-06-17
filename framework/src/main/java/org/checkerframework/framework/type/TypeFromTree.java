@@ -26,6 +26,8 @@ class TypeFromTree {
             new TypeFromExpressionVisitor();
 
     /**
+     * Returns an AnnotatedTypeMirror representing the input expression tree.
+     *
      * @param tree must be an ExpressionTree
      * @return an AnnotatedTypeMirror representing the input expression tree
      */
@@ -40,6 +42,8 @@ class TypeFromTree {
     }
 
     /**
+     * Returns an AnnotatedTypeMirror representing the input tree.
+     *
      * @param tree must represent a class member
      * @return an AnnotatedTypeMirror representing the input tree
      */
@@ -53,6 +57,8 @@ class TypeFromTree {
     }
 
     /**
+     * Returns an AnnotatedTypeMirror representing the input type tree.
+     *
      * @param tree must be a type tree
      * @return an AnnotatedTypeMirror representing the input type tree
      */
@@ -65,7 +71,11 @@ class TypeFromTree {
         return type;
     }
 
-    /** @return an AnnotatedDeclaredType representing the input ClassTree */
+    /**
+     * Returns an AnnotatedDeclaredType representing the input ClassTree.
+     *
+     * @return an AnnotatedDeclaredType representing the input ClassTree
+     */
     public static AnnotatedDeclaredType fromClassTree(
             final AnnotatedTypeFactory typeFactory, final ClassTree tree) {
         abortIfTreeIsNull(typeFactory, tree);

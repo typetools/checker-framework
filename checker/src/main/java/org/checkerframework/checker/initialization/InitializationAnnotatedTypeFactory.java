@@ -104,7 +104,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      *
      * @param checker the checker to which the new type factory belongs
      */
-    public InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
+    protected InitializationAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
 
         INITIALIZED = AnnotationBuilder.fromClass(elements, Initialized.class);
@@ -153,7 +153,11 @@ public abstract class InitializationAnnotatedTypeFactory<
      * commitment type-system.
      */
 
-    /** @return the list of annotations that is forbidden for the constructor return type */
+    /**
+     * Returns the list of annotations that is forbidden for the constructor return type.
+     *
+     * @return the list of annotations that is forbidden for the constructor return type
+     */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();
     }
@@ -742,7 +746,14 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        public InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
+        /**
+         * Create an InitializationQualifierHierarchy.
+         *
+         * @param f a factory to create to create a {@link
+         *     org.checkerframework.framework.util.GraphQualifierHierarchy}
+         * @param arg seems to be ignored
+         */
+        protected InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
             super(f, arg);
         }
 
