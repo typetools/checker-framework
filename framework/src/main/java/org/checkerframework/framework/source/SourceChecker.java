@@ -1887,113 +1887,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Determines whether an error (whose message key is {@code errKey}) should be suppressed,
-     * according to the user's explicitly-written SuppressWarnings annotation {@code anno} or the
-     * {@code -AsuppressWarnings} command-line argument.
-     *
-     * <p>A @SuppressWarnings value may be of the following pattern:
-     *
-     * <ol>
-     *   <li>{@code "prefix"}, where prefix is a SuppressWarnings prefix, as specified by {@link
-     *       #getSuppressWarningsPrefixes()} (e.g., {@code "nullness"} for Nullness, {@code "regex"}
-     *       for Regex)
-     *   <li>{@code "partial-message-key"}, where partial-message-key is a prefix or suffix of the
-     *       message key that it may suppress. So "generic.argument", would suppress any errors a
-     *       message key that contains to generic.argument.
-     *   <li>{@code "prefix:partial-message-key}, where the prefix and partial-message-key is as
-     *       above. So "nullness:generic.argument", would suppress any errors in the Nullness
-     *       Checker with a message key that contains to generic.argument.
-     * </ol>
-     *
-     * {@code "allcheckers"} is a prefix that suppress a warning from any checker. {@code "all"} is
-     * a partial-message-key that suppress a warning with any message key.
-     *
-     * <p>If {@code -ArequirePrefixInWarningSuppressions}, then {@code prefix} and {@code
-     * prefix:partial-message-key} are the only SuppressWarnings stings that have an effect.
-     *
-     * @param anno the @SuppressWarnings annotation written by the user
-     * @param errKey the error key the checker is emitting
-     * @return true {@code anno} should suppress a warning with key {@code errKey}
-     */
-    private boolean checkSuppressWarnings(@Nullable SuppressWarnings anno, String errKey) {
-        if (checkSuppressWarnings(getSuppressWarningsStringsFromOption(), errKey)) {
-            return true;
-        }
-
-        if (anno != null) {
-            String[] suppressWarningStrings = anno.value();
-            Arrays.setAll(suppressWarningStrings, i -> suppressWarningStrings[i].toLowerCase());
-            return checkSuppressWarnings(suppressWarningStrings, errKey);
-        }
-
-        return false;
-    }
-
-    /**
-     * Return true if the given error should be suppressed, based on the given @SuppressWarnings
-     * strings. See {@link #checkSuppressWarnings(SuppressWarnings, String)} for more detail on when
-     * a warning is suppressed.
-     *
-     * @param suppressWarningStrings the @SuppressWarnings strings. May be null, in which case this
-     *     method returns false.
-     * @param messageKey the message key of the error the checker is emitting; a lowercase string
-     * @return true if one of the {@code suppressWarningStrings} suppresses the error
-     */
-    private boolean checkSuppressWarnings(
-            String @Nullable [] suppressWarningStrings, String messageKey) {
-        if (suppressWarningStrings == null) {
-            return false;
-        }
-        // Is the name of the checker required to suppress a warning?
-        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
-
-        Collection<String> prefixes = this.getSuppressWarningsPrefixes();
-        for (String suppressWarningString : suppressWarningStrings) {
-            int colonPos = suppressWarningString.indexOf(":");
-            String messageKeyInSuppressWarningString;
-            if (colonPos == -1) {
-                // The SuppressWarnings string is not of the form prefix:partial-message-key
-                if (prefixes.contains(suppressWarningString)) {
-                    // the value in the @SuppressWarnings is exactly a prefix. Suppress the warning
-                    // no matter its message key.
-                    return true;
-                } else if (requirePrefix) {
-                    // A prefix is required, but this SuppressWarning string does not have a prefix,
-                    // check the next SuppressWarning string
-                    continue;
-                } else if (suppressWarningString.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
-                    // Prefixes aren't required and the SuppressWarnings string is "all".  Suppress
-                    // the warning no matter its message key.
-                    return true;
-                }
-                //  The suppressWarningsString is not a prefix or a prefix:message-key, so it might
-                // be a message key.
-                messageKeyInSuppressWarningString = suppressWarningString;
-            } else {
-                // The SuppressWarnings string has a prefix.
-                String suppressWarningPrefix = suppressWarningString.substring(0, colonPos);
-                if (!prefixes.contains(suppressWarningPrefix)) {
-                    // The prefix of this SuppressWarnings string is a not a prefix supported by
-                    // this checker. Checker the next SuppressWarnings string.
-                    continue;
-                }
-                messageKeyInSuppressWarningString = suppressWarningString.substring(colonPos + 1);
-            }
-            // Check if the message key in the warning suppression is part of the message key that
-            // the checker is emiting.
-            if (messageKey.equals(messageKeyInSuppressWarningString)
-                    || messageKey.startsWith(messageKeyInSuppressWarningString + ".")
-                    || messageKey.endsWith("." + messageKeyInSuppressWarningString)
-                    || messageKey.contains("." + messageKeyInSuppressWarningString + ".")) {
-                return true;
-            }
-        }
-
-        // None of the SuppressWarnings strings suppress this error.
-        return false;
-    }
-
-    /**
      * Returns true if all the warnings pertaining to the given source should be suppressed. This
      * implementation just that delegates to an overloaded, more specific version of {@code
      * shouldSuppressWarnings()}.
@@ -2004,7 +1897,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @see #shouldSuppressWarnings(Element, String)
      * @see #shouldSuppressWarnings(Tree, String)
      */
-    public boolean shouldSuppressWarnings(Object src, String errKey) {
+    private boolean shouldSuppressWarnings(@Nullable Object src, String errKey) {
         if (src instanceof Element) {
             return shouldSuppressWarnings((Element) src, errKey);
         } else if (src instanceof Tree) {
@@ -2027,8 +1920,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     declaration with an appropriately-valued {@literal @}SuppressWarnings annotation; false
      *     otherwise
      */
-    // Public so it can be called from a few places in
-    // org.checkerframework.framework.flow.CFAbstractTransfer
     public boolean shouldSuppressWarnings(Tree tree, String errKey) {
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> prefixes = getSuppressWarningsPrefixes();
@@ -2138,7 +2029,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *     a declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
      *     otherwise
      */
-    // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
         if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
             // Never suppress an unneeded suppression warning.
@@ -2150,24 +2040,114 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
-        if (elt == null) {
-            return false;
-        }
-
-        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
-            if (hasOption("warnUnneededSuppressions")) {
-                elementsWithSuppressedWarnings.add(elt);
-            }
+        if (shouldSuppressWarningStringSuppressKey(
+                getSuppressWarningsStringsFromOption(), errKey)) {
             return true;
         }
 
-        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the
-            // enclosing elements, because they may not have an @AnnotatedFor.
+        while (elt != null) {
+            SuppressWarnings suppressWarningsAnno = elt.getAnnotation(SuppressWarnings.class);
+            if (suppressWarningsAnno != null) {
+                String[] suppressWarningStrings = suppressWarningsAnno.value();
+                Arrays.setAll(suppressWarningStrings, i -> suppressWarningStrings[i].toLowerCase());
+                if (shouldSuppressWarningStringSuppressKey(suppressWarningStrings, errKey)) {
+                    if (hasOption("warnUnneededSuppressions")) {
+                        elementsWithSuppressedWarnings.add(elt);
+                    }
+                    return true;
+                }
+            }
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+                // Return false immediately. Do NOT check for AnnotatedFor in the
+                // enclosing elements, because they may not have an @AnnotatedFor.
+                return false;
+            }
+            elt = elt.getEnclosingElement();
+        }
+        return false;
+    }
+
+    /**
+     * Determines whether an error (whose message key is {@code errKey}) should be suppressed,
+     * according to the @SuppressWarnings string.
+     *
+     * <p>A @SuppressWarnings string may be of the following pattern:
+     *
+     * <ol>
+     *   <li>{@code "prefix"}, where prefix is a SuppressWarnings prefix, as specified by {@link
+     *       #getSuppressWarningsPrefixes()} (e.g., {@code "nullness"} for Nullness, {@code "regex"}
+     *       for Regex)
+     *   <li>{@code "partial-message-key"}, where partial-message-key is a prefix or suffix of the
+     *       message key that it may suppress. So "generic.argument", would suppress any errors a
+     *       message key that contains to generic.argument.
+     *   <li>{@code "prefix:partial-message-key}, where the prefix and partial-message-key is as
+     *       above. So "nullness:generic.argument", would suppress any errors in the Nullness
+     *       Checker with a message key that contains to generic.argument.
+     * </ol>
+     *
+     * {@code "allcheckers"} is a prefix that suppress a warning from any checker. {@code "all"} is
+     * a partial-message-key that suppress a warning with any message key.
+     *
+     * <p>If {@code -ArequirePrefixInWarningSuppressions}, then {@code prefix} and {@code
+     * prefix:partial-message-key} are the only SuppressWarnings stings that have an effect.
+     *
+     * @param suppressWarningStrings the @SuppressWarnings strings. May be null, in which case this
+     *     method returns false.
+     * @param messageKey the message key of the error the checker is emitting; a lowercase string
+     * @return true if one of the {@code suppressWarningStrings} suppresses the error
+     */
+    private boolean shouldSuppressWarningStringSuppressKey(
+            String @Nullable [] suppressWarningStrings, String messageKey) {
+        if (suppressWarningStrings == null) {
             return false;
         }
+        // Is the name of the checker required to suppress a warning?
+        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
-        return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
+        Collection<String> prefixes = this.getSuppressWarningsPrefixes();
+        for (String suppressWarningString : suppressWarningStrings) {
+            int colonPos = suppressWarningString.indexOf(":");
+            String messageKeyInSuppressWarningString;
+            if (colonPos == -1) {
+                // The SuppressWarnings string is not of the form prefix:partial-message-key
+                if (prefixes.contains(suppressWarningString)) {
+                    // the value in the @SuppressWarnings is exactly a prefix. Suppress the warning
+                    // no matter its message key.
+                    return true;
+                } else if (requirePrefix) {
+                    // A prefix is required, but this SuppressWarning string does not have a prefix,
+                    // check the next SuppressWarning string
+                    continue;
+                } else if (suppressWarningString.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
+                    // Prefixes aren't required and the SuppressWarnings string is "all".  Suppress
+                    // the warning no matter its message key.
+                    return true;
+                }
+                //  The suppressWarningsString is not a prefix or a prefix:message-key, so it might
+                // be a message key.
+                messageKeyInSuppressWarningString = suppressWarningString;
+            } else {
+                // The SuppressWarnings string has a prefix.
+                String suppressWarningPrefix = suppressWarningString.substring(0, colonPos);
+                if (!prefixes.contains(suppressWarningPrefix)) {
+                    // The prefix of this SuppressWarnings string is a not a prefix supported by
+                    // this checker. Checker the next SuppressWarnings string.
+                    continue;
+                }
+                messageKeyInSuppressWarningString = suppressWarningString.substring(colonPos + 1);
+            }
+            // Check if the message key in the warning suppression is part of the message key that
+            // the checker is emiting.
+            if (messageKey.equals(messageKeyInSuppressWarningString)
+                    || messageKey.startsWith(messageKeyInSuppressWarningString + ".")
+                    || messageKey.endsWith("." + messageKeyInSuppressWarningString)
+                    || messageKey.contains("." + messageKeyInSuppressWarningString + ".")) {
+                return true;
+            }
+        }
+
+        // None of the SuppressWarnings strings suppress this error.
+        return false;
     }
 
     /**
