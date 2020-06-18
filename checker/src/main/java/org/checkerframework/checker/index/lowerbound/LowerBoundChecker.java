@@ -16,6 +16,11 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  */
 @SuppressWarningsPrefix({"index", "lowerbound"})
 public class LowerBoundChecker extends BaseTypeChecker {
+
+    /**
+     * These classes are bases for both mutable and immutable sequence collections, which contain
+     * methods that change the length.
+     */
     private HashSet<String> collectionBaseTypeNames;
 
     /**
