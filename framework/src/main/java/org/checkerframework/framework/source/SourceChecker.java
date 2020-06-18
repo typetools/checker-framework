@@ -197,9 +197,9 @@ import org.plumelib.util.UtilPlume;
     "infer",
 
     // With each warning, in addition to the concrete error key,
-    // output the suppress warning keys that can be used to
+    // output the suppress warning strings that can be used to
     // suppress that warning.
-    "showSuppressWarningKeys",
+    "showSuppressWarningStrings",
 
     // Warn about @SuppressWarnings annotations that do not suppress any warnings.
     // org.checkerframework.common.basetype.BaseTypeChecker.warnUnneededSuppressions
@@ -1198,7 +1198,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private String suppressWarningsString(String messageKey) {
         Collection<String> prefixes = this.getSuppressWarningsPrefixes();
-        if (hasOption("showSuppressWarningKeys")) {
+        if (hasOption("showSuppressWarningStrings")) {
             return prefixes + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a checker key, then add that to the

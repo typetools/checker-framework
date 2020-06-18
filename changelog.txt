@@ -12,6 +12,9 @@ The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
 
+Renamings:
+ -AshowSuppressWarningKeys to -AshowSuppressWarningsStrings
+
 Implementation details:
 Changed the types of some fields and methods from array to List:
 QualifierDefaults.validLocationsForUncheckedCodeDefaults()
