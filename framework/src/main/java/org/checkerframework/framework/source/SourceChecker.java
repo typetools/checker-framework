@@ -2048,8 +2048,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         // trees.getPath might be slow, but this is only used in error reporting
-        // TODO: #1586 this might return null within a cloned finally block and
-        // then a warning that should be suppressed isn't. Fix this when fixing #1586.
         @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
 
         @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
