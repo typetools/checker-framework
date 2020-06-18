@@ -690,17 +690,17 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
 \item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning.
+  With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> keys without a \<\emph{checkername}:> prefix
+  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
   (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
   \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
   your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the key in a warning suppression annotation begin with a checker
-  warning suppression key.  Otherwise, the suppress warning annotation does not
+  name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.

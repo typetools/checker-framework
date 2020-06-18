@@ -16,11 +16,15 @@ import java.lang.annotation.Target;
  * <p>If this annotation is not present on a checker class, then the name of the checker is used by
  * default. (The name of the checker is the part of the checker classname that comes before Checker
  * or Subchecker. If the checker classname is not of this form, then the classname is used.)
+ *
+ * @checker_framework.manual #suppresswarnings-annotation-syntax
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
+// In the manual section #suppresswarnings-annotation-syntax, the term checkername is used instead
+// of prefix.
 public @interface SuppressWarningsPrefix {
 
     /**

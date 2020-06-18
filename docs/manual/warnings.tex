@@ -120,7 +120,7 @@ purity-related messages when using \<-AcheckPurityAnnotations>.
 
 The argument \emph{messagekey} is the message key for the error.
 Each warning message from the compiler gives the most specific
-suppression key that can be used to suppress that warning.
+suppression string that can be used to suppress that warning.
 An example is ``\<dereference.of.nullable>'' in
 
 %BEGIN LATEX
@@ -155,7 +155,7 @@ If the \emph{messagekey} part is omitted, the \<@SuppressWarnings> applies
 to all messages (it suppresses all warnings from the given checker).
 
 With the \code{-ArequirePrefixInWarningSuppressions} command-line
-option, the Checker Framework only suppresses warnings when the key is in
+option, the Checker Framework only suppresses warnings when the string is in
 the \code{"\emph{checkername}"} or \code{"\emph{checkername}:\emph{messagekey}"}
 format, as in
 \<@SuppressWarnings("nullness")> or
@@ -507,7 +507,7 @@ default).  This will prevent the checker from issuing a warning about the
 Supplying the \<-AsuppressWarnings> command-line option is equivalent to
 writing a \<@SuppressWarnings> annotation on every class that the compiler
 type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
-list of warning suppression keys, as in
+list of warning suppression strings, as in
 \<-AsuppressWarnings=purity,uninitialized>.
 
 When possible, it is better to write a \<@SuppressWarnings> annotation with a
