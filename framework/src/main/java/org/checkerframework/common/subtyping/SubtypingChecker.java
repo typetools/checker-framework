@@ -38,6 +38,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
      * @param visitor the visitor
      * @param superSupportedTypeQualifiers the result of super.getSuppressWarningsKeys(), as
      *     executed by checker
+     * @return SuppressWarnings prefixes, based on the names of all the qualifiers
      */
     public static SortedSet<String> getSuppressWarningsPrefixes(
             SourceVisitor<?, ?> visitor, SortedSet<String> superSupportedTypeQualifiers) {
