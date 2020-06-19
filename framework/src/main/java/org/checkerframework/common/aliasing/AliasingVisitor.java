@@ -1,17 +1,11 @@
 package org.checkerframework.common.aliasing;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
+import java.util.Set;
+import javax.lang.model.element.*;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
@@ -271,13 +265,34 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        boolean isArray = type.getUnderlyingType().getKind().toString().equalsIgnoreCase("array");
-        boolean isNull = exp.getKind() == Kind.NULL_LITERAL;
-        if (type.getUnderlyingType().toString().startsWith("java.lang") || isArray || isNull) {
-            return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
-        } else {
+        boolean isUniqueClassFlag = isUniqueClass(exp);
+        if (isUniqueClassFlag) {
             return type.hasAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
+        } else {
+            return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
         }
+    }
+
+    /**
+     * Returns true if class of tree expression {@code exp} has type {@code @Unique}
+     *
+     * @param exp the Tree to check
+     */
+    private boolean isUniqueClass(Tree exp) {
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
+        Element el = types.asElement(type.getUnderlyingType());
+        Set<AnnotationMirror> annoMirrors = null;
+        if (el != null) {
+            annoMirrors = atypeFactory.getDeclAnnotations(el);
+            if (annoMirrors != null) {
+                for (AnnotationMirror mirror : annoMirrors) {
+                    if (atypeFactory.getAnnotatedType(el).hasAnnotation(Unique.class)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private boolean isInUniqueConstructor() {
