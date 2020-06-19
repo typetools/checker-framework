@@ -72,7 +72,6 @@ The rest of this chapter explains these mechanisms in turn.
 You can use the \code{-AwarnUnneededSuppressions} command-line option to issue a
 warning if a \code{@SuppressWarnings} did not suppress any warnings issued by the current checker.
 
-% See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
 
 \sectionAndLabel{\code{@SuppressWarnings} annotation}{suppresswarnings-annotation}
 
@@ -340,7 +339,8 @@ option also serves the latter purpose).
 
 \begin{sloppypar}
 You can suppress a warning by \<assert>ing that some property is true, and
-placing the string \<@AssumeAssertion(\emph{warningkey})> in the assertion
+placing the string \<@AssumeAssertion(\emph{
+  warningkey})> in the assertion
 message.
 \end{sloppypar}
 
@@ -364,7 +364,8 @@ type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
-The warning key is exactly as in the \<@SuppressWarnings> annotation
+The value in parentheses is a Suppresswarnings string,
+exactly as in the \<@SuppressWarnings> annotation
 (Section~\ref{suppresswarnings-annotation}).  The same good practices apply
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe

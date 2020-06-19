@@ -36,7 +36,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
      * }</pre>
      *
      * @param visitor the visitor
-     * @param superSupportedTypeQualifiers the result of super.getSuppressWarningsKeys(), as
+     * @param superSupportedTypeQualifiers the result of super.getSuppressWarningsPrefixes(), as
      *     executed by checker
      * @return SuppressWarnings prefixes, based on the names of all the qualifiers
      */

@@ -43,9 +43,9 @@ fi
 # Implementation notes:
 # These are the two types of matching lines:
 # Matching lines:
-#  * "KEY"  (for @SuppressWarnings, but don't match "@SuppressWarnings"
+#  * "SWSTRING"  (for @SuppressWarnings, but don't match "@SuppressWarnings"
 #    because that might be on the previous line)
-#  * @AssumeAssertion(key)
+#  * @AssumeAssertion(SWSTRING)
 
 echo "regex=${regex}"
 
