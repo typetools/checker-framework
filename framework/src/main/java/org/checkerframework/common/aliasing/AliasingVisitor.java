@@ -277,6 +277,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
      * Returns true if class of tree expression {@code exp} has type {@code @Unique}
      *
      * @param exp the Tree to check
+     * @return boolean true if class if unique and false otherwise
      */
     private boolean isUniqueClass(Tree exp) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
