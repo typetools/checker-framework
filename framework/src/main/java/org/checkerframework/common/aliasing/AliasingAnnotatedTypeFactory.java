@@ -2,6 +2,7 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.NewArrayTree;
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
@@ -16,10 +17,13 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.SimpleHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -79,10 +83,33 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(new AliasingTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    protected class AliasingQualifierHierarchy extends SimpleHierarchy {
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new AliasingQualifierHierarchy(factory);
+    }
 
-        protected AliasingQualifierHierarchy() {
-            super(AliasingAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+    protected class AliasingQualifierHierarchy extends MultiGraphQualifierHierarchy {
+
+        protected AliasingQualifierHierarchy(MultiGraphFactory f) {
+            super(f);
+        }
+
+        @Override
+        protected Set<AnnotationMirror> findBottoms(
+                Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
+            Set<AnnotationMirror> newbottoms = AnnotationUtils.createAnnotationSet();
+            newbottoms.add(UNIQUE);
+            newbottoms.add(MAYBE_LEAKED);
+            return newbottoms;
+        }
+
+        @Override
+        protected Set<AnnotationMirror> findTops(
+                Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
+            Set<AnnotationMirror> newtops = AnnotationUtils.createAnnotationSet();
+            newtops.add(MAYBE_ALIASED);
+            newtops.add(NON_LEAKED);
+            return newtops;
         }
 
         /**
