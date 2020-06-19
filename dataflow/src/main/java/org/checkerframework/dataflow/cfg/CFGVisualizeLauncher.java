@@ -239,7 +239,7 @@ public class CFGVisualizeLauncher {
      * @return a map which includes a key "stringGraph" and the String representation of CFG as the
      *     value
      */
-    protected <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+    public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
             @Nullable Map<String, Object> generateStringOfCFG(
             String inputFile,
             String method,
