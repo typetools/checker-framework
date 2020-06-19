@@ -281,12 +281,14 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     private boolean isUniqueClass(Tree exp) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         Element el = types.asElement(type.getUnderlyingType());
-        Set<AnnotationMirror> annoMirrors = null;
         if (el != null) {
-            annoMirrors = atypeFactory.getDeclAnnotations(el);
+            Set<AnnotationMirror> annoMirrors = atypeFactory.getDeclAnnotations(el);
             if (annoMirrors != null) {
                 for (AnnotationMirror mirror : annoMirrors) {
-                    if (atypeFactory.getAnnotatedType(el).hasAnnotation(Unique.class)) {
+                    if (mirror.getAnnotationType()
+                            .asElement()
+                            .getSimpleName()
+                            .contentEquals("Unique")) {
                         return true;
                     }
                 }
