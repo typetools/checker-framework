@@ -786,9 +786,9 @@ public abstract class InitializationAnnotatedTypeFactory<
          * leastUpperBound and call this method for initialization qualifiers.
          *
          * @param anno1 an initialization qualifier
-         * @param qual1
+         * @param qual1 a qualifier kind
          * @param anno2 an initialization qualifier
-         * @param qual2
+         * @param qual2 a qualifier kind
          * @return the lub of anno1 and anno2
          */
         protected AnnotationMirror leastUpperBoundInitialization(

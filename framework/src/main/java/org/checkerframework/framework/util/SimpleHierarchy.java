@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
@@ -84,7 +83,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
 
     protected Set<AnnotationMirror> createTops() {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
+        for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
             if (entry.getKey().isTop()) {
                 tops.add(entry.getValue());
             }
@@ -94,7 +93,7 @@ public class SimpleHierarchy extends QualifierHierarchy {
 
     protected Set<AnnotationMirror> createBottoms() {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        for (Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
+        for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
             if (entry.getKey().isBottom()) {
                 bottoms.add(entry.getValue());
             }

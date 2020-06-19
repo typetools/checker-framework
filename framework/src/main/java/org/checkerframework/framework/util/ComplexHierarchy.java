@@ -47,7 +47,7 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
      * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
-    public ComplexHierarchy(
+    protected ComplexHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);

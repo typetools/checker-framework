@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -260,43 +259,43 @@ public class QualifierKindHierarchy {
         // printIsSubtype();
     }
 
-    private void printLubs() {
-        for (Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
-            System.out.printf(
-                    "LUB(%s, %s): %s%n",
-                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-        }
-    }
-
-    private void printLubsWithElements() {
-        for (Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
-            if (entry.getValue().hasElements) {
-                System.out.printf(
-                        "LUB(%s, %s): %s%n",
-                        entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-            }
-        }
-    }
-
-    private void printGlbs() {
-        for (Entry<QualifierKindPair, QualifierKind> entry : glbs.entrySet()) {
-            System.out.printf(
-                    "GLB(%s, %s): %s%n",
-                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-        }
-    }
-
-    private void printIsSubtype() {
-        for (QualifierKind subKind : qualifierKindMap.values()) {
-            for (QualifierKind superKind : qualifierKindMap.values()) {
-                if (subKind.isSubtype(superKind)
-                        && superKind.hasElements()
-                        && subKind.hasElements()) {
-                    System.out.printf("Sub: %s Super: %s%n", subKind, superKind);
-                }
-            }
-        }
-    }
+    //    private void printLubs() {
+    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
+    //            System.out.printf(
+    //                    "LUB(%s, %s): %s%n",
+    //                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
+    //        }
+    //    }
+    //
+    //    private void printLubsWithElements() {
+    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
+    //            if (entry.getValue().hasElements) {
+    //                System.out.printf(
+    //                        "LUB(%s, %s): %s%n",
+    //                        entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
+    //            }
+    //        }
+    //    }
+    //
+    //    private void printGlbs() {
+    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : glbs.entrySet()) {
+    //            System.out.printf(
+    //                    "GLB(%s, %s): %s%n",
+    //                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
+    //        }
+    //    }
+    //
+    //    private void printIsSubtype() {
+    //        for (QualifierKind subKind : qualifierKindMap.values()) {
+    //            for (QualifierKind superKind : qualifierKindMap.values()) {
+    //                if (subKind.isSubtype(superKind)
+    //                        && superKind.hasElements()
+    //                        && subKind.hasElements()) {
+    //                    System.out.printf("Sub: %s Super: %s%n", subKind, superKind);
+    //                }
+    //            }
+    //        }
+    //    }
 
     /**
      * Verifies that the {@link QualifierKindHierarchy} is a valid hierarchy.
@@ -454,7 +453,7 @@ public class QualifierKindHierarchy {
     private Set<QualifierKind> createTopsSet(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         Set<QualifierKind> tops = new TreeSet<>();
-        for (Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
+        for (Map.Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
             QualifierKind qualifierKind = entry.getKey();
             if (entry.getValue().size() == 0) {
                 tops.add(qualifierKind);
@@ -581,7 +580,7 @@ public class QualifierKindHierarchy {
      * Returns the set of all qualifiers that are a supertype of {@code qualifierKind}.
      *
      * @param qualifierKind the qualifier whose super types should be returned
-     * @param directSuperMap
+     * @param directSuperMap directSuperMap
      * @return the set of all qualifiers that are a supertype of {@code qualifierKind}
      * @throws UserError if there is a cycle in the hierarchy
      */

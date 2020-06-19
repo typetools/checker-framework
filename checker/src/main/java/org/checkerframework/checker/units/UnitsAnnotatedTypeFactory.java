@@ -570,7 +570,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected void specifyBottom(
                 Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-                Class<? extends Annotation> bottom) {
+                Class<? extends Annotation> b) {
             super.specifyBottom(directSuperMap, UnitsBottom.class);
         }
     }
