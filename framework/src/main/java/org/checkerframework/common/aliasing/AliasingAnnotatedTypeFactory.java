@@ -84,6 +84,15 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory =
+                this.createQualifierHierarchyFactory();
+
+        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new AliasingQualifierHierarchy(factory);
     }
