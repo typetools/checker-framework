@@ -183,7 +183,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node, AnnotatedTypeFactory f) {
+    public AnnotatedTypeVariable visitTypeParameter(
+            TypeParameterTree node, AnnotatedTypeFactory f) {
 
         List<AnnotatedTypeMirror> bounds = new ArrayList<>(node.getBounds().size());
         for (Tree t : node.getBounds()) {
@@ -243,68 +244,57 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * Returns an AnnotatedTypeMirror for uses of type variables with annotations written explicitly
-     * on the type parameter declaration and/or its upper bound.
+     * If a tree is can be found for the declaration of the type variable {@code type}, then a
+     * {@link AnnotatedTypeVariable} is returned with explicit annotations from the type variables
+     * declared bounds. If a tree cannot be found, then {@code type}, converted to a use, is
+     * returned.
      *
-     * <p>Note for type variable uses in method signatures, explicit annotations on the declaration
-     * are added by {@link TypeFromMemberVisitor#typeVarAnnotator}.
+     * @param type type variable used to find declaration tree
+     * @param f annotated type factory
+     * @return the AnnotatedTypeVariable from the declaration of {@code type} or {@code type} if no
+     *     tree is found.
      */
-    private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
-        if (type.getKind() != TypeKind.TYPEVAR) {
-            throw new BugInCF(
-                    "TypeFromTree.forTypeVariable: should only be called on type variables");
-        }
-        TypeVariable typeVar = (TypeVariable) type.getUnderlyingType();
+    private AnnotatedTypeVariable getTypeVariableFromDeclaration(
+            AnnotatedTypeVariable type, AnnotatedTypeFactory f) {
+        TypeVariable typeVar = type.getUnderlyingType();
         TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
         Element elt = tpe.getGenericElement();
         if (elt instanceof TypeElement) {
             TypeElement typeElt = (TypeElement) elt;
             int idx = typeElt.getTypeParameters().indexOf(tpe);
             ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
-            if (cls != null) {
-                // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
-                // none of which are declarations.  But `cls.getTypeParameters()` returns a list
-                // of type parameter declarations (`TypeParameterTree`), so this recursive call
-                // to `visit` will return a declaration ATV.  So we must copy the result and set
-                // its `isDeclaration` field to `false`.
-                if (cls.getTypeParameters().isEmpty()) {
-                    // The type parameters in the source tree were already erased.
-                    // The element already contains all necessary information and we can return
-                    // that.
-                    return type;
-                }
-                AnnotatedTypeMirror result =
-                        visit(cls.getTypeParameters().get(idx), f).shallowCopy();
-                ((AnnotatedTypeVariable) result).setDeclaration(false);
-                return result;
-            } else {
-                // We already have all info from the element -> nothing to do.
-                return type;
+            if (cls == null || cls.getTypeParameters().isEmpty()) {
+                // The type parameters in the source tree were already erased. The element already
+                // contains all necessary information and we can return that.
+                return type.asUse();
             }
+
+            // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
+            // none of which are declarations.  But `cls.getTypeParameters()` returns a list
+            // of type parameter declarations (`TypeParameterTree`), so this  call
+            // will return a declaration ATV.  So change it to a use.
+            return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
         } else if (elt instanceof ExecutableElement) {
             ExecutableElement exElt = (ExecutableElement) elt;
             int idx = exElt.getTypeParameters().indexOf(tpe);
             MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
-            if (meth != null) {
-                // This works the same as the case above.  Even though `meth` itself is not a
-                // type declaration tree, the elements of `meth.getTypeParameters()` still are.
-                AnnotatedTypeMirror result =
-                        visit(meth.getTypeParameters().get(idx), f).shallowCopy();
-                ((AnnotatedTypeVariable) result).setDeclaration(false);
-                return result;
-            } else {
+            if (meth == null) {
                 // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source for: "
                 //                   + elt);
-                return type;
+                return type.asUse();
             }
-        } else {
+            // This works the same as the case above.  Even though `meth` itself is not a
+            // type declaration tree, the elements of `meth.getTypeParameters()` still are.
+            AnnotatedTypeVariable result =
+                    visitTypeParameter(meth.getTypeParameters().get(idx), f).shallowCopy();
+            result.setDeclaration(false);
+            return result;
+        } else if (TypesUtils.isCaptured(typeVar)) {
             // Captured types can have a generic element (owner) that is
             // not an element at all, namely Symtab.noSymbol.
-            if (TypesUtils.isCaptured(typeVar)) {
-                return type;
-            } else {
-                throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
-            }
+            return type.asUse();
+        } else {
+            throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
         }
     }
 
@@ -314,7 +304,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {
-            return forTypeVariable(type, f).asUse();
+            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
         }
 
         return type;
@@ -326,7 +316,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {
-            return forTypeVariable(type, f).asUse();
+            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
         }
 
         return type;
@@ -337,7 +327,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {
-            return forTypeVariable(type, f).asUse();
+            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
         }
 
         return type;
@@ -349,7 +339,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {
-            return forTypeVariable(type, f).asUse();
+            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
         }
 
         return type;
