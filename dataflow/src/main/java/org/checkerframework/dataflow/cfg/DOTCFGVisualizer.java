@@ -208,19 +208,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        StringBuilder sbBlockNode = new StringBuilder();
-        sbBlockNode
-                .append(escapeDoubleQuotes(t))
-                .append("   [ ")
-                .append(getNodeSimpleName(t))
-                .append(" ]");
-        if (analysis != null) {
-            V value = analysis.getValue(t);
-            if (value != null) {
-                sbBlockNode.append("    > ").append(escapeDoubleQuotes(value));
-            }
-        }
-        return sbBlockNode.toString();
+        return super.visualizeBlockNodeHelper(t, analysis, true);
     }
 
     @Override
@@ -276,26 +264,6 @@ public class DOTCFGVisualizer<
     @Override
     public String visualizeStoreKeyVal(String keyName, Object value) {
         return storeEntryIndent + keyName + " = " + value + leftJustifiedTerminator;
-    }
-
-    /**
-     * Escape the double quotes from the input String, replacing {@code "} by {@code \"}.
-     *
-     * @param str the string to be escaped
-     * @return the escaped version of the string
-     */
-    private String escapeDoubleQuotes(final String str) {
-        return str.replace("\"", "\\\"");
-    }
-
-    /**
-     * Escape the double quotes from the string representation of the given object.
-     *
-     * @param obj an object
-     * @return an escaped version of the string representation of the object
-     */
-    private String escapeDoubleQuotes(final Object obj) {
-        return escapeDoubleQuotes(String.valueOf(obj));
     }
 
     @Override

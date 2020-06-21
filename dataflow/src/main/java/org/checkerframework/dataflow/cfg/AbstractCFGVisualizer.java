@@ -262,6 +262,37 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
+     * Helper method to visualize a node based on the analysis.
+     *
+     * @param t a node
+     * @param analysis the current analysis
+     * @param needEscape need to escape double quotes
+     * @return the visualization of the given node
+     */
+    protected String visualizeBlockNodeHelper(
+            Node t, @Nullable Analysis<V, S, T> analysis, boolean needEscape) {
+        StringBuilder sbBlockNode = new StringBuilder();
+        if (needEscape) {
+            sbBlockNode.append(escapeDoubleQuotes(t));
+        } else {
+            sbBlockNode.append(t.toString());
+        }
+        sbBlockNode.append("   [ ").append(getNodeSimpleName(t)).append(" ]");
+        if (analysis != null) {
+            V value = analysis.getValue(t);
+            if (value != null) {
+                sbBlockNode.append("    > ");
+                if (needEscape) {
+                    sbBlockNode.append(escapeDoubleQuotes(value));
+                } else {
+                    sbBlockNode.append(value.toString());
+                }
+            }
+        }
+        return sbBlockNode.toString();
+    }
+
+    /**
      * Visualize the transfer input of a block.
      *
      * @param bb the block
@@ -422,5 +453,25 @@ public abstract class AbstractCFGVisualizer<
     protected String getNodeSimpleName(Node t) {
         String name = t.getClass().getSimpleName();
         return name.replace("Node", "");
+    }
+
+    /**
+     * Escape the double quotes from the input String, replacing {@code "} by {@code \"}.
+     *
+     * @param str the string to be escaped
+     * @return the escaped version of the string
+     */
+    protected String escapeDoubleQuotes(final String str) {
+        return str.replace("\"", "\\\"");
+    }
+
+    /**
+     * Escape the double quotes from the string representation of the given object.
+     *
+     * @param obj an object
+     * @return an escaped version of the string representation of the object
+     */
+    protected String escapeDoubleQuotes(final Object obj) {
+        return escapeDoubleQuotes(String.valueOf(obj));
     }
 }
