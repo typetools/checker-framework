@@ -339,8 +339,7 @@ option also serves the latter purpose).
 
 \begin{sloppypar}
 You can suppress a warning by \<assert>ing that some property is true, and
-placing the string \<@AssumeAssertion(\emph{
-  warningkey})> in the assertion
+placing the string \<@AssumeAssertion(\emph{checkername})> in the assertion
 message.
 \end{sloppypar}
 
@@ -364,9 +363,9 @@ type refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
 rules about what type refinement it performs.
 
-The value in parentheses is a Suppresswarnings string,
+The value in parentheses is a Suppresswarnings checkername,
 exactly as in the \<@SuppressWarnings> annotation
-(Section~\ref{suppresswarnings-annotation}).  The same good practices apply
+(Section~\ref{suppresswarnings-annotation-syntax}).  The same good practices apply
 as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).
@@ -384,7 +383,7 @@ information regardless of the \<-AassumeAssertionsAreEnabled> and
 
 
 %% Redundant.
-% If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
+% If the string \<@AssumeAssertion(\emph{checkername})> does not appear in the
 % assertion message, then the Checker Framework treats the assertion as
 % being used for defensive programming.  That is, the programmer believes
 % that the assertion might fail at run time, so the Checker Framework should
