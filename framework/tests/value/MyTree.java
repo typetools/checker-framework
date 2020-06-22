@@ -21,9 +21,16 @@ public class MyTree<Value> {
 
         MyTree<@UnknownVal String> myTree1 = newTree("hello").put("bye");
         // :: error: (assignment.type.incompatible)
+        MyTree<@StringVal("hello") String> myTree1b = newTree("hello").put("bye");
+
+        // Note: This is a false positive: the type newTree("hello").put("hello") is able to be
+        // inferred as MyTree<@StringVal("hello") String>
+        // :: error: (assignment.type.incompatible)
         MyTree<@StringVal("hello") String> myTree2 = newTree("hello").put("hello");
         MyTree<@StringVal("hello") String> myTree2b =
                 MyTree.<@StringVal("hello") String>newTree("hello").put("hello");
+        // :: error: (assignment.type.incompatible)
+        MyTree<@StringVal("error") String> myTree2c = newTree("hello").put("hello");
 
         MyTree<@UnknownVal String> myTree3 = newTree("hello");
         myTree3.put("bye");
