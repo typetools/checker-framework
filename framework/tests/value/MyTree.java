@@ -23,8 +23,8 @@ public class MyTree<Value> {
         // :: error: (assignment.type.incompatible)
         MyTree<@StringVal("hello") String> myTree1b = newTree("hello").put("bye");
 
-        // Note: This is a false positive: the type newTree("hello").put("hello") is able to be
-        // inferred as MyTree<@StringVal("hello") String>
+        // Note: This is a false positive: the type of newTree("hello").put("hello") should be
+        // inferred as MyTree<@StringVal("hello") String> and the assignment should therefore pass.
         // :: error: (assignment.type.incompatible)
         MyTree<@StringVal("hello") String> myTree2 = newTree("hello").put("hello");
         MyTree<@StringVal("hello") String> myTree2b =
