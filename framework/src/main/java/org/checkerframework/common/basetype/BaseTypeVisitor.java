@@ -1,7 +1,5 @@
 package org.checkerframework.common.basetype;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -68,6 +66,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -472,7 +471,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             for (AnnotationMirror poly : polys) {
                 if (type.hasAnnotationRelaxed(poly)) {
                     return Collections.singletonList(
-                            new DiagMessage(ERROR, "invalid.polymorphic.qualifier.use", poly));
+                            new DiagMessage(Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
                 }
             }
             return Collections.emptyList();
