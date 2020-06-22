@@ -47,6 +47,11 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new FlowQualifierHierarchy(factory, BOTTOM);
     }

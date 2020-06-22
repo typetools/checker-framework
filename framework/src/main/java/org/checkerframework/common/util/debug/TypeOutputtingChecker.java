@@ -171,6 +171,11 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
 
         @Override
+        protected QualifierHierarchy createQualifierHierarchy() {
+            return oldCreateQualifierHierarchy();
+        }
+
+        @Override
         public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
             return new GeneralQualifierHierarchy(factory);
         }

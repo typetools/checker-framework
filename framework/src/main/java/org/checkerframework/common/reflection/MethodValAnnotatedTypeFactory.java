@@ -146,6 +146,11 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MethodValQualifierHierarchy(factory, METHODVAL_BOTTOM);
     }

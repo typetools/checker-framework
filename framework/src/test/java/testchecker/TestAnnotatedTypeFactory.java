@@ -9,9 +9,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import testchecker.quals.H1Bot;
 import testchecker.quals.H1Invalid;
@@ -49,11 +46,6 @@ public class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 H1Poly.class,
                 H2Poly.class,
                 H1Invalid.class);
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new MultiGraphQualifierHierarchy(factory);
     }
 
     @Override

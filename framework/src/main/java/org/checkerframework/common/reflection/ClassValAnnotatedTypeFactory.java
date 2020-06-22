@@ -96,6 +96,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ClassValQualifierHierarchy(factory);
     }

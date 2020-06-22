@@ -3,7 +3,9 @@ package testlib.util;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -15,8 +17,8 @@ import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
+import org.checkerframework.framework.util.SimpleHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
@@ -73,7 +75,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return new HashSet<Class<? extends Annotation>>(
+        return new HashSet<>(
                 Arrays.asList(
                         Odd.class,
                         MonotonicOdd.class,
@@ -83,7 +85,27 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, BOTTOM);
+    public QualifierHierarchy createQualifierHierarchy() {
+        return new SimpleHierarchy(getSupportedTypeQualifiers(), elements) {
+            @Override
+            protected QualifierKindHierarchy createQualifierKindHierarchy(
+                    Collection<Class<? extends Annotation>> qualifierClasses) {
+                return new TestQualifierKindHierarchy(qualifierClasses);
+            }
+        };
+    }
+
+    protected static class TestQualifierKindHierarchy extends QualifierKindHierarchy {
+        public TestQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            super(qualifierClasses);
+        }
+
+        @Override
+        protected void specifyBottom(
+                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
+                Class<? extends Annotation> bottom) {
+            super.specifyBottom(directSuperMap, Bottom.class);
+        }
     }
 }

@@ -153,6 +153,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new RegexQualifierHierarchy(factory, REGEXBOTTOM);
     }

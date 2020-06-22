@@ -70,6 +70,11 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new WholeProgramInferenceTestQualifierHierarchy(factory);
     }

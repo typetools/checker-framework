@@ -55,6 +55,11 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                         SubstringIndexBottom.class));
     }
 
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
     /** Creates the Substring Index qualifier hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy(

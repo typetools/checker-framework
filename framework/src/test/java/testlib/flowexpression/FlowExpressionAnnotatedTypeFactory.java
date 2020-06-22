@@ -29,6 +29,11 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return oldCreateQualifierHierarchy();
+    }
+
+    @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new FlowExpressionQualifierHierarchy(factory);
     }

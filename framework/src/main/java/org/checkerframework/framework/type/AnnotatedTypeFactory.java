@@ -671,15 +671,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        try {
-            return new SimpleHierarchy(this.getSupportedTypeQualifiers(), elements);
-        } catch (Exception ex) {
-            Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory =
-                    this.createQualifierHierarchyFactory();
+        return new SimpleHierarchy(this.getSupportedTypeQualifiers(), elements);
+    }
 
-            return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
-        }
+    /**
+     * Creates the QualifierHierarchy using the old method. TODO: Remove.
+     *
+     * @return qualifier hierarchy
+     */
+    protected QualifierHierarchy oldCreateQualifierHierarchy() {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory =
+                this.createQualifierHierarchyFactory();
+
+        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
     }
 
     /**
