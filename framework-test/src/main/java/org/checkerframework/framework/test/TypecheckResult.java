@@ -9,7 +9,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Represents the test results from typechecking one or more java files using the given
@@ -106,7 +106,7 @@ public class TypecheckResult {
     public String summarize() {
         if (testFailed) {
             StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-            summaryBuilder.add(PluginUtil.joinLines(getErrorHeaders()));
+            summaryBuilder.add(SystemUtil.joinLines(getErrorHeaders()));
 
             if (!unexpectedDiagnostics.isEmpty()) {
                 summaryBuilder.add(
@@ -143,34 +143,6 @@ public class TypecheckResult {
     }
 
     public static TypecheckResult fromCompilationResults(
-            TestConfiguration configuration,
-            CompilationResult result,
-            List<TestDiagnostic> expectedDiagnostics) {
-
-        boolean usingAnomsgtxt = configuration.getOptions().containsKey("-Anomsgtext");
-        final Set<TestDiagnostic> actualDiagnostics =
-                TestDiagnosticUtils.fromJavaxDiagnosticList(
-                        result.getDiagnostics(), usingAnomsgtxt);
-
-        final Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
-        unexpectedDiagnostics.addAll(actualDiagnostics);
-        unexpectedDiagnostics.removeAll(expectedDiagnostics);
-
-        final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
-        missingDiagnostics.removeAll(actualDiagnostics);
-
-        boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
-
-        return new TypecheckResult(
-                configuration,
-                result,
-                expectedDiagnostics,
-                testFailed,
-                missingDiagnostics,
-                new ArrayList<>(unexpectedDiagnostics));
-    }
-
-    public static TypecheckResult fromCompilationResultsExpectedDiagnostics(
             TestConfiguration configuration,
             CompilationResult result,
             List<TestDiagnostic> expectedDiagnostics) {

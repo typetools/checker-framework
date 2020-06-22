@@ -191,12 +191,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
 
             if (rhsArgTypes.length < lhsArgTypes.length) {
-                checker.report(
-                        org.checkerframework.framework.source.Result.warning(
-                                "format.missing.arguments",
-                                varType.toString(),
-                                valueType.toString()),
-                        valueTree);
+                checker.reportWarning(
+                        valueTree,
+                        "format.missing.arguments",
+                        varType.toString(),
+                        valueType.toString());
             }
         }
     }

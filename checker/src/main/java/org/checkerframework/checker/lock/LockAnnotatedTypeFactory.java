@@ -43,7 +43,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -156,9 +155,8 @@ public class LockAnnotatedTypeFactory
                 List<DependentTypesError> superErrors = new ArrayList<>();
                 for (DependentTypesError error : errors) {
                     if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
-                        checker.report(
-                                Result.failure("lock.expression.not.final", error.expression),
-                                errorTree);
+                        checker.reportError(
+                                errorTree, "lock.expression.not.final", error.expression);
                     } else {
                         superErrors.add(error);
                     }
@@ -533,7 +531,7 @@ public class LockAnnotatedTypeFactory
 
             if (count > 1 && issueErrorIfMoreThanOnePresent) {
                 // TODO: Turn on after figuring out how this interacts with inherited annotations.
-                // checker.report(Result.failure("multiple.sideeffect.annotations"), element);
+                // checker.reportError(element, "multiple.sideeffect.annotations");
             }
 
             SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);
@@ -650,7 +648,7 @@ public class LockAnnotatedTypeFactory
      * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the
      * index of this {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex},
      * then {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy
-     * replaced with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     * replaced with that in {@code annotationInGuardedByHierarchy}.
      *
      * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
      *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.

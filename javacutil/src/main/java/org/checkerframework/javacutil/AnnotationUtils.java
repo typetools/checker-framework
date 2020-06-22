@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -32,6 +32,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
@@ -51,6 +52,8 @@ public class AnnotationUtils {
     // **********************************************************************
 
     /**
+     * Returns the fully-qualified name of an annotation as a String.
+     *
      * @param annotation the annotation whose name to return
      * @return the fully-qualified name of an annotation as a String
      */
@@ -168,8 +171,8 @@ public class AnnotationUtils {
         }
 
         // while loop depends on SortedSet implementation.
-        SortedSet<AnnotationMirror> s1 = createAnnotationSet();
-        SortedSet<AnnotationMirror> s2 = createAnnotationSet();
+        NavigableSet<AnnotationMirror> s1 = createAnnotationSet();
+        NavigableSet<AnnotationMirror> s2 = createAnnotationSet();
         s1.addAll(c1);
         s2.addAll(c2);
         Iterator<AnnotationMirror> iter1 = s1.iterator();
@@ -462,7 +465,7 @@ public class AnnotationUtils {
      *
      * @return a sorted new set to store {@link AnnotationMirror} as element
      */
-    public static SortedSet<AnnotationMirror> createAnnotationSet() {
+    public static NavigableSet<AnnotationMirror> createAnnotationSet() {
         return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     }
 
@@ -477,6 +480,8 @@ public class AnnotationUtils {
     }
 
     /**
+     * Returns the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE.
+     *
      * @param target a location where an annotation can be written
      * @return the set of {@link ElementKind}s to which {@code target} applies, ignoring TYPE_USE
      */
@@ -744,7 +749,8 @@ public class AnnotationUtils {
      * @param expectedType the expected type used to cast the return type
      * @param <T> the class of the expected type
      * @param useDefaults whether to apply default values to the element
-     * @return the value of the element with the given name
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
      */
     public static <T> List<T> getElementValueArray(
             AnnotationMirror anno,
@@ -755,7 +761,23 @@ public class AnnotationUtils {
         List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
         List<T> result = new ArrayList<>(la.size());
         for (AnnotationValue a : la) {
-            result.add(expectedType.cast(a.getValue()));
+            try {
+                result.add(expectedType.cast(a.getValue()));
+            } catch (Throwable t) {
+                String err1 =
+                        String.format(
+                                "getElementValueArray(%n  anno=%s,%n  elementName=%s,%n  expectedType=%s,%n  useDefaults=%s)%n",
+                                anno, elementName, expectedType, useDefaults);
+                String err2 =
+                        String.format(
+                                "Error in cast:%n  expectedType=%s%n  a=%s [%s]%n  a.getValue()=%s [%s]",
+                                expectedType,
+                                a,
+                                a.getClass(),
+                                a.getValue(),
+                                a.getValue().getClass());
+                throw new BugInCF(err1 + "; " + err2, t);
+            }
         }
         return result;
     }
@@ -832,8 +854,8 @@ public class AnnotationUtils {
     // The Javadoc doesn't use @link because framework is a different project than this one
     // (javacutil).
     /**
-     * Update a map, to add <code>newQual</code> to the set that <code>key</code> maps to. The
-     * mapped-to element is an unmodifiable set.
+     * Update a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to
+     * element is an unmodifiable set.
      *
      * <p>See
      * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,
@@ -844,7 +866,7 @@ public class AnnotationUtils {
      * @param newQual the element to add to the given key's value
      * @param <T> the key type
      */
-    public static <T> void updateMappingToImmutableSet(
+    public static <T extends @NonNull Object> void updateMappingToImmutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
@@ -881,7 +903,7 @@ public class AnnotationUtils {
      * be written on uses of types.
      *
      * @param anno the AnnotationMirror
-     * @return true if anno is a declaration annotation.
+     * @return true if anno is a declaration annotation
      */
     public static boolean isDeclarationAnnotation(AnnotationMirror anno) {
         TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();

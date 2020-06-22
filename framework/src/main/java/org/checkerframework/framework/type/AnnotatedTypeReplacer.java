@@ -1,83 +1,149 @@
 package org.checkerframework.framework.type;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
+import org.checkerframework.javacutil.BugInCF;
 
-/** Duplicates annotated types and replaces components according to a replacement map. */
-public class AnnotatedTypeReplacer {
+/**
+ * Replaces or adds all the annotations in the parameter with the annotations from the visited type.
+ * An annotation is replaced if the parameter type already has an annotation in the same hierarchy
+ * at the same location as the visited type.
+ *
+ * <p>Example use:
+ *
+ * <pre>{@code
+ * AnnotatedTypeMirror visitType = ...;
+ * AnnotatedTypeMirror parameter = ...;
+ * visitType.accept(new AnnotatedTypeReplacer(), parameter);
+ * }</pre>
+ */
+public class AnnotatedTypeReplacer extends AnnotatedTypeComparer<Void> {
 
     /**
-     * Return a copy of type after making the specified replacements.
+     * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code
+     * from} will be used everywhere they exist, but annotations in {@code to} will be kept anywhere
+     * that {@code from} is unannotated.
      *
-     * @param type the type that will be copied with replaced components
-     * @param replacementMap a mapping of {@literal referenceToReplace &rArr;
-     *     referenceOfReplacement}
-     * @return a duplicate of type in which every reference that was a key in replacementMap has
-     *     been replaced by its corresponding value
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
      */
-    public static AnnotatedTypeMirror replace(
-            AnnotatedTypeMirror type,
-            Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> replacementMap) {
-        return new Visitor(replacementMap).visit(type);
+    public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        if (from == to) {
+            throw new BugInCF("From == to");
+        }
+        new AnnotatedTypeReplacer().visit(from, to);
     }
 
     /**
-     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited &rArr; copyOfTypeVisited}
-     * When a reference, typeVisited, is encountered again, it will use the recorded reference,
-     * copyOfTypeVisited, instead of generating a new copy of typeVisited. Visitor pre-populates
-     * this mapping so that references are replaced not by their copies but by those in the
-     * replacementMap provided in the constructor.
+     * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
+     * Annotations from {@code from} will be used everywhere they exist, but annotations in {@code
+     * to} will be kept anywhere that {@code from} is unannotated.
      *
-     * <p>All types NOT in the replacement map are duplicated as per AnnotatedTypeCopier.visit
+     * @param from the annotated type mirror from which to take new annotations
+     * @param to the annotated type mirror to which the annotations will be added
+     * @param top the top type of the hierarchy whose annotations will be added
      */
-    protected static class Visitor extends AnnotatedTypeCopier {
-
-        private final IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror>
-                originalMappings;
-
-        public Visitor(
-                final Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings) {
-            originalMappings = new IdentityHashMap<>(mappings);
+    public static void replace(
+            final AnnotatedTypeMirror from,
+            final AnnotatedTypeMirror to,
+            final AnnotationMirror top) {
+        if (from == to) {
+            throw new BugInCF("from == to: %s", from);
         }
+        new AnnotatedTypeReplacer(top).visit(from, to);
+    }
 
-        @Override
-        public AnnotatedTypeMirror visit(AnnotatedTypeMirror type) {
-            return type.accept(this, new IdentityHashMap<>(originalMappings));
+    /** If top != null we replace only the annotations in the hierarchy of top. */
+    private final AnnotationMirror top;
+
+    /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
+    public AnnotatedTypeReplacer() {
+        this.top = null;
+    }
+
+    /**
+     * Construct an AnnotatedTypeReplacer that will only replace annotations in {@code top}'s
+     * hierarchy.
+     *
+     * @param top if top != null, then only annotation in the hierarchy of top are affected
+     */
+    public AnnotatedTypeReplacer(final AnnotationMirror top) {
+        this.top = top;
+    }
+
+    @Override
+    protected Void compare(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+        assert from != to;
+        if (from != null && to != null) {
+            replaceAnnotations(from, to);
         }
+        return null;
+    }
 
-        @Override
-        public AnnotatedTypeMirror visitTypeVariable(
-                AnnotatedTypeVariable original,
-                IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-            // AnnotatedTypeCopier will visit the type parameters of a method and copy them.
-            // Without this flag, any mappings in originalToCopy would replace the type parameters.
-            // However, we do not replace the type parameters in an AnnotatedExecutableType.  Also,
-            // AnnotatedExecutableType.typeVarTypes is of type List<AnnotatedTypeVariable> so if the
-            // mapping contained a type parameter -> (Non-type variable AnnotatedTypeMirror) then a
-            // runtime exception would occur.
-            if (visitingExecutableTypeParam) {
-                visitingExecutableTypeParam = false;
-                final AnnotatedTypeVariable copy =
-                        (AnnotatedTypeVariable)
-                                AnnotatedTypeMirror.createType(
-                                        original.getUnderlyingType(),
-                                        original.atypeFactory,
-                                        original.isDeclaration());
-                maybeCopyPrimaryAnnotations(original, copy);
-                originalToCopy.put(original, copy);
+    @Override
+    protected Void combineRs(Void r1, Void r2) {
+        return r1;
+    }
 
-                if (original.getUpperBoundField() != null) {
-                    copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy));
-                }
-
-                if (original.getLowerBoundField() != null) {
-                    copy.setLowerBound(visit(original.getLowerBoundField(), originalToCopy));
-                }
-                return copy;
+    /**
+     * Replace the annotations in to with the annotations in from, wherever from has an annotation.
+     *
+     * @param from the source of the annotations
+     * @param to the destination of the annotations, modified by this method
+     */
+    protected void replaceAnnotations(
+            final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        if (top == null) {
+            to.replaceAnnotations(from.getAnnotations());
+        } else {
+            final AnnotationMirror replacement = from.getAnnotationInHierarchy(top);
+            if (replacement != null) {
+                to.replaceAnnotation(from.getAnnotationInHierarchy(top));
             }
+        }
+    }
 
-            return super.visitTypeVariable(original, originalToCopy);
+    @Override
+    public Void visitTypeVariable(AnnotatedTypeVariable from, AnnotatedTypeMirror to) {
+        resolvePrimaries(from, to);
+        return super.visitTypeVariable(from, to);
+    }
+
+    @Override
+    public Void visitWildcard(AnnotatedWildcardType from, AnnotatedTypeMirror to) {
+        resolvePrimaries(from, to);
+        return super.visitWildcard(from, to);
+    }
+
+    /**
+     * For type variables and wildcards, the absence of a primary annotations has an implied meaning
+     * on substitution. Therefore, in these cases we remove the primary annotation and rely on the
+     * fact that the bounds are also merged into the type to.
+     *
+     * @param from a type variable or wildcard
+     * @param to the destination annotated type mirror
+     */
+    public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+        if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {
+            if (top != null) {
+                if (from.getAnnotationInHierarchy(top) == null) {
+                    to.removeAnnotationInHierarchy(top);
+                }
+            } else {
+                for (final AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
+                    if (from.getAnnotationInHierarchy(toPrimaryAnno) == null) {
+                        to.removeAnnotation(toPrimaryAnno);
+                    }
+                }
+            }
+        } else {
+            throw new BugInCF(
+                    "ResolvePrimaries's from argument should be a type variable OR wildcard%n"
+                            + "from=%s%nto=%s",
+                    from.toString(true), to.toString(true));
         }
     }
 }

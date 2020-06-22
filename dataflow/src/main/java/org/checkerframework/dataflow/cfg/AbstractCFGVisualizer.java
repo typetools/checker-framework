@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -30,12 +31,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * {@link CFGVisualizer} are already implemented in this abstract class, but can be overridden if
  * necessary.
  *
+ * @param <V> the abstract value type to be tracked by the analysis
+ * @param <S> the store type used in the analysis
+ * @param <T> the transfer function type that is used to approximate runtime behavior
  * @see DOTCFGVisualizer
  * @see StringCFGVisualizer
  */
 public abstract class AbstractCFGVisualizer<
-                A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
-        implements CFGVisualizer<A, S, T> {
+                V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+        implements CFGVisualizer<V, S, T> {
 
     /**
      * Initialized in {@link #init(Map)}. If its value is {@code true}, {@link CFGVisualizer}
@@ -68,7 +72,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the representation of the control flow graph
      */
     protected String visualizeGraph(
-            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
         return visualizeGraphHeader()
                 + visualizeGraphWithoutHeaderAndFooter(cfg, entry, analysis)
                 + visualizeGraphFooter();
@@ -83,7 +87,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the String representation of the control flow graph
      */
     protected String visualizeGraphWithoutHeaderAndFooter(
-            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
         Set<Block> visited = new HashSet<>();
         StringBuilder sbGraph = new StringBuilder();
         Queue<Block> workList = new ArrayDeque<>();
@@ -173,7 +177,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
-            Block bb, @Nullable Analysis<A, S, T> analysis, String escapeString) {
+            Block bb, @Nullable Analysis<V, S, T> analysis, String escapeString) {
         StringBuilder sbBlock = new StringBuilder();
         sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
 
@@ -183,8 +187,10 @@ public abstract class AbstractCFGVisualizer<
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
                 centered = true;
+            } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
+                sbBlock.append(visualizeConditionalBlock((ConditionalBlock) bb));
             } else {
-                return "";
+                sbBlock.append("<empty block>");
             }
         }
 
@@ -195,6 +201,7 @@ public abstract class AbstractCFGVisualizer<
             if (verbose) {
                 Node lastNode = getLastNode(bb);
                 if (lastNode != null) {
+                    @SuppressWarnings("nullness:contracts.precondition.not.satisfied")
                     S store = analysis.getResult().getStoreAfter(lastNode);
                     StringBuilder sbStore = new StringBuilder();
                     sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
@@ -223,7 +230,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the String representation of the contents of the block
      */
     protected String loopOverBlockContents(
-            Block bb, @Nullable Analysis<A, S, T> analysis, String separator) {
+            Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
 
         List<Node> contents = addBlockContent(bb);
         StringJoiner sjBlockContents = new StringJoiner(separator);
@@ -265,11 +272,11 @@ public abstract class AbstractCFGVisualizer<
      * @return the String representation of the transfer input of the block
      */
     protected String visualizeBlockTransferInputHelper(
-            Block bb, Analysis<A, S, T> analysis, String escapeString) {
+            Block bb, Analysis<V, S, T> analysis, String escapeString) {
         assert analysis != null
                 : "analysis should be non-null when visualizing the transfer input of a block.";
 
-        TransferInput<A, S> input = analysis.getInput(bb);
+        TransferInput<V, S> input = analysis.getInput(bb);
         assert input != null : "@AssumeAssertion(nullness): well-behaved analysis";
 
         StringBuilder sbStore = new StringBuilder();
@@ -307,7 +314,7 @@ public abstract class AbstractCFGVisualizer<
             case EXCEPTIONAL_EXIT:
                 return "<exceptional-exit>" + separator;
             default:
-                return "";
+                throw new Error("Unrecognized special block type: " + sbb.getType());
         }
     }
 
@@ -322,10 +329,13 @@ public abstract class AbstractCFGVisualizer<
             case REGULAR_BLOCK:
                 List<Node> blockContents = ((RegularBlock) bb).getContents();
                 return blockContents.get(blockContents.size() - 1);
+            case CONDITIONAL_BLOCK:
+            case SPECIAL_BLOCK:
+                return null;
             case EXCEPTION_BLOCK:
                 return ((ExceptionBlock) bb).getNode();
             default:
-                return null;
+                throw new Error("Unrecognized block type: " + bb.getType());
         }
     }
 
@@ -342,7 +352,11 @@ public abstract class AbstractCFGVisualizer<
         int count = 1;
         for (Block b : cfg.getDepthFirstOrderedBlocks()) {
             depthFirstOrder.computeIfAbsent(b, k -> new ArrayList<>());
-            depthFirstOrder.get(b).add(count++);
+            @SuppressWarnings(
+                    "nullness:assignment.type.incompatible") // computeIfAbsent's function doesn't
+            // return null
+            @NonNull List<Integer> blockIds = depthFirstOrder.get(b);
+            blockIds.add(count++);
         }
         return depthFirstOrder;
     }
@@ -361,7 +375,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the String representation of the nodes
      */
     protected abstract String visualizeNodes(
-            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis);
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis);
 
     /**
      * Generate the String representation of an edge.

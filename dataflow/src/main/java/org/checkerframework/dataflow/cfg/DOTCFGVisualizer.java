@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -19,6 +20,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
@@ -27,8 +29,8 @@ import org.checkerframework.javacutil.UserError;
 /** Generate a graph description in the DOT language of a control graph. */
 @SuppressWarnings("initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
-                A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
-        extends AbstractCFGVisualizer<A, S, T> {
+                V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+        extends AbstractCFGVisualizer<V, S, T> {
 
     /** The output directory. */
     protected String outDir;
@@ -57,7 +59,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public @Nullable Map<String, Object> visualize(
-            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
 
         String dotGraph = visualizeGraph(cfg, entry, analysis);
         String dotFileName = dotOutputFileName(cfg.underlyingAST);
@@ -77,9 +79,10 @@ public class DOTCFGVisualizer<
         return res;
     }
 
+    @SuppressWarnings("enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
-            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
         sbDotNodes.append(lineSeparator);
@@ -87,7 +90,7 @@ public class DOTCFGVisualizer<
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Definition of all nodes including their labels.
-        for (Block v : blocks) {
+        for (@KeyFor("processOrder") Block v : blocks) {
             sbDotNodes.append("    ").append(v.getId()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
@@ -125,7 +128,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
         return super.visualizeBlockHelper(bb, analysis, leftJustifiedTerminator);
     }
 
@@ -135,7 +138,13 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
+    public String visualizeConditionalBlock(ConditionalBlock cbb) {
+        // No extra content in DOT output.
+        return "";
+    }
+
+    @Override
+    public String visualizeBlockTransferInput(Block bb, Analysis<V, S, T> analysis) {
         return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustifiedTerminator);
     }
 
@@ -198,7 +207,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
         StringBuilder sbBlockNode = new StringBuilder();
         sbBlockNode
                 .append(escapeDoubleQuotes(t))
@@ -206,7 +215,7 @@ public class DOTCFGVisualizer<
                 .append(getNodeSimpleName(t))
                 .append(" ]");
         if (analysis != null) {
-            A value = analysis.getValue(t);
+            V value = analysis.getValue(t);
             if (value != null) {
                 sbBlockNode.append("    > ").append(escapeDoubleQuotes(value));
             }
@@ -215,12 +224,12 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreThisVal(A value) {
+    public String visualizeStoreThisVal(V value) {
         return storeEntryIndent + "this > " + value + leftJustifiedTerminator;
     }
 
     @Override
-    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value) {
+    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
         return storeEntryIndent
                 + localVar
                 + " > "
@@ -229,7 +238,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value) {
+    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
         return storeEntryIndent
                 + fieldAccess
                 + " > "
@@ -238,7 +247,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value) {
+    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
         return storeEntryIndent
                 + arrayValue
                 + " > "
@@ -247,7 +256,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
+    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
         return storeEntryIndent
                 + escapeDoubleQuotes(methodCall)
                 + " > "
@@ -256,7 +265,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreClassVals(FlowExpressions.ClassName className, A value) {
+    public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
         return storeEntryIndent
                 + className
                 + " > "

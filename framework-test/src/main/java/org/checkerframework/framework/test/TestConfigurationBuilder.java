@@ -3,12 +3,14 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -62,13 +64,7 @@ public class TestConfigurationBuilder {
             configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
         }
 
-        if (PluginUtil.getJreVersion() == 8) {
-            // Use the annotated jdk for the compile bootclasspath
-            String jdkJarPath = getJdkJarPathFromProperty();
-            if (notNullOrEmpty(jdkJarPath)) {
-                configBuilder.addOption("-Xbootclasspath/p:" + jdkJarPath);
-            }
-
+        if (SystemUtil.getJreVersion() == 8) {
             configBuilder.addOption("-source", "8").addOption("-target", "8");
         }
 
@@ -99,8 +95,43 @@ public class TestConfigurationBuilder {
             Iterable<String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
+        return buildDefaultConfiguration(
+                testSourcePath,
+                testSourceFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
+    }
+
+    /**
+     * This is the default configuration used by Checker Framework JUnit tests.
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
+     * @param testSourceFiles the Java files that compose the test
+     * @param classpathExtra extra entries for the classpath, needed to compile the source files
+     * @param processors the checkers or other annotation processors to run over the testSourceFiles
+     * @param options the options to the compiler/processors
+     * @param shouldEmitDebugInfo whether or not debug information should be emitted
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
+     */
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            Iterable<File> testSourceFiles,
+            Collection<String> classpathExtra,
+            Iterable<String> processors,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
 
         String classPath = getDefaultClassPath();
+        if (!classpathExtra.isEmpty()) {
+            classPath +=
+                    System.getProperty("path.separator")
+                            + String.join(System.getProperty("path.separator"), classpathExtra);
+        }
+
         File outputDir = getOutputDirFromProperty();
 
         TestConfigurationBuilder builder =
@@ -113,10 +144,6 @@ public class TestConfigurationBuilder {
                         options,
                         shouldEmitDebugInfo);
         return builder.validateThenBuild(true);
-    }
-
-    private static boolean notNullOrEmpty(String str) {
-        return str != null && !str.isEmpty();
     }
 
     /**
@@ -141,7 +168,12 @@ public class TestConfigurationBuilder {
         List<String> processors = Arrays.asList(checkerName);
 
         return buildDefaultConfiguration(
-                testSourcePath, javaFiles, processors, options, shouldEmitDebugInfo);
+                testSourcePath,
+                javaFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
     }
 
     /** The list of files that contain Java diagnostics to compare against. */
@@ -360,22 +392,30 @@ public class TestConfigurationBuilder {
                 String.join("%n", errors), this);
     }
 
-    /** @return the set of Javac options as a flat list */
+    /**
+     * Returns the set of Javac options as a flat list.
+     *
+     * @return the set of Javac options as a flat list
+     */
     public List<String> flatOptions() {
         return options.getOptionsAsList();
     }
 
     @Override
     public String toString() {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + PluginUtil.join(" ", testSourceFiles),
-                "processors=" + PluginUtil.join(", ", processors),
-                "options=" + PluginUtil.join(", ", options.getOptionsAsList()),
+                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
+                "processors=" + SystemUtil.join(", ", processors),
+                "options=" + SystemUtil.join(", ", options.getOptionsAsList()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 
-    /** @return a list that first has the items from parameter list then the items from iterable */
+    /**
+     * Returns a list that first has the items from parameter list then the items from iterable.
+     *
+     * @return a list that first has the items from parameter list then the items from iterable
+     */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
         final List<T> newList = new ArrayList<>();
@@ -405,14 +445,5 @@ public class TestConfigurationBuilder {
                 System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
         return classpath + File.pathSeparator + globalclasspath;
-    }
-
-    /**
-     * The path to the annotated JDK, looked up from the system property "JDK_JAR".
-     *
-     * @return the value of the system property "JDK_JAR"
-     */
-    public static String getJdkJarPathFromProperty() {
-        return System.getProperty("JDK_JAR");
     }
 }

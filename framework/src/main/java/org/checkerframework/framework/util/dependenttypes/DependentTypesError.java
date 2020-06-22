@@ -1,11 +1,9 @@
 package org.checkerframework.framework.util.dependenttypes;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -19,6 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class DependentTypesError {
 
     /** How elements of this class are formatted. */
+    @SuppressWarnings("InlineFormatString") // https://github.com/google/error-prone/issues/1650
     private static final String FORMAT_STRING = "[error for expression: %s; error: %s]";
     /** Regular expression for unparsing string representations of this class (gross). */
     private static final Pattern ERROR_PATTERN =
@@ -57,16 +56,15 @@ public class DependentTypesError {
         this.error = error;
     }
 
-    /** Create a DependentTypesError for the given expression and exception. */
+    /**
+     * Create a DependentTypesError for the given expression and exception.
+     *
+     * @param expression the incorrect Java expression
+     * @param e wraps an error message about the expression
+     */
     public DependentTypesError(String expression, FlowExpressionParseException e) {
         this.expression = expression;
-        StringBuilder buf = new StringBuilder();
-        List<Result.DiagMessage> msgs = e.getResult().getDiagMessages();
-
-        for (Result.DiagMessage msg : msgs) {
-            buf.append(msg.getArgs()[0]);
-        }
-        this.error = buf.toString();
+        this.error = e.getDiagMessage().getArgs()[0].toString();
     }
 
     /**
@@ -105,7 +103,8 @@ public class DependentTypesError {
 
     @Override
     public String toString() {
-        return String.format(FORMAT_STRING, expression, error);
+        // Empty string concatenation is to maybe work around Error Prone's InlineFormatString.
+        return String.format(FORMAT_STRING + "", expression, error);
     }
 
     /**

@@ -8,7 +8,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Compiler Messages Checker. Depends on the compiler.properties file. */
 public class CompilerMessagesTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a CompilerMessagesTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public CompilerMessagesTest(List<File> testFiles) {
         super(
                 testFiles,

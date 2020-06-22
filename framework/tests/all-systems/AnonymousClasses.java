@@ -2,7 +2,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 // Checkers may issue type checking errors for this class, but they should not crash
-@SuppressWarnings("")
+@SuppressWarnings("all")
 public class AnonymousClasses {
     // test anonymous classes
     private void testAnonymous() {

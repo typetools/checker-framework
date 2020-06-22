@@ -29,6 +29,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -38,9 +39,9 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFCFGBuilder;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -77,6 +78,15 @@ public class NullnessVisitor
     /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
+    /** The System.clearProperty(String) method. */
+    private final ExecutableElement systemClearProperty;
+
+    /** The System.setProperties(String) method. */
+    private final ExecutableElement systemSetProperties;
+
+    /** True if checked code may clear system properties. */
+    private final boolean permitClearProperty;
+
     /**
      * Create a new NullnessVisitor.
      *
@@ -95,6 +105,15 @@ public class NullnessVisitor
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
         this.collectionToArray =
                 TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
+        systemClearProperty =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
+        systemSetProperties =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperties", 1, env);
+
+        this.permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
     }
 
     @Override
@@ -239,12 +258,11 @@ public class NullnessVisitor
                 && (checker.getLintOption("soundArrayCreationNullness", false)
                         // temporary, for backward compatibility
                         || checker.getLintOption("forbidnonnullarraycomponents", false))) {
-            checker.report(
-                    Result.failure(
-                            "new.array.type.invalid",
-                            componentType.getAnnotations(),
-                            type.toString()),
-                    node);
+            checker.reportError(
+                    node,
+                    "new.array.type.invalid",
+                    componentType.getAnnotations(),
+                    type.toString());
         }
 
         return super.visitNewArray(node, p);
@@ -376,10 +394,10 @@ public class NullnessVisitor
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
                     && right.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
+                checker.reportWarning(node, KNOWN_NONNULL, rightOp.toString());
             } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
                     && left.hasEffectiveAnnotation(NONNULL)) {
-                checker.report(Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
+                checker.reportWarning(node, KNOWN_NONNULL, leftOp.toString());
             }
         }
     }
@@ -430,6 +448,41 @@ public class NullnessVisitor
         return super.visitTypeCast(node, p);
     }
 
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        if (!permitClearProperty) {
+            ProcessingEnvironment env = checker.getProcessingEnvironment();
+            if (TreeUtils.isMethodInvocation(node, systemClearProperty, env)) {
+                String literal = literalFirstArgument(node);
+                if (literal == null
+                        || SystemGetPropertyHandler.predefinedSystemProperties.contains(literal)) {
+                    checker.reportError(node, "clear.system.property");
+                }
+            }
+            if (TreeUtils.isMethodInvocation(node, systemSetProperties, env)) {
+                checker.reportError(node, "clear.system.property");
+            }
+        }
+        return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * If the first argument of a method call is a literal, return it; otherwise return null.
+     *
+     * @param tree a method invocation whose first formal parameter is of String type
+     * @return the first argument if it is a literal, otherwise null
+     */
+    /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+        List<? extends ExpressionTree> args = tree.getArguments();
+        assert args.size() > 0;
+        ExpressionTree arg = args.get(0);
+        if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
+            String literal = (String) ((LiteralTree) arg).getValue();
+            return literal;
+        }
+        return null;
+    }
+
     // ///////////// Utility methods //////////////////////////////
 
     /**
@@ -455,7 +508,7 @@ public class NullnessVisitor
     private boolean checkForNullability(
             AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
         if (!type.hasEffectiveAnnotation(NONNULL)) {
-            checker.report(Result.failure(errMsg, tree), tree);
+            checker.reportError(tree, errMsg, tree);
             return false;
         }
         return true;
@@ -538,16 +591,14 @@ public class NullnessVisitor
                         containsSameByName(atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
-                    checker.report(
-                            Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                    checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
                     // Note that other consistency checks are made by isValid.
                 }
             }
             if (t.toString().contains("@PolyNull")) {
                 // TODO: this is a hack, but PolyNull gets substituted
                 // afterwards
-                checker.report(
-                        Result.warning("new.class.type.invalid", type.getAnnotations()), node);
+                checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
             }
         }
         // TODO: It might be nicer to introduce a framework-level

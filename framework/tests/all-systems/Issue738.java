@@ -1,7 +1,7 @@
 // Testcase for #738
 // https://github.com/typetools/checker-framework/issues/738
 // Also, see checker/tests/nullness/Issue738.java
-@SuppressWarnings("") // This testcase is checking for crashes.
+@SuppressWarnings("all") // This testcase is checking for crashes.
 public class Issue738 {
     public static void methodA() {
         methodB(0, new Object()); // This compiles fine.

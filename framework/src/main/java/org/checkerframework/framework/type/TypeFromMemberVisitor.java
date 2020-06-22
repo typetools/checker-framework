@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts a field or methods tree into an AnnotatedTypeMirror.
@@ -81,7 +82,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * @return the type of the lambda parameter or null if paramElement is not a lambda parameter
+     * Returns the type of the lambda parameter, or null if paramElement is not a lambda parameter.
+     *
+     * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
      */
     private static AnnotatedTypeMirror inferLambdaParamAnnotations(
             AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
@@ -100,9 +103,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
             AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
             if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
-                if (f.types.isSubtype(funcTypeParam.actualType, lambdaParam.actualType)) {
-                    // The Java types should be exactly the same, but because invocation type
-                    // inference (#979) isn't implement, check first.
+                // The Java types should be exactly the same, but because invocation type
+                // inference (#979) isn't implement, check first. Use the erased types because the
+                // type arguments are not substituted when the annotated type arguments are.
+                if (TypesUtils.isErasedSubtype(
+                        funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
                 }
                 lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());

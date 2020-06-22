@@ -4,7 +4,7 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-@SuppressWarnings("") // Only check for crashes
+@SuppressWarnings("all") // Only check for crashes
 class Issue1920 {
     static class Foo implements Iterable {
         public Iterator iterator() {

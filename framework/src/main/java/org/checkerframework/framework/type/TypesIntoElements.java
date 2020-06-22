@@ -25,8 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -69,9 +67,9 @@ public class TypesIntoElements {
          * I assume that the problem is the default that we use for these locations.
          * Once we've decided the defaulting, enable this.
          * See example of code that fails when this is enabled in
-         * checker/jtreg/nullness/annotationsOnExtends. Also, see https://github
-         * .com/typetools/checker-framework/pull/876 for a better implementation (though it also
-         * causes the error).
+         * checker/jtreg/nullness/annotationsOnExtends. Also, see
+         * https://github.com/typetools/checker-framework/pull/876 for
+         * a better implementation (though it also causes the error).
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -304,9 +302,16 @@ public class TypesIntoElements {
     private static class TCConvert
             extends AnnotatedTypeScanner<List<Attribute.TypeCompound>, TypeAnnotationPosition> {
 
+        /** ProcessEnvironment */
         private final ProcessingEnvironment processingEnv;
 
+        /**
+         * Creates a {@link TCConvert}.
+         *
+         * @param processingEnv ProcessEnvironment
+         */
         TCConvert(ProcessingEnvironment processingEnv) {
+            super(List.nil());
             this.processingEnv = processingEnv;
         }
 
@@ -317,15 +322,6 @@ public class TypesIntoElements {
             }
             List<TypeCompound> res = super.scan(type, pos);
             return res;
-        }
-
-        @Override
-        protected List<TypeCompound> scan(
-                Iterable<? extends AnnotatedTypeMirror> types, TypeAnnotationPosition pos) {
-            if (types == null) {
-                return List.nil();
-            }
-            return super.scan(types, pos);
         }
 
         @Override
@@ -520,16 +516,6 @@ public class TypesIntoElements {
             }
             visitedNodes.put(type, res);
             return res;
-        }
-
-        @Override
-        public List<TypeCompound> visitNoType(AnnotatedNoType type, TypeAnnotationPosition tapos) {
-            return List.nil();
-        }
-
-        @Override
-        public List<TypeCompound> visitNull(AnnotatedNullType type, TypeAnnotationPosition tapos) {
-            return List.nil();
         }
     }
 }
