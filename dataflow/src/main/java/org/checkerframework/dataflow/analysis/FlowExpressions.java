@@ -13,6 +13,8 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.Pretty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -1121,12 +1123,16 @@ public class FlowExpressions {
 
         /** The binary operation kind. */
         protected final Kind operationKind;
+        /** The binary operation kind for pretty print. */
+        protected final JCTree.Tag tag;
         /** Receiver of the left operand. */
         protected final Receiver left;
         /** Receiver of the right operand. */
         protected final Receiver right;
 
         /**
+         * Binary Operation Constructor.
+         *
          * @param node the binary operation node.
          * @param left the left operand receiver.
          * @param right the right operand receiver.
@@ -1134,6 +1140,7 @@ public class FlowExpressions {
         public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
             super(node.getType());
             this.operationKind = node.getTree().getKind();
+            this.tag = ((JCTree) node.getTree()).getTag();
             this.left = left;
             this.right = right;
         }
@@ -1207,7 +1214,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean equals(Object other) {
+        public boolean equals(@Nullable Object other) {
             if (!(other instanceof BinaryOperation)) {
                 return false;
             }
@@ -1246,71 +1253,10 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
+            final Pretty pretty = new Pretty(null, true);
             StringBuilder result = new StringBuilder();
             result.append(left.toString());
-
-            switch (operationKind) {
-                case PLUS:
-                    result.append(" + ");
-                    break;
-                case MINUS:
-                    result.append(" - ");
-                    break;
-                case MULTIPLY:
-                    result.append(" * ");
-                    break;
-                case DIVIDE:
-                    result.append(" / ");
-                    break;
-                case REMAINDER:
-                    result.append(" % ");
-                    break;
-                case LEFT_SHIFT:
-                    result.append(" << ");
-                    break;
-                case RIGHT_SHIFT:
-                    result.append(" >> ");
-                    break;
-                case UNSIGNED_RIGHT_SHIFT:
-                    result.append(" >>> ");
-                    break;
-                case AND:
-                    result.append(" & ");
-                    break;
-                case OR:
-                    result.append(" | ");
-                    break;
-                case XOR:
-                    result.append(" ^ ");
-                    break;
-                case CONDITIONAL_AND:
-                    result.append(" && ");
-                    break;
-                case CONDITIONAL_OR:
-                    result.append(" || ");
-                    break;
-                case GREATER_THAN:
-                    result.append(" > ");
-                    break;
-                case GREATER_THAN_EQUAL:
-                    result.append(" >= ");
-                    break;
-                case LESS_THAN:
-                    result.append(" < ");
-                    break;
-                case LESS_THAN_EQUAL:
-                    result.append(" <= ");
-                    break;
-                case EQUAL_TO:
-                    result.append(" == ");
-                    break;
-                case NOT_EQUAL_TO:
-                    result.append(" != ");
-                    break;
-                default:
-                    throw new BugInCF("Type of the receiver is not a binary operation.");
-            }
-
+            result.append(pretty.operatorName(tag));
             result.append(right.toString());
             return result.toString();
         }
