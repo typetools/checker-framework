@@ -417,7 +417,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * SuppressWarning strings supplied via the -AsuppressWarnings option. Do not use directly, call
      * {@link #getSuppressWarningsStringsFromOption()}.
      */
-    private String @Nullable [] suppressWarningsStrings;
+    private String @Nullable [] suppressWarningsStringsFromOption;
 
     /**
      * Regular expression pattern to specify Java classes that are not annotated, so warnings about
@@ -1742,13 +1742,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Returns the argument to -AsuppressWarnings, split on commas, or null if no such argument.
-     * Only ever called once; the value is cached in field {@link #suppressWarningsStrings}.
+     * Only ever called once; the value is cached in field {@link
+     * #suppressWarningsStringsFromOption}.
      *
      * @return the argument to -AsuppressWarnings, split on commas, or null if no such argument
      */
     private String @Nullable [] getSuppressWarningsStringsFromOption() {
         Map<String, String> options = getOptions();
-        if (this.suppressWarningsStrings == null) {
+        if (this.suppressWarningsStringsFromOption == null) {
             if (!options.containsKey("suppressWarnings")) {
                 return null;
             }
@@ -1757,11 +1758,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (swStrings == null) {
                 return null;
             }
-            this.suppressWarningsStrings = swStrings.split(",");
-            Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
+            this.suppressWarningsStringsFromOption = swStrings.split(",");
+            Arrays.setAll(
+                    suppressWarningsStringsFromOption,
+                    i -> suppressWarningsStringsFromOption[i].toLowerCase());
         }
 
-        return this.suppressWarningsStrings;
+        return this.suppressWarningsStringsFromOption;
     }
 
     /**
@@ -1795,9 +1798,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         // It's not clear for which checker "all" is intended, so never report it as unused.
         prefixes.remove(SourceChecker.SUPPRESS_ALL_PREFIX);
 
-        // Is a prefix required to suppress a warning?
-        boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
-
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
             // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
@@ -1806,37 +1806,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 continue;
             }
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
-            // Check each value of the user-written @SuppressWarnings annotation.
-            for (final String suppressWarningsString : suppressAnno.value()) {
-                String suppressWarningsMessageKey;
-                int colonPos = suppressWarningsString.indexOf(":");
-                if (colonPos == -1) {
-                    // User-written SuppressWarnings string contains no ":".
-                    if (prefixes.contains(suppressWarningsString)) {
-                        reportUnneededSuppression(tree, suppressWarningsString);
-                    }
-                    if (requirePrefix) {
-                        // This user-written SuppressWarnings string is not for the Checker
-                        // Framework.
-                        continue;
-                    }
-                    suppressWarningsMessageKey = suppressWarningsString;
-                } else {
-                    // User-written error key contains ":".
-                    String userPrefix = suppressWarningsString.substring(0, colonPos);
-                    if (!prefixes.contains(userPrefix)) {
-                        // This user-written SuppressWarnings string is for some other checker.
-                        continue;
-                    }
-                    suppressWarningsMessageKey = suppressWarningsString.substring(colonPos + 1);
-                }
+            String[] suppressWarningsStrings = suppressAnno.value();
+            Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
+            for (String suppressWarningsString : suppressWarningsStrings) {
                 for (String errorKey : allErrorKeys) {
-                    // The messagekey part of a SuppressWarnings string may only be a part of a full
-                    // error key as the Checker Framework would issue it.
-                    // For example, @SuppressWarnings("purity") suppresses errors with keys:
-                    // purity.deterministic.void.method, purity.deterministic.constructor, etc.
-                    if (errorKey.contains(suppressWarningsMessageKey)) {
+                    // Don't use SUPPRESS_ALL_PREFIX because it could apply to any checker.
+                    if (shouldSuppressWarningStringSuppressKey(
+                            prefixes, errorKey, suppressWarningsString)) {
                         reportUnneededSuppression(tree, suppressWarningsString);
+                        //                        break; // Don't report the same warning string
+                        // more than once
                     }
                 }
             }
@@ -1927,7 +1906,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (prefixes.isEmpty()
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
-                    "Checker must provide a SuppressWarnings prefix. Add @SuppressWarningsPrefix meta-annotation.");
+                    "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
         }
 
         // trees.getPath might be slow, but this is only used in error reporting
@@ -2042,7 +2021,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         if (shouldSuppressWarningStringSuppressKey(
-                getSuppressWarningsStringsFromOption(), errKey)) {
+                errKey, getSuppressWarningsStringsFromOption())) {
             return true;
         }
 
@@ -2051,7 +2030,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (suppressWarningsAnno != null) {
                 String[] suppressWarningStrings = suppressWarningsAnno.value();
                 Arrays.setAll(suppressWarningStrings, i -> suppressWarningStrings[i].toLowerCase());
-                if (shouldSuppressWarningStringSuppressKey(suppressWarningStrings, errKey)) {
+                if (shouldSuppressWarningStringSuppressKey(errKey, suppressWarningStrings)) {
                     if (hasOption("warnUnneededSuppressions")) {
                         elementsWithSuppressedWarnings.add(elt);
                     }
@@ -2092,21 +2071,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * <p>If {@code -ArequirePrefixInWarningSuppressions}, then {@code prefix} and {@code
      * prefix:partial-message-key} are the only SuppressWarnings strings that have an effect.
      *
-     * @param suppressWarningStrings the SuppressWarnings strings. May be null, in which case this
-     *     method returns false.
      * @param messageKey the message key of the error the checker is emitting; a lowercase string,
      *     without any "checkername:" prefix
+     * @param suppressWarningStrings the SuppressWarnings strings. May be null, in which case this
+     *     method returns false.
      * @return true if one of the {@code suppressWarningStrings} suppresses the error
      */
     private boolean shouldSuppressWarningStringSuppressKey(
-            String @Nullable [] suppressWarningStrings, String messageKey) {
+            String messageKey, String @Nullable ... suppressWarningStrings) {
+        Set<String> prefixes = this.getSuppressWarningsPrefixes();
+        return shouldSuppressWarningStringSuppressKey(prefixes, messageKey, suppressWarningStrings);
+    }
+
+    /**
+     * See {@link #shouldSuppressWarningStringSuppressKey(String, String...)}
+     *
+     * @param prefixes SuppressWarnings prefixes to use
+     * @param messageKey the message key of the error the checker is emitting; a lowercase string,
+     *     without any "checkername:" prefix
+     * @param suppressWarningStrings the SuppressWarnings strings. May be null, in which case this
+     *     method returns false.
+     * @return true if one of the {@code suppressWarningStrings} suppresses the error
+     */
+    private boolean shouldSuppressWarningStringSuppressKey(
+            Set<String> prefixes, String messageKey, String @Nullable ... suppressWarningStrings) {
         if (suppressWarningStrings == null) {
             return false;
         }
         // Is the name of the checker required to suppress a warning?
         boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
-        Collection<String> prefixes = this.getSuppressWarningsPrefixes();
         for (String suppressWarningString : suppressWarningStrings) {
             int colonPos = suppressWarningString.indexOf(":");
             String messageKeyInSuppressWarningString;
@@ -2184,11 +2178,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Returns set of lower-case strings that are prefixes for SuppressWarning strings.
+     * Returns a modifiable set of lower-case strings that are prefixes for SuppressWarning strings.
      *
      * <p>The collection must not be empty and must not contain only {@link #SUPPRESS_ALL_PREFIX}.
      *
-     * @return non-empty set of lower-case prefixes for SuppressWarning strings
+     * @return non-empty set of lower-case prefixes for SuppressWarning strings that can be modified
      */
     public SortedSet<String> getSuppressWarningsPrefixes() {
         return getStandardSuppressWarningPrefixes();
