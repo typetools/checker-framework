@@ -798,7 +798,7 @@ public class QualifierKindHierarchy {
      * @return the mapping from the fully-qualified class name of an annotation to its qualifier
      *     kind
      */
-    public Map<String, QualifierKind> getQualifierKindMap() {
+    public Map<@Interned String, QualifierKind> getQualifierKindMap() {
         return qualifierKindMap;
     }
 
