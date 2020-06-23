@@ -227,16 +227,16 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean error = false;
 
         /** Set of annotations to use if a most specific value cannot be found. */
-        Set<AnnotationMirror> backupSet;
+        final Set<AnnotationMirror> backupSet;
 
         /** Set of most specific annotations. Annotations are added by the visitor. */
-        Set<AnnotationMirror> mostSpecific;
+        final Set<AnnotationMirror> mostSpecific;
 
         /** TypeMirror for the "a" value. */
-        TypeMirror aTypeMirror;
+        final TypeMirror aTypeMirror;
 
         /** TypeMirror for the "b" value. */
-        TypeMirror bTypeMirror;
+        final TypeMirror bTypeMirror;
 
         /**
          * Create a {@link MostSpecificVisitor}.
@@ -293,6 +293,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
                     && analysis.getTypeFactory()
                             .hasQualifierParameterInHierarchy(
                                     TypesUtils.getTypeElement(bTypeMirror), top)) {
+                // Both types have qualifier parameters, so the annotations must be exact.
                 if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
                     mostSpecific.add(b);
                 } else {
