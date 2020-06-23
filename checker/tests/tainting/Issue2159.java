@@ -1,4 +1,6 @@
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Issue2159 {
     @Tainted Issue2159() {}

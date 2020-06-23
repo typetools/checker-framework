@@ -1,5 +1,3 @@
-package hardcoded;
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;

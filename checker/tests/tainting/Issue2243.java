@@ -1,7 +1,8 @@
 // Test cases for issue 2243
 // https://github.com/typetools/checker-framework/issues/2243
 
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 // :: error: (declaration.inconsistent.with.extends.clause)
 public @Tainted class Issue2243 extends Y2243 {}

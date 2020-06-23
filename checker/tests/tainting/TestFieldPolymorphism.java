@@ -1,5 +1,6 @@
-import java.util.*;
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
 @HasQualifierParameter(Tainted.class)

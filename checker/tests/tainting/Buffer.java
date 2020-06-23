@@ -1,5 +1,3 @@
-package hardcoded;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.tainting.qual.PolyTainted;
