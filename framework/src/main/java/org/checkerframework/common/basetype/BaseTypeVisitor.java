@@ -421,7 +421,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 for (TypeMirror interfaceType : classElement.getInterfaces()) {
                     Element interfaceEle = TypesUtils.getTypeElement(interfaceType);
                     if (atypeFactory.hasQualifierParameterInHierarchy(interfaceEle, top)) {
-                        checker.reportError(classTree, "missing.has.qual.param");
+                        checker.reportError(classTree, "missing.has.qual.param", top);
                         break; // only issue error once
                     }
                 }
