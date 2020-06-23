@@ -455,6 +455,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     static class PolyTypeScanner
             extends SimpleAnnotatedTypeScanner<List<DiagMessage>, Set<AnnotationMirror>> {
 
+        /** Create PolyTypeScanner. */
         private PolyTypeScanner() {
             super(DiagMessage::mergeLists, Collections.emptyList());
         }
