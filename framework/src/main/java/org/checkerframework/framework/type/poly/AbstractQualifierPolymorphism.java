@@ -90,7 +90,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * qualifiers on types that have a qualifier parameter. Mapping from poly qualifier to set of
      * qualifiers.
      */
-    protected final AnnotationMirrorMap<AnnotationMirrorSet> polyBind = new AnnotationMirrorMap<>();
+    protected final AnnotationMirrorMap<AnnotationMirror> polyBind = new AnnotationMirrorMap<>();
 
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -231,15 +231,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (polyQuals.isEmpty()) {
             return;
         }
-        AnnotationMirrorMap<AnnotationMirrorSet> matchingMapping = new AnnotationMirrorMap<>();
+        AnnotationMirrorMap<AnnotationMirror> matchingMapping = new AnnotationMirrorMap<>();
         polyQuals.forEach(
                 (polyAnnotation, topAnno) -> {
-                    AnnotationMirrorSet resolvedType = new AnnotationMirrorSet();
                     AnnotationMirror annoOnOwner = owner.getAnnotationInHierarchy(topAnno);
                     if (annoOnOwner != null) {
-                        resolvedType.add(annoOnOwner);
+                        matchingMapping.put(polyAnnotation, annoOnOwner);
                     }
-                    matchingMapping.put(polyAnnotation, resolvedType);
                 });
         if (!matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
@@ -320,7 +318,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             if (polyType.hasAnnotation(poly)) {
                 AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
                 if (typeQual != null) {
-                    if (atypeFactory.hasQualifierParameterInHierarchy(actualType, top)) {
+                    if (atypeFactory.hasQualifierParameterInHierarchy(type, top)) {
                         polyBind.put(poly, typeQual);
                     }
                     result.put(poly, typeQual);
