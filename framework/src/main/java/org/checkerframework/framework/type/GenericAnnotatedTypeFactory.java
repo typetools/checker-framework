@@ -1559,6 +1559,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
         applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
+
     /**
      * Applies defaults for types in a class with an qualifier parameter.
      *
@@ -1575,7 +1576,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param elt Element whose type is {@code type}
      * @param type where the defaults are applied
      */
-    protected void applyQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
+    protected void applyQualifierParameterDefaults(
+            @Nullable Element elt, AnnotatedTypeMirror type) {
         if (elt == null) {
             return;
         }
