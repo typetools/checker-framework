@@ -384,17 +384,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param classTree the ClassTree to check for polymorphic fields
      */
     protected void checkQualifierParameter(ClassTree classTree) {
-        // Set of polymorphic qualifiers for hierarchies that doe not have a qualifier parameter and
+        // Set of polymorphic qualifiers for hierarchies that do not have a qualifier parameter and
         // therefor cannot appear on a field.
         Set<AnnotationMirror> illegalOnFieldsPolyQual = AnnotationUtils.createAnnotationSet();
         // Set of polymorphic annotations for all hierarchies
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
-
+        TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
         for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
-            TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
-            if (classElement == null) {
-                continue;
-            }
             AnnotationMirror poly =
                     atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
             if (poly != null) {
@@ -409,6 +405,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
                 continue;
             }
+
             if (poly != null) {
                 illegalOnFieldsPolyQual.add(poly);
             }
@@ -446,19 +443,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
+     * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a
+     * use of one of the polymorphic qualifiers.
      */
     private final PolyTypeScanner polyScanner = new PolyTypeScanner();
 
     /**
-     * A scanner that indicates whether any part of an annotated type has a polymorphic annotation.
+     * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a
+     * use of one of the polymorphic qualifiers.
      */
     static class PolyTypeScanner
             extends SimpleAnnotatedTypeScanner<List<DiagMessage>, Set<AnnotationMirror>> {
 
-        @Override
-        protected List<DiagMessage> reduce(List<DiagMessage> r1, List<DiagMessage> r2) {
-            return DiagMessage.mergeLists(r1, r2);
+        private PolyTypeScanner() {
+            super(DiagMessage::mergeLists, Collections.emptyList());
         }
 
         @Override
