@@ -94,6 +94,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1602,15 +1603,18 @@ public abstract class GenericAnnotatedTypeFactory<
         if (tops.isEmpty()) {
             return;
         }
+        Set<AnnotationMirror> polyWithQualParam = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror top : tops) {
+            AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polyWithQualParam.add(poly);
+            }
+        }
         new TypeAnnotator(this) {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
                 if (type.getUnderlyingType().asElement().equals(enclosingClass)) {
-                    for (AnnotationMirror top : tops) {
-                        if (!type.isAnnotatedInHierarchy(top)) {
-                            type.addAnnotation(qualHierarchy.getPolymorphicAnnotation(top));
-                        }
-                    }
+                    type.addMissingAnnotations(polyWithQualParam);
                 }
                 return super.visitDeclared(type, aVoid);
             }
