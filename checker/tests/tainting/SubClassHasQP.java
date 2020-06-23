@@ -3,7 +3,7 @@ import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
-// @skip-test
+// @skip-test https://github.com/typetools/checker-framework/issues/3400
 class SubClassHasQP {
     @HasQualifierParameter(Tainted.class)
     static class Buffer {
