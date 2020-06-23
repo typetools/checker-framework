@@ -3512,7 +3512,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Whether or not the {@code annotatedTypeMirror} has an implicit qualifier parameter.
+     * Whether or not the {@code annotatedTypeMirror} has a qualifier parameter.
      *
      * @param annotatedTypeMirror AnnotatedTypeMirror to check
      * @param top the top of the hierarchy to check
@@ -3525,7 +3525,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Whether or not the {@code element} has an implicit qualifier parameter.
+     * Whether or not the {@code element} has a qualifier parameter.
      *
      * @param element element to check
      * @param top the top of the hierarchy to check

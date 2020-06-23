@@ -396,6 +396,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (poly != null) {
                 polys.add(poly);
             }
+            // else {
+            // If there is no polymorphic qualifier in the hierarchy, it could still have a
+            // @HasQualifierParameter that must be checked.
+            // }
 
             if (atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
                     && atypeFactory.hasExplicitNoQualifierParameterInHierarchy(classElement, top)) {
