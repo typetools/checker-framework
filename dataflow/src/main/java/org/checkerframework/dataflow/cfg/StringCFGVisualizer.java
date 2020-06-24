@@ -90,8 +90,13 @@ public class StringCFGVisualizer<
     }
 
     @Override
+    protected String format(Object obj) {
+        return obj.toString();
+    }
+
+    @Override
     public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        return visualizeBlockNodeHelper(t, analysis, false);
+        return visualizeBlockNodeHelper(t, analysis);
     }
 
     @Override
