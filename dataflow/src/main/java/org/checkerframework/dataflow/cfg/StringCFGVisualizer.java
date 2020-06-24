@@ -91,7 +91,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        return super.visualizeBlockNodeHelper(t, analysis, false);
+        return visualizeBlockNodeHelper(t, analysis, false);
     }
 
     @Override
