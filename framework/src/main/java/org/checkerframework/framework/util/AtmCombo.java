@@ -196,7 +196,7 @@ public enum AtmCombo {
     public final AtmKind type2Kind;
 
     /**
-     * Creates an AtmCombo
+     * Creates an AtmCombo.
      *
      * @param type1Kind first kind
      * @param type2Kind second kind
