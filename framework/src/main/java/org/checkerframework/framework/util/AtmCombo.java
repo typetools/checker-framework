@@ -190,9 +190,17 @@ public enum AtmCombo {
     WILDCARD_UNION(AtmKind.WILDCARD, AtmKind.UNION),
     WILDCARD_WILDCARD(AtmKind.WILDCARD, AtmKind.WILDCARD);
 
+    /** First AtmKind. */
     public final AtmKind type1Kind;
+    /** Second AtmKind. */
     public final AtmKind type2Kind;
 
+    /**
+     * Creates an AtmCombo
+     *
+     * @param type1Kind first kind
+     * @param type2Kind second kind
+     */
     AtmCombo(final AtmKind type1Kind, AtmKind type2Kind) {
         this.type1Kind = type1Kind;
         this.type2Kind = type2Kind;
