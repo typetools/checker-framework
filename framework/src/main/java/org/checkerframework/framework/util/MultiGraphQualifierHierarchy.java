@@ -369,7 +369,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    // For caching results of lubs
+    /** For caching results of lubs * */
     private Map<AnnotationPair, AnnotationMirror> lubs = null;
 
     @Override

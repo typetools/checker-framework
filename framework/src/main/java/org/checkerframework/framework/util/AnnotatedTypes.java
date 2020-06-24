@@ -1043,6 +1043,7 @@ public class AnnotatedTypes {
         return found;
     }
 
+    /** java.lang.annotation.Annotation.class canonical name. */
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
