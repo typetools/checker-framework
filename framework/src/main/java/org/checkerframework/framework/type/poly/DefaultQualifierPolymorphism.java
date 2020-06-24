@@ -39,8 +39,13 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
             AnnotationMirror poly = pqentry.getKey();
             if (type.hasAnnotation(poly)) {
                 type.removeAnnotation(poly);
-                AnnotationMirror quals = pqentry.getValue();
-                type.replaceAnnotation(quals);
+                AnnotationMirror qual;
+                if (polyInstantiationForQualifierParameter.containsKey(poly)) {
+                    qual = polyInstantiationForQualifierParameter.get(poly);
+                } else {
+                    qual = pqentry.getValue();
+                }
+                type.replaceAnnotation(qual);
             }
         }
     }

@@ -1,13 +1,11 @@
 package org.checkerframework.framework.source;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.MANDATORY_WARNING;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -74,7 +72,7 @@ public final class Result {
     // reportWarning} directly
     public static Result failure(@CompilerMessageKey String messageKey, @Nullable Object... args) {
         return new Result(
-                Type.FAILURE, Collections.singleton(new DiagMessage(ERROR, messageKey, args)));
+                Type.FAILURE, Collections.singleton(new DiagMessage(Kind.ERROR, messageKey, args)));
     }
 
     /**
@@ -89,7 +87,7 @@ public final class Result {
     public static Result warning(@CompilerMessageKey String messageKey, @Nullable Object... args) {
         return new Result(
                 Type.WARNING,
-                Collections.singleton(new DiagMessage(MANDATORY_WARNING, messageKey, args)));
+                Collections.singleton(new DiagMessage(Kind.MANDATORY_WARNING, messageKey, args)));
     }
 
     private Result(Type type, Collection<DiagMessage> messagePairs) {
@@ -105,10 +103,10 @@ public final class Result {
                 javax.tools.Diagnostic.Kind kind;
                 switch (type) {
                     case FAILURE:
-                        kind = ERROR;
+                        kind = Kind.ERROR;
                         break;
                     case WARNING:
-                        kind = MANDATORY_WARNING;
+                        kind = Kind.MANDATORY_WARNING;
                         break;
                     case SUCCESS:
                     default:

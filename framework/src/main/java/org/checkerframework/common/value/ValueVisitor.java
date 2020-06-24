@@ -1,8 +1,5 @@
 package org.checkerframework.common.value;
 
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -177,8 +174,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
                 // accordingly.
                 if (args.size() == 2) {
-                    long from = getElementValue(anno, "from", Long.class, true);
-                    long to = getElementValue(anno, "to", Long.class, true);
+                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
+                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
                     if (from > to) {
                         checker.reportError(node, "from.greater.than.to");
                         return null;
@@ -190,7 +187,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                List<Object> values = getElementValueArray(anno, "value", Object.class, true);
+                List<Object> values =
+                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
 
                 if (values.isEmpty()) {
                     checker.reportWarning(node, "no.values.given");
@@ -215,8 +213,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
                 break;
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                int from = getElementValue(anno, "from", Integer.class, true);
-                int to = getElementValue(anno, "to", Integer.class, true);
+                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
                     checker.reportError(node, "from.greater.than.to");
                     return null;
@@ -329,8 +327,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
         } else if (AnnotationUtils.areSameByName(
                 anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            int from = getElementValue(anno, "from", Integer.class, true);
-            int to = getElementValue(anno, "to", Integer.class, true);
+            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
             if (from > to) {
                 checker.reportError(tree, "from.greater.than.to");
                 return false;
