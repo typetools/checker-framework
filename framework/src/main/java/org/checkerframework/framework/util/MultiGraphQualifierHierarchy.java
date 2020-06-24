@@ -215,6 +215,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // System.out.println("MGH: " + this);
     }
 
+    @Override
+    public boolean isValid() {
+        return typeQualifiers.isEmpty();
+    }
+
     /**
      * Method to finalize the qualifier hierarchy before it becomes unmodifiable. The parameters
      * pass all fields and allow modification.
