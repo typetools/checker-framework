@@ -1001,8 +1001,9 @@ on the same class for the same hierarchy.
 
 \subsectionAndLabel{Types with qualifier parameters as type arguments}{class-qual-param-type-arg}
 
-Types with qualifier parameters are forbidden as type arguments because type variables are not treated
-as invariant. For example:
+Types with qualifier parameters are only allowed as type arguments to type parameters whose upper bound
+have a qualifier parameter. If they were allowed for as type arguments for any type parameter, then
+unsound casts would be permitted.For example:
 
 \begin{Verbatim}
     @HasQualifierParameter(Tainted.class)

@@ -2732,7 +2732,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Reports an error if the type argument has a qualifier parameter.
+     * Reports an error if the type argument has a qualifier parameter and the type parameter upper
+     * bound does not have a qualifier parameter.
      *
      * @param typeArgument type argument
      * @param typeParameterUpperBound upper bound of the type parameter
