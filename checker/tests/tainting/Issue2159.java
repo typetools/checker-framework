@@ -1,4 +1,6 @@
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 class Issue2159 {
     Issue2159() {}
