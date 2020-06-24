@@ -176,7 +176,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (in == null) {
                     checker.message(Kind.WARNING, "Couldn't find the properties file: " + name);
                     // report(null, "propertykeychecker.filenotfound", name);
-                    // return Collections.emptySet()
+                    // return Collections.emptySet();
                     continue;
                 }
 
