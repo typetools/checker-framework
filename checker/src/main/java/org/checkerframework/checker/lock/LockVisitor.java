@@ -119,7 +119,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * </ul>
      *
      * @param variableTree the VariableTree for the variable declaration used to determine if
-     *     multiple @GuardedBy annotations are present and to report the error via checker.report.
+     *     multiple @GuardedBy annotations are present and to report the error
      */
     private void issueErrorIfMoreThanOneGuardedByAnnotationPresent(VariableTree variableTree) {
         int guardedByAnnotationCount = 0;
@@ -222,7 +222,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * </ul>
      *
      * @param methodElement the ExecutableElement for the method call referred to by {@code node}
-     * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
+     * @param treeForErrorReporting the MethodTree used to report the error
      */
     private void issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(
             ExecutableElement methodElement, MethodTree treeForErrorReporting) {

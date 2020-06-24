@@ -73,16 +73,6 @@ public abstract class QualifierHierarchy {
      */
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 
-    /**
-     * Returns all type qualifiers in this type qualifier hierarchy.
-     *
-     * @return the fully qualified name represented in this hierarchy
-     * @deprecated use {@link AnnotatedTypeFactory#getSupportedTypeQualifierNames()} or {@link
-     *     AnnotatedTypeFactory#getSupportedTypeQualifiers()} instead
-     */
-    @Deprecated
-    public abstract Set<? extends AnnotationMirror> getTypeQualifiers();
-
     // **********************************************************************
     // Qualifier Hierarchy Queries
     // **********************************************************************

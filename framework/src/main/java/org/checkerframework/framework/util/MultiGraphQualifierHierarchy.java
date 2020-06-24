@@ -369,12 +369,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    @Override
-    @Deprecated
-    public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return typeQualifiers;
-    }
-
     // For caching results of lubs
     private Map<AnnotationPair, AnnotationMirror> lubs = null;
 
