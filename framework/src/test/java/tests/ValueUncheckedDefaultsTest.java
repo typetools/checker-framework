@@ -16,7 +16,6 @@ public class ValueUncheckedDefaultsTest extends FrameworkPerDirectoryTest {
                 ValueChecker.class,
                 "value",
                 "-Anomsgtext",
-                "-Astubs=statically-executable.astub",
                 "-AuseConservativeDefaultsForUncheckedCode=btyecode",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS);
     }

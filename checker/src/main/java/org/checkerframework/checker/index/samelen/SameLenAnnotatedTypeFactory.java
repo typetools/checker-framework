@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.samelen;
 
-import static org.checkerframework.common.value.ValueCheckerUtils.getValueOfAnnotationWithStringArgument;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
@@ -26,6 +24,7 @@ import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -129,7 +128,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (r != null) {
                     String varName = r.toString();
 
-                    List<String> exprs = getValueOfAnnotationWithStringArgument(anm);
+                    List<String> exprs =
+                            ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
                     if (exprs.contains(varName)) {
                         exprs.remove(varName);
                     }
@@ -198,8 +198,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
+                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
+                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
 
                 Set<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
                 if (exprs == null) {
@@ -225,8 +225,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = getValueOfAnnotationWithStringArgument(a2);
+                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
+                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
 
                 if (!Collections.disjoint(a1Val, a2Val)) {
                     a1Val.retainAll(a2Val);
@@ -260,8 +260,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return areSameByClass(superAnno, PolySameLen.class);
             } else if (AnnotationUtils.hasElementValue(subAnno, "value")
                     && AnnotationUtils.hasElementValue(superAnno, "value")) {
-                List<String> subArrays = getValueOfAnnotationWithStringArgument(subAnno);
-                List<String> superArrays = getValueOfAnnotationWithStringArgument(superAnno);
+                List<String> subArrays =
+                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
+                List<String> superArrays =
+                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
 
                 if (subArrays.containsAll(superArrays)) {
                     return true;
@@ -305,7 +307,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         } else if (areSameByClass(sequenceAnno, SameLen.class)) {
                             // Add the sequence whose length is being used to the annotation.
                             List<String> exprs =
-                                    getValueOfAnnotationWithStringArgument(sequenceAnno);
+                                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(
+                                            sequenceAnno);
                             int index = Collections.binarySearch(exprs, recString);
                             if (index < 0) {
                                 exprs.add(-index - 1, recString);
@@ -338,7 +341,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (sameLenAnno == null) {
             return new ArrayList<>();
         }
-        return getValueOfAnnotationWithStringArgument(sameLenAnno);
+        return ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
     }
 
     ///
@@ -393,7 +396,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         for (AnnotationMirror anno : annos) {
             if (areSameByClass(anno, SameLen.class)) {
-                exprs.addAll(getValueOfAnnotationWithStringArgument(anno));
+                exprs.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno));
             }
         }
         return createSameLen(exprs);
