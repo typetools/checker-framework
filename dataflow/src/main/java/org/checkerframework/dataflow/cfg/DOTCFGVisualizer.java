@@ -208,7 +208,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        return super.visualizeBlockNodeHelper(t, analysis, true);
+        return visualizeBlockNodeHelper(t, analysis, true);
     }
 
     @Override
