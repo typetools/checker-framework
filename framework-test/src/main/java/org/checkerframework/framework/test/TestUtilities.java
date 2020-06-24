@@ -399,7 +399,7 @@ public class TestUtilities {
      *
      * <p>In a checker, a more specific error message is subsumed by a general one. For example,
      * "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the test
-     * framework, which must use the exact error key.
+     * framework, which must use the exact error message key.
      *
      * @param testResult the result of type-checking
      */

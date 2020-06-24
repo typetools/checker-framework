@@ -1309,7 +1309,7 @@ Support a few new units in the UnitsChecker.
 Version 1.7.4, 19 February 2014
 
 Error messages now display the error key that can be used in
-SuppressWarning annotations. Use -AshowSuppressWarningKeys to
+SuppressWarnings annotations. Use -AshowSuppressWarningKeys to
 show additional keys.
 
 Defaulted type qualifiers are now stored in the Element and written

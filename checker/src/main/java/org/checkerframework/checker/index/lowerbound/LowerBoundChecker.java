@@ -18,8 +18,8 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 public class LowerBoundChecker extends BaseTypeChecker {
 
     /**
-     * These classes are bases for both mutable and immutable sequence collections, which contain
-     * methods that change the length.
+     * These collection classes have some subtypes whose length can change and some subtypes whose
+     * length cannot change. Lower bound checker warnings are skipped at uses of them.
      */
     private HashSet<String> collectionBaseTypeNames;
 
@@ -28,9 +28,6 @@ public class LowerBoundChecker extends BaseTypeChecker {
      * accessed with values that are too low. Normally bundled as part of the Index Checker.
      */
     public LowerBoundChecker() {
-        // These classes are bases for both mutable and immutable sequence collections, which
-        // contain methods that change the length.
-        // Lower bound checker warnings are skipped at uses of them.
         Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
         collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
         for (Class<?> collectionBaseClass : collectionBaseClasses) {

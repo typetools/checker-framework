@@ -14,7 +14,7 @@ public class RequireCheckerPrefix {
     void method(@Nullable Object o) {
         @SuppressWarnings("nullness:assignment.type.incompatible")
         @NonNull Object s = o;
-        // All is not a valid prefix, so the warning is never suppressed.
+        // "all" is not a valid prefix, so the warning is never suppressed.
         @SuppressWarnings("all:assignment.type.incompatible")
         @NonNull Object t = o;
         @SuppressWarnings("allcheckers:assignment.type.incompatible")
