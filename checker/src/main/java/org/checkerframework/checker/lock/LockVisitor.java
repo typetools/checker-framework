@@ -1,7 +1,5 @@
 package org.checkerframework.checker.lock;
 
-import static org.checkerframework.javacutil.TreeUtils.getReceiverTree;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -595,7 +593,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (methodElement != null) {
             // Handle releasing of explicit locks. Verify that the lock expression is effectively
             // final.
-            ExpressionTree recvTree = getReceiverTree(node);
+            ExpressionTree recvTree = TreeUtils.getReceiverTree(node);
 
             ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, recvTree);
 
