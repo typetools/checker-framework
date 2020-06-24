@@ -645,6 +645,9 @@ public final class TypesUtils {
      */
     public static @Nullable TypeElement getTypeElement(TypeMirror type) {
         Element element = ((Type) type).asElement();
+        if (element == null) {
+            return null;
+        }
         if (ElementUtils.isClassElement(element)) {
             return (TypeElement) element;
         }
