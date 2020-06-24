@@ -217,7 +217,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     @Override
     public boolean isValid() {
-        return typeQualifiers.isEmpty();
+        return !typeQualifiers.isEmpty();
     }
 
     /**
