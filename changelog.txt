@@ -9,7 +9,7 @@ It is no longer necessary to pass -Astubs=checker.jar/javadoc.astub when
 compiling a program that uses Javadoc classes.
 
 Renamed command-line arguments:
- -AshowSuppressWarningKeys to -AshowSuppressWarningsStrings
+ * -AshowSuppressWarningKeys to -AshowSuppressWarningsStrings
 
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
