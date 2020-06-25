@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -54,6 +52,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -1114,7 +1113,7 @@ public class FlowExpressionParseUtil {
          * @return a DiagMessage that can be used for error reporting
          */
         public DiagMessage getDiagMessage() {
-            return new DiagMessage(ERROR, errorKey, args);
+            return new DiagMessage(Kind.ERROR, errorKey, args);
         }
 
         public boolean isFlowParseError() {
