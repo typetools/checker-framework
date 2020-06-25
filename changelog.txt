@@ -21,6 +21,8 @@ QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
 
+Removed methods and classes marked deprecated in release 3.3.0 or earlier.
+
 ---------------------------------------------------------------------------
 
 Version 3.4.1, June 1, 2020
