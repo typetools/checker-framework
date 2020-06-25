@@ -1193,8 +1193,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private String suppressWarningsString(String messageKey) {
         Collection<String> prefixes = this.getSuppressWarningsPrefixes();
+        prefixes.remove(SUPPRESS_ALL_PREFIX);
         if (hasOption("showSuppressWarningsStrings")) {
-            return prefixes + ":" + messageKey;
+            List<String> list = new ArrayList<>(prefixes);
+            // Make sure "allcheckers" is at the end of the list.
+            list.add(SUPPRESS_ALL_PREFIX);
+            return list + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a prefix (a checker name), then add that to
             // the SuppressWarnings string that is printed.
@@ -1202,7 +1206,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (prefixes.contains(defaultPrefix)) {
                 return defaultPrefix + ":" + messageKey;
             } else {
-                prefixes.remove(SUPPRESS_ALL_PREFIX);
                 String firstKey = prefixes.iterator().next();
                 return firstKey + ":" + messageKey;
             }
@@ -1807,11 +1810,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
             for (String suppressWarningsString : suppressWarningsStrings) {
                 for (String errorKey : allErrorKeys) {
-                    if (shouldSuppressWarningsStringSuppressKey(
-                            prefixes, errorKey, suppressWarningsString)) {
+                    if (shouldSuppress(prefixes, new String[] {suppressWarningsString}, errorKey)) {
                         reportUnneededSuppression(tree, suppressWarningsString);
-                        //                        break; // Don't report the same warning string
-                        // more than once
+                        break; // Don't report the same warning string more than once.
                     }
                 }
             }
@@ -2016,8 +2017,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
 
-        if (shouldSuppressWarningsStringSuppressKey(
-                errKey, getSuppressWarningsStringsFromOption())) {
+        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
             return true;
         }
 
@@ -2027,7 +2027,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 String[] suppressWarningsStrings = suppressWarningsAnno.value();
                 Arrays.setAll(
                         suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
-                if (shouldSuppressWarningsStringSuppressKey(errKey, suppressWarningsStrings)) {
+                if (shouldSuppress(suppressWarningsStrings, errKey)) {
                     if (hasOption("warnUnneededSuppressions")) {
                         elementsWithSuppressedWarnings.add(elt);
                     }
@@ -2069,31 +2069,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * then {@code "partial-message-key"} has no effect; {@code "prefix"} and {@code
      * "prefix:partial-message-key"} are the only SuppressWarnings strings that have an effect.
      *
-     * @param messageKey the message key of the error the checker is emitting; a lowercase string,
-     *     without any "checkername:" prefix
      * @param suppressWarningsStrings the SuppressWarnings strings that are in effect. May be null,
      *     in which case this method returns false.
+     * @param messageKey the message key of the error the checker is emitting; a lowercase string,
+     *     without any "checkername:" prefix
      * @return true if an element of {@code suppressWarningsStrings} suppresses the error
      */
-    private boolean shouldSuppressWarningsStringSuppressKey(
-            String messageKey, String @Nullable ... suppressWarningsStrings) {
+    private boolean shouldSuppress(String[] suppressWarningsStrings, String messageKey) {
         Set<String> prefixes = this.getSuppressWarningsPrefixes();
-        return shouldSuppressWarningsStringSuppressKey(
-                prefixes, messageKey, suppressWarningsStrings);
+        return shouldSuppress(prefixes, suppressWarningsStrings, messageKey);
     }
 
     /**
-     * See {@link #shouldSuppressWarningsStringSuppressKey(String, String...)}
+     * See {@link #shouldSuppress(String[], String)}
      *
      * @param prefixes the SuppressWarnings prefixes used by this checker
-     * @param messageKey the message key of the error the checker is emitting; a lowercase string,
-     *     without any "checkername:" prefix
      * @param suppressWarningsStrings the SuppressWarnings strings that are in effect. May be null,
      *     in which case this method returns false.
+     * @param messageKey the message key of the error the checker is emitting; a lowercase string,
+     *     without any "checkername:" prefix
      * @return true if one of the {@code suppressWarningsStrings} suppresses the error
      */
-    private boolean shouldSuppressWarningsStringSuppressKey(
-            Set<String> prefixes, String messageKey, String @Nullable ... suppressWarningsStrings) {
+    private boolean shouldSuppress(
+            Set<String> prefixes, String[] suppressWarningsStrings, String messageKey) {
         if (suppressWarningsStrings == null) {
             return false;
         }
