@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.livevariable;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
@@ -125,14 +126,15 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
     @Override
     public String visualize(CFGVisualizer<?, LiveVarStore, ?> viz) {
+        String key = "live variables";
         if (liveVarSet.isEmpty()) {
-            return "No live variables.";
+            return viz.visualizeStoreKeyVal(key, "none");
         }
-        StringBuilder sbStoreVal = new StringBuilder();
+        StringJoiner sjStoreVal = new StringJoiner(", ");
         for (LiveVar liveVar : liveVarSet) {
-            sbStoreVal.append(viz.visualizeStoreKeyVal("live variable", liveVar.liveVariable));
+            sjStoreVal.add(liveVar.toString());
         }
-        return sbStoreVal.toString();
+        return viz.visualizeStoreKeyVal(key, sjStoreVal.toString());
     }
 
     @Override

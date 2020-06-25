@@ -31,3 +31,10 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype(shadowJar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${pomFiles}/dataflow-shaded-pom.xml")
     }
 }
+
+task liveVariableTest(type: Exec, group: 'Verification') {
+    description 'Run live variable analysis test for dataflow framework.'
+    executable 'make'
+    environment CHECKERFRAMEWORK: "${projectDir}/../"
+    args = ['-C', 'tests/live-variable/']
+}
