@@ -474,9 +474,10 @@ public class FlowExpressions {
 
         /**
          * Returns true if and only if the value this expression stands for cannot be changed (with
-         * respect to ==) by a method call. This is the case for local variables, the self reference
-         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
-         * true. Binary operation depends on its left and right operands.
+         * respect to ==) by a method call. This is the case for local variables, the self
+         * reference, final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and
+         * binary operations whose left and right operands are both {@link
+         * #isUnmodifieableByOtherCode}.
          *
          * @see #isUnmodifiableByOtherCode
          */
@@ -1123,19 +1124,19 @@ public class FlowExpressions {
 
         /** The binary operation kind. */
         protected final Kind operationKind;
-        /** The binary operation kind for pretty print. */
+        /** The binary operation kind for pretty printing. */
         protected final JCTree.Tag tag;
-        /** Receiver of the left operand. */
+        /** The left operand. */
         protected final Receiver left;
-        /** Receiver of the right operand. */
+        /** The right operand. */
         protected final Receiver right;
 
         /**
-         * Binary Operation Constructor.
+         * Create a binary operation.
          *
-         * @param node the binary operation node.
-         * @param left the left operand receiver.
-         * @param right the right operand receiver.
+         * @param node the binary operation node
+         * @param left the left operand
+         * @param right the right operand
          */
         public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
             super(node.getType());
@@ -1148,7 +1149,7 @@ public class FlowExpressions {
         /**
          * Returns the operator of this binary operation.
          *
-         * @return the binary operation kind.
+         * @return the binary operation kind
          */
         public Kind getOperationKind() {
             return operationKind;
@@ -1157,7 +1158,7 @@ public class FlowExpressions {
         /**
          * Returns the left operand of this binary operation.
          *
-         * @return the left receiver.
+         * @return the left operand
          */
         public Receiver getLeft() {
             return left;
@@ -1166,7 +1167,7 @@ public class FlowExpressions {
         /**
          * Returns the right operand of this binary operation.
          *
-         * @return the right receiver.
+         * @return the right operand
          */
         public Receiver getRight() {
             return right;
@@ -1230,9 +1231,9 @@ public class FlowExpressions {
         }
 
         /**
-         * Check if the binary operation is commutative. e.g. x + y == y + x.
+         * Returns true if the binary operation is commutative, e.g., x + y == y + x.
          *
-         * @return true if the binary operation is commutative.
+         * @return true if the binary operation is commutative
          */
         private boolean isCommutative() {
             switch (operationKind) {
