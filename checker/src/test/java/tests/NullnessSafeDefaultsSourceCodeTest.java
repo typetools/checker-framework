@@ -1,7 +1,5 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +41,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
                                 "-AuseConservativeDefaultsForUncheckedCode=source,bytecode",
                                 "-Anomsgtext"));
         TestConfiguration config1 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         "tests/nullness-safedefaultssourcecodelib",
                         new File("tests/nullness-safedefaultssourcecodelib", "Lib.java"),
                         checkerName,
@@ -55,7 +53,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
         List<String> customizedOptions2 =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config2 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
                         Collections.singleton(checkerName),

@@ -7,6 +7,9 @@ The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
 
+Add support for class qualifier parameters.  See "Class qualifier parameters"
+section in the manual.
+
 The Dataflow Framework now also supports backward analysis.
 
 Implementation details:
