@@ -262,7 +262,8 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Format the given object into a String.
+     * Format the given object as a String suitable for the output format, i.e. with format-specific
+     * characters escaped.
      *
      * @param obj an object
      * @return the formatted String from the given object
