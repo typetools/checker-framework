@@ -982,6 +982,9 @@ public abstract class CFAbstractTransfer<
     /**
      * Returns true if whole-program inference should be performed. If the tree is in the scope of
      * a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @return whether to perform whole-program inference on the tree
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
         return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
@@ -990,6 +993,10 @@ public abstract class CFAbstractTransfer<
     /**
      * Returns true if whole-program inference should be performed. If the expressionTree or lhsTree
      * is in the scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param expressionTree the right-hand side of an assignment
+     * @param lhsTree the left-hand side of an assignment
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
         // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
@@ -1004,6 +1011,10 @@ public abstract class CFAbstractTransfer<
     /**
      * Returns true if whole-program inference should be performed. If the tree or element is in the
      * scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @param elt its element
+     * @param whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
