@@ -477,7 +477,7 @@ public class FlowExpressions {
          * respect to ==) by a method call. This is the case for local variables, the self
          * reference, final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and
          * binary operations whose left and right operands are both {@link
-         * #isUnmodifieableByOtherCode}.
+         * #isUnmodifiableByOtherCode}.
          *
          * @see #isUnmodifiableByOtherCode
          */
