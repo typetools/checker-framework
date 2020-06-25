@@ -1014,7 +1014,7 @@ public abstract class CFAbstractTransfer<
      *
      * @param tree a tree
      * @param elt its element
-     * @param whether to perform whole-program inference
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
