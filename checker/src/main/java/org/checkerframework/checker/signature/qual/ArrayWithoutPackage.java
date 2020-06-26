@@ -8,16 +8,14 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a field descriptor (JVM type format) for a primitive as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.3.2">Java Virtual
- * Machine Specification, section 4.3.2</a>.
+ * An identifier or primitive type, followed by any number of array square brackets.
  *
- * <p>Must be one of B, C, D, F, I, J, S, Z.
+ * <p>Example: Foobar[][] Example: Baz22
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({FieldDescriptorWithoutPackage.class, Identifier.class})
-public @interface FieldDescriptorForPrimitive {}
+@SubtypeOf({FullyQualifiedName.class, ClassGetSimpleName.class})
+public @interface ArrayWithoutPackage {}

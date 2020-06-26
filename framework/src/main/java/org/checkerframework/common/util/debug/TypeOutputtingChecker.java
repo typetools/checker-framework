@@ -230,14 +230,6 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            @Deprecated
-            public Set<? extends AnnotationMirror> getTypeQualifiers() {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.getTypeQualifiers() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
                 throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
             }
