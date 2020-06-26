@@ -158,12 +158,12 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     /**
      * {@inheritDoc}
      *
-     * @return {@code "null\\l"} because {@link ConstantPropagationStore} doesn't support
-     *     visualization
+     * <p>{@code value} is {@code null} because {@link ConstantPropagationStore} doesn't support
+     * visualization.
      */
     @Override
     @SuppressWarnings("nullness")
     public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
-        return "null\\l";
+        return viz.visualizeStoreKeyVal("constant propagation", null);
     }
 }
