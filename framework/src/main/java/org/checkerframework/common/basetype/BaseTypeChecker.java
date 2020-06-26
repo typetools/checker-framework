@@ -593,8 +593,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
-     * Prints given stack trace of runtime exception if -AdumpOnErrors flag is passed as compilation
-     * argument
+     * Output the given stack trace if the "dumpOnErrors" option is enabled.
      *
      * @param trace stack trace when the checker encounters an error
      */
