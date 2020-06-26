@@ -11,6 +11,16 @@ compiling a program that uses Javadoc classes.
 Renamed command-line arguments:
  * -AshowSuppressWarningKeys to -AshowSuppressWarningsStrings
 
+The Signature Checker no longer considers Java keywords to be identifiers.
+Renamed Signature Checker annotations:
+  @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
+  @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
+  @IdentifierOrArray => @ArrayWithoutPackage
+Added new Signature Checker annotations:
+  @BinaryNameOrPrimitiveType
+  @DotSeparatedIdentifiersOrPrimitiveType
+  #IdentifierOrPrimitiveType
+
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
@@ -2052,7 +2062,7 @@ Property File Checker (new):
 
 Signature Checker (new):
   Ensures that different string representations of a Java type (e.g.,
-  "package.Outer.Inner" vs. "package.Outer$Inner" vs. "Lpackage/Outer$Inner;")
+  "pakkage.Outer.Inner" vs. "pakkage.Outer$Inner" vs. "Lpakkage/Outer$Inner;")
   are not misused.
 
 Interning Checker enhancements:
