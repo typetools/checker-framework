@@ -76,13 +76,14 @@ is not sufficient to supply their source files on the command line.
 
 \subsectionAndLabel{Suppressing warnings from the Subtyping Checker}{subtyping-suppressing}
 
-To suppress a warning issued by the Subtyping Checker, use a
-\sunjavadocanno{java.base/java/lang/SuppressWarnings.html}{SuppressWarnings}
-annotation, with the argument being the unqualified, uncapitalized name of
-any of the annotations passed to \code{-Aquals}.  This will suppress all
-warnings, regardless of which of the annotations is involved in the
-warning.  (As a matter of style, you should choose one of the annotations
-as your \code{@SuppressWarnings} key and stick with it.)
+When suppressing a warning issued by the Subtyping Checker, as the
+``checker name'' you may use the unqualified, uncapitalized name of any of
+the annotations passed to \code{-Aquals}.  (See
+Section~\ref{suppresswarnings-annotation-syntax} for details about the
+\<@SuppressWarnings> syntax.)  As a matter of style, you should
+choose one of the annotations as the ``checker name'' part of the
+\code{@SuppressWarnings} string and use it consistently; this avoids
+confusion and makes it easier to search for uses.
 
 
 \sectionAndLabel{Subtyping Checker example\label{encrypted-example}}{subtyping-example}
