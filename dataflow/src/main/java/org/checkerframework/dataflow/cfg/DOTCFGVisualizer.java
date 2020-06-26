@@ -133,7 +133,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "");
+        return super.visualizeSpecialBlockHelper(sbb, "\\n");
     }
 
     @Override
@@ -292,7 +292,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreFooter() {
-        return ")";
+        return ")" + leftJustifiedTerminator;
     }
 
     /**

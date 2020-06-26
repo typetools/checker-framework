@@ -1,10 +1,6 @@
 package org.checkerframework.dataflow.cfg;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -24,7 +20,7 @@ public class StringCFGVisualizer<
     @Override
     public Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
-        String stringGraph = visualizeGraph(cfg, entry, analysis);
+        String stringGraph = visualizeGraph(cfg, entry, analysis).trim();
         Map<String, Object> res = new HashMap<>();
         res.put("stringGraph", stringGraph);
         return res;
@@ -34,27 +30,18 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
-        StringBuilder sbStringNodes = new StringBuilder();
-        sbStringNodes.append(lineSeparator);
-
+        StringJoiner sjStringNodes = new StringJoiner(lineSeparator, lineSeparator, "");
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
         for (@KeyFor("processOrder") Block v : blocks) {
-            sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
+            sjStringNodes.add(v.getId() + ":");
             if (verbose) {
-                sbStringNodes
-                        .append(getProcessOrderSimpleString(processOrder.get(v)))
-                        .append(lineSeparator);
+                sjStringNodes.add(getProcessOrderSimpleString(processOrder.get(v)));
             }
-            String strBlock = visualizeBlock(v, analysis);
-            if (strBlock.length() == 0) {
-                sbStringNodes.append(lineSeparator);
-            } else {
-                sbStringNodes.append(strBlock).append(lineSeparator);
-            }
+            sjStringNodes.add(visualizeBlock(v, analysis));
         }
-        return sbStringNodes.toString();
+        return sjStringNodes.toString();
     }
 
     @Override
@@ -80,7 +67,8 @@ public class StringCFGVisualizer<
         return "ConditionalBlock: then: "
                 + cbb.getThenSuccessor().getId()
                 + ", else: "
-                + cbb.getElseSuccessor().getId();
+                + cbb.getElseSuccessor().getId()
+                + lineSeparator;
     }
 
     @Override
@@ -135,7 +123,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeStoreFooter() {
-        return ")";
+        return ")" + lineSeparator;
     }
 
     /**
