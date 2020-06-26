@@ -52,7 +52,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ComplexHierarchy;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
@@ -275,7 +275,7 @@ public class LockAnnotatedTypeFactory
     }
 
     /** LockQualifierHierarchy */
-    class LockQualifierHierarchy extends ComplexHierarchy {
+    class LockQualifierHierarchy extends ComplexQualifierHierarchy {
 
         /** Qualifier kind for {@link GuardedBy} annotation. */
         private final QualifierKind GUARDEDBY_KIND;

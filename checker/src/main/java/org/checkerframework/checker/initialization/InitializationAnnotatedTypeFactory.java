@@ -49,7 +49,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.ComplexHierarchy;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -745,7 +745,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * subclass NullnessQualifierHierarchy within class {@link
      * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
-    protected abstract class InitializationQualifierHierarchy extends ComplexHierarchy {
+    protected abstract class InitializationQualifierHierarchy extends ComplexQualifierHierarchy {
 
         /** Qualifier kind for {@link UnknownInitialization} annotation. */
         private final QualifierKind UNKNOWN_INIT;

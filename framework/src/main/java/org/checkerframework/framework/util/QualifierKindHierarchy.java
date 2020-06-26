@@ -36,9 +36,9 @@ import org.checkerframework.javacutil.UserError;
  *   <li>{@link #createGlbsMap()}
  * </ul>
  *
- * This class is used by {@link SimpleHierarchy} and {@link ComplexHierarchy} classes to implement
- * methods that compare {@link javax.lang.model.element.AnnotationMirror}s, such as {@link
- * org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
+ * This class is used by {@link SimpleQualifierHierarchy} and {@link ComplexQualifierHierarchy}
+ * classes to implement methods that compare {@link javax.lang.model.element.AnnotationMirror}s,
+ * such as {@link org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
  * AnnotationMirror)}.
  */
 public class QualifierKindHierarchy {

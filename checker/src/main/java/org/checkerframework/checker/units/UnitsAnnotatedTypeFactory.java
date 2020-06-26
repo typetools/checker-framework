@@ -34,7 +34,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.ComplexHierarchy;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -543,7 +543,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Qualifier Hierarchy for the Units Checker. */
-    protected class UnitsQualifierHierarchy extends ComplexHierarchy {
+    protected class UnitsQualifierHierarchy extends ComplexQualifierHierarchy {
         /** Constructor. */
         public UnitsQualifierHierarchy() {
             super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
@@ -603,10 +603,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * qualifier. Every qualifier kind maps to a nonnull AnnotationMirror.
          */
         private final Map<QualifierKind, AnnotationMirror> directSuperQualifierMap;
+
         /**
-         * Creates UnitsQualifierKindHierarchy
+         * Creates UnitsQualifierKindHierarchy.
          *
-         * @param qualifierClasses
+         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
          */
         public UnitsQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {

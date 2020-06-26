@@ -14,7 +14,7 @@ import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.ComplexHierarchy;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -106,7 +106,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Fenum qualifier hierarchy */
-    protected class FenumQualifierHierarchy extends ComplexHierarchy {
+    protected class FenumQualifierHierarchy extends ComplexQualifierHierarchy {
 
         /** QualifierKind for {@link Fenum} qualifier. */
         private final QualifierKind FENUM_KIND;
