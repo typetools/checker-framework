@@ -15,7 +15,6 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.node.Node;
 
 /** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
@@ -92,11 +91,6 @@ public class StringCFGVisualizer<
     @Override
     protected String format(Object obj) {
         return obj.toString();
-    }
-
-    @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        return visualizeBlockNodeHelper(t, analysis);
     }
 
     @Override

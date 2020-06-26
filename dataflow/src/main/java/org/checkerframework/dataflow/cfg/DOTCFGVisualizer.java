@@ -22,7 +22,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
@@ -209,11 +208,6 @@ public class DOTCFGVisualizer<
     @Override
     protected String format(Object obj) {
         return escapeDoubleQuotes(obj);
-    }
-
-    @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        return visualizeBlockNodeHelper(t, analysis);
     }
 
     @Override

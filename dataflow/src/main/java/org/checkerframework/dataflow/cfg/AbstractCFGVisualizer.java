@@ -270,14 +270,8 @@ public abstract class AbstractCFGVisualizer<
      */
     protected abstract String format(Object obj);
 
-    /**
-     * Helper method to visualize a node based on the analysis.
-     *
-     * @param t a node
-     * @param analysis the current analysis
-     * @return the visualization of the given node
-     */
-    protected String visualizeBlockNodeHelper(Node t, @Nullable Analysis<V, S, T> analysis) {
+    @Override
+    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
         StringBuilder sbBlockNode = new StringBuilder();
         sbBlockNode.append(format(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
         if (analysis != null) {
