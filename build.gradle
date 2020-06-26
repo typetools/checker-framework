@@ -814,8 +814,7 @@ subprojects {
             }
 
             if(project.name.is('dataflow')) {
-                // Uncomment when CFGVisualizer changes have been merged.
-                // dependsOn('liveVariableTest')
+                 dependsOn('liveVariableTest')
             }
         }
 
