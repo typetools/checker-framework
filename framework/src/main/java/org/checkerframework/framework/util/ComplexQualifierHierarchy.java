@@ -269,6 +269,17 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return qualifierMap.get(lub);
     }
 
+    /**
+     * Returns the least upper bound between {@code a1} and {@code a2}.
+     *
+     * <p>This method is only called when the lub is an annotation with elements.
+     *
+     * @param a1 first annotation
+     * @param qual1 QualifierKind for {@code a1}
+     * @param a2 second annotation
+     * @param qual2 QualifierKind for {@code a2}
+     * @return the least upper bound between {@code a1} and {@code a2}.
+     */
     protected abstract AnnotationMirror leastUpperBound(
             AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
 
@@ -286,6 +297,17 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return qualifierMap.get(glb);
     }
 
+    /**
+     * Returns the greatest lower bound between {@code a1} and {@code a2}.
+     *
+     * <p>This method is only called when the glb is an annotation with elements.
+     *
+     * @param a1 first annotation
+     * @param qual1 QualifierKind for {@code a1}
+     * @param a2 second annotation
+     * @param qual2 QualifierKind for {@code a2}
+     * @return the greatest lower bound between {@code a1} and {@code a2}.
+     */
     protected abstract AnnotationMirror greatestLowerBound(
             AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
 
