@@ -274,12 +274,24 @@ public class LockAnnotatedTypeFactory
         return new LockTransfer((LockAnalysis) analysis, (LockChecker) this.checker);
     }
 
+    /** LockQualifierHierarchy */
     class LockQualifierHierarchy extends ComplexHierarchy {
+
+        /** Qualifier kind for {@link GuardedBy} annotation. */
         private final QualifierKind GUARDEDBY_KIND;
+        /** Qualifier kind for {@link GuardSatisfied} annotation. */
         private final QualifierKind GUARDSATISFIED_KIND;
+        /** Qualifier kind for {@link GuardedByBottom} annotation. */
         private final QualifierKind GUARDEDBYBOTTOM_KIND;
+        /** Qualifier kind for {@link GuardedByUnknown} annotation. */
         private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
+        /**
+         * Creates LockQualifierHierarchy.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
         public LockQualifierHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);

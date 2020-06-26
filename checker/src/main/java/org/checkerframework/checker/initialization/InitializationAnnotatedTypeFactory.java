@@ -746,7 +746,10 @@ public abstract class InitializationAnnotatedTypeFactory<
      * org.checkerframework.checker.nullness.NullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends ComplexHierarchy {
+
+        /** Qualifier kind for {@link UnknownInitialization} annotation. */
         private final QualifierKind UNKNOWN_INIT;
+        /** Qualifier kind for {@link UnderInitialization} annotation. */
         private final QualifierKind UNDER_INIT;
 
         /** Create an InitializationQualifierHierarchy. */

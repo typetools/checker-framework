@@ -225,11 +225,17 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
     }
 
+    /** I18nFormatterQualifierHierarchy */
     class I18nFormatterQualifierHierarchy extends ComplexHierarchy {
+
+        /** Qualifier kind for {@link I18nFormat} annotation. */
         private final QualifierKind I18NFORMAT_KIND;
+        /** Qualifier kind for {@link I18nFormatFor} annotation. */
         private final QualifierKind I18NFORMATFOR_KIND;
+        /** Qualifier kind for {@link I18nInvalidFormat} annotation. */
         private final QualifierKind I18NINVALIDFORMAT_KIND;
 
+        /** Creates I18nFormatterQualifierHierarchy. */
         public I18nFormatterQualifierHierarchy() {
             super(I18nFormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
             this.I18NFORMAT_KIND = this.getQualifierKind(I18NFORMAT_NAME);

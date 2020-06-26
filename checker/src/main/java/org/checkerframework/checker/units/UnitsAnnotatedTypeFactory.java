@@ -535,9 +535,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** UnitsQualifierKindHierarchy */
     protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
         private final Map<QualifierKind, QualifierKind> directSuperType;
 
+        /**
+         * Creates UnitsQualifierKindHierarchy
+         *
+         * @param qualifierClasses
+         */
         public UnitsQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             super(qualifierClasses);

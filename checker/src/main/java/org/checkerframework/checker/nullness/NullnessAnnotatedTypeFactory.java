@@ -563,9 +563,13 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessQualifierHierarchy();
     }
 
+    /** NullnessQualifierHierarchy */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
+
+        /** Qualifier kind for {@link Nullable} annotation. */
         private final QualifierKind NULLABLE;
 
+        /** Creates NullnessQualifierHierarchy. */
         public NullnessQualifierHierarchy() {
             super();
             NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);

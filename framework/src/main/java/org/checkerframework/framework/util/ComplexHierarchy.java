@@ -229,12 +229,6 @@ public abstract class ComplexHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    @Deprecated
-    public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return null;
-    }
-
-    @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         QualifierKind subKind = getQualifierKind(subAnno);
         QualifierKind superKind = getQualifierKind(superAnno);

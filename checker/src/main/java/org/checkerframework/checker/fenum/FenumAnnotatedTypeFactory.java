@@ -26,9 +26,14 @@ import org.plumelib.reflection.Signatures;
 /** The type factory for the Fenum Checker. */
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    /** AnnotationMirror for {@link FenumUnqualified}. */
     protected AnnotationMirror FENUM_UNQUALIFIED;
-    protected AnnotationMirror FENUM_BOTTOM, FENUM_TOP;
+    /** AnnotationMirror for {@link FenumBottom}. */
+    protected AnnotationMirror FENUM_BOTTOM;
+    /** AnnotationMirror for {@link FenumTop}. */
+    protected AnnotationMirror FENUM_TOP;
 
+    /** Create a FenumAnnotatedTypeFactory. */
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -100,9 +105,18 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Fenum qualifier hierarchy */
     protected class FenumQualifierHierarchy extends ComplexHierarchy {
+
+        /** QualifierKind for {@link Fenum} qualifier. */
         private final QualifierKind FENUM_KIND;
 
+        /**
+         * Creates FenumQualifierHierarchy.
+         *
+         * @param qualifierClasses qualifier classes
+         * @param elements element utils
+         */
         public FenumQualifierHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);

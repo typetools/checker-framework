@@ -98,10 +98,16 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /** Qualifier hierarchy for the Formatter Checker. */
     class FormatterQualifierHierarchy extends ComplexHierarchy {
+
+        /** Qualifier kind for {@link Format} annotation. */
         private final QualifierKind FORMAT_KIND;
+
+        /** Qualifier kind for {@link InvalidFormat} annotation. */
         private final QualifierKind INVALIDFORMAT_KIND;
 
+        /** Creates a {@link FormatterQualifierHierarchy}. */
         public FormatterQualifierHierarchy() {
             super(FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
             FORMAT_KIND = getQualifierKind(FORMAT_NAME);

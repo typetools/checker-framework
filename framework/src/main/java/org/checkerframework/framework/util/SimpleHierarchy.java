@@ -162,12 +162,6 @@ public class SimpleHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    @Deprecated
-    public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return qualifiers;
-    }
-
-    @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         QualifierKind subKind = getQualifierKind(subAnno);
         QualifierKind superKind = getQualifierKind(superAnno);

@@ -205,9 +205,18 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
+    /** KeyForQualifierHierarchy */
     private final class KeyForQualifierHierarchy extends ComplexHierarchy {
+
+        /** Qualifier kind for {@link KeyFor} annotation. */
         private final QualifierKind KEYFOR_KIND;
 
+        /**
+         * Creates KeyForQualifierHierarchy.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
         public KeyForQualifierHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
