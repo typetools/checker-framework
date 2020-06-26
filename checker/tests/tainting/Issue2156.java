@@ -3,7 +3,8 @@
 
 // @skip-test until the bug is fixed
 
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 enum SampleEnum {
     @Untainted FIRST,

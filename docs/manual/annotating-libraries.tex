@@ -321,22 +321,9 @@ This section describes how to create an annotated library.
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK\@.  You can do so either as stub files or in a copy of the
-JDK source code.  This
-section describes the latter approach.
-It assumes that you have already followed the instructions for building the
-Checker Framework from source (Section~\ref{build-source}).
-(Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
-JDK annotations for an existing type system.)
-
-Edit files in repository \url{https://github.com/typetools/jdk}.  Add
-an \<@AnnotatedFor()> annotation to each file you annotate.
-
-Whenever you add a file, fully annotate it, as described in
-Section~\ref{library-tips}.
-
-If you are only annotating fields and method signatures (but not
-ensuring that method bodies type-check), then you don't need to suppress
-warnings, because the JDK is not type-checked.
+JDK source code, as described in Section~\ref{creating-a-checker-annotated-jdk}.
+Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
+JDK annotations for an existing type system.
 
 
 \sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}

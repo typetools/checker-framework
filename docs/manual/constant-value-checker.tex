@@ -9,15 +9,10 @@ There are two ways to run the Constant Value Checker.
 \begin{itemize}
 \item
 Typically, it is automatically run by another type checker.
-%% This is an implementation detail that does not belong in the user
-%% manual, because users don't have to do anything.
-% When using the Constant Value Checker as part of another checker, the
-% \code{statically-executable.astub} file in the Constant Value Checker directory must
-% be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line options to javac:
-\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub}
+\code{-processor org.checkerframework.common.value.ValueChecker}
 \end{itemize}
 
 
@@ -233,8 +228,6 @@ deterministic).
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler, because they are reflectively called at
 compile-time to perform the constant value analysis.
-% Standard library methods (such as those annotated as \<@StaticallyExecutable>
-% in file \<statically-executable.astub>) will already be on the classpath.
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
@@ -242,7 +235,6 @@ classpath. For example, the command-line arguments to the Checker Framework
 might include:
 \begin{Verbatim}
   -processor org.checkerframework.common.value.ValueChecker
-  -Astubs=statically-executable.astub
   -classpath $CLASSPATH:MY_PROJECT/build/
 \end{Verbatim}
 
