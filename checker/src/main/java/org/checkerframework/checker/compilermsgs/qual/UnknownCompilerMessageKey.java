@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the {@code String} type has an unknown compiler message key property.
+ * A {@code String} that might or might not be a compiler message key.
  *
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
  */
