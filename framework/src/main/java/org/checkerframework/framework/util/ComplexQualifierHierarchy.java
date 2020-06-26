@@ -75,15 +75,11 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
         this.qualifierMap = createQualifiers();
-    }
 
-    @Override
-    public boolean isValid() {
         for (AnnotationMirror top : tops) {
             // This throws an error if poly is a qualifier that has an element.
             getPolymorphicAnnotation(top);
         }
-        return true;
     }
 
     /**
@@ -114,6 +110,13 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return Collections.unmodifiableMap(quals);
     }
 
+    /**
+     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top.
+     *
+     * <p>Subclasses must override this if the top annotation has elements and provides not default.
+     *
+     * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top
+     */
     protected Map<QualifierKind, AnnotationMirror> createTops() {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
@@ -122,6 +125,14 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return topsMap;
     }
 
+    /**
+     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom.
+     *
+     * <p>Subclasses must override this if the bottom annotation has elements and provides not
+     * default.
+     *
+     * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom
+     */
     protected Map<QualifierKind, AnnotationMirror> createBottoms() {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
@@ -130,11 +141,23 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return bottomsMap;
     }
 
+    /**
+     * Returns the qualifier kind for the given annotation.
+     *
+     * @param anno annotation mirror
+     * @return the qualifier kind for the given annotation
+     */
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
         return getQualifierKind(name);
     }
 
+    /**
+     * Returns the qualifier kind for the annotation with the fully qualified name {@code name}.
+     *
+     * @param name fully qualified annotation name
+     * @return the qualifier kind for the annotation with {@code name}
+     */
     protected QualifierKind getQualifierKind(String name) {
         QualifierKind kind = qualifierKindHierarchy.getQualifierKindMap().get(name);
         if (kind == null) {
@@ -195,6 +218,16 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         return false;
     }
 
+    /**
+     * Returns whether or not {@code subAnno} is a subtype of {@code superAnno}. Both {@code
+     * subAnno} and {@code superAnno} are annotations with elements.
+     *
+     * @param subAnno possible subtype annotation; has elements
+     * @param subKind QualifierKind of{@code subAnno}
+     * @param superAnno possible super annotation; has elements
+     * @param superKind QualifierKind of{@code superAnno}
+     * @return whether or not {@code subAnno} is a subtype of {@code superAnno}
+     */
     protected abstract boolean isSubtype(
             AnnotationMirror subAnno,
             QualifierKind subKind,
