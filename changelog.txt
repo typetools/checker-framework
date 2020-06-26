@@ -34,6 +34,8 @@ Renamed meta-annotation SuppressWarningsKeys to SuppressWarningsPrefix.
 Renamed SourceChecker#getSuppressWarningsKeys(...) to getSuppressWarningsPrefixes.
 Renamed SubtypingChecker#getSuppressWarningsKeys to getSuppressWarningsPrefixes.
 
+Removed methods and classes marked deprecated in release 3.3.0 or earlier.
+
 ---------------------------------------------------------------------------
 
 Version 3.4.1, June 1, 2020
