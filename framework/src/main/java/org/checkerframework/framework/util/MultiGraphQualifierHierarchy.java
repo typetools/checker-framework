@@ -215,6 +215,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // System.out.println("MGH: " + this);
     }
 
+    @Override
+    public boolean isValid() {
+        return !typeQualifiers.isEmpty();
+    }
+
     /**
      * Method to finalize the qualifier hierarchy before it becomes unmodifiable. The parameters
      * pass all fields and allow modification.
@@ -364,13 +369,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    @Override
-    @Deprecated
-    public Set<? extends AnnotationMirror> getTypeQualifiers() {
-        return typeQualifiers;
-    }
-
-    // For caching results of lubs
+    /** For caching results of lubs * */
     private Map<AnnotationPair, AnnotationMirror> lubs = null;
 
     @Override
