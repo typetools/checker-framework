@@ -94,8 +94,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -1487,8 +1489,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
-
         addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+        applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1560,6 +1562,66 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param tree Tree whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
+        applyQualifierParameterDefaults(TreeUtils.elementFromTree(tree), type);
+    }
+
+    /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param elt Element whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(
+            @Nullable Element elt, AnnotatedTypeMirror type) {
+        if (elt == null) {
+            return;
+        }
+        switch (elt.getKind()) {
+            case CONSTRUCTOR:
+            case METHOD:
+            case FIELD:
+            case LOCAL_VARIABLE:
+            case PARAMETER:
+                break;
+            default:
+                return;
+        }
+
+        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        Set<AnnotationMirror> tops;
+        if (enclosingClass != null) {
+            tops = getQualifierParameterHierarchies(enclosingClass);
+        } else {
+            return;
+        }
+        if (tops.isEmpty()) {
+            return;
+        }
+        Set<AnnotationMirror> polyWithQualParam = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror top : tops) {
+            AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polyWithQualParam.add(poly);
+            }
+        }
+        new TypeAnnotator(this) {
+            @Override
+            public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
+                if (type.getUnderlyingType().asElement().equals(enclosingClass)) {
+                    type.addMissingAnnotations(polyWithQualParam);
+                }
+                return super.visitDeclared(type, aVoid);
+            }
+        }.visit(type);
+    }
+
+    /**
      * To add annotations to the type of method or constructor parameters, add a {@link
      * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
      * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
@@ -1571,6 +1633,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         addAnnotationsFromDefaultQualifierForUse(elt, type);
+        applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
@@ -1732,6 +1795,15 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
+    }
+
+    @Override
+    public void postAsMemberOf(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
+        super.postAsMemberOf(type, owner, element);
+        if (element.getKind() == ElementKind.FIELD) {
+            poly.resolve(((VariableElement) element), owner, type);
+        }
     }
 
     /**

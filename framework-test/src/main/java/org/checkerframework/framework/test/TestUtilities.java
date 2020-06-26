@@ -397,12 +397,19 @@ public class TestUtilities {
     /**
      * TODO: REDO COMMENT Compares the result of the compiler against an array of Strings.
      *
-     * <p>In a checker, we treat a more specific error message as subsumed by a general one. For
-     * example, "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the
-     * test framework; the exact error key is expected.
+     * <p>In a checker, a more specific error message is subsumed by a general one. For example,
+     * "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the test
+     * framework, which must use the exact error message key.
+     *
+     * @param testResult the result of type-checking
      */
     public static void assertResultsAreValid(TypecheckResult testResult) {
         if (testResult.didTestFail()) {
+            if (getShouldEmitDebugInfo()) {
+                System.out.println("---------------- start of javac ouput ----------------");
+                System.out.println(testResult.getCompilationResult().getJavacOutput());
+                System.out.println("---------------- end of javac ouput ----------------");
+            }
             Assert.fail(testResult.summarize());
         }
     }

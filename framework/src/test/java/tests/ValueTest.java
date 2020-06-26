@@ -22,7 +22,7 @@ public class ValueTest extends FrameworkPerDirectoryTest {
                 org.checkerframework.common.value.ValueChecker.class,
                 "value",
                 "-Anomsgtext",
-                "-Astubs=statically-executable.astub:tests/value/minints-stub.astub:tests/value/lowercase.astub",
+                "-Astubs=tests/value/minints-stub.astub:tests/value/lowercase.astub",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS);
     }
 
