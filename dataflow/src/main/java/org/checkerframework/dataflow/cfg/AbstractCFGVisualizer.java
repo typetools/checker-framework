@@ -271,7 +271,7 @@ public abstract class AbstractCFGVisualizer<
         boolean isTwoStores = false;
 
         StringBuilder sbStore = new StringBuilder();
-        sbStore.append("Before:");
+        sbStore.append("Before: ");
 
         Direction analysisDirection = analysis.getDirection();
 
@@ -296,7 +296,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.append("~~~~~~~~~").append(escapeString);
+        sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
         return sbStore.toString();
     }
 
@@ -323,7 +323,7 @@ public abstract class AbstractCFGVisualizer<
         boolean isTwoStores = false;
 
         StringBuilder sbStore = new StringBuilder();
-        sbStore.append("After:");
+        sbStore.append("After: ");
 
         Direction analysisDirection = analysis.getDirection();
 
@@ -348,7 +348,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.insert(0, "~~~~~~~~~" + escapeString);
+        sbStore.insert(0, escapeString + "~~~~~~~~~" + escapeString);
         return sbStore.toString();
     }
 
