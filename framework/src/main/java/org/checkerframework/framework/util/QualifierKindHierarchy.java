@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.UserError;
  * change this behavior:
  *
  * <ul>
- *   <li>{ @link #createQualifierKinds(Collection)}
+ *   <li>{@link #createQualifierKinds(Collection)}
  *   <li>{@link #createDirectSuperMap()}
  *   <li>{@link #specifyBottom(Map, Class)}
  *   <li>{@link #initializePolymorphicQualifiers()}
