@@ -23,7 +23,10 @@ public abstract class QualifierHierarchy {
      *
      * @return whether the instance is valid
      */
-    public abstract boolean isValid();
+    // TODO:  @Deprecated
+    public boolean isValid() {
+        return true;
+    }
 
     // **********************************************************************
     // Getter methods about this hierarchy
