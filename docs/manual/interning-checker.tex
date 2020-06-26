@@ -219,7 +219,7 @@ public InternedClass intern() {
   @Interned InternedClass that = this; // error
 
   if (!pool.contains(this)) {
-    @SuppressWarning("interning:assignment.type.incompatible")
+    @SuppressWarnings("interning:assignment.type.incompatible")
     @Interned InternedClass internedThis = this;
     pool.add(internedThis);
   }

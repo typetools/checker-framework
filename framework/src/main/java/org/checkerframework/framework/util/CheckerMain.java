@@ -623,7 +623,7 @@ public class CheckerMain {
         }
         String name = cls.getName();
         String classFileName;
-        /* name is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
+        /* name is something like pakkage.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
         {
             int idx = name.lastIndexOf('.');
             classFileName = (idx == -1 ? name : name.substring(idx + 1)) + ".class";
