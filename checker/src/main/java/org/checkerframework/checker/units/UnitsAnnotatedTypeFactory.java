@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -535,52 +536,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** UnitsQualifierKindHierarchy */
-    protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
-        private final Map<QualifierKind, QualifierKind> directSuperType;
-
-        /**
-         * Creates UnitsQualifierKindHierarchy
-         *
-         * @param qualifierClasses
-         */
-        public UnitsQualifierKindHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses) {
-            super(qualifierClasses);
-            directSuperType = initDirectTypeType();
-        }
-
-        private Map<QualifierKind, QualifierKind> initDirectTypeType() {
-            Map<QualifierKind, QualifierKind> directSuperType = new TreeMap<>();
-            for (QualifierKind qualifierKind : getQualifierKindMap().values()) {
-                directSuperType.put(qualifierKind, directSuperType(qualifierKind));
-            }
-            return directSuperType;
-        }
-
-        private QualifierKind directSuperType(QualifierKind qualifierKind) {
-            if (qualifierKind.isTop()) {
-                return qualifierKind;
-            }
-            Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getSuperTypes());
-            while (superQuals.size() > 0) {
-                Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
-                if (lowest.size() == 1) {
-                    return lowest.iterator().next();
-                }
-                superQuals.removeAll(lowest);
-            }
-            throw new BugInCF("No directSuperType found for %s", qualifierKind);
-        }
-
-        @Override
-        protected void specifyBottom(
-                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-                Class<? extends Annotation> b) {
-            super.specifyBottom(directSuperMap, UnitsBottom.class);
-        }
-    }
-
     /** Set the Bottom qualifier as the bottom of the hierarchy. */
     @Override
     public QualifierHierarchy createQualifierHierarchy() {
@@ -597,7 +552,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected QualifierKindHierarchy createQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
-            return new UnitsQualifierKindHierarchy(qualifierClasses);
+            return new UnitsQualifierKindHierarchy(qualifierClasses, elements);
         }
 
         @Override
@@ -623,10 +578,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
-                    QualifierKind lub =
-                            ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
-                                    .directSuperType.get(qual1);
-                    return AnnotationBuilder.fromName(elements, lub.getName());
+                    return ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
+                            .directSuperQualifierMap.get(qual1);
                 }
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", qual1, qual2);
@@ -639,6 +592,77 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a2,
                 QualifierKind qual2) {
             return UnitsAnnotatedTypeFactory.this.BOTTOM;
+        }
+    }
+
+    /** UnitsQualifierKindHierarchy */
+    protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
+
+        /**
+         * Mapping from QualifierKind to an AnnotationMirror that represents its direct super
+         * qualifier. Every qualifier kind maps to a nonnull AnnotationMirror.
+         */
+        private final Map<QualifierKind, AnnotationMirror> directSuperQualifierMap;
+        /**
+         * Creates UnitsQualifierKindHierarchy
+         *
+         * @param qualifierClasses
+         */
+        public UnitsQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses);
+            directSuperQualifierMap = createDirectSuperQualifierMap(elements);
+        }
+
+        /**
+         * Creates the direct super qualifier map.
+         *
+         * @param elements element utils
+         * @return the map
+         */
+        private Map<QualifierKind, AnnotationMirror> createDirectSuperQualifierMap(
+                Elements elements) {
+            Map<QualifierKind, AnnotationMirror> directSuperType = new TreeMap<>();
+            for (QualifierKind qualifierKind : getQualifierKindMap().values()) {
+                QualifierKind directSuperTypeKind = getDirectSuperQualifierKind(qualifierKind);
+                AnnotationMirror directSuperTypeAnno;
+                try {
+                    directSuperTypeAnno =
+                            AnnotationBuilder.fromName(elements, directSuperTypeKind.getName());
+                } catch (BugInCF ex) {
+                    throw new BugInCF("Unit annotations must have a default for all elements.");
+                }
+                directSuperType.put(qualifierKind, directSuperTypeAnno);
+            }
+            return directSuperType;
+        }
+
+        /**
+         * Get the direct super qualifier for the given qualifier kind.
+         *
+         * @param qualifierKind qualifier kind
+         * @return direct super qualifier kind
+         */
+        private QualifierKind getDirectSuperQualifierKind(QualifierKind qualifierKind) {
+            if (qualifierKind.isTop()) {
+                return qualifierKind;
+            }
+            Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getSuperTypes());
+            while (superQuals.size() > 0) {
+                Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
+                if (lowest.size() == 1) {
+                    return lowest.iterator().next();
+                }
+                superQuals.removeAll(lowest);
+            }
+            throw new BugInCF("No direct super qualifier found for %s", qualifierKind);
+        }
+
+        @Override
+        protected void specifyBottom(
+                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
+                Class<? extends Annotation> b) {
+            super.specifyBottom(directSuperMap, UnitsBottom.class);
         }
     }
 
