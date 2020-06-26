@@ -429,22 +429,6 @@ public class AnnotationUtils {
     }
 
     /**
-     * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
-     * ordering ignores annotation values when ordering.
-     *
-     * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
-     * Set} should not contain two annotations that only differ in values.
-     *
-     * @return an ordering over AnnotationMirrors based on their name
-     * @deprecated Use the method reference {@code AnnotationUtils::compareAnnotationMirrors}
-     *     instead
-     */
-    @Deprecated
-    public static Comparator<AnnotationMirror> annotationOrdering() {
-        return AnnotationUtils::compareAnnotationMirrors;
-    }
-
-    /**
      * Create a map suitable for storing {@link AnnotationMirror} as keys.
      *
      * <p>It can store one instance of {@link AnnotationMirror} of a given declared type, regardless
