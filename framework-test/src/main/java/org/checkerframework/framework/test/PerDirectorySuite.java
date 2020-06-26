@@ -109,7 +109,7 @@ public class PerDirectorySuite extends Suite {
         String methodName = method.getName();
         switch (methodName) {
             case "getTestDirs":
-                if (!(returnType.isArray() && returnType.getComponentType() != String.class)) {
+                if (!(returnType.isArray() && returnType.getComponentType() == String.class)) {
                     throw new RuntimeException(
                             "getTestDirs should return String[], found " + returnType);
                 }
