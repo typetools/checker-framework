@@ -81,7 +81,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      */
     protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
+        for (QualifierKind kind : qualifierKindHierarchy.getNameToQualifierKind().values()) {
             if (kind.hasElements()) {
                 throw new UserError(
                         "SimpleQualifierHierarchy cannot be used with annotations that have elements. Found %s: ",
@@ -114,7 +114,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
 
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
-        QualifierKind kind = qualifierKindHierarchy.getQualifierKindMap().get(name);
+        QualifierKind kind = qualifierKindHierarchy.getNameToQualifierKind().get(name);
         if (name == null) {
             throw new BugInCF("Annotation not in hierarchy: %s", anno);
         }
@@ -165,7 +165,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        QualifierKind poly = qualifierKindHierarchy.getPolyMap().get(kind);
+        QualifierKind poly = qualifierKindHierarchy.getTopToPoly().get(kind);
         if (poly == null) {
             return null;
         }

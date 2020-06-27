@@ -220,7 +220,7 @@ public class KeyForAnnotatedTypeFactory
         public KeyForQualifierHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
-            this.KEYFOR_KIND = qualifierKindHierarchy.getQualifierKindMap().get(KEYFOR_NAME);
+            this.KEYFOR_KIND = qualifierKindHierarchy.getNameToQualifierKind().get(KEYFOR_NAME);
         }
 
         private List<String> extractValues(AnnotationMirror anno) {

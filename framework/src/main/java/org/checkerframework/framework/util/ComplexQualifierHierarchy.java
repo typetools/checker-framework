@@ -102,7 +102,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      */
     protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.getQualifierKindMap().values()) {
+        for (QualifierKind kind : qualifierKindHierarchy.getNameToQualifierKind().values()) {
             if (!kind.hasElements()) {
                 quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
             }
@@ -159,7 +159,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * @return the qualifier kind for the annotation with {@code name}
      */
     protected QualifierKind getQualifierKind(String name) {
-        QualifierKind kind = qualifierKindHierarchy.getQualifierKindMap().get(name);
+        QualifierKind kind = qualifierKindHierarchy.getNameToQualifierKind().get(name);
         if (kind == null) {
             throw new BugInCF("QualifierKind not in hierarchy: %s", name);
         }
@@ -185,7 +185,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        QualifierKind poly = qualifierKindHierarchy.getPolyMap().get(kind);
+        QualifierKind poly = qualifierKindHierarchy.getTopToPoly().get(kind);
         if (poly == null) {
             return null;
         }
