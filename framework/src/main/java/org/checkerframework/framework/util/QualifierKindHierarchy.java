@@ -556,17 +556,18 @@ public class QualifierKindHierarchy {
         }
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             for (QualifierKind bot : bottoms) {
-                if (bot.top == qualifierKind.top) {
-                    if (qualifierKind.bottom == null) {
-                        qualifierKind.bottom = bot;
-                    } else if (qualifierKind.top != bot) {
-                        throw new UserError(
-                                "Multiple bottoms found for qualifier %s. Tops: %s and %s.",
-                                qualifierKind, bot, qualifierKind.bottom);
-                    }
-                    if (qualifierKind.isPoly) {
-                        bot.superTypes.add(qualifierKind);
-                    }
+                if (bot.top != qualifierKind.top) {
+                    continue;
+                }
+                if (qualifierKind.bottom == null) {
+                    qualifierKind.bottom = bot;
+                } else if (qualifierKind.top != bot) {
+                    throw new UserError(
+                            "Multiple bottoms found for qualifier %s. Tops: %s and %s.",
+                            qualifierKind, bot, qualifierKind.bottom);
+                }
+                if (qualifierKind.isPoly) {
+                    bot.superTypes.add(qualifierKind);
                 }
             }
         }
