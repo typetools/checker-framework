@@ -61,7 +61,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayDeque;
@@ -4915,14 +4914,15 @@ public class CFGBuilder {
             // Condition
             addLabelForNextNode(conditionStart);
             assert tree.getCondition() != null;
-            // Determine whether loop condition is a constant true, according to the compiler logic.
-            boolean isWhileTrue = CFGBuilder.isCondConstTrue((JCTree) tree.getCondition());
+            // Determine whether the loop condition has the constant value true, according to the
+            // compiler logic.
+            boolean isCondConstTrue = TreeUtils.isExprConstTrue(tree.getCondition());
 
             unbox(scan(tree.getCondition(), p));
 
-            if (!isWhileTrue) {
-                // If the loop condition is not constant true, the control flow is split into two
-                // branches.
+            if (!isCondConstTrue) {
+                // If the loop condition does not have the constant value true, the control flow is
+                // split into two branches.
                 ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
                 extendWithExtendedNode(cjump);
             }
@@ -4932,8 +4932,9 @@ public class CFGBuilder {
             assert tree.getStatement() != null;
             scan(tree.getStatement(), p);
 
-            if (isWhileTrue) {
-                // The condition is constant true so we can directly jump back to the loop entry.
+            if (isCondConstTrue) {
+                // The condition has the constant value true, so we can directly jump back to the
+                // loop entry.
                 extendWithExtendedNode(new UnconditionalJump(loopEntry));
             } else {
                 // Otherwise, jump back to evaluate the condition.
@@ -5000,35 +5001,6 @@ public class CFGBuilder {
         } else {
             throw new NullPointerException();
         }
-    }
-
-    /**
-     * Determine whether loop condition {@link JCTree} is a constant true, according to the compiler
-     * logic.
-     *
-     * @param cond the loop condition to be checked.
-     * @return true if {@code cond} is constant true.
-     */
-    protected static boolean isCondConstTrue(JCTree cond) {
-        if (cond.type.isTrue()) {
-            return true;
-        } else {
-            cond = com.sun.tools.javac.tree.TreeInfo.skipParens(cond);
-            if (cond instanceof JCTree.JCBinary) {
-                JCTree.JCBinary tree = (JCTree.JCBinary) cond;
-                JCTree ltree = tree.lhs;
-                JCTree rtree = tree.rhs;
-                switch (tree.getTag()) {
-                    case AND:
-                        return isCondConstTrue(ltree) && isCondConstTrue(rtree);
-                    case OR:
-                        return isCondConstTrue(ltree) || isCondConstTrue(rtree);
-                    default:
-                        break;
-                }
-            }
-        }
-        return false;
     }
 
     /* --------------------------------------------------------- */

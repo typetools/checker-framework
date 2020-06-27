@@ -52,4 +52,13 @@ public class Issue3249 {
         }
         field = local;
     }
+
+    Issue3249(boolean x) {
+        double local;
+        while (6 > 4) {
+            local = 1;
+            break;
+        }
+        field = local;
+    }
 }
