@@ -18,8 +18,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * This class holds information about the relationships between annotation classes, stored as {@link
- * QualifierKind}s.
+ * This class holds information about the subtyping relationships between qualifiers.
  *
  * <p>By default, the subtyping information and information about polymorphic qualifiers is read
  * from meta-annotations on the annotation classes. This information is used to infer further
@@ -44,24 +43,24 @@ import org.checkerframework.javacutil.UserError;
 public class QualifierKindHierarchy {
 
     /**
-     * A class that represent a particular class of annotation that is a qualifier. It holds
-     * information about the relationship between itself and other {@link QualifierKind}s.
+     * Represents a qualifier class. It holds information about the relationship between itself and
+     * other {@link QualifierKind}s.
      *
      * <p>Exactly one qualifier kind is created for each annotation class.
      */
     // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
 
-        /** The canonical name of the annotation class of this kind of qualifier. */
+        /** The canonical name of the annotation class of this. */
         private final @Interned String name;
 
-        /** The annotation class for this kind of qualifier. */
+        /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
 
-        /** Whether or not this kind of qualifier has elements. */
+        /** Whether or not this has elements. */
         private final boolean hasElements;
 
-        /** Whether or not this is a polymorphic kind of qualifier. */
+        /** Whether or not this ispolymorphic. */
         private boolean isPoly;
 
         /**
