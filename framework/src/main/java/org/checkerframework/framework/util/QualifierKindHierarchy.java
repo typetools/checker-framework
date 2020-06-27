@@ -69,26 +69,22 @@ public class QualifierKindHierarchy {
          */
         private Set<QualifierKind> superTypes;
 
-        /**
-         * The qualifier kind that is the top of the hierarchy to which this qualifier kind belongs.
-         */
+        /** The top of the hierarchy to which this belongs. */
         private QualifierKind top;
-        /**
-         * The qualifier kind that is the bottom of the hierarchy to which this qualifier kind
-         * belongs.
-         */
+        /** The bottom of the hierarchy to which this belongs. */
         private QualifierKind bottom;
 
         /**
-         * Creates a {@link QualifierKind} for the give annotation class.
+         * Creates a {@link QualifierKind} for the given annotation class.
          *
-         * @param clazz annotation class that this qualifier kind represents
+         * @param clazz annotation class for a qualifier
          */
         private QualifierKind(Class<? extends Annotation> clazz) {
             this.clazz = clazz;
             this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = clazz.getCanonicalName().intern();
-            // The non-final fields in this class are set by QualifierKindHierarchy.
+            // These non-final fields are set by QualifierKindHierarchy.
+            // Give them values here, because the Java compiler requires it.
             isPoly = false;
             superTypes = null;
             top = null;
@@ -96,45 +92,45 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Returns the canonical name of the annotation class of this kind of qualifier.
+         * Returns the canonical name of the annotation class of this.
          *
-         * @return the canonical name of the annotation class of this kind of qualifier
+         * @return the canonical name of the annotation class of this
          */
         public String getName() {
             return name;
         }
 
         /**
-         * Returns the annotation class for this kind of qualifier.
+         * Returns the annotation class for this.
          *
-         * @return the annotation class for this kind of qualifier
+         * @return the annotation class for this
          */
         public Class<? extends Annotation> getAnnotationClass() {
             return clazz;
         }
 
         /**
-         * Whether or not this is a polymorphic qualifier kind.
+         * Returns whether or not this is polymorphic.
          *
-         * @return true if this is a polymorphic qualifier kind
+         * @return true if this is polymorphic
          */
         public boolean isPoly() {
             return isPoly;
         }
 
         /**
-         * Whether or not this qualifier is the top qualifier of its hierarchy.
+         * Whether or not this is the top qualifier of its hierarchy.
          *
-         * @return true if this qualifier kind is the top qualifier of its hierarchy
+         * @return true if this is the top qualifier of its hierarchy
          */
         public boolean isTop() {
             return this.top == this;
         }
 
         /**
-         * Whether or not this qualifier is the bottom qualifier of its hierarchy.
+         * Whether or not this is the bottom qualifier of its hierarchy.
          *
-         * @return true if this qualifier kind is the bottom qualifier of its hierarchy
+         * @return true if this is the bottom qualifier of its hierarchy
          */
         public boolean isBottom() {
             return this.bottom == this;
@@ -179,10 +175,10 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this qualifier kind and {@code other} are in the same hierarchy.
+         * Whether or not this and {@code other} are in the same hierarchy.
          *
-         * @param other an other qualifier kind
-         * @return true if this qualifier kind and {@code other} are in the same hierarchy
+         * @param other a qualifier kind
+         * @return true if this and {@code other} are in the same hierarchy
          */
         public boolean areInSameHierarchy(QualifierKind other) {
             return this.top == other.top;
@@ -192,7 +188,7 @@ public class QualifierKindHierarchy {
          * Whether or not this qualifier is a subtype of {@code superQual}.
          *
          * @param superQual other qualifier
-         * @return true if this qualifier is a subtype of {@code superQual}.
+         * @return true if this qualifier is a subtype of {@code superQual}
          */
         public boolean isSubtype(QualifierKind superQual) {
             return this == superQual || superTypes.contains(superQual);
