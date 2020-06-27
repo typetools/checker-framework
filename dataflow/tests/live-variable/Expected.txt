@@ -12,9 +12,6 @@ Before:   live variables = none
 ~~~~~~~~~
 <entry>
 
-~~~~~~~~~
-After:   live variables = none
-
 
 3:
 Process order: 2
@@ -43,9 +40,6 @@ Before:   live variables = a, b, c
 
 ~~~~~~~~~
 ConditionalBlock: then: 8, else: 10
-~~~~~~~~~
-After:   live variables = a, b, c
-
 
 8:
 Process order: 4
@@ -81,6 +75,3 @@ Before:   live variables = none
 
 ~~~~~~~~~
 <exit>
-
-~~~~~~~~~
-After:   live variables = none
