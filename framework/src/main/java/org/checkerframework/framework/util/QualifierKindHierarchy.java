@@ -233,8 +233,7 @@ public class QualifierKindHierarchy {
     private final Map<QualifierKindPair, QualifierKind> glbs;
 
     /**
-     * Creates a {@link QualifierKindHierarchy}. Also, creates and initializes all the qualifier
-     * kinds for the hierarchy.
+     * Creates a {@link QualifierKindHierarchy}. Also, creates and initializes all its qualifiers.
      *
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      */
@@ -295,9 +294,9 @@ public class QualifierKindHierarchy {
     /**
      * Verifies that the {@link QualifierKindHierarchy} is a valid hierarchy.
      *
-     * @param directSuperMap mapping from qualifier kind to its direct super types; used to verify
-     *     that a polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
-     * @throws UserError if the heirarchy isn't valid
+     * @param directSuperMap mapping from qualifier to its direct supertypes; used to verify that a
+     *     polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
+     * @throws UserError if the hierarchy isn't valid
      */
     protected void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -318,15 +317,17 @@ public class QualifierKindHierarchy {
                                 + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
                         qualifierKind);
             } else if (isPoly) {
-                if (qualifierKind.top == null && tops.size() == 1) {
-                    qualifierKind.top = tops.iterator().next();
-                } else if (qualifierKind.top == null) {
-                    throw new UserError(
-                            "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
-                            qualifierKind, SystemUtil.join(", ", tops));
+                if (qualifierKind.top == null) {
+                    if (tops.size() == 1) {
+                        qualifierKind.top = tops.iterator().next();
+                    } else {
+                        throw new UserError(
+                                "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
+                                qualifierKind, SystemUtil.join(", ", tops));
+                    }
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new UserError(
-                            "Polymorphic qualifier, %s, specified %s, instead of a top qualifier in a hierarchy. Top qualifiers: %s",
+                            "Polymorphic qualifier %s has invalid top %s. Top qualifiers: %s",
                             qualifierKind, qualifierKind.top, SystemUtil.join(", ", tops));
                 }
             }
@@ -341,10 +342,10 @@ public class QualifierKindHierarchy {
 
     /**
      * Creates all QualifierKind objects for the given {@code qualifierClasses} and adds them to
-     * qualifierClassMap. (This method does not initialize all fields in the {@link QualifierKind}
-     * that is done by {@link #initializeQualifierKindFields(Map)}.)
+     * qualifierClassMap. This method does not initialize all fields in the {@link QualifierKind};
+     * that is done by {@link #initializeQualifierKindFields(Map)}.
      *
-     * @param qualifierClasses a collection of classes of annotations that are type qualifiers
+     * @param qualifierClasses classes of annotations that are type qualifiers
      * @return a mapping from annotation name to {@link QualifierKind}
      */
     protected Map<@Interned String, QualifierKind> createQualifierKinds(
