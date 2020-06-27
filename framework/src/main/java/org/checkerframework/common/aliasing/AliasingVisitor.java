@@ -279,7 +279,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     /**
-     * Returns true if class of tree expression {@code type} has type {@code @Unique}
+     * Returns true if class of annotated type {@code type} has annotation {@code @Unique}
      *
      * @param type the annotated type whose class must be checked
      * @return boolean true if class if unique and false otherwise
