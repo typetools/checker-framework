@@ -352,9 +352,7 @@ public class QualifierKindHierarchy {
             Collection<Class<? extends Annotation>> qualifierClasses) {
         Map<@Interned String, QualifierKind> nameToQualifierKind = new TreeMap<>();
         for (Class<? extends Annotation> clazz : qualifierClasses) {
-            // If another QualifierKind exists with the same class, an exception will be thrown
-            // below.
-            @SuppressWarnings("interning")
+            @SuppressWarnings("interning") // uniqueness is tested immediately below
             @Interned QualifierKind qualifierKind = new QualifierKind(clazz);
             if (nameToQualifierKind.containsKey(qualifierKind.name)) {
                 throw new UserError("");
@@ -367,7 +365,7 @@ public class QualifierKindHierarchy {
     /**
      * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifiers using
      * the {@link SubtypeOf} meta-annotation. The direct super qualifiers must not contain the
-     * qualifier itself. This mapping is used to by {@link #createBottomsSet(Map)}, {@link
+     * qualifier itself. This mapping is used by {@link #createBottomsSet(Map)}, {@link
      * #createTopsSet(Map)}, and {@link #initializeQualifierKindFields(Map)}.
      *
      * <p>Subclasses may override this method to create the direct super map some other way.
@@ -384,10 +382,9 @@ public class QualifierKindHierarchy {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             SubtypeOf subtypeOfMetaAnno = qualifierKind.clazz.getAnnotation(SubtypeOf.class);
             if (subtypeOfMetaAnno != null) {
-                Class<? extends Annotation>[] superQualifiers = subtypeOfMetaAnno.value();
                 Set<QualifierKind> directSupers = new TreeSet<>();
                 directSuperMap.put(qualifierKind, directSupers);
-                for (Class<? extends Annotation> superClazz : superQualifiers) {
+                for (Class<? extends Annotation> superClazz : subtypeOfMetaAnno.value()) {
                     String superName = superClazz.getCanonicalName();
                     QualifierKind superQualifier = nameToQualifierKind.get(superName);
                     if (superQualifier == null) {
@@ -407,16 +404,16 @@ public class QualifierKindHierarchy {
     /**
      * Explicitly set bottom to the given class.
      *
-     * <p>For some type systems, qualifiers may be added at runtime, so the {@link SubtypeOf}
+     * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
      * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
      * type systems, override this method and call super with the bottom class. For example,
      *
      * <pre>
-     * @Override
-     * protected void specifyBottom(Map<QualifierKind, Set<QualifierKind>> directSuperMap, Class<? extends Annotation> bottom) {
-     *     super.specifyBottom(directSuperMap, UnitsBottom.class);
-     * }
-     * </pre>
+     * {@code @Override
+     *  protected void specifyBottom(Map<QualifierKind, Set<QualifierKind>> directSuperMap, Class<? extends Annotation> bottom) {
+     *      super.specifyBottom(directSuperMap, UnitsBottom.class);
+     *  }
+     * }</pre>
      *
      * If this method is not overridden, it has no effect.
      *
