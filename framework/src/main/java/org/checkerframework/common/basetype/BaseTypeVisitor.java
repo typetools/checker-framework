@@ -2106,7 +2106,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param castType an invariant type
      * @param exprType type of the expressions that is cast which may or may not be invariant
      * @param top the top qualifier of the hierarchy to check
-     * @return whether or not casting the exprType to castType is legal.
+     * @return whether or not casting the exprType to castType is legal
      */
     private boolean isInvariantTypeCastSafe(
             AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType, AnnotationMirror top) {
@@ -2632,7 +2632,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param atms annotated type mirrors to compare
      * @return true iff there are two annotated types (anywhere in any ATM) such that their
-     *     toStrings are the same but their verbose toStrings differ.
+     *     toStrings are the same but their verbose toStrings differ
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         Map<String, String> simpleToVerbose = new HashMap<>();

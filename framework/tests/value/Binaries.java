@@ -27,7 +27,9 @@ class Binaries {
             else if ('0' <= c && c <= '9') {
                 v = v * 10 + (c - '0');
                 decexp += seendot;
-            } else break;
+            } else {
+                break;
+            }
         }
     }
 
