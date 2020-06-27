@@ -21,16 +21,14 @@ import java.lang.annotation.Target;
  * classname is the checker name.)
  *
  * @checker_framework.manual #suppresswarnings-annotation-syntax
- * @deprecated Use {@link SuppressWarningsPrefix} instead.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-@Deprecated // use {@link SuppressWarningsPrefix} instead
 // In the manual section #suppresswarnings-annotation-syntax, the term checkername is used instead
 // of prefix.
-public @interface SuppressWarningsKeys {
+public @interface SuppressWarningsPrefix {
 
     /**
      * Returns array of strings, any one of which causes this checker to suppress a warning when

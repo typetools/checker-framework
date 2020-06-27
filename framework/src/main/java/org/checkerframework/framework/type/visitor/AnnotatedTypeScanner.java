@@ -19,8 +19,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
  * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
  * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
- * regardless of the kind of type. The function returns some value with type {@link R} and takes an
- * argument of type {@link P}. If the function does not return any value, then {@code R} should be
+ * regardless of the kind of type. The function returns some value with type {@code R} and takes an
+ * argument of type {@code P}. If the function does not return any value, then {@code R} should be
  * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.
  *
  * <p>The default implementation of the visitAnnotatedTypeMirror methods will determine a result as
@@ -66,11 +66,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * Below is an example of how to use {@code CountTypeVariable}
  *
- * <pre><code>
+ * <pre>{@code
  * void method(AnnotatedTypeMirror type) {
  *     int count = new CountTypeVariable().visit(type);
  * }
- * </code></pre>
+ * }</pre>
  *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
@@ -110,7 +110,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      *
      * @param reduceFunction function used to combine two results
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
         if (reduceFunction == null) {
@@ -137,7 +137,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * is nonnull; otherwise the second result is returned.
      *
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(R defaultResult) {
         this(null, defaultResult);
