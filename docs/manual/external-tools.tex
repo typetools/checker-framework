@@ -377,6 +377,8 @@ line.  You can use any
 one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
+Adjust the pathnames if you have installed the Checker Framework somewhere
+other than \<\${HOME}/checker-framework-3.4.1/>.
 
 
 \begin{itemize}
@@ -393,8 +395,9 @@ use the last one.
   export CHECKERFRAMEWORK=${HOME}/checker-framework-3.4.1
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
-    then log out and back in to ensure that the environment variable
-    setting takes effect.
+
+   After editing the file, log out and back in to ensure that the environment variable
+   setting takes effect.
 
   \item
     \begin{sloppypar}
@@ -406,12 +409,16 @@ use the last one.
     You can simplify this by introducing an alias \<javacheck>.  Then,
     whenever this document tells you to run \code{javac}, instead run
     \<javacheck>.  Here is the syntax for your
-    \verb|~/.bashrc| file:
+    \verb|~/.bashrc|, \verb|~/.profile|, or \verb|~/.bash_profile|
+    file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
   export CHECKERFRAMEWORK=${HOME}/checker-framework-3.4.1
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
+
+   After editing the file, log out and back in to ensure that the environment variable
+   setting and alias take effect.
 
    \item
    Option 3:
