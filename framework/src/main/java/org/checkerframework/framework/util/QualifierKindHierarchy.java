@@ -448,7 +448,7 @@ public class QualifierKindHierarchy {
         Set<QualifierKind> tops = new TreeSet<>();
         for (Map.Entry<QualifierKind, Set<QualifierKind>> entry : directSuperMap.entrySet()) {
             QualifierKind qualifierKind = entry.getKey();
-            if (entry.getValue().size() == 0) {
+            if (entry.getValue().isEmpty()) {
                 tops.add(qualifierKind);
                 qualifierKind.top = qualifierKind;
             }
@@ -457,7 +457,7 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates the set of bottom {@link QualifierKind}s by search {@code directSuperMap} for
+     * Creates the set of bottom {@link QualifierKind}s by searching {@code directSuperMap} for
      * qualifiers that are not a direct super qualifier of another qualifier.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
@@ -493,10 +493,10 @@ public class QualifierKindHierarchy {
         Map<QualifierKind, QualifierKind> topToPoly = new TreeMap<>();
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             Class<? extends Annotation> clazz = qualifierKind.getAnnotationClass();
-            PolymorphicQualifier polyMetAnno = clazz.getAnnotation(PolymorphicQualifier.class);
-            if (polyMetAnno != null) {
+            PolymorphicQualifier polyMetaAnno = clazz.getAnnotation(PolymorphicQualifier.class);
+            if (polyMetaAnno != null) {
                 qualifierKind.isPoly = true;
-                String topName = polyMetAnno.value().getCanonicalName();
+                String topName = polyMetaAnno.value().getCanonicalName();
                 if (nameToQualifierKind.containsKey(topName)) {
                     qualifierKind.top = nameToQualifierKind.get(topName);
                 } else if (topName.equals(PolymorphicQualifier.class.getCanonicalName())) {
@@ -504,12 +504,12 @@ public class QualifierKindHierarchy {
                         qualifierKind.top = tops.iterator().next();
                     } else {
                         throw new UserError(
-                                "The polymorphic qualifier, %s, did not specify a top annotation class. Tops: [%s]",
+                                "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
                                 qualifierKind, SystemUtil.join(", ", tops));
                     }
                 } else {
                     throw new UserError(
-                            "The polymorphic qualifier, %s, specified a top annotation class that is not a supported qualifier. Found: %s.",
+                            "polymorphic qualifier %s's top $s is not a supported qualifier. Found: %s.",
                             qualifierKind, topName);
                 }
                 topToPoly.put(qualifierKind.top, qualifierKind);
