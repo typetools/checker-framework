@@ -66,11 +66,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * Below is an example of how to use {@code CountTypeVariable}
  *
- * <pre><code>
+ * <pre>{@code
  * void method(AnnotatedTypeMirror type) {
  *     int count = new CountTypeVariable().visit(type);
  * }
- * </code></pre>
+ * }</pre>
  *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
@@ -110,7 +110,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      *
      * @param reduceFunction function used to combine two results
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
         if (reduceFunction == null) {
@@ -137,7 +137,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * is nonnull; otherwise the second result is returned.
      *
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(R defaultResult) {
         this(null, defaultResult);

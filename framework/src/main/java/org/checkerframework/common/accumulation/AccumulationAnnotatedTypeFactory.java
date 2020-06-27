@@ -120,7 +120,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     /**
      * Creates a new instance of the accumulator annotation that contains exactly one value.
      *
-     * @param value the argument to the annotation.
+     * @param value the argument to the annotation
      * @return an annotation mirror representing the accumulator annotation with {@code value} as
      *     its argument
      */
@@ -252,7 +252,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         /**
-         * Create the qualifier hierarchy
+         * Create the qualifier hierarchy.
          *
          * @param factory the factory
          */
