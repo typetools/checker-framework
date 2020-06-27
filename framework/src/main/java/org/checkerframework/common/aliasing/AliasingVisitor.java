@@ -1,7 +1,13 @@
 package org.checkerframework.common.aliasing;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -257,7 +264,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     /**
      * Returns true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
-     * class expression.
+     * class expression. It checks whether the tree expression is unique by either checking for an
+     * explicit annotation or checking whether the class of the tree expression {@code exp} has type
+     * {@code @Unique}
      *
      * @param exp the Tree to check
      */
@@ -265,35 +274,27 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        boolean isUniqueClassFlag = isUniqueClass(exp);
-        if (isUniqueClassFlag) {
-            return type.hasAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
-        } else {
-            return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation && !isNewClass;
-        }
+        boolean isUniqueType = (isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class));
+        return isUniqueType && !isMethodInvocation && !isNewClass;
     }
 
     /**
-     * Returns true if class of tree expression {@code exp} has type {@code @Unique}
+     * Returns true if class of tree expression {@code type} has type {@code @Unique}
      *
-     * @param exp the Tree to check
+     * @param type the annotated type whose class must be checked
      * @return boolean true if class if unique and false otherwise
      */
-    private boolean isUniqueClass(Tree exp) {
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
+    private boolean isUniqueClass(AnnotatedTypeMirror type) {
         Element el = types.asElement(type.getUnderlyingType());
-        if (el != null) {
-            Set<AnnotationMirror> annoMirrors = atypeFactory.getDeclAnnotations(el);
-            if (annoMirrors != null) {
-                for (AnnotationMirror mirror : annoMirrors) {
-                    if (mirror.getAnnotationType()
-                            .asElement()
-                            .getSimpleName()
-                            .contentEquals("Unique")) {
-                        return true;
-                    }
-                }
-            }
+        if (el == null) {
+            return false;
+        }
+        Set<AnnotationMirror> annoMirrors = atypeFactory.getDeclAnnotations(el);
+        if (annoMirrors == null) {
+            return false;
+        }
+        if (AnnotationUtils.containsSameByClass(annoMirrors, Unique.class)) {
+            return true;
         }
         return false;
     }
