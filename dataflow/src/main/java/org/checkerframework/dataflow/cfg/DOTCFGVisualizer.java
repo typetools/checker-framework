@@ -133,7 +133,16 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "\\n");
+        switch (sbb.getSpecialType()) {
+            case ENTRY:
+                return "<entry>" + "\\n";
+            case EXIT:
+                return "<exit>" + "\\n";
+            case EXCEPTIONAL_EXIT:
+                return "<exceptional-exit>" + "\\n";
+            default:
+                throw new Error("Unrecognized special block type: " + sbb.getType());
+        }
     }
 
     @Override

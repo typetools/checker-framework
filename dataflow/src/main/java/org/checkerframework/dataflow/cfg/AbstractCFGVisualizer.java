@@ -316,26 +316,6 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Visualize a special block.
-     *
-     * @param sbb the special block
-     * @param separator the separator String to put at the end of the result
-     * @return the String representation of the special block, followed by the separator
-     */
-    protected String visualizeSpecialBlockHelper(SpecialBlock sbb, String separator) {
-        switch (sbb.getSpecialType()) {
-            case ENTRY:
-                return "<entry>" + separator;
-            case EXIT:
-                return "<exit>" + separator;
-            case EXCEPTIONAL_EXIT:
-                return "<exceptional-exit>" + separator;
-            default:
-                throw new Error("Unrecognized special block type: " + sbb.getType());
-        }
-    }
-
-    /**
      * Returns the last node of a block, or null if none.
      *
      * @param bb the block

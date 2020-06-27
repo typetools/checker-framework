@@ -16,6 +16,7 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
@@ -25,7 +26,7 @@ public class StringCFGVisualizer<
     @Override
     public Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
-        String stringGraph = visualizeGraph(cfg, entry, analysis).trim();
+        String stringGraph = visualizeGraph(cfg, entry, analysis);
         Map<String, Object> res = new HashMap<>();
         res.put("stringGraph", stringGraph);
         return res;
@@ -64,7 +65,16 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, lineSeparator);
+        switch (sbb.getSpecialType()) {
+            case ENTRY:
+                return "<entry>" + lineSeparator;
+            case EXIT:
+                return "<exit>";
+            case EXCEPTIONAL_EXIT:
+                return "<exceptional-exit>";
+            default:
+                throw new BugInCF("Unrecognized special block type: " + sbb.getType());
+        }
     }
 
     @Override
