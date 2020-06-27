@@ -240,6 +240,7 @@ Here is a good way to proceed.
 
 \begin{enumerate}
 \item
+\label{creating-tips-write-manual}
   Write the user manual.  Do this before you start coding.  The manual
   explains the type system, what it guarantees, how to use it, etc., from
   the point of view of a user.  Writing the manual will help you flesh out
@@ -260,6 +261,7 @@ Here is a good way to proceed.
   your design.
 
 \item
+\label{creating-tips-implement-qualifiers}
   Implement the type qualifiers and hierarchy
   (Section~\ref{creating-typequals}).
 
@@ -282,6 +284,7 @@ Here is a good way to proceed.
   (\chapterpageref{subtyping-checker}).
 
 \item
+\label{creating-tips-implement-checker}
   Write the checker class itself
   (Section~\ref{creating-compiler-interface}).
 
@@ -294,6 +297,7 @@ Here is a good way to proceed.
 \end{Verbatim}
 
 \item
+\label{creating-tips-test-infrastructure}
   Test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
@@ -1676,13 +1680,39 @@ uses the JDK\@.  You have two options:
 \item
   Write JDK annotations in a fork of
   \url{https://github.com/typetools/jdk}.
+
+  If your checker is written in a fork of
+  \url{https://github.com/typetools/jdk},
+  then use the same fork name (GitHub organization) and branch name;
+  this is necessary so that the CI jobs use the right annotated JDK.
+
+  Clone the JDK and the Checker Framework in the same place; that is, your
+  working copy of the JDK (a \<jdk> directory) should be a sibling of your
+  working copy of the Checker Framework (a \<checker-framework> directory).
+
+  Here are some tips:
+  \begin{itemize}
+  \item
+    Add
+    an \refqualclass{framework/qual}{AnnotatedFor} annotation to each file you annotate.
+  \item
+    Whenever you add a file, fully annotate it, as described in
+    Section~\ref{library-tips}.
+  \item
+    If you are only annotating fields and method signatures (but not
+    ensuring that method bodies type-check), then you don't need to suppress
+    warnings, because the JDK is not type-checked.
+  \end{itemize}
+
 \item
   Write JDK annotations as stub files (partial Java source files).
+
   Create a file \<jdk.astub> in
 the checker's main source directory.  You can also create \<jdk\emph{N}.astub> files that contain methods
 or classes that only exist in certain JDK versions.
-It will be automatically used by the
+The JDK stub files will be automatically used by the
 checker, unless the user supplies the command-line option \<-Aignorejdkastub>.
+
 You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
@@ -1708,7 +1738,7 @@ class MyNullnessTest {
 
 \noindent
 When the Nullness Checker is run on the above code, it should produce
-exactly one error, whose suppression key is \<dereference.of.nullable>, on
+exactly one error, whose message key is \<dereference.of.nullable>, on
 the line following the ``// ::'' comment.
 
 % Don't repeat the information here, to prevent them from getting out of sync.

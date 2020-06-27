@@ -40,18 +40,18 @@ if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
 
-# Implementation notes:
-# These are the two types of matching lines:
-# Matching lines:
-#  * "KEY"  (for @SuppressWarnings, but don't match "@SuppressWarnings"
-#    because that might be on the previous line)
-#  * @AssumeAssertion(key)
-
 echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
+
+# These are the two types of matching lines:
+#  * "checkername" or "chekername:..."
+#    This matches occurrences within @SuppressWarnings.  The regex does not
+#    include "@SuppressWarnings" because it might appear on the previous line.
+#  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > "${greplines}"
+
 ## Don't output a total, to avoid people using this approximate count.
 # echo -n "Total: "
 # cat ${greplines} | wc -l

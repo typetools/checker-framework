@@ -1,8 +1,5 @@
 package tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -14,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import testlib.util.AnnoWithStringArg;
@@ -49,7 +47,7 @@ public class AnnotationBuilderTest {
     public void createAnnoWithoutValues1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         AnnotationMirror anno = builder.build();
-        assertEquals(0, anno.getElementValues().size());
+        Assert.assertEquals(0, anno.getElementValues().size());
     }
 
     @Test
@@ -57,7 +55,7 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", "m");
         AnnotationMirror anno = builder.build();
-        assertEquals(1, anno.getElementValues().size());
+        Assert.assertEquals(1, anno.getElementValues().size());
     }
 
     @Test(expected = BugInCF.class)
@@ -100,28 +98,28 @@ public class AnnotationBuilderTest {
     public void listArrayPrimitive() {
         AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
         builder.setValue("numbers", new Integer[] {34, 32, 43});
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test
     public void listArrayObject() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", new String[] {"m", "n"});
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test(expected = BugInCF.class)
     public void listArrayObjectWrongType() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", new Object[] {"m", "n", 1});
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test(expected = BugInCF.class)
     public void listArrayObjectWrongType1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", 1);
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     public static @interface Prim {
@@ -132,14 +130,14 @@ public class AnnotationBuilderTest {
     public void primitiveValue() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Prim.class);
         builder.setValue("a", 3);
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test(expected = BugInCF.class)
     public void primitiveValueWithException() {
         AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
         builder.setValue("a", 3.0);
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     // Multiple values
@@ -153,14 +151,14 @@ public class AnnotationBuilderTest {
     public void multiple1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Mult.class);
         builder.setValue("a", 2);
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test(expected = BugInCF.class)
     public void multiple2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Mult.class);
         builder.setValue("a", "m");
-        assertEquals(1, builder.build().getElementValues().size());
+        Assert.assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test
@@ -168,7 +166,7 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Mult.class);
         builder.setValue("a", 1);
         builder.setValue("b", "mark");
-        assertEquals(2, builder.build().getElementValues().size());
+        Assert.assertEquals(2, builder.build().getElementValues().size());
     }
 
     public static @interface ClassElt {
@@ -184,7 +182,8 @@ public class AnnotationBuilderTest {
         builder.setValue("value", void.class);
         Object storedValue =
                 builder.build().getElementValues().values().iterator().next().getValue();
-        assertTrue("storedValue is " + storedValue.getClass(), storedValue instanceof TypeMirror);
+        Assert.assertTrue(
+                "storedValue is " + storedValue.getClass(), storedValue instanceof TypeMirror);
     }
 
     @Test(expected = BugInCF.class)
@@ -253,21 +252,23 @@ public class AnnotationBuilderTest {
     @Test
     public void testToString1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
-        assertEquals("@tests.AnnotationBuilderTest.Anno", builder.build().toString());
+        Assert.assertEquals("@tests.AnnotationBuilderTest.Anno", builder.build().toString());
     }
 
     @Test
     public void testToString2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("value", "string");
-        assertEquals("@tests.AnnotationBuilderTest.Anno(\"string\")", builder.build().toString());
+        Assert.assertEquals(
+                "@tests.AnnotationBuilderTest.Anno(\"string\")", builder.build().toString());
     }
 
     @Test
     public void testToString3() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("can", new Object[] {1});
-        assertEquals("@tests.AnnotationBuilderTest.Anno(can={1})", builder.build().toString());
+        Assert.assertEquals(
+                "@tests.AnnotationBuilderTest.Anno(can={1})", builder.build().toString());
     }
 
     @Test
@@ -275,7 +276,7 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("value", "m");
         builder.setValue("can", new Object[] {1});
-        assertEquals(
+        Assert.assertEquals(
                 "@tests.AnnotationBuilderTest.Anno(value=\"m\", can={1})",
                 builder.build().toString());
     }
@@ -285,7 +286,7 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("can", new Object[] {1});
         builder.setValue("value", "m");
-        assertEquals(
+        Assert.assertEquals(
                 "@tests.AnnotationBuilderTest.Anno(can={1}, value=\"m\")",
                 builder.build().toString());
     }
@@ -301,7 +302,7 @@ public class AnnotationBuilderTest {
         AnnotationMirror anno = AnnotationBuilder.fromClass(env.getElementUtils(), MyAnno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
-        assertEquals(
+        Assert.assertEquals(
                 "@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)",
                 builder.build().toString());
     }

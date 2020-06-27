@@ -43,12 +43,12 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         };
     }
 
-    /** I18nFormatterLubGlbAnnotatedTypeFactory */
+    /** I18nFormatterLubGlbAnnotatedTypeFactory. */
     private static class I18nFormatterLubGlbAnnotatedTypeFactory
             extends I18nFormatterAnnotatedTypeFactory {
 
         /**
-         * Constructor
+         * Constructor.
          *
          * @param checker checker
          */
