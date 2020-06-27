@@ -600,7 +600,7 @@ public class QualifierKindHierarchy {
      * Creates a mapping from {@link QualifierKindPair} to the least upper bound of both
      * QualifierKinds.
      *
-     * @return a mapping from {@link QualifierKindPair} to their lub.
+     * @return a mapping from {@link QualifierKindPair} to their lub
      */
     protected Map<QualifierKindPair, QualifierKind> createLubsMap() {
         Map<QualifierKindPair, QualifierKind> lubs = new TreeMap<>();
@@ -629,8 +629,8 @@ public class QualifierKindHierarchy {
     /**
      * Returns the least upper bound of {@code qual1} and {@code qual2}.
      *
-     * @param qual1 a qualifier kind
-     * @param qual2 a qualifier kind
+     * @param qual1 a qualifier
+     * @param qual2 a qualifier
      * @return the least upper bound of {@code qual1} and {@code qual2}
      */
     private QualifierKind findLub(QualifierKind qual1, QualifierKind qual2) {
@@ -659,7 +659,7 @@ public class QualifierKindHierarchy {
     /**
      * Returns the lowest qualifiers in the passed set.
      *
-     * @param qualifierKinds the passed set
+     * @param qualifierKinds a set of qualifiers
      * @return the lowest qualifiers in the passed set
      */
     protected final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
@@ -674,7 +674,7 @@ public class QualifierKindHierarchy {
      * Creates a mapping from {@link QualifierKindPair} to the greatest lower bound of both
      * QualifierKinds.
      *
-     * @return a mapping from {@link QualifierKindPair} to their glb.
+     * @return a mapping from {@link QualifierKindPair} to their glb
      */
     private Map<QualifierKindPair, QualifierKind> createGlbsMap() {
         Map<QualifierKindPair, QualifierKind> glbs = new TreeMap<>();
@@ -703,8 +703,8 @@ public class QualifierKindHierarchy {
     /**
      * Returns the greatest lower bound of {@code qual1} and {@code qual2}.
      *
-     * @param qual1 a qualifier kind
-     * @param qual2 a qualifier kind
+     * @param qual1 a qualifier
+     * @param qual2 a qualifier
      * @return the greatest lower bound of {@code qual1} and {@code qual2}
      */
     private QualifierKind findGlb(QualifierKind qual1, QualifierKind qual2) {
@@ -737,7 +737,7 @@ public class QualifierKindHierarchy {
     /**
      * Returns the highest qualifiers in the passed set.
      *
-     * @param qualifierKinds the passed set
+     * @param qualifierKinds a set of qualifiers
      * @return the highest qualifiers in the passed set
      */
     protected final Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
@@ -824,8 +824,8 @@ public class QualifierKindHierarchy {
         /**
          * Create a pair.
          *
-         * @param qual1 a qualifier kind
-         * @param qual2 a qualifier kind
+         * @param qual1 a qualifier
+         * @param qual2 a qualifier
          */
         public QualifierKindPair(QualifierKind qual1, QualifierKind qual2) {
             // Order the pair.
