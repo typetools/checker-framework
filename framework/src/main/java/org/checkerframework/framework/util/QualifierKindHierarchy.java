@@ -519,11 +519,12 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Initializes {@link QualifierKind#superTypes}, {@link QualifierKind#top} and {@link
-     * QualifierKind#bottom}. (Requires tops, bottoms, and polymorphicQualifiers to be initialized.)
+     * For each qualifier in {@code directSuperMap}, initializes {@link QualifierKind#superTypes},
+     * {@link QualifierKind#top} and {@link QualifierKind#bottom}. (Requires tops, bottoms, and
+     * polymorphicQualifiers to be initialized.)
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
-     *     qualifiers; create by {@link #createDirectSuperMap()}
+     *     qualifiers; created by {@link #createDirectSuperMap()}
      * @throws UserError if a qualifier isn't a subtype of one of the top qualifiers or if multiple
      *     tops or bottoms are found for the same hierarchy.
      */
@@ -540,31 +541,33 @@ public class QualifierKindHierarchy {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             for (QualifierKind top : tops) {
                 if (qualifierKind.isSubtype(top)) {
-                    if (qualifierKind.top != null && qualifierKind.top != top) {
+                    if (qualifierKind.top == null) {
+                        qualifierKind.top = top;
+                    } else if (qualifierKind.top != top) {
                         throw new UserError(
                                 "Multiple tops found for qualifier %s. Tops: %s and %s.",
                                 qualifierKind, top, qualifierKind.top);
-                    }
-                    qualifierKind.top = top;
-                }
-            }
-        }
-        for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
-            for (QualifierKind bot : bottoms) {
-                if (bot.top == qualifierKind.top) {
-                    if (qualifierKind.bottom != null && qualifierKind.top != bot) {
-                        throw new UserError(
-                                "Multiple bottoms found for qualifier %s. Tops: %s and %s.",
-                                qualifierKind, bot, qualifierKind.bottom);
-                    }
-                    qualifierKind.bottom = bot;
-                    if (qualifierKind.isPoly) {
-                        bot.superTypes.add(qualifierKind);
                     }
                 }
             }
             if (qualifierKind.top == null) {
                 throw new UserError("Qualifier isn't in hierarchy: %s", qualifierKind);
+            }
+        }
+        for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
+            for (QualifierKind bot : bottoms) {
+                if (bot.top == qualifierKind.top) {
+                    if (qualifierKind.bottom == null) {
+                        qualifierKind.bottom = bot;
+                    } else if (qualifierKind.top != bot) {
+                        throw new UserError(
+                                "Multiple bottoms found for qualifier %s. Tops: %s and %s.",
+                                qualifierKind, bot, qualifierKind.bottom);
+                    }
+                    if (qualifierKind.isPoly) {
+                        bot.superTypes.add(qualifierKind);
+                    }
+                }
             }
         }
     }
