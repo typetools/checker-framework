@@ -200,7 +200,10 @@ public abstract class AbstractCFGVisualizer<
         if (analysis != null) {
             sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
             if (verbose) {
-                sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+                Node lastNode = getLastNode(bb);
+                if (lastNode != null) {
+                    sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+                }
             }
         }
         if (!centered || verbose) {
@@ -369,6 +372,27 @@ public abstract class AbstractCFGVisualizer<
                 return "<exceptional-exit>" + separator;
             default:
                 throw new BugInCF("Unrecognized special block type: " + sbb.getType());
+        }
+    }
+
+    /**
+     * Returns the last node of a block, or null if none.
+     *
+     * @param bb the block
+     * @return the last node of this block or {@code null}
+     */
+    protected @Nullable Node getLastNode(Block bb) {
+        switch (bb.getType()) {
+            case REGULAR_BLOCK:
+                List<Node> blockContents = ((RegularBlock) bb).getContents();
+                return blockContents.get(blockContents.size() - 1);
+            case CONDITIONAL_BLOCK:
+            case SPECIAL_BLOCK:
+                return null;
+            case EXCEPTION_BLOCK:
+                return ((ExceptionBlock) bb).getNode();
+            default:
+                throw new Error("Unrecognized block type: " + bb.getType());
         }
     }
 
