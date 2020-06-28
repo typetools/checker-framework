@@ -1397,7 +1397,7 @@ public final class TreeUtils {
      * Determine whether an expression {@link ExpressionTree} has the constant value true, according
      * to the compiler logic.
      *
-     * @param tree the expression to be checked.
+     * @param node the expression to be checked.
      * @return true if {@code node} has the constant value true.
      */
     public static boolean isExprConstTrue(final ExpressionTree node) {
