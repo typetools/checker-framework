@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -55,7 +56,6 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     /** Issue an error if the node represents a reference that has been used up. */
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
-            AnnotatedTypeMirror x = atypeFactory.getAnnotatedType(node);
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
                 checker.reportError(node, "use.unsafe", TreeUtils.elementFromUse(node));
             }
@@ -79,7 +79,7 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            String errorKey) {
+            @CompilerMessageKey String errorKey) {
         if (varType.hasAnnotation(Linear.class)) {
             if (valueTree instanceof LiteralTree || valueTree instanceof NewClassTree) {
                 valueType.removeAnnotation(atypeFactory.NORMAL);

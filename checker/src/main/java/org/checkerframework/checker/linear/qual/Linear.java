@@ -9,7 +9,13 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-/** @checker_framework.manual #linear-checker Linear Checker */
+/**
+ * Denotes that the object can be operated on only once, after which it becomes unusable.
+ * {@code @Linear} objects, unlike {@code @Unusable} objects can be used for assignment any number
+ * of times.
+ *
+ * @checker_framework.manual #linear-checker Linear Checker
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
