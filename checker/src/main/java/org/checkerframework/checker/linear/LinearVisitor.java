@@ -38,8 +38,6 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     /**
      * Return true if the node represents a reference to a local variable or parameter.
      *
-     * <p>
-     *
      * <p>In Linear Checker, only local variables and method parameters can be of {@link Linear} or
      * {@link Unusable} types.
      *
@@ -58,7 +56,11 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         }
     }
 
-    /** Issue an error if the node represents a reference that has been used up. */
+    /**
+     * Issue an error if the node represents a reference that has been used up.
+     *
+     * @param node whose legality is being checked
+     */
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
