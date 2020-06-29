@@ -199,6 +199,11 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
+        return getQualifierKind(qualifier).isPoly();
+    }
+
+    @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return bottomsMap.get(kind.getBottom());

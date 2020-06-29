@@ -173,6 +173,11 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
+        return getQualifierKind(qualifier).isPoly();
+    }
+
+    @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         QualifierKind subKind = getQualifierKind(subAnno);
         QualifierKind superKind = getQualifierKind(superAnno);
