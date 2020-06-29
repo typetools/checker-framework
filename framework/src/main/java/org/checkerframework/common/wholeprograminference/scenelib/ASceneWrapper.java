@@ -104,7 +104,6 @@ public class ASceneWrapper {
 
         // Recursively remove annotations from inner types
         for (ATypeElement innerType : typeElt.innerTypes.values()) {
-            // TODO: Is using the same location correct here?
             removeAnnosFromATypeElement(innerType, loc, annosToRemove);
         }
     }
