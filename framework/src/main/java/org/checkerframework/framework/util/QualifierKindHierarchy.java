@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class QualifierKindHierarchy {
         /** Whether or not this has elements. */
         private final boolean hasElements;
 
-        /** Whether or not this ispolymorphic. */
+        /** Whether or not this is polymorphic. */
         private boolean isPoly;
 
         /**
@@ -71,6 +72,7 @@ public class QualifierKindHierarchy {
 
         /** The top of the hierarchy to which this belongs. */
         private QualifierKind top;
+
         /** The bottom of the hierarchy to which this belongs. */
         private QualifierKind bottom;
 
@@ -185,7 +187,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this qualifier is a subtype of {@code superQual}.
+         * Whether or not this qualifier is a subtype of or equal to {@code superQual}.
          *
          * @param superQual other qualifier
          * @return true if this qualifier is a subtype of {@code superQual}
@@ -210,8 +212,8 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * A mapping from interned, fully-qualified class name of a qualifier to the QualifierKind
-     * object representing that class.
+     * A mapping from interned, canonical name of a qualifier to the QualifierKind object
+     * representing that class.
      */
     private final Map<@Interned String, QualifierKind> nameToQualifierKind;
 
@@ -226,11 +228,17 @@ public class QualifierKindHierarchy {
     /** All the qualifier kinds that are the bottom qualifier in their hierarchy. */
     private final Set<QualifierKind> bottoms;
 
-    /** A mapping from a pair of qualifier kinds to their lub. */
-    private final Map<QualifierKindPair, QualifierKind> lubs;
+    /**
+     * Holds the lub of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the lub of kind1
+     * and kind2.
+     */
+    private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> lubs;
 
-    /** A mapping from a pair of qualifier kinds to their glb. */
-    private final Map<QualifierKindPair, QualifierKind> glbs;
+    /**
+     * Holds the glb of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the lub of kind1
+     * and kind2.
+     */
+    private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> glbs;
 
     /**
      * Creates a {@link QualifierKindHierarchy}. Also, creates and initializes all its qualifiers.
@@ -249,47 +257,7 @@ public class QualifierKindHierarchy {
         this.glbs = createGlbsMap();
 
         verifyHierarchy(directSuperMap);
-        // printLubs();
-        // printIsSubtype();
     }
-
-    //    private void printLubs() {
-    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
-    //            System.out.printf(
-    //                    "LUB(%s, %s): %s%n",
-    //                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-    //        }
-    //    }
-    //
-    //    private void printLubsWithElements() {
-    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : lubs.entrySet()) {
-    //            if (entry.getValue().hasElements) {
-    //                System.out.printf(
-    //                        "LUB(%s, %s): %s%n",
-    //                        entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-    //            }
-    //        }
-    //    }
-    //
-    //    private void printGlbs() {
-    //        for (Map.Entry<QualifierKindPair, QualifierKind> entry : glbs.entrySet()) {
-    //            System.out.printf(
-    //                    "GLB(%s, %s): %s%n",
-    //                    entry.getKey().qual1, entry.getKey().qual2, entry.getValue());
-    //        }
-    //    }
-    //
-    //    private void printIsSubtype() {
-    //        for (QualifierKind subKind : nameToQualifierKind.values()) {
-    //            for (QualifierKind superKind : nameToQualifierKind.values()) {
-    //                if (subKind.isSubtype(superKind)
-    //                        && superKind.hasElements()
-    //                        && subKind.hasElements()) {
-    //                    System.out.printf("Sub: %s Super: %s%n", subKind, superKind);
-    //                }
-    //            }
-    //        }
-    //    }
 
     /**
      * Verifies that the {@link QualifierKindHierarchy} is a valid hierarchy.
@@ -597,30 +565,23 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates a mapping from {@link QualifierKindPair} to the least upper bound of both
-     * QualifierKinds.
+     * Creates the lub of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the lub of
+     * kind1 and kind2.
      *
-     * @return a mapping from {@link QualifierKindPair} to their lub
+     * @return a mapping of lubs
      */
-    protected Map<QualifierKindPair, QualifierKind> createLubsMap() {
-        Map<QualifierKindPair, QualifierKind> lubs = new TreeMap<>();
+    protected Map<QualifierKind, Map<QualifierKind, QualifierKind>> createLubsMap() {
+        Map<QualifierKind, Map<QualifierKind, QualifierKind>> lubs = new HashMap<>();
         for (QualifierKind qual1 : nameToQualifierKind.values()) {
             for (QualifierKind qual2 : nameToQualifierKind.values()) {
                 if (qual1.top != qual2.top) {
                     continue;
                 }
                 QualifierKind lub = findLub(qual1, qual2);
-                QualifierKindPair pair = new QualifierKindPair(qual1, qual2);
-                QualifierKind otherLub = lubs.get(pair);
-                if (otherLub != null) {
-                    if (otherLub != lub) {
-                        throw new BugInCF(
-                                "Multiple lubs for qualifiers %s and %s. Found lubs %s and %s",
-                                qual1, qual2, lub, otherLub);
-                    }
-                } else {
-                    lubs.put(pair, lub);
-                }
+                // Add qual1 -> (qual2 -> lub)
+                addToMapOfMap(lubs, qual1, qual2, lub, "lub");
+                // Add qual2 -> (qual1 -> lub)
+                addToMapOfMap(lubs, qual2, qual1, lub, "lub");
             }
         }
         return lubs;
@@ -671,30 +632,21 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates a mapping from {@link QualifierKindPair} to the greatest lower bound of both
-     * QualifierKinds.
+     * Creates the glb of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the glb of
+     * kind1 and kind2.
      *
-     * @return a mapping from {@link QualifierKindPair} to their glb
+     * @return a mapping of glb
      */
-    private Map<QualifierKindPair, QualifierKind> createGlbsMap() {
-        Map<QualifierKindPair, QualifierKind> glbs = new TreeMap<>();
+    private Map<QualifierKind, Map<QualifierKind, QualifierKind>> createGlbsMap() {
+        Map<QualifierKind, Map<QualifierKind, QualifierKind>> glbs = new TreeMap<>();
         for (QualifierKind qual1 : nameToQualifierKind.values()) {
             for (QualifierKind qual2 : nameToQualifierKind.values()) {
                 if (qual1.top != qual2.top) {
                     continue;
                 }
                 QualifierKind glb = findGlb(qual1, qual2);
-                QualifierKindPair pair = new QualifierKindPair(qual1, qual2);
-                QualifierKind otherGlb = glbs.get(pair);
-                if (otherGlb != null) {
-                    if (otherGlb != glb) {
-                        throw new BugInCF(
-                                "Multiple glbs for qualifiers %s and %s. Found lubs %s and %s",
-                                qual1, qual2, glb, otherGlb);
-                    }
-                } else {
-                    glbs.put(pair, glb);
-                }
+                addToMapOfMap(glbs, qual1, qual2, glb, "glb");
+                addToMapOfMap(glbs, qual2, qual1, glb, "glb");
             }
         }
         return glbs;
@@ -774,7 +726,7 @@ public class QualifierKindHierarchy {
      * @return the least upper bound of {@code q1} and {@code q2}
      */
     public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
-        return lubs.get(new QualifierKindPair(q1, q2));
+        return lubs.get(q1).get(q2);
     }
 
     /**
@@ -785,15 +737,13 @@ public class QualifierKindHierarchy {
      * @return the greatest lower bound of {@code q1} and {@code q2}
      */
     public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
-        return glbs.get(new QualifierKindPair(q1, q2));
+        return glbs.get(q1).get(q2);
     }
 
     /**
-     * Returns the mapping from the fully-qualified class name of an annotation to its qualifier
-     * kind.
+     * Returns the mapping from the canonical class name of an annotation to its qualifier kind.
      *
-     * @return the mapping from the fully-qualified class name of an annotation to its qualifier
-     *     kind
+     * @return the mapping from the canonical class name of an annotation to its qualifier kind
      */
     public Map<@Interned String, QualifierKind> getNameToQualifierKind() {
         return nameToQualifierKind;
@@ -811,64 +761,33 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * A pair of {@link QualifierKind}s. new QualifierKindPair(q1, q2) is equal to new
-     * QualifierKindPair(q2, q1).
+     * Add Key: qual1, Value: (Key: qual2, Value: value) to {@code map}. If already in map, throw an
+     * exception if value is different.
+     *
+     * @param map mapping
+     * @param qual1 the first qualifier kind
+     * @param qual2 the second qualifier kind
+     * @param value the value to add
      */
-    protected static class QualifierKindPair implements Comparable<QualifierKindPair> {
-
-        /** The first qualifier of the pair. */
-        private final QualifierKind qual1;
-        /** The second qualifier of the pair. */
-        private final QualifierKind qual2;
-
-        /**
-         * Create a pair.
-         *
-         * @param qual1 a qualifier
-         * @param qual2 a qualifier
-         */
-        public QualifierKindPair(QualifierKind qual1, QualifierKind qual2) {
-            // Order the pair.
-            if (qual1.compareTo(qual2) <= 0) {
-                this.qual1 = qual1;
-                this.qual2 = qual2;
-            } else {
-                this.qual1 = qual2;
-                this.qual2 = qual1;
-            }
+    private static void addToMapOfMap(
+            Map<QualifierKind, Map<QualifierKind, QualifierKind>> map,
+            QualifierKind qual1,
+            QualifierKind qual2,
+            QualifierKind value,
+            String error) {
+        Map<QualifierKind, QualifierKind> qual1Lubs = map.get(qual1);
+        if (qual1Lubs == null) {
+            qual1Lubs = new HashMap<>();
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
+        QualifierKind existingLub = qual1Lubs.get(qual2);
+        if (existingLub == null) {
+            qual1Lubs.put(qual2, value);
+        } else {
+            if (existingLub != value) {
+                throw new BugInCF(
+                        "Multiple %s for qualifiers %s and %s. Found map %s and %s",
+                        error, qual1, qual2, value, existingLub);
             }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            QualifierKindPair that = (QualifierKindPair) o;
-            return qual1 == that.qual1 && qual2 == that.qual2;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = qual1.hashCode();
-            result = 31 * result + qual2.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "qual1=" + qual1 + ", qual2=" + qual2;
-        }
-
-        @Override
-        public int compareTo(QualifierKindPair o) {
-            if (this.qual1 == o.qual1) {
-                return this.qual2.compareTo(o.qual2);
-            }
-            return this.qual1.compareTo(o.qual1);
         }
     }
 }
