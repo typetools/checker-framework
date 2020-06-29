@@ -1312,8 +1312,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Perform any additional operations after the CFG has been analyzed by {@link #analyze(Queue,
-     * Queue, UnderlyingAST, List, ClassTree, boolean, boolean, boolean, CFAbstractStore)}.
+     * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
+     * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, boolean, boolean,
+     * boolean, CFAbstractStore)}. This method can be used to initialize additional state or to
+     * perform any analyses that are easier to perform on the CFG instead of the AST.
      *
      * @param cfg the CFG
      * @see #analyze(java.util.Queue, java.util.Queue,
