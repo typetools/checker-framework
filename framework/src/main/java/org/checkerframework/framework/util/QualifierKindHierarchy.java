@@ -449,8 +449,7 @@ public class QualifierKindHierarchy {
     /**
      * Iterates over all the qualifier kinds and adds all polymorphic qualifiers to
      * polymorphicQualifiers. Also sets {@link QualifierKind#isPoly} to true and {@link
-     * QualifierKind#top} to top if the meta-annotation {@link PolymorphicQualifier} specifies a
-     * top.
+     * QualifierKind#top} to top for the polymophic qualifiers.
      *
      * <p>Requires that tops has been initialized.
      *
@@ -480,7 +479,7 @@ public class QualifierKindHierarchy {
                     }
                 } else {
                     throw new UserError(
-                            "polymorphic qualifier %s's top $s is not a supported qualifier. Found: %s.",
+                            "polymorphic qualifier %s's top %s is not a qualifier. Found: %s.",
                             qualifierKind, topName);
                 }
                 topToPoly.put(qualifierKind.top, qualifierKind);
