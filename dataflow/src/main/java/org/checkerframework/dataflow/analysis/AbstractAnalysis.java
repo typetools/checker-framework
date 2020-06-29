@@ -313,7 +313,7 @@ public abstract class AbstractAnalysis<
 
     /**
      * Call the transfer function for node {@code node}, and set that node as current node first.
-     * This method requires a copied {@code transferInput} so that the method can modify it safely.
+     * This method requires a {@code transferInput} that the method can modify.
      *
      * @param node the given node
      * @param transferInput the transfer input
