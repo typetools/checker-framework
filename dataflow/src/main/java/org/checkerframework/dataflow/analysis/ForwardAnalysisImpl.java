@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
@@ -223,8 +224,9 @@ public class ForwardAnalysisImpl<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
@@ -337,13 +339,12 @@ public class ForwardAnalysisImpl<
     }
 
     @Override
+    @RequiresNonNull("cfg")
     protected void initInitialInputs() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         worklist.process(cfg);
         Block entry = cfg.getEntryBlock();
         worklist.add(entry);
         List<LocalVariableNode> parameters = null;
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
         if (underlyingAST.getKind() == Kind.METHOD) {
             MethodTree tree = ((CFGMethod) underlyingAST).getMethod();

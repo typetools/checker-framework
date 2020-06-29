@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
@@ -118,6 +119,7 @@ public abstract class AbstractAnalysis<
     }
 
     /** Initialize the transfer inputs of every basic block before performing the analysis. */
+    @RequiresNonNull("cfg")
     protected abstract void initInitialInputs();
 
     /**
@@ -148,12 +150,13 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public AnalysisResult<V, S> getResult() {
         if (isRunning) {
             throw new BugInCF(
                     "AbstractAnalysis::getResult() shouldn't be called when the analysis is running.");
         }
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         return new AnalysisResult<>(
                 nodeValues,
                 inputs,
@@ -210,8 +213,9 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             return inputs.get(regularExitBlock).getRegularStore();
@@ -221,8 +225,9 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public @Nullable S getExceptionalExitStore() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
         if (inputs.containsKey(exceptionalExitBlock)) {
             S exceptionalExitStore = inputs.get(exceptionalExitBlock).getRegularStore();
@@ -472,7 +477,6 @@ public abstract class AbstractAnalysis<
          * @param cfg the control flow graph to process
          */
         public void process(ControlFlowGraph cfg) {
-            assert cfg != null : "@AssumeAssertion(nullness): invariant";
             depthFirstOrder.clear();
             int count = 1;
             for (Block b : cfg.getDepthFirstOrderedBlocks()) {
