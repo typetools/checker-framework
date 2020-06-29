@@ -65,6 +65,7 @@ public interface QualifierPolymorphism {
      *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
      * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
      */
+    @Deprecated
     static Name getPolymorphicQualifierElement(AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 

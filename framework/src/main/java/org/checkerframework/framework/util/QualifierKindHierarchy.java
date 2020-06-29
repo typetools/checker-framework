@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
@@ -314,7 +315,7 @@ public class QualifierKindHierarchy {
      * that is done by {@link #initializeQualifierKindFields(Map)}.
      *
      * @param qualifierClasses classes of annotations that are type qualifiers
-     * @return a mapping from annotation name to {@link QualifierKind}
+     * @return a mapping from the canonical name of an annotation class to {@link QualifierKind}
      */
     protected Map<@Interned String, QualifierKind> createQualifierKinds(
             Collection<Class<? extends Annotation>> qualifierClasses) {
@@ -391,7 +392,7 @@ public class QualifierKindHierarchy {
      */
     protected void specifyBottom(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-            Class<? extends Annotation> bottom) {
+            @Nullable Class<? extends Annotation> bottom) {
         if (bottom != null) {
             String name = bottom.getCanonicalName();
             QualifierKind bottomKind = getNameToQualifierKind().get(name);
@@ -467,7 +468,9 @@ public class QualifierKindHierarchy {
                 String topName = polyMetaAnno.value().getCanonicalName();
                 if (nameToQualifierKind.containsKey(topName)) {
                     qualifierKind.top = nameToQualifierKind.get(topName);
-                } else if (topName.equals(PolymorphicQualifier.class.getCanonicalName())) {
+                } else if (topName.equals(Annotation.class.getCanonicalName())) {
+                    // Annotation.class is the default value of PolymorphicQualifier. If it is used,
+                    // then there must be exactly one top.
                     if (tops.size() == 1) {
                         qualifierKind.top = tops.iterator().next();
                     } else {
