@@ -26,7 +26,7 @@ public @interface PolymorphicQualifier {
      * qualifier needs to indicate which sub-hierarchy it belongs to. Do so by passing a qualifier
      * from the given hierarchy, by convention the top qualifier.
      */
-    // We use the meaningless PolymorphicQualifier.class as default value and
+    // We use the meaningless Annotation.class as default value and
     // then ensure there is a single top qualifier to use.
-    Class<? extends Annotation> value() default PolymorphicQualifier.class;
+    Class<? extends Annotation> value() default Annotation.class;
 }
