@@ -26,6 +26,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
 
+    /**
+     * Constructor function of the LinearVisitor
+     *
+     * @param checker the associated {@link LinearChecker}
+     */
     public LinearVisitor(BaseTypeChecker checker) {
         super(checker);
     }

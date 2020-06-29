@@ -22,19 +22,24 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
- * Marks a {@link Linear} variable as {@link Unusable} once the variable is:
- *
- * <p>
- *
- * <ol>
- *   <li value="1">the receiver of a method call
- *   <li value="2">TODO
- * </ol>
+ * Marks a {@link Linear} variable as {@link Unusable} once the variable is the receiver of a method
+ * call
  */
 public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    final AnnotationMirror LINEAR, UNUSABLE, NORMAL;
+    /** The @{@link Linear} annotation. */
+    final AnnotationMirror LINEAR;
+    /** The @{@link Unusable} annotation. */
+    final AnnotationMirror UNUSABLE;
+    /** The @{@link Normal} annotation. */
+    final AnnotationMirror NORMAL;
 
+    /**
+     * Constructor function and building LINEAR, UNUSABLE and NORMAL annotation mirrors from
+     * classes.
+     *
+     * @param checker the associated {@link LinearChecker}
+     */
     @SuppressWarnings("method.invocation.invalid")
     public LinearAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -52,9 +57,20 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new LinearFlow(analysis);
     }
 
+    /**
+     * Checks the flow of data with regard to the linear checker. Changes annotations of receiver on
+     * method invocation.
+     */
     private class LinearFlow extends CFTransfer {
+        /** The type factory obtained from control flow analysis */
         private final AnnotatedTypeFactory factory;
 
+        /**
+         * Constructor function and obtaining the type factory from the control flow abstract
+         * analysis
+         *
+         * @param analysis the control flow analysis whose annotated type factory is required
+         */
         LinearFlow(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
             super(analysis);
             factory = analysis.getTypeFactory();
