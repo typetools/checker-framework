@@ -778,18 +778,19 @@ public class QualifierKindHierarchy {
             QualifierKind qual2,
             QualifierKind value,
             String error) {
-        Map<QualifierKind, QualifierKind> qual1Lubs = map.get(qual1);
-        if (qual1Lubs == null) {
-            qual1Lubs = new HashMap<>();
+        Map<QualifierKind, QualifierKind> qual1Map = map.get(qual1);
+        if (qual1Map == null) {
+            qual1Map = new HashMap<>();
+            map.put(qual1, qual1Map);
         }
-        QualifierKind existingLub = qual1Lubs.get(qual2);
-        if (existingLub == null) {
-            qual1Lubs.put(qual2, value);
+        QualifierKind existingValue = qual1Map.get(qual2);
+        if (existingValue == null) {
+            qual1Map.put(qual2, value);
         } else {
-            if (existingLub != value) {
+            if (existingValue != value) {
                 throw new BugInCF(
                         "Multiple %s for qualifiers %s and %s. Found map %s and %s",
-                        error, qual1, qual2, value, existingLub);
+                        error, qual1, qual2, value, existingValue);
             }
         }
     }
