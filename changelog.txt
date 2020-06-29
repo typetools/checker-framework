@@ -1,22 +1,50 @@
 Version 3.5.0, July 1, 2020
 
+Use "allcheckers:" instead of "all:" as a prefix in a warning suppression string.
+Writing `@SuppressWarnings("allcheckers")` means the same thing as
+`@SuppressWarnings("all")`, unless the `-ArequirePrefixInWarningSuppressions`
+command-line argument is supplied.  See the manual for details.
+
 It is no longer necessary to pass -Astubs=checker.jar/javadoc.astub when
 compiling a program that uses Javadoc classes.
+
+Renamed command-line arguments:
+ * -AshowSuppressWarningKeys to -AshowSuppressWarningsStrings
+
+The Signature Checker no longer considers Java keywords to be identifiers.
+Renamed Signature Checker annotations:
+  @BinaryNameInUnnamedPackage => @BinaryNameWithoutPackage
+  @FieldDescriptorForPrimitiveOrArrayInUnnamedPackage => @FieldDescriptorWithoutPackage
+  @IdentifierOrArray => @ArrayWithoutPackage
+Added new Signature Checker annotations:
+  @BinaryNameOrPrimitiveType
+  @DotSeparatedIdentifiersOrPrimitiveType
+  #IdentifierOrPrimitiveType
 
 The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
 
+Add support for class qualifier parameters.  See "Class qualifier parameters"
+section in the manual.
+
 Implementation details:
+
 Changed the types of some fields and methods from array to List:
-QualifierDefaults.validLocationsForUncheckedCodeDefaults()
-QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
-QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
-QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
-QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
+ * QualifierDefaults.validLocationsForUncheckedCodeDefaults()
+ * QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
+ * QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
+ * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
+ * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
+
+Renamed meta-annotation SuppressWarningsKeys to SuppressWarningsPrefix.
+Renamed SourceChecker#getSuppressWarningsKeys(...) to getSuppressWarningsPrefixes.
+Renamed SubtypingChecker#getSuppressWarningsKeys to getSuppressWarningsPrefixes.
+
+Removed methods and classes marked deprecated in release 3.3.0 or earlier.
 
 ---------------------------------------------------------------------------
 
@@ -1293,7 +1321,7 @@ Support a few new units in the UnitsChecker.
 Version 1.7.4, 19 February 2014
 
 Error messages now display the error key that can be used in
-SuppressWarning annotations. Use -AshowSuppressWarningKeys to
+SuppressWarnings annotations. Use -AshowSuppressWarningKeys to
 show additional keys.
 
 Defaulted type qualifiers are now stored in the Element and written
@@ -2034,7 +2062,7 @@ Property File Checker (new):
 
 Signature Checker (new):
   Ensures that different string representations of a Java type (e.g.,
-  "package.Outer.Inner" vs. "package.Outer$Inner" vs. "Lpackage/Outer$Inner;")
+  "pakkage.Outer.Inner" vs. "pakkage.Outer$Inner" vs. "Lpakkage/Outer$Inner;")
   are not misused.
 
 Interning Checker enhancements:

@@ -1,7 +1,8 @@
 // Test cases for issue 2243
 // https://github.com/typetools/checker-framework/issues/2243
 
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 // :: error: (declaration.inconsistent.with.extends.clause)
 public @Tainted class Issue2243 extends Y2243 {}
@@ -11,8 +12,12 @@ class ExtendsSubTypingExplicit2243 extends @Untainted X2243 {}
 
 class X2243 {}
 
-@Untainted class Y2243 {
-    // :: warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
+class MyClass2243 {
+    @Tainted MyClass2243() {}
+}
+
+@Untainted class Y2243 extends MyClass2243 {
+    // :: error: (super.invocation.invalid)
     @Untainted Y2243() {}
 }
 
