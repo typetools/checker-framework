@@ -825,17 +825,6 @@ public class Analysis<
     }
 
     /**
-     * Get the control flow graph used by the analysis. The control flow graph changes when {@link
-     * #performAnalysis(ControlFlowGraph)} is called. The result is {@code null} before the first
-     * invocation of {@link #performAnalysis(ControlFlowGraph)}.
-     *
-     * @return the control flow graph currently used by the analysis, or {@code null}
-     */
-    public @Nullable ControlFlowGraph getControlFlowGraph() {
-        return cfg;
-    }
-
-    /**
      * Get the set of {@link Node}s for a given {@link Tree}. Returns null for trees that don't
      * produce a value.
      */
@@ -878,6 +867,7 @@ public class Analysis<
      */
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
             TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
@@ -895,6 +885,7 @@ public class Analysis<
     @RequiresNonNull("cfg")
     public AnalysisResult<V, S> getResult() {
         assert !isRunning;
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         return new AnalysisResult<>(
                 nodeValues,
                 inputs,
@@ -912,6 +903,7 @@ public class Analysis<
      */
     @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             S regularExitStore = inputs.get(regularExitBlock).getRegularStore();
@@ -928,6 +920,7 @@ public class Analysis<
      */
     @RequiresNonNull("cfg")
     public @Nullable S getExceptionalExitStore() {
+        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
         if (inputs.containsKey(exceptionalExitBlock)) {
             S exceptionalExitStore = inputs.get(exceptionalExitBlock).getRegularStore();
