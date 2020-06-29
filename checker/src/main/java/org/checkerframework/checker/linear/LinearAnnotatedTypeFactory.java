@@ -2,7 +2,6 @@ package org.checkerframework.checker.linear;
 
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Normal;
 import org.checkerframework.checker.linear.qual.Unusable;
@@ -69,9 +68,14 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (receiverTree != null) {
                 AnnotatedTypeMirror type = factory.getAnnotatedType(receiverTree);
                 if (type.hasAnnotation(Linear.class)) {
-                    FlowExpressions.Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget().getReceiver());
+                    FlowExpressions.Receiver receiver =
+                            FlowExpressions.internalReprOf(
+                                    analysis.getTypeFactory(), node.getTarget().getReceiver());
                     in.getRegularStore().insertOrRefine(receiver, UNUSABLE);
-                    return new RegularTransferResult<>(analysis.createSingleAnnotationValue(NORMAL, result.getResultValue().getUnderlyingType()),in.getRegularStore());
+                    return new RegularTransferResult<>(
+                            analysis.createSingleAnnotationValue(
+                                    NORMAL, result.getResultValue().getUnderlyingType()),
+                            in.getRegularStore());
                 }
             }
             return result;
