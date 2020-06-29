@@ -689,18 +689,18 @@ Type-checking modes:  enable/disable functionality
   Section~\ref{whole-program-inference}.
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
-\item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning.
+\item \<-AshowSuppressWarningsStrings>
+  With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> keys without a \<\emph{checkername}:> prefix
+  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
   (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
   \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
   your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
 \item \<-ArequirePrefixInWarningSuppressions>
-  Require that the key in a warning suppression annotation begin with a checker
-  warning suppression key.  Otherwise, the suppress warning annotation does not
+  Require that the string in a warning suppression annotation begin with a checker
+  name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
@@ -1515,7 +1515,7 @@ same methodology in different words.
 % LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
 % LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
-% LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
+% LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
