@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
@@ -118,6 +119,7 @@ public abstract class AbstractAnalysis<
     }
 
     /** Initialize the transfer inputs of every basic block before performing the analysis. */
+    @RequiresNonNull("cfg")
     protected abstract void initInitialInputs();
 
     /**
@@ -148,12 +150,13 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public AnalysisResult<V, S> getResult() {
         if (isRunning) {
             throw new BugInCF(
                     "AbstractAnalysis::getResult() shouldn't be called when the analysis is running.");
         }
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         return new AnalysisResult<>(
                 nodeValues,
                 inputs,
@@ -210,8 +213,9 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             return inputs.get(regularExitBlock).getRegularStore();
@@ -221,8 +225,9 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
+    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @RequiresNonNull("cfg")
     public @Nullable S getExceptionalExitStore() {
-        assert cfg != null : "@AssumeAssertion(nullness): invariant";
         SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
         if (inputs.containsKey(exceptionalExitBlock)) {
             S exceptionalExitStore = inputs.get(exceptionalExitBlock).getRegularStore();
@@ -307,24 +312,24 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Call the transfer function for node {@code node}, and set that node as current node first. Be
-     * careful that {@code store} may be shared between nodes in a block. Passing a copied store to
-     * avoid the accident changing.
+     * Call the transfer function for node {@code node}, and set that node as current node first.
+     * This method requires a {@code transferInput} that the method can modify.
      *
      * @param node the given node
-     * @param store the transfer input
+     * @param transferInput the transfer input
      * @return the output of the transfer function
      */
-    protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> store) {
+    protected TransferResult<V, S> callTransferFunction(
+            Node node, TransferInput<V, S> transferInput) {
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         if (node.isLValue()) {
             // TODO: should the default behavior return a regular transfer result, a conditional
             //  transfer result (depending on store.hasTwoStores()), or is the following correct?
-            return new RegularTransferResult<>(null, store.getRegularStore());
+            return new RegularTransferResult<>(null, transferInput.getRegularStore());
         }
-        store.node = node;
+        transferInput.node = node;
         currentNode = node;
-        TransferResult<V, S> transferResult = node.accept(transferFunction, store);
+        TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
         currentNode = null;
         if (node instanceof AssignmentNode) {
             // store the flow-refined value effectively for final local variables
@@ -472,7 +477,6 @@ public abstract class AbstractAnalysis<
          * @param cfg the control flow graph to process
          */
         public void process(ControlFlowGraph cfg) {
-            assert cfg != null : "@AssumeAssertion(nullness): invariant";
             depthFirstOrder.clear();
             int count = 1;
             for (Block b : cfg.getDepthFirstOrderedBlocks()) {

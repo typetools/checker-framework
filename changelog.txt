@@ -32,18 +32,19 @@ The Dataflow Framework now also supports backward analysis.
 
 Implementation details:
 
-* Changed the types of some fields and methods from array to List:
-   QualifierDefaults.validLocationsForUncheckedCodeDefaults()
-   QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
-   QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
-   QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
-   QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
-* Dataflow Framework: Analysis is now an interface, added AbstractAnalysis,
-   ForwardAnalysis, ForwardTransferFunction, ForwardAnalysisImpl,
-   BackwardAnalysis, BackwardTransferFunction, BackwardAnalysisImpl.
-   Existing code is easy to adapt:
-     `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
-     `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
+Changed the types of some fields and methods from array to List:
+ * QualifierDefaults.validLocationsForUncheckedCodeDefaults()
+ * QualifierDefaults.STANDARD_CLIMB_DEFAULTS_TOP
+ * QualifierDefaults.STANDARD_CLIMB_DEFAULTS_BOTTOM
+ * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
+ * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
+
+Dataflow Framework: Analysis is now an interface, added AbstractAnalysis,
+ForwardAnalysis, ForwardTransferFunction, ForwardAnalysisImpl,
+BackwardAnalysis, BackwardTransferFunction, BackwardAnalysisImpl.
+Existing code is easy to adapt:
+    `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
+    `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
