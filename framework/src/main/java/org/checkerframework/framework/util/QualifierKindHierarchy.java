@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -502,8 +503,7 @@ public class QualifierKindHierarchy {
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             if (qualifierKind.isPoly) {
-                qualifierKind.superTypes = new TreeSet<>();
-                qualifierKind.superTypes.add(qualifierKind.top);
+                qualifierKind.superTypes = Collections.singleton(qualifierKind.top);
             } else {
                 qualifierKind.superTypes = findAllTheSupers(qualifierKind, directSuperMap);
             }
@@ -555,11 +555,16 @@ public class QualifierKindHierarchy {
             QualifierKind qualifierKind, Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         Queue<QualifierKind> queue = new ArrayDeque<>(directSuperMap.get(qualifierKind));
         Set<QualifierKind> allSupers = new TreeSet<>(directSuperMap.get(qualifierKind));
+        Set<QualifierKind> visited = new HashSet<>();
         while (!queue.isEmpty()) {
             QualifierKind superQual = queue.remove();
             if (superQual == qualifierKind) {
                 throw new UserError("Cycle in hierarchy: %s", qualifierKind);
             }
+            if (visited.contains(superQual)) {
+                continue;
+            }
+            visited.add(superQual);
             queue.addAll(directSuperMap.get(superQual));
             allSupers.addAll(directSuperMap.get(superQual));
         }
