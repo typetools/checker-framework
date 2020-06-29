@@ -46,10 +46,15 @@ import org.checkerframework.javacutil.UserError;
 public class QualifierKindHierarchy {
 
     /**
-     * Represents a qualifier class. It holds information about the relationship between itself and
-     * other {@link QualifierKind}s.
+     * Represents a kind of qualifier. If two qualifiers use the same annotation classe, then they
+     * have the same qualifier kind. Two qualifiers can be the same "kind" of qualifier but not be
+     * the same qualifier. For example, both {@code @IndexFor("a")} and {@code @IndexFor("b")} are
+     * the same kind of qualifier.
      *
      * <p>Exactly one qualifier kind is created for each annotation class.
+     *
+     * <p>A {@code QualifierKind} holds information about the relationship between itself and other
+     * {@link QualifierKind}s.
      */
     // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
@@ -597,8 +602,8 @@ public class QualifierKindHierarchy {
     /**
      * Returns the least upper bound of {@code qual1} and {@code qual2}.
      *
-     * @param qual1 a qualifier
-     * @param qual2 a qualifier
+     * @param qual1 a qualifier kind
+     * @param qual2 a qualifier kind
      * @return the least upper bound of {@code qual1} and {@code qual2}
      */
     private QualifierKind findLub(QualifierKind qual1, QualifierKind qual2) {
@@ -619,7 +624,8 @@ public class QualifierKindHierarchy {
         }
         QualifierKind lub = lubs.iterator().next();
         if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
-            return lub.top;
+            throw new BugInCF(
+                    "Lub can't be poly: lub: %s, qual1: %s, qual2: %s.", lub, qual1, qual2);
         }
         return lub;
     }
@@ -662,8 +668,8 @@ public class QualifierKindHierarchy {
     /**
      * Returns the greatest lower bound of {@code qual1} and {@code qual2}.
      *
-     * @param qual1 a qualifier
-     * @param qual2 a qualifier
+     * @param qual1 a qualifier kind
+     * @param qual2 a qualifier kind
      * @return the greatest lower bound of {@code qual1} and {@code qual2}
      */
     private QualifierKind findGlb(QualifierKind qual1, QualifierKind qual2) {
@@ -686,11 +692,12 @@ public class QualifierKindHierarchy {
                     "Not exactly 1 glb for %s and %s. Found glb: [%s].",
                     qual1, qual2, SystemUtil.join(", ", glbs));
         }
-        QualifierKind lub = glbs.iterator().next();
-        if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
-            return lub.bottom;
+        QualifierKind glb = glbs.iterator().next();
+        if (glb.isPoly && !qual1.isPoly && !qual2.isPoly) {
+            throw new BugInCF(
+                    "GLB can't be poly: lub: %s, qual1: %s, qual2: %s.", glb, qual1, qual2);
         }
-        return lub;
+        return glb;
     }
 
     /**
