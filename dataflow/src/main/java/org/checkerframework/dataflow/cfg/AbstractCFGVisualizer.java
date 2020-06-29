@@ -3,8 +3,8 @@ package org.checkerframework.dataflow.cfg;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -88,7 +88,7 @@ public abstract class AbstractCFGVisualizer<
      */
     protected String visualizeGraphWithoutHeaderAndFooter(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
-        Set<Block> visited = new HashSet<>();
+        Set<Block> visited = new LinkedHashSet<>();
         StringBuilder sbGraph = new StringBuilder();
         Queue<Block> workList = new ArrayDeque<>();
         Block cur = entry;

@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.framework.util.Contract.Kind.CONDITIONALPOSTCONDITION;
-import static org.checkerframework.framework.util.Contract.Kind.POSTCONDITION;
-import static org.checkerframework.framework.util.Contract.Kind.PRECONDITION;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -87,7 +83,7 @@ public class ContractsUtils {
      * @return the contracts on {@code executableElement}
      */
     public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, PRECONDITION, Contract.Precondition.class);
+        return getContracts(executableElement, Kind.PRECONDITION, Contract.Precondition.class);
     }
 
     /// Postcondition methods (keep in sync with other two types)
@@ -99,7 +95,7 @@ public class ContractsUtils {
      * @return the contracts on {@code executableElement}
      */
     public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, POSTCONDITION, Contract.Postcondition.class);
+        return getContracts(executableElement, Kind.POSTCONDITION, Contract.Postcondition.class);
     }
 
     /// Conditional postcondition methods (keep in sync with other two types)
@@ -113,7 +109,9 @@ public class ContractsUtils {
     public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         return getContracts(
-                methodElement, CONDITIONALPOSTCONDITION, Contract.ConditionalPostcondition.class);
+                methodElement,
+                Kind.CONDITIONALPOSTCONDITION,
+                Contract.ConditionalPostcondition.class);
     }
 
     /// Helper methods

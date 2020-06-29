@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -366,7 +368,117 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkExtendsImplements(classTree);
 
+        checkQualifierParameter(classTree);
+
         super.visitClass(classTree, null);
+    }
+
+    /**
+     * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
+     * {@code @HasQualifierParameter}. Always issue a warning if the type of a static field is
+     * annotated with a polymorphic qualifier.
+     *
+     * <p>Issues an error if {@code classTree} extends or implements a class/interface that has a
+     * qualifier parameter, but this class does not.
+     *
+     * @param classTree the ClassTree to check for polymorphic fields
+     */
+    protected void checkQualifierParameter(ClassTree classTree) {
+        // Set of polymorphic qualifiers for hierarchies that do not have a qualifier parameter and
+        // therefor cannot appear on a field.
+        Set<AnnotationMirror> illegalOnFieldsPolyQual = AnnotationUtils.createAnnotationSet();
+        // Set of polymorphic annotations for all hierarchies
+        Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+        TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+        for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            AnnotationMirror poly =
+                    atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polys.add(poly);
+            }
+            // else {
+            // If there is no polymorphic qualifier in the hierarchy, it could still have a
+            // @HasQualifierParameter that must be checked.
+            // }
+
+            if (atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
+                    && atypeFactory.hasExplicitNoQualifierParameterInHierarchy(classElement, top)) {
+                checker.reportError(classTree, "conflicting.qual.param", top);
+            }
+
+            if (atypeFactory.hasQualifierParameterInHierarchy(classElement, top)) {
+                continue;
+            }
+
+            if (poly != null) {
+                illegalOnFieldsPolyQual.add(poly);
+            }
+            Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
+            if (extendsEle != null
+                    && atypeFactory.hasQualifierParameterInHierarchy(extendsEle, top)) {
+                checker.reportError(classTree, "missing.has.qual.param");
+            } else {
+                for (TypeMirror interfaceType : classElement.getInterfaces()) {
+                    Element interfaceEle = TypesUtils.getTypeElement(interfaceType);
+                    if (atypeFactory.hasQualifierParameterInHierarchy(interfaceEle, top)) {
+                        checker.reportError(classTree, "missing.has.qual.param", top);
+                        break; // only issue error once
+                    }
+                }
+            }
+        }
+
+        for (Tree mem : classTree.getMembers()) {
+            if (mem.getKind() == Tree.Kind.VARIABLE) {
+                AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
+                List<DiagMessage> hasIllegalPoly;
+                if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
+                    // A polymorphic qualifier is not allowed on a static field even if the class
+                    // has a qualifier parameter.
+                    hasIllegalPoly = polyScanner.visit(fieldType, polys);
+                } else {
+                    hasIllegalPoly = polyScanner.visit(fieldType, illegalOnFieldsPolyQual);
+                }
+                for (DiagMessage dm : hasIllegalPoly) {
+                    checker.report(mem, dm);
+                }
+            }
+        }
+    }
+
+    /**
+     * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a
+     * use of one of the polymorphic qualifiers.
+     */
+    private final PolyTypeScanner polyScanner = new PolyTypeScanner();
+
+    /**
+     * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a
+     * use of one of the polymorphic qualifiers.
+     */
+    static class PolyTypeScanner
+            extends SimpleAnnotatedTypeScanner<List<DiagMessage>, Set<AnnotationMirror>> {
+
+        /** Create PolyTypeScanner. */
+        private PolyTypeScanner() {
+            super(DiagMessage::mergeLists, Collections.emptyList());
+        }
+
+        @Override
+        protected List<DiagMessage> defaultAction(
+                AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
+            if (type == null) {
+                return Collections.emptyList();
+            }
+
+            for (AnnotationMirror poly : polys) {
+                if (type.hasAnnotationRelaxed(poly)) {
+                    return Collections.singletonList(
+                            new DiagMessage(Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
+                }
+            }
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -1875,10 +1987,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-
+        boolean calledOnce = false;
+        for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
+            if (!isInvariantTypeCastSafe(castType, exprType, top)) {
+                checker.reportError(
+                        typeCastTree,
+                        "invariant.cast.unsafe",
+                        exprType.toString(true),
+                        castType.toString(true));
+            }
+            calledOnce = true; // don't issue cast unsafe warning.
+        }
         // We cannot do a simple test of casting, as isSubtypeOf requires
         // the input types to be subtypes according to Java
-        if (!isTypeCastSafe(castType, exprType)) {
+        if (!calledOnce && !isTypeCastSafe(castType, exprType)) {
             checker.reportWarning(
                     typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
         }
@@ -1976,6 +2098,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return qualifierHierarchy.isSubtype(
                     exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
+    }
+
+    /**
+     * Return whether or not casting the exprType to castType is legal.
+     *
+     * @param castType an invariant type
+     * @param exprType type of the expressions that is cast which may or may not be invariant
+     * @param top the top qualifier of the hierarchy to check
+     * @return whether or not casting the exprType to castType is legal
+     */
+    private boolean isInvariantTypeCastSafe(
+            AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType, AnnotationMirror top) {
+        if (!isTypeCastSafe(castType, exprType)) {
+            return false;
+        }
+        AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
+        AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
+
+        if (atypeFactory.hasQualifierParameterInHierarchy(exprType, top)) {
+            // The isTypeCastSafe call above checked that the exprType is a subtype of castType,
+            // so just check the reverse to check that the qualifiers are equivalent.
+            return atypeFactory.getQualifierHierarchy().isSubtype(castTypeAnno, exprTypeAnno);
+        }
+        // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
+        AnnotationMirror bottom = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
+        return AnnotationUtils.areSame(castTypeAnno, bottom)
+                && AnnotationUtils.areSame(exprTypeAnno, bottom);
     }
 
     @Override
@@ -2483,7 +2632,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param atms annotated type mirrors to compare
      * @return true iff there are two annotated types (anywhere in any ATM) such that their
-     *     toStrings are the same but their verbose toStrings differ.
+     *     toStrings are the same but their verbose toStrings differ
      */
     private static boolean containsSameToString(AnnotatedTypeMirror... atms) {
         Map<String, String> simpleToVerbose = new HashMap<>();
@@ -2559,34 +2708,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 paramUpperBound, (AnnotatedWildcardType) typeArg);
             }
 
+            Tree reportErrorToTree;
             if (typeargTrees == null || typeargTrees.isEmpty()) {
-                // The type arguments were inferred and we mark the whole method.
-                // The inference fails if we provide invalid arguments,
-                // therefore issue an error for the arguments.
-                // I hope this is less confusing for users.
-                commonAssignmentCheck(
-                        paramUpperBound, typeArg, toptree, "type.argument.type.incompatible");
+                // The type arguments were inferred, report the error on the method invocation.
+                reportErrorToTree = toptree;
             } else {
-                commonAssignmentCheck(
-                        paramUpperBound,
-                        typeArg,
-                        typeargTrees.get(typeargs.indexOf(typeArg)),
-                        "type.argument.type.incompatible");
+                reportErrorToTree = typeargTrees.get(typeargs.indexOf(typeArg));
             }
+
+            checkHasQualifierParameterAsTypeArgument(typeArg, paramUpperBound, toptree);
+            commonAssignmentCheck(
+                    paramUpperBound, typeArg, reportErrorToTree, "type.argument.type.incompatible");
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
                 FoundRequired fr = FoundRequired.of(typeArg, bounds);
-                if (typeargTrees == null || typeargTrees.isEmpty()) {
-                    // The type arguments were inferred and we mark the whole method.
-                    checker.reportError(
-                            toptree, "type.argument.type.incompatible", fr.found, fr.required);
-                } else {
-                    checker.reportError(
-                            typeargTrees.get(typeargs.indexOf(typeArg)),
-                            "type.argument.type.incompatible",
-                            fr.found,
-                            fr.required);
-                }
+                checker.reportError(
+                        reportErrorToTree,
+                        "type.argument.type.incompatible",
+                        fr.found,
+                        fr.required);
+            }
+        }
+    }
+
+    /**
+     * Reports an error if the type argument has a qualifier parameter and the type parameter upper
+     * bound does not have a qualifier parameter.
+     *
+     * @param typeArgument type argument
+     * @param typeParameterUpperBound upper bound of the type parameter
+     * @param reportError Tree to which to report the error
+     */
+    private void checkHasQualifierParameterAsTypeArgument(
+            AnnotatedTypeMirror typeArgument,
+            AnnotatedTypeMirror typeParameterUpperBound,
+            Tree reportError) {
+        for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+            if (atypeFactory.hasQualifierParameterInHierarchy(typeArgument, top)
+                    && !getTypeFactory()
+                            .hasQualifierParameterInHierarchy(typeParameterUpperBound, top)) {
+                checker.reportError(reportError, "type.argument.invalid.hasqualparam", top);
             }
         }
     }
@@ -3779,9 +3940,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        return atypeFactory
-                .getTypeHierarchy()
-                .isSubtype(useType.getErased(), declarationType.getErased());
+        // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
+        // parameters.
+        Set<? extends AnnotationMirror> tops =
+                atypeFactory.getQualifierHierarchy().getTopAnnotations();
+        Set<AnnotationMirror> upperBounds =
+                atypeFactory
+                        .getQualifierUpperBounds()
+                        .getBoundQualifiers(declarationType.getUnderlyingType());
+        for (AnnotationMirror top : tops) {
+            AnnotationMirror upperBound =
+                    atypeFactory
+                            .getQualifierHierarchy()
+                            .findAnnotationInHierarchy(upperBounds, top);
+            AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(qualifier, upperBound)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

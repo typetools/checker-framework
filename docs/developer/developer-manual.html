@@ -32,6 +32,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
         </ul></li>
+      <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
@@ -159,10 +160,16 @@ version control system, such as by running <code>git annotate <em>filename</em><
 
 <h2 id="IDE_configuration">IDE configuration</h2>
 
-After <a href="../manual/manual.html">cloning and building all projects from their sources</a>,
-import them as gradle projects.
+<p>
+First clone and build all projects from their sources, from the command line,
+using the instructions
+at <a href="https://checkerframework.org/manual/#build-source">https://checkerframework.org/manual/#build-source</a>.
+After that succeeds, import the projects into your IDE as Gradle projects.
+</p>
 
+<p>
 If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11.
+</p>
 
 
 <h2 id="pull-requests">Pull requests</h2>
@@ -215,13 +222,6 @@ and use that branch when running tests.
 </p>
 
 <p>
-Please ensure that your GitHub account profile contains your complete name.
-This is necessary to include you in
-the <a href="https://checkerframework.org/manual/#credits">list of
-contributors</a>.
-</p>
-
-<p>
 Also
 see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
 Ernst's advice about creating GitHub pull requests</a>.
@@ -248,6 +248,24 @@ after the pull request was assigned with no feedback, then ping the
 assignee, wait at least another business day, and then go ahead and push
 your changes.  It's great if reviewers can give feedback, but if they are
 too busy to do so, you should recognize that and move on.
+</p>
+
+
+<h2 id="github-configuration">GitHub configuration</h2>
+
+<p>
+Before you make any commits (even to your own fork),
+update your GitHub account profile so it contains your complete name.
+This is necessary to include you in
+the <a href="https://checkerframework.org/manual/#credits">list of
+contributors</a>.
+</p>
+
+<p>
+You will want your own GitHub fork of any project you plan to modify.  We
+recommend that, for each fork, you configure GitHub
+to <a href="https://help.github.com/en/github/administering-a-repository/managing-the-automatic-deletion-of-branches">delete
+branches after they are merged</a>.
 </p>
 
 

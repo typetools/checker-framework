@@ -1,25 +1,31 @@
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
-class Issue2159 {
-    Issue2159() {}
+public class Issue2159 {
+    @Tainted Issue2159() {}
 
-    // :: warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
-    @PolyTainted Issue2159(@PolyTainted Object x) {}
+    static class MyClass extends Issue2159 {
+        MyClass() {}
 
-    void testPolyTaintedLocal(
-            @PolyTainted Object input, @Untainted Object untainted, @Tainted Object tainted) {
-        // :: warning: (cast.unsafe)
-        @PolyTainted Object local = (@PolyTainted Issue2159) new Issue2159();
-        // :: warning: (cast.unsafe.constructor.invocation)
-        @PolyTainted Object local1 = new @PolyTainted Issue2159();
-        // :: warning: (cast.unsafe.constructor.invocation)
-        @Untainted Object local2 = new @Untainted Issue2159();
+        // :: error: (super.invocation.invalid)
+        @PolyTainted MyClass(@PolyTainted Object x) {}
 
-        @PolyTainted Object local3 = new @PolyTainted Issue2159(input);
-        // :: warning: (cast.unsafe.constructor.invocation)
-        @Untainted Object local4 = new @Untainted Issue2159(input);
-        // :: warning: (cast.unsafe.constructor.invocation)
-        @PolyTainted Object local5 = new @PolyTainted Issue2159(tainted);
-        @Untainted Object local6 = new @Untainted Issue2159(untainted);
+        void testPolyTaintedLocal(
+                @PolyTainted Object input, @Untainted Object untainted, @Tainted Object tainted) {
+            // :: warning: (cast.unsafe)
+            @PolyTainted Object local = (@PolyTainted MyClass) new MyClass();
+            // :: warning: (cast.unsafe.constructor.invocation)
+            @PolyTainted Object local1 = new @PolyTainted MyClass();
+            // :: warning: (cast.unsafe.constructor.invocation)
+            @Untainted Object local2 = new @Untainted MyClass();
+
+            @PolyTainted Object local3 = new @PolyTainted MyClass(input);
+            // :: warning: (cast.unsafe.constructor.invocation)
+            @Untainted Object local4 = new @Untainted MyClass(input);
+            // :: warning: (cast.unsafe.constructor.invocation)
+            @PolyTainted Object local5 = new @PolyTainted MyClass(tainted);
+            @Untainted Object local6 = new @Untainted MyClass(untainted);
+        }
     }
 }

@@ -9,8 +9,6 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1045,38 +1043,7 @@ public class AnnotatedTypes {
         return found;
     }
 
-    /**
-     * Returns true if the given annotation mirror targets {@link ElementType#TYPE_USE}, false
-     * otherwise.
-     *
-     * @param anno the {@link AnnotationMirror}
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the anno targets both {@link ElementType#TYPE_USE} and something
-     *     besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated Use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
-        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
-        return hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
-    }
-
-    /**
-     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
-     *
-     * @param elements an array of {@link ElementType} values
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
-     *     something besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        return AnnotationUtils.hasTypeQualifierElementTypes(elements, cls);
-    }
-
+    /** java.lang.annotation.Annotation.class canonical name. */
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 

@@ -13,12 +13,12 @@ public class RefinedReturnTest {
 
     public class Sub extends Super {
         @Override
-        public @IdentifierOrArray String aString() {
+        public @ArrayWithoutPackage String aString() {
             return "Integer[]";
         }
     }
 
     void m() {
-        @IdentifierOrArray String s = new Sub().aString();
+        @ArrayWithoutPackage String s = new Sub().aString();
     }
 }
