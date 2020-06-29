@@ -1,11 +1,8 @@
-ext {
-    annotatedJdkHome = '../../jdk'
-}
 sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
+            srcDirs += ['src/main/java']
         }
     }
     testannotations
@@ -27,74 +24,6 @@ dependencies {
 
     testannotationsImplementation project(':checker-qual')
 }
-
-task cloneTypetoolsJdk() {
-    description 'Obtain or update the annotated JDK.'
-    doLast {
-        if (file(annotatedJdkHome).exists()) {
-            exec {
-                workingDir annotatedJdkHome
-                executable 'git'
-                args = ['pull', '-q']
-                ignoreExitValue = true
-            }
-        } else {
-            println 'Cloning annotated JDK repository.'
-            exec {
-                workingDir "${annotatedJdkHome}/../"
-                executable 'git'
-                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
-            }
-        }
-    }
-}
-
-task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
-    dependsOn ':framework:compileJava'
-    def inputDir = "${annotatedJdkHome}/src"
-    def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
-
-    description "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
-
-    inputs.dir file(inputDir)
-    outputs.dir file(outputDir)
-
-    doLast {
-        FileTree tree = fileTree(dir: inputDir)
-        SortedSet<String> annotatedForFiles = new TreeSet<>();
-        tree.visit { FileVisitDetails fvd ->
-            if (!fvd.file.isDirectory() && fvd.file.name.matches(".*\\.java")
-                    && !fvd.file.path.contains("org/checkerframework")
-                    && !fvd.file.name.matches("module-info.java")) {
-                // Ignore module-info until this JavaParser bug is fixed (and merged in the StubParser):
-                // https://github.com/javaparser/javaparser/issues/2615
-                fvd.getFile().readLines().any { line ->
-                    if (line.contains("@AnnotatedFor") || line.contains("org.checkerframework")) {
-                        annotatedForFiles.add(fvd.file.absolutePath)
-                        return true;
-                    }
-                }
-            }
-        }
-        String absolutejdkHome = file(annotatedJdkHome).absolutePath
-        int jdkDirStringSize = absolutejdkHome.size()
-        copy {
-            from(annotatedJdkHome)
-            into(outputDir)
-            for (String filename : annotatedForFiles) {
-                include filename.substring(jdkDirStringSize)
-            }
-        }
-        javaexec {
-            classpath = sourceSets.main.runtimeClasspath
-
-            main = 'org.checkerframework.framework.stub.JavaStubifier'
-            args outputDir
-        }
-    }
-}
-
-processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 jar {
     manifest {

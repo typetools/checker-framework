@@ -43,9 +43,9 @@ import scenelib.annotations.io.IndexFileParser;
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
  * scenelib.annotations.el.AScene}, which {@code writeScenes()} can write into a file. For example,
- * a class {@code my.package.MyClass} will have its members' inferred types stored in a Scene, and
- * later written into a file named {@code my.package.MyClass.jaif} if using {@link
- * OutputFormat#JAIF}, or {@code my.package.MyClass.astub} if using {@link OutputFormat#STUB}.
+ * a class {@code my.pakkage.MyClass} will have its members' inferred types stored in a Scene, and
+ * later written into a file named {@code my.pakkage.MyClass.jaif} if using {@link
+ * OutputFormat#JAIF}, or {@code my.pakkage.MyClass.astub} if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
  * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those

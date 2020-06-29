@@ -119,6 +119,9 @@ public class CFGVisualizeLauncher {
     /**
      * Generate the DOT representation of the CFG for a method.
      *
+     * @param <V> the abstract value type to be tracked by the analysis
+     * @param <S> the store type used in the analysis
+     * @param <T> the transfer function type that is used to approximated runtime behavior
      * @param inputFile java source input file
      * @param outputDir source output directory
      * @param method name of the method to generate the CFG for
@@ -230,6 +233,9 @@ public class CFGVisualizeLauncher {
     /**
      * Generate the String representation of the CFG for a method.
      *
+     * @param <V> the abstract value type to be tracked by the analysis
+     * @param <S> the store type used in the analysis
+     * @param <T> the transfer function type that is used to approximated runtime behavior
      * @param inputFile java source input file
      * @param method name of the method to generate the CFG for
      * @param clas name of the class which includes the method to generate the CFG for
@@ -239,7 +245,7 @@ public class CFGVisualizeLauncher {
      * @return a map which includes a key "stringGraph" and the String representation of CFG as the
      *     value
      */
-    protected <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+    public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
             @Nullable Map<String, Object> generateStringOfCFG(
             String inputFile,
             String method,

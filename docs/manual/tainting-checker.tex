@@ -201,7 +201,8 @@ This invocation is permitted because, in the expression, all
 corresponding formal parameter.
 
 Beware this problem both in code you write, and also in annotated libraries
-(such as stub files).
+(such as stub files).  The correct way to annotate this class is to
+add a class qualifier parameter; see Section~\ref{class-qualifier-polymorphism}.
 
 (Side note:  if \code{append} were purely functional (had no side effects
 and returned a new \<StringBuffer>) the method call would be acceptable,
@@ -209,10 +210,6 @@ because the return type is instantiated to \<@Tainted StringBuffer> for the
 expression \<usb.append(ts)>.  However, the \code{append} method works via
 side-effect, and only returns a reference to the buffer as a convenience
 for writing ``fluent'' client code.)
-
-%% Uncomment this text when the Detemrinism Checker is merged into master.
-% The Determinism Checker enables sound polymorphic annotation of methods
-% like \<StringBuffer.append> via its \code{@PolyDet(``use'')} annotation.
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
