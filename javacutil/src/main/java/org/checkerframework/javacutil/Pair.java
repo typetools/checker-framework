@@ -42,6 +42,9 @@ public class Pair<V1, V2> {
 
     @Override
     public boolean equals(@Nullable Object o) {
+        if (this == o) {
+            return true;
+        }
         if (!(o instanceof Pair)) {
             return false;
         }

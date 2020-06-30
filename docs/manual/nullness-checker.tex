@@ -621,7 +621,7 @@ Chapter~\ref{suppressing-warnings}).  An example use is
 %END LATEX
 
 
-The Nullness Checker supports an additional warning suppression key,
+The Nullness Checker supports an additional warning suppression string,
 \<nullness:generic.argument>.
 Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress warnings related to misuse of generic type
@@ -632,7 +632,7 @@ arguments.  One use for this key is when a class is declared to take only
 The Nullness Checker also permits you to use assertions or method calls to
 suppress warnings; see below.
 
-% TODO: check whether the SuppressWarnings keys are correct.
+% TODO: check whether the SuppressWarnings strings are correct.
 
 
 \subsectionAndLabel{Suppressing warnings with assertions and method calls}{suppressing-warnings-with-assertions}
@@ -717,7 +717,8 @@ command-line argument
 
 To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
 use the following command (where \code{javac} is the Checker Framework compiler that
-is distributed with the Checker Framework):
+is distributed with the Checker Framework, see Section~\ref{javac-wrapper}
+for details):
 
 %BEGIN LATEX
 \begin{smaller}
@@ -1962,7 +1963,7 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-``initialization.''~(note the trailing period) warning suppression key.  You
+``initialization.''~(note the trailing period) warning suppression string.  You
 can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
 class, or pass the command-line argument
 \<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
@@ -1977,7 +1978,7 @@ as about assignments or method overriding.
 
 It is not possible to completely disable initialization checking while
 retaining nullness checking.  The ``initialization'' warning suppression
-key (without a period) has the same effect as the ``nullness'' key:  both
+string (without a period) has the same effect as ``nullness'':  both
 of them disable all nullness and initialization checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers

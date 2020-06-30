@@ -15,7 +15,7 @@ public class TestDiagnostic {
 
     /**
      * An error key or full error message that usually appears between parentheses in diagnostic
-     * messages
+     * messages.
      */
     private final String message;
 
