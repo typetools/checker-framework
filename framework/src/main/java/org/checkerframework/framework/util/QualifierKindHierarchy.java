@@ -389,6 +389,10 @@ public class QualifierKindHierarchy {
      *
      * If this method is not overridden or if {@code bottom} is null, it has no effect.
      *
+     * <p>If {@code bottom} is not null, then the {@code directSuperMap} is modified so that the
+     * super qualifier kinds of bottom are all the qualifier kinds that are not super qualifier
+     * kinds of another qualifier kind.
+     *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers
      * @param bottom the class of the bottom qualifier or {@code null}
