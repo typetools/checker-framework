@@ -1,3 +1,7 @@
+package livevar;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 import org.checkerframework.dataflow.analysis.BackwardAnalysis;
 import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
@@ -13,6 +17,7 @@ public class LiveVariable {
         String inputFile = "Test.java";
         String method = "test";
         String clazz = "Test";
+        String outputFile = "Out.txt";
 
         LiveVarTransfer transfer = new LiveVarTransfer();
         BackwardAnalysis<LiveVar, LiveVarStore, LiveVarTransfer> backwardAnalysis =
@@ -21,6 +26,11 @@ public class LiveVariable {
         Map<String, Object> res =
                 cfgVisualizeLauncher.generateStringOfCFG(
                         inputFile, method, clazz, true, backwardAnalysis);
-        System.out.println(res.get("stringGraph"));
+        try (FileWriter out = new FileWriter(outputFile)) {
+            out.write(res.get("stringGraph").toString());
+            out.write("\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
