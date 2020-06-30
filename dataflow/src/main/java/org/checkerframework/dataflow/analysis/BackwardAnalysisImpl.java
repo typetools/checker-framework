@@ -322,8 +322,6 @@ public class BackwardAnalysisImpl<
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
-        // TODO: Understand why the Store of passing node is analysis.currentInput.getRegularStore()
-        // when the analysis is running
         if (isRunning) {
             assert currentInput != null : "@AssumeAssertion(nullness): invariant";
             return currentInput.getRegularStore();

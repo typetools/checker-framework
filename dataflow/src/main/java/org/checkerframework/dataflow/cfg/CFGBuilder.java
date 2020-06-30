@@ -61,6 +61,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -4913,15 +4914,32 @@ public class CFGBuilder {
             // Condition
             addLabelForNextNode(conditionStart);
             assert tree.getCondition() != null;
+            // Determine whether the loop condition has the constant value true, according to the
+            // compiler logic.
+            boolean isCondConstTrue = TreeUtils.isExprConstTrue(tree.getCondition());
+
             unbox(scan(tree.getCondition(), p));
-            ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
-            extendWithExtendedNode(cjump);
+
+            if (!isCondConstTrue) {
+                // If the loop condition does not have the constant value true, the control flow is
+                // split into two branches.
+                ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
+                extendWithExtendedNode(cjump);
+            }
 
             // Loop body
             addLabelForNextNode(loopEntry);
             assert tree.getStatement() != null;
             scan(tree.getStatement(), p);
-            extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+            if (isCondConstTrue) {
+                // The condition has the constant value true, so we can directly jump back to the
+                // loop entry.
+                extendWithExtendedNode(new UnconditionalJump(loopEntry));
+            } else {
+                // Otherwise, jump back to evaluate the condition.
+                extendWithExtendedNode(new UnconditionalJump(conditionStart));
+            }
 
             // Loop exit
             addLabelForNextNode(loopExit);
