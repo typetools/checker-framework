@@ -37,6 +37,8 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
@@ -1389,5 +1391,34 @@ public final class TreeUtils {
     public static boolean isImplicitlyTypedLambda(Tree tree) {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
+    }
+
+    /**
+     * Determine whether an expression {@link ExpressionTree} has the constant value true, according
+     * to the compiler logic.
+     *
+     * @param node the expression to be checked.
+     * @return true if {@code node} has the constant value true.
+     */
+    public static boolean isExprConstTrue(final ExpressionTree node) {
+        assert node instanceof JCExpression;
+        if (((JCExpression) node).type.isTrue()) {
+            return true;
+        }
+        ExpressionTree tree = TreeUtils.withoutParens(node);
+        if (tree instanceof JCTree.JCBinary) {
+            JCBinary binTree = (JCBinary) tree;
+            JCExpression ltree = binTree.lhs;
+            JCExpression rtree = binTree.rhs;
+            switch (binTree.getTag()) {
+                case AND:
+                    return isExprConstTrue(ltree) && isExprConstTrue(rtree);
+                case OR:
+                    return isExprConstTrue(ltree) || isExprConstTrue(rtree);
+                default:
+                    break;
+            }
+        }
+        return false;
     }
 }
