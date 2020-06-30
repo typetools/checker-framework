@@ -613,8 +613,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             AnnotationMirror maybeTop = polyQualifiers.get(poly);
             if (AnnotationUtils.areSameByName(poly, maybeTop)) {
                 // If the value of @PolymorphicQualifier is the default value, Annotation.class,
-                // then map
-                // is set to polyQual -> polyQual in
+                // then map is set to polyQual -> polyQual in
                 // MultiGraphQualifierHierarchy.MultiGraphFactory.addQualifier,
                 // because the top is unknown there.
                 // Reset it to top here.
