@@ -183,11 +183,6 @@ public abstract class CFAbstractAnalysis<
         return atypeFactory;
     }
 
-    /** Perform a visualization of the CFG and analysis info for inspection. */
-    public void visualizeCFG() {
-        atypeFactory.getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), this);
-    }
-
     /**
      * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
      * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
