@@ -258,8 +258,6 @@ public class ForwardAnalysisImpl<
             cache = null;
         }
 
-        // TODO: Understand why the Store of passing node is analysis.currentInput.getRegularStore()
-        //  when the analysis is running
         if (isRunning) {
             assert currentInput != null : "@AssumeAssertion(nullness): invariant";
             return currentInput.getRegularStore();
