@@ -418,8 +418,6 @@ public class QualifierKindHierarchy {
      * Creates the set of top {@link QualifierKind}s by searching {@code directSuperMap} for
      * qualifiers without any direct super qualifiers.
      *
-     * <p>Also, sets {@link QualifierKind#top} for the top {@code QualifierKinds}s.
-     *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers; create by {@link #createDirectSuperMap()}
      * @return the set of top {@link QualifierKind}s
@@ -433,7 +431,6 @@ public class QualifierKindHierarchy {
                 (qualifierKind, superQuals) -> {
                     if (superQuals.isEmpty()) {
                         tops.add(qualifierKind);
-                        qualifierKind.top = qualifierKind;
                     }
                 });
         return tops;
