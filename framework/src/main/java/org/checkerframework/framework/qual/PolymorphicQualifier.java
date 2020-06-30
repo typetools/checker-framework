@@ -25,6 +25,8 @@ public @interface PolymorphicQualifier {
      * When multiple type hierarchies are supported by a single type system, then each polymorphic
      * qualifier needs to indicate which sub-hierarchy it belongs to. Do so by passing a qualifier
      * from the given hierarchy, by convention the top qualifier.
+     *
+     * @return the top qualifier in the hierarchy of this qualifier
      */
     // We use the meaningless Annotation.class as default value and
     // then ensure there is a single top qualifier to use.
