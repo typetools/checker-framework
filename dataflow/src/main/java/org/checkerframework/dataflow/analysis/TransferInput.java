@@ -6,8 +6,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
- * TransferFunction}. It also contains a reference to the node for which the transfer function will
- * be applied.
+ * ForwardTransferFunction} or a {@link BackwardTransferFunction}. It also contains a reference to
+ * the node for which the transfer function will be applied.
  *
  * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
  * 'then', and the other to 'else'.
