@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,8 +94,16 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
             Name pqtopclass = getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
-                AnnotationMirror pqtop =
-                        AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
+                AnnotationMirror pqtop;
+                if (pqtopclass.contentEquals(Annotation.class.getName())) {
+                    // @PolymorphicQualifier with no value defaults to Annotation.class.
+                    // That means there is only one top in the hierarchy. The top qualifier
+                    // may not be known at this point, so use the qualifier itself.
+                    // This changed to top in MultiGraphQualifierHierarchy.addPolyRelations
+                    pqtop = qual;
+                } else {
+                    pqtop = AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
+                }
                 // use given top (which might be Annotation) as key
                 this.polyQualifiers.put(pqtop, qual);
             } else {
@@ -351,12 +360,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
         AnnotationMirror top = getTopAnnotation(start);
         for (AnnotationMirror key : polyQualifiers.keySet()) {
-            if (key != null
-                    && (AnnotationUtils.areSame(key, top)
-                            // java.lang.annotation.Annotation means top, when a hierarchy only has
-                            // one top.
-                            || AnnotationUtils.areSameByName(
-                                    key, "java.lang.annotation.Annotation"))) {
+            if (key != null && AnnotationUtils.areSame(key, top)) {
                 return polyQualifiers.get(key);
             }
         }
@@ -603,78 +607,78 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return;
         }
 
+        // Handle the case where @PolymorphicQualifier uses the default value Annotation.class.
+        if (polyQualifiers.size() == 1 && tops.size() == 1) {
+            AnnotationMirror poly = polyQualifiers.keySet().iterator().next();
+            AnnotationMirror maybeTop = polyQualifiers.get(poly);
+            if (AnnotationUtils.areSameByName(poly, maybeTop)) {
+                // If the value of @PolymorphicQualifier is the default value, Annotation.class,
+                // then map is set to polyQual -> polyQual in
+                // MultiGraphQualifierHierarchy.MultiGraphFactory.addQualifier,
+                // because the top is unknown there.
+                // Reset it to top here.
+                polyQualifiers.put(tops.iterator().next(), poly);
+                polyQualifiers.remove(poly);
+            }
+        }
+
         for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQualifiers.entrySet()) {
             AnnotationMirror declTop = kv.getKey();
             AnnotationMirror polyQualifier = kv.getValue();
-            // java.lang.annotation.Annotation means top, when a hierarchy only has one top.
-            if (AnnotationUtils.areSameByName(declTop, "java.lang.annotation.Annotation")) {
-                if (tops.size() == 1) { // un-ambigous single top
-                    AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, tops);
-                    for (AnnotationMirror bottom : bottoms) {
-                        // Add the polyqualifier as a supertype
-                        // Need to copy over the set as it is unmodifiable.
-                        AnnotationUtils.updateMappingToImmutableSet(
-                                fullMap, bottom, Collections.singleton(polyQualifier));
-                    }
-                } else {
-                    throw new BugInCF(
-                            "MultiGraphQualifierHierarchy.addPolyRelations: "
-                                    + "incorrect or missing top qualifier given in polymorphic qualifier "
-                                    + polyQualifier
-                                    + "; declTop = "
-                                    + declTop
-                                    + "; possible top qualifiers: "
-                                    + tops);
-                }
+            // Ensure that it's really the top of the hierarchy
+            Set<AnnotationMirror> declSupers = fullMap.get(declTop);
+            AnnotationMirror polyTop = null;
+            if (declSupers.isEmpty()) {
+                polyTop = declTop;
             } else {
-                // Ensure that it's really the top of the hierarchy
-                Set<AnnotationMirror> declSupers = fullMap.get(declTop);
-                AnnotationMirror polyTop = null;
-                if (declSupers.isEmpty()) {
-                    polyTop = declTop;
-                } else {
-                    for (AnnotationMirror ds : declSupers) {
-                        if (AnnotationUtils.containsSameByName(tops, ds)) {
-                            polyTop = ds;
-                        }
+                for (AnnotationMirror ds : declSupers) {
+                    if (AnnotationUtils.containsSameByName(tops, ds)) {
+                        polyTop = ds;
                     }
                 }
-                boolean found = (polyTop != null);
-                if (found) {
-                    AnnotationUtils.updateMappingToImmutableSet(
-                            fullMap, polyQualifier, Collections.singleton(polyTop));
-                } else {
-                    throw new BugInCF(
-                            "MultiGraphQualifierHierarchy.addPolyRelations: "
-                                    + "incorrect top qualifier given in polymorphic qualifier: "
-                                    + polyQualifier
-                                    + " could not find: "
-                                    + polyTop);
-                }
+            }
+            boolean found = (polyTop != null);
+            if (found) {
+                AnnotationUtils.updateMappingToImmutableSet(
+                        fullMap, polyQualifier, Collections.singleton(polyTop));
+            } else if (AnnotationUtils.areSameByName(polyQualifier, declTop)) {
+                throw new BugInCF(
+                        "MultiGraphQualifierHierarchy.addPolyRelations: "
+                                + "incorrect or missing top qualifier given in polymorphic qualifier "
+                                + polyQualifier
+                                + "; possible top qualifiers: "
+                                + tops);
+            } else {
+                throw new BugInCF(
+                        "MultiGraphQualifierHierarchy.addPolyRelations: "
+                                + "incorrect top qualifier given in polymorphic qualifier: "
+                                + polyQualifier
+                                + " could not find: "
+                                + polyTop);
+            }
 
-                found = false;
-                AnnotationMirror bottom = null;
-                outer:
-                for (AnnotationMirror btm : bottoms) {
-                    for (AnnotationMirror btmsuper : fullMap.get(btm)) {
-                        if (AnnotationUtils.areSameByName(btmsuper, polyTop)) {
-                            found = true;
-                            bottom = btm;
-                            break outer;
-                        }
+            found = false;
+            AnnotationMirror bottom = null;
+            outer:
+            for (AnnotationMirror btm : bottoms) {
+                for (AnnotationMirror btmsuper : fullMap.get(btm)) {
+                    if (AnnotationUtils.areSameByName(btmsuper, polyTop)) {
+                        found = true;
+                        bottom = btm;
+                        break outer;
                     }
                 }
-                if (found) {
-                    AnnotationUtils.updateMappingToImmutableSet(
-                            fullMap, bottom, Collections.singleton(polyQualifier));
-                } else {
-                    // TODO: in a type system with a single qualifier this check will fail.
-                    // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
-                    // " +
-                    //        "incorrect top qualifier given in polymorphic qualifier: "
-                    //
-                    //        + polyQualifier + " could not find bottom for: " + polyTop);
-                }
+            }
+            if (found) {
+                AnnotationUtils.updateMappingToImmutableSet(
+                        fullMap, bottom, Collections.singleton(polyQualifier));
+            } else {
+                // TODO: in a type system with a single qualifier this check will fail.
+                // throw new BugInCF("MultiGraphQualifierHierarchy.addPolyRelations:
+                // " +
+                //        "incorrect top qualifier given in polymorphic qualifier: "
+                //
+                //        + polyQualifier + " could not find bottom for: " + polyTop);
             }
         }
     }
