@@ -21,50 +21,50 @@ import org.checkerframework.javacutil.BugInCF;
 public class LiveVarStore implements Store<LiveVarStore> {
 
     /** A set of live variable abstract values. */
-    private final Set<LiveVar> liveVarSet;
+    private final Set<LiveVarValue> liveVarValueSet;
 
     /** Create a new LiveVarStore. */
     public LiveVarStore() {
-        liveVarSet = new HashSet<>();
+        liveVarValueSet = new HashSet<>();
     }
 
     /**
      * Create a new LiveVarStore.
      *
-     * @param liveVarSet a set of live variable abstract values
+     * @param liveVarValueSet a set of live variable abstract values
      */
-    public LiveVarStore(Set<LiveVar> liveVarSet) {
-        this.liveVarSet = liveVarSet;
+    public LiveVarStore(Set<LiveVarValue> liveVarValueSet) {
+        this.liveVarValueSet = liveVarValueSet;
     }
 
     /**
-     * Add the information of a live variable into {@link #liveVarSet}.
+     * Add the information of a live variable into {@link #liveVarValueSet}.
      *
      * @param variable a live variable
      */
-    public void putLiveVar(LiveVar variable) {
-        liveVarSet.add(variable);
+    public void putLiveVar(LiveVarValue variable) {
+        liveVarValueSet.add(variable);
     }
 
     /**
-     * Remove the information of a live variable from {@link #liveVarSet}.
+     * Remove the information of a live variable from {@link #liveVarValueSet}.
      *
      * @param variable a live variable
      */
-    public void killLiveVar(LiveVar variable) {
-        liveVarSet.remove(variable);
+    public void killLiveVar(LiveVarValue variable) {
+        liveVarValueSet.remove(variable);
     }
 
     /**
-     * Add the information of live variables in an expression to {@link #liveVarSet}.
+     * Add the information of live variables in an expression to {@link #liveVarValueSet}.
      *
      * @param expression a node
      */
     public void addUseInExpression(Node expression) {
         // TODO Do we need a AbstractNodeScanner to do the following job?
         if (expression instanceof LocalVariableNode || expression instanceof FieldAccessNode) {
-            LiveVar liveVar = new LiveVar(expression);
-            putLiveVar(liveVar);
+            LiveVarValue liveVarValue = new LiveVarValue(expression);
+            putLiveVar(liveVarValue);
         } else if (expression instanceof UnaryOperationNode) {
             UnaryOperationNode unaryNode = (UnaryOperationNode) expression;
             addUseInExpression(unaryNode.getOperand());
@@ -92,25 +92,25 @@ public class LiveVarStore implements Store<LiveVarStore> {
             return false;
         }
         LiveVarStore other = (LiveVarStore) obj;
-        return other.liveVarSet.equals(this.liveVarSet);
+        return other.liveVarValueSet.equals(this.liveVarValueSet);
     }
 
     @Override
     public int hashCode() {
-        return this.liveVarSet.hashCode();
+        return this.liveVarValueSet.hashCode();
     }
 
     @Override
     public LiveVarStore copy() {
-        return new LiveVarStore(new HashSet<>(liveVarSet));
+        return new LiveVarStore(new HashSet<>(liveVarValueSet));
     }
 
     @Override
     public LiveVarStore leastUpperBound(LiveVarStore other) {
-        Set<LiveVar> liveVarSetLub = new HashSet<>();
-        liveVarSetLub.addAll(this.liveVarSet);
-        liveVarSetLub.addAll(other.liveVarSet);
-        return new LiveVarStore(liveVarSetLub);
+        Set<LiveVarValue> liveVarValueSetLub = new HashSet<>();
+        liveVarValueSetLub.addAll(this.liveVarValueSet);
+        liveVarValueSetLub.addAll(other.liveVarValueSet);
+        return new LiveVarStore(liveVarValueSetLub);
     }
 
     /** It should not be called since it is not used by the backward analysis. */
@@ -127,18 +127,18 @@ public class LiveVarStore implements Store<LiveVarStore> {
     @Override
     public String visualize(CFGVisualizer<?, LiveVarStore, ?> viz) {
         String key = "live variables";
-        if (liveVarSet.isEmpty()) {
+        if (liveVarValueSet.isEmpty()) {
             return viz.visualizeStoreKeyVal(key, "none");
         }
         StringJoiner sjStoreVal = new StringJoiner(", ");
-        for (LiveVar liveVar : liveVarSet) {
-            sjStoreVal.add(liveVar.toString());
+        for (LiveVarValue liveVarValue : liveVarValueSet) {
+            sjStoreVal.add(liveVarValue.toString());
         }
         return viz.visualizeStoreKeyVal(key, sjStoreVal.toString());
     }
 
     @Override
     public String toString() {
-        return liveVarSet.toString();
+        return liveVarValueSet.toString();
     }
 }

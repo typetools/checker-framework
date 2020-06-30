@@ -6,9 +6,9 @@ import java.util.Map;
 import org.checkerframework.dataflow.analysis.BackwardAnalysis;
 import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.CFGVisualizeLauncher;
-import org.checkerframework.dataflow.livevariable.LiveVar;
 import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
+import org.checkerframework.dataflow.livevariable.LiveVarValue;
 
 /** Used in liveVariableTest Gradle task to test the LiveVariable analysis. */
 public class LiveVariable {
@@ -26,7 +26,7 @@ public class LiveVariable {
         String outputFile = "Out.txt";
 
         LiveVarTransfer transfer = new LiveVarTransfer();
-        BackwardAnalysis<LiveVar, LiveVarStore, LiveVarTransfer> backwardAnalysis =
+        BackwardAnalysis<LiveVarValue, LiveVarStore, LiveVarTransfer> backwardAnalysis =
                 new BackwardAnalysisImpl<>(transfer);
         CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
         Map<String, Object> res =

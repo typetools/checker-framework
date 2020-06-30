@@ -5,8 +5,8 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A live variable wrapper turning node into abstract value. */
-public class LiveVar implements AbstractValue<LiveVar> {
+/** A live variable (which is represented by a node) wrapper turning node into abstract value. */
+public class LiveVarValue implements AbstractValue<LiveVarValue> {
 
     /**
      * A live variable is represented by a node, which can be a {@link
@@ -16,7 +16,7 @@ public class LiveVar implements AbstractValue<LiveVar> {
     protected final Node liveVariable;
 
     @Override
-    public LiveVar leastUpperBound(LiveVar other) {
+    public LiveVarValue leastUpperBound(LiveVarValue other) {
         throw new BugInCF("lub of LiveVar get called!");
     }
 
@@ -25,7 +25,7 @@ public class LiveVar implements AbstractValue<LiveVar> {
      *
      * @param n a node
      */
-    public LiveVar(Node n) {
+    public LiveVarValue(Node n) {
         this.liveVariable = n;
     }
 
@@ -36,10 +36,10 @@ public class LiveVar implements AbstractValue<LiveVar> {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if (!(obj instanceof LiveVar)) {
+        if (!(obj instanceof LiveVarValue)) {
             return false;
         }
-        LiveVar other = (LiveVar) obj;
+        LiveVarValue other = (LiveVarValue) obj;
         return this.liveVariable.equals(other.liveVariable);
     }
 
