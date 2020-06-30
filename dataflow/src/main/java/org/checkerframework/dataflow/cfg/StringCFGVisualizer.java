@@ -46,7 +46,14 @@ public class StringCFGVisualizer<
             }
             sjStringNodes.add(visualizeBlock(v, analysis));
         }
-        return sjStringNodes.toString();
+
+        // Remove the line separator from the end of the string.
+        String stringNodes = sjStringNodes.toString();
+        if (stringNodes.endsWith(lineSeparator)) {
+            stringNodes = stringNodes.substring(0, stringNodes.length() - lineSeparator.length());
+        }
+
+        return stringNodes;
     }
 
     @Override
