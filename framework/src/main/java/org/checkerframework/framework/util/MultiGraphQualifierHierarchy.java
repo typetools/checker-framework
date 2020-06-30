@@ -114,6 +114,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          * Returns the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
          * otherwise return null.
          *
+         * @param qual qualifier
          * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
          *     otherwise return null
          */
