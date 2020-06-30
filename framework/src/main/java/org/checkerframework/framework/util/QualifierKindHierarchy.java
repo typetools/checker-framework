@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -222,7 +223,7 @@ public class QualifierKindHierarchy {
      * A mapping from interned, canonical name of a qualifier to the QualifierKind object
      * representing that class.
      */
-    private final Map<@Interned String, QualifierKind> nameToQualifierKind;
+    private final NavigableMap<@Interned String, QualifierKind> nameToQualifierKind;
 
     /**
      * A mapping from a top qualifier kind to the polymorphic qualifier kind in the same hierarchy.
@@ -323,9 +324,9 @@ public class QualifierKindHierarchy {
      * @param qualifierClasses classes of annotations that are type qualifiers
      * @return a mapping from the canonical name of an annotation class to {@link QualifierKind}
      */
-    protected Map<@Interned String, QualifierKind> createQualifierKinds(
+    protected NavigableMap<@Interned String, QualifierKind> createQualifierKinds(
             Collection<Class<? extends Annotation>> qualifierClasses) {
-        Map<@Interned String, QualifierKind> nameToQualifierKind = new TreeMap<>();
+        TreeMap<@Interned String, QualifierKind> nameToQualifierKind = new TreeMap<>();
         for (Class<? extends Annotation> clazz : qualifierClasses) {
             @SuppressWarnings("interning") // uniqueness is tested immediately below
             @Interned QualifierKind qualifierKind = new QualifierKind(clazz);
@@ -334,7 +335,7 @@ public class QualifierKindHierarchy {
             }
             nameToQualifierKind.put(qualifierKind.name, qualifierKind);
         }
-        return Collections.unmodifiableMap(nameToQualifierKind);
+        return Collections.unmodifiableNavigableMap(nameToQualifierKind);
     }
 
     /**
@@ -400,8 +401,12 @@ public class QualifierKindHierarchy {
             Map<QualifierKind, Set<QualifierKind>> directSuperMap,
             @Nullable Class<? extends Annotation> bottom) {
         if (bottom != null) {
-            String name = bottom.getCanonicalName();
-            QualifierKind bottomKind = getNameToQualifierKind().get(name);
+            QualifierKind bottomKind = getQualifierKind(bottom.getCanonicalName());
+            if (bottomKind == null) {
+                throw new BugInCF(
+                        "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
+                        bottom.getCanonicalName());
+            }
             Set<QualifierKind> superTypes = directSuperMap.get(bottomKind);
             superTypes.addAll(directSuperMap.keySet());
             superTypes.remove(bottomKind);
@@ -755,12 +760,24 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Returns the mapping from the canonical class name of an annotation to its qualifier kind.
+     * Returns a collection of all {@link QualifierKind}s sorted ascending order.
      *
-     * @return the mapping from the canonical class name of an annotation to its qualifier kind
+     * @return a collection of all {@link QualifierKind}s sorted ascending order
      */
-    public Map<@Interned String, QualifierKind> getNameToQualifierKind() {
-        return nameToQualifierKind;
+    public Collection<QualifierKind> allQualifierKinds() {
+        return nameToQualifierKind.values();
+    }
+
+    /**
+     * Returns the {@link QualifierKind} for the given annotation class name or null if one does not
+     * exist.
+     *
+     * @param name canonical name of an annotation class
+     * @return the {@link QualifierKind} for the given annotation class name or null if one does not
+     *     exist
+     */
+    public @Nullable QualifierKind getQualifierKind(String name) {
+        return nameToQualifierKind.get(name);
     }
 
     /**

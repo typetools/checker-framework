@@ -102,7 +102,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      */
     protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.getNameToQualifierKind().values()) {
+        for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
                 quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
             }
@@ -159,7 +159,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * @return the qualifier kind for the annotation with {@code name}
      */
     protected QualifierKind getQualifierKind(String name) {
-        QualifierKind kind = qualifierKindHierarchy.getNameToQualifierKind().get(name);
+        QualifierKind kind = qualifierKindHierarchy.getQualifierKind(name);
         if (kind == null) {
             throw new BugInCF("QualifierKind not in hierarchy: %s", name);
         }
