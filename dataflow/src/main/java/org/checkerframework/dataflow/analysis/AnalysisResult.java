@@ -269,11 +269,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Returns the regular store immediately before a given {@link Block}.
      *
-     * @param bb a block
+     * @param block a block
      * @return the store right before the given block
      */
-    public S getStoreBefore(Block bb) {
-        TransferInput<V, S> transferInput = stores.get(bb);
+    public S getStoreBefore(Block block) {
+        TransferInput<V, S> transferInput = stores.get(block);
         assert transferInput != null
                 : "@AssumeAssertion(nullness): transferInput should be non-null";
         Analysis<V, S, ?> analysis = transferInput.analysis;
@@ -282,12 +282,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 return transferInput.getRegularStore();
             case BACKWARD:
                 Node firstNode;
-                switch (bb.getType()) {
+                switch (block.getType()) {
                     case REGULAR_BLOCK:
-                        firstNode = ((RegularBlock) bb).getContents().get(0);
+                        firstNode = ((RegularBlock) block).getContents().get(0);
                         break;
                     case EXCEPTION_BLOCK:
-                        firstNode = ((ExceptionBlock) bb).getNode();
+                        firstNode = ((ExceptionBlock) block).getNode();
                         break;
                     default:
                         firstNode = null;
@@ -306,17 +306,17 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Returns the regular store immediately after a given block.
      *
-     * @param bb a block
+     * @param block a block
      * @return the store after the given block
      */
-    public S getStoreAfter(Block bb) {
-        TransferInput<V, S> transferInput = stores.get(bb);
+    public S getStoreAfter(Block block) {
+        TransferInput<V, S> transferInput = stores.get(block);
         assert transferInput != null
                 : "@AssumeAssertion(nullness): transferInput should be non-null";
         Analysis<V, S, ?> analysis = transferInput.analysis;
         switch (analysis.getDirection()) {
             case FORWARD:
-                Node lastNode = getLastNode(bb);
+                Node lastNode = getLastNode(block);
                 if (lastNode == null) {
                     // This block doesn't contains any node, return the store in the transfer input
                     return transferInput.getRegularStore();
@@ -333,21 +333,21 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Returns the last node of the given block, or {@code null} if none.
      *
-     * @param bb the block
+     * @param block the block
      * @return the last node of this block or {@code null}
      */
-    protected @Nullable Node getLastNode(Block bb) {
-        switch (bb.getType()) {
+    protected @Nullable Node getLastNode(Block block) {
+        switch (block.getType()) {
             case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) bb).getContents();
+                List<Node> blockContents = ((RegularBlock) block).getContents();
                 return blockContents.get(blockContents.size() - 1);
             case CONDITIONAL_BLOCK:
             case SPECIAL_BLOCK:
                 return null;
             case EXCEPTION_BLOCK:
-                return ((ExceptionBlock) bb).getNode();
+                return ((ExceptionBlock) block).getNode();
             default:
-                throw new BugInCF("Unrecognized block type: " + bb.getType());
+                throw new BugInCF("Unrecognized block type: " + block.getType());
         }
     }
 
