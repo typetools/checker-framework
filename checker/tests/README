@@ -162,7 +162,7 @@ Writing tests for a new checker or with different command-line arguments
 To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level test directory, such as
    checker-framework/checker/tests/regex for the test cases
- * create a top-level JUnit test in checker-framework/checker/src/test/tests,
+ * create a top-level JUnit test in checker-framework/checker/src/test/java/tests,
    such as: RegexTest.java
    It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for
