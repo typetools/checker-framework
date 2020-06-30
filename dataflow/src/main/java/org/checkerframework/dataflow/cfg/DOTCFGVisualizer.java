@@ -144,8 +144,13 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustifiedTerminator);
+    public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, leftJustifiedTerminator);
+    }
+
+    @Override
+    public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     /**
