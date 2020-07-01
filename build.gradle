@@ -812,6 +812,10 @@ subprojects {
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
+
+            if (project.name.is('dataflow')) {
+                dependsOn('liveVariableTest')
+            }
         }
 
         // Create an allTests task per project.
