@@ -17,8 +17,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 - Pre-/postconditions from a developer perspective:
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
 
-- Document -ANullnessChecker_option=value mechanism
-
 ------------------------------------------------------
 
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
@@ -26,13 +24,5 @@ the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
 to be a subtype of AbstractBasicAnnotatedTypeFactory, because
 BaseTypeVisitor assumes that.
 [Defer this because it is being rewritten.]
-
-Basic* is gone.
-Base* (in checker-framework/framework/src/org/checkerframework/common/basetype) does:
- * subtype tests
- * type validation
- * default annotations
- * visitor
- * etc.
 
 ------------------------------------------------------

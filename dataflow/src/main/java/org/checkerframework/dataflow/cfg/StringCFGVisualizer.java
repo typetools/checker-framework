@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -15,7 +16,6 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.node.Node;
 
 /** Generate the String representation of a control flow graph. */
 public class StringCFGVisualizer<
@@ -35,27 +35,25 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
-        StringBuilder sbStringNodes = new StringBuilder();
-        sbStringNodes.append(lineSeparator);
-
+        StringJoiner sjStringNodes = new StringJoiner(lineSeparator, lineSeparator, "");
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
         for (@KeyFor("processOrder") Block v : blocks) {
-            sbStringNodes.append(v.getId()).append(":").append(lineSeparator);
+            sjStringNodes.add(v.getId() + ":");
             if (verbose) {
-                sbStringNodes
-                        .append(getProcessOrderSimpleString(processOrder.get(v)))
-                        .append(lineSeparator);
+                sjStringNodes.add(getProcessOrderSimpleString(processOrder.get(v)));
             }
-            String strBlock = visualizeBlock(v, analysis);
-            if (strBlock.length() == 0) {
-                sbStringNodes.append(lineSeparator);
-            } else {
-                sbStringNodes.append(strBlock).append(lineSeparator);
-            }
+            sjStringNodes.add(visualizeBlock(v, analysis));
         }
-        return sbStringNodes.toString();
+
+        // Remove the line separator from the end of the string.
+        String stringNodes = sjStringNodes.toString();
+        if (stringNodes.endsWith(lineSeparator)) {
+            stringNodes = stringNodes.substring(0, stringNodes.length() - lineSeparator.length());
+        }
+
+        return stringNodes;
     }
 
     @Override
@@ -81,25 +79,23 @@ public class StringCFGVisualizer<
         return "ConditionalBlock: then: "
                 + cbb.getThenSuccessor().getId()
                 + ", else: "
-                + cbb.getElseSuccessor().getId();
+                + cbb.getElseSuccessor().getId()
+                + lineSeparator;
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputHelper(bb, analysis, lineSeparator);
+    public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, lineSeparator);
     }
 
     @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        StringBuilder sbBlockNode = new StringBuilder();
-        sbBlockNode.append(t.toString()).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
-        if (analysis != null) {
-            V value = analysis.getValue(t);
-            if (value != null) {
-                sbBlockNode.append(" > ").append(value.toString());
-            }
-        }
-        return sbBlockNode.toString();
+    public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, lineSeparator);
+    }
+
+    @Override
+    protected String format(Object obj) {
+        return obj.toString();
     }
 
     @Override
@@ -144,7 +140,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeStoreFooter() {
-        return ")";
+        return ")" + lineSeparator;
     }
 
     /**
