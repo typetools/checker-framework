@@ -30,7 +30,7 @@ a user can write a type qualifier on the type argument, as in
 `List<@Tainted Character>` versus `List<@Untainted Character>`.  When a
 non-generic class represents a collection with a hard-coded type (as
 `StringBuffer` hard-codes `Character`), you can use the new class qualifier
-parameter feature to distinguish `StringBuffer` that contain different
+parameter feature to distinguish `StringBuffer`s that contain different
 types of characters.
 
 The Dataflow Framework supports backward analysis.  See its manual.
