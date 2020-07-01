@@ -569,7 +569,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (messageStore == null) {
             super.printOrStoreMessage(kind, message, source, root);
             printStackTrace(trace);
-
         } else {
             CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
             messageStore.add(checkerMessage);
@@ -595,7 +594,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     /**
      * Output the given stack trace if the "dumpOnErrors" option is enabled.
      *
-     * @param trace stack trace when the checker encounters an error
+     * @param trace stack trace when the checker encountered a warning/error
      */
     private void printStackTrace(StackTraceElement[] trace) {
         boolean dumpOnErrors = getBooleanOption("dumpOnErrors", false);
