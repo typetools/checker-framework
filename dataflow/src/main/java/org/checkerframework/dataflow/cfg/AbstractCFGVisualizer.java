@@ -368,7 +368,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.insert(0, escapeString + "~~~~~~~~~" + escapeString);
+        sbStore.insert(0, "~~~~~~~~~" + escapeString);
         return sbStore.toString();
     }
 
