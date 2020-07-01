@@ -38,7 +38,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
     }
 
     /**
-     * Add the information of a live variable into {@link #liveVarValueSet}.
+     * Add the information of a live variable into the live variable set.
      *
      * @param variable a live variable
      */
@@ -47,7 +47,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
     }
 
     /**
-     * Remove the information of a live variable from {@link #liveVarValueSet}.
+     * Remove the information of a live variable from the live variable set.
      *
      * @param variable a live variable
      */
@@ -56,7 +56,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
     }
 
     /**
-     * Add the information of live variables in an expression to {@link #liveVarValueSet}.
+     * Add the information of live variables in an expression to the live variable set.
      *
      * @param expression a node
      */
