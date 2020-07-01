@@ -1742,6 +1742,33 @@ and \autoref{fig:ConstSimple}.
 \constantpropagation{Simple}{Simple sequential program to illustrate constant propagation.}
 
 
+\section{Example: Live Variable}
+
+A live variable analysis for local variables and fields was implemented
+to show the backward analysis works properly. The main class is
+\code{org.checkerframework.dataflow.cfg.playground.LiveVariablePlayground}.
+
+\textbf{Abstract values.} A class \code{LiveVarValue} is a live
+variable (which is represented by a node) wrapper turning node into
+abstract value. A node can be \code{LocalVariableNode} or \code{FieldAccessNode}.
+
+\textbf{The store.} The live variable store \code{LiveVarStore} has a field
+\code{liveVarValueSet} which contains a set of \code{LiveVarValue}s. Only
+\code{LocalVariableNode} or \code{FieldAccessNode} will be considered as a
+live variable and added to \code{liveVarValueSet}. The store defines methods
+\code{putLiveVar(LiveVarValue)} and \code{killLiveVar(LiveVarValue)} to add
+and kill live variables.
+
+\textbf{The transfer function.} The transfer function \code{LiveVarTransfer}
+initializes empty stores at normal and exceptional exit blocks (because this
+is a backward transfer function). The transfer function visits assignments to
+update the information of live variables for each node in the stores.
+
+\textbf{Example.} An example is shown in \autoref{lst:LiveSimple} and
+\autoref{fig:LiveSimple}.
+
+\livevariable{Simple}{Simple sequential program to illustrate live variable.}
+
 
 \section{Default Analysis}
 
@@ -2043,4 +2070,4 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
 %  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
-%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol
+%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
