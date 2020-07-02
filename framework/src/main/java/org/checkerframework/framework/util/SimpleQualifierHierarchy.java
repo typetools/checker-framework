@@ -16,8 +16,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * A qualifier hierarchy where no qualifiers are represented by annotations with elements. The
- * meta-annotation {@link org.checkerframework.framework.qual.SubtypeOf} specifies the hierarchy.
+ * A qualifier hierarchy where no qualifiers have arguments; that is, no qualifier is represented by
+ * an annotation with elements. The meta-annotation {@link
+ * org.checkerframework.framework.qual.SubtypeOf} specifies the hierarchy.
  *
  * <p>It uses a {@link QualifierKindHierarchy} to model the relationships between qualifiers.
  * Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass of
@@ -43,7 +44,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     /**
      * Creates a type hierarchy from the given classes.
      *
-     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
     public SimpleQualifierHierarchy(
@@ -63,7 +64,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
      * QualifierKindHierarchy.)
      *
-     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(

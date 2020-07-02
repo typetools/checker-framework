@@ -25,10 +25,15 @@ The Nullness Checker now treats `System.getProperty()` soundly.  Use
 `-Alint=permitClearProperty` to disable special treatment of
 `System.getProperty()` and to permit undefining built-in system properties.
 
-Add support for class qualifier parameters.  See "Class qualifier parameters"
-section in the manual.
+Class qualifier parameters:  When a generic class represents a collection,
+a user can write a type qualifier on the type argument, as in
+`List<@Tainted Character>` versus `List<@Untainted Character>`.  When a
+non-generic class represents a collection with a hard-coded type (as
+`StringBuffer` hard-codes `Character`), you can use the new class qualifier
+parameter feature to distinguish `StringBuffer`s that contain different
+types of characters.
 
-The Dataflow Framework now also supports backward analysis.
+The Dataflow Framework supports backward analysis.  See its manual.
 
 Implementation details:
 
@@ -39,12 +44,12 @@ Changed the types of some fields and methods from array to List:
  * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_TOP
  * QualifierDefaults.STANDARD_UNCHECKED_DEFAULTS_BOTTOM
 
-Dataflow Framework: Analysis is now an interface, added AbstractAnalysis,
+Dataflow Framework: Analysis is now an interface.  Added AbstractAnalysis,
 ForwardAnalysis, ForwardTransferFunction, ForwardAnalysisImpl,
-BackwardAnalysis, BackwardTransferFunction, BackwardAnalysisImpl.
-Existing code is easy to adapt:
-    `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
-    `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
+BackwardAnalysis, BackwardTransferFunction, and BackwardAnalysisImpl.
+To adapt existing code:
+ * `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
+ * `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
@@ -57,6 +62,9 @@ Added GenericAnnotatedTypeFactory#postAnalyze, changed signature of
 GenericAnnotatedTypeFactory#handleCFGViz, and removed CFAbstractAnalysis#visualizeCFG.
 
 Removed methods and classes marked deprecated in release 3.3.0 or earlier.
+
+Closed issues:
+#1362, #1727, #2632, #3249, #3296, #3300, #3356, #3357, #3358, #3359, #3380.
 
 ---------------------------------------------------------------------------
 
