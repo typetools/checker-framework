@@ -103,6 +103,11 @@
     \flowimg{Const#1}{The control-flow graph (including intermediate analysis results) for \autoref{lst:Const#1}.}
 }
 
+\newcommand{\livevariable}[2]{
+\flowlst{Live#1}{{#2 Its CFG and intermediate analysis results are depicted in \autoref{fig:Live#1}.}}
+\flowimg{Live#1}{The control-flow graph (including intermediate analysis results) for \autoref{lst:Live#1}.}
+}
+
 % references to the java specification
 \newcommand{\jlsref}[1]{JLS~\textsection{}#1}
 

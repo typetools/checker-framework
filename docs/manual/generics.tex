@@ -856,17 +856,16 @@ type-check) than writing just
 
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
 
-The Checker Framework supports type \emph{qualifier} polymorphism for classes.
-Java generic classes permit you to supply a type argument to a generic
-class, as in \code{List<@Nullable String>}.
 Class qualifier parameters permit you to supply a type qualifier (only,
-without a Java basetype) to any
-class (generic or not).
-This is useful when the class hard-codes a type internally (as
-\<StringBuffer> hard-codes \<Character>), but you wish to apply a qualifier
-to it, such as to distinguish \<StringBuffer>s that contain tainted
-characters from those that contain untainted characters.  (For a discussion
-of tainting, see \chapterpageref{tainting-checker}.)
+without a Java basetype) to any class (generic or not).
+
+When a generic class represents a collection, a user can write a type
+qualifier on the type argument, as in \code{List<@Tainted Character>}
+versus \code{List<@Untainted Character>}.  When a non-generic class
+represents a collection with a hard-coded type (as \<StringBuffer>
+hard-codes \<Character>), you can use a class qualifier parameter to
+distinguish \<StringBuffer>s that contain different types of characters.
+% (For a discussion of tainting, see \chapterpageref{tainting-checker}.)
 
 To add a qualifier parameter to a class, annotate its declaration with \refqualclass{framework/qual}{HasQualifierParameter}
 and write the class of the top qualifier as its element.
