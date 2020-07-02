@@ -91,7 +91,14 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
+    /** FenumQualifierKindHierarchy. */
     protected static class FenumQualifierKindHierarchy extends QualifierKindHierarchy {
+
+        /**
+         * Create FenumQualifierKindHierarchy.
+         *
+         * @param qualifierClasses qualifier classes
+         */
         public FenumQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             super(qualifierClasses);
