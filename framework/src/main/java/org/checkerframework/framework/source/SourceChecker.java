@@ -2332,7 +2332,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Log (that is, print) a type system error.
      *
-     * @param ce the user error to output
+     * @param ce the type system error to output
      */
     private void logTypeSystemError(TypeSystemError ce) {
         String msg = ce.getMessage();

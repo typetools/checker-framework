@@ -489,8 +489,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private void checkSupportedQuals() {
         if (supportedQuals.isEmpty()) {
-            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
-            // the framework itself.
             throw new TypeSystemError("Found no supported qualifiers.");
         }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
