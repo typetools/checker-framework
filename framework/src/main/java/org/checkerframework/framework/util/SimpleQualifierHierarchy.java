@@ -93,6 +93,11 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         return Collections.unmodifiableMap(quals);
     }
 
+    /**
+     * Creates and returns the unmodifiable set of top {@link AnnotationMirror}s.
+     *
+     * @return the unmodifiable set of top {@link AnnotationMirror}s.
+     */
     protected Set<AnnotationMirror> createTops() {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
@@ -103,6 +108,11 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         return Collections.unmodifiableSet(tops);
     }
 
+    /**
+     * Creates and returns the unmodifiable set of bottom {@link AnnotationMirror}s.
+     *
+     * @return the unmodifiable set of bottom {@link AnnotationMirror}s.
+     */
     protected Set<AnnotationMirror> createBottoms() {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
@@ -113,10 +123,17 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         return Collections.unmodifiableSet(bottoms);
     }
 
+    /**
+     * Returns the {@link QualifierKind} for the given annotation.
+     *
+     * @param anno an annotation that is a qualifier in this hierarchy
+     * @return the {@code QualifierKind}
+     * @throws BugInCF if {@code anno} is not a qualifier in this hierarchy
+     */
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
         QualifierKind kind = qualifierKindHierarchy.getQualifierKind(name);
-        if (name == null) {
+        if (kind == null) {
             throw new BugInCF("Annotation not in hierarchy: %s", anno);
         }
         return kind;

@@ -114,7 +114,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     /**
      * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top.
      *
-     * <p>Subclasses must override this if the top annotation has elements and provides not default.
+     * <p>Subclasses must override this if the top annotation has elements and provides no default.
      *
      * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top
      */
