@@ -1,6 +1,10 @@
 package org.checkerframework.javacutil;
 
-/** Exception type indicating a mistake by a type system built using the Checker Framework. */
+/**
+ * Exception type indicating a mistake by a type system built using the Checker Framework. For
+ * example, misusing a meta-annotation on a qualifier. These should only be thrown by the framework
+ * package.
+ */
 @SuppressWarnings("serial")
 public class TypeSystemError extends RuntimeException {
 
