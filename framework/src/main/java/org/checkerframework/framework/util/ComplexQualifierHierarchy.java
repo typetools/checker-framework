@@ -18,12 +18,16 @@ import org.checkerframework.javacutil.TypeSystemError;
 /**
  * A qualifier hierarchy where qualifiers may be represented by annotations with elements.
  *
- * <p>Subclasses must implement {@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror,
- * QualifierKind)}, {@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror,
- * QualifierKind)}, and {@link #greatestLowerBound(AnnotationMirror, QualifierKind,
- * AnnotationMirror, QualifierKind)} for cases when the annotations have elements. For cases where
- * the annotations have no elements, the {@link org.checkerframework.framework.qual.SubtypeOf}
- * meta-annotation is used.
+ * <p>Subclasses must implement the following methods when annotations have elements:
+ *
+ * <ul>
+ *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
+ *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
+ *   <li>{@link #greatestLowerBound(AnnotationMirror,QualifierKind,AnnotationMirror,QualifierKind)}
+ * </ul>
+ *
+ * For cases where the annotations have no elements, the {@link
+ * org.checkerframework.framework.qual.SubtypeOf} meta-annotation is used.
  *
  * <p>ComplexQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
  * between qualifiers. Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to

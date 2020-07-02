@@ -740,14 +740,13 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * The {@link QualifierHierarchy} for the initialization type system. Type systems extending the
-     * Initialization Checker should call methods {@link
-     * InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, QualifierKind,
-     * AnnotationMirror, QualifierKind)} and {@link
-     * InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
-     * QualifierKind, AnnotationMirror, QualifierKind)} for appropriate qualifiers. See protected
-     * subclass NullnessQualifierHierarchy within class {@link
-     * org.checkerframework.checker.nullness.NullnessChecker} for an example.
+     * The {@link QualifierHierarchy} for the initialization type system.
+     *
+     * <p>Type systems extending the Initialization Checker should call methods {@link
+     * InitializationQualifierHierarchy#isSubtypeInitialization} and {@link
+     * InitializationQualifierHierarchy#leastUpperBoundInitialization} for appropriate qualifiers.
+     * See protected subclass NullnessQualifierHierarchy within class {@link NullnessChecker} for an
+     * example.
      */
     protected abstract class InitializationQualifierHierarchy extends ComplexQualifierHierarchy {
 

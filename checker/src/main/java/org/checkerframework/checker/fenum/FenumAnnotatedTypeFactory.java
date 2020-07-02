@@ -33,7 +33,11 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** AnnotationMirror for {@link FenumTop}. */
     protected AnnotationMirror FENUM_TOP;
 
-    /** Create a FenumAnnotatedTypeFactory. */
+    /**
+     * Create a FenumAnnotatedTypeFactory.
+     *
+     * @param checker checker
+     */
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
