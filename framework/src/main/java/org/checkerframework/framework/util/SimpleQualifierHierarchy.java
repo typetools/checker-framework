@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.UserError;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * A qualifier hierarchy where no qualifiers have arguments; that is, no qualifier is represented by
@@ -84,7 +84,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (kind.hasElements()) {
-                throw new UserError(
+                throw new TypeSystemError(
                         "SimpleQualifierHierarchy cannot be used with annotations that have elements. Found %s: ",
                         kind);
             }

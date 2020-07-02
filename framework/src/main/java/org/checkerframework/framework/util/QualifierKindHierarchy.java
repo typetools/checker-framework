@@ -17,8 +17,8 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -357,7 +357,7 @@ public class QualifierKindHierarchy {
      *
      * @param directSuperMap mapping from qualifier to its direct supertypes; used to verify that a
      *     polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
-     * @throws UserError if the hierarchy isn't valid
+     * @throws TypeSystemError if the hierarchy isn't valid
      */
     protected void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -366,24 +366,24 @@ public class QualifierKindHierarchy {
             if (isPoly && hasSubtypeOfAnno) {
                 // This is currently not supported. At some point we might add
                 // polymorphic qualifiers with upper and lower bounds.
-                throw new UserError(
+                throw new TypeSystemError(
                         "AnnotatedTypeFactory: "
                                 + qualifierKind
                                 + " is polymorphic and specifies super qualifiers.%n"
                                 + "Remove the @PolymorphicQualifier or @SubtypeOf annotation from it.");
             } else if (!isPoly && !hasSubtypeOfAnno) {
-                throw new UserError(
+                throw new TypeSystemError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
                                 + "Add an @SubtypeOf or @PolymorphicQualifier annotation to it,%n"
                                 + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
                         qualifierKind);
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
-                    throw new UserError(
+                    throw new TypeSystemError(
                             "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
                             qualifierKind, SystemUtil.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
-                    throw new UserError(
+                    throw new TypeSystemError(
                             "Polymorphic qualifier %s has invalid top %s. Top qualifiers: %s",
                             qualifierKind, qualifierKind.top, SystemUtil.join(", ", tops));
                 }
@@ -391,7 +391,7 @@ public class QualifierKindHierarchy {
         }
 
         if (bottoms.size() != tops.size()) {
-            throw new UserError(
+            throw new TypeSystemError(
                     "Number of tops not equal to number of bottoms: Tops: [%s] Bottoms: [%s]",
                     SystemUtil.join(", ", tops), SystemUtil.join(", ", bottoms));
         }
@@ -412,7 +412,7 @@ public class QualifierKindHierarchy {
             @SuppressWarnings("interning") // uniqueness is tested immediately below
             @Interned QualifierKind qualifierKind = new QualifierKind(clazz);
             if (nameToQualifierKind.containsKey(qualifierKind.name)) {
-                throw new UserError("Duplicate QualifierKind " + qualifierKind.name);
+                throw new TypeSystemError("Duplicate QualifierKind " + qualifierKind.name);
             }
             nameToQualifierKind.put(qualifierKind.name, qualifierKind);
         }
@@ -446,7 +446,7 @@ public class QualifierKindHierarchy {
                     String superName = superClazz.getCanonicalName();
                     QualifierKind superQualifier = nameToQualifierKind.get(superName);
                     if (superQualifier == null) {
-                        throw new UserError(
+                        throw new TypeSystemError(
                                 "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
                                 qualifierKind,
                                 superName,
@@ -486,7 +486,7 @@ public class QualifierKindHierarchy {
         if (bottom != null) {
             QualifierKind bottomKind = getQualifierKind(bottom.getCanonicalName());
             if (bottomKind == null) {
-                throw new BugInCF(
+                throw new TypeSystemError(
                         "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
                         bottom.getCanonicalName());
             }
@@ -571,12 +571,12 @@ public class QualifierKindHierarchy {
                 if (tops.size() == 1) {
                     qualifierKind.top = tops.iterator().next();
                 } else {
-                    throw new UserError(
+                    throw new TypeSystemError(
                             "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
                             qualifierKind, SystemUtil.join(", ", tops));
                 }
             } else {
-                throw new UserError(
+                throw new TypeSystemError(
                         "Polymorphic qualifier %s's top, %s, is not a qualifier.",
                         qualifierKind, topName);
             }
@@ -609,14 +609,14 @@ public class QualifierKindHierarchy {
                     if (qualifierKind.top == null) {
                         qualifierKind.top = top;
                     } else if (qualifierKind.top != top) {
-                        throw new UserError(
+                        throw new TypeSystemError(
                                 "Multiple tops found for qualifier %s. Tops: %s and %s.",
                                 qualifierKind, top, qualifierKind.top);
                     }
                 }
             }
             if (qualifierKind.top == null) {
-                throw new UserError("Qualifier isn't in hierarchy: %s", qualifierKind);
+                throw new TypeSystemError("Qualifier isn't in hierarchy: %s", qualifierKind);
             }
         }
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -627,7 +627,7 @@ public class QualifierKindHierarchy {
                 if (qualifierKind.bottom == null) {
                     qualifierKind.bottom = bot;
                 } else if (qualifierKind.top != bot) {
-                    throw new UserError(
+                    throw new TypeSystemError(
                             "Multiple bottoms found for qualifier %s. Bottoms: %s and %s.",
                             qualifierKind, bot, qualifierKind.bottom);
                 }
@@ -654,7 +654,7 @@ public class QualifierKindHierarchy {
         while (!queue.isEmpty()) {
             QualifierKind superQual = queue.remove();
             if (superQual == qualifierKind) {
-                throw new UserError("Cycle in hierarchy: %s", qualifierKind);
+                throw new TypeSystemError("Cycle in hierarchy: %s", qualifierKind);
             }
             if (visited.contains(superQual)) {
                 continue;
@@ -709,13 +709,13 @@ public class QualifierKindHierarchy {
         allSuperTypes.retainAll(qual2.superTypes);
         Set<QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
         if (lubs.size() != 1) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "Not exactly 1 lub for %s and %s. Found lubs: [%s].",
                     qual1, qual2, SystemUtil.join(", ", lubs));
         }
         QualifierKind lub = lubs.iterator().next();
         if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "Lub can't be poly: lub: %s, qual1: %s, qual2: %s.", lub, qual1, qual2);
         }
         return lub;
@@ -779,13 +779,13 @@ public class QualifierKindHierarchy {
         }
         Set<QualifierKind> glbs = findHighestQualifiers(allSubTypes);
         if (glbs.size() != 1) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "Not exactly 1 glb for %s and %s. Found glb: [%s].",
                     qual1, qual2, SystemUtil.join(", ", glbs));
         }
         QualifierKind glb = glbs.iterator().next();
         if (glb.isPoly && !qual1.isPoly && !qual2.isPoly) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "GLB can't be poly: lub: %s, qual1: %s, qual2: %s.", glb, qual1, qual2);
         }
         return glb;
@@ -828,7 +828,7 @@ public class QualifierKindHierarchy {
             qual1Map.put(qual2, value);
         } else {
             if (existingValue != value) {
-                throw new BugInCF(
+                throw new TypeSystemError(
                         "Multiple %s for qualifiers %s and %s. Found map %s and %s",
                         error, qual1, qual2, value, existingValue);
             }

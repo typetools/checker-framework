@@ -13,6 +13,7 @@ import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * A qualifier hierarchy where qualifiers may be represented by annotations with elements.
@@ -192,7 +193,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (qualifierMap.containsKey(poly)) {
             return qualifierMap.get(poly);
         } else {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "Poly has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation. Poly: %s",
                     poly);
         }
