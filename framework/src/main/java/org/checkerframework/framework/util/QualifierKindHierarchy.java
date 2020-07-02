@@ -84,7 +84,7 @@ public class QualifierKindHierarchy {
          * All the qualifier kinds that are a strict super qualifier kind of this. Does not include
          * this qualifier kind itself.
          */
-        private Set<QualifierKind> superTypes;
+        private Set<QualifierKind> strictSuperTypes;
 
         /** The top of the hierarchy to which this belongs. */
         private QualifierKind top;
@@ -104,7 +104,7 @@ public class QualifierKindHierarchy {
             // These non-final fields are set by QualifierKindHierarchy.
             // Give them values here, because the Java compiler requires it.
             isPoly = false;
-            superTypes = null;
+            strictSuperTypes = null;
             top = null;
             bottom = null;
         }
@@ -160,8 +160,8 @@ public class QualifierKindHierarchy {
          *
          * @return all the qualifier kinds that are a strict super qualifier of this qualifier
          */
-        public Set<QualifierKind> getSuperTypes() {
-            return superTypes;
+        public Set<QualifierKind> getStrictSuperTypes() {
+            return strictSuperTypes;
         }
 
         /**
@@ -208,7 +208,7 @@ public class QualifierKindHierarchy {
          * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
          */
         public boolean isSubtype(QualifierKind superQualKind) {
-            return this == superQualKind || superTypes.contains(superQualKind);
+            return this == superQualKind || strictSuperTypes.contains(superQualKind);
         }
 
         @Override
@@ -380,7 +380,7 @@ public class QualifierKindHierarchy {
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
                     throw new TypeSystemError(
-                            "PolymorphicQualifier, %s,  has to specify type hierarchy, if more than one exist; top types: [%s] ",
+                            "PolymorphicQualifier, %s, has to specify type hierarchy in its @PolymorphicQualifier meta-annotation, if more than one exist; top types: [%s].",
                             qualifierKind, SystemUtil.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new TypeSystemError(
@@ -535,7 +535,7 @@ public class QualifierKindHierarchy {
     // not this method, because other methods expect the directSuperMap to be complete.
     private Set<QualifierKind> createBottomsSet(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-        Set<QualifierKind> bottoms = new TreeSet<>(directSuperMap.keySet());
+        Set<QualifierKind> bottoms = new HashSet<>(directSuperMap.keySet());
         for (Set<QualifierKind> superKinds : directSuperMap.values()) {
             bottoms.removeAll(superKinds);
         }
@@ -580,7 +580,7 @@ public class QualifierKindHierarchy {
                         "Polymorphic qualifier %s's top, %s, is not a qualifier.",
                         qualifierKind, topName);
             }
-            qualifierKind.superTypes = Collections.singleton(qualifierKind.top);
+            qualifierKind.strictSuperTypes = Collections.singleton(qualifierKind.top);
             topToPoly.put(qualifierKind.top, qualifierKind);
         }
         return topToPoly;
@@ -588,7 +588,7 @@ public class QualifierKindHierarchy {
 
     /**
      * For each qualifier kind in {@code directSuperMap}, initializes {@link
-     * QualifierKind#superTypes}, {@link QualifierKind#top} and {@link QualifierKind#bottom}.
+     * QualifierKind#strictSuperTypes}, {@link QualifierKind#top} and {@link QualifierKind#bottom}.
      * (Requires tops, bottoms, and polymorphicQualifiers to be initialized.)
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
@@ -600,7 +600,7 @@ public class QualifierKindHierarchy {
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             if (!qualifierKind.isPoly) {
-                qualifierKind.superTypes = findAllTheSupers(qualifierKind, directSuperMap);
+                qualifierKind.strictSuperTypes = findAllTheSupers(qualifierKind, directSuperMap);
             }
         }
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -632,7 +632,7 @@ public class QualifierKindHierarchy {
                             qualifierKind, bot, qualifierKind.bottom);
                 }
                 if (qualifierKind.isPoly) {
-                    bot.superTypes.add(qualifierKind);
+                    bot.strictSuperTypes.add(qualifierKind);
                 }
             }
         }
@@ -705,8 +705,8 @@ public class QualifierKindHierarchy {
         } else if (qual2.isSubtype(qual1)) {
             return qual1;
         }
-        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.superTypes);
-        allSuperTypes.retainAll(qual2.superTypes);
+        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.strictSuperTypes);
+        allSuperTypes.retainAll(qual2.strictSuperTypes);
         Set<QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
         if (lubs.size() != 1) {
             throw new TypeSystemError(
