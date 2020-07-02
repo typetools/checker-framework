@@ -767,11 +767,17 @@ public abstract class InitializationAnnotatedTypeFactory<
          * Subtype testing for initialization annotations. Will return false if either qualifier is
          * not an initialization annotation. Subclasses should override isSubtype and call this
          * method for initialization qualifiers.
+         *
+         * @param subAnno subtype annotation
+         * @param subKind subtype kind
+         * @param superAnno supertype annotation
+         * @param superKind supertype kind
+         * @return where subAnno is a subtype of superAnno in the initialization hierarchy
          */
         public boolean isSubtypeInitialization(
-                AnnotationMirror rhs,
+                AnnotationMirror subAnno,
                 QualifierKind subKind,
-                AnnotationMirror lhs,
+                AnnotationMirror superAnno,
                 QualifierKind superKind) {
             if (!subKind.isSubtype(superKind)) {
                 return false;
@@ -779,8 +785,8 @@ public abstract class InitializationAnnotatedTypeFactory<
                     || (subKind == UNDER_INIT && superKind == UNKNOWN_INIT)
                     || (subKind == UNKNOWN_INIT && superKind == UNKNOWN_INIT)) {
                 // Thus, we only need to look at the type frame.
-                TypeMirror frame1 = getTypeFrameFromAnnotation(rhs);
-                TypeMirror frame2 = getTypeFrameFromAnnotation(lhs);
+                TypeMirror frame1 = getTypeFrameFromAnnotation(subAnno);
+                TypeMirror frame2 = getTypeFrameFromAnnotation(superAnno);
                 return types.isSubtype(frame1, frame2);
             } else {
                 return true;
