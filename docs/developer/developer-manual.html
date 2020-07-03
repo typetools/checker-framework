@@ -254,6 +254,14 @@ too busy to do so, you should recognize that and move on.
 <h2 id="github-configuration">GitHub configuration</h2>
 
 <p>
+When you installed Git, you should have set your name and email address.  If you have not yet done so, do it now:
+</p>
+<pre>
+git config --global user.name "<em>FIRST_NAME LAST_NAME</em>"
+git config --global user.email "<em>USERNAME</em>@<em>SOMEDOMAIN.COM</em>"
+</pre>
+
+<p>
 Before you make any commits (even to your own fork),
 update your GitHub account profile so it contains your complete name.
 This is necessary to include you in
@@ -285,7 +293,7 @@ We recommend Azure Pipelines.
 <ul>
   <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
       (You might need to create a (free) account.)</li>
-  <li>Click "Create a project to get started"</li>
+  <li>Click "Create a project to get started" and enter an appropriate name</li>
   <li>Click "public".</li>
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
@@ -295,6 +303,8 @@ We recommend Azure Pipelines.
   <li>Click "Select a repository"</li>
   <li>Choose <em>MYUSERID</em>/checker-framework</li>
   <li>Choose the default radio button, "only selected repositories".  <b>Do not</b> choose "all repositories".</li>
+  <li>Choose "Existing Azure Pipelines YAML file"</li>
+  <li>Select "/azure-pipelines.yml" in the dropdown menu</li>
   <li>Approve and install.</li>
   <li>Click "run".</li>
 </ul>

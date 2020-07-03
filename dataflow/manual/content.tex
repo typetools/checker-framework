@@ -378,7 +378,13 @@ A TransferFunction is a NodeVisitor that takes an input and produces an output.
 package org.checkerframework.dataflow.analysis;
 interface TransferFunction<V extends AbstractValue<V>,
         S extends Store<S>>
-    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>
+    extends NodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
+interface ForwardTransferFunction<V extends AbstractValue<V>,
+        S extends Store<S>>
+    extends TransferFunction<V, S>
+interface BackwardTransferFunction<V extends AbstractValue<V>,
+        S extends Store<S>>
+    extends TransferFunction<V, S>
 \end{verbatim}
 
 The Checker Framework defines a derived class of TransferFunction to
@@ -392,7 +398,7 @@ abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
-    implements TransferFunction<V, S>
+    implements ForwardTransferFunction<V, S>
 
 class CFTransfer extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>
 \end{verbatim}
@@ -421,14 +427,26 @@ class RegexTransfer extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>
 \label{sec:analysis_classes}
 
 An Analysis performs iterative dataflow analysis over a control flow
-graph using a given transfer function.  Currently only forward
+graph using a given transfer function.  Both forward and backward
 analyses are supported.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class Analysis<V extends AbstractValue<V>,
+interface Analysis<V extends AbstractValue<V>,
         S extends Store<S>,
-        T extends TransferFunction<A, S>>
+        T extends TransferFunction<V, S>>
+abstract class AbstractAnalysis<V extends AbstractValue<V>,
+        S extends Store<S>,
+        T extends TransferFunction<V, S>>
+    implements Analysis<V, S, T>
+interface ForwardAnalysis<V extends AbstractValue<V>,
+        S extends Store<S>,
+        T extends ForwardTransferFunction<V, S>>
+    extends Analysis<V, S, T>
+interface BackwardAnalysis<V extends AbstractValue<V>,
+        S extends Store<S>,
+        T extends BackwardTransferFunction<V, S>>
+    extends Analysis<V, S, T>
 \end{verbatim}
 
 The Checker Framework defines a derived class of Analysis for use as
@@ -441,7 +459,7 @@ package org.checkerframework.framework.flow;
 abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
-    extends Analysis<V, S, T>
+    extends ForwardAnalysisImpl<V, S, T>
 
 class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>
 \end{verbatim}
@@ -1408,13 +1426,11 @@ to define a particular analysis.
 Roughly, a dataflow analysis in the framework works as follows. Given
 the abstract syntax tree of a method, the framework computes the
 corresponding control-flow graph as described in
-\autoref{sec:cfg}. Then, a simple forward iterative algorithm is used
-to compute a fix-point, by iteratively applying a set of transfer
-functions to the nodes in the CFG\@.  (For our initial application,
-type-checking, we do not need to support backwards analyses; in the
-future, we may wish to do so.)  These transfer functions are specific
-to the particular analysis and are used to approximate the runtime
-behavior of different statements and expressions.
+\autoref{sec:cfg}. Then, a simple forward or backward iterative
+algorithm is used to compute a fix-point, by iteratively applying a
+set of transfer functions to the nodes in the CFG\@.  These transfer
+functions are specific to the particular analysis and are used to
+approximate the runtime behavior of different statements and expressions.
 
 An analysis result contains two parts:
 
@@ -1726,6 +1742,33 @@ and \autoref{fig:ConstSimple}.
 \constantpropagation{Simple}{Simple sequential program to illustrate constant propagation.}
 
 
+\section{Example: Live Variable}
+
+A live variable analysis for local variables and fields was implemented
+to show the backward analysis works properly. The main class is
+\code{org.checkerframework.dataflow.cfg.playground.LiveVariablePlayground}.
+
+\textbf{Abstract values.} A class \code{LiveVarValue} is a live
+variable (which is represented by a node) wrapper turning node into
+abstract value. A node can be \code{LocalVariableNode} or \code{FieldAccessNode}.
+
+\textbf{The store.} The live variable store \code{LiveVarStore} has a field
+\code{liveVarValueSet} which contains a set of \code{LiveVarValue}s. Only
+\code{LocalVariableNode} or \code{FieldAccessNode} will be considered as a
+live variable and added to \code{liveVarValueSet}. The store defines methods
+\code{putLiveVar(LiveVarValue)} and \code{killLiveVar(LiveVarValue)} to add
+and kill live variables.
+
+\textbf{The transfer function.} The transfer function \code{LiveVarTransfer}
+initializes empty stores at normal and exceptional exit blocks (because this
+is a backward transfer function). The transfer function visits assignments to
+update the information of live variables for each node in the stores.
+
+\textbf{Example.} An example is shown in \autoref{lst:LiveSimple} and
+\autoref{fig:LiveSimple}.
+
+\livevariable{Simple}{Simple sequential program to illustrate live variable.}
+
 
 \section{Default Analysis}
 
@@ -2027,4 +2070,4 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
 %  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
-%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol
+%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
