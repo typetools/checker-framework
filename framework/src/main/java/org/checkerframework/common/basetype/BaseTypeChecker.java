@@ -598,12 +598,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * @param trace stack trace when the checker encounters an error
      */
     private void printStackTrace(StackTraceElement[] trace) {
-        boolean dumpOnErrors = getBooleanOption("dumpOnErrors", false);
+        boolean dumpOnErrors = !getOptions().isEmpty() && getBooleanOption("dumpOnErrors", true);
         if (dumpOnErrors) {
+            String msg = new String();
             for (StackTraceElement elem : trace) {
-                String msg = "\tat " + elem;
-                message(Diagnostic.Kind.NOTE, msg);
+                msg = msg + "\tat " + elem + "\n";
             }
+            message(Diagnostic.Kind.NOTE, msg);
         }
     }
 
