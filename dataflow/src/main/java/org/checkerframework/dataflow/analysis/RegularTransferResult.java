@@ -35,8 +35,8 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      * this class.
      *
      * @param value the abstract value produced by the transfer function
-     * @param resultStore {@link #store}
-     * @param storeChanged {@link #storeChanged}
+     * @param resultStore regular result store
+     * @param storeChanged whether the store changed
      * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
      */
     public RegularTransferResult(@Nullable V value, S resultStore, boolean storeChanged) {
@@ -86,7 +86,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
      *
      * <p><em>Aliasing</em>: {@code resultStore} and any store in {@code exceptionalStores} are not
      * allowed to be used anywhere outside of this class (including use through aliases). Complete
-     * control over the objects is transfered to this class.
+     * control over the objects is transferred to this class.
      *
      * @param value the abstract value produced by the transfer function
      * @param resultStore {@link #store}

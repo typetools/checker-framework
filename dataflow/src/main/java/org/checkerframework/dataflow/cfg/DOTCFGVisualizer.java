@@ -22,7 +22,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
@@ -134,7 +133,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "");
+        return super.visualizeSpecialBlockHelper(sbb, "\\n");
     }
 
     @Override
@@ -144,8 +143,13 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustifiedTerminator);
+    public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, leftJustifiedTerminator);
+    }
+
+    @Override
+    public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     /**
@@ -207,20 +211,8 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
-        StringBuilder sbBlockNode = new StringBuilder();
-        sbBlockNode
-                .append(escapeDoubleQuotes(t))
-                .append("   [ ")
-                .append(getNodeSimpleName(t))
-                .append(" ]");
-        if (analysis != null) {
-            V value = analysis.getValue(t);
-            if (value != null) {
-                sbBlockNode.append("    > ").append(escapeDoubleQuotes(value));
-            }
-        }
-        return sbBlockNode.toString();
+    protected String format(Object obj) {
+        return escapeDoubleQuotes(obj);
     }
 
     @Override
@@ -305,7 +297,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreFooter() {
-        return ")";
+        return ")" + leftJustifiedTerminator;
     }
 
     /**
