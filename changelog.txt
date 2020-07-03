@@ -63,6 +63,9 @@ GenericAnnotatedTypeFactory#handleCFGViz, and removed CFAbstractAnalysis#visuali
 
 Removed methods and classes marked deprecated in release 3.3.0 or earlier.
 
+Closed issues:
+#1362, #1727, #2632, #3249, #3296, #3300, #3356, #3357, #3358, #3359, #3380.
+
 ---------------------------------------------------------------------------
 
 Version 3.4.1, June 1, 2020
