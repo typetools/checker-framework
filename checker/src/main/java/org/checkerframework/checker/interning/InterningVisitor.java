@@ -541,7 +541,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
 
         } else if (hasEqualsMethodAnno && params == 2) {
             Element p1 = enclosingMethod.getParameters().get(0);
