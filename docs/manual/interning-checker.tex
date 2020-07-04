@@ -138,6 +138,16 @@ These qualifiers are part of the Interning type system:
   is a method declaration annotation that indicates that this method
   returns an interned object and may be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
+
+\item[\refqualclass{checker/interning/qual}{EqualsMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<equals()>.  The Interning Checker permits use
+  of \<this == arg> within the body.
+
+\item[\refqualclass{checker/interning/qual}{CompareToMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<compareTo()>.  The Interning Checker permits use
+  of \<if (arg1 == arg2) \ttlcb\ return 0; \ttrcb> within the body.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
