@@ -30,6 +30,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.interning.qual.CompareToMethod;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -217,6 +219,36 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         return super.visitMethodInvocation(node, p);
+    }
+
+    // Ensure that method annotations are not written on methods they don't apply to.
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
+        boolean hasCompareToMethodAnno =
+                atypeFactory.getDeclAnnotation(methElt, CompareToMethod.class) != null;
+        boolean hasEqualsMethodAnno =
+                atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
+        boolean hasInternMethodAnno =
+                atypeFactory.getDeclAnnotation(methElt, InternMethod.class) != null;
+        int params = methElt.getParameters().size();
+        if (hasCompareToMethodAnno && !(params == 1 || params == 2)) {
+            checker.reportError(
+                    node,
+                    "invalid.method.annotation",
+                    "@CompareToMethod",
+                    "1 or 2",
+                    methElt,
+                    params);
+        } else if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
+            checker.reportError(
+                    node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+        } else if (hasInternMethodAnno && !(params == 0)) {
+            checker.reportError(
+                    node, "invalid.method.annotation", "@InternMethod", "0", methElt, params);
+        }
+
+        return super.visitMethod(node, p);
     }
 
     /**
@@ -446,9 +478,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false; // The if statement is not the first statement in the method.
         }
 
-        ExecutableElement enclosing =
+        ExecutableElement enclosingMethod =
                 TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
-        assert enclosing != null;
+        assert enclosingMethod != null;
 
         final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
         final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
@@ -479,9 +511,16 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                     }
                 };
 
+        boolean hasCompareToMethodAnno =
+                atypeFactory.getDeclAnnotation(enclosingMethod, CompareToMethod.class) != null;
+        boolean hasEqualsMethodAnno =
+                atypeFactory.getDeclAnnotation(enclosingMethod, EqualsMethod.class) != null;
+        int params = enclosingMethod.getParameters().size();
+
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
-        if (overrides(enclosing, Comparator.class, "compare")) {
+        if (overrides(enclosingMethod, Comparator.class, "compare")
+                || (hasCompareToMethodAnno && params == 2)) {
             final boolean returnsZero =
                     new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
                             .match(getCurrentPath());
@@ -490,20 +529,27 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 return false;
             }
 
-            assert enclosing.getParameters().size() == 2;
-            Element p1 = enclosing.getParameters().get(0);
-            Element p2 = enclosing.getParameters().get(1);
-            return (p1.equals(lhs) && p2.equals(rhs)) || (p2.equals(lhs) && p1.equals(rhs));
+            assert params == 2;
+            Element p1 = enclosingMethod.getParameters().get(0);
+            Element p2 = enclosingMethod.getParameters().get(1);
+            return (p1.equals(lhs) && p2.equals(rhs)) || (p1.equals(rhs) && p2.equals(lhs));
 
-        } else if (overrides(enclosing, Object.class, "equals")) {
-            assert enclosing.getParameters().size() == 1;
-            Element param = enclosing.getParameters().get(0);
+        } else if (overrides(enclosingMethod, Object.class, "equals")
+                || (hasEqualsMethodAnno && params == 1)) {
+            assert params == 1;
+            Element param = enclosingMethod.getParameters().get(0);
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
                     || (param.equals(lhs) && thisElt.equals(rhs));
 
-        } else if (overrides(enclosing, Comparable.class, "compareTo")) {
+        } else if (hasEqualsMethodAnno && params == 2) {
+            Element p1 = enclosingMethod.getParameters().get(0);
+            Element p2 = enclosingMethod.getParameters().get(1);
+            return (p1.equals(lhs) && p2.equals(rhs)) || (p1.equals(rhs) && p2.equals(lhs));
+
+        } else if (overrides(enclosingMethod, Comparable.class, "compareTo")
+                || (hasCompareToMethodAnno && params == 1)) {
 
             final boolean returnsZero =
                     new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
@@ -513,13 +559,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 return false;
             }
 
-            assert enclosing.getParameters().size() == 1;
-            Element param = enclosing.getParameters().get(0);
+            assert params == 1;
+            Element param = enclosingMethod.getParameters().get(0);
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
         }
+
         return false;
     }
 
@@ -548,11 +595,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * Pattern matches to prevent false positives of the forms:
      *
-     * <pre>
-     *   (a == b) || a.equals(b)
-     *   (a == b) || (a != null ? a.equals(b) : false)
-     *   (a == b) || (a != null &amp;&amp; a.equals(b))
-     * </pre>
+     * <pre>{@code
+     * (a == b) || a.equals(b)
+     * (a == b) || (a != null ? a.equals(b) : false)
+     * (a == b) || (a != null && a.equals(b))
+     * }</pre>
      *
      * Returns true iff the given node fits this pattern.
      *
