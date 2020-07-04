@@ -9,19 +9,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Represents a type qualifier hierarchy.
+ * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
+ * that this object represents. Each hierarchy has its own top and bottom, and subtyping
+ * relationships exist only within each hierarchy.
  *
- * <p>All method parameter annotations need to be type qualifiers recognized within this hierarchy.
+ * <p>All type annotations need to be type qualifiers recognized within this hierarchy.
  *
- * <p>This assumes that any particular annotated type in a program is annotated with at least one
- * qualifier from the hierarchy.
+ * <p>This assumes that every annotated type in a program is annotated with exactly one qualifier
+ * from each hierarchy.
  */
 public abstract class QualifierHierarchy {
 
     /**
-     * Determine whether the instance is valid.
+     * Determine whether this is valid.
      *
-     * @return whether the instance is valid
+     * @return whether this is valid
      */
     public abstract boolean isValid();
 
@@ -38,7 +40,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the top (ultimate super) type qualifiers in the type system.
+     * Returns the top (ultimate super) type qualifiers in the type system. The size of this set is
+     * equal to {@link #getWidth}.
      *
      * @return the top (ultimate super) type qualifiers in the type system
      */
@@ -57,19 +60,20 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
-     * Returns the bottom type qualifier in the hierarchy.
+     * Returns the bottom type qualifiers in the hierarchy. The size of this set is equal to {@link
+     * #getWidth}.
      *
-     * @return the bottom type qualifier in the hierarchy
+     * @return the bottom type qualifiers in the hierarchy
      */
     public abstract Set<? extends AnnotationMirror> getBottomAnnotations();
 
     /**
-     * Returns the polymorphic qualifier for that hierarchy or {@code null} if there is no
-     * polymorphic qualifier in that hierarchy.
+     * Returns the polymorphic qualifier for the hierarchy containing {@code start}, or {@code null}
+     * if there is no polymorphic qualifier in that hierarchy.
      *
-     * @param start any qualifier from the type hierarchy
-     * @return the polymorphic qualifier for that hierarchy or {@code null} if there is no
-     *     polymorphic qualifier in that hierarchy
+     * @param start any qualifier from one of the type hierarchies represented by this
+     * @return the polymorphic qualifier for the hierarchy containing {@code start}, or {@code null}
+     *     if there is no polymorphic qualifier in that hierarchy
      */
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 
@@ -95,7 +99,8 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs);
 
     /**
-     * Returns the least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same quarifier hierarchy.
      *
      * <p>Examples:
      *
@@ -103,10 +108,7 @@ public abstract class QualifierHierarchy {
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
      * </ul>
      *
-     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
-     *
-     * @return the least restrictive qualifiers for both types
+     * @return the least upper bound of the qualifiers
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
 
@@ -114,8 +116,6 @@ public abstract class QualifierHierarchy {
      * Returns the number of iterations dataflow should perform before {@link
      * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
      * called.
-     *
-     * <p>Subclasses overriding this method should return some positive number or -1.
      *
      * @return the number of iterations dataflow should perform before {@link
      *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should
@@ -128,9 +128,9 @@ public abstract class QualifierHierarchy {
     /**
      * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
      * reach a fixed point. To prevent this, implement this method such that it returns an upper
-     * bound for the two qualifiers that is a super type and not equal to the least upper bound. If
-     * this method is implemented, also override {@link #numberOfIterationsBeforeWidening()} and
-     * change its return to a positive number.
+     * bound for the two qualifiers that is a strict super type of the least upper bound. If this
+     * method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to return a
+     * positive number.
      *
      * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
      * previousQualifier} is the qualifier dataflow computed on the last iteration.
@@ -140,7 +140,7 @@ public abstract class QualifierHierarchy {
      *
      * @param newQualifier new qualifier dataflow computed for some expression
      * @param previousQualifier the previous qualifier dataflow computed on the last iteration
-     * @return an upper bound that is wider than the least upper bound of newQualifier and
+     * @return an upper bound that is higher than the least upper bound of newQualifier and
      *     previousQualifier (or the lub if the type hierarchy does not require this)
      */
     public AnnotationMirror widenedUpperBound(
@@ -149,10 +149,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the greatest lower bound for the qualifiers a1 and a2.
-     *
-     * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
+     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
      *
      * @param a1 first annotation
      * @param a2 second annotation
@@ -241,8 +239,7 @@ public abstract class QualifierHierarchy {
      * type.
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
      *
      * @param subAnno a qualifier that might be a subtype
      * @param superAnno a qualifier that might be a subtype
@@ -256,9 +253,8 @@ public abstract class QualifierHierarchy {
      * some annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the
      * Java type.
      *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * <p>This method works even if the underlying Java type is a type variable. In that case, the
+     * empty set is a legal argument that represents no annotation.
      *
      * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
      */
@@ -268,7 +264,8 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> superAnnos);
 
     /**
-     * Returns the least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
      *
      * <p>Examples:
      *
@@ -276,12 +273,8 @@ public abstract class QualifierHierarchy {
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
      * </ul>
      *
-     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
-     *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
      *
      * @return the least restrictive qualifiers for both types
      */
@@ -289,14 +282,11 @@ public abstract class QualifierHierarchy {
             AnnotationMirror a1, AnnotationMirror a2);
 
     /**
-     * Returns the greatest lower bound for the qualifiers a1 and a2.
-     *
-     * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
+     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
      *
      * @param a1 first annotation
      * @param a2 second annotation
@@ -312,9 +302,8 @@ public abstract class QualifierHierarchy {
      * <p>This is necessary for determining the type of a conditional expression ({@code ?:}), where
      * the type of the expression is the least upper bound of the true and false clauses.
      *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * <p>This method works even if the underlying Java type is a type variable. In that case, the
+     * empty set is a legal argument that represents no annotation.
      *
      * @return the least upper bound of annos1 and annos2
      */
@@ -345,14 +334,10 @@ public abstract class QualifierHierarchy {
 
     /**
      * Returns the type qualifiers that are the greatest lower bound of the qualifiers in annos1 and
-     * annos2.
+     * annos2. Returns null if the qualifiers are not from the same qualifier hierarchy.
      *
-     * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
-     *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
-     * annotation).
+     * <p>This method works even if the underlying Java type is a type variable. In that case, the
+     * empty set is a legal argument that represents no annotation.
      *
      * @param annos1 first collection of qualifiers
      * @param annos2 second collection of qualifiers
@@ -452,16 +437,14 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
      *
      * <p>Examples:
      *
      * <ul>
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
      * </ul>
-     *
-     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
      * should be invoked, or if the normal version is sufficient (which provides more strict
@@ -482,10 +465,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the greatest lower bound for the qualifiers a1 and a2.
-     *
-     * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
+     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
      * should be invoked, or if the normal version is sufficient (which provides more strict
@@ -534,10 +515,7 @@ public abstract class QualifierHierarchy {
 
     /**
      * Returns the type qualifiers that are the greatest lower bound of the qualifiers in annos1 and
-     * annos2.
-     *
-     * <p>The two qualifiers have to be from the same qualifier hierarchy. Otherwise, null will be
-     * returned.
+     * annos2. Returns null if the qualifiers are not from the same qualifier hierarchy.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
      * should be invoked, or if the normal version is sufficient (which provides more strict
