@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -734,7 +735,14 @@ public class FlowExpressions {
         }
     }
 
+    /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
+    @UsesObjectEquals
     public static class Unknown extends Receiver {
+        /**
+         * Create a new Unknown receiver.
+         *
+         * @param type the Java type of this receiver
+         */
         public Unknown(TypeMirror type) {
             super(type);
         }

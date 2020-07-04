@@ -409,7 +409,9 @@ public final class TreeUtils {
                 return getAssignmentContext(parentPath);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
-                if (cet.getCondition() == treePath.getLeaf()) {
+                @SuppressWarnings("interning:not.interned") // AST node comparison
+                boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
+                if (conditionIsLeaf) {
                     // The assignment context for the condition is simply boolean.
                     // No point in going on.
                     return null;

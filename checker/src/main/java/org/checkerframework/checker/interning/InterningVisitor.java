@@ -442,7 +442,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // statement (an if statement) in the body
         assert stmnt != null;
 
-        if (stmnt != ifStatementTree) {
+        @SuppressWarnings("interning:not.interned") // comparing AST nodes
+        boolean notSameNode = stmnt != ifStatementTree;
+        if (notSameNode) {
             return false; // The if statement is not the first statement in the method.
         }
 
@@ -723,7 +725,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                             return visit(leftTree, p);
                         } else {
                             // a == b || a.compareTo(b) == 0
-                            ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
+                            @SuppressWarnings(
+                                    "interning:assignment.type.incompatible" // AST node comparisons
+                            )
+                            @InternedDistinct ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
                             ExpressionTree rightTree =
                                     tree.getRightOperand(); // looking for a.compareTo(b) == 0
                             // or b.compareTo(a) == 0
