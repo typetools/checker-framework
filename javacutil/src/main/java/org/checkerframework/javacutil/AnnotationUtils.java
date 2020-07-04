@@ -108,7 +108,6 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 have the same annotation name
      * @see #areSame(AnnotationMirror, AnnotationMirror)
-     * @return true iff a1 and a2 have the same annotation name
      */
     @EqualsMethod
     public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
@@ -375,10 +374,12 @@ public class AnnotationUtils {
     }
 
     /**
-     * Return 0 if the two annotation values are the same.
+     * Compares two annotation values for order.
      *
      * @param val1 a value returned by {@code AnnotationValue.getValue()}
      * @param val2 a value returned by {@code AnnotationValue.getValue()}
+     * @return a negative integer, zero, or a positive integer as the first annotation value is less
+     *     than, equal to, or greater than the second annotation value
      */
     @CompareToMethod
     private static int compareAnnotationValueValue(@Nullable Object val1, @Nullable Object val2) {
