@@ -506,7 +506,9 @@ public class ForwardAnalysisImpl<
                     break;
                 }
             case BOTH:
-                if (thenStore == elseStore) {
+                @SuppressWarnings("interning:not.interned")
+                boolean sameStore = (thenStore == elseStore);
+                if (sameStore) {
                     // Currently there is only one regular store
                     S newStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newStore.equals(thenStore)) {
