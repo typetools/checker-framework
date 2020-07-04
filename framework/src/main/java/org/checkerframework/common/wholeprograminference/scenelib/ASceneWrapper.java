@@ -16,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
@@ -89,7 +90,7 @@ public class ASceneWrapper {
      */
     private void removeAnnosFromATypeElement(
             ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
-        String annosToRemoveKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
+        String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
         Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
         if (annosToRemoveForLocation != null) {
             Set<Annotation> annosToRemoveHere = new HashSet<>();
