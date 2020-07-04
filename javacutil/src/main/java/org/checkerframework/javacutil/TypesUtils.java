@@ -186,6 +186,7 @@ public final class TypesUtils {
      *
      * @return whether the arguments are the same primitive types
      */
+    @SuppressWarnings("interning:not.interned") // equality test optimization
     public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
         // Do a cheaper test first
         if (t1.tsym.name != t2.tsym.name) {
