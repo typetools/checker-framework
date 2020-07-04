@@ -493,7 +493,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             assert enclosingMethod.getParameters().size() == 2;
             Element p1 = enclosingMethod.getParameters().get(0);
             Element p2 = enclosingMethod.getParameters().get(1);
-            return (p1.equals(lhs) && p2.equals(rhs)) || (p2.equals(lhs) && p1.equals(rhs));
+            return (p1.equals(lhs) && p2.equals(rhs)) || (p1.equals(rhs) && p2.equals(lhs));
 
         } else if (overrides(enclosingMethod, Object.class, "equals")) {
             assert enclosingMethod.getParameters().size() == 1;
@@ -501,7 +501,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
 
         } else if (overrides(enclosingMethod, Comparable.class, "compareTo")) {
 
@@ -518,7 +518,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
         }
         return false;
     }
@@ -548,11 +548,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * Pattern matches to prevent false positives of the forms:
      *
-     * <pre>
-     *   (a == b) || a.equals(b)
-     *   (a == b) || (a != null ? a.equals(b) : false)
-     *   (a == b) || (a != null &amp;&amp; a.equals(b))
-     * </pre>
+     * <pre>{@code
+     * (a == b) || a.equals(b)
+     * (a == b) || (a != null ? a.equals(b) : false)
+     * (a == b) || (a != null && a.equals(b))
+     * }</pre>
      *
      * Returns true iff the given node fits this pattern.
      *
