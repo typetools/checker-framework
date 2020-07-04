@@ -37,6 +37,7 @@ public final class Opt {
     /**
      * If primary is non-null, returns it, otherwise throws NoSuchElementException.
      *
+     * @param <T> the type of the argument
      * @param primary a non-null value to return
      * @return {@code primary} if it is non-null
      * @throws NoSuchElementException if primary is null
