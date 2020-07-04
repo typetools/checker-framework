@@ -24,6 +24,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -186,10 +187,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             rightElt = ((DeclaredType) right.getUnderlyingType()).asElement();
         }
 
-        // TODO: CODE REVIEW
-        // TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
-        // TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
-        // if neither @Interned or @UsesObjectEquals, report error
+        // If neither @Interned or @UsesObjectEquals, report error.
         if (!(left.hasEffectiveAnnotation(INTERNED)
                 || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.reportError(leftOp, "not.interned", left);
@@ -256,8 +254,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * with @UsesObjectEquals, it must:
      *
      * <ul>
-     *   <li>not override .equals(Object)
-     *   <li>be a subclass of Object or another class annotated with @UsesObjectEquals
+     *   <li>not override .equals(Object) and be a subclass of a class annotated
+     *       with @UsesObjectEquals, or
+     *   <li>override equals(Object) with body "this == arg"
      * </ul>
      *
      * If a class is not annotated with @UsesObjectEquals, it must:
@@ -278,25 +277,65 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // If @UsesObjectEquals is present, check to make sure the class does not override equals
         // and its supertype is Object or is annotated with @UsesObjectEquals.
         if (annotation != null) {
-            // Check methods to ensure no .equals
-            if (overridesEquals(classTree)) {
-                checker.reportError(classTree, "overrides.equals");
-            }
-            TypeMirror superClass = elt.getSuperclass();
-            if (superClass != null
-                    // The super class of an interface is "none" rather than null.
-                    && superClass.getKind() == TypeKind.DECLARED) {
-                TypeElement superClassElement = TypesUtils.getTypeElement(superClass);
-                if (superClassElement != null
-                        && !ElementUtils.isObject(superClassElement)
-                        && atypeFactory.getDeclAnnotation(superClassElement, UsesObjectEquals.class)
-                                == null) {
-                    checker.reportError(classTree, "superclass.notannotated");
+            MethodTree equalsMethod = equalsImplementation(classTree);
+            if (equalsMethod != null) {
+                if (!isReferenceEqualityImplementation(equalsMethod)) {
+                    checker.reportError(classTree, "overrides.equals");
+                }
+            } else {
+                // Does not override equals()
+                TypeMirror superClass = elt.getSuperclass();
+                if (superClass != null
+                        // The super class of an interface is "none" rather than null.
+                        && superClass.getKind() == TypeKind.DECLARED) {
+                    TypeElement superClassElement = TypesUtils.getTypeElement(superClass);
+                    if (superClassElement != null
+                            && !ElementUtils.isObject(superClassElement)
+                            && atypeFactory.getDeclAnnotation(
+                                            superClassElement, UsesObjectEquals.class)
+                                    == null) {
+                        checker.reportError(classTree, "superclass.notannotated");
+                    }
                 }
             }
         }
 
         super.processClassTree(classTree);
+    }
+
+    /**
+     * Returns true if the given equals() method implements reference equality.
+     *
+     * @param equalsMethod an overriding implementation of Object.equals()
+     * @return true if the given equals() method implements reference equality
+     */
+    private boolean isReferenceEqualityImplementation(MethodTree equalsMethod) {
+        BlockTree body = equalsMethod.getBody();
+        List<? extends StatementTree> bodyStatements = body.getStatements();
+        if (bodyStatements.size() == 1) {
+            StatementTree bodyStatement = bodyStatements.get(0);
+            if (bodyStatement.getKind() == Tree.Kind.RETURN) {
+                ExpressionTree returnExpr =
+                        TreeUtils.withoutParens(((ReturnTree) bodyStatement).getExpression());
+                if (returnExpr.getKind() == Tree.Kind.EQUAL_TO) {
+                    BinaryTree bt = (BinaryTree) returnExpr;
+                    ExpressionTree lhsTree = bt.getLeftOperand();
+                    ExpressionTree rhsTree = bt.getRightOperand();
+                    if (lhsTree.getKind() == Tree.Kind.IDENTIFIER
+                            && rhsTree.getKind() == Tree.Kind.IDENTIFIER) {
+                        Name leftName = ((IdentifierTree) lhsTree).getName();
+                        Name rightName = ((IdentifierTree) rhsTree).getName();
+                        Name paramName = equalsMethod.getParameters().get(0).getName();
+                        if ((leftName.contentEquals("this") && rightName.equals(paramName))
+                                || (leftName.equals(paramName)
+                                        && rightName.contentEquals("this"))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -372,19 +411,24 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // Helper methods
     // **********************************************************************
 
-    /** Returns true if a class overrides Object.equals. */
-    private boolean overridesEquals(ClassTree node) {
+    /**
+     * Returns the method that overrides Object.equals, or null.
+     *
+     * @param node a class
+     * @return the class's implementation of equals, or null
+     */
+    private MethodTree equalsImplementation(ClassTree node) {
         List<? extends Tree> members = node.getMembers();
         for (Tree member : members) {
             if (member instanceof MethodTree) {
                 MethodTree mTree = (MethodTree) member;
                 ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
                 if (overrides(enclosing, Object.class, "equals")) {
-                    return true;
+                    return mTree;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -440,44 +484,51 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
         }
 
-        // If we're not directly in an if statement in a method (ignoring
-        // parens and blocks), terminate.
-        if (!Heuristics.matchParents(getCurrentPath(), Tree.Kind.IF, Tree.Kind.METHOD)) {
-            return false;
-        }
+        TreePath path = getCurrentPath();
+        TreePath parentPath = path.getParentPath();
+        Tree parent = parentPath.getLeaf();
 
-        // Ensure the if statement is the first statement in the method
-
-        TreePath parentPath = getCurrentPath().getParentPath();
-
-        // Retrieve the enclosing if statement tree and method tree
-        Tree tree, ifStatementTree = null;
-        MethodTree methodTree = null;
-        while ((tree = parentPath.getLeaf()) != null) {
-            if (tree.getKind() == Tree.Kind.IF) {
-                ifStatementTree = tree;
-            } else if (tree.getKind() == Tree.Kind.METHOD) {
-                methodTree = (MethodTree) tree;
-                break;
+        // Ensure the == is in a return or in an if, and that enclosing statement is the first
+        // statement in the method.
+        if (parent.getKind() == Tree.Kind.RETURN) {
+            // ensure the return statement is the first statement in the method
+            if (parentPath.getParentPath().getParentPath().getLeaf().getKind()
+                    != Tree.Kind.METHOD) {
+                return false;
             }
 
-            parentPath = parentPath.getParentPath();
-        }
+            // maybe set some variables??
+        } else if (Heuristics.matchParents(getCurrentPath(), Tree.Kind.IF, Tree.Kind.METHOD)) {
+            // Ensure the if statement is the first statement in the method
 
-        // The call to Heuristics.matchParents already ensured there is an enclosing if statement
-        assert ifStatementTree != null;
-        // The call to Heuristics.matchParents already ensured there is an enclosing method
-        assert methodTree != null;
-
-        StatementTree stmnt = methodTree.getBody().getStatements().get(0);
-        // The call to Heuristics.matchParents already ensured the enclosing method has at least one
-        // statement (an if statement) in the body
-        assert stmnt != null;
-
-        @SuppressWarnings("interning:not.interned") // comparing AST nodes
-        boolean notSameNode = stmnt != ifStatementTree;
-        if (notSameNode) {
-            return false; // The if statement is not the first statement in the method.
+            // Retrieve the enclosing if statement tree and method tree
+            Tree ifStatementTree = null;
+            MethodTree methodTree = null;
+            // Set ifStatementTree and methodTree
+            {
+                TreePath ppath = parentPath;
+                Tree tree;
+                while ((tree = ppath.getLeaf()) != null) {
+                    if (tree.getKind() == Tree.Kind.IF) {
+                        ifStatementTree = tree;
+                    } else if (tree.getKind() == Tree.Kind.METHOD) {
+                        methodTree = (MethodTree) tree;
+                        break;
+                    }
+                    ppath = ppath.getParentPath();
+                }
+            }
+            assert ifStatementTree != null;
+            assert methodTree != null;
+            StatementTree firstStmnt = methodTree.getBody().getStatements().get(0);
+            assert firstStmnt != null;
+            @SuppressWarnings("interning:not.interned") // comparing AST nodes
+            boolean notSameNode = firstStmnt != ifStatementTree;
+            if (notSameNode) {
+                return false; // The if statement is not the first statement in the method.
+            }
+        } else {
+            return false;
         }
 
         ExecutableElement enclosingMethod =
