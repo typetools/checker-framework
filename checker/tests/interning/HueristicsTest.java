@@ -1,6 +1,6 @@
 import java.util.Comparator;
 
-public class Heuristics implements Comparable<Heuristics> {
+public class HeuristicsTest implements Comparable<HeuristicsTest> {
 
     public static final class MyComparator implements Comparator<String> {
         // Using == is OK if it's the first statement in the compare method,
@@ -31,7 +31,7 @@ public class Heuristics implements Comparable<Heuristics> {
 
     @Override
     @org.checkerframework.dataflow.qual.Pure
-    public int compareTo(Heuristics o) {
+    public int compareTo(HeuristicsTest o) {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
 
