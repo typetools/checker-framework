@@ -2,7 +2,7 @@ import java.util.Comparator;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 
-public class Heuristics implements Comparable<Heuristics> {
+public class HeuristicsTest implements Comparable<HeuristicsTest> {
 
     public static final class MyComparator implements Comparator<String> {
         // Using == is OK if it's the first statement in the compare method,
@@ -107,7 +107,7 @@ public class Heuristics implements Comparable<Heuristics> {
 
     @Override
     @org.checkerframework.dataflow.qual.Pure
-    public int compareTo(Heuristics o) {
+    public int compareTo(HeuristicsTest o) {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
 
@@ -124,7 +124,7 @@ public class Heuristics implements Comparable<Heuristics> {
 
     @CompareToMethod
     @org.checkerframework.dataflow.qual.Pure
-    public int compareTo2(Heuristics o) {
+    public int compareTo2(HeuristicsTest o) {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
 
@@ -140,7 +140,7 @@ public class Heuristics implements Comparable<Heuristics> {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    public int compareTo3(Heuristics o) {
+    public int compareTo3(HeuristicsTest o) {
         // Not compareTo or annotated as @CompareToMethod
         // :: error: (not.interned)
         if (o == this) {
@@ -156,7 +156,7 @@ public class Heuristics implements Comparable<Heuristics> {
 
     @CompareToMethod
     @org.checkerframework.dataflow.qual.Pure
-    public static int compareTo4(Heuristics thisOne, Heuristics o) {
+    public static int compareTo4(HeuristicsTest thisOne, HeuristicsTest o) {
         // Using == is OK if it's the first statement in the equals method
         // and it compares "this" against the argument.
 
@@ -172,7 +172,7 @@ public class Heuristics implements Comparable<Heuristics> {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    public static int compareTo5(Heuristics thisOne, Heuristics o) {
+    public static int compareTo5(HeuristicsTest thisOne, HeuristicsTest o) {
         // Not compareTo or annotated as @CompareToMethod
         // :: error: (not.interned)
         if (o == thisOne) {
