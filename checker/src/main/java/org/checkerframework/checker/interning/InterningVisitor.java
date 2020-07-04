@@ -295,7 +295,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         Name rightName = ((IdentifierTree) rhsTree).getName();
                         Name paramName = equalsMethod.getParameters().get(0).getName();
                         if ((leftName.contentEquals("this") && rightName.equals(paramName))
-                                || leftName.equals(paramName) && rightName.contentEquals("this")) {
+                                || (leftName.equals(paramName)
+                                        && rightName.contentEquals("this"))) {
                             return true;
                         }
                     }
