@@ -239,7 +239,7 @@ public abstract class QualifierHierarchy {
      * type.
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
+     * 'null' AnnotationMirror is a legal argument that represents no annotation.
      *
      * @param subAnno a qualifier that might be a subtype
      * @param superAnno a qualifier that might be a subtype
@@ -274,7 +274,7 @@ public abstract class QualifierHierarchy {
      * </ul>
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
+     * 'null' AnnotationMirror is a legal argument that represents no annotation.
      *
      * @return the least restrictive qualifiers for both types
      */
@@ -286,7 +286,7 @@ public abstract class QualifierHierarchy {
      * are not from the same qualifier hierarchy.
      *
      * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnnotationMirror is a legal argument that represents no annotation.
+     * 'null' AnnotationMirror is a legal argument that represents no annotation.
      *
      * @param a1 first annotation
      * @param a2 second annotation
