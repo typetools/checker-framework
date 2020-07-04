@@ -210,6 +210,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // comparing AST nodes
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
         Void v = super.visitLambdaExpression(node, p);
         // If this is a lambda inferred to be @UI, scan up the path and re-check any assignments
@@ -435,6 +436,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // comparing AST nodes
     public Void visitNewClass(NewClassTree node, Void p) {
         Void v = super.visitNewClass(node, p);
         // If this is an anonymous inner class inferred to be @UI, scan up the path and re-check any
