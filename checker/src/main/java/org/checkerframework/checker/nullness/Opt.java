@@ -21,12 +21,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <pre>import static org.checkerframework.checker.nullness.Opt.*;</pre>
  *
- * <p><b>Runtime Dependency</b>
- *
- * <p>Please note that using this class introduces a runtime dependency. This means that you need to
- * distribute (or link to) {@code checker-qual.jar}, along with your binaries.
- *
- * <p>To eliminate this dependency, you can simply copy this class into your own project.
+ * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
+ * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
+ * project.
  *
  * @see java.util.Optional
  */
