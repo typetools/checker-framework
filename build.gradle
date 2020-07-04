@@ -270,6 +270,8 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-processor', "${checker}",
                 '-proc:only',
                 '-Xlint:-processing',
+		'-Xmaxerrs', '10000',
+		'-Xmaxwarns', '10000',
                 ]
         options.compilerArgs += args
 
