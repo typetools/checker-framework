@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -500,6 +501,7 @@ public class FlowExpressions {
          *
          * @return true if and only if the two receiver are syntactically identical
          */
+        @EqualsMethod
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
@@ -1082,11 +1084,14 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
             if (method.getKind() == ElementKind.CONSTRUCTOR) {
-                return this == obj;
+                return false;
             }
             MethodCall other = (MethodCall) obj;
             return parameters.equals(other.parameters)

@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
@@ -314,11 +315,14 @@ public class BackwardAnalysisImpl<
 
     @Override
     public S runAnalysisFor(
-            Node node,
+            Node node_,
             boolean before,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+        @SuppressWarnings("interning:assignment.type.incompatible") // used for == comparisons
+        @InternedDistinct Node node = node_;
+
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
@@ -339,7 +343,7 @@ public class BackwardAnalysisImpl<
                         ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                         while (reverseIter.hasPrevious()) {
                             Node n = reverseIter.previous();
-                            currentNode = n;
+                            setCurrentNode(n);
                             if (n == node && !before) {
                                 return store.getRegularStore();
                             }
@@ -368,7 +372,7 @@ public class BackwardAnalysisImpl<
                         if (!before) {
                             return transferInput.getRegularStore();
                         }
-                        currentNode = node;
+                        setCurrentNode(node);
                         TransferResult<V, S> transferResult =
                                 callTransferFunction(node, transferInput);
                         // Merge transfer result with the exception store of this exceptional block
@@ -383,7 +387,7 @@ public class BackwardAnalysisImpl<
             }
 
         } finally {
-            currentNode = oldCurrentNode;
+            setCurrentNode(oldCurrentNode);
             isRunning = false;
         }
     }

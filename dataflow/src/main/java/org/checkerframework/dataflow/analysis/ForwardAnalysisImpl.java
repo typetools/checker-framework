@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -237,11 +238,14 @@ public class ForwardAnalysisImpl<
 
     @Override
     public S runAnalysisFor(
-            Node node,
+            Node node_,
             boolean before,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+        @SuppressWarnings("interning:assignment.type.incompatible") // used for == comparisons
+        @InternedDistinct Node node = node_;
+
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
@@ -274,7 +278,7 @@ public class ForwardAnalysisImpl<
                         TransferInput<V, S> store = transferInput;
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getContents()) {
-                            currentNode = n;
+                            setCurrentNode(n);
                             if (n == node && before) {
                                 return store.getRegularStore();
                             }
@@ -310,7 +314,7 @@ public class ForwardAnalysisImpl<
                         if (before) {
                             return transferInput.getRegularStore();
                         }
-                        currentNode = node;
+                        setCurrentNode(node);
                         TransferResult<V, S> transferResult =
                                 callTransferFunction(node, transferInput);
                         return transferResult.getRegularStore();
@@ -320,7 +324,7 @@ public class ForwardAnalysisImpl<
                     throw new BugInCF("Unexpected block type: " + block.getType());
             }
         } finally {
-            currentNode = oldCurrentNode;
+            setCurrentNode(oldCurrentNode);
             isRunning = false;
         }
     }
