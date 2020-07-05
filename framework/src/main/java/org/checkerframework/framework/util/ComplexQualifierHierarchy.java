@@ -57,7 +57,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
      * have elements.
      */
-    protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
+    protected final Map<QualifierKind, AnnotationMirror> kindToAnnotationMirror;
 
     /**
      * Creates a type hierarchy from the given classes.
@@ -79,7 +79,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
-        this.qualifierMap = createQualifiers();
+        this.kindToAnnotationMirror = createQualifiers();
 
         for (AnnotationMirror top : tops) {
             // This throws an error if poly is a qualifier that has an element.
@@ -194,11 +194,11 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (poly == null) {
             return null;
         }
-        if (qualifierMap.containsKey(poly)) {
-            return qualifierMap.get(poly);
+        if (kindToAnnotationMirror.containsKey(poly)) {
+            return kindToAnnotationMirror.get(poly);
         } else {
             throw new TypeSystemError(
-                    "Poly has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation. Poly: %s",
+                    "Poly %s has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation.",
                     poly);
         }
     }
@@ -276,7 +276,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (lub.hasElements()) {
             return leastUpperBound(a1, qual1, a2, qual2);
         }
-        return qualifierMap.get(lub);
+        return kindToAnnotationMirror.get(lub);
     }
 
     /**
@@ -304,7 +304,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (glb.hasElements()) {
             return greatestLowerBound(a1, qual1, a2, qual2);
         }
-        return qualifierMap.get(glb);
+        return kindToAnnotationMirror.get(glb);
     }
 
     /**

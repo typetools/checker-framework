@@ -776,7 +776,7 @@ public class QualifierKindHierarchy {
         Set<QualifierKind> glbs = findHighestQualifiers(allSubTypes);
         if (glbs.size() != 1) {
             throw new TypeSystemError(
-                    "Not exactly 1 glb for %s and %s. Found glb: [%s].",
+                    "Not exactly 1 glb for %s and %s. Found glbs: [%s].",
                     qual1, qual2, SystemUtil.join(", ", glbs));
         }
         QualifierKind glb = glbs.iterator().next();

@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * A qualifier hierarchy where no qualifiers have arguments; that is, no qualifier is represented by
+ * A qualifier hierarchy where no qualifier has arguments; that is, no qualifier is represented by
  * an annotation with elements. The meta-annotation {@link
  * org.checkerframework.framework.qual.SubtypeOf} specifies the hierarchy.
  *
@@ -36,7 +36,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     protected final Set<AnnotationMirror> bottoms;
 
     /** Mapping from {@link QualifierKind} to its corresponding {@link AnnotationMirror}. */
-    protected final Map<QualifierKind, AnnotationMirror> qualifierMap;
+    protected final Map<QualifierKind, AnnotationMirror> kindToAnnotationMirror;
 
     /** Set of all annotations in the hierarchy. */
     protected final Set<? extends AnnotationMirror> qualifiers;
@@ -51,9 +51,9 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
-        this.qualifierMap = createAnnotationMirrors(elements);
+        this.kindToAnnotationMirror = createAnnotationMirrors(elements);
         Set<AnnotationMirror> qualifiers = AnnotationUtils.createAnnotationSet();
-        qualifiers.addAll(qualifierMap.values());
+        qualifiers.addAll(kindToAnnotationMirror.values());
         this.qualifiers = Collections.unmodifiableSet(qualifiers);
 
         this.tops = createTops();
@@ -77,8 +77,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * qualifier kind's annotation class.
      *
      * @param elements element utils
-     * @return a mapping from qualifier kind to an annotation mirror created from the qualifier
-     *     kind's annotation class
+     * @return a mapping from qualifier kind to its annotation mirror
      */
     protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
@@ -96,11 +95,11 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     /**
      * Creates and returns the unmodifiable set of top {@link AnnotationMirror}s.
      *
-     * @return the unmodifiable set of top {@link AnnotationMirror}s.
+     * @return the unmodifiable set of top {@link AnnotationMirror}s
      */
     protected Set<AnnotationMirror> createTops() {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
+        for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isTop()) {
                 tops.add(entry.getValue());
             }
@@ -111,11 +110,11 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     /**
      * Creates and returns the unmodifiable set of bottom {@link AnnotationMirror}s.
      *
-     * @return the unmodifiable set of bottom {@link AnnotationMirror}s.
+     * @return the unmodifiable set of bottom {@link AnnotationMirror}s
      */
     protected Set<AnnotationMirror> createBottoms() {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        for (Map.Entry<QualifierKind, AnnotationMirror> entry : qualifierMap.entrySet()) {
+        for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isBottom()) {
                 bottoms.add(entry.getValue());
             }
@@ -146,13 +145,13 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror findAnnotationInSameHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
         QualifierKind kind = getQualifierKind(annotationMirror);
-        for (AnnotationMirror anno : annos) {
-            QualifierKind annoKind = getQualifierKind(anno);
-            if (annoKind.areInSameHierarchy(kind)) {
-                return anno;
+        for (AnnotationMirror candidate : annos) {
+            QualifierKind candidateKind = getQualifierKind(candidate);
+            if (candidateKind.areInSameHierarchy(kind)) {
+                return candidate;
             }
         }
         return null;
@@ -166,7 +165,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifierMap.get(kind.getTop());
+        return kindToAnnotationMirror.get(kind.getTop());
     }
 
     @Override
@@ -177,7 +176,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return qualifierMap.get(kind.getBottom());
+        return kindToAnnotationMirror.get(kind.getBottom());
     }
 
     @Override
@@ -187,7 +186,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         if (poly == null) {
             return null;
         }
-        return qualifierMap.get(poly);
+        return kindToAnnotationMirror.get(poly);
     }
 
     @Override
@@ -231,7 +230,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
             return null;
         }
         QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
-        return qualifierMap.get(lub);
+        return kindToAnnotationMirror.get(lub);
     }
 
     @Override
@@ -242,7 +241,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
             return null;
         }
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
-        return qualifierMap.get(glb);
+        return kindToAnnotationMirror.get(glb);
     }
 
     @Override
