@@ -481,22 +481,24 @@ public class QualifierKindHierarchy {
     protected void specifyBottom(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap,
             @Nullable Class<? extends Annotation> bottom) {
-        if (bottom != null) {
-            QualifierKind bottomKind = getQualifierKind(bottom.getCanonicalName());
-            if (bottomKind == null) {
-                throw new TypeSystemError(
-                        "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
-                        bottom.getCanonicalName());
-            }
-            Set<QualifierKind> currentLeafs = new TreeSet<>(allQualifierKinds());
-            currentLeafs.remove(bottomKind);
-            directSuperMap.forEach(
-                    (sub, supers) -> {
-                        currentLeafs.removeAll(supers);
-                    });
-            Set<QualifierKind> bottomDirectSuperQuals = directSuperMap.get(bottomKind);
-            bottomDirectSuperQuals.addAll(currentLeafs);
+        if (bottom == null) {
+            return;
         }
+
+        QualifierKind bottomKind = getQualifierKind(bottom.getCanonicalName());
+        if (bottomKind == null) {
+            throw new TypeSystemError(
+                    "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
+                    bottom.getCanonicalName());
+        }
+        Set<QualifierKind> currentLeaves = new TreeSet<>(allQualifierKinds());
+        currentLeaves.remove(bottomKind);
+        directSuperMap.forEach(
+                (sub, supers) -> {
+                    currentLeaves.removeAll(supers);
+                });
+        Set<QualifierKind> bottomDirectSuperQuals = directSuperMap.get(bottomKind);
+        bottomDirectSuperQuals.addAll(currentLeaves);
     }
 
     /**
@@ -610,7 +612,8 @@ public class QualifierKindHierarchy {
                 }
             }
             if (qualifierKind.top == null) {
-                throw new TypeSystemError("Qualifier isn't in hierarchy: %s", qualifierKind);
+                throw new TypeSystemError(
+                        "Qualifier %s isn't a subtype of any top. tops = %s", qualifierKind, tops);
             }
         }
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
