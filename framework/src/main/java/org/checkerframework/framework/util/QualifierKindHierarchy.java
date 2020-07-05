@@ -19,13 +19,12 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.checkerframework.javacutil.UserError;
 
 /**
  * This class holds information about the subtyping relationships between kinds of qualifiers. A
- * "kind" of qualifier is represented by the {@link QualifierKind} class and is analogous to the
- * annotation class of a qualifier. If a type system has more than one hierarchy, information about
- * all hierarchies are stored in this class.
+ * "kind" of qualifier is its annotation class and is represented by the {@link QualifierKind}
+ * class. If a type system has more than one hierarchy, information about all hierarchies are stored
+ * in this class.
  *
  * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
  * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
@@ -102,7 +101,7 @@ public class QualifierKindHierarchy {
             this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = clazz.getCanonicalName().intern();
             // These non-final fields are set by QualifierKindHierarchy.
-            // Give them values here, because the Java compiler requires it.
+            // Give them dummy values here, because the Java compiler requires it.
             isPoly = false;
             strictSuperTypes = null;
             top = null;
@@ -137,7 +136,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this is the top qualifier of its hierarchy.
+         * Returns whether or not this is the top qualifier of its hierarchy.
          *
          * @return true if this is the top qualifier of its hierarchy
          */
@@ -146,7 +145,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this is the bottom qualifier of its hierarchy.
+         * Returns whether or not this is the bottom qualifier of its hierarchy.
          *
          * @return true if this is the bottom qualifier of its hierarchy
          */
@@ -165,7 +164,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Return the top qualifier kind of the hierarchy to which this qualifier kind belongs.
+         * Returns the top qualifier kind of the hierarchy to which this qualifier kind belongs.
          *
          * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
          */
@@ -174,7 +173,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
+         * Returns the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
          *
          * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
          */
@@ -183,7 +182,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not the annotation class this qualifier kind represents has elements.
+         * Returns whether or not the annotation class this qualifier kind represents has elements.
          *
          * @return true if the annotation class this qualifier kind represents has elements
          */
@@ -192,7 +191,7 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this and {@code other} are in the same hierarchy.
+         * Returns whether or not this and {@code other} are in the same hierarchy.
          *
          * @param other a qualifier kind
          * @return true if this and {@code other} are in the same hierarchy
@@ -202,7 +201,8 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Whether or not this qualifier kind is a subtype of or equal to {@code superQualKind}.
+         * Returns whether or not this qualifier kind is a subtype of or equal to {@code
+         * superQualKind}.
          *
          * @param superQualKind other qualifier kind
          * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
@@ -218,13 +218,11 @@ public class QualifierKindHierarchy {
 
         @Override
         public String toString() {
-            String[] split = name.split("\\.");
-            if (split.length == 0) {
-                return name;
-            }
-            return split[split.length - 1];
+            return name.substring(name.lastIndexOf(".") + 1);
         }
     }
+
+    // End of QualifierKind class, start of QualifierKindHierarchy fields.
 
     /**
      * A mapping from canonical name of a qualifier class to the QualifierKind object representing
@@ -274,7 +272,8 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Returns the least upper bound of {@code q1} and {@code q2}.
+     * Returns the least upper bound of {@code q1} and {@code q2}. Ignores elements/arguments (as
+     * QualifierKind always does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
@@ -285,7 +284,8 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Returns the greatest lower bound of {@code q1} and {@code q2}.
+     * Returns the greatest lower bound of {@code q1} and {@code q2}. Ignores elements/arguments (as
+     * QualifierKind always does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
@@ -364,8 +364,7 @@ public class QualifierKindHierarchy {
             boolean isPoly = qualifierKind.isPoly;
             boolean hasSubtypeOfAnno = directSuperMap.containsKey(qualifierKind);
             if (isPoly && hasSubtypeOfAnno) {
-                // This is currently not supported. At some point we might add
-                // polymorphic qualifiers with upper and lower bounds.
+                // Polymorphic qualifiers with upper and lower bounds are currently not supported.
                 throw new TypeSystemError(
                         "AnnotatedTypeFactory: "
                                 + qualifierKind
@@ -380,7 +379,7 @@ public class QualifierKindHierarchy {
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
                     throw new TypeSystemError(
-                            "PolymorphicQualifier, %s, has to specify type hierarchy in its @PolymorphicQualifier meta-annotation, if more than one exist; top types: [%s].",
+                            "PolymorphicQualifier, %s, has to specify a type hierarchy in its @PolymorphicQualifier meta-annotation, if more than one exists; top types: [%s].",
                             qualifierKind, SystemUtil.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new TypeSystemError(
@@ -420,20 +419,19 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifier kinds
-     * using the {@link SubtypeOf} meta-annotation. The direct super qualifier kinds do not contain
-     * the qualifier itself. This mapping is used by {@link #createBottomsSet(Map)}, {@link
-     * #createTopsSet(Map)}, and {@link #initializeQualifierKindFields(Map)}.
+     * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifier kinds.
+     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used by
+     * {@link #createBottomsSet(Map)}, {@link #createTopsSet(Map)}, and {@link
+     * #initializeQualifierKindFields(Map)}.
      *
-     * <p>Subclasses may override this method to create the direct super map some other way.
+     * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override
+     * this method to create the direct super map some other way.
      *
      * <p>Note that this method is called from the constructor when only {@link
      * #nameToQualifierKind} has been initialized. This method is not static, so it can be
      * overridden by subclasses.
      *
-     * @throws UserError if the {@link SubtypeOf} meta-annotation refers to a class that is not a
-     *     qualifier
-     * @return a mapping from a {@link QualifierKind} to a set of its direct super qualifiers
+     * @return a mapping from each {@link QualifierKind} to a set of its direct super qualifiers
      */
     protected Map<QualifierKind, Set<QualifierKind>> createDirectSuperMap() {
         Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
@@ -549,8 +547,6 @@ public class QualifierKindHierarchy {
      *
      * <p>Requires that tops has been initialized.
      *
-     * @throws UserError if the meta-annotation {@link PolymorphicQualifier} specifies an annotation
-     *     that is not in the hierarchy.
      * @return a mapping from a top qualifier to the polymorphic qualifier in the heirarchy
      */
     protected Map<QualifierKind, QualifierKind> initializePolymorphicQualifiers() {
@@ -593,8 +589,6 @@ public class QualifierKindHierarchy {
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
-     * @throws UserError if a qualifier isn't a subtype of one of the top qualifiers or if multiple
-     *     tops or bottoms are found for the same hierarchy.
      */
     protected void initializeQualifierKindFields(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
@@ -644,7 +638,6 @@ public class QualifierKindHierarchy {
      * @param qualifierKind the qualifier kind whose super types should be returned
      * @param directSuperMap directSuperMap
      * @return the set of all qualifier kinds that are a strict supertype of {@code qualifierKind}
-     * @throws UserError if there is a cycle in the hierarchy
      */
     private Set<QualifierKind> findAllTheSupers(
             QualifierKind qualifierKind, Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
