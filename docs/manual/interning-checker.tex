@@ -118,7 +118,7 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{PolyInterned}]
   indicates qualifier polymorphism (see
-  Section~\ref{qualifier-polymorphism}).
+  Section~\ref{method-qualifier-polymorphism}).
 
 \end{description}
 
@@ -186,8 +186,8 @@ For example:
 \begin{Verbatim}
 @Interned class InternedClass {
   @UnknownInterned InternedClass() {
-  // error, "this" is @UnknownInterned.
-  @Interned InternedClass that = this;
+    // error, "this" is @UnknownInterned.
+    @Interned InternedClass that = this;
   }
 
   @SuppressWarnings("intern") // Only creation of an InternedClass object.

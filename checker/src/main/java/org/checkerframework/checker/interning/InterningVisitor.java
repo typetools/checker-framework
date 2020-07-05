@@ -446,9 +446,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false; // The if statement is not the first statement in the method.
         }
 
-        ExecutableElement enclosing =
+        ExecutableElement enclosingMethod =
                 TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
-        assert enclosing != null;
+        assert enclosingMethod != null;
 
         final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
         final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
@@ -481,7 +481,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
-        if (overrides(enclosing, Comparator.class, "compare")) {
+        if (overrides(enclosingMethod, Comparator.class, "compare")) {
             final boolean returnsZero =
                     new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
                             .match(getCurrentPath());
@@ -490,20 +490,20 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 return false;
             }
 
-            assert enclosing.getParameters().size() == 2;
-            Element p1 = enclosing.getParameters().get(0);
-            Element p2 = enclosing.getParameters().get(1);
-            return (p1.equals(lhs) && p2.equals(rhs)) || (p2.equals(lhs) && p1.equals(rhs));
+            assert enclosingMethod.getParameters().size() == 2;
+            Element p1 = enclosingMethod.getParameters().get(0);
+            Element p2 = enclosingMethod.getParameters().get(1);
+            return (p1.equals(lhs) && p2.equals(rhs)) || (p1.equals(rhs) && p2.equals(lhs));
 
-        } else if (overrides(enclosing, Object.class, "equals")) {
-            assert enclosing.getParameters().size() == 1;
-            Element param = enclosing.getParameters().get(0);
+        } else if (overrides(enclosingMethod, Object.class, "equals")) {
+            assert enclosingMethod.getParameters().size() == 1;
+            Element param = enclosingMethod.getParameters().get(0);
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
 
-        } else if (overrides(enclosing, Comparable.class, "compareTo")) {
+        } else if (overrides(enclosingMethod, Comparable.class, "compareTo")) {
 
             final boolean returnsZero =
                     new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
@@ -513,12 +513,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 return false;
             }
 
-            assert enclosing.getParameters().size() == 1;
-            Element param = enclosing.getParameters().get(0);
+            assert enclosingMethod.getParameters().size() == 1;
+            Element param = enclosingMethod.getParameters().get(0);
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                    || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (thisElt.equals(rhs) && param.equals(lhs));
         }
         return false;
     }
@@ -548,11 +548,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * Pattern matches to prevent false positives of the forms:
      *
-     * <pre>
-     *   (a == b) || a.equals(b)
-     *   (a == b) || (a != null ? a.equals(b) : false)
-     *   (a == b) || (a != null &amp;&amp; a.equals(b))
-     * </pre>
+     * <pre>{@code
+     * (a == b) || a.equals(b)
+     * (a == b) || (a != null ? a.equals(b) : false)
+     * (a == b) || (a != null && a.equals(b))
+     * }</pre>
      *
      * Returns true iff the given node fits this pattern.
      *
