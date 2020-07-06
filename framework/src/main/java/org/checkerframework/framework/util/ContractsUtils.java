@@ -42,7 +42,7 @@ public class ContractsUtils {
      * The currently-used ContractsUtils object. This class is NOT a singleton: this value can
      * change.
      */
-    protected static ContractsUtils instance;
+    protected static @InternedDistinct ContractsUtils instance;
 
     /** The factory that this ContractsUtils is associated with. */
     protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
@@ -52,7 +52,10 @@ public class ContractsUtils {
         this.factory = factory;
     }
 
-    /** Returns an instance of the {@link ContractsUtils} class. */
+    /**
+     * Returns an instance of the {@link ContractsUtils} class for the given factory. Also sets it
+     * as the currently-used ContractsUtils object.
+     */
     public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);

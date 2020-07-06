@@ -393,7 +393,7 @@ public class QualifierDefaults {
             }
         }
 
-        Tree prev = null;
+        @InternedDistinct Tree prev = null;
 
         for (Tree t : path) {
             switch (t.getKind()) {
@@ -832,7 +832,11 @@ public class QualifierDefaults {
                 extends AnnotatedTypeScanner<Void, AnnotationMirror> {
 
             @Override
-            public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
+            public Void scan(AnnotatedTypeMirror t_, AnnotationMirror qual) {
+
+                @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+                @InternedDistinct AnnotatedTypeMirror t = t_;
+
                 if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
                     return super.scan(t, qual);
                 }

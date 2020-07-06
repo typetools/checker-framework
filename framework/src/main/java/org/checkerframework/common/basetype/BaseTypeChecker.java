@@ -25,6 +25,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -561,6 +562,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Otherwise, it prints the message.
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
@@ -592,14 +594,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     private static class CheckerMessage {
         final Diagnostic.Kind kind;
         final String message;
-        final Tree source;
+        final @InternedDistinct Tree source;
 
         /**
          * The checker that issued this message. The compound checker that depends on this checker
          * uses this to sort the messages.
          */
-        final BaseTypeChecker checker;
+        final @InternedDistinct BaseTypeChecker checker;
 
+        @SuppressWarnings(
+                "interning:assignment.type.incompatible") // fields will be compared with ==
         private CheckerMessage(
                 Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
             this.kind = kind;

@@ -179,7 +179,11 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
      * result of substitution and therefore not in the list of type arguments.
      */
     private Element getTypeParamFromEnclosingClass(
-            final AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
+            final AnnotatedWildcardType wildcard_, final AnnotatedDeclaredType parent) {
+
+        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+        @InternedDistinct Tree wildcard = wildcard_;
+
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {

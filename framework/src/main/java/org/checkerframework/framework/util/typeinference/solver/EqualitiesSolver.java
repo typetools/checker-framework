@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -97,9 +98,12 @@ public class EqualitiesSolver {
      * @param type the type inferred
      */
     private void rewriteWithInferredType(
-            final TypeVariable target,
+            final TypeVariable target_,
             final AnnotatedTypeMirror type,
             final ConstraintMap constraints) {
+
+        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+        @InternedDistinct TypeVariable target = target_;
 
         final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<TypeVariable, AnnotationMirrorSet> equivalentTargets =
@@ -186,10 +190,13 @@ public class EqualitiesSolver {
      * @param inferredTarget the other target inferred to be equal
      */
     private void rewriteWithInferredTarget(
-            final TypeVariable target,
+            final TypeVariable target_,
             final TypeVariable inferredTarget,
             final ConstraintMap constraints,
             final AnnotatedTypeFactory typeFactory) {
+        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+        @InternedDistinct TypeVariable target = target_;
+
         final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<AnnotatedTypeMirror, AnnotationMirrorSet> equivalentTypes =
                 targetRecord.equalities.types;

@@ -58,8 +58,8 @@ public class Range {
     /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = create(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
-    /** The empty range singleton. */
-    public static final Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
+    /** The empty range. This is the only Range object that contains nothing */
+    public static final @InternedDistinct Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
 
     /** An alias to the range containing all possible 64-bit values. */
     public static final Range EVERYTHING = LONG_EVERYTHING;

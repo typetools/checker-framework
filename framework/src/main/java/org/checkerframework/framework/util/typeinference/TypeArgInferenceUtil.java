@@ -267,6 +267,7 @@ public class TypeArgInferenceUtil {
      * Returns whether argumentTree is the tree at the leaf of path. if tree is a conditional
      * expression, isArgument is called recursively on the true and false expressions.
      */
+    @SuppressWarnings("interning:not.interned")
     private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
         argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {

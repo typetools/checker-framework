@@ -27,6 +27,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
  */
+@SuppressWarnings("interned") // TODO after https://tinyurl.com/cfissue/3404 is merged
 public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     /**
@@ -669,14 +670,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * @param a2 second annotation mirror
      * @return the LUB of a1 and a2, or null if none can be found
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     protected AnnotationMirror findLub(AnnotationMirror a1, AnnotationMirror a2) {
-        if (isSubtype(a1, a2)) {
-            return a2;
-        }
-        if (isSubtype(a2, a1)) {
-            return a1;
-        }
-
         assert getTopAnnotation(a1) == getTopAnnotation(a2)
                 : "MultiGraphQualifierHierarchy.findLub: this method may only be called "
                         + "with qualifiers from the same hierarchy. Found a1: "
@@ -688,6 +683,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                         + " [top: "
                         + getTopAnnotation(a2)
                         + "]";
+
+        if (isSubtype(a1, a2)) {
+            return a2;
+        }
+        if (isSubtype(a2, a1)) {
+            return a1;
+        }
 
         if (isPolymorphicQualifier(a1)) {
             return findLubWithPoly(a1, a2);
