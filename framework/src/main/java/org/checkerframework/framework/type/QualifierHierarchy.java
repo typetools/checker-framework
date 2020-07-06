@@ -108,6 +108,8 @@ public abstract class QualifierHierarchy {
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
      * </ul>
      *
+     * @param a1 the first qualifer to LUB
+     * @param a2 the second qualifier to LUB
      * @return the least upper bound of the qualifiers
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
