@@ -1,0 +1,22 @@
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
+
+public class FindDistinctTest {
+
+    public void ok1(@FindDistinct Object o) {
+        @InternedDistinct Object o2 = o;
+    }
+
+    public void ok2(@FindDistinct Object findIt, Object other) {
+        boolean b = findIt == other;
+    }
+
+    public void bad1(Object o) {
+        // :: (assignment.type.incompatible)
+        @InternedDistinct Object o2 = o;
+    }
+
+    public void bad2(Object findIt, Object other) {
+        boolean b = findIt == other;
+    }
+}
