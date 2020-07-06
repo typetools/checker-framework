@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -261,8 +262,17 @@ public abstract class QualifierHierarchy {
      * @param superAnno a qualifier that might be a subtype
      * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
      */
-    public abstract boolean isSubtypeTypeVariable(
-            AnnotationMirror subAnno, AnnotationMirror superAnno);
+    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+        if (superAnno == null) {
+            // null is a supertype of any qualifier, and null <: null
+            return true;
+        }
+        if (subAnno == null) {
+            // null is a subtype of no qualifier (only null)
+            return false;
+        }
+        return isSubtype(subAnno, superAnno);
+    }
 
     /**
      * Tests whether there is any annotation in superAnnos that is a super qualifier of or equal to
@@ -298,8 +308,13 @@ public abstract class QualifierHierarchy {
      *
      * @return the least restrictive qualifiers for both types
      */
-    public abstract AnnotationMirror leastUpperBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2);
+    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
+        if (a1 == null || a2 == null) {
+            // null is a supertype of any qualifier, and null <: null
+            return null;
+        }
+        return leastUpperBound(a1, a2);
+    }
 
     /**
      * Returns the greatest lower bound for the qualifiers a1 and a2.
@@ -315,8 +330,18 @@ public abstract class QualifierHierarchy {
      * @param a2 second annotation
      * @return greatest lower bound of the two annotations
      */
-    public abstract AnnotationMirror greatestLowerBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2);
+    public AnnotationMirror greatestLowerBoundTypeVariable(
+            AnnotationMirror a1, AnnotationMirror a2) {
+        if (a1 == null) {
+            // null is a supertype of any qualifier, and null <: null
+            return a2;
+        }
+        if (a2 == null) {
+            // null is a supertype of any qualifier, and null <: null
+            return a1;
+        }
+        return greatestLowerBound(a1, a2);
+    }
 
     /**
      * Returns the type qualifiers that are the least upper bound of the qualifiers in annos1 and
@@ -579,7 +604,7 @@ public abstract class QualifierHierarchy {
      * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
-    public AnnotationMirror findAnnotationInSameHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
         AnnotationMirror top = this.getTopAnnotation(annotationMirror);
         return findAnnotationInHierarchy(annos, top);
@@ -592,7 +617,7 @@ public abstract class QualifierHierarchy {
      * @param top the top annotation in the hierarchy to which the returned annotation belongs
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
-    public AnnotationMirror findAnnotationInHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         for (AnnotationMirror anno : annos) {
             if (isSubtype(anno, top)) {

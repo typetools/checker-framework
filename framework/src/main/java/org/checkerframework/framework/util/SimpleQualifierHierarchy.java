@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -245,19 +246,6 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-        if (superAnno == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return true;
-        }
-        if (subAnno == null) {
-            // [] is a subtype of no qualifier (only [])
-            return false;
-        }
-        return isSubtype(subAnno, superAnno);
-    }
-
-    @Override
     public boolean isSubtypeTypeVariable(
             Collection<? extends AnnotationMirror> subAnnos,
             Collection<? extends AnnotationMirror> superAnnos) {
@@ -276,28 +264,5 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
             }
         }
         return isSubtypeCount == subAnnos.size();
-    }
-
-    @Override
-    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null || a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return null;
-        }
-        return leastUpperBound(a1, a2);
-    }
-
-    @Override
-    public AnnotationMirror greatestLowerBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a2;
-        }
-        if (a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a1;
-        }
-        return greatestLowerBound(a1, a2);
     }
 }
