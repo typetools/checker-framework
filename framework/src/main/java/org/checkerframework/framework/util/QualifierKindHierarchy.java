@@ -632,6 +632,11 @@ public class QualifierKindHierarchy {
                     bot.strictSuperTypes.add(qualifierKind);
                 }
             }
+            if (qualifierKind.bottom == null) {
+                throw new TypeSystemError(
+                        "Cannot find a bottom qualifier for %s. bottoms = %s",
+                        qualifierKind, bottoms);
+            }
         }
     }
 
