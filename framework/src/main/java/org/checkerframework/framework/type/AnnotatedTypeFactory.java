@@ -104,6 +104,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
@@ -488,9 +489,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private void checkSupportedQuals() {
         if (supportedQuals.isEmpty()) {
-            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
-            // the framework itself.
-            throw new BugInCF("Found no supported qualifiers.");
+            throw new TypeSystemError("Found no supported qualifiers.");
         }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             // Check @Target values
@@ -519,7 +518,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     buf.append(otherElementTypes.get(i));
                 }
                 buf.append(".");
-                throw new BugInCF(buf.toString());
+                throw new TypeSystemError(buf.toString());
             }
         }
     }
@@ -550,7 +549,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postInit() {
         this.qualHierarchy = createQualifierHierarchy();
         if (qualHierarchy == null) {
-            throw new BugInCF("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
@@ -716,7 +716,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
                     // This is currently not supported. At some point we might add
                     // polymorphic qualifiers with upper and lower bounds.
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "AnnotatedTypeFactory: "
                                     + typeQualifier
                                     + " is polymorphic and specifies super qualifiers. "
@@ -725,7 +725,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 continue;
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                throw new BugInCF(
+                throw new TypeSystemError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
                                 + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
                                 + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
@@ -735,14 +735,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
                 if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
                     // This is currently not supported. No qualifier can have a polymorphic
                     // qualifier as super qualifier.
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
@@ -754,7 +754,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         QualifierHierarchy hierarchy = factory.build();
 
         if (!hierarchy.isValid()) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "AnnotatedTypeFactory: invalid qualifier hierarchy: "
                             + hierarchy.getClass()
                             + " "
