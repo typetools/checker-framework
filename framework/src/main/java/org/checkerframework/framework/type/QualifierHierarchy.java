@@ -78,11 +78,11 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 
     /**
-     * Returns {@code true} is the qualifier is a polymorphic qualifier; otherwise, returns {@code
+     * Returns {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
      * false}.
      *
      * @param qualifier qualifier
-     * @return {@code true} is the qualifier is a polymorphic qualifier; otherwise, returns {@code
+     * @return {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
      *     false}.
      */
     public abstract boolean isPolymorphicQualifier(AnnotationMirror qualifier);

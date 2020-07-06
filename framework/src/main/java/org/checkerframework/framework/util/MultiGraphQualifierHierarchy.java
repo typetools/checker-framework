@@ -96,10 +96,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (pqtopclass != null) {
                 AnnotationMirror pqtop;
                 if (pqtopclass.contentEquals(Annotation.class.getName())) {
-                    // @PolymorphicQualifier with no value defaults to Annotation.class.
+                    // A @PolymorphicQualifier with no value defaults to Annotation.class.
                     // That means there is only one top in the hierarchy. The top qualifier
                     // may not be known at this point, so use the qualifier itself.
-                    // This changed to top in MultiGraphQualifierHierarchy.addPolyRelations
+                    // This is changed to top in MultiGraphQualifierHierarchy.addPolyRelations
                     pqtop = qual;
                 } else {
                     pqtop = AnnotationBuilder.fromName(atypeFactory.getElementUtils(), pqtopclass);
@@ -110,6 +110,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 supertypesDirect.put(qual, AnnotationUtils.createAnnotationSet());
             }
         }
+
         /**
          * Returns the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
          * otherwise return null.
@@ -610,8 +611,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         // Handle the case where @PolymorphicQualifier uses the default value Annotation.class.
         if (polyQualifiers.size() == 1 && tops.size() == 1) {
-            AnnotationMirror poly = polyQualifiers.keySet().iterator().next();
-            AnnotationMirror maybeTop = polyQualifiers.get(poly);
+            Map.Entry<AnnotationMirror, AnnotationMirror> entry =
+                    polyQualifiers.entrySet().iterator().next();
+            AnnotationMirror poly = entry.getKey();
+            AnnotationMirror maybeTop = entry.getValue();
             if (AnnotationUtils.areSameByName(poly, maybeTop)) {
                 // If the value of @PolymorphicQualifier is the default value, Annotation.class,
                 // then map is set to polyQual -> polyQual in
