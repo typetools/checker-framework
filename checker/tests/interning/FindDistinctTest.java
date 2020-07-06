@@ -12,11 +12,12 @@ public class FindDistinctTest {
     }
 
     public void bad1(Object o) {
-        // :: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @InternedDistinct Object o2 = o;
     }
 
     public void bad2(Object findIt, Object other) {
+        // :: error: (not.interned)
         boolean b = findIt == other;
     }
 }

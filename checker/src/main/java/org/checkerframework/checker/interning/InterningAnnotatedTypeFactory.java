@@ -2,9 +2,9 @@ package org.checkerframework.checker.interning;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -68,9 +68,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@link InternedDistinct} annotation. */
     final AnnotationMirror INTERNED_DISTINCT =
             AnnotationBuilder.fromClass(elements, InternedDistinct.class);
-    /** The {@link FindDistinct} annotation. */
-    final AnnotationMirror FIND_DISTINCT =
-            AnnotationBuilder.fromClass(elements, FindDistinct.class);
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
@@ -199,14 +196,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitVariable(VariableTree node, AnnotatedTypeMirror type) {
-            System.out.printf(
-                    "visitVariable(%s [%s] [%s], %s)%n",
-                    node, node.getClass(), node.getKind(), type);
-            // if (decl.hasAnnotation(FIND_DISTINCT)) {
-            // type.replaceAnnotation(INTERNED_DISTINCT);
-            // }
-            return super.visitVariable(node, type);
+        public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
+            Element e = TreeUtils.elementFromTree(node);
+            if (atypeFactory.getDeclAnnotation(e, FindDistinct.class) != null) {
+                type.replaceAnnotation(INTERNED_DISTINCT);
+            }
+            return super.visitIdentifier(node, type);
         }
     }
 
