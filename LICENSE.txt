@@ -15,8 +15,8 @@ the parts that you might want to include with your own program.
    qual/ directory, plus utility files FormatUtil.java,
    I18nFormatUtil.java, NullnessUtil.java, Opt.java,
    PurityUnqualified.java, RegexUtil.java, SignednessUtil.java, and
-   UnitsTools.java.  It also applies to other utility files, such as
-   SignednessUtilExtra.java, and to the cleanroom implementations of
+   UnitsTools.java.  It also applies to other utility files
+   (SignednessUtilExtra.java) and to the cleanroom implementations of
    third-party annotations (in checker/src/testannotations/ and in
    framework/src/main/java/org/jmlspecs/).
 
