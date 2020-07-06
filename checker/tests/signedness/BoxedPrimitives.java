@@ -48,17 +48,29 @@ public class BoxedPrimitives {
 
     void client() {
         argSigned(si);
+        argSignedBoxed(si);
         argSigned(sbi);
+        argSignedBoxed(sbi);
         // :: error: (argument.type.incompatible)
         argUnsigned(si);
         // :: error: (argument.type.incompatible)
+        argUnsignedBoxed(si);
+        // :: error: (argument.type.incompatible)
         argUnsigned(sbi);
+        // :: error: (argument.type.incompatible)
+        argUnsignedBoxed(sbi);
         // :: error: (argument.type.incompatible)
         argSigned(ui);
         // :: error: (argument.type.incompatible)
+        argSignedBoxed(ui);
+        // :: error: (argument.type.incompatible)
         argSigned(ubi);
+        // :: error: (argument.type.incompatible)
+        argSignedBoxed(ubi);
         argUnsigned(ui);
+        argUnsignedBoxed(ui);
         argUnsigned(ubi);
+        argUnsignedBoxed(ubi);
     }
 
     public LinkedList<Integer> commands;
