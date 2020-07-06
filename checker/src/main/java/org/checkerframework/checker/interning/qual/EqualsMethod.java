@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Method declaration annotation used to indicate that this method may be invoked on an uninterned
- * object and that it returns an interned object.
+ * Method declaration annotation that indicates a method has a specification like {@code equals()}.
+ * The Interning Checker permits use of {@code this == arg} within the body. Can also be applied to
+ * a static two-argument method, in which case {@code arg1 == arg2} is permitted within the body.
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
@@ -17,4 +18,4 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @InheritedAnnotation
-public @interface InternMethod {}
+public @interface EqualsMethod {}
