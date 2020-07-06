@@ -625,7 +625,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private Map<QualifierKind, AnnotationMirror> createDirectSuperQualifierMap(
                 Elements elements) {
             Map<QualifierKind, AnnotationMirror> directSuperType = new TreeMap<>();
-            for (QualifierKind qualifierKind : oallQualifierKinds()) {
+            for (QualifierKind qualifierKind : allQualifierKinds()) {
                 QualifierKind directSuperTypeKind = getDirectSuperQualifierKind(qualifierKind);
                 AnnotationMirror directSuperTypeAnno;
                 try {
