@@ -68,6 +68,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.UtilPlume;
 
@@ -780,6 +781,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             }
         } catch (UserError ce) {
             logUserError(ce);
+        } catch (TypeSystemError ce) {
+            logTypeSystemError(ce);
         } catch (BugInCF ce) {
             logBugInCF(ce);
         } catch (Throwable t) {
@@ -895,6 +898,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             warnUnneededSuppressions();
         } catch (UserError ce) {
             logUserError(ce);
+        } catch (TypeSystemError ce) {
+            logTypeSystemError(ce);
         } catch (BugInCF ce) {
             logBugInCF(ce);
         } catch (Throwable t) {
@@ -2320,6 +2325,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param ce the user error to output
      */
     private void logUserError(UserError ce) {
+        String msg = ce.getMessage();
+        printMessage(msg);
+    }
+
+    /**
+     * Log (that is, print) a type system error.
+     *
+     * @param ce the type system error to output
+     */
+    private void logTypeSystemError(TypeSystemError ce) {
         String msg = ce.getMessage();
         printMessage(msg);
     }
