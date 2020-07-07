@@ -247,8 +247,12 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns true if and only if the given type can have empty annotation sets (and thus the
-     * *TypeVariable methods need to be used).
+     * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return an empty
+     * set even if the type has been fully-annotated.
+     *
+     * @param type annotated type mirror
+     * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return an empty
+     *     set
      */
     public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
         return type.getKind() == TypeKind.TYPEVAR
