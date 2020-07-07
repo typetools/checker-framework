@@ -109,7 +109,7 @@ public abstract class AbstractAnalysis<
     /**
      * Set the node that is currently being looked at.
      *
-     * @param currentTree the tree that should be currently looked at
+     * @param currentNode the node that should be currently looked at
      */
     protected void setCurrentNode(@FindDistinct Node currentNode) {
         this.currentNode = currentNode;
