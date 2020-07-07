@@ -111,7 +111,7 @@ public abstract class AbstractAnalysis<
      *
      * @param currentNode the node that should be currently looked at
      */
-    protected void setCurrentNode(@FindDistinct Node currentNode) {
+    protected void setCurrentNode(@FindDistinct @Nullable Node currentNode) {
         this.currentNode = currentNode;
     }
 
@@ -340,6 +340,7 @@ public abstract class AbstractAnalysis<
         }
         transferInput.node = node;
         setCurrentNode(node);
+        @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
         TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
         setCurrentNode(null);
         if (node instanceof AssignmentNode) {
