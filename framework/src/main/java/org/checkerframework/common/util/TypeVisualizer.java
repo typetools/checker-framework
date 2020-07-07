@@ -179,7 +179,11 @@ public class TypeVisualizer {
         /** The delegate; that is, the wrapped value. */
         private final @InternedDistinct AnnotatedTypeMirror type;
 
-        /** Create a new Node that wraps the given type. */
+        /**
+         * Create a new Node that wraps the given type.
+         *
+         * @param type the type that the newly-constructed Node represents
+         */
         private Node(final @FindDistinct AnnotatedTypeMirror type) {
             this.type = type;
         }
