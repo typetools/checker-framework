@@ -303,6 +303,7 @@ public abstract class QualifierHierarchy {
      * @param map the mapping to modify
      * @param key the key to update
      * @param qualifier the value to add
+     * @param <T> type of the map's keys
      * @return true if the update was done; false if there was a qualifier hierarchy collision
      */
     public <T> boolean updateMappingToMutableSet(
@@ -453,6 +454,8 @@ public abstract class QualifierHierarchy {
      * <p>This method works even if the underlying Java type is a type variable. In that case, the
      * empty set is a legal argument that represents no annotation.
      *
+     * @param subAnnos qualifiers
+     * @param superAnnos qualifiers
      * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the subtype relationship between "no qualifier" and a qualifier
@@ -588,6 +591,10 @@ public abstract class QualifierHierarchy {
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
+     * @param type1 annotated type
+     * @param type2 annotated type
+     * @param annos1 qualifiers
+     * @param annos2 qualifiers
      * @return the least upper bound of annos1 and annos2
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the relationship between "no qualifier" and a qualifier
@@ -679,6 +686,8 @@ public abstract class QualifierHierarchy {
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
+     * @param type1 annotated type
+     * @param type2 annotated type
      * @param a1 first annotation
      * @param a2 second annotation
      * @return greatest lower bound of the two annotations
@@ -706,6 +715,8 @@ public abstract class QualifierHierarchy {
      * should be invoked, or if the normal version is sufficient (which provides more strict
      * checks).
      *
+     * @param type1 annotated type
+     * @param type2 annotated type
      * @param annos1 first collection of qualifiers
      * @param annos2 second collection of qualifiers
      * @return greatest lower bound of the two collections of qualifiers
