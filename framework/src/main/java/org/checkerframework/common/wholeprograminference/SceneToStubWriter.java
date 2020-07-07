@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -24,10 +25,10 @@ import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
@@ -494,12 +495,13 @@ public final class SceneToStubWriter {
      *     that index in {@code classNames}
      */
     private static TypeElement @SameLen("#2") [] getTypeElementsForClasses(
-            TypeElement innermostTypeElt, String[] classNames) {
+            TypeElement innermostTypeElt, String @MinLen(1) [] classNames) {
         TypeElement[] result = new TypeElement[classNames.length];
-        TypeElement elt = innermostTypeElt;
-        for (int i = classNames.length - 1; i >= 0; i--) {
-            result[i] = elt;
-            elt = ElementUtils.enclosingClass(elt);
+        result[classNames.length - 1] = innermostTypeElt;
+        Element elt = innermostTypeElt;
+        for (int i = classNames.length - 2; i >= 0; i--) {
+            elt = elt.getEnclosingElement();
+            result[i] = (TypeElement) elt;
         }
         return result;
     }
