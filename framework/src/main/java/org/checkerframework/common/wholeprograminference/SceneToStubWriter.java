@@ -453,10 +453,10 @@ public final class SceneToStubWriter {
             String basename, AClass aClass, PrintWriter printWriter) {
         String[] classNames = basename.split("\\$");
         TypeElement innermostTypeElt = aClass.getTypeElement();
-        TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt, classNames);
         if (innermostTypeElt == null) {
             throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
         }
+        TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt, classNames);
 
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
@@ -469,8 +469,7 @@ public final class SceneToStubWriter {
             if (i == classNames.length - 1) {
                 // Only print class annotations on the innermost class, which corresponds to aClass.
                 // If there should be class annotations on another class, it will have its own stub
-                // file,
-                // which will eventually be merged with this one.
+                // file, which will eventually be merged with this one.
                 printWriter.print(formatAnnotations(aClass.getAnnotations()));
             }
             printWriter.print(nameToPrint);
@@ -496,9 +495,6 @@ public final class SceneToStubWriter {
      */
     private static TypeElement @SameLen("#2") [] getTypeElementsForClasses(
             TypeElement innermostTypeElt, String[] classNames) {
-        if (classNames.length == 1) {
-            return new TypeElement[] {innermostTypeElt};
-        }
         TypeElement[] result = new TypeElement[classNames.length];
         TypeElement elt = innermostTypeElt;
         for (int i = classNames.length - 1; i >= 0; i--) {
