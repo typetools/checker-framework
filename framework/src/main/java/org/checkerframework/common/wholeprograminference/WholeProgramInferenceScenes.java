@@ -229,7 +229,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         String className = getEnclosingClassName(lhs);
         String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath);
+        AClass clazz =
+                storage.getAClass(
+                        className,
+                        jaifPath,
+                        (ClassSymbol) TreeUtils.elementFromDeclaration(classTree));
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
         AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
         method.setFieldsFromMethodElement(methodElt);
