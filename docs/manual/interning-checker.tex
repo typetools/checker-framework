@@ -151,6 +151,15 @@ These qualifiers are part of the Interning type system:
   is a method declaration annotation that indicates that this method
   has a specification like \<compareTo()>.  The Interning Checker permits use
   of \<if (arg1 == arg2) \ttlcb\ return 0; \ttrcb> within the body.
+
+\item[\refqualclass{checker/interning/qual}{FindDistinct}]
+  is a formal parameter declaration annotation that indicates that this
+  method uses \<==> to perform comparisons against the annotated formal
+  parameter.  A common reason is that the method searches for the formal
+  parameter in some data structure, using \<==>.  Within the method body,
+  the formal parameter's type is treated as
+  \refqualclass{checker/interning/qual}{InternedDistinct}, but any value
+  may be passed to the method.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
