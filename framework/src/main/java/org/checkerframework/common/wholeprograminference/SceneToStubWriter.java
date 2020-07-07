@@ -203,7 +203,8 @@ public final class SceneToStubWriter {
      *     javac. Guaranteed to have exactly {@code levels} entries. Entries may be null, if the
      *     corresponding parts of {@code scenelibRep} are null. See <a
      *     href="https://github.com/typetools/checker-framework/issues/3422">issue 3422</a> for an
-     *     example of code that causes a null ATypeElement.
+     *     example of code that causes a null ATypeElement, because the component type is unknown,
+     *     but the primary type of the array is known.
      */
     private static List<@Nullable ATypeElement> getSceneLibRepInJavacOrder(
             ATypeElement scenelibRep, int levels) {
@@ -244,10 +245,8 @@ public final class SceneToStubWriter {
             result += explicitAnno.toString();
             result += " ";
         }
-        if ("".equals(result)) {
-            if (scenelibRep != null) {
-                result += formatAnnotations(scenelibRep.tlAnnotationsHere);
-            }
+        if (result.isEmpty() && scenelibRep != null) {
+            result += formatAnnotations(scenelibRep.tlAnnotationsHere);
         }
         result += "[] ";
         if (javacComponent.getKind() == TypeKind.ARRAY) {
