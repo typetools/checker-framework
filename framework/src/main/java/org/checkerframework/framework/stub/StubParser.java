@@ -951,7 +951,6 @@ public class StubParser {
      * @param declAnnos annotations stored on the declaration of the variable with this type, or
      *     null
      */
-    @SuppressWarnings("interning:not.interned") // bug?
     private void annotate(
             AnnotatedTypeMirror atype, Type typeDef, NodeList<AnnotationExpr> declAnnos) {
         if (atype.getKind() == TypeKind.ARRAY) {
@@ -1047,7 +1046,7 @@ public class StubParser {
                 // Add annotations from the declaration of the TypeVariable
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
                 for (AnnotatedTypeVariable typePar : typeParameters) {
-                    if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                    if (Types.isSameType(typePar.getUnderlyingType(), atype.getUnderlyingType())) {
                         AnnotatedTypeReplacer.replace(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
                         AnnotatedTypeReplacer.replace(
