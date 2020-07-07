@@ -113,6 +113,248 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> superQualifiers);
 
     /**
+     * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+     * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier
+     * hierarchy.
+     *
+     * <p>Examples:
+     *
+     * <ul>
+     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+     * </ul>
+     *
+     * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+     * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code
+     *     qualifier1}
+     * @return the least upper bound of the qualifiers or {@code null} if the qualifiers are from
+     *     different hierarchies
+     */
+    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
+    // set version of LUB below.
+    public abstract @Nullable AnnotationMirror leastUpperBound(
+            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+    /**
+     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
+     * qualifier for the same hierarchy in each set.
+     *
+     * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+     * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+     * @return the least upper bound of two the two sets of qualifiers
+     */
+    public Set<? extends AnnotationMirror> leastUpperBounds(
+            Collection<? extends AnnotationMirror> qualifiers1,
+            Collection<? extends AnnotationMirror> qualifiers2) {
+        assertSameSize(qualifiers1, qualifiers2);
+        if (qualifiers1.isEmpty()) {
+            throw new BugInCF(
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
+        }
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : qualifiers1) {
+            for (AnnotationMirror a2 : qualifiers2) {
+                AnnotationMirror lub = leastUpperBound(a1, a2);
+                if (lub != null) {
+                    result.add(lub);
+                }
+            }
+        }
+
+        assertSameSize(result, qualifiers1);
+        return result;
+    }
+
+    /**
+     * Returns the number of iterations dataflow should perform before {@link
+     * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
+     * called.
+     *
+     * @return the number of iterations dataflow should perform before {@link
+     *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should
+     *     never be called.
+     */
+    public int numberOfIterationsBeforeWidening() {
+        return -1;
+    }
+
+    /**
+     * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
+     * reach a fixed point. To prevent this, implement this method such that it returns an upper
+     * bound for the two qualifiers that is a strict super type of the least upper bound. If this
+     * method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to return a
+     * positive number.
+     *
+     * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
+     * previousQualifier} is the qualifier dataflow computed on the last iteration.
+     *
+     * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
+     * the two annotations.
+     *
+     * @param newQualifier new qualifier dataflow computed for some expression
+     * @param previousQualifier the previous qualifier dataflow computed on the last iteration
+     * @return an upper bound that is higher than the least upper bound of newQualifier and
+     *     previousQualifier (or the lub if the type hierarchy does not require this)
+     */
+    public AnnotationMirror widenedUpperBound(
+            AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
+        return leastUpperBound(newQualifier, previousQualifier);
+    }
+
+    /**
+     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
+     *
+     * @param a1 first annotation
+     * @param a2 second annotation
+     * @return greatest lower bound of the two annotations or null if the two annotations are not
+     *     from the same hierarchy
+     */
+    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
+    // set version of LUB below.
+    public abstract @Nullable AnnotationMirror greatestLowerBound(
+            AnnotationMirror a1, AnnotationMirror a2);
+
+    /**
+     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
+     * qualifier for the same hierarchy in each set.
+     *
+     * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+     * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+     * @return the least upper bound of two the two sets of qualifiers
+     */
+    public Set<? extends AnnotationMirror> greatestLowerBounds(
+            Collection<? extends AnnotationMirror> qualifiers1,
+            Collection<? extends AnnotationMirror> qualifiers2) {
+        assertSameSize(qualifiers1, qualifiers2);
+        if (qualifiers1.isEmpty()) {
+            throw new BugInCF(
+                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
+        }
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : qualifiers1) {
+            for (AnnotationMirror a2 : qualifiers2) {
+                AnnotationMirror glb = greatestLowerBound(a1, a2);
+                if (glb != null) {
+                    result.add(glb);
+                }
+            }
+        }
+
+        assertSameSize(qualifiers1, qualifiers2, result);
+        return result;
+    }
+
+    /**
+     * Returns true if and only if the given type can have empty annotation sets (and thus the
+     * *TypeVariable methods need to be used).
+     */
+    public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
+        return type.getKind() == TypeKind.TYPEVAR
+                || type.getKind() == TypeKind.WILDCARD
+                ||
+                // TODO: or should the union/intersection be the LUB of the alternatives?
+                type.getKind() == TypeKind.UNION
+                || type.getKind() == TypeKind.INTERSECTION;
+    }
+
+    /**
+     * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
+     *
+     * @param annos set of annotations to search
+     * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
+     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
+     */
+    public AnnotationMirror findAnnotationInSameHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        AnnotationMirror top = this.getTopAnnotation(annotationMirror);
+        return findAnnotationInHierarchy(annos, top);
+    }
+
+    /**
+     * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
+     *
+     * @param annos set of annotations to search
+     * @param top the top annotation in the hierarchy to which the returned annotation belongs
+     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
+     */
+    public AnnotationMirror findAnnotationInHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
+        for (AnnotationMirror anno : annos) {
+            if (isSubtype(anno, top)) {
+                return anno;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Update a mapping from some key to a set of AnnotationMirrors. If the key already exists in
+     * the mapping and the new qualifier is in the same qualifier hierarchy as any of the existing
+     * qualifiers, do nothing and return false. If the key already exists in the mapping and the new
+     * qualifier is not in the same qualifier hierarchy as any of the existing qualifiers, add the
+     * qualifier to the existing set and return true. If the key does not exist in the mapping, add
+     * the new qualifier as a singleton set and return true.
+     *
+     * @param map the mapping to modify
+     * @param key the key to update
+     * @param newQual the value to add
+     * @return true if the update was done; false if there was a qualifier hierarchy collision
+     */
+    public <T> boolean updateMappingToMutableSet(
+            Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror newQual) {
+
+        if (!map.containsKey(key)) {
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(newQual);
+            map.put(key, set);
+        } else {
+            Set<AnnotationMirror> prevs = map.get(key);
+            for (AnnotationMirror p : prevs) {
+                if (AnnotationUtils.areSame(getTopAnnotation(p), getTopAnnotation(newQual))) {
+                    return false;
+                }
+            }
+            prevs.add(newQual);
+            map.put(key, prevs);
+        }
+        return true;
+    }
+
+    /**
+     * Throws an exception if the given collections do not have the same size.
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+        if (c1.size() != c2.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
+        }
+    }
+
+    /**
+     * Throws an exception if the result does not have the same size as the inputs (which are
+     * assumed to have the same size as one another).
+     *
+     * @param c1 the first collection
+     * @param c2 the second collection
+     * @param result the result collection
+     */
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+        if (c1.size() != result.size()) {
+            throw new BugInCF(
+                    "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
+                    c1.size(), c2.size(), result.size(), c1, c2, result);
+        }
+    }
+    // **********************************************************************
+    // Deprecated methods
+    // **********************************************************************
+
+    /**
      * Tests whether {@code subQualifier} is a sub-qualifier of, or equal to, {@code
      * superQualifier}, according to the type qualifier hierarchy.
      *
@@ -226,59 +468,6 @@ public abstract class QualifierHierarchy {
             }
         }
         return true;
-    }
-
-    /**
-     * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
-     * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier
-     * hierarchy.
-     *
-     * <p>Examples:
-     *
-     * <ul>
-     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
-     * </ul>
-     *
-     * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
-     * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code
-     *     qualifier1}
-     * @return the least upper bound of the qualifiers or {@code null} if the qualifiers are from
-     *     different hierarchies
-     */
-    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
-    // set version of LUB below.
-    public abstract @Nullable AnnotationMirror leastUpperBound(
-            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
-
-    /**
-     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
-     * qualifier for the same hierarchy in each set.
-     *
-     * @param qualifiers1 set of qualifiers; exactly one per hierarchy
-     * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of two the two sets of qualifiers
-     */
-    public Set<? extends AnnotationMirror> leastUpperBounds(
-            Collection<? extends AnnotationMirror> qualifiers1,
-            Collection<? extends AnnotationMirror> qualifiers2) {
-        assertSameSize(qualifiers1, qualifiers2);
-        if (qualifiers1.isEmpty()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
-        }
-
-        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1 : qualifiers1) {
-            for (AnnotationMirror a2 : qualifiers2) {
-                AnnotationMirror lub = leastUpperBound(a1, a2);
-                if (lub != null) {
-                    result.add(lub);
-                }
-            }
-        }
-
-        assertSameSize(result, qualifiers1);
-        return result;
     }
 
     /**
@@ -415,87 +604,6 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the number of iterations dataflow should perform before {@link
-     * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
-     * called.
-     *
-     * @return the number of iterations dataflow should perform before {@link
-     *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should
-     *     never be called.
-     */
-    public int numberOfIterationsBeforeWidening() {
-        return -1;
-    }
-
-    /**
-     * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
-     * reach a fixed point. To prevent this, implement this method such that it returns an upper
-     * bound for the two qualifiers that is a strict super type of the least upper bound. If this
-     * method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to return a
-     * positive number.
-     *
-     * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
-     * previousQualifier} is the qualifier dataflow computed on the last iteration.
-     *
-     * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
-     * the two annotations.
-     *
-     * @param newQualifier new qualifier dataflow computed for some expression
-     * @param previousQualifier the previous qualifier dataflow computed on the last iteration
-     * @return an upper bound that is higher than the least upper bound of newQualifier and
-     *     previousQualifier (or the lub if the type hierarchy does not require this)
-     */
-    public AnnotationMirror widenedUpperBound(
-            AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-        return leastUpperBound(newQualifier, previousQualifier);
-    }
-
-    /**
-     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
-     * are not from the same qualifier hierarchy.
-     *
-     * @param a1 first annotation
-     * @param a2 second annotation
-     * @return greatest lower bound of the two annotations or null if the two annotations are not
-     *     from the same hierarchy
-     */
-    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
-    // set version of LUB below.
-    public abstract @Nullable AnnotationMirror greatestLowerBound(
-            AnnotationMirror a1, AnnotationMirror a2);
-
-    /**
-     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
-     * qualifier for the same hierarchy in each set.
-     *
-     * @param qualifiers1 set of qualifiers; exactly one per hierarchy
-     * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of two the two sets of qualifiers
-     */
-    public Set<? extends AnnotationMirror> greatestLowerBounds(
-            Collection<? extends AnnotationMirror> qualifiers1,
-            Collection<? extends AnnotationMirror> qualifiers2) {
-        assertSameSize(qualifiers1, qualifiers2);
-        if (qualifiers1.isEmpty()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
-        }
-
-        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1 : qualifiers1) {
-            for (AnnotationMirror a2 : qualifiers2) {
-                AnnotationMirror glb = greatestLowerBound(a1, a2);
-                if (glb != null) {
-                    result.add(glb);
-                }
-            }
-        }
-
-        assertSameSize(qualifiers1, qualifiers2, result);
-        return result;
-    }
-
-    /**
      * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
      * are not from the same qualifier hierarchy.
      *
@@ -612,110 +720,6 @@ public abstract class QualifierHierarchy {
             return greatestLowerBoundsTypeVariable(annos1, annos2);
         } else {
             return greatestLowerBounds(annos1, annos2);
-        }
-    }
-    /**
-     * Returns true if and only if the given type can have empty annotation sets (and thus the
-     * *TypeVariable methods need to be used).
-     */
-    public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
-        return type.getKind() == TypeKind.TYPEVAR
-                || type.getKind() == TypeKind.WILDCARD
-                ||
-                // TODO: or should the union/intersection be the LUB of the alternatives?
-                type.getKind() == TypeKind.UNION
-                || type.getKind() == TypeKind.INTERSECTION;
-    }
-
-    /**
-     * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
-     *
-     * @param annos set of annotations to search
-     * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
-     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
-     */
-    public AnnotationMirror findAnnotationInSameHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
-        AnnotationMirror top = this.getTopAnnotation(annotationMirror);
-        return findAnnotationInHierarchy(annos, top);
-    }
-
-    /**
-     * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
-     *
-     * @param annos set of annotations to search
-     * @param top the top annotation in the hierarchy to which the returned annotation belongs
-     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
-     */
-    public AnnotationMirror findAnnotationInHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
-        for (AnnotationMirror anno : annos) {
-            if (isSubtype(anno, top)) {
-                return anno;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Update a mapping from some key to a set of AnnotationMirrors. If the key already exists in
-     * the mapping and the new qualifier is in the same qualifier hierarchy as any of the existing
-     * qualifiers, do nothing and return false. If the key already exists in the mapping and the new
-     * qualifier is not in the same qualifier hierarchy as any of the existing qualifiers, add the
-     * qualifier to the existing set and return true. If the key does not exist in the mapping, add
-     * the new qualifier as a singleton set and return true.
-     *
-     * @param map the mapping to modify
-     * @param key the key to update
-     * @param newQual the value to add
-     * @return true if the update was done; false if there was a qualifier hierarchy collision
-     */
-    public <T> boolean updateMappingToMutableSet(
-            Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror newQual) {
-
-        if (!map.containsKey(key)) {
-            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-            set.add(newQual);
-            map.put(key, set);
-        } else {
-            Set<AnnotationMirror> prevs = map.get(key);
-            for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(getTopAnnotation(p), getTopAnnotation(newQual))) {
-                    return false;
-                }
-            }
-            prevs.add(newQual);
-            map.put(key, prevs);
-        }
-        return true;
-    }
-
-    /**
-     * Throws an exception if the given collections do not have the same size.
-     *
-     * @param c1 the first collection
-     * @param c2 the second collection
-     */
-    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
-        if (c1.size() != c2.size()) {
-            throw new BugInCF(
-                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
-        }
-    }
-
-    /**
-     * Throws an exception if the result does not have the same size as the inputs (which are
-     * assumed to have the same size as one another).
-     *
-     * @param c1 the first collection
-     * @param c2 the second collection
-     * @param result the result collection
-     */
-    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
-        if (c1.size() != result.size()) {
-            throw new BugInCF(
-                    "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
-                    c1.size(), c2.size(), result.size(), c1, c2, result);
         }
     }
 }
