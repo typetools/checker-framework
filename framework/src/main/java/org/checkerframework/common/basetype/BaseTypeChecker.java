@@ -593,8 +593,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /** Represents a message (e.g., an error message) issued by a checker. */
     private static class CheckerMessage {
+        /** The severity of the message. */
         final Diagnostic.Kind kind;
+        /** The message itself. */
         final String message;
+        /** The source code that the message is about. */
         final @InternedDistinct Tree source;
 
         /**
@@ -603,6 +606,14 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
          */
         final @InternedDistinct BaseTypeChecker checker;
 
+        /**
+         * Create a new CheckerMessage.
+         *
+         * @param kind the severity of the message
+         * @param message the text of the message
+         * @param source the source code that the message is about
+         * @param checker the checker that issued the message.
+         */
         private CheckerMessage(
                 Diagnostic.Kind kind,
                 String message,

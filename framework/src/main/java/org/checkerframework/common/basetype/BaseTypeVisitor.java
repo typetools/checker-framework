@@ -3858,6 +3858,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Returns the statement that encloses the given one.
+     *
+     * @param tree an AST node that is on the current path
+     * @return the statement that encloses the given one
+     */
     protected Tree enclosingStatement(@FindDistinct Tree tree) {
         TreePath path = this.getCurrentPath();
         while (path != null && path.getLeaf() != tree) {
@@ -3901,6 +3907,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Returns true if access is allowed, based on an @Unused annotation
+     *
+     * @param field the field to be accessed, whose declaration might be annotated by @Unused
+     * @param receiver the expression whose field is accessed
+     * @param accessTree the access expression
+     * @return true if access is allowed
+     */
     protected boolean isAccessAllowed(
             Element field, AnnotatedTypeMirror receiver, @FindDistinct ExpressionTree accessTree) {
         AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);

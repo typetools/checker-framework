@@ -176,8 +176,10 @@ public class TypeVisualizer {
      * create a wrapper that performed referential equality on types and use a LinkedHashMap.
      */
     private static class Node {
+        /** The delegate; that is, the wrapped value. */
         private final @InternedDistinct AnnotatedTypeMirror type;
 
+        /** Create a new Node that wraps the given type. */
         private Node(final @FindDistinct AnnotatedTypeMirror type) {
             this.type = type;
         }

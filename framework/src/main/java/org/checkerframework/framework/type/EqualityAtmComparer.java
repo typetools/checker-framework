@@ -41,6 +41,13 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
         return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
     }
 
+    /**
+     * Return true if the twe types are the same.
+     *
+     * @param type1 the first type to compare
+     * @param type2 the second type to compare
+     * @return true if the twe types are the same
+     */
     @EqualsMethod // to make Interning Checker permit the == comparison
     protected boolean compare(final AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
         if (type1 == type2) {

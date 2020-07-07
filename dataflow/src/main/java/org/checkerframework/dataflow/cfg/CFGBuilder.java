@@ -1090,6 +1090,10 @@ public class CFGBuilder {
          * place where previously the edge pointed to {@code cur}. Additionally, the predecessor
          * holder also takes care of unlinking (i.e., removing the {@code pred} from {@code cur's}
          * predecessors).
+         *
+         * @param pred a block whose successor should be set
+         * @param cur the previous successor of {@code pred}
+         * @return a predecessor holder to set the successor of {@code pred}
          */
         @SuppressWarnings("interning:not.interned") // AST node comparisons
         protected static PredecessorHolder getPredecessorHolder(

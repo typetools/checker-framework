@@ -840,6 +840,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
+    /**
+     * Returns true if the annotatedTypeFactory for this is the given value.
+     *
+     * @param annotatedTypeFactory a factory to compare to that of this
+     * @return true if the annotatedTypeFactory for this is the given value
+     */
     public boolean sameAnnotatedTypeFactory(
             @FindDistinct AnnotatedTypeFactory annotatedTypeFactory) {
         return this.annotatedTypeFactory == annotatedTypeFactory;
