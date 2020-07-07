@@ -68,7 +68,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -3858,10 +3858,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    protected Tree enclosingStatement(Tree tree_) {
-        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
-        @InternedDistinct Tree tree = tree_;
-
+    protected Tree enclosingStatement(@FindDistinct Tree tree) {
         TreePath path = this.getCurrentPath();
         while (path != null && path.getLeaf() != tree) {
             path = path.getParentPath();
@@ -3905,11 +3902,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     protected boolean isAccessAllowed(
-            Element field, AnnotatedTypeMirror receiver, ExpressionTree accessTree_) {
-
-        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
-        @InternedDistinct ExpressionTree accessTree = accessTree_;
-
+            Element field, AnnotatedTypeMirror receiver, @FindDistinct ExpressionTree accessTree) {
         AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
         if (unused == null) {
             return true;

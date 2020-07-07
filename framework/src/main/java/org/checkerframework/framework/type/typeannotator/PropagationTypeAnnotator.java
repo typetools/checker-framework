@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -179,11 +180,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
      * result of substitution and therefore not in the list of type arguments.
      */
     private Element getTypeParamFromEnclosingClass(
-            final AnnotatedWildcardType wildcard_, final AnnotatedDeclaredType parent) {
-
-        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
-        @InternedDistinct Tree wildcard = wildcard_;
-
+            final @FindDistinct AnnotatedWildcardType wildcard,
+            final AnnotatedDeclaredType parent) {
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {

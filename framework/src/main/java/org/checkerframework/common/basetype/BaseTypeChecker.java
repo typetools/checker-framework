@@ -25,6 +25,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -602,10 +603,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
          */
         final @InternedDistinct BaseTypeChecker checker;
 
-        @SuppressWarnings(
-                "interning:assignment.type.incompatible") // fields will be compared with ==
         private CheckerMessage(
-                Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
+                Diagnostic.Kind kind,
+                String message,
+                @FindDistinct Tree source,
+                @FindDistinct BaseTypeChecker checker) {
             this.kind = kind;
             this.message = message;
             this.source = source;

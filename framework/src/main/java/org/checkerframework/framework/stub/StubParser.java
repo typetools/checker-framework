@@ -951,6 +951,7 @@ public class StubParser {
      * @param declAnnos annotations stored on the declaration of the variable with this type, or
      *     null
      */
+    @SuppressWarnings("interning:not.interned") // bug?
     private void annotate(
             AnnotatedTypeMirror atype, Type typeDef, NodeList<AnnotationExpr> declAnnos) {
         if (atype.getKind() == TypeKind.ARRAY) {

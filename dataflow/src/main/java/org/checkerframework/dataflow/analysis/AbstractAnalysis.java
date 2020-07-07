@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -101,8 +102,7 @@ public abstract class AbstractAnalysis<
      *
      * @param currentTree the tree that should be currently looked at
      */
-    @SuppressWarnings("interning:assignment.type.incompatible") // will be used for == comparisons
-    public void setCurrentTree(Tree currentTree) {
+    public void setCurrentTree(@FindDistinct Tree currentTree) {
         this.currentTree = currentTree;
     }
 
@@ -111,8 +111,7 @@ public abstract class AbstractAnalysis<
      *
      * @param currentTree the tree that should be currently looked at
      */
-    @SuppressWarnings("interning:assignment.type.incompatible") // will be used for == comparisons
-    protected void setCurrentNode(Node currentNode) {
+    protected void setCurrentNode(@FindDistinct Node currentNode) {
         this.currentNode = currentNode;
     }
 

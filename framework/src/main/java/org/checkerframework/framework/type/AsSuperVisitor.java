@@ -8,6 +8,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -50,12 +51,16 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
      * @return a copy of {@code superType} with annotations copied from {@code type} and type
      *     variables substituted from {@code type}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({
+        "unchecked",
+        "interning:not.interned" // optimized special case
+    })
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
         if (type == null || superType == null) {
             throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+        }
 
-        } else if (type == superType) {
+        if (type == superType) {
             return (T) type.deepCopy();
         }
 
@@ -834,7 +839,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
-    public boolean sameAnnotatedTypeFactory(AnnotatedTypeFactory annotatedTypeFactory) {
+    public boolean sameAnnotatedTypeFactory(
+            @FindDistinct AnnotatedTypeFactory annotatedTypeFactory) {
         return this.annotatedTypeFactory == annotatedTypeFactory;
     }
     // </editor-fold>

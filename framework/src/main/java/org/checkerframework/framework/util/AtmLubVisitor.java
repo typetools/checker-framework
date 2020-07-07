@@ -7,7 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -373,11 +373,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      * added to the list of visited AnnotatedTypeMirrors. This prevents infinite recursion on
      * recursive types.
      */
-    private boolean visited(AnnotatedTypeMirror atm_) {
-
-        @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
-        @InternedDistinct AnnotatedTypeMirror atm = atm_;
-
+    private boolean visited(@FindDistinct AnnotatedTypeMirror atm) {
         for (AnnotatedTypeMirror atmVisit : visited) {
             // Use reference equality rather than equals because the visitor may visit two types
             // that are structurally equal, but not actually the same.  For example, the

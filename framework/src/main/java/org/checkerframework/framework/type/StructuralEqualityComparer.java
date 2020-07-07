@@ -6,6 +6,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -91,11 +92,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      *
      * @return true if type1 and type2 are equal
      */
+    @EqualsMethod
     private boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        assert currentTop != null;
         if (type1 == type2) {
             return true;
         }
+        assert currentTop != null;
         if (type1 == null || type2 == null) {
             return false;
         }

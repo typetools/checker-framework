@@ -12,6 +12,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -174,9 +176,9 @@ public class TypeVisualizer {
      * create a wrapper that performed referential equality on types and use a LinkedHashMap.
      */
     private static class Node {
-        private final AnnotatedTypeMirror type;
+        private final @InternedDistinct AnnotatedTypeMirror type;
 
-        private Node(final AnnotatedTypeMirror type) {
+        private Node(final @FindDistinct AnnotatedTypeMirror type) {
             this.type = type;
         }
 

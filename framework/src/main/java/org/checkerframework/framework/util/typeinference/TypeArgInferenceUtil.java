@@ -138,6 +138,7 @@ public class TypeArgInferenceUtil {
      *
      * @return type that path leaf is assigned to
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparisons
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         AnnotatedTypeMirror res;

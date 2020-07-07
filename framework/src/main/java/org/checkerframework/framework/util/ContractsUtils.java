@@ -11,6 +11,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -56,6 +57,7 @@ public class ContractsUtils {
      * Returns an instance of the {@link ContractsUtils} class for the given factory. Also sets it
      * as the currently-used ContractsUtils object.
      */
+    @SuppressWarnings("interning")
     public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);

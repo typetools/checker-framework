@@ -558,7 +558,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param newRoot the new compilation unit root
      */
-    @SuppressWarnings("interning:not.interned") // used in == tests
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);

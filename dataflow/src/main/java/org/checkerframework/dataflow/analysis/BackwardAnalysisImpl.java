@@ -4,7 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
@@ -315,14 +315,11 @@ public class BackwardAnalysisImpl<
 
     @Override
     public S runAnalysisFor(
-            Node node_,
+            @FindDistinct Node node,
             boolean before,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-        @SuppressWarnings("interning:assignment.type.incompatible") // used for == comparisons
-        @InternedDistinct Node node = node_;
-
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
