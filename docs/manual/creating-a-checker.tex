@@ -495,7 +495,7 @@ Your type system should include a top qualifier and a bottom qualifier
 The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
-(Section~\ref{qualifier-polymorphism}).
+(Section~\ref{method-qualifier-polymorphism}).
 
 Choose good names for the qualifiers, because users will write these in
 their source code.
@@ -538,7 +538,7 @@ hierarchy.
 %       "root" for ASTs, in particular for CompilationUnitTrees.
 
   All type qualifiers, except for polymorphic qualifiers (see below and
-  also Section~\ref{qualifier-polymorphism}), need to be
+  also Section~\ref{method-qualifier-polymorphism}), need to be
   properly annotated with \refclass{framework/qual}{SubtypeOf}.
 
   The top qualifier is annotated with
@@ -571,7 +571,7 @@ hierarchy.
   \end{Verbatim}
 
   For a description of polymorphic qualifiers, see
-  Section~\ref{qualifier-polymorphism}.  A polymorphic qualifier needs
+  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier needs
   no \refqualclass{framework/qual}{SubtypeOf} meta-annotation and need not be
   mentioned in any other \refqualclass{framework/qual}{SubtypeOf}
   meta-annotation.
@@ -1168,7 +1168,7 @@ being called and then treats the method in a special way.
 
 The annotated type of expressions and types are defined via type introduction rules in the
 type factory.  For most expressions and types, these rules are the same regardless of the type system.
-For example, the type of a method invocation expression is the return type of the invoked method
+For example, the type of a method invocation expression is the return type of the invoked method,
 viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
 automatically use them.  For other expressions, such as string literals, their (annotated) types depend
 on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.
