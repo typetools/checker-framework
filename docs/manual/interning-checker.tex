@@ -118,7 +118,7 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{PolyInterned}]
   indicates qualifier polymorphism (see
-  Section~\ref{qualifier-polymorphism}).
+  Section~\ref{method-qualifier-polymorphism}).
 
 \end{description}
 
@@ -128,16 +128,29 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
   is a class annotation (not a type annotation) that indicates that this class's
-  \<equals> method is the same as that of \<Object>.  In other words,
-  neither this class nor any of its superclasses overrides the \<equals>
-  method.  Since \<Object.equals> uses reference equality, this means that
-  for such a class, \<==> and \<equals> are equivalent, and so the
-  Interning Checker does not issue errors or warnings for either one.
+  \<equals> method is the same as that of \<Object>.  Since
+  \<Object.equals> uses reference equality, this means that for such a
+  class, \<==> and \<equals> are equivalent, and so the Interning Checker
+  does not issue errors or warnings for either one.
+
+  Two ways to satisfy this annotation are:  (1) neither this class nor any
+  of its superclasses overrides the \<equals> method, or (2) this class
+  defines \<equals> with body \<return this == o;>.
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
   is a method declaration annotation that indicates that this method
   returns an interned object and may be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
+
+\item[\refqualclass{checker/interning/qual}{EqualsMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<equals()>.  The Interning Checker permits use
+  of \<this == arg> within the body.
+
+\item[\refqualclass{checker/interning/qual}{CompareToMethod}]
+  is a method declaration annotation that indicates that this method
+  has a specification like \<compareTo()>.  The Interning Checker permits use
+  of \<if (arg1 == arg2) \ttlcb\ return 0; \ttrcb> within the body.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
@@ -186,8 +199,8 @@ For example:
 \begin{Verbatim}
 @Interned class InternedClass {
   @UnknownInterned InternedClass() {
-  // error, "this" is @UnknownInterned.
-  @Interned InternedClass that = this;
+    // error, "this" is @UnknownInterned.
+    @Interned InternedClass that = this;
   }
 
   @SuppressWarnings("intern") // Only creation of an InternedClass object.

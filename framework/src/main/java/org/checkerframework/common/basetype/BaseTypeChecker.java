@@ -41,6 +41,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -298,10 +299,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         } catch (Throwable t) {
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
-                if (err instanceof UserError) {
-                    UserError ue = (UserError) err;
+                if (err instanceof UserError || err instanceof TypeSystemError) {
                     // Don't add another stack frame, just show the message.
-                    throw ue;
+                    throw (RuntimeException) err;
                 }
                 throw new BugInCF(
                         String.format(

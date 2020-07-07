@@ -76,6 +76,12 @@ public class Heuristics {
             return visit(node.getExpression(), p);
         }
 
+        /**
+         * Returns true if the given path matches this Matcher.
+         *
+         * @param path the path to test
+         * @return true if the given path matches this Matcher
+         */
         public boolean match(TreePath path) {
             return visit(path.getLeaf(), null);
         }
@@ -126,6 +132,9 @@ public class Heuristics {
      * the leaf of a path, ignoring all other parts of it.
      */
     public static class Within extends Matcher {
+        /**
+         * The matcher that {@code Within.match} will try, on every parent of the path it is given.
+         */
         private final Matcher matcher;
 
         /**

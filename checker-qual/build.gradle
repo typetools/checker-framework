@@ -17,16 +17,19 @@ task copySources(type: Copy) {
     }
 
     from files('../checker/src/main/java', '../dataflow/src/main/java', '../framework/src/main/java')
-    include "**/FormatUtil.java"
-    include "**/NullnessUtil.java"
-    include "**/RegexUtil.java"
-    include "**/UnitsTools.java"
-    include "**/SignednessUtil.java"
-    include "**/I18nFormatUtil.java"
+    // Qualifiers
     include '**/org/checkerframework/**/qual/*.java'
-    include '**/Opt.java'
-    // TODO: Should we move this into a qual directory?
-    include '**/PurityUnqualified.java'
+    include '**/PurityUnqualified.java'    // TODO: Should we move this into a qual directory?
+    // Utility classes
+    // If you change this list, also update ../LICENSE.txt .
+    include "**/FormatUtil.java"
+    include "**/I18nFormatUtil.java"
+    include "**/NullnessUtil.java"
+    include "**/Opt.java"
+    include "**/RegexUtil.java"
+    include "**/SignednessUtil.java"
+    // include "**/SignednessUtilExtra.java"
+    include "**/UnitsTools.java"
 
     // Make files read only.
     fileMode(0444)

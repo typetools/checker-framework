@@ -50,6 +50,8 @@
 
     <developers>
 
+        <!-- These are the lead developers, not all the contributors. -->
+
         <developer>
             <id>mernst</id>
             <name>Michael Ernst</name>

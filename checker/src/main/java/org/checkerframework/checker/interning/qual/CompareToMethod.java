@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Method declaration annotation used to indicate that this method may be invoked on an uninterned
- * object and that it returns an interned object.
+ * Method declaration annotation that indicates a method has a specification like {@code
+ * compareTo()} or {@code compare()}. The Interning Checker permits use of {@code if (this == arg) {
+ * return 0; }} or {@code if (arg1 == arg2) { return 0; }} within the body.
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
@@ -17,4 +18,4 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @InheritedAnnotation
-public @interface InternMethod {}
+public @interface CompareToMethod {}
