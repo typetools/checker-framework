@@ -84,7 +84,7 @@ public class EqualitiesSolver {
 
     /**
      * Let Ti be a target type parameter. When we reach this method we have inferred an argument,
-     * Ai, for Ti3.
+     * Ai, for Ti.
      *
      * <p>However, there still may be constraints of the form {@literal Ti = Tj}, {@literal Ti <:
      * Tj}, {@literal Tj <: Ti} in the constraint map. In this case we need to replace Ti with the
