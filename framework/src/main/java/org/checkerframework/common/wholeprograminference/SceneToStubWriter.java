@@ -486,10 +486,10 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Uses getEnclosingElement to construct an array of TypeElements corresponding to the list of
-     * classes, starting from the innermost element.
+     * Constructs an array of TypeElements corresponding to the list of classes.
      *
-     * @param innermostTypeElt the innermost type element representing an inner class
+     * @param innermostTypeElt the innermost type element: either an inner class or an outer class
+     *     without any inner classes that should be printed
      * @param classNames the names of the containing classes, from outer to inner
      * @return an array of TypeElements whose entry at a given index represents the type named at
      *     that index in {@code classNames}
