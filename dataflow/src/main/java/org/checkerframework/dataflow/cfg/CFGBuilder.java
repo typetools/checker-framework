@@ -209,6 +209,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       preserving the control flow structure.
  * </ol>
  */
+@SuppressWarnings("nullness") // TODO
 public class CFGBuilder {
 
     /** This class should never be instantiated. Protected to still allow subclasses. */
