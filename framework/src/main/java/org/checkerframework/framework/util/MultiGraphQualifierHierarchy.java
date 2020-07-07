@@ -355,20 +355,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lhs.size() == valid;
     }
 
-    @Override
-    public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos) {
-        for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror rhsForTop = findAnnotationInHierarchy(subAnnos, top);
-            AnnotationMirror lhsForTop = findAnnotationInHierarchy(superAnnos, top);
-            if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /** For caching results of lubs * */
     private Map<AnnotationPair, AnnotationMirror> lubs = null;
 
@@ -458,19 +444,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
         Set<AnnotationMirror> supermap1 = this.supertypesTransitive.get(subAnno);
         return AnnotationUtils.containsSame(supermap1, superAnno);
-    }
-
-    @Override
-    public boolean isSubtypeTypeVariable(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-        if (superAnno == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return true;
-        }
-        if (subAnno == null) {
-            // [] is a subtype of no qualifier (only [])
-            return false;
-        }
-        return isSubtype(subAnno, superAnno);
     }
 
     private final void checkAnnoInGraph(AnnotationMirror a) {

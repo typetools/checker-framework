@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -49,15 +50,12 @@ public abstract class QualifierHierarchy {
 
     /**
      * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype
-     * of start but no further supertypes exist.
+     * of {@code qualifier} but no further supertypes exist.
+     *
+     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @return the top qualifier of {@code qualifier}'s hierarchy
      */
-    public abstract AnnotationMirror getTopAnnotation(AnnotationMirror start);
-
-    /**
-     * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of start
-     * but no further subtypes exist.
-     */
-    public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
+    public abstract AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
 
     /**
      * Returns the bottom type qualifiers in the hierarchy. The size of this set is equal to {@link
@@ -68,39 +66,171 @@ public abstract class QualifierHierarchy {
     public abstract Set<? extends AnnotationMirror> getBottomAnnotations();
 
     /**
-     * Returns the polymorphic qualifier for the hierarchy containing {@code start}, or {@code null}
-     * if there is no polymorphic qualifier in that hierarchy.
+     * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
+     * qualifier} but no further subtypes exist.
      *
-     * @param start any qualifier from one of the type hierarchies represented by this
-     * @return the polymorphic qualifier for the hierarchy containing {@code start}, or {@code null}
-     *     if there is no polymorphic qualifier in that hierarchy
+     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @return the bottom qualifier of {@code qualifier}'s hierarchy
      */
-    public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
+    public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
+
+    /**
+     * Returns the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
+     * null} if there is no polymorphic qualifier in that hierarchy.
+     *
+     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @return the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
+     *     null} if there is no polymorphic qualifier in that hierarchy
+     */
+    public abstract @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
 
     // **********************************************************************
     // Qualifier Hierarchy Queries
     // **********************************************************************
 
     /**
-     * Tests whether rhs is equal to or a sub-qualifier of lhs, according to the type qualifier
-     * hierarchy. This checks only the qualifiers, not the Java type.
+     * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+     * according to the type qualifier hierarchy.
      *
-     * @return true iff rhs is a sub qualifier of lhs
-     */
-    public abstract boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs);
-
-    /**
-     * Tests whether there is any annotation in lhs that is a super qualifier of, or equal to, some
-     * annotation in rhs. lhs and rhs contain only the annotations, not the Java type.
-     *
-     * @return true iff an annotation in lhs is a super of one in rhs
+     * @param subQualifier possible subQualifier of {@code superQualifier}
+     * @param superQualifier possible superQualifier of {@code subQualifier}
+     * @return true iff {@code subQualifier} is a sub qualifier of {@code superQualifier}
      */
     public abstract boolean isSubtype(
-            Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs);
+            AnnotationMirror subQualifier, AnnotationMirror superQualifier);
 
     /**
-     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
-     * are not from the same quarifier hierarchy.
+     * Tests whether {@code subQualifier} is a sub-qualifier of, or equal to, {@code
+     * superQualifier}, according to the type qualifier hierarchy.
+     *
+     * <p>This method works even if the underlying Java type is a type variable. In that case, a
+     * 'null' AnnotationMirror is a legal argument that represents no annotation.
+     *
+     * @param subQualifier a qualifier that might be a subtype
+     * @param superQualifier a qualifier that might be a subtype
+     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     *     superQualifier}
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the subtype relationship between "no qualifier" and a qualifier
+     */
+    @Deprecated
+    public boolean isSubtypeTypeVariable(
+            @Nullable AnnotationMirror subQualifier, @Nullable AnnotationMirror superQualifier) {
+        if (subQualifier == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return true;
+        } else if (superQualifier == null) {
+            // [] is a subtype of no qualifier (only [])
+            return false;
+        }
+        return isSubtype(subQualifier, superQualifier);
+    }
+
+    /**
+     * Tests whether {@code subQualifier} is a sub-qualifier of, or equal to, {@code
+     * superQualifier}, according to the type qualifier hierarchy. This checks only the qualifiers,
+     * not the Java type.
+     *
+     * <p>This method takes an annotated type to decide if the type variable version of the method
+     * should be invoked, or if the normal version is sufficient (which provides more strict
+     * checks).
+     *
+     * @param subType used to decide whether to call isSubtypeTypeVariable
+     * @param superType used to decide whether to call isSubtypeTypeVariable
+     * @param subQualifier the type qualifier that might be a subtype
+     * @param superQualifier the type qualifier that might be a supertype
+     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     *     superQualifier}
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the subtype relationship between "no qualifier" and a qualifier
+     */
+    @Deprecated
+    public boolean isSubtype(
+            AnnotatedTypeMirror subType,
+            AnnotatedTypeMirror superType,
+            AnnotationMirror subQualifier,
+            AnnotationMirror superQualifier) {
+        if (canHaveEmptyAnnotationSet(subType) || canHaveEmptyAnnotationSet(superType)) {
+            return isSubtypeTypeVariable(subQualifier, superQualifier);
+        } else {
+            return isSubtype(subQualifier, superQualifier);
+        }
+    }
+
+    /**
+     * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+     * qualifier in the same hierarchy in {@code superQualifiers}.
+     *
+     * @param subQualifiers set of qualifiers; exactly one per hierarchy
+     * @param superQualifiers set of qualifiers; exactly one per hierarchy
+     * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+     *     qualifier in the same hierarchy in {@code superQualifiers}
+     */
+    public abstract boolean isSubtype(
+            Collection<? extends AnnotationMirror> subQualifiers,
+            Collection<? extends AnnotationMirror> superQualifiers);
+
+    /**
+     * Tests whether there is any annotation in {@code supers} that is a super qualifier of, or
+     * equal to, some annotation in {@code subs}. {@code supers} and {@code subs} contain only the
+     * annotations, not the Java type.
+     *
+     * <p>This method takes an annotated type to decide if the type variable version of the method
+     * should be invoked, or if the normal version is sufficient (which provides more strict
+     * checks).
+     *
+     * @param subType used to decide whether to call isSubtypeTypeVariable
+     * @param superType used to decide whether to call isSubtypeTypeVariable
+     * @param subs the type qualifiers that might be a subtype
+     * @param supers the type qualifiers that might be a supertype
+     * @return true iff an annotation in {@code supers} is a supertype of, or equal to, one in
+     *     {@code subs}
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the subtype relationship between "no qualifier" and a qualifier
+     */
+    @Deprecated
+    public boolean isSubtype(
+            AnnotatedTypeMirror subType,
+            AnnotatedTypeMirror superType,
+            Collection<? extends AnnotationMirror> subs,
+            Collection<AnnotationMirror> supers) {
+        if (canHaveEmptyAnnotationSet(subType) || canHaveEmptyAnnotationSet(superType)) {
+            return isSubtypeTypeVariable(subs, supers);
+        } else {
+            return isSubtype(subs, supers);
+        }
+    }
+
+    /**
+     * Tests whether there is any annotation in superAnnos that is a super qualifier of or equal to
+     * some annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the
+     * Java type.
+     *
+     * <p>This method works even if the underlying Java type is a type variable. In that case, the
+     * empty set is a legal argument that represents no annotation.
+     *
+     * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the subtype relationship between "no qualifier" and a qualifier
+     */
+    // This method requires more revision.
+    @Deprecated
+    public boolean isSubtypeTypeVariable(
+            Collection<? extends AnnotationMirror> subAnnos,
+            Collection<? extends AnnotationMirror> superAnnos) {
+        for (AnnotationMirror top : getTopAnnotations()) {
+            AnnotationMirror rhsForTop = findAnnotationInHierarchy(subAnnos, top);
+            AnnotationMirror lhsForTop = findAnnotationInHierarchy(superAnnos, top);
+            if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the least upper bound (LUB) of the qualifiers {@code a1} and {@code a2}. Returns
+     * {@code null} if the qualifiers are not from the same qualifier hierarchy.
      *
      * <p>Examples:
      *
@@ -108,11 +238,13 @@ public abstract class QualifierHierarchy {
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
      * </ul>
      *
-     * @param a1 the first qualifer to LUB
+     * @param a1 the first qualifier to LUB
      * @param a2 the second qualifier to LUB
-     * @return the least upper bound of the qualifiers
+     * @return the least upper bound of the qualifiers or {@code null} if the qualifiers are from
+     *     different hierarchies
      */
-    public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
+    public abstract @Nullable AnnotationMirror leastUpperBound(
+            AnnotationMirror a1, AnnotationMirror a2);
 
     /**
      * Returns the number of iterations dataflow should perform before {@link
@@ -236,36 +368,6 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Tests whether {@code subAnno} is a sub-qualifier of, or equal to, {@code superAnno},
-     * according to the type qualifier hierarchy. This checks only the qualifiers, not the Java
-     * type.
-     *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnotationMirror is a legal argument that represents no annotation.
-     *
-     * @param subAnno a qualifier that might be a subtype
-     * @param superAnno a qualifier that might be a subtype
-     * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
-     */
-    public abstract boolean isSubtypeTypeVariable(
-            AnnotationMirror subAnno, AnnotationMirror superAnno);
-
-    /**
-     * Tests whether there is any annotation in superAnnos that is a super qualifier of or equal to
-     * some annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the
-     * Java type.
-     *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, the
-     * empty set is a legal argument that represents no annotation.
-     *
-     * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
-     */
-    // This method requires more revision.
-    public abstract boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos);
-
-    /**
      * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
      * are not from the same qualifier hierarchy.
      *
@@ -381,61 +483,6 @@ public abstract class QualifierHierarchy {
                 // TODO: or should the union/intersection be the LUB of the alternatives?
                 type.getKind() == TypeKind.UNION
                 || type.getKind() == TypeKind.INTERSECTION;
-    }
-
-    /**
-     * Tests whether {@code subAnno} is a sub-qualifier of, or equal to, {@code superAnno},
-     * according to the type qualifier hierarchy. This checks only the qualifiers, not the Java
-     * type.
-     *
-     * <p>This method takes an annotated type to decide if the type variable version of the method
-     * should be invoked, or if the normal version is sufficient (which provides more strict
-     * checks).
-     *
-     * @param subType used to decide whether to call isSubtypeTypeVariable
-     * @param superType used to decide whether to call isSubtypeTypeVariable
-     * @param subAnno the type qualifier that might be a subtype
-     * @param superAnno the type qualifier that might be a supertype
-     * @return true iff {@code subAnno} is a sub qualifier of, or equal to, {@code superAnno}
-     */
-    public boolean isSubtype(
-            AnnotatedTypeMirror subType,
-            AnnotatedTypeMirror superType,
-            AnnotationMirror subAnno,
-            AnnotationMirror superAnno) {
-        if (canHaveEmptyAnnotationSet(subType) || canHaveEmptyAnnotationSet(superType)) {
-            return isSubtypeTypeVariable(subAnno, superAnno);
-        } else {
-            return isSubtype(subAnno, superAnno);
-        }
-    }
-
-    /**
-     * Tests whether there is any annotation in {@code supers} that is a super qualifier of, or
-     * equal to, some annotation in {@code subs}. {@code supers} and {@code subs} contain only the
-     * annotations, not the Java type.
-     *
-     * <p>This method takes an annotated type to decide if the type variable version of the method
-     * should be invoked, or if the normal version is sufficient (which provides more strict
-     * checks).
-     *
-     * @param subType used to decide whether to call isSubtypeTypeVariable
-     * @param superType used to decide whether to call isSubtypeTypeVariable
-     * @param subs the type qualifiers that might be a subtype
-     * @param supers the type qualifiers that might be a supertype
-     * @return true iff an annotation in {@code supers} is a supertype of, or equal to, one in
-     *     {@code subs}
-     */
-    public boolean isSubtype(
-            AnnotatedTypeMirror subType,
-            AnnotatedTypeMirror superType,
-            Collection<? extends AnnotationMirror> subs,
-            Collection<AnnotationMirror> supers) {
-        if (canHaveEmptyAnnotationSet(subType) || canHaveEmptyAnnotationSet(superType)) {
-            return isSubtypeTypeVariable(subs, supers);
-        } else {
-            return isSubtype(subs, supers);
-        }
     }
 
     /**
