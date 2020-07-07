@@ -84,6 +84,16 @@ public abstract class QualifierHierarchy {
      */
     public abstract @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
 
+    /**
+     * Returns {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
+     * false}.
+     *
+     * @param qualifier qualifier
+     * @return {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
+     *     false}.
+     */
+    public abstract boolean isPolymorphicQualifier(AnnotationMirror qualifier);
+
     // **********************************************************************
     // Qualifier Hierarchy Queries
     // **********************************************************************
