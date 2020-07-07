@@ -376,15 +376,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lubs.get(pair);
     }
 
-    @Override
-    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null || a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return null;
-        }
-        return leastUpperBound(a1, a2);
-    }
-
     /** A cache of the results of glb computations. Maps from a pair of annotations to their glb. */
     private Map<AnnotationPair, AnnotationMirror> glbs = null;
 

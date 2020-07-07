@@ -229,8 +229,9 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the least upper bound (LUB) of the qualifiers {@code a1} and {@code a2}. Returns
-     * {@code null} if the qualifiers are not from the same qualifier hierarchy.
+     * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+     * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier
+     * hierarchy.
      *
      * <p>Examples:
      *
@@ -238,13 +239,111 @@ public abstract class QualifierHierarchy {
      *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
      * </ul>
      *
-     * @param a1 the first qualifier to LUB
-     * @param a2 the second qualifier to LUB
+     * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+     * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code
+     *     qualifier1}
      * @return the least upper bound of the qualifiers or {@code null} if the qualifiers are from
      *     different hierarchies
      */
+    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
+    // set version of LUB below.
     public abstract @Nullable AnnotationMirror leastUpperBound(
-            AnnotationMirror a1, AnnotationMirror a2);
+            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+    /**
+     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
+     * qualifier for the same hierarchy in each set.
+     *
+     * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+     * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+     * @return the least upper bound of two the two sets of qualifiers
+     */
+    public Set<? extends AnnotationMirror> leastUpperBounds(
+            Collection<? extends AnnotationMirror> qualifiers1,
+            Collection<? extends AnnotationMirror> qualifiers2) {
+        assertSameSize(qualifiers1, qualifiers2);
+        if (qualifiers1.isEmpty()) {
+            throw new BugInCF(
+                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
+        }
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : qualifiers1) {
+            for (AnnotationMirror a2 : qualifiers2) {
+                AnnotationMirror lub = leastUpperBound(a1, a2);
+                if (lub != null) {
+                    result.add(lub);
+                }
+            }
+        }
+
+        assertSameSize(result, qualifiers1);
+        return result;
+    }
+
+    /**
+     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
+     *
+     * <p>Examples:
+     *
+     * <ul>
+     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
+     * </ul>
+     *
+     * <p>This method works even if the underlying Java type is a type variable. In that case, a
+     * 'null' AnnotationMirror is a legal argument that represents no annotation.
+     *
+     * @param a1 anno1
+     * @param a2 anno2
+     * @return the least restrictive qualifiers for both types
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the relationship between "no qualifier" and a qualifier
+     */
+    @Deprecated
+    public AnnotationMirror leastUpperBoundTypeVariable(
+            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+        if (a1 == null || a2 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return null;
+        }
+        return leastUpperBound(a1, a2);
+    }
+
+    /**
+     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
+     * are not from the same qualifier hierarchy.
+     *
+     * <p>Examples:
+     *
+     * <ul>
+     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
+     * </ul>
+     *
+     * <p>This method takes an annotated type to decide if the type variable version of the method
+     * should be invoked, or if the normal version is sufficient (which provides more strict
+     * checks).
+     *
+     * @param type1 type 1
+     * @param type2 type 2
+     * @param a1 annotation
+     * @param a2 annotation
+     * @return the least restrictive qualifiers for both types
+     * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
+     *     the relationship between "no qualifier" and a qualifier
+     */
+    @Deprecated
+    public AnnotationMirror leastUpperBound(
+            AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2,
+            AnnotationMirror a1,
+            AnnotationMirror a2) {
+        if (canHaveEmptyAnnotationSet(type1) || canHaveEmptyAnnotationSet(type2)) {
+            return leastUpperBoundTypeVariable(a1, a2);
+        } else {
+            return leastUpperBound(a1, a2);
+        }
+    }
 
     /**
      * Returns the number of iterations dataflow should perform before {@link
@@ -293,45 +392,6 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2);
 
     /**
-     * Returns the least upper bound of two types. Each type is represented as a set of type
-     * qualifiers, as is the result.
-     *
-     * <p>Annos1 and annos2 must have the same size, and each annotation in them must be from a
-     * different type hierarchy.
-     *
-     * <p>This is necessary for determining the type of a conditional expression ({@code ?:}), where
-     * the type of the expression is the least upper bound of the true and false clauses.
-     *
-     * @param annos1 first collection of qualifiers
-     * @param annos2 second collection of qualifiers
-     * @return pairwise least upper bounds of elements of the input collections (which need not be
-     *     sorted in the same order)
-     */
-    public Set<? extends AnnotationMirror> leastUpperBounds(
-            Collection<? extends AnnotationMirror> annos1,
-            Collection<? extends AnnotationMirror> annos2) {
-        assertSameSize(annos1, annos2);
-        if (annos1.isEmpty()) {
-            throw new BugInCF(
-                    "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
-        }
-
-        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1 : annos1) {
-            for (AnnotationMirror a2 : annos2) {
-                AnnotationMirror lub = leastUpperBound(a1, a2);
-                if (lub != null) {
-                    result.add(lub);
-                }
-            }
-        }
-
-        assertSameSize(result, annos1);
-
-        return result;
-    }
-
-    /**
      * Returns the greatest lower bound of two types. Each type is represented as a set of type
      * qualifiers, as is the result.
      *
@@ -366,24 +426,6 @@ public abstract class QualifierHierarchy {
 
         return result;
     }
-
-    /**
-     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
-     * are not from the same qualifier hierarchy.
-     *
-     * <p>Examples:
-     *
-     * <ul>
-     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
-     * </ul>
-     *
-     * <p>This method works even if the underlying Java type is a type variable. In that case, a
-     * 'null' AnnotationMirror is a legal argument that represents no annotation.
-     *
-     * @return the least restrictive qualifiers for both types
-     */
-    public abstract AnnotationMirror leastUpperBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2);
 
     /**
      * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
@@ -483,34 +525,6 @@ public abstract class QualifierHierarchy {
                 // TODO: or should the union/intersection be the LUB of the alternatives?
                 type.getKind() == TypeKind.UNION
                 || type.getKind() == TypeKind.INTERSECTION;
-    }
-
-    /**
-     * Returns the least upper bound for the qualifiers a1 and a2. Returns null if the qualifiers
-     * are not from the same qualifier hierarchy.
-     *
-     * <p>Examples:
-     *
-     * <ul>
-     *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable
-     * </ul>
-     *
-     * <p>This method takes an annotated type to decide if the type variable version of the method
-     * should be invoked, or if the normal version is sufficient (which provides more strict
-     * checks).
-     *
-     * @return the least restrictive qualifiers for both types
-     */
-    public AnnotationMirror leastUpperBound(
-            AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2,
-            AnnotationMirror a1,
-            AnnotationMirror a2) {
-        if (canHaveEmptyAnnotationSet(type1) || canHaveEmptyAnnotationSet(type2)) {
-            return leastUpperBoundTypeVariable(a1, a2);
-        } else {
-            return leastUpperBound(a1, a2);
-        }
     }
 
     /**
