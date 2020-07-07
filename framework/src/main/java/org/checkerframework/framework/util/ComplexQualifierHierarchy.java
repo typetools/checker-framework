@@ -23,7 +23,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <ul>
  *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
  *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
- *   <li>{@link #greatestLowerBound(AnnotationMirror,QualifierKind,AnnotationMirror,QualifierKind)}
+ *   <li>{@link #greatestLowerBound(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKind)}
  * </ul>
  *
  * For cases where the annotations have no elements, the {@link

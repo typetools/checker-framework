@@ -306,6 +306,8 @@ public abstract class QualifierHierarchy {
      * 'null' AnnnotationMirror and the empty set represent a meaningful value (namely, no
      * annotation).
      *
+     * @param a1 annotation
+     * @param a2 annotation
      * @return the least restrictive qualifiers for both types
      */
     public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
