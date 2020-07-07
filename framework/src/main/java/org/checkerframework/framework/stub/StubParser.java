@@ -1046,8 +1046,10 @@ public class StubParser {
             case TYPEVAR:
                 // Add annotations from the declaration of the TypeVariable
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+                Types typeUtils = processingEnv.getTypeUtils();
                 for (AnnotatedTypeVariable typePar : typeParameters) {
-                    if (Types.isSameType(typePar.getUnderlyingType(), atype.getUnderlyingType())) {
+                    if (typeUtils.isSameType(
+                            typePar.getUnderlyingType(), atype.getUnderlyingType())) {
                         AnnotatedTypeReplacer.replace(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
                         AnnotatedTypeReplacer.replace(
