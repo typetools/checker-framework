@@ -391,20 +391,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return glbs.get(pair);
     }
 
-    @Override
-    public AnnotationMirror greatestLowerBoundTypeVariable(
-            AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a2;
-        }
-        if (a2 == null) {
-            // [] is a supertype of any qualifier, and [] <: []
-            return a1;
-        }
-        return greatestLowerBound(a1, a2);
-    }
-
     /**
      * {@inheritDoc}
      *

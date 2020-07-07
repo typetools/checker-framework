@@ -246,8 +246,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             AnnotationMirror glb =
                     qualifierHierarchy.greatestLowerBound(
-                            type1LowerBound,
-                            type2LowerBound,
                             type1LowerBound.getAnnotationInHierarchy(top),
                             type2LowerBound.getAnnotationInHierarchy(top));
             if (glb != null) {

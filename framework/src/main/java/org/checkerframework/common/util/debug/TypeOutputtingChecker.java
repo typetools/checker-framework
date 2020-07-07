@@ -256,14 +256,6 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
                         "GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
             }
 
-            // Not needed - raises error.
-            @Override
-            public AnnotationMirror greatestLowerBoundTypeVariable(
-                    AnnotationMirror a1, AnnotationMirror a2) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() shouldn't be called.");
-            }
-
             @Override
             public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
                 throw new BugInCF(
