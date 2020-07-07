@@ -294,34 +294,31 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Update a mapping from some key to a set of AnnotationMirrors. If the key already exists in
-     * the mapping and the new qualifier is in the same qualifier hierarchy as any of the existing
-     * qualifiers, do nothing and return false. If the key already exists in the mapping and the new
-     * qualifier is not in the same qualifier hierarchy as any of the existing qualifiers, add the
-     * qualifier to the existing set and return true. If the key does not exist in the mapping, add
-     * the new qualifier as a singleton set and return true.
+     * Update a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not
+     * already in the map, then put it in the map with a value of a new set containing {@code
+     * qualifier}/ If the map contains {@code key}, then add {@code qualifier} to the set to which
+     * {@code key} maps. If that set contains a qualifier in the same hierarchy as {@code
+     * qualifier}, then don't add it and return false.
      *
      * @param map the mapping to modify
      * @param key the key to update
-     * @param newQual the value to add
+     * @param qualifier the value to add
      * @return true if the update was done; false if there was a qualifier hierarchy collision
      */
     public <T> boolean updateMappingToMutableSet(
-            Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror newQual) {
-
-        if (!map.containsKey(key)) {
-            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-            set.add(newQual);
-            map.put(key, set);
-        } else {
+            Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror qualifier) {
+        if (map.containsKey(key)) {
             Set<AnnotationMirror> prevs = map.get(key);
-            for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(getTopAnnotation(p), getTopAnnotation(newQual))) {
-                    return false;
-                }
+            AnnotationMirror old = findAnnotationInSameHierarchy(prevs, qualifier);
+            if (old != null) {
+                return false;
             }
-            prevs.add(newQual);
+            prevs.add(qualifier);
             map.put(key, prevs);
+        } else {
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(qualifier);
+            map.put(key, set);
         }
         return true;
     }
@@ -354,6 +351,7 @@ public abstract class QualifierHierarchy {
                     c1.size(), c2.size(), result.size(), c1, c2, result);
         }
     }
+
     // **********************************************************************
     // Deprecated methods
     // **********************************************************************
