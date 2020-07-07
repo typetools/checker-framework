@@ -23,8 +23,9 @@ source "$SCRIPTDIR"/build.sh
 
 # Javadoc documentation
 CHECKJAVADOC=1
+# Uncomment this line temporarily for refactorings that touch a lot of code.
 CHECKJAVADOC=0 # TEMPORARY
-if [ $CHECKJAVADOC -eq 0 ]; then
+if [ $CHECKJAVADOC -eq 1 ]; then
 status=0
 ./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
