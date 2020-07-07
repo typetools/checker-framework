@@ -56,6 +56,9 @@ public class ContractsUtils {
     /**
      * Returns an instance of the {@link ContractsUtils} class for the given factory. Also sets it
      * as the currently-used ContractsUtils object.
+     *
+     * @param factory the factory to create a ContractsUtils for
+     * @return a ContractsUtils for the given factory
      */
     @SuppressWarnings("interning")
     public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {

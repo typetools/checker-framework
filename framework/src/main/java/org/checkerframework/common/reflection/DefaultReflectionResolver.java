@@ -478,6 +478,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Get set of MethodSymbols based on class name, method name, and parameter length.
      *
+     * @param className the class that contains the method
+     * @param methodName the method's name
+     * @param paramLength the number of parameters
+     * @param env the environment
      * @return the (potentially empty) set of corresponding method Symbol(s)
      */
     @SuppressWarnings("interning:not.interned") // bug?

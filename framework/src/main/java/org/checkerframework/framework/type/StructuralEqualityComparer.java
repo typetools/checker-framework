@@ -90,6 +90,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Framework sometimes "infers" Typevars to be Wildcards, we allow the combination
      * Wildcard,Typevar. In this case, the two types are "equal" if their bounds are.
      *
+     * @param type1 the first AnnotatedTypeMirror to compare
+     * @param type2 the second AnnotatedTypeMirror to compare
      * @return true if type1 and type2 are equal
      */
     @EqualsMethod

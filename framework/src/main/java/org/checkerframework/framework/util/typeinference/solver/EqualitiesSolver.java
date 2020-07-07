@@ -84,7 +84,7 @@ public class EqualitiesSolver {
 
     /**
      * Let Ti be a target type parameter. When we reach this method we have inferred an argument,
-     * Ai, for Ti
+     * Ai, for Ti3.
      *
      * <p>However, there still may be constraints of the form {@literal Ti = Tj}, {@literal Ti <:
      * Tj}, {@literal Tj <: Ti} in the constraint map. In this case we need to replace Ti with the
@@ -96,6 +96,7 @@ public class EqualitiesSolver {
      *
      * @param target the target for which we have inferred a concrete type argument
      * @param type the type inferred
+     * @param constraints the constraints that are side-effected by this method
      */
     private void rewriteWithInferredType(
             final @FindDistinct TypeVariable target,
@@ -185,6 +186,8 @@ public class EqualitiesSolver {
      *
      * @param target the target for which we know another target is exactly equal to this target
      * @param inferredTarget the other target inferred to be equal
+     * @param constraints the constraints that are side-effected by this method
+     * @param typeFactory type factory
      */
     private void rewriteWithInferredTarget(
             final @FindDistinct TypeVariable target,

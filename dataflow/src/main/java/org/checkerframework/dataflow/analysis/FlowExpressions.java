@@ -497,9 +497,10 @@ public class FlowExpressions {
         public abstract boolean isUnmodifiableByOtherCode();
 
         /**
-         * Returns true if and only if the two receiver are syntactically identical.
+         * Returns true if and only if the two receivers are syntactically identical.
          *
-         * @return true if and only if the two receiver are syntactically identical
+         * @param other the other object to compare to this one
+         * @return true if and only if the two receivers are syntactically identical
          */
         @EqualsMethod
         public boolean syntacticEquals(Receiver other) {

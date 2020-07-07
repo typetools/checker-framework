@@ -151,6 +151,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
      * <p>In scenarios where the bound's owner is the same, we don't want to replace a
      * capture-converted bound in the wildcard type with a non-capture-converted bound given by the
      * type parameter declaration.
+     *
+     * @param typeArgs the type of the arguments at (e.g., at the call side)
+     * @param typeParams the type of the formal parameters (e.g., at the method declaration)
      */
     @SuppressWarnings("interning:not.interned") // workaround for javac bug
     private void updateWildcardBounds(

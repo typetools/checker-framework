@@ -45,6 +45,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
      * Implements asSuper. See {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory,
      * AnnotatedTypeMirror, AnnotatedTypeMirror)} for details.
      *
+     * @param <T> the type of the supertype
      * @param type type from which to copy annotations
      * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
      *     type.

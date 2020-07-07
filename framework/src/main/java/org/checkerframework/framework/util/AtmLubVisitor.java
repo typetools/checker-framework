@@ -372,6 +372,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      * Returns true if the {@link AnnotatedTypeMirror} has been visited. If it has not, then it is
      * added to the list of visited AnnotatedTypeMirrors. This prevents infinite recursion on
      * recursive types.
+     *
+     * @param atm the type that might have been visited
+     * @return true if the given type has been visited
      */
     private boolean visited(@FindDistinct AnnotatedTypeMirror atm) {
         for (AnnotatedTypeMirror atmVisit : visited) {
