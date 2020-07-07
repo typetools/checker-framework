@@ -1,4 +1,5 @@
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 
 public class FindDistinctTest {
@@ -9,6 +10,11 @@ public class FindDistinctTest {
 
     public void ok2(@FindDistinct Object findIt, Object other) {
         boolean b = findIt == other;
+    }
+
+    public void useOk1(Object notinterned, @Interned Object interned) {
+        ok1(notinterned);
+        ok1(interned);
     }
 
     public void bad1(Object o) {
