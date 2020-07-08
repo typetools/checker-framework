@@ -58,7 +58,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.Class declared type.
+     * Checks if the type represents the java.lang.Class declared type.
      *
      * @param type the type
      * @return true iff type represents java.lang.Class
