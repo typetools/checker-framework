@@ -200,9 +200,13 @@ public final class SceneToStubWriter {
      * @param levels the number of component types the type should have, derived from the javac
      *     representation
      * @return a list of the array levels in scenelib's representation, but in the order used by
-     *     javac. Guaranteed to have exactly {@code levels} entries.
+     *     javac. Guaranteed to have exactly {@code levels} entries. Entries may be null, if the
+     *     corresponding parts of {@code scenelibRep} are null. See <a
+     *     href="https://github.com/typetools/checker-framework/issues/3422">issue 3422</a> for an
+     *     example of code that causes a null ATypeElement, because the component type is unknown,
+     *     but the primary type of the array is known.
      */
-    private static List<ATypeElement> getSceneLibRepInJavacOrder(
+    private static List<@Nullable ATypeElement> getSceneLibRepInJavacOrder(
             ATypeElement scenelibRep, int levels) {
         List<ATypeElement> result = new ArrayList<>();
         ATypeElement array = scenelibRep;
@@ -225,12 +229,13 @@ public final class SceneToStubWriter {
      * using {@link #formatType(ATypeElement, TypeMirror)}.
      *
      * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
-     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary.
+     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary and
+     *     why the elements may be null.
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayTypeImpl(
-            List<ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
+            List<@Nullable ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
         TypeMirror javacComponent = javacRep.getComponentType();
         ATypeElement scenelibRep = scenelibRepInJavacOrder.get(0);
         ATypeElement scenelibComponent = scenelibRepInJavacOrder.get(1);
@@ -240,7 +245,7 @@ public final class SceneToStubWriter {
             result += explicitAnno.toString();
             result += " ";
         }
-        if ("".equals(result)) {
+        if (result.isEmpty() && scenelibRep != null) {
             result += formatAnnotations(scenelibRep.tlAnnotationsHere);
         }
         result += "[] ";
