@@ -79,11 +79,11 @@ public class QualifierKindHierarchy {
         /** The bottom of the hierarchy to which this belongs. */
         private QualifierKind bottom;
 
+        /** The polymorphic qualifier of the hierarchy to which this belongs. */
+        private QualifierKind poly;
+
         /** Whether or not this has elements. */
         private final boolean hasElements;
-
-        /** Whether or not this is polymorphic. */
-        private boolean isPoly;
 
         /**
          * All the qualifier kinds that are a strict super qualifier kind of this. Does not include
@@ -102,7 +102,6 @@ public class QualifierKindHierarchy {
             this.name = clazz.getCanonicalName().intern();
             // These non-final fields are set by QualifierKindHierarchy.
             // Give them dummy values here, because the Java compiler requires it.
-            isPoly = false;
             strictSuperTypes = null;
             top = null;
             bottom = null;
@@ -145,6 +144,17 @@ public class QualifierKindHierarchy {
         }
 
         /**
+         * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind
+         * belongs.
+         *
+         * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind
+         *     belongs
+         */
+        public QualifierKind getPolymorphic() {
+            return poly;
+        }
+
+        /**
          * Returns whether or not the annotation class this qualifier kind represents has elements.
          *
          * @return true if the annotation class this qualifier kind represents has elements
@@ -159,7 +169,7 @@ public class QualifierKindHierarchy {
          * @return true if this is polymorphic
          */
         public boolean isPoly() {
-            return isPoly;
+            return this.poly == this;
         }
 
         /**
@@ -229,11 +239,6 @@ public class QualifierKindHierarchy {
      * that class.
      */
     private final NavigableMap<@Interned String, QualifierKind> nameToQualifierKind;
-
-    /**
-     * A mapping from a top qualifier kind to the polymorphic qualifier kind in the same hierarchy.
-     */
-    private final Map<QualifierKind, QualifierKind> topToPoly;
 
     /** All the qualifier kinds that are the top qualifier in their hierarchy. */
     private final Set<QualifierKind> tops;
@@ -316,17 +321,6 @@ public class QualifierKindHierarchy {
         return nameToQualifierKind.get(name);
     }
 
-    /**
-     * The mapping from a top qualifier kind to the polymorphic qualifier kind in the same
-     * hierarchy.
-     *
-     * @return the mapping from a top qualifier kind to the polymorphic qualifier kind in the same
-     *     hierarchy
-     */
-    public Map<QualifierKind, QualifierKind> getTopToPoly() {
-        return topToPoly;
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     /// <editor-fold desc="Initialize hierarchy">
     /// Methods that initialize the hierarchy; only called at object initialization.
@@ -344,7 +338,7 @@ public class QualifierKindHierarchy {
         specifyBottom(directSuperMap, null);
         this.tops = createTopsSet(directSuperMap);
         this.bottoms = createBottomsSet(directSuperMap);
-        this.topToPoly = initializePolymorphicQualifiers();
+        initializePolymorphicQualifiers();
         initializeQualifierKindFields(directSuperMap);
         this.lubs = createLubsMap();
         this.glbs = createGlbsMap();
@@ -361,7 +355,7 @@ public class QualifierKindHierarchy {
      */
     protected void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
-            boolean isPoly = qualifierKind.isPoly;
+            boolean isPoly = qualifierKind.isPoly();
             boolean hasSubtypeOfAnno = directSuperMap.containsKey(qualifierKind);
             if (isPoly && hasSubtypeOfAnno) {
                 // Polymorphic qualifiers with upper and lower bounds are currently not supported.
@@ -544,22 +538,19 @@ public class QualifierKindHierarchy {
 
     /**
      * Iterates over all the qualifier kinds and adds all polymorphic qualifier kinds to
-     * polymorphicQualifiers. Also sets {@link QualifierKind#isPoly} to true and {@link
-     * QualifierKind#top} to top for the polymophic qualifiers.
+     * polymorphicQualifiers. Also sets {@link QualifierKind#poly} and {@link QualifierKind#top} for
+     * the polymorphic qualifiers. Set {@link QualifierKind#poly} for the top qualifiers.
      *
      * <p>Requires that tops has been initialized.
-     *
-     * @return a mapping from a top qualifier to the polymorphic qualifier in the heirarchy
      */
-    protected Map<QualifierKind, QualifierKind> initializePolymorphicQualifiers() {
-        Map<QualifierKind, QualifierKind> topToPoly = new TreeMap<>();
+    protected void initializePolymorphicQualifiers() {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             Class<? extends Annotation> clazz = qualifierKind.getAnnotationClass();
             PolymorphicQualifier polyMetaAnno = clazz.getAnnotation(PolymorphicQualifier.class);
             if (polyMetaAnno == null) {
                 continue;
             }
-            qualifierKind.isPoly = true;
+            qualifierKind.poly = qualifierKind;
             String topName = polyMetaAnno.value().getCanonicalName();
             if (nameToQualifierKind.containsKey(topName)) {
                 qualifierKind.top = nameToQualifierKind.get(topName);
@@ -579,15 +570,15 @@ public class QualifierKindHierarchy {
                         qualifierKind, topName);
             }
             qualifierKind.strictSuperTypes = Collections.singleton(qualifierKind.top);
-            topToPoly.put(qualifierKind.top, qualifierKind);
+            qualifierKind.top.poly = qualifierKind;
         }
-        return topToPoly;
     }
 
     /**
      * For each qualifier kind in {@code directSuperMap}, initializes {@link
-     * QualifierKind#strictSuperTypes}, {@link QualifierKind#top} and {@link QualifierKind#bottom}.
-     * (Requires tops, bottoms, and polymorphicQualifiers to be initialized.)
+     * QualifierKind#strictSuperTypes}, {@link QualifierKind#top}, {@link QualifierKind#bottom}, and
+     * {@link QualifierKind#poly}. (Requires tops, bottoms, and polymorphicQualifiers to be
+     * initialized.)
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
@@ -595,7 +586,7 @@ public class QualifierKindHierarchy {
     protected void initializeQualifierKindFields(
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
-            if (!qualifierKind.isPoly) {
+            if (!qualifierKind.isPoly()) {
                 qualifierKind.strictSuperTypes = findAllTheSupers(qualifierKind, directSuperMap);
             }
         }
@@ -615,6 +606,7 @@ public class QualifierKindHierarchy {
                 throw new TypeSystemError(
                         "Qualifier %s isn't a subtype of any top. tops = %s", qualifierKind, tops);
             }
+            qualifierKind.poly = qualifierKind.top.poly;
         }
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             for (QualifierKind bot : bottoms) {
@@ -628,7 +620,7 @@ public class QualifierKindHierarchy {
                             "Multiple bottoms found for qualifier %s. Bottoms: %s and %s.",
                             qualifierKind, bot, qualifierKind.bottom);
                 }
-                if (qualifierKind.isPoly) {
+                if (qualifierKind.isPoly()) {
                     bot.strictSuperTypes.add(qualifierKind);
                 }
             }
@@ -661,7 +653,7 @@ public class QualifierKindHierarchy {
                 continue;
             }
             visited.add(superQual);
-            if (superQual.isPoly) {
+            if (superQual.isPoly()) {
                 continue;
             }
             queue.addAll(directSuperMap.get(superQual));
@@ -715,7 +707,7 @@ public class QualifierKindHierarchy {
                     qual1, qual2, SystemUtil.join(", ", lubs));
         }
         QualifierKind lub = lubs.iterator().next();
-        if (lub.isPoly && !qual1.isPoly && !qual2.isPoly) {
+        if (lub.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
             throw new TypeSystemError(
                     "Lub can't be poly: lub: %s, qual1: %s, qual2: %s.", lub, qual1, qual2);
         }
@@ -785,7 +777,7 @@ public class QualifierKindHierarchy {
                     qual1, qual2, SystemUtil.join(", ", glbs));
         }
         QualifierKind glb = glbs.iterator().next();
-        if (glb.isPoly && !qual1.isPoly && !qual2.isPoly) {
+        if (glb.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
             throw new TypeSystemError(
                     "GLB can't be poly: lub: %s, qual1: %s, qual2: %s.", glb, qual1, qual2);
         }

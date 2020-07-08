@@ -181,9 +181,8 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-        QualifierKind top = getQualifierKind(start).getTop();
-        QualifierKind poly = qualifierKindHierarchy.getTopToPoly().get(top);
+    public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        QualifierKind poly = getQualifierKind(start).getPolymorphic();
         if (poly == null) {
             return null;
         }

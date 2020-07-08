@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -191,9 +192,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-        QualifierKind kind = getQualifierKind(start);
-        QualifierKind poly = qualifierKindHierarchy.getTopToPoly().get(kind);
+    public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        QualifierKind poly = getQualifierKind(start).getPolymorphic();
         if (poly == null) {
             return null;
         }
