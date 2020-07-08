@@ -140,7 +140,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror findAnnotationInHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         return findAnnotationInSameHierarchy(annos, top);
     }
