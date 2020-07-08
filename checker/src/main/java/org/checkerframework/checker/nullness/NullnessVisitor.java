@@ -289,6 +289,13 @@ public class NullnessVisitor
         return isAllZeros;
     }
 
+    /**
+     * Return true if the given node is "new X[]", in the context "toArray(new X[])".
+     *
+     * @param node a node to test
+     * @return true if the node is a new array within acall to toArray()
+     */
+    @SuppressWarnings("interning:not.interned") // comparisons of Name objects
     private boolean isNewArrayInToArray(NewArrayTree node) {
         if (node.getDimensions().size() != 1) {
             return false;

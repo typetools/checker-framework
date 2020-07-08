@@ -104,7 +104,8 @@ public abstract class QualifierHierarchy {
      *
      * @param subQualifier possible subQualifier of {@code superQualifier}
      * @param superQualifier possible superQualifier of {@code subQualifier}
-     * @return true iff {@code subQualifier} is a sub qualifier of {@code superQualifier}
+     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     *     superQualifier}
      */
     public abstract boolean isSubtype(
             AnnotationMirror subQualifier, AnnotationMirror superQualifier);
@@ -136,7 +137,7 @@ public abstract class QualifierHierarchy {
      * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
      * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code
      *     qualifier1}
-     * @return the least upper bound of the qualifiers or {@code null} if the qualifiers are from
+     * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
      *     different hierarchies
      */
     // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
@@ -220,7 +221,7 @@ public abstract class QualifierHierarchy {
      * @return greatest lower bound of the two annotations or null if the two annotations are not
      *     from the same hierarchy
      */
-    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
+    // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
     // set version of LUB below.
     public abstract @Nullable AnnotationMirror greatestLowerBound(
             AnnotationMirror a1, AnnotationMirror a2);
@@ -306,7 +307,7 @@ public abstract class QualifierHierarchy {
     /**
      * Update a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not
      * already in the map, then put it in the map with a value of a new set containing {@code
-     * qualifier}/ If the map contains {@code key}, then add {@code qualifier} to the set to which
+     * qualifier}. If the map contains {@code key}, then add {@code qualifier} to the set to which
      * {@code key} maps. If that set contains a qualifier in the same hierarchy as {@code
      * qualifier}, then don't add it and return false.
      *
@@ -548,6 +549,7 @@ public abstract class QualifierHierarchy {
             return leastUpperBound(a1, a2);
         }
     }
+
     /**
      * Returns the type qualifiers that are the least upper bound of the qualifiers in annos1 and
      * annos2.

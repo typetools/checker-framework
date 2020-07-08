@@ -635,12 +635,14 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
+        // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessSkipSome', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
+        // These do not yet pass.  TODO: Make them pass.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness', ['-AskipUses=com.sun.*'])
+
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {

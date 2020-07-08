@@ -84,6 +84,7 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     static void addDeclarationAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         // The code here should be similar to

@@ -14,6 +14,7 @@ import java.util.Map;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 
 /**
  * This class provides a collection of utilities to ease working with i18n format strings.
@@ -372,7 +373,8 @@ public class I18nFormatUtil {
             }
 
             // Try trimmed lowercase.
-            String ls = s.trim().toLowerCase(Locale.ROOT);
+            @SuppressWarnings("interning:assignment.type.incompatible") // test if value changed
+            @InternedDistinct String ls = s.trim().toLowerCase(Locale.ROOT);
             if (ls != s) { // Don't loop if the string trim().toLowerCase returned the same object.
                 for (int i = 0; i < list.length; ++i) {
                     if (ls.equals(list[i])) {
