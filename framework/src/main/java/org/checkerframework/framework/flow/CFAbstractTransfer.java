@@ -20,6 +20,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -314,7 +315,8 @@ public abstract class CFAbstractTransfer<
             }
 
             CFGLambda lambda = (CFGLambda) underlyingAST;
-            Tree enclosingTree =
+            @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+            @InternedDistinct Tree enclosingTree =
                     TreeUtils.enclosingOfKind(
                             factory.getPath(lambda.getLambdaTree()),
                             new HashSet<>(

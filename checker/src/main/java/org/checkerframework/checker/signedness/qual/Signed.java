@@ -28,16 +28,14 @@ import org.checkerframework.framework.qual.TypeKind;
             TypeKind.FLOAT,
             TypeKind.DOUBLE,
             TypeKind.CHAR
-        }
-
-        // This is commented out until implicitly signed boxed types are implemented
-        // correctly.
-
-        /*,
+        },
         types = {
             java.lang.Byte.class,
-            java.lang.Short.class,
             java.lang.Integer.class,
-            java.lang.Long.class
-        }*/ )
+            java.lang.Long.class,
+            java.lang.Short.class,
+            java.lang.Float.class,
+            java.lang.Double.class,
+            java.lang.Character.class
+        })
 public @interface Signed {}

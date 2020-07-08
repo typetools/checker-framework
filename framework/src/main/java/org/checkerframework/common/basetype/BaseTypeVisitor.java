@@ -68,6 +68,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -3857,7 +3858,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    protected Tree enclosingStatement(Tree tree) {
+    /**
+     * Returns the statement that encloses the given one.
+     *
+     * @param tree an AST node that is on the current path
+     * @return the statement that encloses the given one
+     */
+    protected Tree enclosingStatement(@FindDistinct Tree tree) {
         TreePath path = this.getCurrentPath();
         while (path != null && path.getLeaf() != tree) {
             path = path.getParentPath();
@@ -3900,8 +3907,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Returns true if access is allowed, based on an @Unused annotation
+     *
+     * @param field the field to be accessed, whose declaration might be annotated by @Unused
+     * @param receiver the expression whose field is accessed
+     * @param accessTree the access expression
+     * @return true if access is allowed
+     */
     protected boolean isAccessAllowed(
-            Element field, AnnotatedTypeMirror receiver, ExpressionTree accessTree) {
+            Element field, AnnotatedTypeMirror receiver, @FindDistinct ExpressionTree accessTree) {
         AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
         if (unused == null) {
             return true;
