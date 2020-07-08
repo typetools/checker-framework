@@ -637,10 +637,10 @@ subprojects {
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessSkipSome', ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessOnlyAnnotatedFor', ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
-        // These do not yet pass on all subprojects.  TODO: Make them pass.
+        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness', ['-AskipUses=com.sun.*'])
 
 
@@ -804,7 +804,7 @@ subprojects {
             description 'Run all Checker Framework tests except for the Junit tests.'
             dependsOn('checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessSkipSome')
+                dependsOn('checkNullnessOnlyAnnotatedFor')
             } else {
                 dependsOn('checkNullness')
             }
