@@ -244,25 +244,4 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
         return kindToAnnotationMirror.get(glb);
     }
-
-    @Override
-    public boolean isSubtypeTypeVariable(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos) {
-        int isSubtypeCount = 0;
-        for (AnnotationMirror subAnno : subAnnos) {
-            QualifierKind subKind = getQualifierKind(subAnno);
-            for (AnnotationMirror superAnno : superAnnos) {
-                QualifierKind superKind = getQualifierKind(superAnno);
-                if (subKind.areInSameHierarchy(superKind)) {
-                    if (subKind.isSubtype(superKind)) {
-                        isSubtypeCount++;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        }
-        return isSubtypeCount == subAnnos.size();
-    }
 }
