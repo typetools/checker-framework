@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -344,10 +345,11 @@ public abstract class QualifierHierarchy {
      * @param c1 the first collection
      * @param c2 the second collection
      */
-    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+    protected static void assertSameSize(Collection<?> c1, Collection<?> c2) {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
-                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
+                    "inconsistent sizes (%d, %d):%n  %s%n  %s",
+                    c1.size(), c2.size(), SystemUtil.join(",", c1), SystemUtil.join(",", c1));
         }
     }
 
@@ -359,11 +361,16 @@ public abstract class QualifierHierarchy {
      * @param c2 the second collection
      * @param result the result collection
      */
-    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
-        if (c1.size() != result.size()) {
+    protected static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+        if (c1.size() != result.size() || c2.size() != result.size()) {
             throw new BugInCF(
                     "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
-                    c1.size(), c2.size(), result.size(), c1, c2, result);
+                    c1.size(),
+                    c2.size(),
+                    result.size(),
+                    SystemUtil.join(",", c1),
+                    SystemUtil.join(",", c2),
+                    SystemUtil.join(",", result));
         }
     }
 

@@ -206,21 +206,15 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     public boolean isSubtype(
             Collection<? extends AnnotationMirror> subAnnos,
             Collection<? extends AnnotationMirror> superAnnos) {
-        int isSubtypeCount = 0;
+        assertSameSize(subAnnos, superAnnos);
         for (AnnotationMirror subAnno : subAnnos) {
-            QualifierKind subKind = getQualifierKind(subAnno);
-            for (AnnotationMirror superAnno : superAnnos) {
-                QualifierKind superKind = getQualifierKind(superAnno);
-                if (subKind.isInSameHierarchyAs(superKind)) {
-                    if (subKind.isSubtype(superKind)) {
-                        isSubtypeCount++;
-                    } else {
-                        return false;
-                    }
+            AnnotationMirror superAnno = findAnnotationInSameHierarchy(superAnnos, subAnno);
+            if (superAnno == null)
+                if (!isSubtype(subAnno, superAnno)) {
+                    return false;
                 }
-            }
         }
-        return isSubtypeCount == superAnnos.size();
+        return true;
     }
 
     @Override
