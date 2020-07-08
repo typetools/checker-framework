@@ -29,7 +29,11 @@ public class TypecheckExecutor {
      * configuration, and return place the result in a CompilationResult
      */
     public CompilationResult compile(TestConfiguration configuration) {
-        TestUtilities.ensureDirectoryExists(new File(configuration.getOptions().get("-d")));
+        String dOption = configuration.getOptions().get("-d");
+        if (dOption == null) {
+            throw new Error("-d not supplied");
+        }
+        TestUtilities.ensureDirectoryExists(new File(dOption));
 
         final StringWriter javacOutput = new StringWriter();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
