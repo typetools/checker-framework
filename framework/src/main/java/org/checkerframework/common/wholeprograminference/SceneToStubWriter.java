@@ -14,15 +14,18 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -200,9 +203,13 @@ public final class SceneToStubWriter {
      * @param levels the number of component types the type should have, derived from the javac
      *     representation
      * @return a list of the array levels in scenelib's representation, but in the order used by
-     *     javac. Guaranteed to have exactly {@code levels} entries.
+     *     javac. Guaranteed to have exactly {@code levels} entries. Entries may be null, if the
+     *     corresponding parts of {@code scenelibRep} are null. See <a
+     *     href="https://github.com/typetools/checker-framework/issues/3422">issue 3422</a> for an
+     *     example of code that causes a null ATypeElement, because the component type is unknown,
+     *     but the primary type of the array is known.
      */
-    private static List<ATypeElement> getSceneLibRepInJavacOrder(
+    private static List<@Nullable ATypeElement> getSceneLibRepInJavacOrder(
             ATypeElement scenelibRep, int levels) {
         List<ATypeElement> result = new ArrayList<>();
         ATypeElement array = scenelibRep;
@@ -225,12 +232,13 @@ public final class SceneToStubWriter {
      * using {@link #formatType(ATypeElement, TypeMirror)}.
      *
      * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
-     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary.
+     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary and
+     *     why the elements may be null.
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayTypeImpl(
-            List<ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
+            List<@Nullable ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
         TypeMirror javacComponent = javacRep.getComponentType();
         ATypeElement scenelibRep = scenelibRepInJavacOrder.get(0);
         ATypeElement scenelibComponent = scenelibRepInJavacOrder.get(1);
@@ -240,7 +248,7 @@ public final class SceneToStubWriter {
             result += explicitAnno.toString();
             result += " ";
         }
-        if ("".equals(result)) {
+        if (result.isEmpty() && scenelibRep != null) {
             result += formatAnnotations(scenelibRep.tlAnnotationsHere);
         }
         result += "[] ";
@@ -450,6 +458,11 @@ public final class SceneToStubWriter {
     private static int printClassDefinitions(
             String basename, AClass aClass, PrintWriter printWriter) {
         String[] classNames = basename.split("\\$");
+        TypeElement innermostTypeElt = aClass.getTypeElement();
+        if (innermostTypeElt == null) {
+            throw new BugInCF("typeElement was unexpectedly null in this aClass: " + aClass);
+        }
+        TypeElement[] typeElements = getTypeElementsForClasses(innermostTypeElt, classNames);
 
         for (int i = 0; i < classNames.length; i++) {
             String nameToPrint = classNames[i];
@@ -459,9 +472,14 @@ public final class SceneToStubWriter {
             } else {
                 printWriter.print("class ");
             }
-            printWriter.print(formatAnnotations(aClass.getAnnotations()));
+            if (i == classNames.length - 1) {
+                // Only print class annotations on the innermost class, which corresponds to aClass.
+                // If there should be class annotations on another class, it will have its own stub
+                // file, which will eventually be merged with this one.
+                printWriter.print(formatAnnotations(aClass.getAnnotations()));
+            }
             printWriter.print(nameToPrint);
-            printTypeParameters(aClass, printWriter);
+            printTypeParameters(typeElements[i], printWriter);
             printWriter.println(" {");
             if (aClass.isEnum(nameToPrint) && i != classNames.length - 1) {
                 // Print a blank set of enum constants if this is an outer enum.
@@ -470,6 +488,27 @@ public final class SceneToStubWriter {
             printWriter.println();
         }
         return classNames.length;
+    }
+
+    /**
+     * Constructs an array of TypeElements corresponding to the list of classes.
+     *
+     * @param innermostTypeElt the innermost type element: either an inner class or an outer class
+     *     without any inner classes that should be printed
+     * @param classNames the names of the containing classes, from outer to inner
+     * @return an array of TypeElements whose entry at a given index represents the type named at
+     *     that index in {@code classNames}
+     */
+    private static TypeElement @SameLen("#2") [] getTypeElementsForClasses(
+            TypeElement innermostTypeElt, String @MinLen(1) [] classNames) {
+        TypeElement[] result = new TypeElement[classNames.length];
+        result[classNames.length - 1] = innermostTypeElt;
+        Element elt = innermostTypeElt;
+        for (int i = classNames.length - 2; i >= 0; i--) {
+            elt = elt.getEnclosingElement();
+            result[i] = (TypeElement) elt;
+        }
+        return result;
     }
 
     /**
@@ -723,14 +762,10 @@ public final class SceneToStubWriter {
     /**
      * Prints the type parameters of the given class, enclosed in {@code <...>}.
      *
-     * @param aClass the class whose type parameters should be printed
+     * @param type the TypeElement representing the class whose type parameters should be printed
      * @param printWriter where to print the type parameters
      */
-    private static void printTypeParameters(AClass aClass, PrintWriter printWriter) {
-        TypeElement type = aClass.getTypeElement();
-        if (type == null) {
-            return;
-        }
+    private static void printTypeParameters(TypeElement type, PrintWriter printWriter) {
         List<? extends TypeParameterElement> typeParameters = type.getTypeParameters();
         printTypeParameters(typeParameters, printWriter);
     }

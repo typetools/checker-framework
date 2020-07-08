@@ -1087,6 +1087,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     public Void visitIdentifier(IdentifierTree tree, Void p) {
         // If the identifier is a field accessed via an implicit this,
         // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.

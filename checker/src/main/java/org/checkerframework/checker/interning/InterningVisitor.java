@@ -178,22 +178,20 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return super.visitBinary(node, p);
         }
 
-        Element leftElt = null;
-        Element rightElt = null;
-        if (left instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
-            leftElt = ((DeclaredType) left.getUnderlyingType()).asElement();
-        }
-        if (right instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
-            rightElt = ((DeclaredType) right.getUnderlyingType()).asElement();
-        }
-
+        Element leftElt = TypesUtils.getTypeElement(left.getUnderlyingType());
         // If neither @Interned or @UsesObjectEquals, report error.
         if (!(left.hasEffectiveAnnotation(INTERNED)
-                || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
+                || (leftElt != null
+                        && atypeFactory.getDeclAnnotation(leftElt, UsesObjectEquals.class)
+                                != null))) {
             checker.reportError(leftOp, "not.interned", left);
         }
+
+        Element rightElt = TypesUtils.getTypeElement(right.getUnderlyingType());
         if (!(right.hasEffectiveAnnotation(INTERNED)
-                || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null))) {
+                || (rightElt != null
+                        && atypeFactory.getDeclAnnotation(rightElt, UsesObjectEquals.class)
+                                != null))) {
             checker.reportError(rightOp, "not.interned", right);
         }
         return super.visitBinary(node, p);
@@ -522,7 +520,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             assert methodTree != null;
             StatementTree firstStmnt = methodTree.getBody().getStatements().get(0);
             assert firstStmnt != null;
-            if (ifStatementTree != firstStmnt) {
+            @SuppressWarnings("interning:not.interned") // comparing AST nodes
+            boolean notSameNode = firstStmnt != ifStatementTree;
+            if (notSameNode) {
                 return false; // The if statement is not the first statement in the method.
             }
         } else {
@@ -821,7 +821,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                             return visit(leftTree, p);
                         } else {
                             // a == b || a.compareTo(b) == 0
-                            ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
+                            @SuppressWarnings(
+                                    "interning:assignment.type.incompatible" // AST node comparisons
+                            )
+                            @InternedDistinct ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
                             ExpressionTree rightTree =
                                     tree.getRightOperand(); // looking for a.compareTo(b) == 0
                             // or b.compareTo(a) == 0

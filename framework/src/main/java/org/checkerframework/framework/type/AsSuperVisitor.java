@@ -8,6 +8,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -44,18 +45,23 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
      * Implements asSuper. See {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory,
      * AnnotatedTypeMirror, AnnotatedTypeMirror)} for details.
      *
+     * @param <T> the type of the supertype
      * @param type type from which to copy annotations
      * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
      *     type.
      * @return a copy of {@code superType} with annotations copied from {@code type} and type
      *     variables substituted from {@code type}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({
+        "unchecked",
+        "interning:not.interned" // optimized special case
+    })
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
         if (type == null || superType == null) {
             throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+        }
 
-        } else if (type == superType) {
+        if (type == superType) {
             return (T) type.deepCopy();
         }
 
@@ -834,7 +840,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
-    public boolean sameAnnotatedTypeFactory(AnnotatedTypeFactory annotatedTypeFactory) {
+    /**
+     * Returns true if the annotatedTypeFactory for this is the given value.
+     *
+     * @param annotatedTypeFactory a factory to compare to that of this
+     * @return true if the annotatedTypeFactory for this is the given value
+     */
+    public boolean sameAnnotatedTypeFactory(
+            @FindDistinct AnnotatedTypeFactory annotatedTypeFactory) {
         return this.annotatedTypeFactory == annotatedTypeFactory;
     }
     // </editor-fold>

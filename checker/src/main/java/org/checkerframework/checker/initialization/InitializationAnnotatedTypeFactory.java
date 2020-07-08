@@ -427,12 +427,17 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * In the first enclosing class, find the top-level member that contains tree. TODO: should we
-     * look whether these elements are enclosed within another class that is itself under
-     * construction.
+     * In the first enclosing class, find the top-level member that contains {@code path}.
+     *
+     * <p>TODO: should we look whether these elements are enclosed within another class that is
+     * itself under construction.
      *
      * <p>Are there any other type of top level objects?
+     *
+     * @param path the path whose leaf is the target
+     * @return a top-level member containing the leaf of {@code path}
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     private Tree findTopLevelClassMemberForTree(TreePath path) {
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass != null) {
