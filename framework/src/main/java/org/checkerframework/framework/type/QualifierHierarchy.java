@@ -285,7 +285,7 @@ public abstract class QualifierHierarchy {
      * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
-    public AnnotationMirror findAnnotationInSameHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
         AnnotationMirror top = this.getTopAnnotation(annotationMirror);
         return findAnnotationInHierarchy(annos, top);
@@ -298,7 +298,7 @@ public abstract class QualifierHierarchy {
      * @param top the top annotation in the hierarchy to which the returned annotation belongs
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
-    public AnnotationMirror findAnnotationInHierarchy(
+    public @Nullable AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         for (AnnotationMirror anno : annos) {
             if (isSubtype(anno, top)) {
