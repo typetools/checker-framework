@@ -73,6 +73,12 @@ public class QualifierKindHierarchy {
         /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
 
+        /** The top of the hierarchy to which this belongs. */
+        private QualifierKind top;
+
+        /** The bottom of the hierarchy to which this belongs. */
+        private QualifierKind bottom;
+
         /** Whether or not this has elements. */
         private final boolean hasElements;
 
@@ -84,12 +90,6 @@ public class QualifierKindHierarchy {
          * this qualifier kind itself.
          */
         private Set<QualifierKind> strictSuperTypes;
-
-        /** The top of the hierarchy to which this belongs. */
-        private QualifierKind top;
-
-        /** The bottom of the hierarchy to which this belongs. */
-        private QualifierKind bottom;
 
         /**
          * Creates a {@link QualifierKind} for the given annotation class.
@@ -127,43 +127,6 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Returns whether or not this is polymorphic.
-         *
-         * @return true if this is polymorphic
-         */
-        public boolean isPoly() {
-            return isPoly;
-        }
-
-        /**
-         * Returns whether or not this is the top qualifier of its hierarchy.
-         *
-         * @return true if this is the top qualifier of its hierarchy
-         */
-        public boolean isTop() {
-            return this.top == this;
-        }
-
-        /**
-         * Returns whether or not this is the bottom qualifier of its hierarchy.
-         *
-         * @return true if this is the bottom qualifier of its hierarchy
-         */
-        public boolean isBottom() {
-            return this.bottom == this;
-        }
-
-        /**
-         * All the qualifier kinds that are a strict super qualifier of this qualifier. Does not
-         * include this qualifier kind itself.
-         *
-         * @return all the qualifier kinds that are a strict super qualifier of this qualifier
-         */
-        public Set<QualifierKind> getStrictSuperTypes() {
-            return strictSuperTypes;
-        }
-
-        /**
          * Returns the top qualifier kind of the hierarchy to which this qualifier kind belongs.
          *
          * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
@@ -188,6 +151,43 @@ public class QualifierKindHierarchy {
          */
         public boolean hasElements() {
             return hasElements;
+        }
+
+        /**
+         * Returns whether or not this is polymorphic.
+         *
+         * @return true if this is polymorphic
+         */
+        public boolean isPoly() {
+            return isPoly;
+        }
+
+        /**
+         * All the qualifier kinds that are a strict super qualifier of this qualifier. Does not
+         * include this qualifier kind itself.
+         *
+         * @return all the qualifier kinds that are a strict super qualifier of this qualifier
+         */
+        public Set<QualifierKind> getStrictSuperTypes() {
+            return strictSuperTypes;
+        }
+
+        /**
+         * Returns whether or not this is the top qualifier of its hierarchy.
+         *
+         * @return true if this is the top qualifier of its hierarchy
+         */
+        public boolean isTop() {
+            return this.top == this;
+        }
+
+        /**
+         * Returns whether or not this is the bottom qualifier of its hierarchy.
+         *
+         * @return true if this is the bottom qualifier of its hierarchy
+         */
+        public boolean isBottom() {
+            return this.bottom == this;
         }
 
         /**
