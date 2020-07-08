@@ -54,6 +54,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -399,13 +400,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected Trees trees;
 
     /** The source tree that is being scanned. */
-    protected CompilationUnitTree currentRoot;
+    protected @InternedDistinct CompilationUnitTree currentRoot;
 
     /**
      * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
      * #typeProcess} with that same CompilationUnitTree.
      */
-    private CompilationUnitTree previousErrorCompilationUnit;
+    private @InternedDistinct CompilationUnitTree previousErrorCompilationUnit;
 
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
@@ -557,6 +558,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param newRoot the new compilation unit root
      */
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
@@ -855,7 +857,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
-            previousErrorCompilationUnit = p.getCompilationUnit();
+            @SuppressWarnings("interning:assignment.type.incompatible") // will be compared with ==
+            @InternedDistinct CompilationUnitTree cu = p.getCompilationUnit();
+            previousErrorCompilationUnit = cu;
             return;
         }
         if (p.getCompilationUnit() == previousErrorCompilationUnit) {

@@ -91,6 +91,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
@@ -1009,6 +1010,7 @@ public class CFGBuilder {
          * @param predecessors an empty set to be filled by this method with all predecessors
          * @return the single successor of the set of the empty basic blocks
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         protected static BlockImpl computeNeighborhoodOfEmptyBlock(
                 RegularBlockImpl start,
                 Set<RegularBlockImpl> empty,
@@ -1088,7 +1090,12 @@ public class CFGBuilder {
          * place where previously the edge pointed to {@code cur}. Additionally, the predecessor
          * holder also takes care of unlinking (i.e., removing the {@code pred} from {@code cur's}
          * predecessors).
+         *
+         * @param pred a block whose successor should be set
+         * @param cur the previous successor of {@code pred}
+         * @return a predecessor holder to set the successor of {@code pred}
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         protected static PredecessorHolder getPredecessorHolder(
                 final BlockImpl pred, final BlockImpl cur) {
             switch (pred.getType()) {
@@ -1225,6 +1232,7 @@ public class CFGBuilder {
          *     empty regular basic blocks or conditional blocks with the same block as 'then' and
          *     'else' successor)
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         public static ControlFlowGraph process(PhaseOneResult in) {
 
             Map<Label, Integer> bindings = in.bindings;
@@ -1900,7 +1908,7 @@ public class CFGBuilder {
          * @param pred the desired predecessor
          */
         @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
-        protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
+        protected void insertExtendedNodeAfter(ExtendedNode n, @FindDistinct Node pred) {
             int index = -1;
             for (int i = 0; i < nodeList.size(); i++) {
                 ExtendedNode inList = nodeList.get(i);

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -237,7 +238,7 @@ public class ForwardAnalysisImpl<
 
     @Override
     public S runAnalysisFor(
-            Node node,
+            @FindDistinct Node node,
             boolean before,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
@@ -274,7 +275,7 @@ public class ForwardAnalysisImpl<
                         TransferInput<V, S> store = transferInput;
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getContents()) {
-                            currentNode = n;
+                            setCurrentNode(n);
                             if (n == node && before) {
                                 return store.getRegularStore();
                             }
@@ -310,7 +311,7 @@ public class ForwardAnalysisImpl<
                         if (before) {
                             return transferInput.getRegularStore();
                         }
-                        currentNode = node;
+                        setCurrentNode(node);
                         TransferResult<V, S> transferResult =
                                 callTransferFunction(node, transferInput);
                         return transferResult.getRegularStore();
@@ -320,7 +321,7 @@ public class ForwardAnalysisImpl<
                     throw new BugInCF("Unexpected block type: " + block.getType());
             }
         } finally {
-            currentNode = oldCurrentNode;
+            setCurrentNode(oldCurrentNode);
             isRunning = false;
         }
     }
@@ -502,7 +503,9 @@ public class ForwardAnalysisImpl<
                     break;
                 }
             case BOTH:
-                if (thenStore == elseStore) {
+                @SuppressWarnings("interning:not.interned")
+                boolean sameStore = (thenStore == elseStore);
+                if (sameStore) {
                     // Currently there is only one regular store
                     S newStore = mergeStores(s, thenStore, shouldWiden);
                     if (!newStore.equals(thenStore)) {

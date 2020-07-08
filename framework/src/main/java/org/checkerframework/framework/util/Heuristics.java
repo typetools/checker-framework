@@ -94,6 +94,7 @@ public class Heuristics {
             this.matcher = matcher;
         }
 
+        @SuppressWarnings("interning:not.interned")
         @Override
         public boolean match(TreePath path) {
             StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
@@ -173,6 +174,7 @@ public class Heuristics {
             this.matcher = conditionMatcher;
         }
 
+        @SuppressWarnings("interning:not.interned")
         @Override
         public boolean match(TreePath path) {
             TreePath prev = path, p = path.getParentPath();
