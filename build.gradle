@@ -803,7 +803,7 @@ subprojects {
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
             dependsOn('checkInterning', 'checkPurity', 'checkSignature')
-            if (project.name.is('framwork') || project.name.is('checker')) {
+            if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessSkipSome')
             } else {
                 dependsOn('checkNullness')
