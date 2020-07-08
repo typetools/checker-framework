@@ -468,6 +468,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return AnnotationUtils.containsSame(supermap1, superAnno);
     }
 
+    /**
+     * Throw a {@link BugInCF} if {@code a} is not in the {@link #supertypesTransitive} or {@link
+     * #polyQualifiers}.
+     *
+     * @param a qualifier
+     */
     private final void checkAnnoInGraph(AnnotationMirror a) {
         if (AnnotationUtils.containsSame(supertypesTransitive.keySet(), a)
                 || AnnotationUtils.containsSame(polyQualifiers.values(), a)) {
