@@ -21,10 +21,12 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
  * <ul>
- *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
- *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
+ *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKindHierarchy.QualifierKind)}
+ *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKindHierarchy.QualifierKind)}
  *   <li>{@link #greatestLowerBound(AnnotationMirror, QualifierKind, AnnotationMirror,
- *       QualifierKind)}
+ *       QualifierKindHierarchy.QualifierKind)}
  * </ul>
  *
  * For cases where the annotations have no elements, the {@link
