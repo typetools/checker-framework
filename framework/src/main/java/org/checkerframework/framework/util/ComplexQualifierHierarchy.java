@@ -246,27 +246,6 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
             QualifierKind superKind);
 
     @Override
-    public boolean isSubtype(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos) {
-        int isSubtypeCount = 0;
-        for (AnnotationMirror subAnno : subAnnos) {
-            QualifierKind subKind = getQualifierKind(subAnno);
-            for (AnnotationMirror superAnno : superAnnos) {
-                QualifierKind superKind = getQualifierKind(superAnno);
-                if (subKind.isInSameHierarchyAs(superKind)) {
-                    if (isSubtype(subAnno, superAnno)) {
-                        isSubtypeCount++;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        }
-        return isSubtypeCount == superAnnos.size();
-    }
-
-    @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);

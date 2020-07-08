@@ -123,9 +123,23 @@ public abstract class QualifierHierarchy {
      * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
      *     qualifier in the same hierarchy in {@code superQualifiers}
      */
-    public abstract boolean isSubtype(
+    public boolean isSubtype(
             Collection<? extends AnnotationMirror> subQualifiers,
-            Collection<? extends AnnotationMirror> superQualifiers);
+            Collection<? extends AnnotationMirror> superQualifiers) {
+        assertSameSize(subQualifiers, superQualifiers);
+        for (AnnotationMirror subQual : subQualifiers) {
+            AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
+            if (superQual == null) {
+                throw new BugInCF(
+                        "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
+                        subQual, SystemUtil.join(",", superQualifiers));
+            }
+            if (!isSubtype(subQual, superQual)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
@@ -345,7 +359,7 @@ public abstract class QualifierHierarchy {
      * @param c1 the first collection
      * @param c2 the second collection
      */
-    protected static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2) {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
                     "inconsistent sizes (%d, %d):%n  %s%n  %s",
@@ -361,7 +375,7 @@ public abstract class QualifierHierarchy {
      * @param c2 the second collection
      * @param result the result collection
      */
-    protected static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+    private static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
         if (c1.size() != result.size() || c2.size() != result.size()) {
             throw new BugInCF(
                     "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",

@@ -203,21 +203,6 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtype(
-            Collection<? extends AnnotationMirror> subAnnos,
-            Collection<? extends AnnotationMirror> superAnnos) {
-        assertSameSize(subAnnos, superAnnos);
-        for (AnnotationMirror subAnno : subAnnos) {
-            AnnotationMirror superAnno = findAnnotationInSameHierarchy(superAnnos, subAnno);
-            if (superAnno == null)
-                if (!isSubtype(subAnno, superAnno)) {
-                    return false;
-                }
-        }
-        return true;
-    }
-
-    @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
