@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -212,7 +213,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
         Tree enclosing = enclosingPair.first;
         // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
-        Tree enclosingChild = enclosingPair.second;
+        @SuppressWarnings("interning:assignment.type.incompatible") // comparing AST nodes
+        @InternedDistinct Tree enclosingChild = enclosingPair.second;
 
         if (!isMask(enclosing)) {
             return false;

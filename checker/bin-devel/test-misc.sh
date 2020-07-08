@@ -21,14 +21,15 @@ source "$SCRIPTDIR"/build.sh
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
-# Documentation
-./gradlew javadoc --console=plain --warning-mode=all --no-daemon
-
-./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon
-make -C docs/manual all
-
+# Javadoc documentation
+status=0
+./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
+./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
 (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt
-
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt
+/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
+if [ $status -ne 0 ]; then exit $status; fi
+
+# User documentation
+make -C docs/manual all

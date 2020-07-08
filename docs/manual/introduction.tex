@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.4.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.5.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -635,7 +635,8 @@ More sound (strict) checking: enable errors that are disabled by default
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
 \item \<-AuseConservativeDefaultsForUncheckedCode>
-  Enables/disables conservative defaults in unchecked code.  Takes arguments ``source,bytecode''.
+  Enables conservative defaults, and suppresses all type-checking warnings,
+  in unchecked code.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
   \begin{itemize}
   \item

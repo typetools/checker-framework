@@ -550,7 +550,8 @@ public class NullnessAnnotatedTypeFactory
      * @return whether or not type has the invariant annotation
      */
     @Override
-    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
+    protected boolean hasFieldInvariantAnnotation(
+            AnnotatedTypeMirror type, VariableElement fieldElement) {
         AnnotationMirror invariant = getFieldInvariantAnnotation();
         Set<AnnotationMirror> lowerBounds =
                 AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);

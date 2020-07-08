@@ -183,12 +183,9 @@ public abstract class AbstractCFGVisualizer<
         StringBuilder sbBlock = new StringBuilder();
         sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
 
-        // Handle case where no contents are present.
-        boolean centered = false;
         if (sbBlock.length() == 0) {
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
-                centered = true;
             } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
                 sbBlock.append(visualizeConditionalBlock((ConditionalBlock) bb));
             } else {
@@ -206,9 +203,6 @@ public abstract class AbstractCFGVisualizer<
                 }
             }
         }
-        if (!centered || verbose) {
-            sbBlock.append(escapeString);
-        }
         return sbBlock.toString();
     }
 
@@ -224,7 +218,8 @@ public abstract class AbstractCFGVisualizer<
             Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
 
         List<Node> contents = addBlockContent(bb);
-        StringJoiner sjBlockContents = new StringJoiner(separator);
+        StringJoiner sjBlockContents = new StringJoiner(separator, "", separator);
+        sjBlockContents.setEmptyValue("");
         for (Node t : contents) {
             sjBlockContents.add(visualizeBlockNode(t, analysis));
         }
@@ -249,6 +244,28 @@ public abstract class AbstractCFGVisualizer<
             default:
                 throw new BugInCF("Unrecognized basic block type: " + bb.getType());
         }
+    }
+
+    /**
+     * Format the given object as a String suitable for the output format, i.e. with format-specific
+     * characters escaped.
+     *
+     * @param obj an object
+     * @return the formatted String from the given object
+     */
+    protected abstract String format(Object obj);
+
+    @Override
+    public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
+        StringBuilder sbBlockNode = new StringBuilder();
+        sbBlockNode.append(format(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
+        if (analysis != null) {
+            V value = analysis.getValue(t);
+            if (value != null) {
+                sbBlockNode.append("    > ").append(format(value));
+            }
+        }
+        return sbBlockNode.toString();
     }
 
     /**
@@ -299,7 +316,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.append(escapeString).append("~~~~~~~~~").append(escapeString);
+        sbStore.append("~~~~~~~~~").append(escapeString);
         return sbStore.toString();
     }
 
@@ -351,7 +368,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.insert(0, escapeString + "~~~~~~~~~" + escapeString);
+        sbStore.insert(0, "~~~~~~~~~" + escapeString);
         return sbStore.toString();
     }
 

@@ -39,9 +39,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
      * objects is transferred to this class.
      *
      * @param value the abstract value produced by the transfer function
-     * @param thenStore {@link #thenStore}
-     * @param elseStore {@link #elseStore}
-     * @param storeChanged {@link #storeChanged}
+     * @param thenStore 'then' result store
+     * @param elseStore 'else' result store
+     * @param storeChanged whether the store changed
      * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
      */
     public ConditionalTransferResult(
@@ -51,7 +51,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
 
     /**
      * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
-     * using {@code false} for {@link #storeChanged} and {@code null} for {@link
+     * using {@code false} for whether the store changed and {@code null} for {@link
      * #exceptionalStores}.
      *
      * @param value the abstract value produced by the transfer function

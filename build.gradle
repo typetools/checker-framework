@@ -4,7 +4,7 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '6.0.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "4.0.4"
+    id "de.undercouch.download" version "4.1.0"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "1.2.1"
@@ -101,7 +101,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.5.0-SNAPSHOT'
+    version '3.5.0'
 
     repositories {
         mavenCentral()
@@ -270,6 +270,8 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-processor', "${checker}",
                 '-proc:only',
                 '-Xlint:-processing',
+                '-Xmaxerrs', '10000',
+                '-Xmaxwarns', '10000',
                 ]
         options.compilerArgs += args
 
@@ -633,12 +635,14 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'WorkingNullness', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*|org.checkerframework.dataflow.cfg.CFGBuilder'])
+        // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning')
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessSkipSome', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
+        // These do not yet pass.  TODO: Make them pass.
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness', ['-AskipUses=com.sun.*'])
+
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
@@ -798,7 +802,7 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature', 'checkWorkingNullness')
+            dependsOn('checkInterning', 'checkNullnessSkipSome', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkCompilerMessages', 'jtregTests')
             }
@@ -811,6 +815,10 @@ subprojects {
                     dependsOn('jtregJdk11Tests')
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
+            }
+
+            if (project.name.is('dataflow')) {
+                dependsOn('liveVariableTest')
             }
         }
 

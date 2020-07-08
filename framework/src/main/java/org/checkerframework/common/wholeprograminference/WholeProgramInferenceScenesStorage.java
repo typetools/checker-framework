@@ -522,8 +522,7 @@ public class WholeProgramInferenceScenesStorage {
             if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
-                String firstKey =
-                        typeToUpdate.description.toString() + typeToUpdate.tlAnnotationsHere;
+                String firstKey = aTypeElementToString(typeToUpdate);
                 Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {
@@ -536,8 +535,20 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
-     * names of annotations.
+     * Returns a string representation of an ATypeElement, for use as part of a key in {@link
+     * AnnotationsInContexts}.
+     *
+     * @param aType an ATypeElement to convert to a string representation
+     * @return a string representation of the argument
+     */
+    public static String aTypeElementToString(ATypeElement aType) {
+        // return aType.description.toString() + aType.tlAnnotationsHere;
+        return aType.description.toString();
+    }
+
+    /**
+     * Maps the {@link #aTypeElementToString} representation of an ATypeElement and its
+     * TypeUseLocation to a set of names of annotations.
      */
     public static class AnnotationsInContexts
             extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {
