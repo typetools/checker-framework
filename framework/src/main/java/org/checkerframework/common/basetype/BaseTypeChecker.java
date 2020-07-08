@@ -25,6 +25,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -561,6 +563,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Otherwise, it prints the message.
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
@@ -590,18 +593,32 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /** Represents a message (e.g., an error message) issued by a checker. */
     private static class CheckerMessage {
+        /** The severity of the message. */
         final Diagnostic.Kind kind;
+        /** The message itself. */
         final String message;
-        final Tree source;
+        /** The source code that the message is about. */
+        final @InternedDistinct Tree source;
 
         /**
          * The checker that issued this message. The compound checker that depends on this checker
          * uses this to sort the messages.
          */
-        final BaseTypeChecker checker;
+        final @InternedDistinct BaseTypeChecker checker;
 
+        /**
+         * Create a new CheckerMessage.
+         *
+         * @param kind the severity of the message
+         * @param message the text of the message
+         * @param source the source code that the message is about
+         * @param checker the checker that issued the message.
+         */
         private CheckerMessage(
-                Diagnostic.Kind kind, String message, Tree source, BaseTypeChecker checker) {
+                Diagnostic.Kind kind,
+                String message,
+                @FindDistinct Tree source,
+                @FindDistinct BaseTypeChecker checker) {
             this.kind = kind;
             this.message = message;
             this.source = source;

@@ -520,7 +520,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             assert methodTree != null;
             StatementTree firstStmnt = methodTree.getBody().getStatements().get(0);
             assert firstStmnt != null;
-            if (ifStatementTree != firstStmnt) {
+            @SuppressWarnings("interning:not.interned") // comparing AST nodes
+            boolean notSameNode = firstStmnt != ifStatementTree;
+            if (notSameNode) {
                 return false; // The if statement is not the first statement in the method.
             }
         } else {
@@ -819,7 +821,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                             return visit(leftTree, p);
                         } else {
                             // a == b || a.compareTo(b) == 0
-                            ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
+                            @SuppressWarnings(
+                                    "interning:assignment.type.incompatible" // AST node comparisons
+                            )
+                            @InternedDistinct ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
                             ExpressionTree rightTree =
                                     tree.getRightOperand(); // looking for a.compareTo(b) == 0
                             // or b.compareTo(a) == 0

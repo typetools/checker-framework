@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -74,13 +76,13 @@ public abstract class AbstractAnalysis<
      *   !isRunning ==&gt; (currentNode == null)
      * </pre>
      */
-    protected @Nullable Node currentNode;
+    protected @InternedDistinct @Nullable Node currentNode;
 
     /**
      * The tree that is currently being looked at. The transfer function can set this tree to make
      * sure that calls to {@code getValue} will not return information for this given tree.
      */
-    protected @Nullable Tree currentTree;
+    protected @InternedDistinct @Nullable Tree currentTree;
 
     /** The current transfer input when the analysis is running. */
     protected @Nullable TransferInput<V, S> currentInput;
@@ -100,8 +102,17 @@ public abstract class AbstractAnalysis<
      *
      * @param currentTree the tree that should be currently looked at
      */
-    public void setCurrentTree(Tree currentTree) {
+    public void setCurrentTree(@FindDistinct Tree currentTree) {
         this.currentTree = currentTree;
+    }
+
+    /**
+     * Set the node that is currently being looked at.
+     *
+     * @param currentNode the node that should be currently looked at
+     */
+    protected void setCurrentNode(@FindDistinct @Nullable Node currentNode) {
+        this.currentNode = currentNode;
     }
 
     /**
@@ -328,9 +339,10 @@ public abstract class AbstractAnalysis<
             return new RegularTransferResult<>(null, transferInput.getRegularStore());
         }
         transferInput.node = node;
-        currentNode = node;
+        setCurrentNode(node);
+        @SuppressWarnings("nullness") // CF bug: "INFERENCE FAILED"
         TransferResult<V, S> transferResult = node.accept(transferFunction, transferInput);
-        currentNode = null;
+        setCurrentNode(null);
         if (node instanceof AssignmentNode) {
             // store the flow-refined value effectively for final local variables
             AssignmentNode assignment = (AssignmentNode) node;
