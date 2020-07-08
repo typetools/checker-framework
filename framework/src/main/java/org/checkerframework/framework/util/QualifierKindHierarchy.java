@@ -196,7 +196,7 @@ public class QualifierKindHierarchy {
          * @param other a qualifier kind
          * @return true if this and {@code other} are in the same hierarchy
          */
-        public boolean areInSameHierarchy(QualifierKind other) {
+        public boolean isInSameHierarchyAs(QualifierKind other) {
             return this.top == other.top;
         }
 

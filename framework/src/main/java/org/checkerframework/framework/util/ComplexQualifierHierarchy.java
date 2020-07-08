@@ -254,7 +254,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
             QualifierKind subKind = getQualifierKind(subAnno);
             for (AnnotationMirror superAnno : superAnnos) {
                 QualifierKind superKind = getQualifierKind(superAnno);
-                if (subKind.areInSameHierarchy(superKind)) {
+                if (subKind.isInSameHierarchyAs(superKind)) {
                     if (isSubtype(subAnno, superAnno)) {
                         isSubtypeCount++;
                     } else {
@@ -270,7 +270,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        if (!qual1.areInSameHierarchy(qual2)) {
+        if (!qual1.isInSameHierarchyAs(qual2)) {
             return null;
         }
         QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
@@ -298,7 +298,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        if (!qual1.areInSameHierarchy(qual2)) {
+        if (!qual1.isInSameHierarchyAs(qual2)) {
             return null;
         }
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);

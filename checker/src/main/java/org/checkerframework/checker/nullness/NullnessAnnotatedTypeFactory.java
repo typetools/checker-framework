@@ -582,7 +582,8 @@ public class NullnessAnnotatedTypeFactory
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
-            if (!subKind.areInSameHierarchy(NULLABLE) || !superKind.areInSameHierarchy(NULLABLE)) {
+            if (!subKind.isInSameHierarchyAs(NULLABLE)
+                    || !superKind.isInSameHierarchyAs(NULLABLE)) {
                 return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
             throw new BugInCF("Unexpected annotations %s %s.", subAnno, superAnno);
@@ -594,7 +595,7 @@ public class NullnessAnnotatedTypeFactory
                 QualifierKind qual1,
                 AnnotationMirror a2,
                 QualifierKind qual2) {
-            if (!qual1.areInSameHierarchy(NULLABLE) || !qual2.areInSameHierarchy(NULLABLE)) {
+            if (!qual1.isInSameHierarchyAs(NULLABLE) || !qual2.isInSameHierarchyAs(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, qual1, a2, qual2);
             }
             throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
@@ -606,7 +607,7 @@ public class NullnessAnnotatedTypeFactory
                 QualifierKind qual1,
                 AnnotationMirror a2,
                 QualifierKind qual2) {
-            if (!qual1.areInSameHierarchy(NULLABLE) || !qual2.areInSameHierarchy(NULLABLE)) {
+            if (!qual1.isInSameHierarchyAs(NULLABLE) || !qual2.isInSameHierarchyAs(NULLABLE)) {
                 return FBCBOTTOM;
             }
             throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
