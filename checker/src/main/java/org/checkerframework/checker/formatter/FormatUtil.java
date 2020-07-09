@@ -137,15 +137,15 @@ public class FormatUtil {
     /**
      * Return the conversion character that is in the given format specifier
      *
-     * @param formatSpecifier a format specifier; see {@url
+     * @param formatSpecifier a format specifier; see
      *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax}
      * @return the conversion character that is in the given format specifier
      * @deprecated This method is public only for testing. Use {@link
      *     #conversionCharFromFormat(Matcher)}.
      */
     @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
-    public static char conversionCharFromFormat(String format) {
-        Matcher m = fsPattern.matcher(format);
+    public static char conversionCharFromFormat(String formatSpecifier) {
+        Matcher m = fsPattern.matcher(formatSpecifier);
         assert m.find();
         return conversionCharFromFormat(m);
     }
