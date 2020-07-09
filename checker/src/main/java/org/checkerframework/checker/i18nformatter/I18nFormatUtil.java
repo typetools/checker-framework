@@ -15,12 +15,14 @@ import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * This class provides a collection of utilities to ease working with i18n format strings.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
+@AnnotatedFor("nullness")
 public class I18nFormatUtil {
 
     /**
@@ -28,6 +30,9 @@ public class I18nFormatUtil {
      *
      * @param format the format string to parse
      */
+    @SuppressWarnings(
+            "nullness:argument.type.incompatible") // It's not documented, but passing null as the
+    // argument array is supported.
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
@@ -48,19 +53,22 @@ public class I18nFormatUtil {
 
         for (I18nConversion c : cs) {
             int index = c.index;
+            Integer indexKey = index;
             conv.put(
-                    index,
+                    indexKey,
                     I18nConversionCategory.intersect(
                             c.category,
-                            conv.containsKey(index)
-                                    ? conv.get(index)
+                            conv.containsKey(indexKey)
+                                    ? conv.get(indexKey)
                                     : I18nConversionCategory.UNUSED));
             maxIndex = Math.max(maxIndex, index);
         }
 
         I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
         for (int i = 0; i <= maxIndex; i++) {
-            res[i] = conv.containsKey(i) ? conv.get(i) : I18nConversionCategory.UNUSED;
+            Integer indexKey = i;
+            res[i] =
+                    conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED;
         }
         return res;
     }

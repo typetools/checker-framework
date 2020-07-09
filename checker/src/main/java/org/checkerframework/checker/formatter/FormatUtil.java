@@ -10,8 +10,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.regex.qual.Regex;
 
 /** This class provides a collection of utilities to ease working with format strings. */
+// TODO @AnnotatedFor("nullness")
 public class FormatUtil {
     private static class Conversion {
         private final int index;
@@ -37,6 +39,7 @@ public class FormatUtil {
      *
      * <p>TODO introduce more such functions, see RegexUtil for examples
      */
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
             throws IllegalFormatException {
@@ -55,6 +58,7 @@ public class FormatUtil {
     }
 
     /** Throws an exception if the format is not syntactically valid. */
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings("unused")
         String unused = String.format(format, (Object[]) null);
@@ -90,25 +94,29 @@ public class FormatUtil {
                     break;
             }
             maxindex = Math.max(maxindex, last);
+            Integer lastKey = last;
             conv.put(
                     last,
                     ConversionCategory.intersect(
-                            conv.containsKey(last) ? conv.get(last) : ConversionCategory.UNUSED,
+                            conv.containsKey(lastKey)
+                                    ? conv.get(lastKey)
+                                    : ConversionCategory.UNUSED,
                             c.category()));
         }
 
         ConversionCategory[] res = new ConversionCategory[maxindex + 1];
         for (int i = 0; i <= maxindex; ++i) {
-            res[i] = conv.containsKey(i) ? conv.get(i) : ConversionCategory.UNUSED;
+            Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
+            res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
         }
         return res;
     }
 
     // %[argument_index$][flags][width][.precision][t]conversion
-    private static final String formatSpecifier =
+    private static final @Regex(7) String formatSpecifier =
             "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
 
-    private static Pattern fsPattern = Pattern.compile(formatSpecifier);
+    private static @Regex(7) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
     private static int indexFromFormat(Matcher m) {
         int index;
@@ -116,7 +124,8 @@ public class FormatUtil {
         if (s != null) { // explicit index
             index = Integer.parseInt(s.substring(0, s.length() - 1));
         } else {
-            if (m.group(2) != null && m.group(2).contains(String.valueOf('<'))) {
+            String group2 = m.group(2); // not @Deterministic, so extract into local var
+            if (group2 != null && group2.contains(String.valueOf('<'))) {
                 index = -1; // relative index
             } else {
                 index = 0; // ordinary index
@@ -125,7 +134,7 @@ public class FormatUtil {
         return index;
     }
 
-    private static char conversionCharFromFormat(Matcher m) {
+    private static char conversionCharFromFormat(@Regex(7) Matcher m) {
         String dt = m.group(5);
         if (dt == null) {
             return m.group(6).charAt(0);
@@ -136,7 +145,7 @@ public class FormatUtil {
 
     private static Conversion[] parse(String format) {
         ArrayList<Conversion> cs = new ArrayList<>();
-        Matcher m = fsPattern.matcher(format);
+        @Regex(7) Matcher m = fsPattern.matcher(format);
         while (m.find()) {
             char c = conversionCharFromFormat(m);
             switch (c) {

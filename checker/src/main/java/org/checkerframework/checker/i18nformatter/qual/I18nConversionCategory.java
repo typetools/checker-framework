@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Elements of this enumeration are used in a {@link I18nFormat} annotation to indicate the valid
@@ -23,6 +25,7 @@ import java.util.Set;
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
+@AnnotatedFor("nullness")
 public enum I18nConversionCategory {
 
     /**
@@ -54,12 +57,12 @@ public enum I18nConversionCategory {
     NUMBER(new Class<?>[] {Number.class}, new String[] {"number", "choice"});
 
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
-    public final Class<? extends Object>[] types;
+    public final Class<?> @Nullable [] types;
 
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
-    public final String[] strings;
+    public final String @Nullable [] strings;
 
-    I18nConversionCategory(Class<? extends Object>[] types, String[] strings) {
+    I18nConversionCategory(Class<?> @Nullable [] types, String @Nullable [] strings) {
         this.types = types;
         this.strings = strings;
     }
@@ -76,6 +79,8 @@ public enum I18nConversionCategory {
      *
      * @return the I18nConversionCategory associated with the given string
      */
+    @SuppressWarnings(
+            "nullness:iterating.over.nullable") // in namedCategories, `strings` field is non-null
     public static I18nConversionCategory stringToI18nConversionCategory(String string) {
         string = string.toLowerCase();
         for (I18nConversionCategory v : namedCategories) {
@@ -127,11 +132,20 @@ public enum I18nConversionCategory {
             return a;
         }
 
-        Set<Class<? extends Object>> as = arrayToSet(a.types);
-        Set<Class<? extends Object>> bs = arrayToSet(b.types);
+        @SuppressWarnings(
+                "nullness:argument.type.incompatible") // types field  is only null in UNUSED and
+        // GENERAL
+        Set<Class<?>> as = arrayToSet(a.types);
+        @SuppressWarnings(
+                "nullness:argument.type.incompatible") // types field  is only null in UNUSED and
+        // GENERAL
+        Set<Class<?>> bs = arrayToSet(b.types);
         as.retainAll(bs); // intersection
         for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
-            Set<Class<? extends Object>> vs = arrayToSet(v.types);
+            @SuppressWarnings(
+                    "nullness:argument.type.incompatible") // in those values, `types` field is
+            // non-null
+            Set<Class<?>> vs = arrayToSet(v.types);
             if (vs.equals(as)) {
                 return v;
             }
@@ -168,7 +182,7 @@ public enum I18nConversionCategory {
         } else {
             sb.append(" conversion category (one of: ");
             boolean first = true;
-            for (Class<? extends Object> cls : this.types) {
+            for (Class<?> cls : this.types) {
                 if (!first) {
                     sb.append(", ");
                 }
