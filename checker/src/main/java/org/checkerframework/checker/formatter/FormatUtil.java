@@ -154,6 +154,22 @@ public class FormatUtil {
         }
     }
 
+    /**
+     * Return the conversion character that is in the given format specifier
+     *
+     * @param formatSpecifier a format specifier; see {@url
+     *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax}
+     * @return the conversion character that is in the given format specifier
+     * @deprecated This method is public only for testing. Use {@link
+     *     #conversionCharFromFormat(Matcher)}.
+     */
+    @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+    public static char conversionCharFromFormat(String format) {
+        Matcher m = fsPattern.matcher(format);
+        assert m.find();
+        return conversionCharFromFormat(m);
+    }
+
     private static Conversion[] parse(String format) {
         ArrayList<Conversion> cs = new ArrayList<>();
         @Regex(7) Matcher m = fsPattern.matcher(format);
