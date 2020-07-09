@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.regex.qual.Regex;
 
 /** This class provides a collection of utilities to ease working with format strings. */
 public class FormatUtil {
@@ -37,6 +38,7 @@ public class FormatUtil {
      *
      * <p>TODO introduce more such functions, see RegexUtil for examples
      */
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
             throws IllegalFormatException {
@@ -55,6 +57,7 @@ public class FormatUtil {
     }
 
     /** Throws an exception if the format is not syntactically valid. */
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings("unused")
         String unused = String.format(format, (Object[]) null);
@@ -105,10 +108,20 @@ public class FormatUtil {
     }
 
     // %[argument_index$][flags][width][.precision][t]conversion
-    private static final String formatSpecifier =
+    // group 1            2      3 4    5           6 7
+    // For dates and times, the [t] is required and precision must not be provided.
+    // For types other than dates and times, the [t] must not be provided.
+    // See
+    // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax
+    // .
+    private static final @Regex(7) String formatSpecifier =
             "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+    // Groups.  Update if formatSpecifier is updated.
+    private static final int formatSpecifierPrecision = 5;
+    private static final int formatSpecifierT = 6;
+    private static final int formatSpecifierConversion = 7;
 
-    private static Pattern fsPattern = Pattern.compile(formatSpecifier);
+    private static @Regex(7) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
     private static int indexFromFormat(Matcher m) {
         int index;
@@ -127,10 +140,10 @@ public class FormatUtil {
 
     private static char conversionCharFromFormat(Matcher m) {
         String dt = m.group(5);
-        if (dt == null) {
-            return m.group(6).charAt(0);
-        } else {
+        if (dt != null) {
             return dt.charAt(0);
+        } else {
+            return m.group(6).charAt(0);
         }
     }
 
