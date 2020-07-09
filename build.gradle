@@ -308,7 +308,10 @@ List<String> getJavaFilesToFormat(projectName) {
     }
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("returnsreceiverdelomboked")
+                && !details.path.contains("build")
+                && details.name.endsWith('java')) {
             javaFiles.add(details.file)
         }
     }
