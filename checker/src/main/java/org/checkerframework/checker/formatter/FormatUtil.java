@@ -150,6 +150,12 @@ public class FormatUtil {
         return conversionCharFromFormat(m);
     }
 
+    /**
+     * Parse the given format string, return information about its format specifiers.
+     *
+     * @param format a format string
+     * @return the list of Conversions from the format specifiers in the format string
+     */
     private static Conversion[] parse(String format) {
         ArrayList<Conversion> cs = new ArrayList<>();
         Matcher m = fsPattern.matcher(format);
