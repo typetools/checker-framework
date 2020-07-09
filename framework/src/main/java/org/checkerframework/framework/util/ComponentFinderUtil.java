@@ -21,6 +21,16 @@ public class ComponentFinderUtil {
         DefaultType getDefault(BaseTypeChecker checker);
     }
 
+    /**
+     * Find a component named with the checker naming convention.
+     *
+     * @param checker the current checker
+     * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
+     * @param defaultGetter a getter for the default value when cannot find the class
+     * @param constructorParamTypes parameter types passed to constructor of the target class
+     * @param constructorArgs arguments passed to constructor of the target class
+     * @return the properly-named component found
+     */
     @SuppressWarnings("unchecked")
     public static <T> T find(
             BaseTypeChecker checker,
@@ -45,6 +55,15 @@ public class ComponentFinderUtil {
         return defaultGetter.getDefault(checker);
     }
 
+    /**
+     * Find a component named with the checker naming convention with its constructor invoked with
+     * the only argument {@code checker}
+     *
+     * @param checker a checker
+     * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
+     * @param defaultGetter a getter for the default value when cannot find the class
+     * @return the properly-named component found
+     */
     public static <T> T findAndInitWithChecker(
             BaseTypeChecker checker, String replacement, DefaultGetter<T> defaultGetter) {
         return find(
