@@ -9,6 +9,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -281,6 +282,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             throw new BugInCF(
                     "updateFromFieldAssignment received an unexpected node type: "
                             + lhs.getClass());
+        }
+
+        // Do not attempt to infer types for temporary variables.
+        // See https://github.com/typetools/checker-framework/issues/3442
+        if (!SourceVersion.isIdentifier(fieldName)) {
+            return;
         }
 
         // If the inferred field has a declaration annotation with the
