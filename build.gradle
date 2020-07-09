@@ -272,6 +272,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
+		'-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
@@ -318,7 +319,7 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    // Collect all java files in jtreg directory
+    // Collect all java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)
@@ -881,6 +882,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+	    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
+	    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
