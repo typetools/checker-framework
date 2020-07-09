@@ -284,7 +284,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             + lhs.getClass());
         }
 
-        // Do not attempt to infer types for temporary variables.
+        // Do not attempt to infer types for fields that do not have valid
+        // names. For example, compiler-generated temporary variables will
+        // have invalid names. Recording facts about fields with
+        // invalid names causes jaif-based WPI to crash when reading the .jaif
+        // file, and stub-based WPI to generate unparseable stub files.
         // See https://github.com/typetools/checker-framework/issues/3442
         if (!SourceVersion.isIdentifier(fieldName)) {
             return;
