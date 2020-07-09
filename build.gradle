@@ -272,6 +272,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
+		'-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
