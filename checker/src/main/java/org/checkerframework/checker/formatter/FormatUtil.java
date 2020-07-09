@@ -116,7 +116,9 @@ public class FormatUtil {
     // group 1            2      3 4    5           6 7
     // For dates and times, the [t] is required and precision must not be provided.
     // For types other than dates and times, the [t] must not be provided.
-    // See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html .
+    // See
+    // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax
+    // .
     private static final @Regex(7) String formatSpecifier =
             "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
     // Groups.  Update if formatSpecifier is updated.
