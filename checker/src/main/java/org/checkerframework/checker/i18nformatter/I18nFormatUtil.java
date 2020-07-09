@@ -15,6 +15,10 @@ import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
@@ -126,17 +130,20 @@ public class I18nFormatUtil {
 
         public static int maxOffset;
 
-        /** The locale to use for formatting numbers and dates. */
-        private static Locale locale;
+        /** The locale to use for formatting numbers and dates. Is set in {@link #parse}. */
+        private static @MonotonicNonNull Locale locale;
 
-        /** An array of formatters, which are used to format the arguments. */
-        private static List<I18nConversionCategory> categories;
+        /**
+         * An array of formatters, which are used to format the arguments. Is set in {@link #parse}.
+         */
+        private static @MonotonicNonNull List<I18nConversionCategory> categories;
 
         /**
          * The argument numbers corresponding to each formatter. (The formatters are stored in the
          * order they occur in the pattern, not in the order in which the arguments are specified.)
+         * Is set in {@link #parse}.
          */
-        private static List<Integer> argumentIndices;
+        private static @MonotonicNonNull List<Integer> argumentIndices;
 
         /** The number of subformats. */
         private static int numFormat;
@@ -170,6 +177,7 @@ public class I18nFormatUtil {
             "", "short", "medium", "long", "full"
         };
 
+        @EnsuresNonNull({"categories", "argumentIndices", "locale"})
         public static I18nConversion[] parse(String pattern) {
             MessageFormatParser.categories = new ArrayList<>();
             MessageFormatParser.argumentIndices = new ArrayList<>();
@@ -183,8 +191,10 @@ public class I18nFormatUtil {
             return ret;
         }
 
+        @SuppressWarnings("nullness:dereference.of.nullable") // complex rules for segments[i]
+        @RequiresNonNull({"argumentIndices", "categories", "locale"})
         private static void applyPattern(String pattern) {
-            StringBuilder[] segments = new StringBuilder[4];
+            @Nullable StringBuilder[] segments = new StringBuilder[4];
             // Allocate only segments[SEG_RAW] here. The rest are
             // allocated on demand.
             segments[SEG_RAW] = new StringBuilder();
@@ -271,7 +281,8 @@ public class I18nFormatUtil {
         }
 
         /** Side-effects {@code categories} field, adding to it an I18nConversionCategory. */
-        private static void makeFormat(int offsetNumber, StringBuilder[] textSegments) {
+        @RequiresNonNull({"argumentIndices", "categories", "locale"})
+        private static void makeFormat(int offsetNumber, @Nullable StringBuilder[] textSegments) {
             String[] segments = new String[textSegments.length];
             for (int i = 0; i < textSegments.length; i++) {
                 StringBuilder oneseg = textSegments[i];
