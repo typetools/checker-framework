@@ -69,8 +69,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.common.util.classfinder.AbstractDiscoverer;
-import org.checkerframework.common.util.classfinder.RecursiveDiscoverer;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -105,6 +103,7 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ComponentFinderUtil;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
@@ -242,13 +241,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return the appropriate type factory
      */
     protected Factory createTypeFactory() {
-        AbstractDiscoverer<Factory> discoverer = new RecursiveDiscoverer<>();
-        return discoverer.findAndInitWithChecker(
-                checker, "AnnotatedTypeFactory", this::getDafaultFactory);
+        return ComponentFinderUtil.findAndInitWithChecker(
+                checker, "AnnotatedTypeFactory", this::createDefaultTypeFactory);
     }
 
+    /**
+     * Create a default type factory if {@link ComponentFinderUtil} failed to find a factory
+     *
+     * @param checker the checker previously passed to {@link
+     *     ComponentFinderUtil#findAndInitWithChecker(BaseTypeChecker, String,
+     *     ComponentFinderUtil.DefaultGetter)}
+     * @return a {@link BaseAnnotatedTypeFactory}
+     */
     @SuppressWarnings("unchecked")
-    private Factory getDafaultFactory(BaseTypeChecker checker) {
+    private Factory createDefaultTypeFactory(BaseTypeChecker checker) {
         try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {

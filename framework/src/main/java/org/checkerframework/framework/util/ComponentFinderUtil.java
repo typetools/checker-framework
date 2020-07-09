@@ -1,0 +1,57 @@
+package org.checkerframework.framework.util;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+
+/**
+ * Util class to find components (e.g. visitors and factories) following the naming convention
+ * reflectively. For example, ABCChecker's default naming for visitor is "ABCVisitor". If a visitor
+ * class with that name exists, then instantiate it and returns. Otherwise try to find the super,
+ * and finally uses the {@code defaultGetter} callback to get a default value if all attempting
+ * fails.
+ */
+public class ComponentFinderUtil {
+    public interface DefaultGetter<DefaultType> {
+
+        /**
+         * The logic for getting the default value if all attempt fails
+         *
+         * @param checker a checker as the argument of constructor
+         * @return the default value
+         */
+        DefaultType getDefault(BaseTypeChecker checker);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T find(
+            BaseTypeChecker checker,
+            String replacement,
+            DefaultGetter<T> defaultGetter,
+            Class<?>[] constructorParamTypes,
+            Object[] constructorArgs) {
+        // Try to reflectively load the component.
+        Class<?> checkerClass = checker.getClass();
+        while (checkerClass != BaseTypeChecker.class) {
+            T result =
+                    (T)
+                            BaseTypeChecker.invokeConstructorFor(
+                                    BaseTypeChecker.getRelatedClassName(checkerClass, replacement),
+                                    constructorParamTypes,
+                                    constructorArgs);
+            if (result != null) {
+                return result;
+            }
+            checkerClass = checkerClass.getSuperclass();
+        }
+        return defaultGetter.getDefault(checker);
+    }
+
+    public static <T> T findAndInitWithChecker(
+            BaseTypeChecker checker, String replacement, DefaultGetter<T> defaultGetter) {
+        return find(
+                checker,
+                replacement,
+                defaultGetter,
+                new Class<?>[] {BaseTypeChecker.class},
+                new Object[] {checker});
+    }
+}

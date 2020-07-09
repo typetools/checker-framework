@@ -31,8 +31,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.common.util.classfinder.AbstractDiscoverer;
-import org.checkerframework.common.util.classfinder.RecursiveDiscoverer;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
@@ -40,6 +38,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.util.ComponentFinderUtil;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -214,25 +213,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        AbstractDiscoverer<BaseTypeVisitor<?>> discoverer = new RecursiveDiscoverer<>();
-        return discoverer.findAndInitWithChecker(this, "Visitor", BaseTypeVisitor::new);
-        //        // Try to reflectively load the visitor.
-        //        Class<?> checkerClass = this.getClass();
-        //
-        //        while (checkerClass != BaseTypeChecker.class) {
-        //            BaseTypeVisitor<?> result =
-        //                    invokeConstructorFor(
-        //                            BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-        //                            new Class<?>[] {BaseTypeChecker.class},
-        //                            new Object[] {this});
-        //            if (result != null) {
-        //                return result;
-        //            }
-        //            checkerClass = checkerClass.getSuperclass();
-        //        }
-        //
-        //        // If a visitor couldn't be loaded reflectively, return the default.
-        //        return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+        return ComponentFinderUtil.findAndInitWithChecker(this, "Visitor", BaseTypeVisitor::new);
     }
 
     /**
