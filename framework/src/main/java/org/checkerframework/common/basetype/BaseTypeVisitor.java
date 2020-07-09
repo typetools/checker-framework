@@ -69,6 +69,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.common.util.classfinder.AbstractDiscoverer;
+import org.checkerframework.common.util.classfinder.RecursiveDiscoverer;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -239,22 +241,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @return the appropriate type factory
      */
-    @SuppressWarnings("unchecked") // unchecked cast to type variable
     protected Factory createTypeFactory() {
-        // Try to reflectively load the type factory.
-        Class<?> checkerClass = checker.getClass();
-        while (checkerClass != BaseTypeChecker.class) {
-            AnnotatedTypeFactory result =
-                    BaseTypeChecker.invokeConstructorFor(
-                            BaseTypeChecker.getRelatedClassName(
-                                    checkerClass, "AnnotatedTypeFactory"),
-                            new Class<?>[] {BaseTypeChecker.class},
-                            new Object[] {checker});
-            if (result != null) {
-                return (Factory) result;
-            }
-            checkerClass = checkerClass.getSuperclass();
-        }
+        AbstractDiscoverer<Factory> discoverer = new RecursiveDiscoverer<>();
+        return discoverer.findAndInitWithChecker(
+                checker, "AnnotatedTypeFactory", this::getDafaultFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Factory getDafaultFactory(BaseTypeChecker checker) {
         try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {
