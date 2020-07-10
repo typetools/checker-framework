@@ -68,6 +68,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -341,7 +342,9 @@ public final class TreeUtils {
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree withoutParens(final ExpressionTree tree) {
+    @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+    public static @PolyInterned ExpressionTree withoutParens(
+            final @PolyInterned ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
@@ -409,7 +412,9 @@ public final class TreeUtils {
                 return getAssignmentContext(parentPath);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
-                if (cet.getCondition() == treePath.getLeaf()) {
+                @SuppressWarnings("interning:not.interned") // AST node comparison
+                boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
+                if (conditionIsLeaf) {
                     // The assignment context for the condition is simply boolean.
                     // No point in going on.
                     return null;

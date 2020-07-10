@@ -67,6 +67,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -1045,8 +1046,10 @@ public class StubParser {
             case TYPEVAR:
                 // Add annotations from the declaration of the TypeVariable
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+                Types typeUtils = processingEnv.getTypeUtils();
                 for (AnnotatedTypeVariable typePar : typeParameters) {
-                    if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                    if (typeUtils.isSameType(
+                            typePar.getUnderlyingType(), atype.getUnderlyingType())) {
                         AnnotatedTypeReplacer.replace(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
                         AnnotatedTypeReplacer.replace(
