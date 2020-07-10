@@ -81,7 +81,11 @@ public class FormatUtil {
 
     /** Throws an exception if the format is not syntactically valid. */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-        @SuppressWarnings("unused")
+        @SuppressWarnings({
+            "unused", // called for side effect, to see if it throws an exception
+            "nullness:argument.type.incompatible" // it's not documented, but String.format permits
+            // a null array,  which it treats as matching any format string
+        })
         String unused = String.format(format, (Object[]) null);
     }
 
