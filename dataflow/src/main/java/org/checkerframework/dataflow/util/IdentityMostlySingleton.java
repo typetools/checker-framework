@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A set that is more efficient than HashSet for 0 and 1 elements. Uses objects identity for object
- * comparison and an {@link ArrayList} for backing storage.
+ * An arbitrary-size set that is very efficient ( more efficient than HashSet) for 0 and 1 elements.
+ * Uses object identity for object comparison.
  */
 public final class IdentityMostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
@@ -42,6 +42,7 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
         }
     }
 
+    @SuppressWarnings("interning:not.interned") // this class uses object identity
     @Override
     public boolean contains(Object o) {
         switch (state) {

@@ -10,6 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
  * A file can indicate expected javac diagnostics. There are two types of such files: Java source
@@ -150,8 +155,9 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /// End of static methods, start of per-instance state
     ///
 
-    private final File toRead;
-    private final JavaFileObject toReadFileObject;
+    // Exactly one of toRead and toReadFileObject is non-null
+    private final @Nullable File toRead;
+    private final @Nullable JavaFileObject toReadFileObject;
     private final DiagnosticCodec codec;
 
     private final String filename;
@@ -159,34 +165,38 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     private boolean initialized = false;
     private boolean closed = false;
 
-    private LineNumberReader reader = null;
+    private @MonotonicNonNull LineNumberReader reader = null;
 
-    private String nextLine = null;
-    private int nextLineNumber = -1;
+    private @Nullable String nextLine = null;
+    private @GTENegativeOne int nextLineNumber = -1;
 
     private JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
         this.toRead = toRead;
         this.toReadFileObject = null;
         this.codec = codec;
-        this.filename = shortFileName(toRead.getAbsolutePath());
+        this.filename = shortFileName(toRead.getName());
     }
 
     private JavaDiagnosticReader(JavaFileObject toRead, DiagnosticCodec codec) {
         this.toRead = null;
         this.toReadFileObject = toRead;
         this.codec = codec;
-        this.filename = shortFileName(toRead.getName());
+        this.filename = shortFileName(toReadFileObject.getName());
     }
 
-    private String shortFileName(String name) {
+    private static String shortFileName(String name) {
         int index = name.lastIndexOf(File.separator);
         return name.substring(index + 1, name.length());
     }
 
+    @SuppressWarnings(
+            "nullness:contracts.postcondition.not.satisfied") // if initialized, reader is non-null
+    @EnsuresNonNull("reader")
     private void init() throws IOException {
         if (!initialized && !closed) {
             initialized = true;
 
+            @SuppressWarnings("nullness") // either toRead or toReadFileObject is non-null
             Reader fileReader =
                     (toRead != null) ? new FileReader(toRead) : toReadFileObject.openReader(true);
             reader = new LineNumberReader(fileReader);
@@ -195,6 +205,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     @Override
+    @SuppressWarnings("contracts.postcondition.not.satisfied") // if closed, reader is non-null
+    @EnsuresNonNull("reader")
     public boolean hasNext() {
         if (closed) {
             return false;
@@ -223,7 +235,9 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
             if (nextLine == null) {
                 throw new NoSuchElementException();
             } else if (closed) {
-                throw new RuntimeException("Reader has been closed: " + toRead.getAbsolutePath());
+                throw new RuntimeException(
+                        "Reader has been closed: "
+                                + ((toRead != null) ? toRead.getAbsolutePath() : toReadFileObject));
             }
 
             String current = nextLine;
@@ -252,11 +266,13 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         }
     }
 
+    @RequiresNonNull("reader")
     protected void advance() throws IOException {
         nextLine = reader.readLine();
         nextLineNumber = reader.getLineNumber();
     }
 
+    @RequiresNonNull("reader")
     public void close() {
         try {
             if (initialized) {
