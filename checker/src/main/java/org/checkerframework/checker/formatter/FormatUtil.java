@@ -13,6 +13,7 @@ import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 import org.checkerframework.checker.regex.qual.Regex;
 
 /** This class provides a collection of utilities to ease working with format strings. */
+// TODO @AnnotatedFor("nullness")
 public class FormatUtil {
 
     /**
@@ -92,7 +93,11 @@ public class FormatUtil {
      */
     @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-        @SuppressWarnings("unused")
+        @SuppressWarnings({
+            "unused", // called for side effect, to see if it throws an exception
+            "nullness:argument.type.incompatible" // it's not documented, but String.format permits
+            // a null array,  which it treats as matching any format string
+        })
         String unused = String.format(format, (Object[]) null);
     }
 
@@ -126,16 +131,20 @@ public class FormatUtil {
                     break;
             }
             maxindex = Math.max(maxindex, last);
+            Integer lastKey = last;
             conv.put(
                     last,
                     ConversionCategory.intersect(
-                            conv.containsKey(last) ? conv.get(last) : ConversionCategory.UNUSED,
+                            conv.containsKey(lastKey)
+                                    ? conv.get(lastKey)
+                                    : ConversionCategory.UNUSED,
                             c.category()));
         }
 
         ConversionCategory[] res = new ConversionCategory[maxindex + 1];
         for (int i = 0; i <= maxindex; ++i) {
-            res[i] = conv.containsKey(i) ? conv.get(i) : ConversionCategory.UNUSED;
+            Integer key = i; // autoboxing prevents recognizing that containsKey => get() != null
+            res[i] = conv.containsKey(key) ? conv.get(key) : ConversionCategory.UNUSED;
         }
         return res;
     }
@@ -183,7 +192,8 @@ public class FormatUtil {
         if (s != null) { // explicit index
             index = Integer.parseInt(s.substring(0, s.length() - 1));
         } else {
-            if (m.group(2) != null && m.group(2).contains(String.valueOf('<'))) {
+            String group2 = m.group(2); // not @Deterministic, so extract into local var
+            if (group2 != null && group2.contains(String.valueOf('<'))) {
                 index = -1; // relative index
             } else {
                 index = 0; // ordinary index
@@ -233,7 +243,7 @@ public class FormatUtil {
      */
     private static Conversion[] parse(String format) {
         ArrayList<Conversion> cs = new ArrayList<>();
-        Matcher m = fsPattern.matcher(format);
+        @Regex(7) Matcher m = fsPattern.matcher(format);
         while (m.find()) {
             char c = conversionCharFromFormat(m);
             switch (c) {
@@ -291,7 +301,9 @@ public class FormatUtil {
         public IllegalFormatConversionCategoryException(
                 ConversionCategory expected, ConversionCategory found) {
             super(
-                    expected.chars.length() == 0 ? '-' : expected.chars.charAt(0),
+                    expected.chars == null || expected.chars.length() == 0
+                            ? '-'
+                            : expected.chars.charAt(0),
                     found.types == null ? Object.class : found.types[0]);
             this.expected = expected;
             this.found = found;
