@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
  * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
  * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds may or may
- * not be subtypes, depending on the value of any elements of the qualifiers.
+ * not be subtypes, depending on the values of any elements of the qualifiers.
  *
  * <p>By default, the subtyping information and information about polymorphic qualifiers is read
  * from meta-annotations on the annotation classes. This information is used to infer further
@@ -59,10 +59,10 @@ public class QualifierKindHierarchy {
      * "kind" of qualifier but not be the same qualifier; an example is {@code @IndexFor("a")} and
      * {@code @IndexFor("b")}.
      *
-     * <p>Exactly one qualifier kind is created for each annotation class.
-     *
      * <p>A {@code QualifierKind} holds information about the relationship between itself and other
      * {@link QualifierKind}s.
+     *
+     * <p>Exactly one qualifier kind is created for each annotation class.
      */
     // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
