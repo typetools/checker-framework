@@ -317,7 +317,7 @@ import org.plumelib.util.UtilPlume;
     "showInferenceSteps",
 
     // Output stack trace when checker encounters errors
-    // org.checkerframework.common.basetype.BaseTypeChecker.printStackTrace()
+    // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
     "dumpOnErrors",
 
     /// Visualizing the CFG
@@ -1084,6 +1084,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
     }
 
+    /**
+     * printOrStoreMessage method with an added stack trace argument. The stack trace is printed
+     * when the dumpOnErrors option is enabled.
+     *
+     * @param kind the kind of message to print
+     * @param message the message text
+     * @param source the souce code position of the diagnostic message
+     * @param root the compilation unit
+     * @param trace the stack trace where the checker encountered an error
+     */
     protected void printOrStoreMessage(
             javax.tools.Diagnostic.Kind kind,
             String message,
