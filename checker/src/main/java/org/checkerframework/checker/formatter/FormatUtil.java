@@ -108,20 +108,19 @@ public class FormatUtil {
     }
 
     // %[argument_index$][flags][width][.precision][t]conversion
-    // group 1            2      3 4    5           6 7
+    // group 1            2      3      4           5 6
     // For dates and times, the [t] is required and precision must not be provided.
     // For types other than dates and times, the [t] must not be provided.
     // See
     // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax
     // .
-    private static final @Regex(7) String formatSpecifier =
+    private static final @Regex(6) String formatSpecifier =
             "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
     // Groups.  Update if formatSpecifier is updated.
-    private static final int formatSpecifierPrecision = 5;
-    private static final int formatSpecifierT = 6;
-    private static final int formatSpecifierConversion = 7;
+    private static final int formatSpecifierT = 5;
+    private static final int formatSpecifierConversion = 6;
 
-    private static @Regex(7) Pattern fsPattern = Pattern.compile(formatSpecifier);
+    private static @Regex(6) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
     private static int indexFromFormat(Matcher m) {
         int index;
@@ -138,12 +137,14 @@ public class FormatUtil {
         return index;
     }
 
-    private static char conversionCharFromFormat(Matcher m) {
-        String dt = m.group(5);
-        if (dt != null) {
-            return dt.charAt(0);
+    @SuppressWarnings(
+            "nullness:dereference.of.nullable") // group formatSpecifierConversion always exists
+    private static char conversionCharFromFormat(@Regex(6) Matcher m) {
+        String tGroup = m.group(formatSpecifierT);
+        if (tGroup != null) {
+            return tGroup.charAt(0); // This is the letter "t" or "T".
         } else {
-            return m.group(6).charAt(0);
+            return m.group(formatSpecifierConversion).charAt(0);
         }
     }
 
