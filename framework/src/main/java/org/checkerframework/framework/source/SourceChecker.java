@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.FileReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.net.URL;
@@ -360,7 +361,8 @@ import org.plumelib.util.UtilPlume;
     "resourceStats",
 
     // Parse all JDK files at startup rather than as needed.
-    "parseAllJdk"
+    "parseAllJdk",
+    "version"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
@@ -778,6 +780,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     }
                                 });
             }
+	    if (hasOption("version")) {
+	    	getCheckerVersion();
+	    }
         } catch (UserError ce) {
             logUserError(ce);
         } catch (BugInCF ce) {
@@ -2508,6 +2513,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 System.out.println(line);
             }
         } catch (IOException e) {
+            System.out.println("IOException while reading git.properties: " + e.getMessage());
+        }
+    }
+
+    /** Print the version of the Checker Framework*/
+    private void getCheckerVersion() {
+	try {
+		String result = "";
+      
+   		Properties p=new Properties();
+		String RLS_FILE = "/docs/developer/release/release.properties";
+		p.putAll(getProperties(getClass(), RLS_FILE));	 
+      
+    		System.out.println(p.getProperty("checkers.ver.1"));  
+        } catch (Exception e) {
             System.out.println("IOException while reading git.properties: " + e.getMessage());
         }
     }
