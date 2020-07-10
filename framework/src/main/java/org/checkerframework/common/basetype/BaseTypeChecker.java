@@ -637,8 +637,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         private CheckerMessage(
                 Diagnostic.Kind kind,
                 String message,
-                Tree source,
-                BaseTypeChecker checker,
+                @FindDistinct Tree source,
+                @FindDistinct BaseTypeChecker checker,
                 StackTraceElement @Nullable [] trace) {
             this.kind = kind;
             this.message = message;
