@@ -14,6 +14,9 @@ import org.checkerframework.javacutil.BugInCF;
  * that this object represents. Each hierarchy has its own top and bottom, and subtyping
  * relationships exist only within each hierarchy.
  *
+ * <p>Note the distinction in terminology between a qualifier hierachy, which has one top and one
+ * bottom, and a {@code QualifierHierarchy}, which represents multiple qualifier hierarchies.
+ *
  * <p>All type annotations need to be type qualifiers recognized within this hierarchy.
  *
  * <p>This assumes that every annotated type in a program is annotated with exactly one qualifier
