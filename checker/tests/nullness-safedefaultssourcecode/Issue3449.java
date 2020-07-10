@@ -1,7 +1,5 @@
 // Test case for https://tinyurl.com/cfissue/3449
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 @AnnotatedFor("nullness")
