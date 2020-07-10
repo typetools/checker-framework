@@ -29,7 +29,7 @@ public class FormatUtil {
          * Construct a new Conversion.
          *
          * @param index the index in the argument list
-         * @param category the conversion category
+         * @param c the conversion character
          */
         public Conversion(char c, int index) {
             this.index = index;
