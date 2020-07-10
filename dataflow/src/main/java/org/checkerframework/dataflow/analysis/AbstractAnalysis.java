@@ -161,7 +161,7 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
-    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public AnalysisResult<V, S> getResult() {
         if (isRunning) {
@@ -224,7 +224,7 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
-    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public @Nullable S getRegularExitStore() {
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
@@ -236,7 +236,7 @@ public abstract class AbstractAnalysis<
     }
 
     @Override
-    @SuppressWarnings("contracts.precondition.override.invalid") // implementation field
+    @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public @Nullable S getExceptionalExitStore() {
         SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
@@ -444,7 +444,7 @@ public abstract class AbstractAnalysis<
          * forward analysis.
          */
         public class ForwardDFOComparator implements Comparator<Block> {
-            @SuppressWarnings("unboxing.of.nullable")
+            @SuppressWarnings("nullness:unboxing.of.nullable")
             @Override
             public int compare(Block b1, Block b2) {
                 return depthFirstOrder.get(b1) - depthFirstOrder.get(b2);
@@ -456,7 +456,7 @@ public abstract class AbstractAnalysis<
          * backward analysis.
          */
         public class BackwardDFOComparator implements Comparator<Block> {
-            @SuppressWarnings("unboxing.of.nullable")
+            @SuppressWarnings("nullness:unboxing.of.nullable")
             @Override
             public int compare(Block b1, Block b2) {
                 return depthFirstOrder.get(b2) - depthFirstOrder.get(b1);
