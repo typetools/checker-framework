@@ -6,10 +6,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * Util class to find components (e.g. visitors and factories) following the naming convention
  * reflectively. For example, ABCChecker's default naming for visitor is "ABCVisitor". If a visitor
  * class with that name exists, then instantiate it and returns. Otherwise try to find the super,
- * and finally uses the {@code defaultGetter} callback to get a default value if all attempting
- * fails.
+ * and finally uses the {@code defaultGetter} callback to get a default value if all attempt fails.
  */
 public class ComponentFinderUtil {
+
+    /**
+     * A single method interface for getting default type for components by method reference.
+     *
+     * @param <DefaultType> the type for the default value
+     */
     public interface DefaultGetter<DefaultType> {
 
         /**
@@ -24,6 +29,7 @@ public class ComponentFinderUtil {
     /**
      * Find a component named with the checker naming convention.
      *
+     * @param <T> type of the component
      * @param checker the current checker
      * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
      * @param defaultGetter a getter for the default value when cannot find the class
@@ -59,6 +65,7 @@ public class ComponentFinderUtil {
      * Find a component named with the checker naming convention with its constructor invoked with
      * the only argument {@code checker}
      *
+     * @param <T> type of the component
      * @param checker a checker
      * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
      * @param defaultGetter a getter for the default value when cannot find the class
