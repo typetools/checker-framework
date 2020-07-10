@@ -21,18 +21,36 @@ public class FormatUtil {
      * Indicates how to convert a value into a string.
      */
     private static class Conversion {
+        /** The index in the argument list. */
         private final int index;
+        /** The conversion category. */
         private final ConversionCategory cath;
 
+        /**
+         * Construct a new Conversion.
+         *
+         * @param index the index in the argument list
+         * @param category the conversion category
+         */
         public Conversion(char c, int index) {
             this.index = index;
             this.cath = ConversionCategory.fromConversionChar(c);
         }
 
+        /**
+         * Returns the index in the argument list.
+         *
+         * @return the index in the argument list
+         */
         int index() {
             return index;
         }
 
+        /**
+         * Returns the conversion category.
+         *
+         * @return the conversion category
+         */
         ConversionCategory category() {
             return cath;
         }

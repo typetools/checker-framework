@@ -11,13 +11,8 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * Elements of this enumeration are used in a {@link I18nFormat} annotation to indicate the valid
  * types that may be passed as a format parameter. For example:
  *
- * <blockquote>
- *
- * <pre>{@literal @}I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER})
- * String f = "{0}{1, number}";
+ * <pre>{@literal @}I18nFormat({GENERAL, NUMBER}) String f = "{0}{1, number}";
  * MessageFormat.format(f, "Example", 0) // valid</pre>
- *
- * </blockquote>
  *
  * The annotation indicates that the format string requires any object as the first parameter
  * ({@link I18nConversionCategory#GENERAL}) and a number as the second parameter ({@link

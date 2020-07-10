@@ -122,15 +122,14 @@ public enum ConversionCategory {
     public final @Nullable String chars;
 
     /**
-     * Use this function to get the category associated with a conversion character. For example:
+     * Converts a conversion character to a category. For example:
      *
-     * <blockquote>
+     * <pre>{@code
+     * ConversionCategory.fromConversionChar('d') == ConversionCategory.INT
+     * }</pre>
      *
-     * <pre>
-     * ConversionCategory.fromConversionChar('d') == ConversionCategory.INT;
-     * </pre>
-     *
-     * </blockquote>
+     * @param c a conversion character
+     * @return the category for the given conversion character
      */
     @SuppressWarnings("nullness:dereference.of.nullable") // `chars` field is non-null for these
     public static ConversionCategory fromConversionChar(char c) {

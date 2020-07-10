@@ -145,6 +145,7 @@ public class I18nFormatUtil {
          */
         private static @MonotonicNonNull List<Integer> argumentIndices;
 
+        // I think this means the number of format specifiers in the format string.
         /** The number of subformats. */
         private static int numFormat;
 
