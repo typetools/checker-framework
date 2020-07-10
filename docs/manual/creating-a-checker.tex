@@ -1168,7 +1168,7 @@ being called and then treats the method in a special way.
 
 The annotated type of expressions and types are defined via type introduction rules in the
 type factory.  For most expressions and types, these rules are the same regardless of the type system.
-For example, the type of a method invocation expression is the return type of the invoked method
+For example, the type of a method invocation expression is the return type of the invoked method,
 viewpoint-adapted for the call site.  The framework implements these rules so that all type systems
 automatically use them.  For other expressions, such as string literals, their (annotated) types depend
 on the type system, so the framework provides way to specify what qualifiers should apply to these expressions.

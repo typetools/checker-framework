@@ -45,7 +45,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1410,7 +1409,7 @@ public class AnnotatedTypes {
         // Collect all polymorphic qualifiers; we should substitute them.
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : returnType.getAnnotations()) {
-            if (QualifierPolymorphism.hasPolymorphicQualifier(anno)) {
+            if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
                 polys.add(anno);
             }
         }

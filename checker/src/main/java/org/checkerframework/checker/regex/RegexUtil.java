@@ -20,13 +20,11 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  * href="https://checkerframework.org/manual/#regexutil-methods">Testing whether a string is a
  * regular expression</a> in the Checker Framework manual.
  *
- * <p><b>Runtime Dependency</b>: Using this class introduces a runtime dependency on the
- * checker-qual package. To eliminate this dependency, you can simply copy this class into your own
+ * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
+ * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
  * project.
  */
-// The Purity Checker cannot show for most methods in this class that
-// they are pure, even though they are.
-@SuppressWarnings("all:purity")
+@SuppressWarnings("allcheckers:purity")
 public final class RegexUtil {
 
     /** This class is a collection of methods; it does not represent anything. */
