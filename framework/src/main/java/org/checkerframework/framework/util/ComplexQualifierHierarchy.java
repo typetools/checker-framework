@@ -8,7 +8,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -37,6 +39,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * between qualifiers. Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to
  * return a subclass of QualifierKindHierarchy.
  */
+@AnnotatedFor("nullness")
 public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
 
     /** {@link org.checkerframework.javacutil.ElementUtils} */
@@ -99,6 +102,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
+            @UnderInitialization ComplexQualifierHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new QualifierKindHierarchy(qualifierClasses);
     }
@@ -109,7 +113,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the mapping
      */
-    protected Map<QualifierKind, AnnotationMirror> createQualifiers() {
+    protected Map<QualifierKind, AnnotationMirror> createQualifiers(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
@@ -126,7 +131,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top
      */
-    protected Map<QualifierKind, AnnotationMirror> createTops() {
+    protected Map<QualifierKind, AnnotationMirror> createTops(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
             topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -142,7 +148,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom
      */
-    protected Map<QualifierKind, AnnotationMirror> createBottoms() {
+    protected Map<QualifierKind, AnnotationMirror> createBottoms(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -192,7 +199,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+    public @Nullable AnnotationMirror getPolymorphicAnnotation(
+            @UnderInitialization ComplexQualifierHierarchy this, AnnotationMirror start) {
         QualifierKind poly = getQualifierKind(start).getPolymorphic();
         if (poly == null) {
             return null;

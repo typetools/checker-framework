@@ -8,7 +8,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -25,6 +27,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass of
  * QualifierKindHierarchy.
  */
+@AnnotatedFor("nullness")
 public class SimpleQualifierHierarchy extends QualifierHierarchy {
 
     /** {@link QualifierKindHierarchy}. */
@@ -69,6 +72,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
+            @UnderInitialization SimpleQualifierHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new QualifierKindHierarchy(qualifierClasses);
     }
@@ -80,7 +84,8 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * @param elements element utils
      * @return a mapping from qualifier kind to its annotation mirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(Elements elements) {
+    protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(
+            @UnderInitialization SimpleQualifierHierarchy this, Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (kind.hasElements()) {
@@ -98,7 +103,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the unmodifiable set of top {@link AnnotationMirror}s
      */
-    protected Set<AnnotationMirror> createTops() {
+    protected Set<AnnotationMirror> createTops(@UnderInitialization SimpleQualifierHierarchy this) {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isTop()) {
@@ -113,7 +118,8 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the unmodifiable set of bottom {@link AnnotationMirror}s
      */
-    protected Set<AnnotationMirror> createBottoms() {
+    protected Set<AnnotationMirror> createBottoms(
+            @UnderInitialization SimpleQualifierHierarchy this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isBottom()) {
