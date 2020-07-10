@@ -1,0 +1,66 @@
+\htmlhr
+\chapter{Linear Checker for preventing re-usability\label{linear-checker}}
+
+The Linear Checker implements type-checking for a linear type system.  A
+linear type system prevents re-usability:  there is only one (usable) reference
+to a given object at any time.  Once a reference appears on the right-hand
+side of an assignment in the form of a method invocation, it may not be used any more.  The same rule applies
+for pseudo-assignments such as procedure argument-passing (including as the
+receiver) or return.
+
+One way of thinking about this is that a reference can only be used once,
+after which it is ``used up''.  This property is checked statically at
+compile time.  The single-use property only applies to use in an
+assignment, which makes a new reference to the object; ordinary field
+de-referencing does not use up a reference.
+
+By forbidding re-usability, a linear type system can prevent problems for variables that cannot be used more than once.
+The java.util.Stream library is one example. Streams cannot be operated on more than once, hence, they cause the program
+to fail when they are used more than one time. By annotating these streams as @Linear, these errors can be observed at
+compile time.
+
+To run the Linear Checker, supply the
+\code{-processor org.checkerframework.checker.linear.LinearChecker}
+command-line option to javac.
+
+Figure~\ref{fig-linear-example} gives an example of the Linear Checker's rules.
+
+\begin{figure}
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+public static void main() {
+    @Linear String a = "hi";
+    String b = a.toUpperCase();   // Since 'a' is operated upon (by method invocation), 'a' has now become @Unusable
+    String c = a.toLowerCase();  // ERROR : 'a' is @Unusable and can no longer be used again
+}
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+\caption{Example of Linear Checker rules.}
+\label{fig-linear-example}
+\end{figure}
+
+\section{Linear annotations\label{linear-annotations}}
+
+The full qualifier hierarchy for the linear type system includes three
+types:
+
+\begin{itemize}
+\item
+\code{@Normal} annotation means that the annotated objects can be assigned or used any number of times.  This is the default, so users only
+need to write \code{@Normal} if they change the default.
+\item
+\code{@Unusable} annotation means that the annotated objects can only be operated upon once. After this operation, they become @Unusable.
+@Linear objects can be assigned or referenced any number of times, but can accommodate only one method invocation.
+\item
+\code{@Unusable} annotation means that the annotated objects can not be either assigned, referenced or operated upon again.
+Doing so would invoke the [use.unsafe] error in the compiler.
+\end{itemize}
+
+\noindent
+\code{@Normal} is a supertype of \code{@Linear}, which is a
+supertype of \code{@Unusable}.
+
