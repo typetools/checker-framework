@@ -52,6 +52,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1072,6 +1073,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             Tree source,
             CompilationUnitTree root) {
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
+    }
+
+    protected void printOrStoreMessage(
+            javax.tools.Diagnostic.Kind kind,
+            String message,
+            Tree source,
+            CompilationUnitTree root,
+            StackTraceElement[] trace) {
+        Trees.instance(processingEnv).printMessage(kind, message, source, root);
+        printStackTrace(trace);
+    }
+
+    /**
+     * Output the given stack trace if the "dumpOnErrors" option is enabled.
+     *
+     * @param trace stack trace when the checker encountered a warning/error
+     */
+    private void printStackTrace(StackTraceElement[] trace) {
+        boolean dumpOnErrors =
+                getOptions().containsKey("dumpOnErrors") && getBooleanOption("dumpOnErrors", true);
+        if (dumpOnErrors) {
+            String msg = new String();
+            for (StackTraceElement elem : trace) {
+                msg = msg + "\tat " + elem + "\n";
+            }
+            message(Diagnostic.Kind.NOTE, msg);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
