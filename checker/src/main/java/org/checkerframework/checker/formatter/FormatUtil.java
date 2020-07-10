@@ -60,8 +60,14 @@ public class FormatUtil {
      * Returns if the format string is satisfiable, and if the format's parameters match the passed
      * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
      *
-     * <p>TODO introduce more such functions, see RegexUtil for examples
+     * @param format a format string
+     * @param cc an array of conversion categories
+     * @return the {@code format} argument
+     * @throws IllegalFormatException if the format string is incompatible with the conversion
+     *     categories
      */
+    // TODO introduce more such functions, see RegexUtil for examples
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
             throws IllegalFormatException {
@@ -79,7 +85,13 @@ public class FormatUtil {
         return format;
     }
 
-    /** Throws an exception if the format is not syntactically valid. */
+    /**
+     * Throws an exception if the format is not syntactically valid.
+     *
+     * @param format a format string
+     * @throws IllegalFormatException if the format string is invalid
+     */
+    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings({
             "unused", // called for side effect, to see if it throws an exception
