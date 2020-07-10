@@ -10,6 +10,7 @@ task copySources(type: Copy, dependsOn: ':checker-qual:copySources') {
     }
     from files('../checker-qual/src/main')
     include "**/*.java"
+    exclude "**/SignednessUtilExtra.java"
     into file('src/main')
 
     // Not read only because "replaceAnnotations" tasks writes to the files.

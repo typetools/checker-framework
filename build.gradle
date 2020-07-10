@@ -272,6 +272,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
+		'-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
@@ -307,7 +308,10 @@ List<String> getJavaFilesToFormat(projectName) {
     }
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("returnsreceiverdelomboked")
+                && !details.path.contains("build")
+                && details.name.endsWith('java')) {
             javaFiles.add(details.file)
         }
     }
@@ -637,10 +641,10 @@ subprojects {
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessSkipSome', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*'])
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessOnlyAnnotatedFor', ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
-        // These do not yet pass.  TODO: Make them pass.
+        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness', ['-AskipUses=com.sun.*'])
 
 
@@ -802,7 +806,13 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkNullnessSkipSome', 'checkPurity', 'checkSignature')
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkNullnessOnlyAnnotatedFor')
+            } else {
+                dependsOn('checkNullness')
+            }
+
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkCompilerMessages', 'jtregTests')
             }

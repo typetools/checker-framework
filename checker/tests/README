@@ -194,7 +194,7 @@ need runtime support or depends on Java 9 APIs.
 Tests that only exercise the static type annotation API do not need
 this marker.
 
-To disable all tests for a given type system, annotated the Junit test class
+To disable all tests for a given type system, annotate the JUnit test class
 with @Ignore.
 
 
