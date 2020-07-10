@@ -15,12 +15,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.*;</pre>
  *
- * <p><b>Runtime Dependency</b>
- *
- * <p>Please note that using this class introduces a runtime dependency. This means that you need to
- * distribute (or link to) the Checker Framework, along with your binaries.
- *
- * <p>To eliminate this dependency, you can simply copy this class into your own project.
+ * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
+ * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
+ * project.
  */
 @SuppressWarnings({
     "nullness", // Nullness utilities are trusted regarding nullness.
@@ -63,7 +60,8 @@ public final class NullnessUtil {
      * is {@code null}. If the exception is ever thrown, then that indicates that the programmer
      * misused the method by using it in a circumstance where its argument can be null.
      *
-     * @param ref a reference of @Nullable type
+     * @param <T> the type of the reference
+     * @param ref a reference of @Nullable type, that is non-null at run time
      * @return the argument, casted to have the type qualifier @NonNull
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object> @NonNull T castNonNull(
@@ -73,15 +71,35 @@ public final class NullnessUtil {
     }
 
     /**
+     * Suppress warnings from the Nullness Checker, with a custom error message. See {@link
+     * #castNonNull(Object)} for documentation.
+     *
+     * @see #castNonNull(Object)
+     * @param <T> the type of the reference
+     * @param ref a reference of @Nullable type, that is non-null at run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object> @NonNull T castNonNull(
+            @Nullable T ref, String message) {
+        assert ref != null : "Misuse of castNonNull: called with a null argument: " + message;
+        return (@NonNull T) ref;
+    }
+
+    /**
      * Like castNonNull, but whereas that method only checks and casts the reference itself, this
      * traverses all levels of the argument array. The array is recursively checked to ensure that
      * all elements at every array level are non-null.
      *
+     * @param <T> the component type of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object>
             @NonNull T @NonNull [] castNonNullDeep(T @Nullable [] arr) {
-        return (@NonNull T[]) castNonNullArray(arr);
+        return (@NonNull T[]) castNonNullArray(arr, null);
     }
 
     /**
@@ -89,11 +107,32 @@ public final class NullnessUtil {
      * traverses all levels of the argument array. The array is recursively checked to ensure that
      * all elements at every array level are non-null.
      *
+     * @param <T> the component type of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     * @see #castNonNull(Object)
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
+            @NonNull T @NonNull [] castNonNullDeep(T @Nullable [] arr, String message) {
+        return (@NonNull T[]) castNonNullArray(arr, message);
+    }
+
+    /**
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
+     * @param <T> the component type of the component type of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object>
             @NonNull T @NonNull [][] castNonNullDeep(T @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][]) castNonNullArray(arr);
+        return (@NonNull T[][]) castNonNullArray(arr, null);
     }
 
     /**
@@ -101,11 +140,32 @@ public final class NullnessUtil {
      * traverses all levels of the argument array. The array is recursively checked to ensure that
      * all elements at every array level are non-null.
      *
+     * @param <T> the component type of the component type of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     * @see #castNonNull(Object)
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
+            @NonNull T @NonNull [][] castNonNullDeep(T @Nullable [] @Nullable [] arr, String message) {
+        return (@NonNull T[][]) castNonNullArray(arr, message);
+    }
+
+    /**
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
+     * @param <T> the component type (three levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object>
             @NonNull T @NonNull [][][] castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][]) castNonNullArray(arr);
+        return (@NonNull T[][][]) castNonNullArray(arr, null);
     }
 
     /**
@@ -113,12 +173,34 @@ public final class NullnessUtil {
      * traverses all levels of the argument array. The array is recursively checked to ensure that
      * all elements at every array level are non-null.
      *
+     * @param <T> the component type (three levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     * @see #castNonNull(Object)
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
+            @NonNull T @NonNull [][][] castNonNullDeep(
+                    T @Nullable [] @Nullable [] @Nullable [] arr, String message) {
+        return (@NonNull T[][][]) castNonNullArray(arr, message);
+    }
+
+    /**
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
+     * @param <T> the component type of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object>
             @NonNull T @NonNull [][][][] castNonNullDeep(
                     T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][][]) castNonNullArray(arr);
+        return (@NonNull T[][][][]) castNonNullArray(arr, null);
     }
 
     /**
@@ -126,26 +208,91 @@ public final class NullnessUtil {
      * traverses all levels of the argument array. The array is recursively checked to ensure that
      * all elements at every array level are non-null.
      *
+     * @param <T> the component type (four levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     * @see #castNonNull(Object)
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
+            @NonNull T @NonNull [][][][] castNonNullDeep(
+                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr, String message) {
+        return (@NonNull T[][][][]) castNonNullArray(arr, message);
+    }
+
+    /**
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
+     * @param <T> the component type (four levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends @Nullable Object>
             @NonNull T @NonNull [][][][][] castNonNullDeep(
                     T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][][][]) castNonNullArray(arr);
+        return (@NonNull T[][][][][]) castNonNullArray(arr, null);
     }
 
+    /**
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
+     * @param <T> the component type (five levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if this method is misused
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     * @see #castNonNull(Object)
+     */
+    public static @EnsuresNonNull("#1") <T extends @Nullable Object>
+            @NonNull T @NonNull [][][][][] castNonNullDeep(
+                    T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr,
+                    String message) {
+        return (@NonNull T[][][][][]) castNonNullArray(arr, message);
+    }
+
+    /**
+     * The implementation of castNonNullDeep.
+     *
+     * @param <T> the component type (five levels in) of the array
+     * @param arr an array all of whose elements, and their elements recursively, are non-null at
+     *     run time
+     * @param message text to include if there is a non-null value, or null to use uncustomized
+     *     message
+     * @return the argument, casted to have the type qualifier @NonNull at all levels
+     */
     private static <T extends @Nullable Object> @NonNull T @NonNull [] castNonNullArray(
-            T @Nullable [] arr) {
-        assert arr != null : "Misuse of castNonNullArray: called with a null array argument";
+            T @Nullable [] arr, @Nullable String message) {
+        assert arr != null
+                : "Misuse of castNonNullArray: called with a null array argument"
+                        + ((message == null) ? "" : (": " + message));
         for (int i = 0; i < arr.length; ++i) {
-            assert arr[i] != null : "Misuse of castNonNull: called with a null array element";
-            checkIfArray(arr[i]);
+            assert arr[i] != null
+                    : "Misuse of castNonNull: called with a null array element"
+                            + ((message == null) ? "" : (": " + message));
+            checkIfArray(arr[i], message);
         }
         return (@NonNull T[]) arr;
     }
 
-    private static void checkIfArray(@NonNull Object ref) {
-        assert ref != null : "Misuse of checkIfArray: called with a null argument";
+    /**
+     * If the argument is an array, requires it to be non-null at all levels.
+     *
+     * @param ref a value; if an array, all of its elements, and their elements recursively, are
+     *     non-null at run time
+     * @param message text to include if there is a non-null value, or null to use uncustomized
+     *     message
+     */
+    private static void checkIfArray(@NonNull Object ref, @Nullable String message) {
+        assert ref != null
+                : "Misuse of checkIfArray: called with a null argument"
+                        + ((message == null) ? "" : (": " + message));
         Class<?> comp = ref.getClass().getComponentType();
         if (comp != null) {
             // comp is non-null for arrays, otherwise null.
@@ -153,7 +300,7 @@ public final class NullnessUtil {
                 // Nothing to do for arrays of primitive type: primitives are
                 // never null.
             } else {
-                castNonNullArray((Object[]) ref);
+                castNonNullArray((Object[]) ref, message);
             }
         }
     }

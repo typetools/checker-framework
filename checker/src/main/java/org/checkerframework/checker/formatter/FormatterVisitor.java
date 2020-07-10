@@ -122,10 +122,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     /**
-     * Returns true if fc is within a method m annotated as {@code @FormatMethod}, and fc's
+     * Returns true if {@code fc} is within a method m annotated as {@code @FormatMethod}, and fc's
      * arguments are m's formal parameters. In other words, fc forwards m's arguments to another
      * format method.
+     *
+     * @param fc an invocation of a format method
+     * @return true if {@code fc} is a call to a format method that forwards its containing methods'
+     *     arguments
      */
+    @SuppressWarnings("interning:not.interned") // comparisons of Name objects
     private boolean isWrappedFormatCall(FormatCall fc) {
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));

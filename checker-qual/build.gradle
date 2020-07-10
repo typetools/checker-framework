@@ -21,13 +21,15 @@ task copySources(type: Copy) {
     include '**/org/checkerframework/**/qual/*.java'
     include '**/PurityUnqualified.java'    // TODO: Should we move this into a qual directory?
     // Utility classes
+    // If you change this list, also update ../LICENSE.txt .
     include "**/FormatUtil.java"
-    include "**/NullnessUtil.java"
-    include "**/RegexUtil.java"
-    include "**/UnitsTools.java"
-    include "**/SignednessUtil.java"
     include "**/I18nFormatUtil.java"
-    include '**/Opt.java'
+    include "**/NullnessUtil.java"
+    include "**/Opt.java"
+    include "**/RegexUtil.java"
+    include "**/SignednessUtil.java"
+    // include "**/SignednessUtilExtra.java"
+    include "**/UnitsTools.java"
 
     // Make files read only.
     fileMode(0444)
