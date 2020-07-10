@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -19,6 +21,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>This assumes that every annotated type in a program is annotated with exactly one qualifier
  * from each hierarchy.
  */
+@AnnotatedFor("nullness")
 public abstract class QualifierHierarchy {
 
     /**
@@ -202,14 +205,22 @@ public abstract class QualifierHierarchy {
      * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
      * the two annotations.
      *
-     * @param newQualifier new qualifier dataflow computed for some expression
-     * @param previousQualifier the previous qualifier dataflow computed on the last iteration
+     * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
+     *     hierarchy and {@code previousQualifier}
+     * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
+     *     be in the same hierarchy and {@code previousQualifier}
      * @return an upper bound that is higher than the least upper bound of newQualifier and
      *     previousQualifier (or the lub if the type hierarchy does not require this)
      */
     public AnnotationMirror widenedUpperBound(
             AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-        return leastUpperBound(newQualifier, previousQualifier);
+        AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
+        if (widenUpperBound == null) {
+            throw new BugInCF(
+                    "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
+                    newQualifier, previousQualifier);
+        }
+        return widenUpperBound;
     }
 
     /**
@@ -319,8 +330,11 @@ public abstract class QualifierHierarchy {
      */
     public <T> boolean updateMappingToMutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror qualifier) {
-        if (map.containsKey(key)) {
-            Set<AnnotationMirror> prevs = map.get(key);
+        @SuppressWarnings("nullness:argument.type.incompatible") // key is of type T.
+        boolean mapContainsKey = map.containsKey(key);
+        if (mapContainsKey) {
+            @SuppressWarnings("nullness:assignment.type.incompatible") // key is a key for map.
+            @NonNull Set<AnnotationMirror> prevs = map.get(key);
             AnnotationMirror old = findAnnotationInSameHierarchy(prevs, qualifier);
             if (old != null) {
                 return false;
@@ -506,8 +520,8 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
-    public AnnotationMirror leastUpperBoundTypeVariable(
-            @Nullable AnnotationMirror a1, @Nullable AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBoundTypeVariable(
+            AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == null || a2 == null) {
             // [] is a supertype of any qualifier, and [] <: []
             return null;
@@ -538,7 +552,7 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
-    public AnnotationMirror leastUpperBound(
+    public @Nullable AnnotationMirror leastUpperBound(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
             AnnotationMirror a1,
@@ -567,6 +581,7 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
+    @SuppressWarnings("nullness") // Don't check deprecated method.
     public Set<? extends AnnotationMirror> leastUpperBoundsTypeVariable(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
@@ -638,7 +653,7 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
-    public AnnotationMirror greatestLowerBoundTypeVariable(
+    public @Nullable AnnotationMirror greatestLowerBoundTypeVariable(
             AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == null) {
             // [] is a supertype of any qualifier, and [] <: []
@@ -665,6 +680,7 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
+    @SuppressWarnings("nullness") // Don't check deprecated method.
     public Set<? extends AnnotationMirror> greatestLowerBoundsTypeVariable(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
@@ -707,7 +723,7 @@ public abstract class QualifierHierarchy {
      *     the relationship between "no qualifier" and a qualifier
      */
     @Deprecated
-    public AnnotationMirror greatestLowerBound(
+    public @Nullable AnnotationMirror greatestLowerBound(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
             AnnotationMirror a1,
