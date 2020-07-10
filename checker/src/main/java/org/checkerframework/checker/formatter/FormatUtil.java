@@ -14,19 +14,42 @@ import org.checkerframework.checker.regex.qual.Regex;
 
 /** This class provides a collection of utilities to ease working with format strings. */
 public class FormatUtil {
+
+    /**
+     * A representation of a format specifier, which is represented by "%..." in the format string.
+     * Indicates how to convert a value into a string.
+     */
     private static class Conversion {
+        /** The index in the argument list. */
         private final int index;
+        /** The conversion category. */
         private final ConversionCategory cath;
 
+        /**
+         * Construct a new Conversion.
+         *
+         * @param index the index in the argument list
+         * @param category the conversion category
+         */
         public Conversion(char c, int index) {
             this.index = index;
             this.cath = ConversionCategory.fromConversionChar(c);
         }
 
+        /**
+         * Returns the index in the argument list.
+         *
+         * @return the index in the argument list
+         */
         int index() {
             return index;
         }
 
+        /**
+         * Returns the conversion category.
+         *
+         * @return the conversion category
+         */
         ConversionCategory category() {
             return cath;
         }
@@ -36,8 +59,13 @@ public class FormatUtil {
      * Returns if the format string is satisfiable, and if the format's parameters match the passed
      * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
      *
-     * <p>TODO introduce more such functions, see RegexUtil for examples
+     * @param format a format string
+     * @param cc an array of conversion categories
+     * @return the {@code format} argument
+     * @throws IllegalFormatException if the format string is incompatible with the conversion
+     *     categories
      */
+    // TODO introduce more such functions, see RegexUtil for examples
     @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
@@ -56,7 +84,12 @@ public class FormatUtil {
         return format;
     }
 
-    /** Throws an exception if the format is not syntactically valid. */
+    /**
+     * Throws an exception if the format is not syntactically valid.
+     *
+     * @param format a format string
+     * @throws IllegalFormatException if the format string is invalid
+     */
     @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings("unused")
@@ -107,21 +140,43 @@ public class FormatUtil {
         return res;
     }
 
-    // %[argument_index$][flags][width][.precision][t]conversion
-    // group 1            2      3      4           5 6
-    // For dates and times, the [t] is required and precision must not be provided.
-    // For types other than dates and times, the [t] must not be provided.
-    // See
-    // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax
-    // .
+    /**
+     * A regex that matches a format specifier. Its syntax is specified in the See <a
+     * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax">{@code
+     * Formatter} documentation</a>.
+     *
+     * <pre>
+     * %[argument_index$][flags][width][.precision][t]conversion
+     * group 1            2      3      4           5 6
+     * </pre>
+     *
+     * For dates and times, the [t] is required and precision must not be provided. For types other
+     * than dates and times, the [t] must not be provided.
+     */
     private static final @Regex(6) String formatSpecifier =
             "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
-    // Groups.  Update if formatSpecifier is updated.
+    /** The capturing group for the optional {@code t} character. */
     private static final int formatSpecifierT = 5;
+    /**
+     * The capturing group for the last character in a format specifier, which is the conversion
+     * character unless the {@code t} character was given.
+     */
     private static final int formatSpecifierConversion = 6;
 
+    /**
+     * A Pattern that matches a format specifier.
+     *
+     * @see #formatSpecifier
+     */
     private static @Regex(6) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
+    /**
+     * Return the index, in the argument list, of the value that will be formatted by the matched
+     * format specifier.
+     *
+     * @param m a matcher that matches a format specifier
+     * @return the index of the argument to format
+     */
     private static int indexFromFormat(Matcher m) {
         int index;
         String s = m.group(1);
@@ -137,6 +192,12 @@ public class FormatUtil {
         return index;
     }
 
+    /**
+     * Returns the conversion character from a format specifier..
+     *
+     * @param m a matcher that matches a format specifier
+     * @return the conversion character from the format specifier
+     */
     @SuppressWarnings(
             "nullness:dereference.of.nullable") // group formatSpecifierConversion always exists
     private static char conversionCharFromFormat(@Regex(6) Matcher m) {
@@ -149,7 +210,7 @@ public class FormatUtil {
     }
 
     /**
-     * Return the conversion character that is in the given format specifier
+     * Return the conversion character that is in the given format specifier.
      *
      * @param formatSpecifier a format specifier; see
      *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax}
