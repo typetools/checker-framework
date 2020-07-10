@@ -201,7 +201,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (polyKind == null) {
             return null;
         }
-        AnnotationMirror poly = kindToAnnotationMirror.containsKey(polyKind);
+        AnnotationMirror poly = kindToAnnotationMirror.get(polyKind);
         if (poly == null) {
             throw new TypeSystemError(
                     "Poly %s has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation.",
