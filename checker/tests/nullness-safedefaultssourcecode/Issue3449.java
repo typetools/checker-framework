@@ -8,8 +8,10 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 public class Issue3449 {
 
     int length;
+    Object[] objs;
 
     public Issue3449(Object... args) {
         length = args.length;
+        objs = args;
     }
 }
