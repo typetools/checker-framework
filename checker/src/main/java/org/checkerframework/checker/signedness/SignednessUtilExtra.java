@@ -13,6 +13,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  */
 @AnnotatedFor("nullness")
 public class SignednessUtilExtra {
+    /** Do not instantiate this class. */
     private SignednessUtilExtra() {
         throw new Error("Do not instantiate");
     }
