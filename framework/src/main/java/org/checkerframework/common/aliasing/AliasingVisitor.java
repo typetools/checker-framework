@@ -150,7 +150,10 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     // this isn't called for pseudo-assignments.
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
         if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
             // If an assignment occurs inside a constructor with
@@ -167,7 +170,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
@@ -250,7 +254,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     @Override
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
+            MethodInvocationTree superCall,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (isInUniqueConstructor()) {
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.
