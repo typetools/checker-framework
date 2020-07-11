@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -2695,19 +2694,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        assert paramBounds.size() == typeargs.size()
+        int size = paramBounds.size();
+        assert size == typeargs.size()
                 : "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: "
                         + typeargs
                         + " and type parameter bounds"
                         + paramBounds;
 
-        Iterator<? extends AnnotatedTypeParameterBounds> boundsIter = paramBounds.iterator();
-        Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
+        for (int i = 0; i < size; i++) {
 
-        while (boundsIter.hasNext()) {
-
-            AnnotatedTypeParameterBounds bounds = boundsIter.next();
-            AnnotatedTypeMirror typeArg = argIter.next();
+            AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
+            AnnotatedTypeMirror typeArg = typeargs.get(i);
 
             if (isIgnoredUninferredWildcard(bounds.getUpperBound())
                     || isIgnoredUninferredWildcard(typeArg)) {
@@ -2929,6 +2926,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs) {
+        int size = requiredArgs.size();
         assert requiredArgs.size() == passedArgs.size()
                 : "mismatch between required args ("
                         + requiredArgs
@@ -2938,7 +2936,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
-            for (int i = 0; i < requiredArgs.size(); ++i) {
+            for (int i = 0; i < size; ++i) {
                 visitorState.setAssignmentContext(
                         Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(
