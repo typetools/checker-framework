@@ -2541,7 +2541,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    /** Print the version of the Checker Framework */
+    /** Extract the version of the Checker Framework */
     private String getCheckerVersion() {
         String version = null;
         Properties p = new Properties();
