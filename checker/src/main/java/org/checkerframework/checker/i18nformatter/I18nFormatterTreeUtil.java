@@ -240,10 +240,15 @@ public class I18nFormatterTreeUtil {
      */
     public class I18nFormatCall {
 
+        /** The AST node for the call. */
         private final MethodInvocationTree tree;
+        /** The format string argument. */
         private ExpressionTree formatArg;
+        /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
+        /** The arguments to the fromat string. */
         private List<? extends ExpressionTree> args;
+        /** Extra description for error messages. */
         private String invalidMessage;
 
         private AnnotatedTypeMirror formatAnno;
