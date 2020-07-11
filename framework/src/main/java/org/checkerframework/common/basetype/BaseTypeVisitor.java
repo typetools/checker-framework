@@ -1442,7 +1442,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" or "super()" invocation within that constructor.
      *
-     * @param superCall the AST node for the constructor call
+     * @param call the AST node for the constructor call
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
@@ -2957,7 +2957,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Name methodName,
             List<?> paramNames) {
         int size = requiredArgs.size();
-        assert requiredArgs.size() == passedArgs.size()
+        assert size == passedArgs.size()
                 : "mismatch between required args ("
                         + requiredArgs
                         + ") and passed args ("
@@ -2978,7 +2978,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
-            for (int i = 0; i < requiredArgs.size(); ++i) {
+            for (int i = 0; i < size; ++i) {
                 visitorState.setAssignmentContext(
                         Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(
@@ -2997,6 +2997,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Produce a printed representation of a list, in the standard format with surrounding "[...]".
+     *
+     * @param lst a list to format
+     * @return the printed representation of the list
+     */
     // com.sun.tools.javac.util.List has a toString that does not include surrounding "[...]",
     // making it hard to interpret in messages.
     private String listToString(List<?> lst) {
