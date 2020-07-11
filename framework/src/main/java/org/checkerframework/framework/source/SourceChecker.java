@@ -364,7 +364,7 @@ import org.plumelib.util.UtilPlume;
     "resourceStats",
 
     // Parse all JDK files at startup rather than as needed.
-    "parseAllJdk",
+    "parseAllJdk"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {
