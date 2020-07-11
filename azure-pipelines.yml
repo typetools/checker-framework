@@ -13,7 +13,6 @@ jobs:
 - job: all_tests_jdk8
   dependsOn:
    - all_tests_jdk11
-  condition: succeeded('all_tests_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -34,7 +33,6 @@ jobs:
 - job: misc_jdk8
   dependsOn:
    - misc_jdk11
-  condition: succeeded('misc_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -55,7 +53,6 @@ jobs:
 - job: cf_inference_jdk8
   dependsOn:
    - cf_inference_jdk11
-  condition: succeeded('cf_inference_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -76,7 +73,6 @@ jobs:
 - job: daikon_jdk8
   dependsOn:
    - daikon_jdk11
-  condition: succeeded('daikon_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -97,7 +93,6 @@ jobs:
 - job: guava_jdk8
   dependsOn:
    - guava_jdk11
-  condition: succeeded('guava_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -120,7 +115,6 @@ jobs:
 - job: plume_lib_jdk8
   dependsOn:
    - plume_lib_jdk11
-  condition: succeeded('plume_lib_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -141,7 +135,6 @@ jobs:
 - job: downstream_jdk8
   dependsOn:
    - downstream_jdk11
-  condition: succeeded('downstream_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
