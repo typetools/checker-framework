@@ -11,6 +11,9 @@ pr:
 
 jobs:
 - job: all_tests_jdk8
+  dependsOn:
+   - all_tests_jdk11
+  condition: succeeded('all_tests_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -29,6 +32,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-all.sh
     displayName: test-cftests-all.sh
 - job: misc_jdk8
+  dependsOn:
+   - misc_jdk11
+  condition: succeeded('misc_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -47,6 +53,9 @@ jobs:
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: cf_inference_jdk8
+  dependsOn:
+   - cf_inference_jdk11
+  condition: succeeded('cf_inference_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -65,6 +74,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cf-inference.sh
     displayName: test-cf-inference.sh
 - job: daikon_jdk8
+  dependsOn:
+   - daikon_jdk11
+  condition: succeeded('daikon_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -83,6 +95,9 @@ jobs:
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
 - job: guava_jdk8
+  dependsOn:
+   - guava_jdk11
+  condition: succeeded('guava_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -103,6 +118,9 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: plume_lib_jdk8
+  dependsOn:
+   - plume_lib_jdk11
+  condition: succeeded('plume_lib_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -120,19 +138,22 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
-- job: downstream_jdk11
+- job: downstream_jdk8
+  dependsOn:
+   - downstream_jdk11
+  condition: succeeded('downstream_jdk11')
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk8:latest
   steps:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-downstream.sh
     displayName: test-downstream.sh
-- job: downstream_jdk8
+- job: downstream_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk8:latest
+  container: mdernst/cf-ubuntu-jdk11:latest
   steps:
   - checkout: self
     fetchDepth: 25
