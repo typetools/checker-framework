@@ -1433,7 +1433,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" or "super()" invocation within that constructor.
      *
-     * @param superCall the AST node for the constructor call
+     * @param call the AST node for the constructor call
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
