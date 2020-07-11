@@ -47,7 +47,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
     protected void commonAssignmentCheck(

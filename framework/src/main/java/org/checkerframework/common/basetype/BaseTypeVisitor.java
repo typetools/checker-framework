@@ -2346,7 +2346,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varTree the AST node for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             Tree varTree,
@@ -2370,7 +2370,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -2409,7 +2409,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     protected final void commonAssignmentCheckStartDiagnostic(
             AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
@@ -2496,7 +2496,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
