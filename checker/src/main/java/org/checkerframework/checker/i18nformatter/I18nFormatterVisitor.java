@@ -3,6 +3,8 @@ package org.checkerframework.checker.i18nformatter;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
@@ -16,6 +18,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Whenever a method with {@link I18nFormatFor} annotation is invoked, it will perform the format
@@ -79,6 +82,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                             I18nConversionCategory formatCat = formatCats[i];
                             Result<TypeMirror> param = paramTypes[i];
                             TypeMirror paramType = param.value();
+                            ExecutableElement method = TreeUtils.elementFromUse(fc.getTree());
+                            Name methodName = method.getSimpleName();
                             switch (formatCat) {
                                 case UNUSED:
                                     tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
@@ -90,8 +95,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                                         tu.failure(
                                                 param,
                                                 "argument.type.incompatible",
-                                                "TODO:paramname",
-                                                "TODO:methodname",
+                                                "", // parameter name is not useful
+                                                methodName,
                                                 paramType,
                                                 formatCat);
                                     }

@@ -266,6 +266,15 @@ public class I18nFormatterTreeUtil {
             initialCheck(theargs, method, node, methodAnno);
         }
 
+        /**
+         * Returns the AST node for the call.
+         *
+         * @return the AST node for the call
+         */
+        MethodInvocationTree getTree() {
+            return tree;
+        }
+
         @Override
         public String toString() {
             return this.tree.toString();
