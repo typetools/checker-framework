@@ -1444,7 +1444,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param call the AST node for the constructor call
      * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void checkThisOrSuperConstructorCall(
             MethodInvocationTree call, @CompilerMessageKey String errorKey) {
