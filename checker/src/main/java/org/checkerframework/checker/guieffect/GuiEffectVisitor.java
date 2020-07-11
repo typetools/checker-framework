@@ -461,7 +461,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
      * traversal only checks assignments on the way down the AST, before inference has had a chance
      * to run.
      *
-     * @param the path to traverse up from a UI-affecting class
+     * @param path the path to traverse up from a UI-affecting class
      */
     private void scanUp(TreePath path) {
         Tree tree = path.getLeaf();
