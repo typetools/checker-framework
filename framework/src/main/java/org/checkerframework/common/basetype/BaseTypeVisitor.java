@@ -1281,7 +1281,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Performs two checks: subtyping and assignability checks, using {@link
-     * #commonAssignmentCheck(Tree, ExpressionTree, String)}.
+     * #commonAssignmentCheck(Tree, ExpressionTree, String, Object[])}.
      *
      * <p>If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
@@ -1406,8 +1406,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * supertype of the return type of "this()" invocation within that constructor.
      *
      * <p>Subclass can override this method to change the behavior for just "this" constructor
-     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
-     * the behavior for "this" and "super" constructor calls.
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String, Object[])} to
+     * change the behavior for "this" and "super" constructor calls.
      */
     protected void checkThisConstructorCall(MethodInvocationTree thisCall) {
         checkThisOrSuperConstructorCall(thisCall, "this.invocation.invalid");
@@ -1418,8 +1418,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * supertype of the return type of "super()" invocation within that constructor.
      *
      * <p>Subclass can override this method to change the behavior for just "super" constructor
-     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
-     * the behavior for "this" and "super" constructor calls.
+     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String, Object[])} to
+     * change the behavior for "this" and "super" constructor calls.
      */
     protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
         checkThisOrSuperConstructorCall(superCall, "super.invocation.invalid");
