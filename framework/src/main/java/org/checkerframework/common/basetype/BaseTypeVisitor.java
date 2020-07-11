@@ -2905,7 +2905,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * like var args.
      *
      * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
-     * @param requiredArgs the required types
+     * @param requiredArgs the required types. This may differ from the formal parameter types,
+     *     because it replaces a varargs parameter by multiple parameters with the vararg's element
+     *     type.
      * @param passedArgs the expressions passed to the corresponding types
      */
     protected void checkArguments(
