@@ -1281,7 +1281,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Performs two checks: subtyping and assignability checks, using {@link
-     * #commonAssignmentCheck(Tree, ExpressionTree, String)}.
+     * #commonAssignmentCheck(Tree, ExpressionTree, String, Object[])}.
      *
      * <p>If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
@@ -1413,9 +1413,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" invocation within that constructor.
      *
-     * <p>Subclass can override this method to change the behavior for just "this" constructor
-     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
-     * the behavior for "this" and "super" constructor calls.
+     * <p>Subclasses can override this method to change the behavior for just "this" constructor
+     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String,
+     * Object[])} to change the behavior for "this" and "super" constructor calls.
+     *
+     * @param thisCall the AST node for the constructor call
      */
     protected void checkThisConstructorCall(MethodInvocationTree thisCall) {
         checkThisOrSuperConstructorCall(thisCall, "this.invocation.invalid");
@@ -1425,9 +1427,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "super()" invocation within that constructor.
      *
-     * <p>Subclass can override this method to change the behavior for just "super" constructor
-     * class. Or {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to change
-     * the behavior for "this" and "super" constructor calls.
+     * <p>Subclasses can override this method to change the behavior for just "super" constructor
+     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String,
+     * Object[])} to change the behavior for "this" and "super" constructor calls.
+     *
+     * @param superCall the AST node for the super constructor call
      */
     protected void checkSuperConstructorCall(MethodInvocationTree superCall) {
         checkThisOrSuperConstructorCall(superCall, "super.invocation.invalid");
@@ -1436,14 +1440,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that the following rule is satisfied: The type on a constructor declaration must be a
      * supertype of the return type of "this()" or "super()" invocation within that constructor.
+     *
+     * @param superCall the AST node for the constructor call
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree superCall,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
-        TreePath path = atypeFactory.getPath(superCall);
+            MethodInvocationTree call, @CompilerMessageKey String errorKey, Object... extraArgs) {
+        TreePath path = atypeFactory.getPath(call);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
-        AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(superCall);
+        AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
         AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
         Set<? extends AnnotationMirror> topAnnotations =
                 atypeFactory.getQualifierHierarchy().getTopAnnotations();
@@ -1455,8 +1461,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory
                     .getQualifierHierarchy()
                     .isSubtype(superTypeMirror, constructorTypeMirror)) {
-                checker.reportError(
-                        superCall, errorKey, constructorTypeMirror, superCall, superTypeMirror);
+                checker.reportError(call, errorKey, constructorTypeMirror, call, superTypeMirror);
             }
         }
     }
@@ -2358,8 +2363,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param varTree the AST node for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
-     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             Tree varTree,
@@ -2382,8 +2387,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
-     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -2422,6 +2427,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
+     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected final void commonAssignmentCheckStartDiagnostic(
             AnnotatedTypeMirror varType,
@@ -2510,8 +2516,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
-     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
