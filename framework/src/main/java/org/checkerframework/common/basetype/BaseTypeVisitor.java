@@ -1430,7 +1430,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * supertype of the return type of "this()" or "super()" invocation within that constructor.
      */
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
+            MethodInvocationTree superCall,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         TreePath path = atypeFactory.getPath(superCall);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(superCall);
@@ -2343,7 +2345,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
         assert var != null : "no variable found for tree: " + varTree;
 
@@ -2366,7 +2371,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (shouldSkipUses(valueExp)) {
             return;
         }
@@ -2401,7 +2407,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueTree the location to use when reporting the error message
      */
     protected final void commonAssignmentCheckStartDiagnostic(
-            AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            Object... extraArgs) {
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -2491,7 +2500,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
