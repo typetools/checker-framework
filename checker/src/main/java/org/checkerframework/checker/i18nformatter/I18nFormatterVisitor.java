@@ -90,6 +90,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                                         tu.failure(
                                                 param,
                                                 "argument.type.incompatible",
+                                                "TODO:paramname",
+                                                "TODO:methodname",
                                                 paramType,
                                                 formatCat);
                                     }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
@@ -460,7 +461,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         List<AnnotatedTypeParameterBounds> bounds =
                 atypeFactory.typeVariablesFromUse(type, element);
 
-        visitor.checkTypeArguments(tree, bounds, type.getTypeArguments(), tree.getTypeArguments());
+        DeclaredType declType = type.getUnderlyingType();
+        TypeElement typeElt = (TypeElement) declType.asElement();
+
+        visitor.checkTypeArguments(
+                tree,
+                bounds,
+                type.getTypeArguments(),
+                tree.getTypeArguments(),
+                typeElt.getSimpleName(),
+                typeElt.getTypeParameters());
 
         return null;
     }
