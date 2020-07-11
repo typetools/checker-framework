@@ -154,7 +154,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
         if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
             // If an assignment occurs inside a constructor with
             // result type @Unique, it will invalidate the @Unique property
@@ -172,7 +172,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             Tree valueTree,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
@@ -254,9 +254,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     @Override
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree superCall,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         if (isInUniqueConstructor()) {
             // Check if a call to super() might create an alias: that
             // happens when the parent's respective constructor is not @Unique.

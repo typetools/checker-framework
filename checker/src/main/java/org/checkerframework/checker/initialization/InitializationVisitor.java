@@ -104,9 +104,7 @@ public class InitializationVisitor<
 
     @Override
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree superCall,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
+            MethodInvocationTree superCall, @CompilerMessageKey String errorKey) {
         // Nothing to check
     }
 
@@ -146,7 +144,7 @@ public class InitializationVisitor<
                 }
             }
         }
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     }
 
     @Override

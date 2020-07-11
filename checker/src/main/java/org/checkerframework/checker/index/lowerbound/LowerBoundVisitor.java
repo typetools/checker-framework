@@ -91,6 +91,6 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
             }
         }
 
-        super.commonAssignmentCheck(varTree, valueTree, errorKey);
+        super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
     }
 }
