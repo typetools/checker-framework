@@ -2424,7 +2424,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueTree the location to use when reporting the error message
      */
     protected final void commonAssignmentCheckStartDiagnostic(
-            AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            Object... extraArgs) {
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
