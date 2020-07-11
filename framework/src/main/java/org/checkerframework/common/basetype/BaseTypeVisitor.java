@@ -84,6 +84,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
@@ -1414,8 +1415,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * supertype of the return type of "this()" invocation within that constructor.
      *
      * <p>Subclasses can override this method to change the behavior for just "this" constructor
-     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String,
-     * Object[])} to change the behavior for "this" and "super" constructor calls.
+     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to
+     * change the behavior for "this" and "super" constructor calls.
      *
      * @param thisCall the AST node for the constructor call
      */
@@ -1428,8 +1429,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * supertype of the return type of "super()" invocation within that constructor.
      *
      * <p>Subclasses can override this method to change the behavior for just "super" constructor
-     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String,
-     * Object[])} to change the behavior for "this" and "super" constructor calls.
+     * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to
+     * change the behavior for "this" and "super" constructor calls.
      *
      * @param superCall the AST node for the super constructor call
      */
@@ -1446,7 +1447,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected void checkThisOrSuperConstructorCall(
-            MethodInvocationTree call, @CompilerMessageKey String errorKey, Object... extraArgs) {
+            MethodInvocationTree call, @CompilerMessageKey String errorKey) {
         TreePath path = atypeFactory.getPath(call);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
@@ -2378,7 +2379,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        commonAssignmentCheck(var, valueExp, errorKey);
+        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
     }
 
     /**
@@ -2418,7 +2419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
-        commonAssignmentCheck(varType, valueType, valueExp, errorKey);
+        commonAssignmentCheck(varType, valueType, valueExp, errorKey, extraArgs);
     }
 
     /**
@@ -2430,10 +2431,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param extraArgs arguments to the error message key, beyond "found" and "expected" types
      */
     protected final void commonAssignmentCheckStartDiagnostic(
-            AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType,
-            Tree valueTree,
-            Object... extraArgs) {
+            AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -2553,7 +2551,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             FoundRequired pair = FoundRequired.of(valueType, varType);
             String valueTypeString = pair.found;
             String varTypeString = pair.required;
-            checker.reportError(valueTree, errorKey, valueTypeString, varTypeString);
+            checker.reportError(
+                    valueTree,
+                    errorKey,
+                    SourceChecker.arrayPlusTwoElements(extraArgs, valueTypeString, varTypeString));
         }
     }
 

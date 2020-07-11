@@ -169,6 +169,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // issued for a given line of code will take precedence over the
         // assignment.type.incompatible
         // issued by super.commonAssignmentCheck.
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 }

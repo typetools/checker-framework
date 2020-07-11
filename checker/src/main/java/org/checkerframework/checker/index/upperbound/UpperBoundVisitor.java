@@ -240,7 +240,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             }
         }
 
-        super.commonAssignmentCheck(varTree, valueTree, errorKey);
+        super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
     }
 
     @Override
@@ -257,7 +257,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                     varType,
                     valueType,
                     valueTree);
-            super.commonAssignmentCheck(varType, valueTree, errorKey);
+            super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
         } else if (checker.hasOption("showchecks")) {
             commonAssignmentCheckEndDiagnostic(
                     true, "relaxedCommonAssignment", varType, valueType, valueTree);
