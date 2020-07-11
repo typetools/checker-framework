@@ -37,6 +37,8 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
@@ -66,6 +68,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -339,7 +342,9 @@ public final class TreeUtils {
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree withoutParens(final ExpressionTree tree) {
+    @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+    public static @PolyInterned ExpressionTree withoutParens(
+            final @PolyInterned ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
@@ -407,7 +412,9 @@ public final class TreeUtils {
                 return getAssignmentContext(parentPath);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
-                if (cet.getCondition() == treePath.getLeaf()) {
+                @SuppressWarnings("interning:not.interned") // AST node comparison
+                boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
+                if (conditionIsLeaf) {
                     // The assignment context for the condition is simply boolean.
                     // No point in going on.
                     return null;
@@ -1389,5 +1396,34 @@ public final class TreeUtils {
     public static boolean isImplicitlyTypedLambda(Tree tree) {
         return tree.getKind() == Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
+    }
+
+    /**
+     * Determine whether an expression {@link ExpressionTree} has the constant value true, according
+     * to the compiler logic.
+     *
+     * @param node the expression to be checked.
+     * @return true if {@code node} has the constant value true.
+     */
+    public static boolean isExprConstTrue(final ExpressionTree node) {
+        assert node instanceof JCExpression;
+        if (((JCExpression) node).type.isTrue()) {
+            return true;
+        }
+        ExpressionTree tree = TreeUtils.withoutParens(node);
+        if (tree instanceof JCTree.JCBinary) {
+            JCBinary binTree = (JCBinary) tree;
+            JCExpression ltree = binTree.lhs;
+            JCExpression rtree = binTree.rhs;
+            switch (binTree.getTag()) {
+                case AND:
+                    return isExprConstTrue(ltree) && isExprConstTrue(rtree);
+                case OR:
+                    return isExprConstTrue(ltree) || isExprConstTrue(rtree);
+                default:
+                    break;
+            }
+        }
+        return false;
     }
 }

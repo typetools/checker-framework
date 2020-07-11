@@ -138,7 +138,7 @@ public class InitializationTransfer<
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
-            if (atypeFactory.hasFieldInvariantAnnotation(fieldType)) {
+            if (atypeFactory.hasFieldInvariantAnnotation(fieldType, field)) {
                 result.add(field);
             }
         }

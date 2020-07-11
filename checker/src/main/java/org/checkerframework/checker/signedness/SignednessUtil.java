@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import org.checkerframework.checker.signedness.qual.Unsigned;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Provides static utility methods for unsigned values. Most of these re-implement functionality
@@ -15,6 +16,7 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
  *
  * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
+@AnnotatedFor("nullness")
 public final class SignednessUtil {
 
     private SignednessUtil() {
