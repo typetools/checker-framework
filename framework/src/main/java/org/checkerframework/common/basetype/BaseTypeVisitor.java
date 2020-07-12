@@ -2949,7 +2949,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     type.
      * @param passedArgs the expressions passed to the corresponding types
      * @param methodName the name of the method being called
-     * @paramNames the names of the callee's formal parameters
+     * @param paramNames the names of the callee's formal parameters
      */
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
@@ -2964,7 +2964,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         + passedArgs
                         + ")";
         int maxParamNamesIndex = paramNames.size() - 1;
-        // Rather weak assertion, due to how varargs parameters are treated
+        // Rather weak assertion, due to how varargs parameters are treated.
         assert size >= maxParamNamesIndex
                 : String.format(
                         "mismatched lengths %d %d %d checkArguments(%s, %s, %s, %s)",
@@ -2997,14 +2997,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    // com.sun.tools.javac.util.List has a toString that does not include surrounding "[...]",
+    // making it hard to interpret in messages.
     /**
      * Produce a printed representation of a list, in the standard format with surrounding "[...]".
      *
      * @param lst a list to format
      * @return the printed representation of the list
      */
-    // com.sun.tools.javac.util.List has a toString that does not include surrounding "[...]",
-    // making it hard to interpret in messages.
     private String listToString(List<?> lst) {
         StringJoiner result = new StringJoiner(",", "[", "]");
         for (Object elt : lst) {
