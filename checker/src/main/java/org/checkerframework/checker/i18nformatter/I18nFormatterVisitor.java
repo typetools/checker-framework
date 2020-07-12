@@ -82,8 +82,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                             I18nConversionCategory formatCat = formatCats[i];
                             Result<TypeMirror> param = paramTypes[i];
                             TypeMirror paramType = param.value();
-                            ExecutableElement method = TreeUtils.elementFromUse(fc.getTree());
-                            Name methodName = method.getSimpleName();
                             switch (formatCat) {
                                 case UNUSED:
                                     tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
@@ -92,6 +90,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                                     break;
                                 default:
                                     if (!fc.isValidParameter(formatCat, paramType)) {
+                                        ExecutableElement method =
+                                                TreeUtils.elementFromUse(fc.getTree());
+                                        Name methodName = method.getSimpleName();
                                         tu.failure(
                                                 param,
                                                 "argument.type.incompatible",
