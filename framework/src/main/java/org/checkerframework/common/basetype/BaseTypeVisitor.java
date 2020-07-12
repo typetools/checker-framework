@@ -2948,6 +2948,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     because it replaces a varargs parameter by multiple parameters with the vararg's element
      *     type.
      * @param passedArgs the expressions passed to the corresponding types
+     * @param methodName the name of the method being called
+     * @paramNames the names of the callee's formal parameters
      */
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
