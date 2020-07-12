@@ -2957,7 +2957,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Name methodName,
             List<?> paramNames) {
         int size = requiredArgs.size();
-        assert requiredArgs.size() == passedArgs.size()
+        assert size == passedArgs.size()
                 : "mismatch between required args ("
                         + requiredArgs
                         + ") and passed args ("
