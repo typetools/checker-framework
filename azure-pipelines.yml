@@ -13,6 +13,7 @@ jobs:
 - job: all_tests_jdk8
   dependsOn:
    - all_tests_jdk11
+   - misc_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -32,6 +33,7 @@ jobs:
     displayName: test-cftests-all.sh
 - job: misc_jdk8
   dependsOn:
+   - all_tests_jdk11
    - misc_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -52,6 +54,8 @@ jobs:
     displayName: test-misc.sh
 - job: cf_inference_jdk8
   dependsOn:
+   - all_tests_jdk11
+   - misc_jdk11
    - cf_inference_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -72,6 +76,8 @@ jobs:
     displayName: test-cf-inference.sh
 - job: daikon_jdk8
   dependsOn:
+   - all_tests_jdk11
+   - misc_jdk11
    - daikon_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -92,6 +98,8 @@ jobs:
     displayName: test-daikon.sh
 - job: guava_jdk8
   dependsOn:
+   - all_tests_jdk11
+   - misc_jdk11
    - guava_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -114,6 +122,8 @@ jobs:
     displayName: test-guava.sh
 - job: plume_lib_jdk8
   dependsOn:
+   - all_tests_jdk11
+   - misc_jdk11
    - plume_lib_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -134,6 +144,8 @@ jobs:
     displayName: test-plume-lib.sh
 - job: downstream_jdk8
   dependsOn:
+   - all_tests_jdk11
+   - misc_jdk11
    - downstream_jdk11
   pool:
     vmImage: 'ubuntu-latest'
