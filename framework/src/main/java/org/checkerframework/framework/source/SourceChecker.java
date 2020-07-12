@@ -253,7 +253,7 @@ import org.plumelib.util.UtilPlume;
 
     /// Amount of detail in messages
 
-    // Print the version of the checker framework
+    // Print the version of the Checker Framework
     "version",
     // Print info about git repository from which the Checker Framework was compiled
     "printGitProperties",
@@ -788,7 +788,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 if (version == null) {
                     messager.printMessage(Kind.NOTE, "Version info not available!");
                 } else {
-                    messager.printMessage(Kind.NOTE, "checker-framework " + version);
+                    messager.printMessage(Kind.NOTE, "Checker Framework " + version);
                 }
             }
         } catch (UserError ce) {
@@ -2544,24 +2544,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** Extract the version of the Checker Framework */
     private String getCheckerVersion() {
         String version = null;
-        Properties p = new Properties();
         String RLS_FILE = "/docs/developer/release/release.properties";
-        p.putAll(getProperties(getClass(), RLS_FILE));
-        String startTag = p.getProperty("checkers.ver.0");
-        String endTag = p.getProperty("checkers.ver.1");
+        Properties releaseProperties = getProperties(getClass(), RLS_FILE);
+        String startTag = releaseProperties.getProperty("checkers.ver.0");
+        String endTag = releaseProperties.getProperty("checkers.ver.1");
         String XML_FILE = "/docs/examples/MavenExample/pom.xml";
         try {
             InputStream in = getClass().getResourceAsStream(XML_FILE);
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line = null;
-            while ((line = reader.readLine()) != null && version == null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.split(startTag).length > 1) {
                     version = line.split(startTag)[1].split(endTag)[0];
+                    return version;
                 }
             }
         } catch (IOException e) {
             System.out.println("IOException while reading version information: " + e.getMessage());
         }
-        return version;
+        return null;
     }
 }
