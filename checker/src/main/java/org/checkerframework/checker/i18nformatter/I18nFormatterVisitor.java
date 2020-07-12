@@ -47,8 +47,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
         Result<FormatType> type = fc.getFormatType();
 
-        Result<InvocationType> invc;
-        I18nConversionCategory[] formatCats;
         switch (type.value()) {
             case I18NINVALID:
                 tu.failure(type, "i18nformat.string.invalid", fc.getInvalidError());
@@ -60,8 +58,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                 }
                 break;
             case I18NFORMAT:
-                invc = fc.getInvocationType();
-                formatCats = fc.getFormatCategories();
+                Result<InvocationType> invc = fc.getInvocationType();
+                I18nConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
                     case VARARG:
                         Result<TypeMirror>[] paramTypes = fc.getParamTypes();
