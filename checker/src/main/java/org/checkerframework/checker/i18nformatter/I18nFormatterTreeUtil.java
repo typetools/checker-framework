@@ -246,7 +246,7 @@ public class I18nFormatterTreeUtil {
         private ExpressionTree formatArg;
         /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
-        /** The arguments to the fromat string. */
+        /** The arguments to the format string. */
         private List<? extends ExpressionTree> args;
         /** Extra description for error messages. */
         private String invalidMessage;
