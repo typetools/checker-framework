@@ -1,5 +1,7 @@
 package org.checkerframework.javacutil;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Exception type indicating a mistake by a type system built using the Checker Framework. For
  * example, misusing a meta-annotation on a qualifier. These should only be thrown by the framework
@@ -26,7 +28,7 @@ public class TypeSystemError extends RuntimeException {
      * @param fmt the format string
      * @param args the arguments for the format string
      */
-    public TypeSystemError(String fmt, Object... args) {
+    public TypeSystemError(String fmt, @Nullable Object... args) {
         this(String.format(fmt, args));
     }
 }

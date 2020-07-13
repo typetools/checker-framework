@@ -133,7 +133,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from top QualifierKind to top AnnotationMirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createTopsMap() {
+    protected Map<QualifierKind, AnnotationMirror> createTopsMap(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
             topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));

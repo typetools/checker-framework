@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -351,7 +352,9 @@ public class QualifierKindHierarchy {
         this.lubs = createLubsMap();
         this.glbs = createGlbsMap();
 
-        verifyHierarchy(directSuperMap);
+        @SuppressWarnings("nullness:assignment.type.incompatible") // all fields are initialized.
+        @Initialized QualifierKindHierarchy initThis = this;
+        initThis.verifyHierarchy(directSuperMap);
     }
 
     /**
@@ -442,21 +445,22 @@ public class QualifierKindHierarchy {
         Map<QualifierKind, Set<QualifierKind>> directSuperMap = new TreeMap<>();
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             SubtypeOf subtypeOfMetaAnno = qualifierKind.clazz.getAnnotation(SubtypeOf.class);
-            if (subtypeOfMetaAnno != null) {
-                Set<QualifierKind> directSupers = new TreeSet<>();
-                directSuperMap.put(qualifierKind, directSupers);
-                for (Class<? extends Annotation> superClazz : subtypeOfMetaAnno.value()) {
-                    String superName = superClazz.getCanonicalName();
-                    QualifierKind superQualifier = nameToQualifierKind.get(superName);
-                    if (superQualifier == null) {
-                        throw new TypeSystemError(
-                                "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
-                                qualifierKind,
-                                superName,
-                                SystemUtil.join(", ", nameToQualifierKind.values()));
-                    }
-                    directSupers.add(superQualifier);
+            if (subtypeOfMetaAnno == null) {
+                continue;
+            }
+            Set<QualifierKind> directSupers = new TreeSet<>();
+            directSuperMap.put(qualifierKind, directSupers);
+            for (Class<? extends Annotation> superClazz : subtypeOfMetaAnno.value()) {
+                String superName = annotationClassName(superClazz);
+                QualifierKind superQualifier = nameToQualifierKind.get(superName);
+                if (superQualifier == null) {
+                    throw new TypeSystemError(
+                            "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
+                            qualifierKind,
+                            superName,
+                            SystemUtil.join(", ", nameToQualifierKind.values()));
                 }
+                directSupers.add(superQualifier);
             }
         }
         return directSuperMap;
@@ -491,8 +495,7 @@ public class QualifierKindHierarchy {
         if (bottom == null) {
             return;
         }
-
-        QualifierKind bottomKind = nameToQualifierKind.get(bottom.getCanonicalName());
+        QualifierKind bottomKind = nameToQualifierKind.get(annotationClassName(bottom));
         if (bottomKind == null) {
             throw new TypeSystemError(
                     "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
@@ -506,6 +509,21 @@ public class QualifierKindHierarchy {
                 });
         Set<QualifierKind> bottomDirectSuperQuals = directSuperMap.get(bottomKind);
         bottomDirectSuperQuals.addAll(currentLeaves);
+    }
+
+    /**
+     * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code
+     * clazz} is anonymous or otherwise does not have a name.
+     *
+     * @param clazz annotation class
+     * @return the canonical name of {@code clazz}
+     */
+    public static String annotationClassName(Class<? extends Annotation> clazz) {
+        String name = clazz.getCanonicalName();
+        if (name == null) {
+            throw new TypeSystemError("Qualifier classes must not be anonymous.");
+        }
+        return name;
     }
 
     /**
