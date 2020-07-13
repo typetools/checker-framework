@@ -291,6 +291,7 @@ public class QualifierKindHierarchy {
      * @return the least upper bound of {@code q1} and {@code q2}; {@code null} if the qualifier
      *     kinds are not in the same hierarchy
      */
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in lub.
     public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
         return lubs.get(q1).get(q2);
     }
@@ -305,6 +306,7 @@ public class QualifierKindHierarchy {
      * @return the greatest lower bound of {@code q1} and {@code q2}; {@code null} if the qualifier
      *     kinds are not in the same hierarchy
      */
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in glb.
     public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
         return glbs.get(q1).get(q2);
     }
@@ -501,7 +503,7 @@ public class QualifierKindHierarchy {
                     "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
                     bottom.getCanonicalName());
         }
-        Set<QualifierKind> currentLeaves = new TreeSet<>(allQualifierKinds());
+        Set<QualifierKind> currentLeaves = new TreeSet<>(nameToQualifierKind.values());
         currentLeaves.remove(bottomKind);
         directSuperMap.forEach(
                 (sub, supers) -> {
@@ -576,6 +578,7 @@ public class QualifierKindHierarchy {
      *
      * <p>Requires that tops has been initialized.
      */
+    @RequiresNonNull("this.nameToQualifierKind")
     protected void initializePolymorphicQualifiers(
             @UnderInitialization QualifierKindHierarchy this) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -617,6 +620,7 @@ public class QualifierKindHierarchy {
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
      */
+    @RequiresNonNull("this.nameToQualifierKind")
     protected void initializeQualifierKindFields(
             @UnderInitialization QualifierKindHierarchy this,
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
@@ -705,6 +709,7 @@ public class QualifierKindHierarchy {
      *
      * @return a mapping of lubs
      */
+    @RequiresNonNull("this.nameToQualifierKind")
     protected Map<QualifierKind, Map<QualifierKind, QualifierKind>> createLubsMap(
             @UnderInitialization QualifierKindHierarchy this) {
         Map<QualifierKind, Map<QualifierKind, QualifierKind>> lubs = new HashMap<>();
@@ -761,7 +766,7 @@ public class QualifierKindHierarchy {
      * @param qualifierKinds a set of qualifiers
      * @return the lowest qualifiers in the passed set
      */
-    protected final Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
+    protected static Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
@@ -837,8 +842,7 @@ public class QualifierKindHierarchy {
      * @param qualifierKinds a set of qualifiers
      * @return the highest qualifiers in the passed set
      */
-    protected final Set<QualifierKind> findHighestQualifiers(
-            @UnderInitialization QualifierKindHierarchy this, Set<QualifierKind> qualifierKinds) {
+    protected static Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
             lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));

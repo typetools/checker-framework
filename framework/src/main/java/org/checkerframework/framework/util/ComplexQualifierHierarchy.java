@@ -10,6 +10,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
@@ -114,7 +115,9 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the mapping
      */
-    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap() {
+    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
+    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
@@ -133,6 +136,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from top QualifierKind to top AnnotationMirror
      */
+    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createTopsMap(
             @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
@@ -151,7 +155,9 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from bottom QualifierKind to bottom AnnotationMirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createBottomsMap() {
+    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
+    protected Map<QualifierKind, AnnotationMirror> createBottomsMap(
+            @UnderInitialization ComplexQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -190,6 +196,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    // All tops are a key for topsMap.
+    @SuppressWarnings("nullness:return.type.incompatible")
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return topsMap.get(kind.getTop());
@@ -221,6 +229,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
+    // All bottoms are keys for bottomsMap.
+    @SuppressWarnings("nullness:return.type.incompatible")
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return bottomsMap.get(kind.getBottom());
@@ -257,13 +267,14 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
             QualifierKind superKind);
 
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        if (!qual1.isInSameHierarchyAs(qual2)) {
+        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
+        if (lub == null) {
+            // Qualifiers are not in the same hierarchy.
             return null;
         }
-        QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
         if (lub.hasElements()) {
             return leastUpperBound(a1, qual1, a2, qual2);
         }
@@ -285,13 +296,14 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
             AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
-        if (!qual1.isInSameHierarchyAs(qual2)) {
+        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
+        if (glb == null) {
+            // Qualifiers are not in the same hierarchy.
             return null;
         }
-        QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);
         if (glb.hasElements()) {
             return greatestLowerBound(a1, qual1, a2, qual2);
         }
