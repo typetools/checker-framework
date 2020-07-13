@@ -281,27 +281,30 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Returns the least upper bound of {@code q1} and {@code q2}. Ignores elements/arguments (as
-     * QualifierKind always does).
+     * Returns the least upper bound of {@code q1} and {@code q2}; or {@code null} if the qualifier
+     * kinds are not in the same hierarchy. Ignores elements/arguments (as QualifierKind always
+     * does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
-     * @return the least upper bound of {@code q1} and {@code q2}
+     * @return the least upper bound of {@code q1} and {@code q2}; {@code null} if the qualifier
+     *     kinds are not in the same hierarchy
      */
-    // TODO: document whether they must be in the same hierarchy
-    public QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
+    public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
         return lubs.get(q1).get(q2);
     }
 
     /**
-     * Returns the greatest lower bound of {@code q1} and {@code q2}. Ignores elements/arguments (as
-     * QualifierKind always does).
+     * Returns the greatest lower bound of {@code q1} and {@code q2}; or {@code null} if the
+     * qualifier kinds are not in the same hierarchy. Ignores elements/arguments (as QualifierKind
+     * always does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
-     * @return the greatest lower bound of {@code q1} and {@code q2}
+     * @return the greatest lower bound of {@code q1} and {@code q2}; {@code null} if the qualifier
+     *     kinds are not in the same hierarchy
      */
-    public QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
+    public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
         return glbs.get(q1).get(q2);
     }
 
