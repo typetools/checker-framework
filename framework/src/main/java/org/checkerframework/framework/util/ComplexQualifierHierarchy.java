@@ -82,7 +82,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         tops.addAll(topsMap.values());
         this.tops = Collections.unmodifiableSet(tops);
 
-        this.bottomsMap = Collections.unmodifiableMap(createBottomsMao());
+        this.bottomsMap = Collections.unmodifiableMap(createBottomsMap());
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
@@ -151,7 +151,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return a mapping from bottom QualifierKind to bottom AnnotationMirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createBottomsMao() {
+    protected Map<QualifierKind, AnnotationMirror> createBottomsMap() {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
