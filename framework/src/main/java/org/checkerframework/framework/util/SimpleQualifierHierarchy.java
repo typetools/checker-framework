@@ -10,6 +10,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
@@ -84,6 +85,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * @param elements element utils
      * @return a mapping from qualifier kind to its annotation mirror
      */
+    @RequiresNonNull("this.qualifierKindHierarchy")
     protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(
             @UnderInitialization SimpleQualifierHierarchy this, Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
@@ -118,6 +120,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the unmodifiable set of bottom {@link AnnotationMirror}s
      */
+    @RequiresNonNull("this.kindToAnnotationMirror")
     protected Set<AnnotationMirror> createBottoms(
             @UnderInitialization SimpleQualifierHierarchy this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
@@ -207,7 +210,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         if (!qual1.isInSameHierarchyAs(qual2)) {
@@ -218,7 +221,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         if (!qual1.isInSameHierarchyAs(qual2)) {
