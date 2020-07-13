@@ -61,6 +61,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -90,6 +91,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
@@ -208,6 +210,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       preserving the control flow structure.
  * </ol>
  */
+@SuppressWarnings("nullness") // TODO
 public class CFGBuilder {
 
     /** This class should never be instantiated. Protected to still allow subclasses. */
@@ -1007,6 +1010,7 @@ public class CFGBuilder {
          * @param predecessors an empty set to be filled by this method with all predecessors
          * @return the single successor of the set of the empty basic blocks
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         protected static BlockImpl computeNeighborhoodOfEmptyBlock(
                 RegularBlockImpl start,
                 Set<RegularBlockImpl> empty,
@@ -1086,7 +1090,12 @@ public class CFGBuilder {
          * place where previously the edge pointed to {@code cur}. Additionally, the predecessor
          * holder also takes care of unlinking (i.e., removing the {@code pred} from {@code cur's}
          * predecessors).
+         *
+         * @param pred a block whose successor should be set
+         * @param cur the previous successor of {@code pred}
+         * @return a predecessor holder to set the successor of {@code pred}
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         protected static PredecessorHolder getPredecessorHolder(
                 final BlockImpl pred, final BlockImpl cur) {
             switch (pred.getType()) {
@@ -1223,6 +1232,7 @@ public class CFGBuilder {
          *     empty regular basic blocks or conditional blocks with the same block as 'then' and
          *     'else' successor)
          */
+        @SuppressWarnings("interning:not.interned") // AST node comparisons
         public static ControlFlowGraph process(PhaseOneResult in) {
 
             Map<Label, Integer> bindings = in.bindings;
@@ -1898,7 +1908,7 @@ public class CFGBuilder {
          * @param pred the desired predecessor
          */
         @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
-        protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
+        protected void insertExtendedNodeAfter(ExtendedNode n, @FindDistinct Node pred) {
             int index = -1;
             for (int i = 0; i < nodeList.size(); i++) {
                 ExtendedNode inList = nodeList.get(i);
@@ -3483,6 +3493,7 @@ public class CFGBuilder {
 
                 ExpressionTree exprTree = tree.getExpression();
                 if (exprTree != null) {
+                    // non-default cases
                     Node expr = scan(exprTree, null);
                     CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
                     extendWithNode(test);
@@ -3587,17 +3598,15 @@ public class CFGBuilder {
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
-            }
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
 
             // Condition
             addLabelForNextNode(conditionStart);
-            if (tree.getCondition() != null) {
-                unbox(scan(tree.getCondition(), p));
-                ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
-                extendWithExtendedNode(cjump);
-            }
+            assert tree.getCondition() != null;
+            unbox(scan(tree.getCondition(), p));
+            ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
+            extendWithExtendedNode(cjump);
 
             // Loop exit
             addLabelForNextNode(loopExit);
@@ -3764,9 +3773,8 @@ public class CFGBuilder {
 
                 translateAssignment(variable, new LocalVariableNode(variable), nextCall);
 
-                if (statement != null) {
-                    scan(statement, p);
-                }
+                assert statement != null;
+                scan(statement, p);
 
                 // Loop back edge
                 addLabelForNextNode(updateStart);
@@ -3863,9 +3871,8 @@ public class CFGBuilder {
                 Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
                 extendWithNodeWithException(arrayAccessNode, npeElement.asType());
 
-                if (statement != null) {
-                    scan(statement, p);
-                }
+                assert statement != null;
+                scan(statement, p);
 
                 // Loop back edge
                 addLabelForNextNode(updateStart);
@@ -3974,9 +3981,8 @@ public class CFGBuilder {
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
-            }
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
 
             // Update
             addLabelForNextNode(updateStart);
@@ -4168,10 +4174,9 @@ public class CFGBuilder {
             List<? extends ExpressionTree> initializers = tree.getInitializers();
 
             List<Node> dimensionNodes = new ArrayList<>();
-            if (dimensions != null) {
-                for (ExpressionTree dim : dimensions) {
-                    dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-                }
+            assert dimensions != null;
+            for (ExpressionTree dim : dimensions) {
+                dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
             }
 
             List<Node> initializerNodes = new ArrayList<>();
@@ -4917,18 +4922,33 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
-            if (tree.getCondition() != null) {
-                unbox(scan(tree.getCondition(), p));
+            assert tree.getCondition() != null;
+            // Determine whether the loop condition has the constant value true, according to the
+            // compiler logic.
+            boolean isCondConstTrue = TreeUtils.isExprConstTrue(tree.getCondition());
+
+            unbox(scan(tree.getCondition(), p));
+
+            if (!isCondConstTrue) {
+                // If the loop condition does not have the constant value true, the control flow is
+                // split into two branches.
                 ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
                 extendWithExtendedNode(cjump);
             }
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            if (tree.getStatement() != null) {
-                scan(tree.getStatement(), p);
+            assert tree.getStatement() != null;
+            scan(tree.getStatement(), p);
+
+            if (isCondConstTrue) {
+                // The condition has the constant value true, so we can directly jump back to the
+                // loop entry.
+                extendWithExtendedNode(new UnconditionalJump(loopEntry));
+            } else {
+                // Otherwise, jump back to evaluate the condition.
+                extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
-            extendWithExtendedNode(new UnconditionalJump(conditionStart));
 
             // Loop exit
             addLabelForNextNode(loopExit);

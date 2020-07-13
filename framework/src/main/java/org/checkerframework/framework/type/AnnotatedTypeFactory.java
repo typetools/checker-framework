@@ -44,6 +44,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -55,6 +56,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -67,7 +70,9 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceSc
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
@@ -101,6 +106,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
@@ -485,9 +491,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private void checkSupportedQuals() {
         if (supportedQuals.isEmpty()) {
-            // This is throwing a CF bug, but it could also be a bug in the checker rather than in
-            // the framework itself.
-            throw new BugInCF("Found no supported qualifiers.");
+            throw new TypeSystemError("Found no supported qualifiers.");
         }
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             // Check @Target values
@@ -516,7 +520,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     buf.append(otherElementTypes.get(i));
                 }
                 buf.append(".");
-                throw new BugInCF(buf.toString());
+                throw new TypeSystemError(buf.toString());
             }
         }
     }
@@ -547,7 +551,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postInit() {
         this.qualHierarchy = createQualifierHierarchy();
         if (qualHierarchy == null) {
-            throw new BugInCF("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
@@ -585,6 +590,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Creates {@link QualifierUpperBounds} for this type factory. */
     protected QualifierUpperBounds createQualifierUpperBounds() {
         return new QualifierUpperBounds(this);
+    }
+
+    /**
+     * Return {@link QualifierUpperBounds} for this type factory.
+     *
+     * @return {@link QualifierUpperBounds} for this type factory
+     */
+    public QualifierUpperBounds getQualifierUpperBounds() {
+        return qualifierUpperBounds;
     }
 
     /**
@@ -704,7 +718,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
                     // This is currently not supported. At some point we might add
                     // polymorphic qualifiers with upper and lower bounds.
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "AnnotatedTypeFactory: "
                                     + typeQualifier
                                     + " is polymorphic and specifies super qualifiers. "
@@ -713,7 +727,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 continue;
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                throw new BugInCF(
+                throw new TypeSystemError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
                                 + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
                                 + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
@@ -723,14 +737,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 if (!supportedTypeQualifiers.contains(superQualifier)) {
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
                 if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
                     // This is currently not supported. No qualifier can have a polymorphic
                     // qualifier as super qualifier.
-                    throw new BugInCF(
+                    throw new TypeSystemError(
                             "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
                             superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
                 }
@@ -742,7 +756,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         QualifierHierarchy hierarchy = factory.build();
 
         if (!hierarchy.isValid()) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "AnnotatedTypeFactory: invalid qualifier hierarchy: "
                             + hierarchy.getClass()
                             + " "
@@ -2914,7 +2928,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (res == null) {
             TreePath path = getPath(tree);
             if (path != null) {
-                MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+                @SuppressWarnings("interning:assignment.type.incompatible") // used for == test
+                @InternedDistinct MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
                 ClassTree enclosingClass = TreeUtils.enclosingClass(path);
 
                 boolean found = false;
@@ -2989,7 +3004,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param node the {@link Tree} to get the path for
      * @return the path for {@code node} under the current root
      */
-    public final TreePath getPath(Tree node) {
+    public final TreePath getPath(@FindDistinct Tree node) {
         assert root != null
                 : "AnnotatedTypeFactory.getPath: root needs to be set when used on trees; factory: "
                         + this.getClass();
@@ -3497,6 +3512,170 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return result;
+    }
+
+    /**
+     * Whether or not the {@code annotatedTypeMirror} has a qualifier parameter.
+     *
+     * @param annotatedTypeMirror AnnotatedTypeMirror to check
+     * @param top the top of the hierarchy to check
+     * @return true if the type has a qualifier parameter
+     */
+    public boolean hasQualifierParameterInHierarchy(
+            AnnotatedTypeMirror annotatedTypeMirror, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(
+                getQualifierParameterHierarchies(annotatedTypeMirror), top);
+    }
+
+    /**
+     * Whether or not the {@code element} has a qualifier parameter.
+     *
+     * @param element element to check
+     * @param top the top of the hierarchy to check
+     * @return true if the type has a qualifier parameter
+     */
+    public boolean hasQualifierParameterInHierarchy(
+            @Nullable Element element, AnnotationMirror top) {
+        if (element == null) {
+            return false;
+        }
+        return AnnotationUtils.containsSame(getQualifierParameterHierarchies(element), top);
+    }
+
+    /**
+     * Returns whether the {@code HasQualifierParameter} annotation was explicitly written on {@code
+     * element} for the hierarchy given by {@code top}.
+     *
+     * @param element Element to check
+     * @param top the top qualifier for the hierarchy to check
+     * @return whether the class given by {@code element} has been explicitly annotated with {@code
+     *     HasQualifierParameter} for the given hierarchy
+     */
+    public boolean hasExplicitQualifierParameterInHierarchy(Element element, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(
+                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class),
+                top);
+    }
+
+    /**
+     * Returns whether the {@code NoQualifierParameter} annotation was explicitly written on {@code
+     * element} for the hierarchy given by {@code top}.
+     *
+     * @param element Element to check
+     * @param top the top qualifier for the hierarchy to check
+     * @return whether the class given by {@code element} has been explicitly annotated with {@code
+     *     NoQualifierParameter} for the given hierarchy
+     */
+    public boolean hasExplicitNoQualifierParameterInHierarchy(
+            Element element, AnnotationMirror top) {
+        return AnnotationUtils.containsSame(
+                getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class),
+                top);
+    }
+
+    /**
+     * Returns the set of top annotations representing all the hierarchies for which this type has a
+     * qualifier parameter.
+     *
+     * @param annotatedType AnnotatedTypeMirror to check
+     * @return the set of top annotations representing all the hierarchies for which this type has a
+     *     qualifier parameter
+     */
+    public Set<AnnotationMirror> getQualifierParameterHierarchies(
+            AnnotatedTypeMirror annotatedType) {
+        while (annotatedType.getKind() == TypeKind.TYPEVAR
+                || annotatedType.getKind() == TypeKind.WILDCARD) {
+            if (annotatedType.getKind() == TypeKind.TYPEVAR) {
+                annotatedType = ((AnnotatedTypeVariable) annotatedType).getUpperBound();
+            } else if (annotatedType.getKind() == TypeKind.WILDCARD) {
+                annotatedType = ((AnnotatedWildcardType) annotatedType).getSuperBound();
+            }
+        }
+
+        if (annotatedType.getKind() != TypeKind.DECLARED) {
+            return Collections.emptySet();
+        }
+
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) annotatedType;
+        Element element = declaredType.getUnderlyingType().asElement();
+        if (element == null) {
+            return Collections.emptySet();
+        }
+        return getQualifierParameterHierarchies(element);
+    }
+
+    /**
+     * Returns the set of top annotations representing all the hierarchies for which this element
+     * has a qualifier parameter.
+     *
+     * @param element Element to check
+     * @return the set of top annotations representing all the hierarchies for which this element
+     *     has a qualifier parameter
+     */
+    public Set<AnnotationMirror> getQualifierParameterHierarchies(Element element) {
+        if (!ElementUtils.isTypeDeclaration(element)) {
+            return Collections.emptySet();
+        }
+
+        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
+        found.addAll(
+                getSupportedAnnotationsInElementAnnotation(element, HasQualifierParameter.class));
+        Set<AnnotationMirror> hasQualifierParameterTops = AnnotationUtils.createAnnotationSet();
+        PackageElement packageElement = ElementUtils.enclosingPackage(element);
+
+        // Traverse all packages containing this element.
+        while (packageElement != null) {
+            Set<AnnotationMirror> packageDefaultTops =
+                    getSupportedAnnotationsInElementAnnotation(
+                            packageElement, HasQualifierParameter.class);
+            hasQualifierParameterTops.addAll(packageDefaultTops);
+
+            packageElement = ElementUtils.parentPackage(packageElement, elements);
+        }
+
+        Set<AnnotationMirror> noQualifierParamClasses =
+                getSupportedAnnotationsInElementAnnotation(element, NoQualifierParameter.class);
+        for (AnnotationMirror anno : hasQualifierParameterTops) {
+            if (!AnnotationUtils.containsSame(noQualifierParamClasses, anno)) {
+                found.add(anno);
+            }
+        }
+
+        return found;
+    }
+
+    /**
+     * Returns a set of supported annotation mirrors corresponding to the annotation classes listed
+     * in the value element of an annotation with class {@code annoClass} on {@code element}.
+     *
+     * @param element Element to check
+     * @param annoClass the class for an annotation that's written on elements, whose value element
+     *     is a list of annotation classes
+     * @return the set of supported annotations with classes listed in the value element of an
+     *     annotation with class {@code annoClass} on the {@code element}. Returns an empty set if
+     *     {@code annoClass} is not written on {@code element} or {@code element} is null.
+     */
+    private Set<AnnotationMirror> getSupportedAnnotationsInElementAnnotation(
+            @Nullable Element element, Class<? extends Annotation> annoClass) {
+        if (element == null) {
+            return Collections.emptySet();
+        }
+        // TODO: caching
+        AnnotationMirror annotation = getDeclAnnotation(element, annoClass);
+        if (annotation == null) {
+            return Collections.emptySet();
+        }
+
+        Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
+        List<Name> qualClasses =
+                AnnotationUtils.getElementValueClassNames(annotation, "value", true);
+        for (Name qual : qualClasses) {
+            AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
+            if (isSupportedQualifier(annotationMirror)) {
+                found.add(annotationMirror);
+            }
+        }
+        return found;
     }
 
     /**

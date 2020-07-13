@@ -59,11 +59,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     private final @MonotonicNonNull Class<? extends Annotation> predicate;
 
     /**
-     * Create an annotated type factory for an accumulation checker, with predicate support.
+     * Create an annotated type factory for an accumulation checker.
      *
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
-     *     element named "value" whose type is a String array.
+     *     argument named "value" whose type is a String array.
      * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
      *     accumulator}. The bottom type should be an annotation with no arguments.
      * @param predicate the predicate annotation. Either null (if predicates are not supported), or
@@ -82,6 +82,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (accDeclaredMethods.length != 1) {
             rejectMalformedAccumulator("have exactly one element");
         }
+
         Method accValue = accDeclaredMethods[0];
         if (accValue.getName() != "value") { // interned
             rejectMalformedAccumulator("name its element \"value\"");
@@ -119,11 +120,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Create an annotated type factory for an accumulation checker, without predicate support.
+     * Create an annotated type factory for an accumulation checker.
      *
      * @param checker the checker
      * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
-     *     element named "value" whose type is a String array.
+     *     argument named "value" whose type is a String array.
      * @param bottom the bottom type in the hierarchy, which must be a subtype of {@code
      *     accumulator}. The bottom type should be an annotation with no arguments.
      */
@@ -176,7 +177,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @param values the arguments to the annotation. The values can contain duplicates and can be
      *     in any order.
      * @return an annotation mirror representing the accumulator annotation with {@code values}'s
-     *     arguments, or top if {@code values} is empty
+     *     arguments; this is top if {@code values} is empty
      */
     public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
@@ -187,7 +188,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     /**
      * Creates a new instance of the accumulator annotation that contains exactly one value.
      *
-     * @param value the argument to the annotation.
+     * @param value the argument to the annotation
      * @return an annotation mirror representing the accumulator annotation with {@code value} as
      *     its argument
      */
@@ -216,7 +217,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Is the given annotation an accumulator annotation?
+     * Is the given annotation an accumulator annotation? Returns false if the argument is {@link
+     * #bottom}.
      *
      * @param anm an annotation mirror
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
@@ -295,7 +297,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
-            return new ArrayList<>();
+            return new ArrayList<>(0);
         } else {
             return values;
         }
@@ -318,7 +320,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         /**
-         * Create the qualifier hierarchy
+         * Create the qualifier hierarchy.
          *
          * @param factory the factory
          */

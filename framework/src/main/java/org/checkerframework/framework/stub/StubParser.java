@@ -3,6 +3,7 @@ package org.checkerframework.framework.stub;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
@@ -66,6 +67,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -75,7 +77,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeReplacer;
+import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -898,8 +900,8 @@ public class StubParser {
 
     /**
      * Add the annotations from {@code type} to {@code atype}. Type annotations that parsed as
-     * declaration annotations (ie those in {@code declAnnos} are applied to the innermost component
-     * type.
+     * declaration annotations (i.e., type annotations in {@code declAnnos} are applied to the
+     * innermost component type.
      *
      * @param atype annotated type to which to add annotations
      * @param type parsed type
@@ -941,8 +943,8 @@ public class StubParser {
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
-     *   <li>any type annotations that parsed as declaration annotations (ie those in {@code
-     *       declAnnos}).
+     *   <li>any type annotations that parsed as declaration annotations (i.e., type annotations in
+     *       {@code declAnnos}).
      * </ol>
      *
      * @param atype annotated type to which to add annotations
@@ -1044,8 +1046,10 @@ public class StubParser {
             case TYPEVAR:
                 // Add annotations from the declaration of the TypeVariable
                 AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+                Types typeUtils = processingEnv.getTypeUtils();
                 for (AnnotatedTypeVariable typePar : typeParameters) {
-                    if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                    if (typeUtils.isSameType(
+                            typePar.getUnderlyingType(), atype.getUnderlyingType())) {
                         AnnotatedTypeReplacer.replace(
                                 typePar.getUpperBound(), typeVarUse.getUpperBound());
                         AnnotatedTypeReplacer.replace(
@@ -1425,7 +1429,8 @@ public class StubParser {
 
     /**
      * Looks for method element in the typeElt and returns it if the element has the same signature
-     * as provided method declaration. In case method element is not found it returns null.
+     * as provided method declaration. Returns null, and possibly issues a warning, if method
+     * element is not found.
      *
      * @param typeElt type element where method element should be looked for
      * @param methodDecl method declaration with signature that should be found among methods in the
@@ -1451,12 +1456,22 @@ public class StubParser {
                 return method;
             }
         }
-        stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
-        if (debugStubParser) {
-            stubDebug(String.format("  Here are the methods of %s:", typeElt));
-            for (ExecutableElement method :
-                    ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-                stubDebug(String.format("    %s", method));
+        if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
+            // This might be a false positive warning.  The stub parser permits a stub file to omit
+            // the access specifier, but package-private methods aren't in the TypeElement.
+            stubWarnNotFound(
+                    "Package-private method "
+                            + wantedMethodString
+                            + " not found in type "
+                            + typeElt);
+        } else {
+            stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
+            if (debugStubParser) {
+                stubDebug(String.format("  Here are the methods of %s:", typeElt));
+                for (ExecutableElement method :
+                        ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+                    stubDebug(String.format("    %s", method));
+                }
             }
         }
         return null;
@@ -1741,9 +1756,11 @@ public class StubParser {
 
     /**
      * Converts {@code number} to {@code expectedKind}.
-     * <p>
-     * {@code @interface Anno { long value();})
-     * {@code @Anno(1)}
+     *
+     * <pre><code>
+     * &nbsp; @interface Anno { long value(); }
+     * &nbsp; @Anno(1)
+     * </code></pre>
      *
      * To properly build @Anno, the IntegerLiteralExpr "1" must be converted from an int to a long.
      */

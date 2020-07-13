@@ -51,6 +51,7 @@ public class PerDirectorySuite extends Suite {
      *
      * @param klass the class whose tests to run
      */
+    @SuppressWarnings("nullness") // JUnit needs to be annotated
     public PerDirectorySuite(Class<?> klass) throws Throwable {
         super(klass, Collections.emptyList());
         final TestClass testClass = getTestClass();
@@ -63,6 +64,7 @@ public class PerDirectorySuite extends Suite {
     }
 
     /** Returns a list of one-element arrays, each containing a Java File. */
+    @SuppressWarnings("nullness") // JUnit needs to be annotated
     private List<List<File>> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
 
@@ -101,7 +103,7 @@ public class PerDirectorySuite extends Suite {
                             + "testClass=%s%n"
                             + "parameterMethods=%s",
                     requiredFormsMessage, testClass.getName(), methods);
-        } // else
+        }
 
         FrameworkMethod method = parameterMethods.get(0);
 
@@ -109,12 +111,9 @@ public class PerDirectorySuite extends Suite {
         String methodName = method.getName();
         switch (methodName) {
             case "getTestDirs":
-                if (returnType.isArray()) {
-                    if (returnType.getComponentType() != String.class) {
-                        throw new RuntimeException(
-                                "Component type of getTestDirs must be java.lang.String, found "
-                                        + returnType.getComponentType().getCanonicalName());
-                    }
+                if (!(returnType.isArray() && returnType.getComponentType() == String.class)) {
+                    throw new RuntimeException(
+                            "getTestDirs should return String[], found " + returnType);
                 }
                 break;
 
@@ -140,9 +139,9 @@ public class PerDirectorySuite extends Suite {
 
     /** The message about the required getTestDirs method. */
     private static final String requiredFormsMessage =
-            "Parameter method must the following form:"
+            "Parameter method must have the following form:"
                     + System.lineSeparator()
-                    + "@Parameters String [] getTestDirs()";
+                    + "@Parameters String[] getTestDirs()";
 
     /** Runs the test class for the set of javaFiles passed in the constructor. */
     private static class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
@@ -161,6 +160,9 @@ public class PerDirectorySuite extends Suite {
 
         String testCaseName() {
             File file = javaFiles.get(0).getParentFile();
+            if (file == null) {
+                throw new Error("root was passed? " + javaFiles.get(0));
+            }
             return file.getPath().replace("tests" + System.getProperty("file.separator"), "");
         }
 

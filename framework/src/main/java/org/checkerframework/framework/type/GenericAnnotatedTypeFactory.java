@@ -94,8 +94,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -1204,14 +1206,20 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Analyze the AST {@code ast} and store the result.
+     * Analyze the AST {@code ast} and store the result. Additional operations that should be
+     * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
      *
-     * @param queue the queue to add more things to scan
-     * @param fieldValues the abstract values for all fields of the same class
+     * @param queue the queue for encountered class trees and their initial stores
+     * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
      * @param ast the AST to analyze
+     * @param fieldValues the abstract values for all fields of the same class
      * @param currentClass the class we are currently looking at
-     * @param isInitializationCode are we analyzing a (non-static) initializer block of a class
+     * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a
+     *     class
+     * @param updateInitializationStore should the initialization store be updated
+     * @param isStatic are we analyzing a static construct
      * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+     * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
      */
     protected void analyze(
             Queue<Pair<ClassTree, Store>> queue,
@@ -1291,25 +1299,43 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        if (checker.hasOption("flowdotdir") || checker.hasOption("cfgviz")) {
-            handleCFGViz();
-        }
-
-        // add classes declared in method
+        // add classes declared in CFG
         for (ClassTree cls : cfg.getDeclaredClasses()) {
             queue.add(Pair.of(cls, getStoreBefore(cls)));
         }
+        // add lambdas declared in CFG
         for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
             lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
         }
+
+        postAnalyze(cfg);
     }
 
     /**
-     * Handle the visualization of the CFG, by calling {@code visualizeCFG} on the analysis. This
-     * method gets invoked in {@code analyze} if one of the visualization options is provided.
+     * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
+     * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, boolean, boolean,
+     * boolean, CFAbstractStore)}. This method can be used to initialize additional state or to
+     * perform any analyses that are easier to perform on the CFG instead of the AST.
+     *
+     * @param cfg the CFG
+     * @see #analyze(java.util.Queue, java.util.Queue,
+     *     org.checkerframework.dataflow.cfg.UnderlyingAST, java.util.List,
+     *     com.sun.source.tree.ClassTree, boolean, boolean, boolean,
+     *     org.checkerframework.framework.flow.CFAbstractStore)
      */
-    protected void handleCFGViz() {
-        analysis.visualizeCFG();
+    protected void postAnalyze(ControlFlowGraph cfg) {
+        handleCFGViz(cfg);
+    }
+
+    /**
+     * Handle the visualization of the CFG, if necessary.
+     *
+     * @param cfg the CFG
+     */
+    protected void handleCFGViz(ControlFlowGraph cfg) {
+        if (checker.hasOption("flowdotdir") || checker.hasOption("cfgviz")) {
+            getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), analysis);
+        }
     }
 
     /**
@@ -1487,8 +1513,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
-
         addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+        applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1560,6 +1586,66 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param tree Tree whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
+        applyQualifierParameterDefaults(TreeUtils.elementFromTree(tree), type);
+    }
+
+    /**
+     * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * @param elt Element whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    protected void applyQualifierParameterDefaults(
+            @Nullable Element elt, AnnotatedTypeMirror type) {
+        if (elt == null) {
+            return;
+        }
+        switch (elt.getKind()) {
+            case CONSTRUCTOR:
+            case METHOD:
+            case FIELD:
+            case LOCAL_VARIABLE:
+            case PARAMETER:
+                break;
+            default:
+                return;
+        }
+
+        TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
+        Set<AnnotationMirror> tops;
+        if (enclosingClass != null) {
+            tops = getQualifierParameterHierarchies(enclosingClass);
+        } else {
+            return;
+        }
+        if (tops.isEmpty()) {
+            return;
+        }
+        Set<AnnotationMirror> polyWithQualParam = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror top : tops) {
+            AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
+            if (poly != null) {
+                polyWithQualParam.add(poly);
+            }
+        }
+        new TypeAnnotator(this) {
+            @Override
+            public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
+                if (type.getUnderlyingType().asElement().equals(enclosingClass)) {
+                    type.addMissingAnnotations(polyWithQualParam);
+                }
+                return super.visitDeclared(type, aVoid);
+            }
+        }.visit(type);
+    }
+
+    /**
      * To add annotations to the type of method or constructor parameters, add a {@link
      * TypeAnnotator} using {@link #createTypeAnnotator()} and see the comment in {@link
      * TypeAnnotator#visitExecutable(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType,
@@ -1571,6 +1657,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         addAnnotationsFromDefaultQualifierForUse(elt, type);
+        applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
         if (dependentTypesHelper != null) {
@@ -1732,6 +1819,15 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
+    }
+
+    @Override
+    public void postAsMemberOf(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
+        super.postAsMemberOf(type, owner, element);
+        if (element.getKind() == ElementKind.FIELD) {
+            poly.resolve(((VariableElement) element), owner, type);
+        }
     }
 
     /**

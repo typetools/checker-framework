@@ -20,6 +20,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -28,8 +29,8 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
-import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -93,7 +94,7 @@ public abstract class CFAbstractTransfer<
                 S extends CFAbstractStore<V, S>,
                 T extends CFAbstractTransfer<V, S, T>>
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
-        implements TransferFunction<V, S> {
+        implements ForwardTransferFunction<V, S> {
 
     /** The analysis class this store belongs to. */
     protected final CFAbstractAnalysis<V, S, T> analysis;
@@ -314,7 +315,8 @@ public abstract class CFAbstractTransfer<
             }
 
             CFGLambda lambda = (CFGLambda) underlyingAST;
-            Tree enclosingTree =
+            @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+            @InternedDistinct Tree enclosingTree =
                     TreeUtils.enclosingOfKind(
                             factory.getPath(lambda.getLambdaTree()),
                             new HashSet<>(
@@ -981,7 +983,10 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns true if whole-program inference should be performed. If the tree is in the scope of
-     * a @SuppressWarning, then this method returns false.
+     * a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @return whether to perform whole-program inference on the tree
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
         return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
@@ -989,11 +994,15 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns true if whole-program inference should be performed. If the expressionTree or lhsTree
-     * is in the scope of a @SuppressWarning, then this method returns false.
+     * is in the scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param expressionTree the right-hand side of an assignment
+     * @param lhsTree the left-hand side of an assignment
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-        // Check that infer is true and the tree isn't in scope of a @SuppressWarning
-        // before calling  InternalUtils.symbol(lhs)
+        // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
+        // before calling InternalUtils.symbol(lhs).
         if (!shouldPerformWholeProgramInference(expressionTree)) {
             return false;
         }
@@ -1003,7 +1012,11 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns true if whole-program inference should be performed. If the tree or element is in the
-     * scope of a @SuppressWarning, then this method returns false.
+     * scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @param elt its element
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)

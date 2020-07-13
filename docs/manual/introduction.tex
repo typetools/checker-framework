@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.4.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.5.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -554,16 +554,11 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
-There is one special case.
-\begin{itemize}
-\item
-For the Java 8 version of the Javadoc classes in the JDK's \<com.sun.javadoc> package,
-% are not exposed by ct.sym and therefore cannot be part of an
-% annotated JDK
-use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
+There is one special case.  If an \<.astub> file is shipped with the
+Checker Framework in \<checker/resources/>, then you can
+use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
 The ``\<checker.jar>'' should be literal --- don't provide a path.
 (This special syntax only works for ``\<checker.jar>''.)
-\end{itemize}
 
 
 \subsectionAndLabel{Summary of command-line options}{checker-options}
@@ -640,7 +635,8 @@ More sound (strict) checking: enable errors that are disabled by default
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
 \item \<-AuseConservativeDefaultsForUncheckedCode>
-  Enables/disables conservative defaults in unchecked code.  Takes arguments ``source,bytecode''.
+  Enables conservative defaults, and suppresses all type-checking warnings,
+  in unchecked code.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
   \begin{itemize}
   \item
@@ -694,18 +690,18 @@ Type-checking modes:  enable/disable functionality
   Section~\ref{whole-program-inference}.
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
-\item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning.
+\item \<-AshowSuppressWarningsStrings>
+  With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> keys without a \<\emph{checkername}:> prefix
+  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
   (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
   \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
   your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
 \item \<-ArequirePrefixInWarningSuppressions>
-  Require that the key in a warning suppression annotation begin with a checker
-  warning suppression key.  Otherwise, the suppress warning annotation does not
+  Require that the string in a warning suppression annotation begin with a checker
+  name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
@@ -1520,7 +1516,7 @@ same methodology in different words.
 % LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
 % LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
-% LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
+% LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed

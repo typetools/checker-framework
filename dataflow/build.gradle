@@ -31,3 +31,31 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype(shadowJar.archiveFile.get().toString(), sourcesJar.archiveFile.get().toString(), javadocJar.archiveFile.get().toString(), "${pomFiles}/dataflow-shaded-pom.xml")
     }
 }
+
+task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
+    description 'Test the live variable analysis test for dataflow framework.'
+    inputs.file('tests/live-variable/Expected.txt')
+    inputs.file('tests/live-variable/Test.java')
+
+    outputs.file('tests/live-variable/Out.txt')
+    outputs.file('tests/live-variable/Test.class')
+
+    delete('tests/live-variable/Out.txt')
+    delete('tests/live-variable/Test.class')
+    doLast {
+        javaexec {
+            workingDir = 'tests/live-variable'
+            if (!JavaVersion.current().java9Compatible) {
+                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            }
+            classpath = sourceSets.test.compileClasspath
+            classpath += sourceSets.test.output
+            main = 'livevar.LiveVariable'
+        }
+        exec {
+            workingDir = 'tests/live-variable'
+            executable 'diff'
+            args = ['-u', 'Expected.txt', 'Out.txt']
+        }
+    }
+}

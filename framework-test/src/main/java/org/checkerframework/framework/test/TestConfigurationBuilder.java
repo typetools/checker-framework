@@ -3,10 +3,15 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -93,8 +98,43 @@ public class TestConfigurationBuilder {
             Iterable<String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
+        return buildDefaultConfiguration(
+                testSourcePath,
+                testSourceFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
+    }
+
+    /**
+     * This is the default configuration used by Checker Framework JUnit tests.
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
+     * @param testSourceFiles the Java files that compose the test
+     * @param classpathExtra extra entries for the classpath, needed to compile the source files
+     * @param processors the checkers or other annotation processors to run over the testSourceFiles
+     * @param options the options to the compiler/processors
+     * @param shouldEmitDebugInfo whether or not debug information should be emitted
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
+     */
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            Iterable<File> testSourceFiles,
+            Collection<String> classpathExtra,
+            Iterable<String> processors,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
 
         String classPath = getDefaultClassPath();
+        if (!classpathExtra.isEmpty()) {
+            classPath +=
+                    System.getProperty("path.separator")
+                            + String.join(System.getProperty("path.separator"), classpathExtra);
+        }
+
         File outputDir = getOutputDirFromProperty();
 
         TestConfigurationBuilder builder =
@@ -131,7 +171,12 @@ public class TestConfigurationBuilder {
         List<String> processors = Arrays.asList(checkerName);
 
         return buildDefaultConfiguration(
-                testSourcePath, javaFiles, processors, options, shouldEmitDebugInfo);
+                testSourcePath,
+                javaFiles,
+                Collections.emptyList(),
+                processors,
+                options,
+                shouldEmitDebugInfo);
     }
 
     /** The list of files that contain Java diagnostics to compare against. */
@@ -200,7 +245,7 @@ public class TestConfigurationBuilder {
             errors.add("No processors were specified!");
         }
 
-        final Map<String, String> optionMap = options.getOptions();
+        final Map<String, @Nullable String> optionMap = options.getOptions();
         if (!optionMap.containsKey("-d") || optionMap.get("-d") == null) {
             errors.add("No output directory was specified.");
         }
@@ -247,7 +292,7 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder setOptions(Map<String, String> options) {
+    public TestConfigurationBuilder setOptions(Map<String, @Nullable String> options) {
         this.options.setOptions(options);
         return this;
     }
@@ -270,7 +315,11 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder addOptions(Map<String, String> options) {
+    @SuppressWarnings("nullness:return.type.incompatible") // need @PolyInitialized annotation
+    @RequiresNonNull("this.options")
+    public TestConfigurationBuilder addOptions(
+            @UnknownInitialization(TestConfigurationBuilder.class) TestConfigurationBuilder this,
+            Map<String, @Nullable String> options) {
         this.options.addOptions(options);
         return this;
     }

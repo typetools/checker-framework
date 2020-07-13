@@ -8,10 +8,13 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.Pretty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,9 +26,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -151,6 +157,12 @@ public class FlowExpressions {
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
             return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
+        } else if (receiverNode instanceof BinaryOperationNode) {
+            BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
+            return new BinaryOperation(
+                    bopn,
+                    internalReprOf(provider, bopn.getLeftOperand(), allowNonDeterministic),
+                    internalReprOf(provider, bopn.getRightOperand(), allowNonDeterministic));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType());
@@ -464,9 +476,10 @@ public class FlowExpressions {
 
         /**
          * Returns true if and only if the value this expression stands for cannot be changed (with
-         * respect to ==) by a method call. This is the case for local variables, the self reference
-         * as well as final field accesses for whose receiver {@link #isUnassignableByOtherCode} is
-         * true.
+         * respect to ==) by a method call. This is the case for local variables, the self
+         * reference, final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and
+         * binary operations whose left and right operands are both {@link
+         * #isUnmodifiableByOtherCode}.
          *
          * @see #isUnmodifiableByOtherCode
          */
@@ -484,10 +497,12 @@ public class FlowExpressions {
         public abstract boolean isUnmodifiableByOtherCode();
 
         /**
-         * Returns true if and only if the two receiver are syntactically identical.
+         * Returns true if and only if the two receivers are syntactically identical.
          *
-         * @return true if and only if the two receiver are syntactically identical
+         * @param other the other object to compare to this one
+         * @return true if and only if the two receivers are syntactically identical
          */
+        @EqualsMethod
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
@@ -723,7 +738,14 @@ public class FlowExpressions {
         }
     }
 
+    /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
+    @UsesObjectEquals
     public static class Unknown extends Receiver {
+        /**
+         * Create a new Unknown receiver.
+         *
+         * @param type the Java type of this receiver
+         */
         public Unknown(TypeMirror type) {
             super(type);
         }
@@ -1063,11 +1085,14 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
             if (method.getKind() == ElementKind.CONSTRUCTOR) {
-                return this == obj;
+                return false;
             }
             MethodCall other = (MethodCall) obj;
             return parameters.equals(other.parameters)
@@ -1104,6 +1129,150 @@ public class FlowExpressions {
                 first = false;
             }
             result.append(")");
+            return result.toString();
+        }
+    }
+
+    /** FlowExpression.Receiver for binary operations. */
+    public static class BinaryOperation extends Receiver {
+
+        /** The binary operation kind. */
+        protected final Kind operationKind;
+        /** The binary operation kind for pretty printing. */
+        protected final JCTree.Tag tag;
+        /** The left operand. */
+        protected final Receiver left;
+        /** The right operand. */
+        protected final Receiver right;
+
+        /**
+         * Create a binary operation.
+         *
+         * @param node the binary operation node
+         * @param left the left operand
+         * @param right the right operand
+         */
+        public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
+            super(node.getType());
+            this.operationKind = node.getTree().getKind();
+            this.tag = ((JCTree) node.getTree()).getTag();
+            this.left = left;
+            this.right = right;
+        }
+
+        /**
+         * Returns the operator of this binary operation.
+         *
+         * @return the binary operation kind
+         */
+        public Kind getOperationKind() {
+            return operationKind;
+        }
+
+        /**
+         * Returns the left operand of this binary operation.
+         *
+         * @return the left operand
+         */
+        public Receiver getLeft() {
+            return left;
+        }
+
+        /**
+         * Returns the right operand of this binary operation.
+         *
+         * @return the right operand
+         */
+        public Receiver getRight() {
+            return right;
+        }
+
+        @Override
+        public boolean containsOfClass(Class<? extends Receiver> clazz) {
+            if (getClass() == clazz) {
+                return true;
+            }
+            return left.containsOfClass(clazz) || right.containsOfClass(clazz);
+        }
+
+        @Override
+        public boolean isUnassignableByOtherCode() {
+            return left.isUnassignableByOtherCode() && right.isUnassignableByOtherCode();
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return left.isUnmodifiableByOtherCode() && right.isUnmodifiableByOtherCode();
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof BinaryOperation)) {
+                return false;
+            }
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!(operationKind == biOp.getOperationKind())) {
+                return false;
+            }
+            return left.equals(biOp.left) && right.equals(biOp.right);
+        }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return left.containsModifiableAliasOf(store, other)
+                    || right.containsModifiableAliasOf(store, other);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(operationKind, left, right);
+        }
+
+        @Override
+        public boolean equals(@Nullable Object other) {
+            if (!(other instanceof BinaryOperation)) {
+                return false;
+            }
+            BinaryOperation biOp = (BinaryOperation) other;
+            if (!(operationKind == biOp.getOperationKind())) {
+                return false;
+            }
+            if (isCommutative()) {
+                return (left.equals(biOp.left) && right.equals(biOp.right))
+                        || (left.equals(biOp.right) && right.equals(biOp.left));
+            }
+            return left.equals(biOp.left) && right.equals(biOp.right);
+        }
+
+        /**
+         * Returns true if the binary operation is commutative, e.g., x + y == y + x.
+         *
+         * @return true if the binary operation is commutative
+         */
+        private boolean isCommutative() {
+            switch (operationKind) {
+                case PLUS:
+                case MULTIPLY:
+                case AND:
+                case OR:
+                case XOR:
+                case EQUAL_TO:
+                case NOT_EQUAL_TO:
+                case CONDITIONAL_AND:
+                case CONDITIONAL_OR:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public String toString() {
+            final Pretty pretty = new Pretty(null, true);
+            StringBuilder result = new StringBuilder();
+            result.append(left.toString());
+            result.append(pretty.operatorName(tag));
+            result.append(right.toString());
             return result.toString();
         }
     }
