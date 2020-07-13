@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * A qualifier hierarchy where qualifiers may be represented by annotations with elements.
+ * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
  *
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
@@ -64,12 +64,12 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
      * have elements.
      */
-    protected final Map<QualifierKind, AnnotationMirror> kindToAnnotationMirror;
+    protected final Map<QualifierKind, AnnotationMirror> kindToElementLessQualifier;
 
     /**
-     * Creates a type hierarchy from the given classes.
+     * Creates a QualifierHierarchy from the given classes.
      *
-     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses class of annotations that are the qualifiers
      * @param elements element utils
      */
     protected ComplexQualifierHierarchy(
@@ -77,16 +77,17 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
-        this.topsMap = Collections.unmodifiableMap(createTops());
+        this.topsMap = Collections.unmodifiableMap(createTopsMap());
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         tops.addAll(topsMap.values());
         this.tops = Collections.unmodifiableSet(tops);
 
-        this.bottomsMap = Collections.unmodifiableMap(createBottoms());
+        this.bottomsMap = Collections.unmodifiableMap(createBottomsMao());
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
-        this.kindToAnnotationMirror = createQualifiers();
+
+        this.kindToElementLessQualifier = createElementLessQualifierMap();
 
         for (AnnotationMirror top : tops) {
             // This throws an error if poly is a qualifier that has an element.
@@ -98,7 +99,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
      * QualifierKindHierarchy.)
      *
-     * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses class of annotations that are the qualifiers
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
@@ -113,8 +114,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      *
      * @return the mapping
      */
-    protected Map<QualifierKind, AnnotationMirror> createQualifiers(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap() {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
@@ -125,14 +125,15 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top.
+     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top and
+     * the AnnotationMirror is top in their respective hierarchies.
      *
-     * <p>Subclasses must override this if the top annotation has elements and provides no default.
+     * <p>This implementation works if the top annotation has no elements, or it has elements,
+     * provides a default, and that default is the top. Otherwise, subclasses must override this.
      *
-     * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top
+     * @return a mapping from top QualifierKind to top AnnotationMirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createTops(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+    protected Map<QualifierKind, AnnotationMirror> createTopsMap() {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
             topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -141,15 +142,15 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom.
+     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom
+     * and the AnnotationMirror is bottom in their respective hierarchies.
      *
-     * <p>Subclasses must override this if the bottom annotation has elements and provides not
-     * default.
+     * <p>This implementation works if the bottom annotation has no elements, or it has elements,
+     * provides a default, and that default is the bottom. Otherwise, subclasses must override this.
      *
-     * @return a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom
+     * @return a mapping from bottom QualifierKind to bottom AnnotationMirror
      */
-    protected Map<QualifierKind, AnnotationMirror> createBottoms(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+    protected Map<QualifierKind, AnnotationMirror> createBottomsMao() {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -199,19 +200,18 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public @Nullable AnnotationMirror getPolymorphicAnnotation(
-            @UnderInitialization ComplexQualifierHierarchy this, AnnotationMirror start) {
-        QualifierKind poly = getQualifierKind(start).getPolymorphic();
-        if (poly == null) {
+    public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        QualifierKind polyKind = getQualifierKind(start).getPolymorphic();
+        if (polyKind == null) {
             return null;
         }
-        if (kindToAnnotationMirror.containsKey(poly)) {
-            return kindToAnnotationMirror.get(poly);
-        } else {
+        AnnotationMirror poly = kindToElementLessQualifier.get(polyKind);
+        if (poly == null) {
             throw new TypeSystemError(
                     "Poly %s has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation.",
-                    poly);
+                    polyKind);
         }
+        return poly;
     }
 
     @Override
@@ -266,7 +266,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (lub.hasElements()) {
             return leastUpperBound(a1, qual1, a2, qual2);
         }
-        return kindToAnnotationMirror.get(lub);
+        return kindToElementLessQualifier.get(lub);
     }
 
     /**
@@ -278,7 +278,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * @param qual1 QualifierKind for {@code a1}
      * @param a2 second annotation
      * @param qual2 QualifierKind for {@code a2}
-     * @return the least upper bound between {@code a1} and {@code a2}.
+     * @return the least upper bound between {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror leastUpperBound(
             AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
@@ -294,7 +294,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         if (glb.hasElements()) {
             return greatestLowerBound(a1, qual1, a2, qual2);
         }
-        return kindToAnnotationMirror.get(glb);
+        return kindToElementLessQualifier.get(glb);
     }
 
     /**
@@ -306,7 +306,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
      * @param qual1 QualifierKind for {@code a1}
      * @param a2 second annotation
      * @param qual2 QualifierKind for {@code a2}
-     * @return the greatest lower bound between {@code a1} and {@code a2}.
+     * @return the greatest lower bound between {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror greatestLowerBound(
             AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);

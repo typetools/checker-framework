@@ -19,9 +19,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * A qualifier hierarchy where no qualifier has arguments; that is, no qualifier is represented by
- * an annotation with elements. The meta-annotation {@link
- * org.checkerframework.framework.qual.SubtypeOf} specifies the hierarchy.
+ * A {@link QualifierHierarchy} where no qualifier has arguments; that is, no qualifier is
+ * represented by an annotation with elements. The meta-annotation {@link
+ * org.checkerframework.framework.qual.SubtypeOf} specifies the subtyping relationships.
  *
  * <p>It uses a {@link QualifierKindHierarchy} to model the relationships between qualifiers.
  * Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass of
@@ -42,13 +42,13 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     /** Mapping from {@link QualifierKind} to its corresponding {@link AnnotationMirror}. */
     protected final Map<QualifierKind, AnnotationMirror> kindToAnnotationMirror;
 
-    /** Set of all annotations in the hierarchy. */
+    /** Set of all annotations in all the hierarchies. */
     protected final Set<? extends AnnotationMirror> qualifiers;
 
     /**
-     * Creates a type hierarchy from the given classes.
+     * Creates a QualifierHierarchy from the given classes.
      *
-     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses classes of annotations that are the qualifiers
      * @param elements element utils
      */
     public SimpleQualifierHierarchy(
@@ -68,7 +68,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
      * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
      * QualifierKindHierarchy.)
      *
-     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+     * @param qualifierClasses classes of annotations that are the qualifiers
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
@@ -132,9 +132,8 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     /**
      * Returns the {@link QualifierKind} for the given annotation.
      *
-     * @param anno an annotation that is a qualifier in this hierarchy
+     * @param anno an annotation that is a qualifier in this
      * @return the {@code QualifierKind}
-     * @throws BugInCF if {@code anno} is not a qualifier in this hierarchy
      */
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
