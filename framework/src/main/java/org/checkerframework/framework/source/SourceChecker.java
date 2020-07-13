@@ -943,21 +943,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Given an array and two values, creates an array with all the values.
-     *
-     * @param array the array to extend
-     * @param elt1 the first element to add
-     * @param elt2 the second element to add
-     * @return a copy of {@code array}, with two elements added
-     */
-    public static Object[] arrayPlusTwoElements(Object[] array, Object elt1, Object elt2) {
-        Object[] result = Arrays.copyOf(array, array.length + 2);
-        result[array.length] = elt1;
-        result[array.length + 1] = elt2;
-        return result;
-    }
-
-    /**
      * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
      * messager.
      *

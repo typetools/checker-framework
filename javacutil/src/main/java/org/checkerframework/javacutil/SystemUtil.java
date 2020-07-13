@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -224,5 +225,21 @@ public class SystemUtil {
                             toolsJarFilename, javaHome, System.getProperty("java.home")));
         }
         return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+    }
+
+    /**
+     * Given an array and two values, creates an array with all the values. The two extra values are
+     * at the end of the returned array.
+     *
+     * @param array the array to extend
+     * @param elt1 the first element to add
+     * @param elt2 the second element to add
+     * @return a copy of {@code array}, with two elements added at the end
+     */
+    public static Object[] arrayPlusTwoElements(Object[] array, Object elt1, Object elt2) {
+        Object[] result = Arrays.copyOf(array, array.length + 2);
+        result[array.length] = elt1;
+        result[array.length + 1] = elt2;
+        return result;
     }
 }
