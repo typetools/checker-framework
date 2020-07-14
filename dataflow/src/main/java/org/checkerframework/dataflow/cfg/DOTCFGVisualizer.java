@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
-@SuppressWarnings("initialization.fields.uninitialized") // uses init method
+@SuppressWarnings("nullness:initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
                 V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
         extends AbstractCFGVisualizer<V, S, T> {
@@ -78,7 +78,7 @@ public class DOTCFGVisualizer<
         return res;
     }
 
-    @SuppressWarnings("enhancedfor.type.incompatible")
+    @SuppressWarnings("keyfor:enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
