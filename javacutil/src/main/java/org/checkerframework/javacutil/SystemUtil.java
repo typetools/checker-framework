@@ -237,6 +237,7 @@ public class SystemUtil {
      * @return a copy of {@code array}, with two elements added at the end
      */
     public static Object[] arrayPlusTwoElements(Object[] array, Object elt1, Object elt2) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
         Object[] result = Arrays.copyOf(array, array.length + 2);
         result[array.length] = elt1;
         result[array.length + 1] = elt2;
