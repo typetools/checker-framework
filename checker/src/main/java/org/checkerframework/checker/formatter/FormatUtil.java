@@ -11,9 +11,10 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** This class provides a collection of utilities to ease working with format strings. */
-// TODO @AnnotatedFor("nullness")
+@AnnotatedFor("nullness")
 public class FormatUtil {
 
     /**
