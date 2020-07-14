@@ -2536,7 +2536,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
     }
 
-    /** Extract the version of the Checker Framework */
+    /**
+     * Extract the version of the Checker Framework
+     *
+     * @throws IOException if unable to read docs/developer/release/release.properties or
+     *     docs/examples/MavenExample/pom.xml file
+     * @throws NullPointerException if tag present in release.properties for Checker Framework
+     *     version is not found in docs/examples/MavenExample/pom.xml
+     * @return Checker Framework version {@link String}
+     */
     private String getCheckerVersion() throws IOException {
         String version = null;
         String RLS_FILE = "/docs/developer/release/release.properties";
