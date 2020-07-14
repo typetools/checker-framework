@@ -33,7 +33,6 @@ public abstract class QualifierHierarchy {
      *
      * @return whether this is valid
      */
-    // TODO:  @Deprecated
     public boolean isValid() {
         return true;
     }

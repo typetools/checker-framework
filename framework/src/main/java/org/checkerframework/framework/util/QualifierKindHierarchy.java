@@ -13,9 +13,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -354,9 +354,7 @@ public class QualifierKindHierarchy {
         this.lubs = createLubsMap();
         this.glbs = createGlbsMap();
 
-        @SuppressWarnings("nullness:assignment.type.incompatible") // all fields are initialized.
-        @Initialized QualifierKindHierarchy initThis = this;
-        initThis.verifyHierarchy(directSuperMap);
+        verifyHierarchy(directSuperMap);
     }
 
     /**
@@ -366,7 +364,10 @@ public class QualifierKindHierarchy {
      *     polymorphic annotation does not have a {@link SubtypeOf} meta-annotation
      * @throws TypeSystemError if the hierarchy isn't valid
      */
-    protected void verifyHierarchy(Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
+    @RequiresNonNull({"this.nameToQualifierKind", "this.tops", "this.bottoms"})
+    protected void verifyHierarchy(
+            @UnderInitialization QualifierKindHierarchy this,
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
             boolean isPoly = qualifierKind.isPoly();
             boolean hasSubtypeOfAnno = directSuperMap.containsKey(qualifierKind);
@@ -503,6 +504,7 @@ public class QualifierKindHierarchy {
                     "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
                     bottom.getCanonicalName());
         }
+
         Set<QualifierKind> currentLeaves = new TreeSet<>(nameToQualifierKind.values());
         currentLeaves.remove(bottomKind);
         directSuperMap.forEach(
@@ -510,7 +512,11 @@ public class QualifierKindHierarchy {
                     currentLeaves.removeAll(supers);
                 });
         Set<QualifierKind> bottomDirectSuperQuals = directSuperMap.get(bottomKind);
-        bottomDirectSuperQuals.addAll(currentLeaves);
+        if (bottomDirectSuperQuals == null) {
+            directSuperMap.put(bottomKind, currentLeaves);
+        } else {
+            bottomDirectSuperQuals.addAll(currentLeaves);
+        }
     }
 
     /**
@@ -578,7 +584,7 @@ public class QualifierKindHierarchy {
      *
      * <p>Requires that tops has been initialized.
      */
-    @RequiresNonNull("this.nameToQualifierKind")
+    @RequiresNonNull({"this.nameToQualifierKind", "this.tops"})
     protected void initializePolymorphicQualifiers(
             @UnderInitialization QualifierKindHierarchy this) {
         for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
@@ -588,7 +594,7 @@ public class QualifierKindHierarchy {
                 continue;
             }
             qualifierKind.poly = qualifierKind;
-            String topName = polyMetaAnno.value().getCanonicalName();
+            String topName = annotationClassName(polyMetaAnno.value());
             if (nameToQualifierKind.containsKey(topName)) {
                 qualifierKind.top = nameToQualifierKind.get(topName);
             } else if (topName.equals(Annotation.class.getCanonicalName())) {
@@ -620,11 +626,11 @@ public class QualifierKindHierarchy {
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
      */
-    @RequiresNonNull("this.nameToQualifierKind")
+    @RequiresNonNull({"this.nameToQualifierKind", "this.tops", "this.bottoms"})
     protected void initializeQualifierKindFields(
             @UnderInitialization QualifierKindHierarchy this,
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
-        for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
+        for (QualifierKind qualifierKind : directSuperMap.keySet()) {
             if (!qualifierKind.isPoly()) {
                 qualifierKind.strictSuperTypes = findAllTheSupers(qualifierKind, directSuperMap);
             }
@@ -680,25 +686,32 @@ public class QualifierKindHierarchy {
      */
     private Set<QualifierKind> findAllTheSupers(
             @UnderInitialization QualifierKindHierarchy this,
-            QualifierKind qualifierKind,
+            @KeyFor("#2") QualifierKind qualifierKind,
             Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         Queue<QualifierKind> queue = new ArrayDeque<>(directSuperMap.get(qualifierKind));
         Set<QualifierKind> allSupers = new TreeSet<>(directSuperMap.get(qualifierKind));
         Set<QualifierKind> visited = new HashSet<>();
         while (!queue.isEmpty()) {
-            QualifierKind superQual = queue.remove();
-            if (superQual == qualifierKind) {
+            QualifierKind superQualKind = queue.remove();
+            if (superQualKind == qualifierKind) {
                 throw new TypeSystemError("Cycle in hierarchy: %s", qualifierKind);
             }
-            if (visited.contains(superQual)) {
+            if (visited.contains(superQualKind)) {
                 continue;
             }
-            visited.add(superQual);
-            if (superQual.isPoly()) {
+            visited.add(superQualKind);
+            if (superQualKind.isPoly()) {
                 continue;
             }
-            queue.addAll(directSuperMap.get(superQual));
-            allSupers.addAll(directSuperMap.get(superQual));
+            if (directSuperMap.containsKey(superQualKind)) {
+                Set<QualifierKind> superSuperQuals = directSuperMap.get(superQualKind);
+                queue.addAll(superSuperQuals);
+                allSupers.addAll(superSuperQuals);
+            } else {
+                throw new TypeSystemError(
+                        "Found a super qualifier kind not a key in the directSuperMap. Found: %s",
+                        superQualKind);
+            }
         }
         return allSupers;
     }

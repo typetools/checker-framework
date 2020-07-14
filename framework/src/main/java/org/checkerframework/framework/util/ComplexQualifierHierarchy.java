@@ -89,11 +89,15 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
         this.bottoms = Collections.unmodifiableSet(bottoms);
 
         this.kindToElementLessQualifier = createElementLessQualifierMap();
+    }
 
+    @Override
+    public boolean isValid() {
         for (AnnotationMirror top : tops) {
             // This throws an error if poly is a qualifier that has an element.
             getPolymorphicAnnotation(top);
         }
+        return true;
     }
 
     /**

@@ -554,6 +554,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (qualHierarchy == null) {
             throw new TypeSystemError(
                     "AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+        } else if (!qualHierarchy.isValid()) {
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory: invalid qualifier hierarchy: %s %s ",
+                    qualHierarchy.getClass(), qualHierarchy);
         }
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
