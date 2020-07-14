@@ -197,7 +197,7 @@ public class StubParser {
      *     this map.
      * @param isJdkAsStub whether or not the stub file is a part of the JDK
      */
-    public StubParser(
+    private StubParser(
             String filename,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
@@ -300,7 +300,8 @@ public class StubParser {
     private Map<String, TypeElement> getAllStubAnnotations() {
         Map<String, TypeElement> result = new HashMap<>();
 
-        assert stubUnit.getCompilationUnits().size() == 1;
+        // TODO: The size can be greater than 1, but this ignores all but the first element.
+        assert !stubUnit.getCompilationUnits().isEmpty();
         CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
 
         if (cu.getImports() == null) {
@@ -487,6 +488,8 @@ public class StubParser {
     /**
      * Delegate to the Stub Parser to parse the stub file to an AST, and save it in {@link
      * stubUnit}. Subsequently, all work uses the AST.
+     *
+     * @param inputStream the stream from which to read a stub file
      */
     private void parseStubUnit(InputStream inputStream) {
         if (debugStubParser) {
@@ -511,7 +514,11 @@ public class StubParser {
         processStubUnit(this.stubUnit);
     }
 
-    /** Process the given StubUnit. */
+    /**
+     * Process the given StubUnit.
+     *
+     * @param index the StubUnit to process
+     */
     private void processStubUnit(StubUnit index) {
         for (CompilationUnit cu : index.getCompilationUnits()) {
             processCompilationUnit(cu);
@@ -550,8 +557,12 @@ public class StubParser {
     }
 
     /**
+     * Process a type declaration
+     *
+     * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
+     * @param packageAnnos the annotation declared in the package
      */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
@@ -633,6 +644,8 @@ public class StubParser {
     /**
      * Returns the type's type parameter declarations.
      *
+     * @param decl a type declaration
+     * @praam elt the type's element
      * @return the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processType(
@@ -1567,6 +1580,9 @@ public class StubParser {
     /**
      * Given a fully-qualified type name, return a TypeElement for it, or null if none exists. Also
      * cache in importedTypes.
+     *
+     * @param name a fully-qualified type name
+     * @return a TypeElement for the name, or null
      */
     private @Nullable TypeElement getTypeElementOrNull(String name) {
         TypeElement typeElement = elements.getTypeElement(name);
@@ -1657,7 +1673,14 @@ public class StubParser {
         }
     }
 
-    /** Returns the value of {@code expr}, or null if some problem occurred getting the value. */
+    /**
+     * Returns the value of {@code expr}, or null if some problem occurred getting the value.
+     *
+     * @param name the name of an annotation element/argument, used for diagnostic messages
+     * @param expr the expression to determine the value of
+     * @param valueKind the type of the result
+     * @return the value of {@code expr}, or null if some problem occurred getting the value
+     */
     private @Nullable Object getValueOfExpressionInAnnotation(
             String name, Expression expr, TypeKind valueKind) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
@@ -2136,6 +2159,12 @@ public class StubParser {
          */
         public @Nullable String className;
 
+        /**
+         * Create a new FqName, which represents a class.
+         *
+         * @param packageName name of the package, or null
+         * @param unqualified name of the type, including outer class names if any. May be null.
+         */
         public FqName(String packageName, String className) {
             this.packageName = packageName;
             this.className = className;
