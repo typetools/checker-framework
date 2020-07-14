@@ -289,6 +289,8 @@ public class StubParser {
         return result;
     }
 
+    // TODO: I'm not sure what "found" means.  This method seems to collect only those that are
+    // imported, so it will miss ones whose fully-qualified name is used in the stub file.
     /**
      * Returns all annotations found in the stub file, as a value for {@link #allStubAnnotations}.
      * Note that this also modifies {@link #importedConstants} and {@link #importedTypes}.
@@ -506,6 +508,7 @@ public class StubParser {
                             "No supported annotations found! Does stub file %s import them?",
                             filename));
         }
+        // Annotations in java.lang might be used without an import statement, so add them in case.
         allStubAnnotations.putAll(annosInPackage(findPackage("java.lang")));
     }
 
