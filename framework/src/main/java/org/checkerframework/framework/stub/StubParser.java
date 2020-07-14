@@ -2166,7 +2166,8 @@ public class StubParser {
          * Create a new FqName, which represents a class.
          *
          * @param packageName name of the package, or null
-         * @param unqualified name of the type, including outer class names if any. May be null.
+         * @param className unqualified name of the type, including outer class names if any. May be
+         *     null.
          */
         public FqName(String packageName, String className) {
             this.packageName = packageName;
