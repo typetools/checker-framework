@@ -447,12 +447,13 @@ public class FlowExpressions {
     }
 
     /**
-     * This class represents a Java expression and its type. However, it does not represent all
-     * possible Java expressions (for example, it does not represent a ternary expression; use
-     * {@link FlowExpressions.Unknown} for unrepresentable expressions). Furthermore, it supports
-     * some <a
+     * This class represents a Java expression and its type. It does not represent all possible Java
+     * expressions (for example, it does not represent a ternary expression; use {@link
+     * FlowExpressions.Unknown} for unrepresentable expressions). Furthermore, its string syntax
+     * supports some <a
      * href="https://checkerframework.org/manual/#java-expressions-as-arguments">extensions</a>,
-     * notably {@code <self>} and {@code #1} for formal parameters.
+     * notably {@code <self>} and {@code #1} for formal parameters. (There are not special
+     * subclasses (AST nodes) for the extensions.)
      *
      * <p>This class's representation is like an AST: subparts are also expressions. For declared
      * names (fields, local variables, and methods), it also contains an Element.
