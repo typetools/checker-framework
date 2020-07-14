@@ -128,15 +128,6 @@ public class DefaultsSignedness {
         // :: error: (assignment.type.incompatible)
         conDouble = testDouble;
 
-        // Test chars
-        @Signed char sinChar;
-        @SignednessGlb char conChar;
-
-        sinChar = testChar;
-
-        // :: error: (assignment.type.incompatible)
-        conChar = testChar;
-
         /*
         // Test boxed bytes
         @Signed Byte sinBoxedByte;
