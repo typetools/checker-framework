@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signedness.qual.Signed;
@@ -28,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The type factory for the Signedness Checker.
@@ -163,11 +165,29 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the tree is a local variable and the type is byte, short, int, or long, then add the
-     * UnknownSignedness annotation so that dataflow can refine it.
+     * If the tree is in {@link TypeUseLocation#LOCAL_VARIABLE} and the type is byte, short, int,
+     * long, Byte, Short, Integer or Long , then add the UnknownSignedness so that dataflow can
+     * refine it.
+     *
+     * @param tree some tree
+     * @param type type to which UnknownSignedness is added
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
+            case DECLARED:
+                String qualifiedName =
+                        TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType())
+                                .toString();
+                if (qualifiedName.equals("java.lang.Byte")
+                        || qualifiedName.equals("java.lang.Short")
+                        || qualifiedName.equals("java.lang.Integer")
+                        || qualifiedName.equals("java.lang.Long")) {
+                    QualifierDefaults defaults = new QualifierDefaults(elements, this);
+                    defaults.addCheckedCodeDefault(
+                            UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+                    defaults.annotate(tree, type);
+                }
+                break;
             case BYTE:
             case SHORT:
             case INT:
