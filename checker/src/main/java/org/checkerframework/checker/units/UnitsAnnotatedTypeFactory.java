@@ -15,7 +15,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.units.qual.MixedUnits;
@@ -25,6 +27,7 @@ import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -41,6 +44,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
@@ -543,6 +547,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Qualifier Hierarchy for the Units Checker. */
+    @AnnotatedFor("nullness")
     protected class UnitsQualifierHierarchy extends ComplexQualifierHierarchy {
         /** Constructor. */
         public UnitsQualifierHierarchy() {
@@ -596,6 +601,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** UnitsQualifierKindHierarchy */
+    @AnnotatedFor("nullness")
     protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
 
         /**
@@ -622,17 +628,23 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param elements element utils
          * @return the map
          */
+        @RequiresNonNull("this.nameToQualifierKind")
         private Map<QualifierKind, AnnotationMirror> createDirectSuperQualifierMap(
-                Elements elements) {
+                @UnderInitialization UnitsQualifierKindHierarchy this, Elements elements) {
             Map<QualifierKind, AnnotationMirror> directSuperType = new TreeMap<>();
-            for (QualifierKind qualifierKind : allQualifierKinds()) {
+            for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
                 QualifierKind directSuperTypeKind = getDirectSuperQualifierKind(qualifierKind);
                 AnnotationMirror directSuperTypeAnno;
                 try {
                     directSuperTypeAnno =
                             AnnotationBuilder.fromName(elements, directSuperTypeKind.getName());
                 } catch (BugInCF ex) {
-                    throw new BugInCF("Unit annotations must have a default for all elements.");
+                    throw new TypeSystemError(
+                            "Unit annotations must have a default for all elements.");
+                }
+                if (directSuperTypeAnno == null) {
+                    throw new TypeSystemError(
+                            "Could not create AnnotationMirror: %s", directSuperTypeAnno);
                 }
                 directSuperType.put(qualifierKind, directSuperTypeAnno);
             }
@@ -645,7 +657,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param qualifierKind qualifier kind
          * @return direct super qualifier kind
          */
-        private QualifierKind getDirectSuperQualifierKind(QualifierKind qualifierKind) {
+        private QualifierKind getDirectSuperQualifierKind(
+                @UnderInitialization UnitsQualifierKindHierarchy this,
+                QualifierKind qualifierKind) {
             if (qualifierKind.isTop()) {
                 return qualifierKind;
             }

@@ -243,7 +243,7 @@ public class QualifierKindHierarchy {
      * A mapping from canonical name of a qualifier class to the QualifierKind object representing
      * that class.
      */
-    private final NavigableMap<@Interned String, QualifierKind> nameToQualifierKind;
+    protected final NavigableMap<@Interned String, QualifierKind> nameToQualifierKind;
 
     /** All the qualifier kinds that are the top qualifier in their hierarchy. */
     private final Set<QualifierKind> tops;
