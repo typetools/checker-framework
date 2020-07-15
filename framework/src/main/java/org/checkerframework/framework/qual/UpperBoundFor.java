@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * annotation should be the upper bound, and the default, for
  *
  * <ul>
- *   <li>all use of a particular type, and
+ *   <li>all uses of a particular type, and
  *   <li>all uses of a particular kind of type.
  * </ul>
  *
