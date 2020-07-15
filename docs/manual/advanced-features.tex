@@ -96,7 +96,8 @@ with some qualifier.
 This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
 default annotations for uses of the type; see Section~\ref{default-for-use})
 
-An upper bound can also be specified by the type-system designer using the meta-annotation
+If it is not possible to annotate the class's definition,
+the type-system designer can specify an upper bound by using the meta-annotation
 \refqualclass{framework/qual}{UpperBoundFor}.
 
 If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
@@ -128,8 +129,8 @@ Due to existing type rules, an expression of type \<A MyClass> can only be used 
 These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
 its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
-If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
-then important APIs and common coding paradigms will no longer type-check.
+If the framework were to forbid expressions and local variables from having types inconsistent with the class annotation,
+then important APIs and common coding paradigms would no longer type-check.
 
 Consider the annotation
 \begin{Verbatim}
@@ -210,7 +211,8 @@ rules are used in order, until one applies.
   (Section~\ref{default-for-use})
 \item
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
-  explicitly written on the declaration of \<MyClass>. (Section~\ref{default-for-use})
+  explicitly written on the declaration of \<MyClass>, or specified via
+  \refqualclass{framework/qual}{UpperBoundFor}. (Section~\ref{default-for-use})
 \item
   The qualifier with a meta-annotation \<@DefaultFor(types = MyClass.class)>. (Section~\ref{default-for-use})
 \item

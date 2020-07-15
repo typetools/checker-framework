@@ -112,21 +112,13 @@ public class DefaultsSignedness {
 
         // Test floats
         @Signed float sinFloat;
-        @SignednessGlb float conFloat;
 
         sinFloat = testFloat;
 
-        // :: error: (assignment.type.incompatible)
-        conFloat = testFloat;
-
         // Test doubles
         @Signed double sinDouble;
-        @SignednessGlb double conDouble;
 
         sinDouble = testDouble;
-
-        // :: error: (assignment.type.incompatible)
-        conDouble = testDouble;
 
         /*
         // Test boxed bytes
