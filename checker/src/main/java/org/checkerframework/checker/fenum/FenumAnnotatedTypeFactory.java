@@ -2,7 +2,6 @@ package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -97,27 +96,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    /** FenumQualifierKindHierarchy. */
-    protected static class FenumQualifierKindHierarchy extends QualifierKindHierarchy {
-
-        /**
-         * Create FenumQualifierKindHierarchy.
-         *
-         * @param qualifierClasses qualifier classes
-         */
-        public FenumQualifierKindHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses) {
-            super(qualifierClasses);
-        }
-
-        @Override
-        protected void specifyBottom(
-                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-                Class<? extends Annotation> bottom) {
-            super.specifyBottom(directSuperMap, FenumBottom.class);
-        }
-    }
-
     /** Fenum qualifier hierarchy */
     protected class FenumQualifierHierarchy extends ComplexQualifierHierarchy {
 
@@ -140,7 +118,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected QualifierKindHierarchy createQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses) {
-            return new FenumQualifierKindHierarchy(qualifierClasses);
+            return new QualifierKindHierarchy(qualifierClasses, FenumBottom.class);
         }
 
         @Override

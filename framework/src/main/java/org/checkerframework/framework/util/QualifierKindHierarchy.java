@@ -344,9 +344,26 @@ public class QualifierKindHierarchy {
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      */
     public QualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
+        this(qualifierClasses, null);
+    }
+
+    /**
+     * Creates a {@link QualifierKindHierarchy}. Also, creates and initializes all its qualifier
+     * kinds.
+     *
+     * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
+     * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
+     * type systems, uses this constructor. Otherwise, use the other constructor.
+     *
+     * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
+     * @param bottom the bottom qualifier of this hierarchy
+     */
+    public QualifierKindHierarchy(
+            Collection<Class<? extends Annotation>> qualifierClasses,
+            @Nullable Class<? extends Annotation> bottom) {
         this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
         Map<QualifierKind, Set<QualifierKind>> directSuperMap = createDirectSuperMap();
-        specifyBottom(directSuperMap, null);
+        setBottom(bottom, directSuperMap);
         this.tops = createTopsSet(directSuperMap);
         this.bottoms = createBottomsSet(directSuperMap);
         initializePolymorphicQualifiers();
@@ -356,7 +373,6 @@ public class QualifierKindHierarchy {
 
         verifyHierarchy(directSuperMap);
     }
-
     /**
      * Verifies that the {@link QualifierKindHierarchy} is a valid hierarchy.
      *
@@ -470,31 +486,20 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Set {@code bottom} to the given class and modify {@code directSuperMap} to add all leaves to
-     * its super qualifier kinds. Leaves are qualifier kinds that are not super qualifier kinds of
-     * another qualifier kind.
+     * If {@code bottom} is nonnull, then this method sets bottom to the given class and modify
+     * {@code directSuperMap} to add all leaves to its super qualifier kinds. Leaves are qualifier
+     * kinds that are not super qualifier kinds of another qualifier kind.
      *
-     * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
-     * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
-     * type systems, override this method and call super with the bottom class. For example,
-     *
-     * <pre>
-     * {@code @Override
-     *  protected void specifyBottom(Map<QualifierKind, Set<QualifierKind>> directSuperMap, Class<? extends Annotation> bottom) {
-     *      super.specifyBottom(directSuperMap, UnitsBottom.class);
-     *  }
-     * }</pre>
+     * <p>If {@code bottom} is {@code null}, then this method does nothing.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers; side-effected by this method
-     * @param bottom the class of the bottom qualifier or {@code null}; if {@code null}, this method
-     *     has no effect
      */
     @RequiresNonNull("this.nameToQualifierKind")
-    protected void specifyBottom(
+    private void setBottom(
             @UnderInitialization QualifierKindHierarchy this,
-            Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-            @Nullable Class<? extends Annotation> bottom) {
+            @Nullable Class<? extends Annotation> bottom,
+            Map<QualifierKind, Set<QualifierKind>> directSuperMap) {
         if (bottom == null) {
             return;
         }

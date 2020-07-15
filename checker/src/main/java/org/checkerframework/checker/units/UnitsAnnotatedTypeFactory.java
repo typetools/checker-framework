@@ -612,7 +612,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         public UnitsQualifierKindHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-            super(qualifierClasses);
+            super(qualifierClasses, UnitsBottom.class);
             directSuperQualifierMap = createDirectSuperQualifierMap(elements);
         }
 
@@ -658,13 +658,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 superQuals.removeAll(lowest);
             }
             throw new BugInCF("No direct super qualifier found for %s", qualifierKind);
-        }
-
-        @Override
-        protected void specifyBottom(
-                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-                Class<? extends Annotation> b) {
-            super.specifyBottom(directSuperMap, UnitsBottom.class);
         }
     }
 
