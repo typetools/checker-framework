@@ -543,11 +543,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (expression.isNameExpr()) {
             return trueVariables.contains(expression.asNameExpr().getNameAsString());
         } else if (expression.isBinaryExpr()) {
-            if (expression.asBinaryExpr().getOperator().equals(BinaryExpr.Operator.OR)) {
+            if (expression.asBinaryExpr().getOperator() == BinaryExpr.Operator.OR) {
                 return evaluateBooleanExpression(expression.asBinaryExpr().getLeft(), trueVariables)
                         || evaluateBooleanExpression(
                                 expression.asBinaryExpr().getRight(), trueVariables);
-            } else if (expression.asBinaryExpr().getOperator().equals(BinaryExpr.Operator.AND)) {
+            } else if (expression.asBinaryExpr().getOperator() == BinaryExpr.Operator.AND) {
                 return evaluateBooleanExpression(expression.asBinaryExpr().getLeft(), trueVariables)
                         && evaluateBooleanExpression(
                                 expression.asBinaryExpr().getRight(), trueVariables);
@@ -555,10 +555,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         } else if (expression.isEnclosedExpr()) {
             return evaluateBooleanExpression(expression.asEnclosedExpr().getInner(), trueVariables);
         } else if (expression.isUnaryExpr()) {
-            if (expression
-                    .asUnaryExpr()
-                    .getOperator()
-                    .equals(UnaryExpr.Operator.LOGICAL_COMPLEMENT)) {
+            if (expression.asUnaryExpr().getOperator() == UnaryExpr.Operator.LOGICAL_COMPLEMENT) {
                 return !evaluateBooleanExpression(
                         expression.asUnaryExpr().getExpression(), trueVariables);
             }
