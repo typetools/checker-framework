@@ -166,11 +166,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * If the tree is in {@link TypeUseLocation#LOCAL_VARIABLE} and the type is byte, short, int,
-     * long, Byte, Short, Integer or Long , then add the UnknownSignedness so that dataflow can
+     * long, Byte, Short, Integer, or Long, then add {@code @UnknownSignedness} so that dataflow can
      * refine it.
      *
      * @param tree some tree
-     * @param type type to which UnknownSignedness is added
+     * @param type the tree's type; this method adds {@code @UnknownSignedness} to it
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
