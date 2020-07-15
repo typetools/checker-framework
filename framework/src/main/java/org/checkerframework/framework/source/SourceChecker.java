@@ -2542,7 +2542,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @throws BugInCF if property git.build.version is not present in git.properties
      * @return Checker Framework version
      */
-    private String getCheckerVersion() throws IOException {
+    private String getCheckerVersion() {
         Properties gitProperties = getProperties(getClass(), "/git.properties");
         String version = gitProperties.getProperty("git.build.version");
         if (version != null) {
