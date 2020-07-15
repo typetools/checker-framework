@@ -2537,31 +2537,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Extract the version of the Checker Framework
+     * Returns the version of the Checker Framework.
      *
-     * @throws IOException if unable to read docs/developer/release/release.properties or
-     *     docs/examples/MavenExample/pom.xml file
-     * @throws NullPointerException if tag present in release.properties for Checker Framework
-     *     version is not found in docs/examples/MavenExample/pom.xml
-     * @return Checker Framework version {@link String}
+     * @throws BugInCF if property git.build.version is not present in git.properties
+     * @return Checker Framework version
      */
     private String getCheckerVersion() throws IOException {
-        String version = null;
-        String RLS_FILE = "/docs/developer/release/release.properties";
-        Properties releaseProperties = getProperties(getClass(), RLS_FILE);
-        String startTag = releaseProperties.getProperty("checkers.ver.0");
-        String endTag = releaseProperties.getProperty("checkers.ver.1");
-        String XML_FILE = "/docs/examples/MavenExample/pom.xml";
-        InputStream in = getClass().getResourceAsStream(XML_FILE);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            if (line.split(startTag).length > 1) {
-                version = line.split(startTag)[1].split(endTag)[0];
-                return version;
-            }
+        Properties gitProperties = getProperties(getClass(), "/git.properties");
+        String version = gitProperties.getProperty("git.build.version");
+        if (version != null) {
+            return version;
         }
-        throw new NullPointerException(
-                "Could not find the version tag as mentioned in release.properties");
+        throw new BugInCF("Could not find the version in git.properties");
     }
 }
