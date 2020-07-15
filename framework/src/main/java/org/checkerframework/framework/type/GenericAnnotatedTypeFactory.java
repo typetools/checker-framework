@@ -1595,7 +1595,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (tree.getKind() == Kind.VARIABLE) {
             VariableTree varTree = (VariableTree) tree;
             Element elt = TreeUtils.elementFromDeclaration(varTree);
-            if (varTree.getInitializer() != null) {
+            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && varTree.getInitializer() != null) {
                 Set<AnnotationMirror> initializerTypes =
                         getAnnotatedType(varTree.getInitializer()).getAnnotations();
                 Set<AnnotationMirror> qualifierTypes = AnnotationUtils.createAnnotationSet();
