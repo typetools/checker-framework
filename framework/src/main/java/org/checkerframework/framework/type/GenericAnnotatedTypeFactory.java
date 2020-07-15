@@ -1592,6 +1592,24 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
+        if (tree.getKind() == Kind.VARIABLE) {
+            VariableTree varTree = (VariableTree) tree;
+            Element elt = TreeUtils.elementFromDeclaration(varTree);
+            if (varTree.getInitializer() != null) {
+                Set<AnnotationMirror> initializerTypes =
+                        getAnnotatedType(varTree.getInitializer()).getAnnotations();
+                Set<AnnotationMirror> qualifierTypes = AnnotationUtils.createAnnotationSet();
+                for (AnnotationMirror initializerType : initializerTypes) {
+                    if (hasQualifierParameterInHierarchy(
+                            type, qualHierarchy.getTopAnnotation(initializerType))) {
+                        qualifierTypes.add(initializerType);
+                    }
+                }
+
+                type.addMissingAnnotations(qualifierTypes);
+            }
+        }
+
         applyQualifierParameterDefaults(TreeUtils.elementFromTree(tree), type);
     }
 
