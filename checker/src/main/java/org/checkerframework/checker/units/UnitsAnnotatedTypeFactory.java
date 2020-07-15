@@ -16,6 +16,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -556,6 +557,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         protected QualifierKindHierarchy createQualifierKindHierarchy(
+                @UnderInitialization UnitsQualifierHierarchy this,
                 Collection<Class<? extends Annotation>> qualifierClasses) {
             return new UnitsQualifierKindHierarchy(qualifierClasses, elements);
         }
@@ -583,8 +585,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
-                    return ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
-                            .directSuperQualifierMap.get(qual1);
+                    // Every qualifier kind is a key in directSuperQualifierMap.
+                    @SuppressWarnings("nullness:assignment.type.incompatible")
+                    @NonNull AnnotationMirror lub =
+                            ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
+                                    .directSuperQualifierMap.get(qual1);
+                    return lub;
                 }
             }
             throw new BugInCF("Unexpected QualifierKinds: %s %s", qual1, qual2);
