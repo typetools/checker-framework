@@ -26,8 +26,7 @@ import org.checkerframework.framework.qual.TypeKind;
             TypeKind.LONG,
             TypeKind.SHORT,
             TypeKind.FLOAT,
-            TypeKind.DOUBLE,
-            TypeKind.CHAR
+            TypeKind.DOUBLE
         },
         types = {
             java.lang.Byte.class,
@@ -35,7 +34,6 @@ import org.checkerframework.framework.qual.TypeKind;
             java.lang.Long.class,
             java.lang.Short.class,
             java.lang.Float.class,
-            java.lang.Double.class,
-            java.lang.Character.class
+            java.lang.Double.class
         })
 public @interface Signed {}
