@@ -16,6 +16,8 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -70,6 +72,7 @@ public class QualifierKindHierarchy {
      * <p>Exactly one qualifier kind is created for each annotation class.
      */
     // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
+    @AnnotatedFor("nullness")
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
 
         /** The canonical name of the annotation class of this. */
@@ -79,13 +82,13 @@ public class QualifierKindHierarchy {
         private final Class<? extends Annotation> clazz;
 
         /** The top of the hierarchy to which this belongs. */
-        private QualifierKind top;
+        private @MonotonicNonNull QualifierKind top;
 
         /** The bottom of the hierarchy to which this belongs. */
-        private QualifierKind bottom;
+        private @MonotonicNonNull QualifierKind bottom;
 
         /** The polymorphic qualifier of the hierarchy to which this belongs. */
-        private QualifierKind poly;
+        private @Nullable QualifierKind poly;
 
         /** Whether or not this has elements. */
         private final boolean hasElements;
@@ -94,7 +97,7 @@ public class QualifierKindHierarchy {
          * All the qualifier kinds that are a strict super qualifier kind of this. Does not include
          * this qualifier kind itself.
          */
-        private Set<QualifierKind> strictSuperTypes;
+        private @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
         /**
          * Creates a {@link QualifierKind} for the given annotation class.
@@ -104,12 +107,14 @@ public class QualifierKindHierarchy {
         private QualifierKind(Class<? extends Annotation> clazz) {
             this.clazz = clazz;
             this.hasElements = clazz.getDeclaredMethods().length != 0;
-            this.name = clazz.getCanonicalName().intern();
+            this.name = annotationClassName(clazz).intern();
+            this.poly = null;
             // These non-final fields are set by QualifierKindHierarchy.
             // Give them dummy values here, because the Java compiler requires it.
-            strictSuperTypes = null;
-            top = null;
-            bottom = null;
+            //            strictSuperTypes = null;
+            //            top = null;
+            //            bottom = null;
+
         }
 
         /**
@@ -136,6 +141,7 @@ public class QualifierKindHierarchy {
          * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
          */
         public QualifierKind getTop() {
+            assert top != null : "@AssumeAssertion(nullness): top must be nonnull.";
             return top;
         }
 
@@ -145,6 +151,7 @@ public class QualifierKindHierarchy {
          * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
          */
         public QualifierKind getBottom() {
+            assert bottom != null : "@AssumeAssertion(nullness): bottom must be nonnull.";
             return bottom;
         }
 
@@ -155,7 +162,7 @@ public class QualifierKindHierarchy {
          * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind
          *     belongs
          */
-        public QualifierKind getPolymorphic() {
+        public @Nullable QualifierKind getPolymorphic() {
             return poly;
         }
 
@@ -184,6 +191,8 @@ public class QualifierKindHierarchy {
          * @return all the qualifier kinds that are a strict super qualifier of this qualifier
          */
         public Set<QualifierKind> getStrictSuperTypes() {
+            assert strictSuperTypes != null
+                    : "@AssumeAssertion(nullness): strictSuperTypes must be nonnull.";
             return strictSuperTypes;
         }
 
@@ -223,6 +232,8 @@ public class QualifierKindHierarchy {
          * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
          */
         public boolean isSubtype(QualifierKind superQualKind) {
+            assert strictSuperTypes != null
+                    : "@AssumeAssertion(nullness): strictSuperTypes must be nonnull.";
             return this == superQualKind || strictSuperTypes.contains(superQualKind);
         }
 
@@ -671,6 +682,8 @@ public class QualifierKindHierarchy {
                             qualifierKind, bot, qualifierKind.bottom);
                 }
                 if (qualifierKind.isPoly()) {
+                    assert bot.strictSuperTypes != null
+                            : "@AssumeAssertion(nullness):strictSuperTypes should be nonnull.";
                     bot.strictSuperTypes.add(qualifierKind);
                 }
             }
@@ -762,8 +775,13 @@ public class QualifierKindHierarchy {
         } else if (qual2.isSubtype(qual1)) {
             return qual1;
         }
+        // strictSuperTypes should be nonnull by this point.
+        @SuppressWarnings("nullness:argument.type.incompatible")
         Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.strictSuperTypes);
-        allSuperTypes.retainAll(qual2.strictSuperTypes);
+        // strictSuperTypes should be nonnull by this point.
+        @SuppressWarnings("nullness:assignment.type.incompatible")
+        @NonNull Set<QualifierKind> qual2StrictSuperTypes = qual2.strictSuperTypes;
+        allSuperTypes.retainAll(qual2StrictSuperTypes);
         Set<QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
         if (lubs.size() != 1) {
             throw new TypeSystemError(
