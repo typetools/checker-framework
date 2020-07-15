@@ -13,7 +13,6 @@ import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
@@ -25,7 +24,6 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
 /** The type factory for the Fenum Checker. */
-@AnnotatedFor("nullness")
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** AnnotationMirror for {@link FenumUnqualified}. */
@@ -100,7 +98,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Fenum qualifier hierarchy */
-    @AnnotatedFor("nullness")
     protected class FenumQualifierHierarchy extends ComplexQualifierHierarchy {
 
         /** QualifierKind for {@link Fenum} qualifier. */
