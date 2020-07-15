@@ -192,6 +192,7 @@ public class StubParser {
      * @param filename name of stub file, used only for diagnostic messages
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
+     * @param atypes annotated types from this stub file are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -648,7 +649,7 @@ public class StubParser {
      * Returns the type's type parameter declarations.
      *
      * @param decl a type declaration
-     * @praam elt the type's element
+     * @rpaam elt the type's element
      * @return the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processType(
