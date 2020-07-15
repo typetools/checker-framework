@@ -649,7 +649,7 @@ public class StubParser {
      * Returns the type's type parameter declarations.
      *
      * @param decl a type declaration
-     * @rpaam elt the type's element
+     * @param elt the type's element
      * @return the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processType(
