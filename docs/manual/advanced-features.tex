@@ -96,7 +96,8 @@ with some qualifier.
 This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
 default annotations for uses of the type; see Section~\ref{default-for-use})
 
-If it is not possible to annotate the class's definition,
+If it is not possible to annotate the class's definition (e.g., for
+primitives and some library classes),
 the type-system designer can specify an upper bound by using the meta-annotation
 \refqualclass{framework/qual}{UpperBoundFor}.
 
