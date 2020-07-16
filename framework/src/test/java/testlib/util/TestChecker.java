@@ -5,7 +5,6 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -90,22 +89,8 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             @Override
             protected QualifierKindHierarchy createQualifierKindHierarchy(
                     Collection<Class<? extends Annotation>> qualifierClasses) {
-                return new TestQualifierKindHierarchy(qualifierClasses);
+                return new QualifierKindHierarchy(qualifierClasses, Bottom.class);
             }
         };
-    }
-
-    protected static class TestQualifierKindHierarchy extends QualifierKindHierarchy {
-        public TestQualifierKindHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses) {
-            super(qualifierClasses);
-        }
-
-        @Override
-        protected void specifyBottom(
-                Map<QualifierKind, Set<QualifierKind>> directSuperMap,
-                Class<? extends Annotation> bottom) {
-            super.specifyBottom(directSuperMap, Bottom.class);
-        }
     }
 }
