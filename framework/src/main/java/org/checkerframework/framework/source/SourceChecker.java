@@ -2539,7 +2539,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Returns the version of the Checker Framework.
      *
-     * @throws BugInCF if property git.build.version is not present in git.properties
      * @return Checker Framework version
      */
     private String getCheckerVersion() {
