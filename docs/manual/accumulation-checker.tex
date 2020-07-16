@@ -57,8 +57,13 @@ It should take no arguments, and should be a subtype of the accumulator type you
 
 You may also choose to define a predicate annotation, analogous to
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
-A predicate annotation allows you to write specifications with disjunctions (the accumulation annotation implicitly already permits
-specifications with conjunctions). If you define such an annnotation, it must have a single argument named \<value> of type \<String>.
+A predicate annotation allows you to write specifications with disjunctions using the || operator (the accumulation annotation
+implicitly already permits specifications with conjunctions, but they are also supported in predicates using the && operator).
+Predicates also support the logical complement (!) operator, which can be used for specifications like "!x", which means
+"it is not true that x was definitely accumulated" (equivalently, "there is no path on which x was accumulated").
+Note that this does NOT mean "x was not accumulated"---it is not a violation of the specification "!x" if x is accumulated
+on some paths, but not others.
+If you define a predicate annnotation, it must have a single argument named \<value> of type \<String>.
 
 \paragraphAndLabel{Setting up the checker}{accumulation-setup}
 
