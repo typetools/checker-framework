@@ -33,6 +33,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -502,8 +503,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         String pred = convertToPredicate(anm);
         try {
             evaluatePredicate(Collections.emptyList(), pred);
-        } catch (BugInCF bugInCF) {
-            return bugInCF.getLocalizedMessage();
+        } catch (UserError ue) {
+            return ue.getLocalizedMessage();
         }
         return null;
     }
@@ -518,15 +519,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return whether the true variables satisfy the predicate
      */
     protected boolean evaluatePredicate(List<String> trueVariables, String pred) {
-        /*for (String cmMethod : trueVariables) {
-            pred = pred.replaceAll("\\b" + cmMethod + "\\b", "true");
-        }
-        pred = pred.replaceAll("(?!true)\\b[_a-zA-Z][_a-zA-Z0-9]*\\b", "false");*/
         Expression expression;
         try {
             expression = StaticJavaParser.parseExpression(pred);
         } catch (ParseProblemException p) {
-            throw new BugInCF("unparseable predicate: " + pred + ". Parse exception: " + p);
+            throw new UserError("unparseable predicate: " + pred + ". Parse exception: " + p);
         }
         return evaluateBooleanExpression(expression, trueVariables);
     }
@@ -544,11 +541,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (expression.isNameExpr()) {
             return trueVariables.contains(expression.asNameExpr().getNameAsString());
         } else if (expression.isBinaryExpr()) {
-            if (expression.asBinaryExpr().getOperator().equals(BinaryExpr.Operator.OR)) {
+            if (expression.asBinaryExpr().getOperator() == BinaryExpr.Operator.OR) {
                 return evaluateBooleanExpression(expression.asBinaryExpr().getLeft(), trueVariables)
                         || evaluateBooleanExpression(
                                 expression.asBinaryExpr().getRight(), trueVariables);
-            } else if (expression.asBinaryExpr().getOperator().equals(BinaryExpr.Operator.AND)) {
+            } else if (expression.asBinaryExpr().getOperator() == BinaryExpr.Operator.AND) {
                 return evaluateBooleanExpression(expression.asBinaryExpr().getLeft(), trueVariables)
                         && evaluateBooleanExpression(
                                 expression.asBinaryExpr().getRight(), trueVariables);
@@ -556,15 +553,17 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         } else if (expression.isEnclosedExpr()) {
             return evaluateBooleanExpression(expression.asEnclosedExpr().getInner(), trueVariables);
         } else if (expression.isUnaryExpr()) {
-            if (expression
-                    .asUnaryExpr()
-                    .getOperator()
-                    .equals(UnaryExpr.Operator.LOGICAL_COMPLEMENT)) {
+            if (expression.asUnaryExpr().getOperator() == UnaryExpr.Operator.LOGICAL_COMPLEMENT) {
                 return !evaluateBooleanExpression(
                         expression.asUnaryExpr().getExpression(), trueVariables);
             }
         }
-        throw new BugInCF(
+        // This could be either a UserError or a BugInCF. It's a user error if the user included
+        // a valid Java syntactic construction that's not permitted in a predicate. It could be a
+        // BugInCF if the user's predicate should have been valid, but there is a bug in the code
+        // above. Because it *can* be a UserError, and probably will be most of the time this error
+        // is issued, UserError makes more sense.
+        throw new UserError(
                 "encountered an unexpected type of expression in a "
                         + "predicate expression: "
                         + expression

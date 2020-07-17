@@ -2,10 +2,8 @@ package org.checkerframework.common.accumulation;
 
 import com.sun.source.tree.AnnotationTree;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -30,10 +28,7 @@ public class AccumulationVisitor extends BaseTypeVisitor<AccumulationAnnotatedTy
         if (atypeFactory.isPredicate(anno)) {
             String errorMessage = atypeFactory.isValidPredicate(anno);
             if (errorMessage != null) {
-                checker.report(
-                        node,
-                        new DiagMessage(Diagnostic.Kind.ERROR, "predicate.invalid", errorMessage));
-                return null;
+                checker.reportError(node, "predicate.invalid", errorMessage);
             }
         }
         return super.visitAnnotation(node, p);
