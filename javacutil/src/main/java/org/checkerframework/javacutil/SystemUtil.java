@@ -231,14 +231,15 @@ public class SystemUtil {
      * Given an array and two values, creates an array with all the values. The two extra values are
      * at the end of the returned array.
      *
+     * @param <T> the type of the array elements
      * @param array the array to extend
      * @param elt1 the first element to add
      * @param elt2 the second element to add
      * @return a copy of {@code array}, with two elements added at the end
      */
-    public static Object[] arrayPlusTwoElements(Object[] array, Object elt1, Object elt2) {
+    public static <T> T[] arrayPlusTwoElements(T[] array, T elt1, T elt2) {
         @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-        Object[] result = Arrays.copyOf(array, array.length + 2);
+        T[] result = Arrays.copyOf(array, array.length + 2);
         result[array.length] = elt1;
         result[array.length + 1] = elt2;
         return result;
