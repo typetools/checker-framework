@@ -502,6 +502,7 @@ public class QualifierKindHierarchy {
      *
      * <p>If {@code bottom} is {@code null}, then this method does nothing.
      *
+     * @param bottom the class of the bottom qualifer in the hierarchy
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers; side-effected by this method
      */
