@@ -175,16 +175,16 @@ public class StubParser {
      * The name of the type that is currently being parsed. After processing a package declaration
      * but before processing a type declaration, the type part of this may be null.
      */
-    FqName typeName;
+    private FqName typeName;
 
     /** Output variable: .... */
-    Map<Element, AnnotatedTypeMirror> atypes;
+    private final Map<Element, AnnotatedTypeMirror> atypes;
 
     /**
      * Map from a name (actually declaration element string) to the set of declaration annotations
      * on it.
      */
-    Map<String, Set<AnnotationMirror>> declAnnos;
+    private final Map<String, Set<AnnotationMirror>> declAnnos;
 
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
@@ -497,7 +497,7 @@ public class StubParser {
 
     /**
      * Delegate to the Stub Parser to parse the stub file to an AST, and save it in {@link
-     * stubUnit}. Subsequently, all work uses the AST.
+     * #stubUnit}. Subsequently, all work uses the AST.
      *
      * @param inputStream the stream from which to read a stub file
      */
