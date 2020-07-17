@@ -45,7 +45,6 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <ul>
  *   <li>{@link #createQualifierKinds(Collection)}
  *   <li>{@link #createDirectSuperMap()}
- *   <li>{@link #specifyBottom(Map, Class)}
  *   <li>{@link #initializePolymorphicQualifiers()}
  *   <li>{@link #initializeQualifierKindFields(Map)}
  *   <li>{@link #createLubsMap()}
@@ -517,7 +516,7 @@ public class QualifierKindHierarchy {
         QualifierKind bottomKind = nameToQualifierKind.get(annotationClassName(bottom));
         if (bottomKind == null) {
             throw new TypeSystemError(
-                    "QualifierKindHierarchy#specifyBottom: the given bottom class, %s, is not in the hierarchy.",
+                    "QualifierKindHierarchy#setBottom: the given bottom class, %s, is not in the hierarchy.",
                     bottom.getCanonicalName());
         }
 
