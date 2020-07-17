@@ -320,7 +320,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *      bottom
      * </pre>
      *
-     * Predicate subtyping is straightforward:
+     * Predicate subtyping is defined as follows:
      *
      * <ul>
      *   <li>An accumulator is a subtype of a predicate if substitution from the accumulator to the
@@ -536,7 +536,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * parentheses, logical complement, and boolean literal nodes.
      *
      * @param expression a JavaParser boolean expression
-     * @param trueVariables the names of the variables that should be considered "true"
+     * @param trueVariables the names of the variables that should be considered "true"; all other
+     *     literals are considered "false"
      * @return the result of evaluating the expression
      */
     private boolean evaluateBooleanExpression(Expression expression, List<String> trueVariables) {
@@ -611,10 +612,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Utility method to check whether anno is a predicate annotation.
+     * Returns true if anno is a predicate annotation.
      *
      * @param anno an annotation
-     * @return whether anno is a predicate annotation
+     * @return true if anno is a predicate annotation
      */
     protected boolean isPredicate(AnnotationMirror anno) {
         return predicate != null && AnnotationUtils.areSameByClass(anno, predicate);
