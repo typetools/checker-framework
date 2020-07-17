@@ -85,12 +85,19 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
+// From an implementation perspective, this class represents a single stub file, notably its
+// annotated types and its declaration annotations.  From a client perspective, it has two static
+// methods as described below in the Javadoc.
 /**
- * This class represents a single stub file, notably its annotated types and its declaration
- * annotations. The main entry point is {@link StubParser#parse(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}, which side-effects its last two
- * arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub file. Then,
- * it walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * This class has two static methods. Each method parses a stub file and adds annotations to two
+ * maps passed as arguments.
+ *
+ * <p>The main entry point is {@link StubParser#parse(String, InputStream, AnnotatedTypeFactory,
+ * ProcessingEnvironment, Map, Map)}, which side-effects its last two arguments. It operates in two
+ * steps. First, it calls the Stub Parser to parse a stub file. Then, it walks the Stub Parser's AST
+ * to create/collect types and declaration annotations.
+ *
+ * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
 public class StubParser {
 
