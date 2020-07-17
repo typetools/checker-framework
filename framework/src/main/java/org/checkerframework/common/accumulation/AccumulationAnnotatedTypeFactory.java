@@ -326,9 +326,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * <ul>
      *   <li>An accumulator is a subtype of a predicate if substitution from the accumulator to the
      *       predicate makes the predicate true. For example, {@code Acc(A)} is a subtype of {@code
-     *       AccPred("A || B")}, because A is replaced with {@code true} (because it is in the
-     *       accumulator) and B is replaced with {@code false} (because it is not), and the
-     *       resulting boolean formula evaluates to true.
+     *       AccPred("A || B")}, because when A is replaced with {@code true} and B is replaced with
+     *       {@code false}, the resulting boolean formula evaluates to true.
      *   <li>A predicate P is a subtype of an accumulator iff after converting the accumulator into
      *       a predicate representing the conjunction of its elements, P is a subtype of that
      *       predicate.
@@ -454,9 +453,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Extension point for complex subtyping behavior between predicates. The standard
-     * implementation conservatively returns true only if the predicates are equal, or if the
-     * prospective supertype (q) is equivalent to top (that is, the empty string).
+     * Extension point for subtyping behavior between predicates. This implementation conservatively
+     * returns true only if the predicates are equal, or if the prospective supertype (q) is
+     * equivalent to top (that is, the empty string).
      *
      * @param p a predicate
      * @param q another predicate
@@ -495,8 +494,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * Used by the visitor to throw "predicate.invalid" errors; thus must be package-private.
      *
      * @param anm any annotation supported by this checker
-     * @return null if there is nothing wrong with the predicate, or an error message indicating the
-     *     problem if the predicate is invalid
+     * @return null if there is nothing wrong with the annotation, or an error message indicating
+     *     the problem if it has an invalid predicate
      */
     /* package-private */
     @Nullable String isValidPredicate(AnnotationMirror anm) {
@@ -558,11 +557,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                         expression.asUnaryExpr().getExpression(), trueVariables);
             }
         }
-        // This could be either a UserError or a BugInCF. It's a user error if the user included
-        // a valid Java syntactic construction that's not permitted in a predicate. It could be a
-        // BugInCF if the user's predicate should have been valid, but there is a bug in the code
-        // above. Because it *can* be a UserError, and probably will be most of the time this error
-        // is issued, UserError makes more sense.
+        // This could be a BugInCF if there is a bug in the code above.
         throw new UserError(
                 "encountered an unexpected type of expression in a "
                         + "predicate expression: "
@@ -572,7 +567,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Creats a new predicate annotation from the given string.
+     * Creates a new predicate annotation from the given string.
      *
      * @param p a valid predicate
      * @return an annotation representing that predicate
@@ -584,10 +579,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     /**
-     * Converts the given annotation mirror to a predicate String.
+     * Converts the given annotation mirror to a predicate.
      *
      * @param anno an annotation
-     * @return the predicate, as a String, that is equivalent to that annotation
+     * @return the predicate, as a String, that is equivalent to that annotation. May return the
+     *     empty string.
      */
     protected String convertToPredicate(AnnotationMirror anno) {
         if (AnnotationUtils.areSame(anno, bottom)) {
@@ -606,7 +602,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             }
             return sj.toString();
         } else {
-            throw new BugInCF("could not convert this annotation to a predicate: " + anno);
+            throw new BugInCF("annotation is not bottom, a predicate, or an accumulator: " + anno);
         }
     }
 
