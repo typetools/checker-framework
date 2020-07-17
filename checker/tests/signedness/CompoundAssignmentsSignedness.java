@@ -1,6 +1,6 @@
 import org.checkerframework.checker.signedness.qual.*;
 
-public class CompoundAssignments {
+public class CompoundAssignmentsSignedness {
 
     public void DivModTest(
             @Unsigned int unsigned,
