@@ -136,6 +136,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return underlyingType;
     }
 
+    @SuppressWarnings("interning:not.interned") // efficiency pre-test
     @Override
     public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof CFAbstractValue)) {

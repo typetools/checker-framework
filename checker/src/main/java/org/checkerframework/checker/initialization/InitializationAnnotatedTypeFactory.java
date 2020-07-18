@@ -3,6 +3,7 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -427,12 +428,17 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * In the first enclosing class, find the top-level member that contains tree. TODO: should we
-     * look whether these elements are enclosed within another class that is itself under
-     * construction.
+     * In the first enclosing class, find the top-level member that contains {@code path}.
+     *
+     * <p>TODO: should we look whether these elements are enclosed within another class that is
+     * itself under construction.
      *
      * <p>Are there any other type of top level objects?
+     *
+     * @param path the path whose leaf is the target
+     * @return a top-level member containing the leaf of {@code path}
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     private Tree findTopLevelClassMemberForTree(TreePath path) {
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass != null) {
@@ -736,6 +742,15 @@ public abstract class InitializationAnnotatedTypeFactory<
                 type.addAnnotation(INITIALIZED);
             }
             return super.visitLiteral(tree, type);
+        }
+
+        @Override
+        public Void visitMemberSelect(
+                MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            if (TreeUtils.isArrayLengthAccess(node)) {
+                annotatedTypeMirror.replaceAnnotation(INITIALIZED);
+            }
+            return super.visitMemberSelect(node, annotatedTypeMirror);
         }
     }
 
