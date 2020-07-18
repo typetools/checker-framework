@@ -1,33 +1,7 @@
 package org.checkerframework.checker.nullness;
 
-import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssertTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.SynchronizedTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WhileLoopTree;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -378,6 +352,18 @@ public class NullnessVisitor
     public Void visitIf(IfTree node, Void p) {
         checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitIf(node, p);
+    }
+
+    @Override
+    public Void visitInstanceOf(InstanceOfTree node, Void p) {
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
+        if (type.hasAnnotation(Nullable.class)) {
+            checker.reportError(node, "instanceof.nullable.error");
+        }
+        if (type.hasAnnotation(NonNull.class)) {
+            checker.reportWarning(node, "instanceof.nonnull.redundant");
+        }
+        return super.visitInstanceOf(node, p);
     }
 
     /**
