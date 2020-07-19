@@ -356,12 +356,14 @@ public class NullnessVisitor
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
-        if (type.hasAnnotation(Nullable.class)) {
-            checker.reportError(node, "instanceof.nullable.error");
-        }
-        if (type.hasAnnotation(NonNull.class)) {
-            checker.reportWarning(node, "instanceof.nonnull.redundant");
+        if (node.getType().getKind().equals(Kind.ANNOTATED_TYPE)) {
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
+            if (type.hasAnnotation(Nullable.class)) {
+                checker.reportError(node, "instanceof.nullable.error");
+            }
+            if (type.hasAnnotation(NonNull.class)) {
+                checker.reportWarning(node, "instanceof.nonnull.redundant");
+            }
         }
         return super.visitInstanceOf(node, p);
     }
