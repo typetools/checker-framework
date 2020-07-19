@@ -356,8 +356,8 @@ public class NullnessVisitor
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
-        if (node.getType().getKind().equals(Kind.ANNOTATED_TYPE)) {
-            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
+        if (node.getType().getKind() == Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror type = atypeFactory.fromExpression((ExpressionTree) node.getType());
             if (type.hasAnnotation(Nullable.class)) {
                 checker.reportError(node, "instanceof.nullable.error");
             }
