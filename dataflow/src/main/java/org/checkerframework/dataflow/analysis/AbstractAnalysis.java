@@ -262,14 +262,7 @@ public abstract class AbstractAnalysis<
         return cfg.getNodesCorrespondingToTree(t);
     }
 
-    /**
-     * Return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
-     * available. Note that if the analysis has not finished yet, this value might not represent the
-     * final value for this node.
-     *
-     * @param t the given tree
-     * @return the abstract value for the given tree
-     */
+    @Override
     public @Nullable V getValue(Tree t) {
         // we don't have a org.checkerframework.dataflow fact about the current node yet
         if (t == currentTree) {
