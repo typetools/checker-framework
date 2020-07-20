@@ -138,8 +138,12 @@ public class CFGVisualizeLauncher {
      */
     protected String generateStringOfCFGWithoutAnalysis(
             String inputFile, String method, String clas, boolean verbose) {
-        Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
-        return (String) res.get("stringGraph");
+        @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
+        if (res != null) {
+            return (String) res.get("stringGraph");
+        } else {
+            return "null";
+        }
     }
 
     /**
@@ -272,12 +276,12 @@ public class CFGVisualizeLauncher {
      *     value
      */
     public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-            Map<String, Object> generateStringOfCFG(
-                    String inputFile,
-                    String method,
-                    String clas,
-                    boolean verbose,
-                    @Nullable Analysis<V, S, T> analysis) {
+            @Nullable Map<String, Object> generateStringOfCFG(
+            String inputFile,
+            String method,
+            String clas,
+            boolean verbose,
+            @Nullable Analysis<V, S, T> analysis) {
         ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
