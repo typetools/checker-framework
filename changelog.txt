@@ -1,5 +1,7 @@
 Version 3.6.0, August 3, 2020
 
+Added a new option `-Aversion` to print the version of the Checker Framework.
+
 The Interning Checker supports method annotations @EqualsMethod and
 @CompareToMethod.  Place them on methods like equals(), compareTo(), and
 compare() to permit certain uses of == on non-interned values.
