@@ -228,19 +228,18 @@ public class SystemUtil {
     }
 
     /**
-     * Given an array and two values, creates an array with all the values. The two extra values are
-     * at the end of the returned array.
+     * Concatenates two arrays. Can be invoked varargs-style.
      *
-     * @param array the array to extend
-     * @param elt1 the first element to add
-     * @param elt2 the second element to add
-     * @return a copy of {@code array}, with two elements added at the end
+     * @param <T> the type of the array elements
+     * @param array1 the first array
+     * @param array2 the second array
+     * @return a new array containing the contents of the given arrays, in order
      */
-    public static Object[] arrayPlusTwoElements(Object[] array, Object elt1, Object elt2) {
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T[] array1, T... array2) {
         @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-        Object[] result = Arrays.copyOf(array, array.length + 2);
-        result[array.length] = elt1;
-        result[array.length + 1] = elt2;
+        T[] result = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
         return result;
     }
 }
