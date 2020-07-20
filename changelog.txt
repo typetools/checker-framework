@@ -6,6 +6,9 @@ compare() to permit certain uses of == on non-interned values.
 
 Added an overloaded version of NullnessUtil.castNonNull that takes an error message.
 
+The CFGVisualizeLauncher now supports to print the string representation
+of the control flow graph in the terminal by passing -string.
+
 ---------------------------------------------------------------------------
 
 Version 3.5.0, July 1, 2020

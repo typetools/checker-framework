@@ -56,6 +56,7 @@ public class CFGVisualizeLauncher {
         boolean pdf = false;
         boolean error = false;
         boolean verbose = false;
+        boolean string = false;
 
         for (int i = 2; i < args.length; i++) {
             switch (args[i]) {
@@ -81,6 +82,9 @@ public class CFGVisualizeLauncher {
                 case "-verbose":
                     verbose = true;
                     break;
+                case "-string":
+                    string = true;
+                    break;
                 default:
                     cfgVisualizeLauncher.printError("Unknown command line argument: " + args[i]);
                     error = true;
@@ -92,8 +96,15 @@ public class CFGVisualizeLauncher {
             System.exit(1);
         }
 
-        cfgVisualizeLauncher.generateDOTofCFGWithoutAnalysis(
-                input, output, method, clas, pdf, verbose);
+        if (!string) {
+            cfgVisualizeLauncher.generateDOTofCFGWithoutAnalysis(
+                    input, output, method, clas, pdf, verbose);
+        } else {
+            String stringGraph =
+                    cfgVisualizeLauncher.generateStringOfCFGWithoutAnalysis(
+                            input, method, clas, verbose);
+            System.out.println(stringGraph);
+        }
     }
 
     /**
@@ -114,6 +125,21 @@ public class CFGVisualizeLauncher {
             boolean pdf,
             boolean verbose) {
         generateDOTofCFG(inputFile, outputDir, method, clas, pdf, verbose, null);
+    }
+
+    /**
+     * Generate the String representation of the CFG for a method without analysis.
+     *
+     * @param inputFile java source input file
+     * @param method name of the method to generate the CFG for
+     * @param clas name of the class which includes the method to generate the CFG for
+     * @param verbose show verbose information in CFG
+     * @return the String representation of the CFG
+     */
+    protected String generateStringOfCFGWithoutAnalysis(
+            String inputFile, String method, String clas, boolean verbose) {
+        Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
+        return (String) res.get("stringGraph");
     }
 
     /**
@@ -246,12 +272,12 @@ public class CFGVisualizeLauncher {
      *     value
      */
     public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-            @Nullable Map<String, Object> generateStringOfCFG(
-            String inputFile,
-            String method,
-            String clas,
-            boolean verbose,
-            @Nullable Analysis<V, S, T> analysis) {
+            Map<String, Object> generateStringOfCFG(
+                    String inputFile,
+                    String method,
+                    String clas,
+                    boolean verbose,
+                    @Nullable Analysis<V, S, T> analysis) {
         ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
@@ -272,13 +298,15 @@ public class CFGVisualizeLauncher {
         System.out.println(
                 "Generate the control flow graph of a Java method, represented as a DOT graph.");
         System.out.println(
-                "Parameters: <inputfile> <outputdir> [-method <name>] [-class <name>] [-pdf] [-verbose]");
+                "Parameters: <inputfile> <outputdir> [-method <name>] [-class <name>] [-pdf] [-verbose] [-string]");
         System.out.println("    -pdf:     Also generate the PDF by invoking 'dot'.");
         System.out.println(
                 "    -method:  The method to generate the CFG for (defaults to 'test').");
         System.out.println(
                 "    -class:   The class in which to find the method (defaults to 'Test').");
         System.out.println("    -verbose: Show the verbose output (defaults to 'false').");
+        System.out.println(
+                "    -string:  Print the string representation of the control flow graph (defaults to 'false').");
     }
 
     /**
