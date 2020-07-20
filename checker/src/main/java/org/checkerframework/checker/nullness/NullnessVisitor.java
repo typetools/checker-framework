@@ -41,7 +41,11 @@ import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeValidator;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.basetype.TypeValidator;
 import org.checkerframework.framework.flow.CFCFGBuilder;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -642,5 +646,39 @@ public class NullnessVisitor
     public Void visitAnnotation(AnnotationTree node, Void p) {
         // All annotation arguments are non-null and initialized, so no need to check them.
         return null;
+    }
+
+    @Override
+    protected TypeValidator createTypeValidator() {
+        return new NullnessValidator(checker, this, atypeFactory);
+    }
+
+    /**
+     * Nullness Validator. Check that primitive types are annotated with {@code @NonNull} even if
+     * they are the type of a local variable.
+     */
+    private static class NullnessValidator extends BaseTypeValidator {
+
+        /**
+         * Create Nullness validator.
+         *
+         * @param checker checker
+         * @param visitor visitor
+         * @param atypeFactory factory
+         */
+        public NullnessValidator(
+                BaseTypeChecker checker,
+                BaseTypeVisitor<?> visitor,
+                AnnotatedTypeFactory atypeFactory) {
+            super(checker, visitor, atypeFactory);
+        }
+
+        @Override
+        protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
+            if (type.getKind().isPrimitive()) {
+                return true;
+            }
+            return super.shouldCheckTopLevelDeclaredType(type, tree);
+        }
     }
 }

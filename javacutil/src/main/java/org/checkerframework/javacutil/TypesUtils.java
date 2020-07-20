@@ -249,8 +249,24 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns true iff the argument is a boxed floating point type.
+     *
+     * @param type type mirror
+     * @return whether the argument is a boxed floating point type
+     */
+    public static boolean isBoxedFloating(TypeMirror type) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+        return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
+    }
+
+    /**
      * Returns true iff the argument is a floating point type.
      *
+     * @param type type mirror
      * @return whether the argument is a floating point type
      */
     public static boolean isFloating(TypeMirror type) {

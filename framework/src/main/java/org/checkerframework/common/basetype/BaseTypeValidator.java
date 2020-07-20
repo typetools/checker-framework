@@ -95,7 +95,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @return whether or not the top-level type should be checked
      */
     protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
-        if (type.getKind() != TypeKind.DECLARED) {
+        if (type.getKind() != TypeKind.DECLARED && !type.getKind().isPrimitive()) {
             return true;
         }
         return !TreeUtils.isLocalVariable(tree)
@@ -403,7 +403,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
-        if (checker.shouldSkipUses(type.getUnderlyingType().toString())) {
+        if (!checkTopLevelDeclaredType
+                || checker.shouldSkipUses(type.getUnderlyingType().toString())) {
             return super.visitPrimitive(type, tree);
         }
 

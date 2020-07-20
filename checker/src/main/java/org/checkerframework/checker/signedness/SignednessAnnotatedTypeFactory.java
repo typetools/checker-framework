@@ -6,8 +6,11 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
@@ -26,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The type factory for the Signedness Checker.
@@ -206,6 +210,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBooleanAsUnknownSignedness(type);
             return null;
+        }
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultQualifierForUse(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+            if (TypesUtils.isFloating(type.getUnderlyingType())
+                    || TypesUtils.isBoxedFloating(type.getUnderlyingType())) {
+                // Always add signed to floats.
+                super.addAnnotationsFromDefaultQualifierForUse(null, type);
+            }
+        } else {
+            super.addAnnotationsFromDefaultQualifierForUse(element, type);
         }
     }
 }
