@@ -271,7 +271,7 @@ public class I18nFormatterTreeUtil {
          *
          * @return the AST node for the call
          */
-        MethodInvocationTree getTree() {
+        public MethodInvocationTree getTree() {
             return tree;
         }
 
