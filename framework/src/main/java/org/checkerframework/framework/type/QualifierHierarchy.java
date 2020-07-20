@@ -146,18 +146,18 @@ public abstract class QualifierHierarchy {
      * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
      *     different hierarchies
      */
-    // The fact the null is returned if the qualifiers are not in the same hierarchy is used by the
+    // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
     // set version of LUB below.
     public abstract @Nullable AnnotationMirror leastUpperBound(
             AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
-     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
+     * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
      * qualifier for the same hierarchy in each set.
      *
      * @param qualifiers1 set of qualifiers; exactly one per hierarchy
      * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of two the two sets of qualifiers
+     * @return the least upper bound of the two sets of qualifiers
      */
     public Set<? extends AnnotationMirror> leastUpperBounds(
             Collection<? extends AnnotationMirror> qualifiers1,
@@ -209,9 +209,9 @@ public abstract class QualifierHierarchy {
      * the two annotations.
      *
      * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
-     *     hierarchy and {@code previousQualifier}
+     *     hierarchy as {@code previousQualifier}
      * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
-     *     be in the same hierarchy and {@code previousQualifier}
+     *     be in the same hierarchy as {@code previousQualifier}
      * @return an upper bound that is higher than the least upper bound of newQualifier and
      *     previousQualifier (or the lub if the type hierarchy does not require this)
      */
@@ -227,26 +227,26 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the greatest lower bound for the qualifiers a1 and a2. Returns null if the qualifiers
-     * are not from the same qualifier hierarchy.
+     * Returns the greatest lower bound for the qualifiers qualifier1 and qualifier2. Returns null
+     * if the qualifiers are not from the same qualifier hierarchy.
      *
-     * @param a1 first annotation
-     * @param a2 second annotation
+     * @param qualifier1 first qualifier
+     * @param qualifier2 second qualifier
      * @return greatest lower bound of the two annotations or null if the two annotations are not
      *     from the same hierarchy
      */
     // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
     // set version of LUB below.
     public abstract @Nullable AnnotationMirror greatestLowerBound(
-            AnnotationMirror a1, AnnotationMirror a2);
+            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
-     * Returns the least upper bound of two the two sets of qualifiers. The result is the lub of the
+     * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
      * qualifier for the same hierarchy in each set.
      *
      * @param qualifiers1 set of qualifiers; exactly one per hierarchy
      * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of two the two sets of qualifiers
+     * @return the least upper bound of the two sets of qualifiers
      */
     public Set<? extends AnnotationMirror> greatestLowerBounds(
             Collection<? extends AnnotationMirror> qualifiers1,
@@ -272,12 +272,12 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return an empty
-     * set even if the type has been fully-annotated.
+     * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set
+     * with fewer qualifiers than the width of the QualifierHierarchy.
      *
      * @param type annotated type mirror
-     * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return an empty
-     *     set
+     * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set
+     *     with fewer qualifiers than the width of the QualifierHierarchy
      */
     public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
         return type.getKind() == TypeKind.TYPEVAR

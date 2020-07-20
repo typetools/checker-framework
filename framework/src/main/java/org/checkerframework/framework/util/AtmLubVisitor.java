@@ -251,9 +251,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotationMirror glb = null;
             if (anno1 != null && anno2 != null) {
                 glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
-            }
-
-            if (glb != null) {
                 lubLowerBound.replaceAnnotation(glb);
             }
         }
