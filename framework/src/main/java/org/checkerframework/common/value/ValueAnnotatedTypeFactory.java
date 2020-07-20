@@ -1229,6 +1229,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     (FlowExpressions.ArrayCreation) expressionObj;
             // This is only expected to support array creations in varargs methods
             return arrayCreation.getInitializers().size();
+        } else if (expressionObj instanceof FlowExpressions.ArrayAccess) {
+            List<? extends AnnotationMirror> a = expressionObj.getType().getAnnotationMirrors();
+            for (AnnotationMirror i : a) {
+                return getMinLenValue(canonicalAnnotation(i));
+            }
         }
 
         lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
