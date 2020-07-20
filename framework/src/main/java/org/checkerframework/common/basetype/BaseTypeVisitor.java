@@ -2534,7 +2534,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.reportError(
                     valueTree,
                     errorKey,
-                    SystemUtil.arrayPlusTwoElements(extraArgs, valueTypeString, varTypeString));
+                    SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
         }
     }
 
