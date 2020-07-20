@@ -1,10 +1,15 @@
-Version 3.?.?, August 3, 2020
+Version 3.6.0, August 3, 2020
 
 The Interning Checker supports method annotations @EqualsMethod and
 @CompareToMethod.  Place them on methods like equals(), compareTo(), and
 compare() to permit certain uses of == on non-interned values.
 
 Added an overloaded version of NullnessUtil.castNonNull that takes an error message.
+
+Implementation details:
+
+commonAssignmentCheck() now takes an additional argument.  Type system
+authors must update their overriding implementations.
 
 ---------------------------------------------------------------------------
 
