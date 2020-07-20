@@ -625,7 +625,8 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+    org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to
