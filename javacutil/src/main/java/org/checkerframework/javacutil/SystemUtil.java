@@ -235,6 +235,7 @@ public class SystemUtil {
      * @param array2 the second array
      * @return a new array containing the contents of the given arrays, in order
      */
+    @SuppressWarnings("unchecked")
     public static <T> T[] concatenate(T[] array1, T... array2) {
         @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
         T[] result = Arrays.copyOf(array1, array1.length + array2.length);
