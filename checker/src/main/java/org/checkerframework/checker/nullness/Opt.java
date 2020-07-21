@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Utility class for the Nullness Checker, providing every method in {@link java.util.Optional}, but
@@ -27,6 +28,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @see java.util.Optional
  */
+@AnnotatedFor("nullness")
 public final class Opt {
 
     /** The Opt class cannot be instantiated. */
