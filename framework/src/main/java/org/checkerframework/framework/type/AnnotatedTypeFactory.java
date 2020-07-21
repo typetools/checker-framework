@@ -1337,7 +1337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     depending on the kind of expression
      * @see TypeFromExpressionVisitor
      */
-    public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
+    private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
         if (shouldCache && fromExpressionTreeCache.containsKey(tree)) {
             return fromExpressionTreeCache.get(tree).deepCopy();
         }
