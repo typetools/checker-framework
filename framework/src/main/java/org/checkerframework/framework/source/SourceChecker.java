@@ -318,7 +318,7 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
     "showInferenceSteps",
 
-    // Output stack trace when checker encounters errors
+    // Output a stack trace when reporting errors or warnings
     // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
     "dumpOnErrors",
 
@@ -1118,11 +1118,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         boolean dumpOnErrors =
                 getOptions().containsKey("dumpOnErrors") && getBooleanOption("dumpOnErrors", true);
         if (dumpOnErrors) {
-            String msg = new String();
+            StringBuilder msg = new StringBuilder();
             for (StackTraceElement elem : trace) {
-                msg = msg + "\tat " + elem + "\n";
+                msg.append("\tat " + elem + "\n");
             }
-            message(Diagnostic.Kind.NOTE, msg);
+            message(Diagnostic.Kind.NOTE, msg.toString());
         }
     }
 

@@ -612,22 +612,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         /**
          * Create a new CheckerMessage.
          *
-         * @param kind the severity of the message
-         * @param message the text of the message
-         * @param source the source code that the message is about
-         * @param checker the checker that issued the message.
-         */
-        private CheckerMessage(
-                Diagnostic.Kind kind,
-                String message,
-                @FindDistinct Tree source,
-                @FindDistinct BaseTypeChecker checker) {
-            this(kind, message, source, checker, null);
-        }
-
-        /**
-         * Constructor method for checker message if stack trace needs to be stored.
-         *
          * @param kind kind of diagnostic, for example, error or warning
          * @param message error message that needs to be printed
          * @param source tree element causing the error
