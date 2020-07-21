@@ -151,8 +151,11 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     // this isn't called for pseudo-assignments.
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
         if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
             // If an assignment occurs inside a constructor with
             // result type @Unique, it will invalidate the @Unique property
@@ -168,8 +171,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.

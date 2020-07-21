@@ -1048,7 +1048,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 }
                 return false;
             }
-            return isPrimarySubtype(upperBound, supertype);
         }
         return checkAndSubtype(upperBound, supertype);
     }
