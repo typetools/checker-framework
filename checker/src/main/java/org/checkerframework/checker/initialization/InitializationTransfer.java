@@ -13,7 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -86,9 +85,11 @@ public class InitializationTransfer<
     /**
      * Returns the fields that can safely be considered initialized after the method call {@code
      * node}.
+     *
+     * @param node a method call
+     * @return the fields that are initialized after the method call
      */
-    protected List<VariableElement> initializedFieldsAfterCall(
-            MethodInvocationNode node, ConditionalTransferResult<V, S> transferResult) {
+    protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
         List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -194,9 +195,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
-        assert result instanceof ConditionalTransferResult;
-        List<VariableElement> newlyInitializedFields =
-                initializedFieldsAfterCall(n, (ConditionalTransferResult<V, S>) result);
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n);
         if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
