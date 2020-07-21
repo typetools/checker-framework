@@ -1140,7 +1140,9 @@ expression as an argument include:
 \item \refqualclass{checker/lock/qual}{Holding}
 \end{itemize}
 
-The set of permitted expressions is a subset of all Java expressions:
+The set of permitted expressions is a subset of all Java expressions,
+with a few extensions, formal parameters like \<\#1> and (for some type
+systems) \code{<self>}.
 
 \begin{itemize}
 \item
@@ -1246,19 +1248,11 @@ The set of permitted expressions is a subset of all Java expressions:
 
 
 \textbf{Limitations:}
-The following Java expressions may not currently be written:
-% The Checker Framework is best at reasoning about Java expressions that
-% are variable references, but these expressions are not.
-\begin{itemize}
-\item String concatenation expressions.
-\item Mathematical operators (plus, minus, division, ...).
-\item Comparisons (equality, less than, etc.).
-\end{itemize}
-
-Additionally, it is not possible to write
-quantification over all array components (e.g. to express that all
+It is not possible to write a
+quantification over all array components (e.g., to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
+
 
 \sectionAndLabel{Field invariants}{field-invariants}
 

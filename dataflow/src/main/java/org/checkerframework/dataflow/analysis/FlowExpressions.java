@@ -446,9 +446,23 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
+    // "#1" for formal parameters.  However, there are no special subclasses (AST nodes) for those
+    // extensions.
     /**
-     * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
-     * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
+     * This class represents a Java expression and its type. It does not represent all possible Java
+     * expressions (for example, it does not represent a ternary expression; use {@link
+     * FlowExpressions.Unknown} for unrepresentable expressions).
+     *
+     * <p>This class's representation is like an AST: subparts are also expressions. For declared
+     * names (fields, local variables, and methods), it also contains an Element.
+     *
+     * <p>Each subclass represents a different type of expression, such as {@link
+     * FlowExpressions.MethodCall}, {@link FlowExpressions.ArrayAccess}, {@link
+     * FlowExpressions.LocalVariable}, etc.
+     *
+     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax
+     *     of Java expressions supported by the Checker Framework</a>
      */
     public abstract static class Receiver {
         /** The type of this expression. */
