@@ -87,7 +87,7 @@ public class InitializationTransfer<
      * node}.
      *
      * @param node a method call
-     * @return the fields that are initialized
+     * @return the fields that are initialized after the method call
      */
     protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
         List<VariableElement> result = new ArrayList<>();
