@@ -811,7 +811,7 @@ public class QualifierKindHierarchy {
     }
 
     /**
-     * Creates the glb of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the glb of
+     * Creates the glb of qualifier kinds. {@code glbs.get(kind1).get(kind2)} returns the glb of
      * kind1 and kind2.
      *
      * @return a mapping of glb
