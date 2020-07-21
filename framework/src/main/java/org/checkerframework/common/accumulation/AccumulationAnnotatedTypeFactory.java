@@ -330,10 +330,15 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *       {@code false}, the resulting boolean formula evaluates to true.
      *   <li>A predicate P is a subtype of an accumulator iff after converting the accumulator into
      *       a predicate representing the conjunction of its elements, P is a subtype of that
-     *       predicate.
+     *       predicate according to the rule for subtyping between two predicates defined below.
      *   <li>A predicate P is a subtype of another predicate Q iff P and Q are equal. An extension
      *       point ({@link #isPredicateSubtype(String, String)}) is provided to allow more complex
-     *       subtyping behavior between predicates.
+     *       subtyping behavior between predicates. (The "correct" subtyping rule is that P is a
+     *       subtype of Q iff P implies Q. That rule would require an SMT solver in the general
+     *       case, which is undesirable because it would require an external dependency. A user can
+     *       override {@link #isPredicateSubtype(String, String)} if they require more precise
+     *       subtyping; the check described here is overly conservative (and therefore sound), but
+     *       not very precise.)
      * </ul>
      */
     protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
