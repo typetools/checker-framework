@@ -9,5 +9,7 @@ class Demo {
     void check(Data p) { // p is @Unique Data Object
         // :: error: (unique.leaked)
         Data y = p; // @Unique p is leaked
+        // :: error: (unique.leaked)
+        Object z = p; // @Unique p is leaked
     }
 }

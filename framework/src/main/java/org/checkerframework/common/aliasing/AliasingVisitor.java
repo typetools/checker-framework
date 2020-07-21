@@ -11,7 +11,10 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
@@ -278,15 +281,16 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        boolean isUniqueType = (isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class));
+        boolean isUniqueType = isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class);
         return isUniqueType && !isMethodInvocation && !isNewClass;
     }
 
     /**
-     * Returns true if class of annotated type {@code type} has annotation {@code @Unique}
+     * Return true if the class declaration for annotated type {@code type} has annotation
+     * {@code @Unique}.
      *
      * @param type the annotated type whose class must be checked
-     * @return boolean true if class if unique and false otherwise
+     * @return boolean true if class is unique and false otherwise
      */
     private boolean isUniqueClass(AnnotatedTypeMirror type) {
         Element el = types.asElement(type.getUnderlyingType());
