@@ -55,6 +55,21 @@ Also define a bottom type, analogous to
 \href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
 It should take no arguments, and should be a subtype of the accumulator type you defined earlier.
 
+You may also define a predicate annotation, analogous to
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
+It must have a single argument named \<value> of type \<String>.
+The predicate syntax supports
+\begin{itemize}
+\item \<||> disjunctions
+\item \<\&\&> conjunctions
+\item \<!> logical complement.  \<"!x"> means
+``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is no path on which \<x> was accumulated''.
+Note that this does \textbf{not} mean ``\<x> was not accumulated'' --- it is not a violation of the specification \<"!x"> if \<x> is accumulated
+on some paths, but not others.
+\item \<(...)> parentheses for precedence
+\end{itemize}
+
+
 \paragraphAndLabel{Setting up the checker}{accumulation-setup}
 
 Define a new class that extends \refclass{common/accumulation}{AccumulationChecker}.
@@ -62,8 +77,9 @@ It does not need any content.
 
 Define a new class that extends \refclass{common/accumulation}{AccumulationAnnotatedTypeFactory}.
 You must create a new constructor whose only argument is a \refclass{common/basetype}{BaseTypeChecker}.
-Your constructor should call the \<super> constructor defined in
-\refclass{common/accumulation}{AccumulationAnnotatedTypeFactory}.
+Your constructor should call one of the \<super> constructors defined in
+\refclass{common/accumulation}{AccumulationAnnotatedTypeFactory} (which one depends on whether or not
+you defined a predicate annotation).
 
 
 \paragraphAndLabel{Adding accumulation logic}{accumulation-accumulating}
