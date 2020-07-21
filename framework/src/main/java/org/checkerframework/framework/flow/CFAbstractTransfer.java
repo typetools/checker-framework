@@ -161,6 +161,7 @@ public abstract class CFAbstractTransfer<
      * @param value the value to finish
      * @param thenStore the "then" store
      * @param elseStore the "else" store
+     * @return the finished value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
@@ -981,12 +982,8 @@ public abstract class CFAbstractTransfer<
                     .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
         }
 
-        if (thenStore.equals(elseStore)) {
-            return new RegularTransferResult<>(finishValue(resValue, thenStore), thenStore);
-        } else {
-            return new ConditionalTransferResult<>(
-                    finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
-        }
+        return new ConditionalTransferResult<>(
+                finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
     }
 
     /**
