@@ -197,8 +197,7 @@ public class InitializationTransfer<
             MethodInvocationNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        List<VariableElement> newlyInitializedFields =
-                initializedFieldsAfterCall(n, (ConditionalTransferResult<V, S>) result);
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n);
         if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
