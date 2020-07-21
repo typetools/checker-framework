@@ -85,9 +85,11 @@ public class InitializationTransfer<
     /**
      * Returns the fields that can safely be considered initialized after the method call {@code
      * node}.
+     *
+     * @param node a method call
+     * @return the fields that are initialized
      */
-    protected List<VariableElement> initializedFieldsAfterCall(
-            MethodInvocationNode node, TransferResult<V, S> transferResult) {
+    protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
         List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -193,7 +195,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
-        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n, result);
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n);
         if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
