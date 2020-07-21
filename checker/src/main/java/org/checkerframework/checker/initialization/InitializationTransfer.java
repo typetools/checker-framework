@@ -13,7 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -88,7 +87,7 @@ public class InitializationTransfer<
      * node}.
      */
     protected List<VariableElement> initializedFieldsAfterCall(
-            MethodInvocationNode node, ConditionalTransferResult<V, S> transferResult) {
+            MethodInvocationNode node, TransferResult<V, S> transferResult) {
         List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
