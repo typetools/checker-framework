@@ -156,7 +156,7 @@ public abstract class CFAbstractTransfer<
      * This method is called before returning the abstract value {@code value} as the result of the
      * transfer function. By default, the value is not changed but subclasses might decide to
      * implement some functionality. The store at this position is also passed (two stores, as the
-     * result is a {@link ConditionalTransferResult}.
+     * result may be a {@link ConditionalTransferResult}.
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
@@ -977,8 +977,12 @@ public abstract class CFAbstractTransfer<
                     .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
         }
 
-        return new ConditionalTransferResult<>(
-                finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+        if (thenStore.equals(elseStore)) {
+            return new RegularTransferResult<>(finishValue(resValue, thenStore), thenStore);
+        } else {
+            return new ConditionalTransferResult<>(
+                    finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+        }
     }
 
     /**
