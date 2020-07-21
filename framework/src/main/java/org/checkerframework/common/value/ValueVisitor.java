@@ -46,16 +46,18 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         replaceSpecialIntRangeAnnotations(varType);
-        super.commonAssignmentCheck(varType, valueExp, errorKey);
+        super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -63,7 +65,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         replaceSpecialIntRangeAnnotations(varType);
 
@@ -73,13 +76,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     /**
      * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to
      * be replaced with {@code @UnknownVal}. See the documentation on {@link
-     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String) commonAssignmentCheck}.
+     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String, Object[])
+     * commonAssignmentCheck}.
      *
      * <p>A separate override is necessary because checkOverride doesn't actually use the
      * commonAssignmentCheck.

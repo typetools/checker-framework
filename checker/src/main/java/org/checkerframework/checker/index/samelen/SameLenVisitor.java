@@ -33,7 +33,8 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (IndexUtil.isSequenceType(valueType.getUnderlyingType())
                 && TreeUtils.isExpressionTree(valueTree)
                 // if both annotations are @PolySameLen, there is nothing to do
@@ -57,6 +58,6 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                 valueType.replaceAnnotation(newSameLen);
             }
         }
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 }

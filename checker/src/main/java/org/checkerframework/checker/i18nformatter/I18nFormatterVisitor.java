@@ -120,7 +120,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
 
@@ -161,6 +162,6 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // issued for a given line of code will take precedence over the
         // assignment.type.incompatible
         // issued by super.commonAssignmentCheck.
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 }
