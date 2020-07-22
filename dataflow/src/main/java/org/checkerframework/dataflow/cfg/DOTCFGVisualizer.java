@@ -16,6 +16,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -192,6 +193,28 @@ public class DOTCFGVisualizer<
             srcLoc.append(cfgMethod.getMethod().getParameters());
             srcLoc.append(")::");
             srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
+            srcLoc.append(">");
+        } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
+            CFGLambda cfgLambda = (CFGLambda) ast;
+            String enclosingClassName = cfgLambda.getEnclosingClass().getSimpleName().toString();
+            String enclosingMethodName = cfgLambda.getEnclosingMethod().getName().toString();
+            int hashCode = cfgLambda.getCode().hashCode();
+            outFile.append(enclosingClassName);
+            outFile.append("-");
+            outFile.append(enclosingMethodName);
+            outFile.append("-");
+            outFile.append(hashCode);
+
+            srcLoc.append("<");
+            srcLoc.append(enclosingClassName);
+            srcLoc.append("::");
+            srcLoc.append(enclosingMethodName);
+            srcLoc.append("(");
+            srcLoc.append(cfgLambda.getEnclosingMethod().getParameters());
+            srcLoc.append(")::");
+            srcLoc.append(hashCode);
+            srcLoc.append("::");
+            srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
             srcLoc.append(">");
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
