@@ -158,9 +158,18 @@ public abstract class GenericAnnotatedTypeFactory<
      * <p>It is initialized to true if data flow is used by the checker. It is set to false when
      * getting the assignment context for type argument inference.
      *
-     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsWithTypeVarInferenceDefaults
      */
     private boolean shouldDefaultTypeVarLocals;
+
+    /**
+     * Should defaults suitable for calculating the left-hand side of assignment during type
+     * variable inference be used? This should only be true when calling
+     * getAnnotatedTypeLhsWithTypeVarInferenceDefaults.
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsWithTypeVarInferenceDefaults
+     */
+    private boolean shouldUseTypeVarInferenceDefaults;
 
     /** An empty store. */
     // Set in postInit only
@@ -202,6 +211,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.everUseFlow = useFlow;
         this.shouldDefaultTypeVarLocals = useFlow;
+        this.shouldUseTypeVarInferenceDefaults = false;
         this.useFlow = useFlow;
 
         this.scannedClasses = new HashMap<>();
@@ -1339,8 +1349,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the type of the left-hand side of an assignment without applying local variable
-     * defaults to type variables.
+     * Returns the type of the left-hand side of an assignment with defaults suitable for performing
+     * type variable inference. Local variable defaults are not applied to type variables and normal
+     * qualifier parameter defaults for local variables are not used.
      *
      * <p>The type variables that are types of local variables are defaulted to top so that they can
      * be refined by dataflow. When these types are used as context during type argument inference,
@@ -1350,14 +1361,22 @@ public abstract class GenericAnnotatedTypeFactory<
      * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains why a
      * different type is used.
      *
+     * <p>Normally, for local variables with a type that has a qualifier parameter, the right-hand
+     * side of their initializer is used to determine their type. When performing type variable
+     * inference, this means that the left-hand side depends on the right-hand side and vice versa.
+     * In this case, normal local variable defaults are used.
+     *
      * @param lhsTree left-hand side of an assignment
      * @return AnnotatedTypeMirror of {@code lhsTree}
      */
-    public AnnotatedTypeMirror getAnnotatedTypeLhsNoTypeVarDefault(Tree lhsTree) {
-        boolean old = this.shouldDefaultTypeVarLocals;
+    public AnnotatedTypeMirror getAnnotatedTypeLhsWithTypeVarInferenceDefaults(Tree lhsTree) {
+        boolean oldShouldDefaultTypeVarLocals = this.shouldDefaultTypeVarLocals;
+        boolean oldShouldUseTypeVarInferenceDefaults = this.shouldUseTypeVarInferenceDefaults;
         shouldDefaultTypeVarLocals = false;
+        shouldUseTypeVarInferenceDefaults = true;
         AnnotatedTypeMirror type = getAnnotatedTypeLhs(lhsTree);
-        this.shouldDefaultTypeVarLocals = old;
+        this.shouldDefaultTypeVarLocals = oldShouldDefaultTypeVarLocals;
+        this.shouldUseTypeVarInferenceDefaults = oldShouldUseTypeVarInferenceDefaults;
         return type;
     }
 
@@ -1592,24 +1611,6 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
-        if (tree.getKind() == Kind.VARIABLE) {
-            VariableTree varTree = (VariableTree) tree;
-            Element elt = TreeUtils.elementFromDeclaration(varTree);
-            if (elt.getKind() == ElementKind.LOCAL_VARIABLE && varTree.getInitializer() != null) {
-                Set<AnnotationMirror> initializerTypes =
-                        getAnnotatedType(varTree.getInitializer()).getAnnotations();
-                Set<AnnotationMirror> qualifierTypes = AnnotationUtils.createAnnotationSet();
-                for (AnnotationMirror initializerType : initializerTypes) {
-                    if (hasQualifierParameterInHierarchy(
-                            type, qualHierarchy.getTopAnnotation(initializerType))) {
-                        qualifierTypes.add(initializerType);
-                    }
-                }
-
-                type.addMissingAnnotations(qualifierTypes);
-            }
-        }
-
         applyQualifierParameterDefaults(TreeUtils.elementFromTree(tree), type);
     }
 
@@ -1633,6 +1634,26 @@ public abstract class GenericAnnotatedTypeFactory<
                 break;
             default:
                 return;
+        }
+
+        if (!shouldUseTypeVarInferenceDefaults && elt.getKind() == ElementKind.LOCAL_VARIABLE) {
+            Tree declTree = declarationFromElement(elt);
+            if (declTree != null && declTree.getKind() == Kind.VARIABLE) {
+                ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+                if (initializer != null) {
+                    Set<AnnotationMirror> initializerTypes =
+                            getAnnotatedType(initializer).getAnnotations();
+                    Set<AnnotationMirror> qualifierTypes = AnnotationUtils.createAnnotationSet();
+                    for (AnnotationMirror initializerType : initializerTypes) {
+                        if (hasQualifierParameterInHierarchy(
+                                type, qualHierarchy.getTopAnnotation(initializerType))) {
+                            qualifierTypes.add(initializerType);
+                        }
+                    }
+
+                    type.addMissingAnnotations(qualifierTypes);
+                }
+            }
         }
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
@@ -1746,7 +1767,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * <p>It is initialized to true if data flow is used by the checker. It is set to false when
      * getting the assignment context for type argument inference.
      *
-     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsWithTypeVarInferenceDefaults
      * @return shouldDefaultTypeVarLocals
      */
     public boolean getShouldDefaultTypeVarLocals() {

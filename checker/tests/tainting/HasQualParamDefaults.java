@@ -44,6 +44,21 @@ public class HasQualParamDefaults {
             someString = s;
             return s;
         }
+
+        void initializeLocalTainted(@Tainted Buffer b) {
+            Buffer local = b;
+            @Tainted Buffer copy = local;
+        }
+
+        void initializeLocalUntainted(@Untainted Buffer b) {
+            Buffer local = b;
+            @Untainted Buffer copy = local;
+        }
+
+        void initializeLocalPolyTainted(@PolyTainted Buffer b) {
+            Buffer local = b;
+            @PolyTainted Buffer copy = local;
+        }
     }
 
     class Use {
@@ -81,6 +96,26 @@ public class HasQualParamDefaults {
             @Untainted Buffer b1 = new @Untainted Buffer();
             @Tainted Buffer b2 = new @Tainted Buffer();
             @PolyTainted Buffer b3 = new @PolyTainted Buffer();
+        }
+    }
+
+    // For classes with @HasQualifierParameter, differenting defaulting rules are applied on that
+    // type inside the class body and outside the class body, so local variables need to be tested
+    // outside the class as well.
+    class LocalVars {
+        void initializeLocalTainted(@Tainted Buffer b) {
+            Buffer local = b;
+            @Tainted Buffer copy = local;
+        }
+
+        void initializeLocalUntainted(@Untainted Buffer b) {
+            Buffer local = b;
+            @Untainted Buffer copy = local;
+        }
+
+        void initializeLocalPolyTainted(@PolyTainted Buffer b) {
+            Buffer local = b;
+            @PolyTainted Buffer copy = local;
         }
     }
 }
