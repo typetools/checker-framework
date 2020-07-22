@@ -2,7 +2,7 @@ package org.checkerframework.framework.type;
 
 import org.checkerframework.framework.util.AnnotatedTypes;
 
-/** Compares AnnotatedTypeMirrors for subtype relationships. See also QualifierHierarchy */
+/** Compares AnnotatedTypeMirrors for subtype relationships. See also {@link QualifierHierarchy}. */
 public interface TypeHierarchy {
 
     /**
