@@ -86,7 +86,8 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (varType.hasAnnotation(Linear.class)) {
             if (valueTree instanceof LiteralTree || valueTree instanceof NewClassTree) {
                 valueType.removeAnnotation(atypeFactory.NORMAL);
