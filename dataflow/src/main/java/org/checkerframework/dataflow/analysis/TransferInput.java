@@ -22,8 +22,8 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     protected @Nullable Node node;
 
     /**
-     * The regular result store (or {@code null} if none is present). The following invariant is
-     * maintained:
+     * The regular result store (or {@code null} if none is present, because {@link #thenStore} and
+     * {@link #elseStore} are set). The following invariant is maintained:
      *
      * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
@@ -32,22 +32,14 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     protected final @Nullable S store;
 
     /**
-     * The 'then' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
-     *
-     * <pre><code>
-     * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </code></pre>
+     * The 'then' result store (or {@code null} if none is present). See invariant at {@link
+     * #store}.
      */
     protected final @Nullable S thenStore;
 
     /**
-     * The 'else' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
-     *
-     * <pre><code>
-     * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </code></pre>
+     * The 'else' result store (or {@code null} if none is present). See invariant at {@link
+     * #store}.
      */
     protected final @Nullable S elseStore;
 
@@ -221,7 +213,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      *     potentially not equal
      */
     public boolean containsTwoStores() {
-        return (thenStore != null && elseStore != null);
+        return store == null;
     }
 
     /**
