@@ -455,11 +455,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     /**
      * This method is called to traverse the path back up from any anonymous inner class or lambda
-     * which has been inferred to be UI affecting and re-run {@link #commonAssignmentCheck(Tree,
-     * ExpressionTree, String)} as needed on places where the class declaration or lambda expression
-     * are being assigned to a variable, passed as a parameter or returned from a method. This is
-     * necessary because the normal visitor traversal only checks assignments on the way down the
-     * AST, before inference has had a chance to run.
+     * which has been inferred to be UI affecting and re-run {@code commonAssignmentCheck} as needed
+     * on places where the class declaration or lambda expression are being assigned to a variable,
+     * passed as a parameter or returned from a method. This is necessary because the normal visitor
+     * traversal only checks assignments on the way down the AST, before inference has had a chance
+     * to run.
+     *
+     * @param path the path to traverse up from a UI-affecting class
      */
     private void scanUp(TreePath path) {
         Tree tree = path.getLeaf();

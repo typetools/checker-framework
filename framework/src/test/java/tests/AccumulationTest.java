@@ -14,7 +14,13 @@ public class AccumulationTest extends FrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public AccumulationTest(List<File> testFiles) {
-        super(testFiles, TestAccumulationChecker.class, "accumulation", "-Anomsgtext");
+        super(
+                testFiles,
+                TestAccumulationChecker.class,
+                "accumulation",
+                "-Anomsgtext",
+                "-encoding",
+                "UTF-8");
     }
 
     @Parameters

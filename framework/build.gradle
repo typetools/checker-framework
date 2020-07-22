@@ -33,8 +33,8 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
-    implementation 'org.plumelib:reflection-util:0.2.2'
     implementation 'org.plumelib:plume-util:1.1.4'
+    implementation 'org.plumelib:reflection-util:0.2.2'
 
     // TODO: org.checkerframework.annotatedlib:guava:28.2-jre requires the below dependency.
     // Get the version number from the "compile dependencies" section of
