@@ -601,7 +601,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         /** The source code that the message is about. */
         final @InternedDistinct Tree source;
         /** Stores the stack trace till the point the checker encounters an error. */
-        final StackTraceElement @Nullable [] trace;
+        final StackTraceElement[] trace;
 
         /**
          * The checker that issued this message. The compound checker that depends on this checker
@@ -623,7 +623,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 String message,
                 @FindDistinct Tree source,
                 @FindDistinct BaseTypeChecker checker,
-                StackTraceElement @Nullable [] trace) {
+                StackTraceElement[] trace) {
             this.kind = kind;
             this.message = message;
             this.source = source;

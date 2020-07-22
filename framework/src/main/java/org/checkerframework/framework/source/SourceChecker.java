@@ -1105,6 +1105,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             Tree source,
             CompilationUnitTree root,
             StackTraceElement[] trace) {
+        // Not calling printOrStoreMessage(kind, message, source, root) since the error message
+        // won't be printed
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
         printStackTrace(trace);
     }
