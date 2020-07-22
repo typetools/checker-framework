@@ -287,7 +287,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * performance.
      *
      * @param subtype a type that may be a subtype
-     * @param supertypeAnno a type that may be a supertype
+     * @param supertype a type that may be a supertype
      * @return true if subtype {@literal <:} supertype
      */
     protected boolean isSubtypeCaching(
@@ -335,8 +335,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * @param inside a type argument of the "subtype"
      * @param outside a type argument of the "supertype"
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
-     * @return true if inside is contained by outside, or if canBeCovariant == true and @code{inside
-     *     <: outside}
+     * @return true if inside is contained by outside, or if canBeCovariant == true and {@code
+     *     inside <: outside}
      */
     protected boolean isContainedBy(
             final AnnotatedTypeMirror inside,
