@@ -1,7 +1,7 @@
 # Contributing to the Checker Framework
 
 Thank you for contributing to the Checker Framework!  This project is a
-community effort of [more than 90
+community effort of [more than 100
 developers](https://checkerframework.org/manual/#credits), plus countless
 more people who have contributed bug reports and feature suggestions.  We
 couldn't do it without your help.
