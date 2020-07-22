@@ -779,10 +779,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the type subtyping checker using the current type qualifier hierarchy.
+     * Creates the type hierarchy to be used by this factory.
      *
      * <p>Subclasses may override this method to specify new type-checking rules beyond the typical
-     * java subtyping rules.
+     * Java subtyping rules.
      *
      * @return the type relations class to check type subtyping
      */

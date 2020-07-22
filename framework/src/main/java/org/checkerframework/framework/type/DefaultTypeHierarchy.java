@@ -31,8 +31,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * covariant array types, raw types, and allowing covariant type arguments depending on various
  * options passed to DefaultTypeHierarchy.
  *
- * <p>Subtyping rules of the JLS can be found in section 4.10, "Subtyping":
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10
+ * <p>Subtyping rules of the JLS can be found in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10">section 4.10,
+ * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
