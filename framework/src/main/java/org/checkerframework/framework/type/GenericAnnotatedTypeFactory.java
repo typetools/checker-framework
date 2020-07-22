@@ -1361,10 +1361,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains why a
      * different type is used.
      *
-     * <p>Normally, for local variables with a type that has a qualifier parameter, the right-hand
-     * side of their initializer is used to determine their type. When performing type variable
-     * inference, this means that the left-hand side depends on the right-hand side and vice versa.
-     * In this case, normal local variable defaults are used.
+     * <p>Normally, for local variables with a type that has a qualifier parameter, the initializer
+     * is used as their initial type. When performing type variable inference on an assignment, this
+     * creates a situation where the type of the left-hand side depends on the right-hand side and
+     * vice versa. In this case, normal local variable defaults are used instead.
      *
      * @param lhsTree left-hand side of an assignment
      * @return AnnotatedTypeMirror of {@code lhsTree}
