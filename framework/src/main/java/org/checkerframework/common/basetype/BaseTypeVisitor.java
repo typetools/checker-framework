@@ -1369,7 +1369,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             paramBounds.add(param.getBounds());
         }
 
-        ExecutableElement method = TreeUtils.elementFromUse(node);
+        ExecutableElement method = invokedMethod.getElement();
         Name methodName = method.getSimpleName();
         checkTypeArguments(
                 node,
@@ -1683,21 +1683,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(node);
-        AnnotatedExecutableType constructor = fromUse.executableType;
+        AnnotatedExecutableType constructorType = fromUse.executableType;
         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
-                AnnotatedTypes.expandVarArgs(atypeFactory, constructor, passedArguments);
+                AnnotatedTypes.expandVarArgs(atypeFactory, constructorType, passedArguments);
 
-        ExecutableElement method = TreeUtils.elementFromUse(node);
-        Name methodName = method.getSimpleName();
+        ExecutableElement constructor = constructorType.getElement();
+        Name constructorName = constructor.getSimpleName();
 
-        checkArguments(params, passedArguments, methodName, method.getParameters());
-        checkVarargs(constructor, node);
+        checkArguments(params, passedArguments, constructorName, constructor.getParameters());
+        checkVarargs(constructorType, node);
 
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
-        for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
+        for (AnnotatedTypeVariable param : constructorType.getTypeVariables()) {
             paramBounds.add(param.getBounds());
         }
 
@@ -1706,8 +1706,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 paramBounds,
                 typeargs,
                 node.getTypeArguments(),
-                methodName,
-                method.getTypeParameters());
+                constructorName,
+                constructor.getTypeParameters());
 
         boolean valid = validateTypeOf(node);
 
@@ -1716,7 +1716,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (atypeFactory.getDependentTypesHelper() != null) {
                 atypeFactory.getDependentTypesHelper().checkType(dt, node);
             }
-            checkConstructorInvocation(dt, constructor, node);
+            checkConstructorInvocation(dt, constructorType, node);
         }
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
@@ -2948,13 +2948,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     because it replaces a varargs parameter by multiple parameters with the vararg's element
      *     type.
      * @param passedArgs the expressions passed to the corresponding types
-     * @param methodName the name of the method being called
+     * @param executableName the name of the method or constructor being called
      * @param paramNames the names of the callee's formal parameters
      */
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs,
-            Name methodName,
+            Name executableName,
             List<?> paramNames) {
         int size = requiredArgs.size();
         assert size == passedArgs.size()
@@ -2973,7 +2973,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         paramNames.size(),
                         listToString(requiredArgs),
                         listToString(passedArgs),
-                        methodName,
+                        executableName,
                         listToString(paramNames));
 
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
@@ -2987,7 +2987,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         "argument.type.incompatible",
                         // TODO: for expanded varargs parameters, maybe adjust the name
                         paramNames.get(Math.min(i, maxParamNamesIndex)),
-                        methodName);
+                        executableName);
                 // Also descend into the argument within the correct assignment
                 // context.
                 scan(passedArgs.get(i), null);

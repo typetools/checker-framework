@@ -462,15 +462,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 atypeFactory.typeVariablesFromUse(type, element);
 
         DeclaredType declType = type.getUnderlyingType();
-        TypeElement typeElt = (TypeElement) declType.asElement();
 
         visitor.checkTypeArguments(
                 tree,
                 bounds,
                 type.getTypeArguments(),
                 tree.getTypeArguments(),
-                typeElt.getSimpleName(),
-                typeElt.getTypeParameters());
+                element.getSimpleName(),
+                element.getTypeParameters());
 
         return null;
     }

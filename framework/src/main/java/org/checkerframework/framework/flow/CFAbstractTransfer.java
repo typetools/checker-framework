@@ -156,7 +156,7 @@ public abstract class CFAbstractTransfer<
      * This method is called before returning the abstract value {@code value} as the result of the
      * transfer function. By default, the value is not changed but subclasses might decide to
      * implement some functionality. The store at this position is also passed (two stores, as the
-     * result may be a {@link ConditionalTransferResult}.
+     * result is a {@link ConditionalTransferResult}.
      *
      * @param value the value to finish
      * @param thenStore the "then" store
