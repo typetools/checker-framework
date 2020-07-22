@@ -260,7 +260,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected boolean isBottom(final AnnotatedTypeMirror subtype) {
         final AnnotationMirror bottom = qualifierHierarchy.getBottomAnnotation(currentTop);
         if (bottom == null) {
-            return false; // can't be below infinitely sized hierarchy
+            throw new BugInCF("getBottomAnnotation(%s) is null", currentTop);
         }
 
         switch (subtype.getKind()) {
