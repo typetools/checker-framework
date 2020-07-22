@@ -1607,6 +1607,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Applies defaults for types in a class with an qualifier parameter.
      *
+     * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
+     * polymorphic qualifier rather than the typical default. Local variables with a type that has a
+     * qualifier parameter are initialized to the type of their initializer, rather than top.
+     *
      * @param tree Tree whose type is {@code type}
      * @param type where the defaults are applied
      */
@@ -1616,6 +1620,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
+     * polymorphic qualifier rather than the typical default. Local variables with a type that has a
+     * qualifier parameter are initialized to the type of their initializer, rather than top.
      *
      * @param elt Element whose type is {@code type}
      * @param type where the defaults are applied
