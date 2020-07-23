@@ -223,8 +223,9 @@ public class FormatUtil {
     /**
      * Return the conversion character that is in the given format specifier.
      *
-     * @param formatSpecifier a format specifier; see
-     *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax}
+     * @param formatSpecifier a <a
+     *     href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax">format
+     *     specifier</a>
      * @return the conversion character that is in the given format specifier
      * @deprecated This method is public only for testing. Use {@link
      *     #conversionCharFromFormat(Matcher)}.
