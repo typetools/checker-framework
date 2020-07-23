@@ -449,7 +449,6 @@ class ChapterExamples {
             d = b.intValue(); // The de-sugared version does not issue an error.
         }
 
-        // :: error: (assignment.type.incompatible)
         c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
         // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
@@ -457,7 +456,6 @@ class ChapterExamples {
         c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
 
         synchronized (lock) {
-            // :: error: (assignment.type.incompatible)
             c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
             // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.

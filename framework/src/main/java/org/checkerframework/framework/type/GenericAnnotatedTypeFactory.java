@@ -1,8 +1,10 @@
 package org.checkerframework.framework.type;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -1519,7 +1521,11 @@ public abstract class GenericAnnotatedTypeFactory<
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
-        addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+        if (!(tree instanceof BinaryTree
+                || tree instanceof UnaryTree
+                || tree instanceof CompoundAssignmentTree)) {
+            addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+        }
 
         applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
