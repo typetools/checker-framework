@@ -7,6 +7,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1523,12 +1524,14 @@ public abstract class GenericAnnotatedTypeFactory<
                         + this.getClass();
         if (!(tree instanceof BinaryTree
                 || tree instanceof UnaryTree
-                || tree instanceof CompoundAssignmentTree)) {
+                || tree instanceof CompoundAssignmentTree
+                || tree instanceof LiteralTree)) {
             addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         }
 
         applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
+        addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
 
