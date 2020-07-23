@@ -2443,18 +2443,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * returns the annotated primitive type of the given declared type if it is a boxed declared
+     * Returns the annotated primitive type of the given declared type if it is a boxed declared
      * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * <p>The returned type would have the annotations on the given type and nothing else.
+     * <p>The returned type has the same primary annotations as the given type.
      *
      * @param type the declared type
      * @return the unboxed primitive type
      * @throws IllegalArgumentException if the type given has no unbox conversion
+     * @see #getUnboxedTypeOrNull
      */
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
             throws IllegalArgumentException {
         PrimitiveType primitiveType = types.unboxedType(type.getUnderlyingType());
+        AnnotatedPrimitiveType pt =
+                (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
+        pt.addAnnotations(type.getAnnotations());
+        return pt;
+    }
+
+    /**
+     * Returns the annotated primitive type of the given declared type if it is a boxed declared
+     * type. Otherwise, returns {@code null}.
+     *
+     * <p>The returned type has the same primary annotations as the given type.
+     *
+     * @param type the declared type
+     * @return the unboxed primitive type, or null
+     * @see #getUnboxedType
+     */
+    public AnnotatedPrimitiveType getUnboxedTypeOrNull(AnnotatedDeclaredType type) {
+        PrimitiveType primitiveType;
+        try {
+            primitiveType = types.unboxedType(type.getUnderlyingType());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
         AnnotatedPrimitiveType pt =
                 (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
         pt.addAnnotations(type.getAnnotations());
