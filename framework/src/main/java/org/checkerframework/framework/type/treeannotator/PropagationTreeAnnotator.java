@@ -197,6 +197,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // of type variables.
             Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
             Set<AnnotationMirror> annosToAdd = AnnotationUtils.createAnnotationSet();
+            // If the qualifier on the expression type is a supertype of the qualifier upper bound
+            // of the cast type, then apply the bound as the default qualifier rather than the
+            // expression qualifier.
             for (AnnotationMirror boundAnno : boundAnnos) {
                 AnnotationMirror exprAnno =
                         qualHierarchy.findAnnotationInSameHierarchy(expressionAnnos, boundAnno);
