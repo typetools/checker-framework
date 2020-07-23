@@ -272,7 +272,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param checker the checker
          * @param qualifierHierarchy the qualifier hierarchy
          * @param ignoreRawTypes from -AignoreRawTypes
-         * @praam invariantArrayComponents from -AinvariantArrays
+         * @param invariantArrayComponents from -AinvariantArrays
          */
         public SignednessTypeHierarchy(
                 BaseTypeChecker checker,
@@ -360,6 +360,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Returns the number of bits in the representation of an integral primitive type. Returns
          * -1 if the type is not an integral primitive type.
+         *
+         * @param p a primitive type
+         * @return the number of bits in its representation, or -1 if not integral
          */
         private int numIntegralBits(PrimitiveType p) {
             switch (p.getKind()) {
