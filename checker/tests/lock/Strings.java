@@ -14,11 +14,11 @@ public class Strings {
             @GuardedBy("lock") Object o2,
             @GuardSatisfied Object o3,
             @GuardedByBottom Object o4) {
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe)
         String s1 = (String) o1;
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe)
         String s2 = (String) o2;
-        // :: error: (assignment.type.incompatible)
+        // :: warning: (cast.unsafe)
         String s3 = (String) o3;
         String s4 = (String) o4; // OK
     }
