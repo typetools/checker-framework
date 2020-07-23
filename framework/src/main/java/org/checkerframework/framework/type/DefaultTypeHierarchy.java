@@ -51,6 +51,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected final boolean ignoreRawTypes;
     protected final boolean invariantArrayComponents;
 
+    // TODO: Incorporate feedback from David/Suzanne
     // IMPORTANT_NOTE:
     //
     // For MultigraphQualifierHierarchies, we check the subtyping relationship of each annotation
@@ -1014,7 +1015,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return result;
     }
 
-    /** A type variable is a supertype if its lower bound is above subtype. */
+    /**
+     * A type variable is a supertype if its lower bound is above subtype.
+     *
+     * @param subtype a type that might be a subtype
+     * @param supertype a type that might be a supertype
+     * @return true if {@code subtype} is a subtype of {@code supertype}
+     */
     protected boolean visitTypevarSupertype(
             AnnotatedTypeMirror subtype, AnnotatedTypeVariable supertype) {
         return isSubtypeCaching(subtype, supertype.getLowerBound());
