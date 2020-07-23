@@ -379,12 +379,20 @@ public abstract class GenericAnnotatedTypeFactory<
         return new ListTypeAnnotator(typeAnnotators);
     }
 
-    /** Creates an {@link DefaultQualifierForUseTypeAnnotator}. */
+    /**
+     * Creates an {@link DefaultQualifierForUseTypeAnnotator}.
+     *
+     * @return a new {@link DefaultQualifierForUseTypeAnnotator}
+     */
     protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
         return new DefaultQualifierForUseTypeAnnotator(this);
     }
 
-    /** Creates an {@link DefaultForTypeAnnotator}. */
+    /**
+     * Creates an {@link DefaultForTypeAnnotator}.
+     *
+     * @return a new {@link DefaultForTypeAnnotator}
+     */
     protected DefaultForTypeAnnotator createDefaultForTypeAnnotator() {
         return new DefaultForTypeAnnotator(this);
     }
