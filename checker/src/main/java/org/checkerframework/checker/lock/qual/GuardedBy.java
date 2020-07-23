@@ -53,8 +53,19 @@ import org.checkerframework.framework.qual.UpperBoundFor;
             TypeKind.LONG,
             TypeKind.SHORT
         },
-        types = {java.lang.String.class, Void.class})
-@UpperBoundFor(types = String.class)
+        types = {String.class, Void.class})
+@UpperBoundFor(
+        typeKinds = {
+            TypeKind.BOOLEAN,
+            TypeKind.BYTE,
+            TypeKind.CHAR,
+            TypeKind.DOUBLE,
+            TypeKind.FLOAT,
+            TypeKind.INT,
+            TypeKind.LONG,
+            TypeKind.SHORT
+        },
+        types = String.class)
 public @interface GuardedBy {
     /**
      * The Java value expressions that need to be held.
