@@ -2,7 +2,7 @@ import org.checkerframework.checker.signedness.qual.*;
 
 public class ShiftPropogation {
 
-    public void ShiftOperationTests(@Unsigned int unsigned, @Signed int signed) {
+    /*   public void ShiftOperationTests(@Unsigned int unsigned, @Signed int signed) {
         @Unsigned int uur = unsigned >>> unsigned;
         @Unsigned int usr = unsigned >>> signed;
 
@@ -13,7 +13,7 @@ public class ShiftPropogation {
         @Unsigned int usl = unsigned << signed;
         @Signed int sul = signed << unsigned;
         @Signed int ssl = signed << signed;
-    }
+    }*/
 
     public void ShiftAssignmentTests(@Unsigned int unsigned, @Signed int signed) {
         @Unsigned int uur = unsigned >>>= unsigned;

@@ -16,6 +16,7 @@ public class Strings {
             @GuardedByBottom Object o4) {
         // :: warning: (cast.unsafe)
         String s1 = (String) o1;
+        String s1b = (@GuardedBy({}) String) o1;
         // :: warning: (cast.unsafe)
         String s2 = (String) o2;
         // :: warning: (cast.unsafe)

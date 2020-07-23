@@ -15,6 +15,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1525,6 +1526,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (!(tree instanceof BinaryTree
                 || tree instanceof UnaryTree
                 || tree instanceof CompoundAssignmentTree
+                || tree instanceof TypeCastTree
                 || tree instanceof LiteralTree)) {
             addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         }

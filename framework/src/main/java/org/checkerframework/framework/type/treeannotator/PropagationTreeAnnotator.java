@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -188,10 +189,25 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             }
             // else do nothing.
         } else {
+            Set<AnnotationMirror> boundAnnos =
+                    atypeFactory
+                            .getQualifierUpperBounds()
+                            .getBoundQualifiers(type.getUnderlyingType());
             // Use effective annotations from the expression, to get upper bound
             // of type variables.
-            type.addMissingAnnotations(exprType.getEffectiveAnnotations());
+            Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
+            Set<AnnotationMirror> annosToAdd = AnnotationUtils.createAnnotationSet();
+            for (AnnotationMirror boundAnno : boundAnnos) {
+                AnnotationMirror exprAnno =
+                        qualHierarchy.findAnnotationInSameHierarchy(expressionAnnos, boundAnno);
+                if (exprAnno != null && !qualHierarchy.isSubtype(exprAnno, boundAnno)) {
+                    annosToAdd.add(boundAnno);
+                }
+            }
+            type.addMissingAnnotations(annosToAdd);
+            type.addMissingAnnotations(expressionAnnos);
         }
+
         return null;
     }
 
