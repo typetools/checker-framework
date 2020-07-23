@@ -318,9 +318,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Boolean visitDeclared_Declared(
                 AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
             AnnotatedPrimitiveType subtypePrimitive = getUnboxedTypeOrNull(subtype);
-            if (subtype != null) {
+            if (subtypePrimitive != null) {
                 AnnotatedPrimitiveType supertypePrimitive = getUnboxedTypeOrNull(supertype);
-                if (supertype != null) {
+                if (supertypePrimitive != null) {
                     return visitPrimitive_Primitive(subtypePrimitive, supertypePrimitive, p);
                 }
             }
