@@ -322,8 +322,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     /**
      * A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
-     * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1
+     * Containment is described in <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
+     * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
