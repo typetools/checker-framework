@@ -2463,29 +2463,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the annotated primitive type of the given declared type if it is a boxed declared
-     * type. Otherwise, returns {@code null}.
-     *
-     * <p>The returned type has the same primary annotations as the given type.
-     *
-     * @param type the declared type
-     * @return the unboxed primitive type, or null
-     * @see #getUnboxedType
-     */
-    public AnnotatedPrimitiveType getUnboxedTypeOrNull(AnnotatedDeclaredType type) {
-        PrimitiveType primitiveType;
-        try {
-            primitiveType = types.unboxedType(type.getUnderlyingType());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-        AnnotatedPrimitiveType pt =
-                (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
-        pt.addAnnotations(type.getAnnotations());
-        return pt;
-    }
-
-    /**
      * Returns AnnotatedDeclaredType with underlying type String and annotations copied from type.
      * Subclasses may change the annotations.
      *

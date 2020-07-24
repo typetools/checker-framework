@@ -36,6 +36,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The type factory for the Signedness Checker.
@@ -307,9 +308,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Boolean visitPrimitive_Declared(
                 AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
-            AnnotatedPrimitiveType supertypePrimitive = getUnboxedTypeOrNull(supertype);
-            if (supertypePrimitive != null) {
-                return visitPrimitive_Primitive(subtype, supertypePrimitive, p);
+            boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+            if (superBoxed) {
+                return visitPrimitive_Primitive(subtype, getUnboxedTypeOrNull(supertype), p);
             }
             return super.visitPrimitive_Declared(subtype, supertype, p);
         }
@@ -317,11 +318,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Boolean visitDeclared_Declared(
                 AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
-            AnnotatedPrimitiveType subtypePrimitive = getUnboxedTypeOrNull(subtype);
-            if (subtypePrimitive != null) {
-                AnnotatedPrimitiveType supertypePrimitive = getUnboxedTypeOrNull(supertype);
-                if (supertypePrimitive != null) {
-                    return visitPrimitive_Primitive(subtypePrimitive, supertypePrimitive, p);
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+                if (superBoxed) {
+                    return visitPrimitive_Primitive(
+                            getUnboxedTypeOrNull(subtype), getUnboxedTypeOrNull(supertype), p);
                 }
             }
             return super.visitDeclared_Declared(subtype, supertype, p);
@@ -330,9 +332,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Boolean visitDeclared_Primitive(
                 AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Void p) {
-            AnnotatedPrimitiveType subtypePrimitive = getUnboxedTypeOrNull(subtype);
-            if (subtypePrimitive != null) {
-                return visitPrimitive_Primitive(subtypePrimitive, supertype, p);
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                return visitPrimitive_Primitive(getUnboxedTypeOrNull(subtype), supertype, p);
             }
             return super.visitDeclared_Primitive(subtype, supertype, p);
         }
