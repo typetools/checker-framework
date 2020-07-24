@@ -2443,10 +2443,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * returns the annotated primitive type of the given declared type if it is a boxed declared
+     * Returns the annotated primitive type of the given declared type if it is a boxed declared
      * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * <p>The returned type would have the annotations on the given type and nothing else.
+     * <p>The returned type has the same primary annotations as the given type.
      *
      * @param type the declared type
      * @return the unboxed primitive type
