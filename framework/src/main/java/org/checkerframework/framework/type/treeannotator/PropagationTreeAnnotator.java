@@ -200,6 +200,16 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         return null;
     }
 
+    private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
+        boolean annotated = true;
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            if (type.getEffectiveAnnotationInHierarchy(top) == null) {
+                annotated = false;
+            }
+        }
+        return annotated;
+    }
+
     /**
      * Adds the qualifiers in {@code annos} to {@code type} that are below the qualifier upper bound
      * of type and for which type does not already have annotation in the same hierarchy. If a
@@ -221,15 +231,5 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         }
         type.addMissingAnnotations(annosToAdd);
         type.addMissingAnnotations(annos);
-    }
-
-    private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
-        boolean annotated = true;
-        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            if (type.getEffectiveAnnotationInHierarchy(top) == null) {
-                annotated = false;
-            }
-        }
-        return annotated;
     }
 }
