@@ -117,5 +117,17 @@ public class HasQualParamDefaults {
             Buffer local = b;
             @PolyTainted Buffer copy = local;
         }
+
+        // These next two cases test circular dependencies. Calculating the type of a local variable
+        // looks at the type of initializer, but if the type of the initializer depends on the type
+        // of the variable, then infinite recursion could occur.
+
+        void testTypeVariableInference() {
+            List<String> set = new ArrayList<>();
+        }
+
+        void testVariableInOwnInitializer() {
+            Object o = (o = null);
+        }
     }
 }

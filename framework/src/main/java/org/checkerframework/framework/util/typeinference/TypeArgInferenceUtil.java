@@ -289,8 +289,8 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * If the variable's type is a type variable, return
-     * getAnnotatedTypeWithTypeVarInferenceDefaults(tree). Rational:
+     * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+     * Rational:
      *
      * <p>For example:
      *
@@ -337,7 +337,7 @@ public class TypeArgInferenceUtil {
         if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
             final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
                     ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
-            return gatf.getAnnotatedTypeLhsWithTypeVarInferenceDefaults(assignmentContext);
+            return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
         } else {
             return atypeFactory.getAnnotatedType(assignmentContext);
         }
