@@ -176,8 +176,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
