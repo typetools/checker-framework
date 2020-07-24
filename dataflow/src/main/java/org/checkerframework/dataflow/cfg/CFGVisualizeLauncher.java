@@ -136,7 +136,7 @@ public class CFGVisualizeLauncher {
      * @param verbose show verbose information in CFG
      * @return the String representation of the CFG
      */
-    protected String generateStringOfCFGWithoutAnalysis(
+    protected @Nullable String generateStringOfCFGWithoutAnalysis(
             String inputFile, String method, String clas, boolean verbose) {
         @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
         if (res != null) {
