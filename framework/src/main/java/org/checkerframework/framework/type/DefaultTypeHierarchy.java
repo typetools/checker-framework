@@ -284,8 +284,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Like {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, but uses a cache for
-     * performance.
+     * Like {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, but uses a cache to
+     * prevent infinite recursion on recursive types.
      *
      * @param subtype a type that may be a subtype
      * @param supertype a type that may be a supertype
