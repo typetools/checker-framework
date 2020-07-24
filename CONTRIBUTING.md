@@ -33,4 +33,4 @@ By contributing, you agree that your contributions will be licensed under the ex
 
 ## Code of conduct
 
-In interactions with other people, please abide by the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct).
+While interacting with other people, please abide by the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct).
