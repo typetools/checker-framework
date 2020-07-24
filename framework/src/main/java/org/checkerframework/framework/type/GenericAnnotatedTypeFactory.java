@@ -173,9 +173,17 @@ public abstract class GenericAnnotatedTypeFactory<
      * To prevent this, variables in this set should not be typed based on their initializer, but by
      * using normal defaults.
      *
-     * <p>Variables are added to this set in applyQualifierParameterDefaults.
+     * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
      */
     private Set<Element> variablesUnderInitialization;
+
+    /**
+     * Caches types of initializers for local variables with a qualifier parameter, so that they
+     * aren't computed each time the type of a variable is looked up.
+     *
+     * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
+     */
+    private Map<Tree, AnnotatedTypeMirror> initializerCache;
 
     /** An empty store. */
     // Set in postInit only
@@ -235,8 +243,10 @@ public abstract class GenericAnnotatedTypeFactory<
         if (shouldCache) {
             int cacheSize = getCacheSize();
             flowResultAnalysisCaches = CollectionUtils.createLRUCache(cacheSize);
+            initializerCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
             flowResultAnalysisCaches = null;
+            initializerCache = null;
         }
 
         // Every subclass must call postInit, but it must be called after
@@ -299,6 +309,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (shouldCache) {
             this.flowResultAnalysisCaches.clear();
+            this.initializerCache.clear();
             this.defaultQualifierForUseTypeAnnotator.clearCache();
         }
     }
@@ -1641,30 +1652,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 return;
         }
 
-        if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                && !getQualifierParameterHierarchies(type).isEmpty()
-                && !variablesUnderInitialization.contains(elt)) {
-            Tree declTree = declarationFromElement(elt);
-            if (declTree != null && declTree.getKind() == Kind.VARIABLE) {
-                ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
-                if (initializer != null) {
-                    variablesUnderInitialization.add(elt);
-                    Set<AnnotationMirror> initializerTypes =
-                            getAnnotatedType(initializer).getAnnotations();
-                    Set<AnnotationMirror> qualifierParamTypes =
-                            AnnotationUtils.createAnnotationSet();
-                    for (AnnotationMirror initializerType : initializerTypes) {
-                        if (hasQualifierParameterInHierarchy(
-                                type, qualHierarchy.getTopAnnotation(initializerType))) {
-                            qualifierParamTypes.add(initializerType);
-                        }
-                    }
-
-                    type.addMissingAnnotations(qualifierParamTypes);
-                    variablesUnderInitialization.remove(elt);
-                }
-            }
-        }
+        applyLocalVariableQualifierParameterDefaults(elt, type);
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
         Set<AnnotationMirror> tops;
@@ -1692,6 +1680,54 @@ public abstract class GenericAnnotatedTypeFactory<
                 return super.visitDeclared(type, aVoid);
             }
         }.visit(type);
+    }
+
+    /**
+     * Defaults local variables with types that have a qualifier parameter to type of their
+     * initializer.
+     *
+     * @param elt Element whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    private void applyLocalVariableQualifierParameterDefaults(
+            Element elt, AnnotatedTypeMirror type) {
+        if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+                || getQualifierParameterHierarchies(type).isEmpty()
+                || variablesUnderInitialization.contains(elt)) {
+            return;
+        }
+
+        Tree declTree = declarationFromElement(elt);
+        if (declTree == null || declTree.getKind() != Kind.VARIABLE) {
+            return;
+        }
+
+        ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+        if (initializer == null) {
+            return;
+        }
+
+        variablesUnderInitialization.add(elt);
+        AnnotatedTypeMirror initializerType;
+        if (shouldCache && initializerCache.containsKey(initializer)) {
+            initializerType = initializerCache.get(initializer);
+        } else {
+            initializerType = getAnnotatedType(initializer);
+        }
+
+        Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror initializerAnnotation : initializerType.getAnnotations()) {
+            if (hasQualifierParameterInHierarchy(
+                    type, qualHierarchy.getTopAnnotation(initializerAnnotation))) {
+                qualParamTypes.add(initializerAnnotation);
+            }
+        }
+
+        type.addMissingAnnotations(qualParamTypes);
+        variablesUnderInitialization.remove(elt);
+        if (shouldCache) {
+            initializerCache.put(initializer, initializerType);
+        }
     }
 
     /**
