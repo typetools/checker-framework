@@ -1234,10 +1234,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     expressionObj.getType().getAnnotationMirrors();
             for (AnnotationMirror anno : annoList) {
                 String ANNO_NAME = anno.getAnnotationType().toString();
-                if (ANNO_NAME.equals(MINLEN_NAME)
-                        || ANNO_NAME.equals(ARRAYLEN_NAME)
-                        || ANNO_NAME.equals(ARRAYLENRANGE_NAME)) {
+                if (ANNO_NAME.equals(MINLEN_NAME)) {
                     return getMinLenValue(canonicalAnnotation(anno));
+                } else if (ANNO_NAME.equals(ARRAYLEN_NAME)
+                        || ANNO_NAME.equals(ARRAYLENRANGE_NAME)) {
+                    return getMinLenValue(anno);
                 }
             }
         }
