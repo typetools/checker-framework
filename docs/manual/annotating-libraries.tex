@@ -189,9 +189,25 @@ annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
-documentation.  If you don't annotate the whole file, then users may be
-surprised that calls to some methods type-check as expected whereas other
-methods do not (because they have not been annotated).
+documentation.  Here are reasons for this rule:
+
+\begin{itemize}
+\item
+  If you annotate just part of the file, then users may be surprised that
+  calls to some methods type-check as expected whereas other methods do not
+  (because they have not been annotated).
+\item
+  Annotating one method or field at a time may lead to inconsistencies
+  between different parts of the file.  Different people may make different
+  assumptions, might write annotations in a way that is locally convenient
+  but globally inconsistent, or might not read all the documentation of the
+  class to understand how it works.
+\item
+  It is not much more effort to annotate an entire class versus one method
+  or field.  In either case it is usually necessary to understand the entire
+  class's design and implementation.  Once you have done that, you might as
+  well annotate the whole thing.
+\end{itemize}
 
 
 \subsectionAndLabel{Verify your annotations}{library-tips-verify}
