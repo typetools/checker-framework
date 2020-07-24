@@ -1642,6 +1642,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         if (elt.getKind() == ElementKind.LOCAL_VARIABLE
+                && !getQualifierParameterHierarchies(type).isEmpty()
                 && !variablesUnderInitialization.contains(elt)) {
             Tree declTree = declarationFromElement(elt);
             if (declTree != null && declTree.getKind() == Kind.VARIABLE) {

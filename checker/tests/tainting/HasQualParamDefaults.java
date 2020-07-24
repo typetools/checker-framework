@@ -123,11 +123,15 @@ public class HasQualParamDefaults {
         // of the variable, then infinite recursion could occur.
 
         void testTypeVariableInference() {
-            List<String> set = new ArrayList<>();
+            GenericWithQualParam<String> set = new GenericWithQualParam<>();
         }
 
         void testVariableInOwnInitializer() {
-            Object o = (o = null);
+            // :: error: (assignment.type.incompatible)
+            Buffer b = (b = null);
         }
     }
+
+    @HasQualifierParameter(Tainted.class)
+    static class GenericWithQualParam<T> {}
 }
