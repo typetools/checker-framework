@@ -24,6 +24,9 @@ requests](https://rawgit.com/typetools/checker-framework/master/docs/developer/d
 section of the Developer Manual.
 
 Submit changes to the annotated JDK at https://github.com/typetools/jdk/pulls .
+Annotations for other libraries can be contributed as stub files in this
+repository, in a fork of the library in https://github.com/typetools/, or
+in the library's own repository.
 
 Do you want to contribute to the project, but you are not sure what issue
 to fix or what feature to add?  Use the tool in your daily work, and when
