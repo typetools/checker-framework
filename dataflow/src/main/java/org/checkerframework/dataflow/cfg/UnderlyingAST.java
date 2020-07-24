@@ -79,24 +79,23 @@ public abstract class UnderlyingAST {
         private final LambdaExpressionTree lambda;
 
         /** The enclosing class of the lambda. */
-        private final ClassTree enclosingClass;
+        private final ClassTree classTree;
 
         /** The enclosing method of the lambda. */
-        private final MethodTree enclosingMethod;
+        private final MethodTree method;
 
         /**
          * Create a new CFGLambda.
          *
          * @param lambda the lambda expression
-         * @param enclosingClass the enclosing class of the lambda
-         * @param enclosingMethod the enclosing method of the lambda
+         * @param classTree the enclosing class of the lambda
+         * @param method the enclosing method of the lambda
          */
-        public CFGLambda(
-                LambdaExpressionTree lambda, ClassTree enclosingClass, MethodTree enclosingMethod) {
+        public CFGLambda(LambdaExpressionTree lambda, ClassTree classTree, MethodTree method) {
             super(Kind.LAMBDA);
             this.lambda = lambda;
-            this.enclosingClass = enclosingClass;
-            this.enclosingMethod = enclosingMethod;
+            this.method = method;
+            this.classTree = classTree;
         }
 
         @Override
@@ -118,8 +117,8 @@ public abstract class UnderlyingAST {
          *
          * @return the enclosing class of the lambda
          */
-        public ClassTree getEnclosingClass() {
-            return enclosingClass;
+        public ClassTree getClassTree() {
+            return classTree;
         }
 
         /**
@@ -127,8 +126,8 @@ public abstract class UnderlyingAST {
          *
          * @return the enclosing method of the lambda
          */
-        public MethodTree getEnclosingMethod() {
-            return enclosingMethod;
+        public MethodTree getMethod() {
+            return method;
         }
 
         @Override

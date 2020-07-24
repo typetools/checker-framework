@@ -196,24 +196,22 @@ public class DOTCFGVisualizer<
             srcLoc.append(">");
         } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
             CFGLambda cfgLambda = (CFGLambda) ast;
-            String enclosingClassName = cfgLambda.getEnclosingClass().getSimpleName().toString();
-            String enclosingMethodName = cfgLambda.getEnclosingMethod().getName().toString();
+            String clsName = cfgLambda.getClassTree().getSimpleName().toString();
+            String methodName = cfgLambda.getMethod().getName().toString();
             int hashCode = cfgLambda.getCode().hashCode();
-            outFile.append(enclosingClassName);
+            outFile.append(clsName);
             outFile.append("-");
-            outFile.append(enclosingMethodName);
+            outFile.append(methodName);
             outFile.append("-");
             outFile.append(hashCode);
 
             srcLoc.append("<");
-            srcLoc.append(enclosingClassName);
+            srcLoc.append(clsName);
             srcLoc.append("::");
-            srcLoc.append(enclosingMethodName);
+            srcLoc.append(methodName);
             srcLoc.append("(");
-            srcLoc.append(cfgLambda.getEnclosingMethod().getParameters());
+            srcLoc.append(cfgLambda.getMethod().getParameters());
             srcLoc.append(")::");
-            srcLoc.append(hashCode);
-            srcLoc.append("::");
             srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
             srcLoc.append(">");
         } else {
