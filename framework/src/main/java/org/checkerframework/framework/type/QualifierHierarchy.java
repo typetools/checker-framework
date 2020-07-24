@@ -108,9 +108,9 @@ public abstract class QualifierHierarchy {
      * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
      * according to the type qualifier hierarchy.
      *
-     * @param subQualifier possible subQualifier of {@code superQualifier}
-     * @param superQualifier possible superQualifier of {@code subQualifier}
-     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     * @param subQualifier possible subqualifier of {@code superQualifier}
+     * @param superQualifier possible superqualifier of {@code subQualifier}
+     * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code
      *     superQualifier}
      */
     public abstract boolean isSubtype(
@@ -147,7 +147,7 @@ public abstract class QualifierHierarchy {
      *     different hierarchies
      */
     // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
-    // set version of LUB below.
+    // collection version of LUB below.
     public abstract @Nullable AnnotationMirror leastUpperBound(
             AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
@@ -236,7 +236,7 @@ public abstract class QualifierHierarchy {
      *     from the same hierarchy
      */
     // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
-    // set version of LUB below.
+    // collection version of LUB below.
     public abstract @Nullable AnnotationMirror greatestLowerBound(
             AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
@@ -394,7 +394,7 @@ public abstract class QualifierHierarchy {
      *
      * @param subQualifier a qualifier that might be a subtype
      * @param superQualifier a qualifier that might be a subtype
-     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code
      *     superQualifier}
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the subtype relationship between "no qualifier" and a qualifier
@@ -425,7 +425,7 @@ public abstract class QualifierHierarchy {
      * @param superType used to decide whether to call isSubtypeTypeVariable
      * @param subQualifier the type qualifier that might be a subtype
      * @param superQualifier the type qualifier that might be a supertype
-     * @return true iff {@code subQualifier} is a sub qualifier of, or equal to, {@code
+     * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code
      *     superQualifier}
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the subtype relationship between "no qualifier" and a qualifier
@@ -444,8 +444,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Tests whether there is any annotation in {@code supers} that is a super qualifier of, or
-     * equal to, some annotation in {@code subs}. {@code supers} and {@code subs} contain only the
+     * Tests whether there is any annotation in {@code supers} that is a superqualifier of, or equal
+     * to, some annotation in {@code subs}. {@code supers} and {@code subs} contain only the
      * annotations, not the Java type.
      *
      * <p>This method takes an annotated type to decide if the type variable version of the method
@@ -475,7 +475,7 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Tests whether there is any annotation in superAnnos that is a super qualifier of or equal to
+     * Tests whether there is any annotation in superAnnos that is a superqualifier of or equal to
      * some annotation in subAnnos. superAnnos and subAnnos contain only the annotations, not the
      * Java type.
      *
