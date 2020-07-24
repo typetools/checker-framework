@@ -295,9 +295,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             PrimitiveType subPrimitive = subtype.getUnderlyingType();
             PrimitiveType superPrimitive = supertype.getUnderlyingType();
             if (isNarrowerIntegral(subPrimitive, superPrimitive)) {
-                // AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
                 AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
-                if (!superAnno.equals(SIGNEDNESS_BOTTOM)) {
+                if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
                     return true;
                 }
             }
