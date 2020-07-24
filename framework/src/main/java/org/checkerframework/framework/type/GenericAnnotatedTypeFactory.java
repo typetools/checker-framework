@@ -1650,15 +1650,16 @@ public abstract class GenericAnnotatedTypeFactory<
                     variablesUnderInitialization.add(elt);
                     Set<AnnotationMirror> initializerTypes =
                             getAnnotatedType(initializer).getAnnotations();
-                    Set<AnnotationMirror> qualifierTypes = AnnotationUtils.createAnnotationSet();
+                    Set<AnnotationMirror> qualifierParamTypes =
+                            AnnotationUtils.createAnnotationSet();
                     for (AnnotationMirror initializerType : initializerTypes) {
                         if (hasQualifierParameterInHierarchy(
                                 type, qualHierarchy.getTopAnnotation(initializerType))) {
-                            qualifierTypes.add(initializerType);
+                            qualifierParamTypes.add(initializerType);
                         }
                     }
 
-                    type.addMissingAnnotations(qualifierTypes);
+                    type.addMissingAnnotations(qualifierParamTypes);
                     variablesUnderInitialization.remove(elt);
                 }
             }
