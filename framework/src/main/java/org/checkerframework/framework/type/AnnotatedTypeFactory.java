@@ -2451,7 +2451,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the declared type
      * @return the unboxed primitive type
      * @throws IllegalArgumentException if the type given has no unbox conversion
-     * @see #getUnboxedTypeOrNull
      */
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
             throws IllegalArgumentException {

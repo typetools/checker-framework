@@ -310,7 +310,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
             boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
             if (superBoxed) {
-                return visitPrimitive_Primitive(subtype, getUnboxedTypeOrNull(supertype), p);
+                return visitPrimitive_Primitive(subtype, getUnboxedType(supertype), p);
             }
             return super.visitPrimitive_Declared(subtype, supertype, p);
         }
@@ -323,7 +323,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
                 if (superBoxed) {
                     return visitPrimitive_Primitive(
-                            getUnboxedTypeOrNull(subtype), getUnboxedTypeOrNull(supertype), p);
+                            getUnboxedType(subtype), getUnboxedType(supertype), p);
                 }
             }
             return super.visitDeclared_Declared(subtype, supertype, p);
@@ -334,7 +334,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Void p) {
             boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
             if (subBoxed) {
-                return visitPrimitive_Primitive(getUnboxedTypeOrNull(subtype), supertype, p);
+                return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
             }
             return super.visitDeclared_Primitive(subtype, supertype, p);
         }
