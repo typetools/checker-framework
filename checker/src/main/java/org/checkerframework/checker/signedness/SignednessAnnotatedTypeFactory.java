@@ -220,10 +220,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void addAnnotationsFromDefaultQualifierForUse(
             @Nullable Element element, AnnotatedTypeMirror type) {
         if (TypesUtils.isFloating(type.getUnderlyingType())
-                || TypesUtils.isBoxedFloating(type.getUnderlyingType())) {
-            // Always add signed to floats.
+                || TypesUtils.isBoxedFloating(type.getUnderlyingType())
+                || type.getKind() == TypeKind.CHAR
+                || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
+            // Floats are always signed and chars are always unsigned.
             super.addAnnotationsFromDefaultQualifierForUse(null, type);
-
         } else {
             super.addAnnotationsFromDefaultQualifierForUse(element, type);
         }
