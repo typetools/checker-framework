@@ -1306,7 +1306,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt the element from which to read stub types
      * @return the type, side-effected to add the stub types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(
+    protected AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt) {
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
         if (stubType != null) {
