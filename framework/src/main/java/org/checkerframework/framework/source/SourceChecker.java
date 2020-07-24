@@ -253,6 +253,8 @@ import org.plumelib.util.UtilPlume;
 
     /// Amount of detail in messages
 
+    // Print the version of the Checker Framework
+    "version",
     // Print info about git repository from which the Checker Framework was compiled
     "printGitProperties",
 
@@ -780,6 +782,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                         shutdownHook();
                                     }
                                 });
+            }
+            if (hasOption("version")) {
+                messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
             }
         } catch (UserError ce) {
             logUserError(ce);
@@ -2529,5 +2534,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (IOException e) {
             System.out.println("IOException while reading git.properties: " + e.getMessage());
         }
+    }
+
+    /**
+     * Returns the version of the Checker Framework.
+     *
+     * @return Checker Framework version
+     */
+    private String getCheckerVersion() {
+        Properties gitProperties = getProperties(getClass(), "/git.properties");
+        String version = gitProperties.getProperty("git.build.version");
+        if (version != null) {
+            return version;
+        }
+        throw new BugInCF("Could not find the version in git.properties");
     }
 }
