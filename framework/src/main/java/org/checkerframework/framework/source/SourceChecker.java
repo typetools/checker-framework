@@ -1086,7 +1086,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             String message,
             Tree source,
             CompilationUnitTree root) {
-        Trees.instance(processingEnv).printMessage(kind, message, source, root);
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        printOrStoreMessage(kind, message, source, root, trace);
     }
 
     /**
