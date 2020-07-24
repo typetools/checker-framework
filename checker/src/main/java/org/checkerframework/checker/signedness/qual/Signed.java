@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
-import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
  * The value is to be interpreted as signed. That is, if the most significant bit in the bitwise
@@ -37,7 +36,4 @@ import org.checkerframework.framework.qual.UpperBoundFor;
             java.lang.Float.class,
             java.lang.Double.class
         })
-@UpperBoundFor(
-        typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
-        types = {java.lang.Float.class, java.lang.Double.class})
 public @interface Signed {}
