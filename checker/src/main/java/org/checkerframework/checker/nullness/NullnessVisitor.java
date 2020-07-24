@@ -175,7 +175,10 @@ public class NullnessVisitor
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         // allow MonotonicNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
@@ -187,20 +190,21 @@ public class NullnessVisitor
                 return;
             }
         }
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     }
 
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         // Use the valueExp as the context because data flow will have a value for that tree.
         // It might not have a value for the var tree.  This is sound because
         // if data flow has determined @PolyNull is @Nullable at the RHS, then
         // it is also @Nullable for the LHS.
         atypeFactory.replacePolyQualifier(varType, valueExp);
-        super.commonAssignmentCheck(varType, valueExp, errorKey);
+        super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -208,7 +212,8 @@ public class NullnessVisitor
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (TypesUtils.isPrimitive(varType.getUnderlyingType())
                 && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
             boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
@@ -217,7 +222,7 @@ public class NullnessVisitor
                 return;
             }
         }
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     /** Case 1: Check for null dereferencing. */

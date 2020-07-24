@@ -11,9 +11,10 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** This class provides a collection of utilities to ease working with format strings. */
-// TODO @AnnotatedFor("nullness")
+@AnnotatedFor("nullness")
 public class FormatUtil {
 
     /**
@@ -222,8 +223,9 @@ public class FormatUtil {
     /**
      * Return the conversion character that is in the given format specifier.
      *
-     * @param formatSpecifier a format specifier; see
-     *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax}
+     * @param formatSpecifier a <a
+     *     href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html#syntax">format
+     *     specifier</a>
      * @return the conversion character that is in the given format specifier
      * @deprecated This method is public only for testing. Use {@link
      *     #conversionCharFromFormat(Matcher)}.

@@ -31,8 +31,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * covariant array types, raw types, and allowing covariant type arguments depending on various
  * options passed to DefaultTypeHierarchy.
  *
- * <p>Subtyping rules of the JLS can be found in section 4.10, "Subtyping":
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10
+ * <p>Subtyping rules of the JLS can be found in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10">section 4.10,
+ * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
@@ -223,7 +224,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
         if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
                 && checker.getTypeFactory().hasQualifierParameterInHierarchy(subtype, currentTop)) {
-            // Qualifiers must be equivalent.
+            // If the types have a class qualifier parameter, the qualifiers must be equivalent.
             return isAnnoSubtype(subtypeAnno, supertypeAnno, annosCanBeEmtpy)
                     && isAnnoSubtype(supertypeAnno, subtypeAnno, annosCanBeEmtpy);
         }
@@ -259,7 +260,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected boolean isBottom(final AnnotatedTypeMirror subtype) {
         final AnnotationMirror bottom = qualifierHierarchy.getBottomAnnotation(currentTop);
         if (bottom == null) {
-            return false; // can't be below infinitely sized hierarchy
+            throw new BugInCF("getBottomAnnotation(%s) is null", currentTop);
         }
 
         switch (subtype.getKind()) {
@@ -321,8 +322,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     /**
      * A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
-     * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1
+     * Containment is described in <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
+     * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
      * @param inside the "subtype" type argument
      * @param outside the "supertype" type argument
@@ -1048,7 +1050,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 }
                 return false;
             }
-            return isPrimarySubtype(upperBound, supertype);
         }
         return checkAndSubtype(upperBound, supertype);
     }

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Elements of this enumeration are used in a {@link Format Format} annotation to indicate the valid
@@ -29,6 +30,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * @see Format
  * @checker_framework.manual #formatter-checker Format String Checker
  */
+@AnnotatedFor("nullness")
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */
     GENERAL(null /* everything */, "bBhHsS"),
