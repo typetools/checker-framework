@@ -14,15 +14,9 @@ public class UnusableTest {
         // argument
 
         // :: error: (use.unsafe)
-        String a = s;
+        String a = s.toLowerCase();
 
         // :: error: (use.unsafe)
         String b = s.toUpperCase();
-
-        // :: error: (use.unsafe)
-        check(s);
     }
-
-    // Method to check whether string s can be passed as an argument
-    void check(String s) {}
 }
