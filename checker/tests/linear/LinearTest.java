@@ -3,7 +3,7 @@ import org.checkerframework.checker.linear.qual.Linear;
 public class LinearTest {
 
     void Test() {
-        @Linear String s = getLinearString();
+        @Linear String s = "Linear string";
 
         String b = s.toLowerCase();
         // Due to the method invocation, s is used up and is now unusable
@@ -15,9 +15,5 @@ public class LinearTest {
 
         // :: error: (use.unsafe)
         String d = s.toUpperCase();
-    }
-
-    static @Linear String getLinearString() {
-        return "Linear string";
     }
 }

@@ -4,7 +4,6 @@ import org.checkerframework.checker.linear.qual.Linear;
 
 public class JavaStreamTest {
 
-    @SuppressWarnings("type.argument.type.incompatible")
     void Test() {
         @Linear Stream<String> stringStream = getLinearString();
 

@@ -12,6 +12,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -93,6 +94,24 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     NORMAL, result.getResultValue().getUnderlyingType()),
                             in.getRegularStore());
                 }
+            }
+            return result;
+        }
+
+        @Override
+        public TransferResult<CFValue, CFStore> visitAssignment(
+                AssignmentNode node, TransferInput<CFValue, CFStore> in) {
+            TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
+            AnnotatedTypeMirror type = factory.getAnnotatedType(node.getExpression().getTree());
+            if (type.hasAnnotation(Linear.class)) {
+                FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), node.getExpression());
+                in.getRegularStore().insertOrRefine(receiver, UNUSABLE);
+                return new RegularTransferResult<>(
+                        analysis.createSingleAnnotationValue(
+                                LINEAR, result.getResultValue().getUnderlyingType()),
+                        in.getRegularStore());
             }
             return result;
         }

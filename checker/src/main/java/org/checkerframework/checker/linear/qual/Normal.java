@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf(Unusable.class)
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor(TypeUseLocation.LOCAL_VARIABLE)
 public @interface Normal {}

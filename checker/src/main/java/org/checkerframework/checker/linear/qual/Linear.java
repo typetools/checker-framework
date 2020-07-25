@@ -20,5 +20,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
-@SubtypeOf({})
+@SubtypeOf(Normal.class)
 public @interface Linear {}

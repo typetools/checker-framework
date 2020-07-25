@@ -7,15 +7,17 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import java.util.List;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.linear.qual.Linear;
+import org.checkerframework.checker.linear.qual.Normal;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -83,6 +85,23 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     }
 
     @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        List<? extends ExpressionTree> args = node.getArguments();
+        List<AnnotatedTypeMirror> params =
+                AnnotatedTypes.expandVarArgs(
+                        atypeFactory,
+                        atypeFactory.methodFromUse(node).executableType,
+                        node.getArguments());
+        for (int i = 0; i < args.size(); ++i) {
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(args.get(i));
+            if (type.hasAnnotation(Linear.class) && params.get(i).hasAnnotation(Normal.class)) {
+                checker.reportError(node, "normal.parameter.error", type, params.get(i));
+            }
+        }
+        return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
@@ -95,13 +114,7 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
                 valueType.addAnnotation(atypeFactory.LINEAR);
             }
         }
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
-    }
-
-    @Override
-    protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-        // Skip this check
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     /** Linear Checker does not contain a rule for method invocation. */
