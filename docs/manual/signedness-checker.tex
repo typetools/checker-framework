@@ -13,12 +13,15 @@ interpreted as unsigned, those bits represent the value 130.  The bits
 The range of signed byte values is -128 to 127.  The range of unsigned byte
 values is 0 to 255.
 
-Signedness is only applicable to integral types:  \<byte>, \<char>,
-\<short>, \<int>, and \<long>.  Floating-point types (\<float> and
-\<double>) do not have operations that interpret the bits as unsigned.
+Signedness is only applicable to the integral types \<byte>,
+\<short>, \<int>, and \<long> and their boxed variants \<Byte>,
+\<Short>, \<Integer>, and \<Long>.
+\<char> and \<Character> are always unsigned.
+Floating-point types \<float>, \<double>, \<Float>, and \<Double> are always signed.
+% , because they do not have operations that interpret the bits as unsigned.
 
 Signedness is primarily about how the bits of the representation are
-interpreted, not about the values that it can represent.  An unsigned value
+\emph{interpreted}, not about the values that it can represent.  An unsigned value
 is always positive, but just because a variable's value is positive does
 not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
 compared to a signed value, or used in arithmetic operations with a signed
@@ -61,7 +64,8 @@ These are the qualifiers in the signedness type system:
 \item[\refqualclass{checker/signedness/qual}{SignedPositive}]
     indicates that a value is known at compile time to be in the positive
     signed range, so it has the same interpretation as signed or unsigned
-    and may be used with either interpretation.  Programmers should usually
+    and may be used with either interpretation.  (Equivalently, the most
+    significant bit is guaranteed to be 0.)  Programmers should usually
     write \refqualclass{checker/signedness/qual}{Signed} or
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
@@ -110,6 +114,23 @@ Signedness Checker treats it in one of the following ways:
     All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
 
 \end{itemize}
+
+
+\subsectionAndLabel{Widening conversions}{signedness-checker-widening-conversions}
+
+Figure~\ref{fig-signedness-hierarchy} shows the type qualifier hierarchy.
+When upcasting among integral types, the expression has type
+\<@SignedPositive> because the value is guaranteed to be within the signed
+positive range.  For example:
+
+\begin{Verbatim}
+@Signed int sint;
+@Unsigned int uint;
+@SignedPositive long splong1 = sint;   // legal
+@SignedPositive long splong2 = uint;   // legal
+... (long) sint ...   // this expression has type @SignedPositive long
+... (long) uint ...   // this expression has type @SignedPositive long
+\end{Verbatim}
 
 
 \sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}

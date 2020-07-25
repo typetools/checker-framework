@@ -779,10 +779,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the type subtyping checker using the current type qualifier hierarchy.
+     * Creates the type hierarchy to be used by this factory.
      *
      * <p>Subclasses may override this method to specify new type-checking rules beyond the typical
-     * java subtyping rules.
+     * Java subtyping rules.
      *
      * @return the type relations class to check type subtyping
      */
@@ -1306,7 +1306,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt the element from which to read stub types
      * @return the type, side-effected to add the stub types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(
+    protected AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt) {
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
         if (stubType != null) {
@@ -2443,10 +2443,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * returns the annotated primitive type of the given declared type if it is a boxed declared
+     * Returns the annotated primitive type of the given declared type if it is a boxed declared
      * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * <p>The returned type would have the annotations on the given type and nothing else.
+     * <p>The returned type has the same primary annotations as the given type.
      *
      * @param type the declared type
      * @return the unboxed primitive type

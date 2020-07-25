@@ -286,6 +286,7 @@ public class BackwardAnalysisImpl<
                         (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
                 if (!newExceptionStore.equals(exceptionStore)) {
                     exceptionStores.put(ebPred, newExceptionStore);
+                    inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
                     addBlockToWorklist = true;
                 }
             }
@@ -344,7 +345,8 @@ public class BackwardAnalysisImpl<
                             if (n == node && !before) {
                                 return store.getRegularStore();
                             }
-                            // Copy the store to preserve to change the state in {@link #inputs}
+                            // Copy the store to avoid changing other blocks' transfer inputs in
+                            // {@link #inputs}
                             TransferResult<V, S> transferResult =
                                     callTransferFunction(n, store.copy());
                             if (n == node) {
@@ -370,8 +372,10 @@ public class BackwardAnalysisImpl<
                             return transferInput.getRegularStore();
                         }
                         setCurrentNode(node);
+                        // Copy the store to avoid changing other blocks' transfer inputs in {@link
+                        // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput);
+                                callTransferFunction(node, transferInput.copy());
                         // Merge transfer result with the exception store of this exceptional block
                         S exceptionStore = exceptionStores.get(eb);
                         return exceptionStore == null
