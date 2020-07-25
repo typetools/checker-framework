@@ -2,6 +2,7 @@ package org.checkerframework.common.value;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -74,6 +75,18 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && valueType.hasAnnotation(getTypeFactory().UNKNOWNVAL)) {
             valueType.addAnnotation(
                     getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
+        }
+
+        if (valueTree.getKind() == Kind.METHOD_INVOCATION
+                && TreeUtils.isArrayscopyOfMethodInvocation((MethodInvocationTree) valueTree)
+                && valueType.getKind() == TypeKind.ARRAY) {
+            List<? extends ExpressionTree> args = ((MethodInvocationTree) valueTree).getArguments();
+            AnnotatedTypeMirror arrType = atypeFactory.getAnnotatedType(args.get(0));
+            if (args.size() == 2) {
+                if (TreeUtils.isArrayLengthAccess(args.get(1))) {
+                    valueType = arrType;
+                }
+            }
         }
 
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
