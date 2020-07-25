@@ -108,7 +108,7 @@ public class CFGVisualizeLauncher {
     }
 
     /**
-     * Generate the DOT representation of the CFG for a method without analysis.
+     * Generate the DOT representation of the CFG for a method, only. Does no dataflow analysis.
      *
      * @param inputFile java source input file
      * @param outputDir output directory
@@ -128,7 +128,8 @@ public class CFGVisualizeLauncher {
     }
 
     /**
-     * Generate the String representation of the CFG for a method without analysis.
+     * Generate the String representation of the CFG for a method, only. Does no dataflow analysis
+     * analysis.
      *
      * @param inputFile java source input file
      * @param method name of the method to generate the CFG for
