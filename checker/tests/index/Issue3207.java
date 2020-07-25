@@ -1,7 +1,5 @@
 // Test case for https://tinyurl.com/cfissue/3207
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.common.value.qual.MinLen;
 
