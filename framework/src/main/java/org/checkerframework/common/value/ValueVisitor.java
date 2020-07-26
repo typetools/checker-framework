@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -18,6 +19,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -82,10 +84,18 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && valueType.getKind() == TypeKind.ARRAY) {
             List<? extends ExpressionTree> args = ((MethodInvocationTree) valueTree).getArguments();
             AnnotatedTypeMirror arrType = atypeFactory.getAnnotatedType(args.get(0));
-            if (args.size() == 2) {
-                if (TreeUtils.isArrayLengthAccess(args.get(1))) {
-                    valueType = arrType;
-                }
+            if (TreeUtils.isArrayLengthAccess(args.get(1))) {
+                valueType = arrType;
+            } else if ((atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class))
+                    != null) {
+                AnnotationMirror argType =
+                        atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class);
+                valueType.addAnnotation(
+                        getTypeFactory()
+                                .createArrayLenAnnotation(
+                                        ValueAnnotatedTypeFactory.getIntValues(argType).stream()
+                                                .map(Long::intValue)
+                                                .collect(Collectors.toList())));
             }
         }
 
