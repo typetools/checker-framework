@@ -18,7 +18,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
@@ -487,6 +489,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
                 ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
                 AnnotatedExecutableType invokedMethod = mType.executableType;
+                ExecutableElement method = invokedMethod.getElement();
+                Name methodName = method.getSimpleName();
+                List<? extends VariableElement> methodParams = method.getParameters();
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
@@ -497,7 +502,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                 argsTypes.get(i),
                                 atypeFactory.getAnnotatedType(args.get(i)),
                                 args.get(i),
-                                "argument.type.incompatible");
+                                "argument.type.incompatible",
+                                methodParams.get(i),
+                                methodName);
                     }
                 }
                 break;

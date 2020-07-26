@@ -96,7 +96,9 @@ with some qualifier.
 This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
 default annotations for uses of the type; see Section~\ref{default-for-use})
 
-An upper bound can also be specified by the type-system designer using the meta-annotation
+If it is not possible to annotate the class's definition (e.g., for
+primitives and some library classes),
+the type-system designer can specify an upper bound by using the meta-annotation
 \refqualclass{framework/qual}{UpperBoundFor}.
 
 If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
@@ -128,8 +130,8 @@ Due to existing type rules, an expression of type \<A MyClass> can only be used 
 These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
 its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
-If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
-then important APIs and common coding paradigms will no longer type-check.
+If the framework were to forbid expressions and local variables from having types inconsistent with the class annotation,
+then important APIs and common coding paradigms would no longer type-check.
 
 Consider the annotation
 \begin{Verbatim}
@@ -1140,7 +1142,9 @@ expression as an argument include:
 \item \refqualclass{checker/lock/qual}{Holding}
 \end{itemize}
 
-The set of permitted expressions is a subset of all Java expressions:
+The set of permitted expressions is a subset of all Java expressions,
+with a few extensions, formal parameters like \<\#1> and (for some type
+systems) \code{<self>}.
 
 \begin{itemize}
 \item
@@ -1246,19 +1250,11 @@ The set of permitted expressions is a subset of all Java expressions:
 
 
 \textbf{Limitations:}
-The following Java expressions may not currently be written:
-% The Checker Framework is best at reasoning about Java expressions that
-% are variable references, but these expressions are not.
-\begin{itemize}
-\item String concatenation expressions.
-\item Mathematical operators (plus, minus, division, ...).
-\item Comparisons (equality, less than, etc.).
-\end{itemize}
-
-Additionally, it is not possible to write
-quantification over all array components (e.g. to express that all
+It is not possible to write a
+quantification over all array components (e.g., to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
+
 
 \sectionAndLabel{Field invariants}{field-invariants}
 
