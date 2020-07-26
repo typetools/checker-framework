@@ -234,4 +234,11 @@ public class ExpectedErrors {
             expectsSibling1(field2);
         }
     }
+
+    class AssignParam {
+        public void f(@WholeProgramInferenceBottom Object param) {
+            // :: error: assignment.type.incompatible
+            param = ((@Top Object) null);
+        }
+    }
 }

@@ -248,7 +248,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     public void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
         for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
-            if (QualifierPolymorphism.hasPolymorphicQualifier(type)) {
+            if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(type)) {
                 // functional interface has a polymorphic qualifier, so they should not be resolved
                 // on memberReference.
                 return;

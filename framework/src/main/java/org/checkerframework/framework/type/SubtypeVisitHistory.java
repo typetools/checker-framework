@@ -11,9 +11,10 @@ import org.checkerframework.javacutil.Pair;
  * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
  * StructuralEqualityComparer ONLY.
  *
- * <p>VisitHistory keeps track of all visits and allows clients of this class to check whether or
- * not they have visited an equivalent pair of AnnotatedTypeMirrors already. This is necessary in
- * order to halt visiting on recursive bounds.
+ * <p>VisitHistory tracks triples of (type1, type2, top), where type1 is a subtype of type2. It does
+ * not track when type1 is not a subtype of type2; such entries are missing from the history.
+ * Clients of this class can check whether or not they have visited an equivalent pair of
+ * AnnotatedTypeMirrors already. This is necessary in order to halt visiting on recursive bounds.
  *
  * <p>This class is primarily used to implement isSubtype(ATM, ATM). The pair of types corresponds
  * to the subtype and the supertype being checked. A single subtype may be visited more than once,
@@ -35,12 +36,20 @@ public class SubtypeVisitHistory {
         this.visited = new HashMap<>();
     }
 
-    /** Add a visit for type1 and type2. */
+    /**
+     * Add a visit for type1 and type2. Has no effect if b is false.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param currentTop the top of the relevant type hierarchy; only annotations from that
+     *     hierarchy are considered
+     * @param b true if type1 is a subtype of type2; if false, this method does nothing
+     */
     public void add(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror currentTop,
-            Boolean b) {
+            boolean b) {
         if (!b) {
             // We only store information about subtype relations that hold.
             return;

@@ -25,6 +25,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -400,7 +401,9 @@ public class QualifierDefaults {
                 case VARIABLE:
                     VariableTree vtree = (VariableTree) t;
                     ExpressionTree vtreeInit = vtree.getInitializer();
-                    if (vtreeInit != null && prev == vtreeInit) {
+                    @SuppressWarnings("interning:not.interned") // check cached value
+                    boolean sameAsPrev = (vtreeInit != null && prev == vtreeInit);
+                    if (sameAsPrev) {
                         Element elt = TreeUtils.elementFromDeclaration((VariableTree) t);
                         AnnotationMirror d =
                                 atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
@@ -832,7 +835,7 @@ public class QualifierDefaults {
                 extends AnnotatedTypeScanner<Void, AnnotationMirror> {
 
             @Override
-            public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
+            public Void scan(@FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual) {
                 if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
                     return super.scan(t, qual);
                 }

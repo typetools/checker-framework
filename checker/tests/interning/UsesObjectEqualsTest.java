@@ -20,6 +20,22 @@ public class UsesObjectEqualsTest {
         }
     }
 
+    @UsesObjectEquals
+    class B3 extends A {
+        @Override
+        public boolean equals(Object o3) {
+            return this == o3;
+        }
+    }
+
+    @UsesObjectEquals
+    class B4 extends A {
+        @Override
+        public boolean equals(Object o4) {
+            return o4 == this;
+        }
+    }
+
     // changed to inherited, no (superclass.annotated) warning
     class C extends A {}
 
@@ -60,4 +76,19 @@ public class UsesObjectEqualsTest {
     class ExtendsInner2 extends UsesObjectEqualsTest.A {}
 
     class MyList extends LinkedList {}
+
+    class DoesNotUseObjectEquals {
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+    }
+
+    @UsesObjectEquals
+    class SubclassUsesObjectEquals extends DoesNotUseObjectEquals {
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+    }
 }

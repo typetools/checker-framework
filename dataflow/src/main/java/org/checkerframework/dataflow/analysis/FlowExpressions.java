@@ -26,6 +26,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -444,9 +446,23 @@ public class FlowExpressions {
         return internalArguments;
     }
 
+    // The syntax that the Checker Framework uses for Java expressions also includes "<self>" and
+    // "#1" for formal parameters.  However, there are no special subclasses (AST nodes) for those
+    // extensions.
     /**
-     * The poorly-named Receiver class is actually a Java AST. Each subclass represents a different
-     * type of expression, such as MethodCall, ArrayAccess, LocalVariable, etc.
+     * This class represents a Java expression and its type. It does not represent all possible Java
+     * expressions (for example, it does not represent a ternary expression; use {@link
+     * FlowExpressions.Unknown} for unrepresentable expressions).
+     *
+     * <p>This class's representation is like an AST: subparts are also expressions. For declared
+     * names (fields, local variables, and methods), it also contains an Element.
+     *
+     * <p>Each subclass represents a different type of expression, such as {@link
+     * FlowExpressions.MethodCall}, {@link FlowExpressions.ArrayAccess}, {@link
+     * FlowExpressions.LocalVariable}, etc.
+     *
+     * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax
+     *     of Java expressions supported by the Checker Framework</a>
      */
     public abstract static class Receiver {
         /** The type of this expression. */
@@ -495,10 +511,12 @@ public class FlowExpressions {
         public abstract boolean isUnmodifiableByOtherCode();
 
         /**
-         * Returns true if and only if the two receiver are syntactically identical.
+         * Returns true if and only if the two receivers are syntactically identical.
          *
-         * @return true if and only if the two receiver are syntactically identical
+         * @param other the other object to compare to this one
+         * @return true if and only if the two receivers are syntactically identical
          */
+        @EqualsMethod
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
@@ -734,7 +752,14 @@ public class FlowExpressions {
         }
     }
 
+    /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
+    @UsesObjectEquals
     public static class Unknown extends Receiver {
+        /**
+         * Create a new Unknown receiver.
+         *
+         * @param type the Java type of this receiver
+         */
         public Unknown(TypeMirror type) {
             super(type);
         }
@@ -1074,11 +1099,14 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (!(obj instanceof MethodCall)) {
                 return false;
             }
             if (method.getKind() == ElementKind.CONSTRUCTOR) {
-                return this == obj;
+                return false;
             }
             MethodCall other = (MethodCall) obj;
             return parameters.equals(other.parameters)

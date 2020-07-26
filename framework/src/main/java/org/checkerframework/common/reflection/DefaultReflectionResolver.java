@@ -132,7 +132,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // and parameter types
         for (MethodInvocationTree resolvedTree : possibleMethods) {
             debugReflection("Resolved method invocation: " + resolvedTree);
-            if (!checkMethodAgruments(resolvedTree)) {
+            if (!checkMethodArguments(resolvedTree)) {
                 debugReflection(
                         "Spoofed tree's arguments did not match declaration" + resolvedTree);
                 // Calling methodFromUse on these sorts of trees will cause an assertion to fail in
@@ -206,18 +206,18 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return origResult;
     }
 
-    private boolean checkMethodAgruments(MethodInvocationTree resolvedTree) {
+    private boolean checkMethodArguments(MethodInvocationTree resolvedTree) {
         // type.getKind() == actualType.getKind()
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-        return checkAgruments(methodDecl.getParameters(), resolvedTree.getArguments());
+        return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
     private boolean checkNewClassArguments(NewClassTree resolvedTree) {
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-        return checkAgruments(methodDecl.getParameters(), resolvedTree.getArguments());
+        return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
-    private boolean checkAgruments(
+    private boolean checkArguments(
             List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
         if (parameters.size() != arguments.size()) {
             return false;
@@ -478,8 +478,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Get set of MethodSymbols based on class name, method name, and parameter length.
      *
+     * @param className the class that contains the method
+     * @param methodName the method's name
+     * @param paramLength the number of parameters
+     * @param env the environment
      * @return the (potentially empty) set of corresponding method Symbol(s)
      */
+    @SuppressWarnings("interning:not.interned") // bug?
     private List<Symbol> getMethodSymbolsfor(
             String className, String methodName, int paramLength, Env<AttrContext> env) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();

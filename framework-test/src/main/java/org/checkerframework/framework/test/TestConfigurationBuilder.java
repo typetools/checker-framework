@@ -9,6 +9,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -242,7 +245,7 @@ public class TestConfigurationBuilder {
             errors.add("No processors were specified!");
         }
 
-        final Map<String, String> optionMap = options.getOptions();
+        final Map<String, @Nullable String> optionMap = options.getOptions();
         if (!optionMap.containsKey("-d") || optionMap.get("-d") == null) {
             errors.add("No output directory was specified.");
         }
@@ -289,7 +292,7 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder setOptions(Map<String, String> options) {
+    public TestConfigurationBuilder setOptions(Map<String, @Nullable String> options) {
         this.options.setOptions(options);
         return this;
     }
@@ -312,7 +315,11 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder addOptions(Map<String, String> options) {
+    @SuppressWarnings("nullness:return.type.incompatible") // need @PolyInitialized annotation
+    @RequiresNonNull("this.options")
+    public TestConfigurationBuilder addOptions(
+            @UnknownInitialization(TestConfigurationBuilder.class) TestConfigurationBuilder this,
+            Map<String, @Nullable String> options) {
         this.options.addOptions(options);
         return this;
     }

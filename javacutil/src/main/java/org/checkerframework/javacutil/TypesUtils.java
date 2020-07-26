@@ -58,7 +58,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.Class declared type.
+     * Checks if the type represents the java.lang.Class declared type.
      *
      * @param type the type
      * @return true iff type represents java.lang.Class
@@ -180,12 +180,15 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the arguments are both the same primitive types.
+     * Returns true iff the arguments are both the same declared types.
      *
      * <p>This is needed because class {@code Type.ClassType} does not override equals.
      *
-     * @return whether the arguments are the same primitive types
+     * @param t1 the first type to test
+     * @param t2 the second type to test
+     * @return whether the arguments are the same declared types
      */
+    @SuppressWarnings("interning:not.interned") // equality test optimization
     public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
         // Do a cheaper test first
         if (t1.tsym.name != t2.tsym.name) {

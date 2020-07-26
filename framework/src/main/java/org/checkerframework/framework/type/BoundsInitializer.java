@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -802,7 +803,7 @@ public class BoundsInitializer {
          *
          * @param node last node in the path
          */
-        public void removePathNode(TypePathNode node) {
+        public void removePathNode(@FindDistinct TypePathNode node) {
             if (currentPath.getLeaf() != node) {
                 throw new BugInCF(
                         "Cannot remove node: %s. It is not the last node. currentPath= %s",

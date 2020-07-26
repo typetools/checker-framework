@@ -1,4 +1,6 @@
 import java.util.Comparator;
+import org.checkerframework.checker.interning.qual.CompareToMethod;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 
 public class HeuristicsTest implements Comparable<HeuristicsTest> {
 
@@ -29,6 +31,80 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
         return false;
     }
 
+    @EqualsMethod
+    @org.checkerframework.dataflow.qual.Pure
+    public boolean equals2(Object o) {
+        // Using == is OK if it's the first statement in the equals method
+        // and it compares "this" against the argument.
+        if (this == o) {
+            return true;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (o == this) {
+            return true;
+        }
+        return false;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public boolean equals3(Object o) {
+        // Not equals() or annotated as @EqualsMethod.
+        // :: error: (not.interned)
+        if (this == o) {
+            return true;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (o == this) {
+            return true;
+        }
+        return false;
+    }
+
+    @EqualsMethod
+    @org.checkerframework.dataflow.qual.Pure
+    public static boolean equals4(Object thisOne, Object o) {
+        // Using == is OK if it's the first statement in the equals method
+        // and it compares "this" against the argument.
+        if (thisOne == o) {
+            return true;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (o == thisOne) {
+            return true;
+        }
+        return false;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public static boolean equals5(Object thisOne, Object o) {
+        // Not equals() or annotated as @EqualsMethod.
+        // :: error: (not.interned)
+        if (thisOne == o) {
+            return true;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (o == thisOne) {
+            return true;
+        }
+        return false;
+    }
+
+    @EqualsMethod
+    // :: error: (invalid.method.annotation)
+    public boolean equals6() {
+        return true;
+    }
+
+    @EqualsMethod
+    // :: error: (invalid.method.annotation)
+    public boolean equals7(int a, int b, int c) {
+        return true;
+    }
+
     @Override
     @org.checkerframework.dataflow.qual.Pure
     public int compareTo(HeuristicsTest o) {
@@ -44,6 +120,82 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
             return 0;
         }
         return 0;
+    }
+
+    @CompareToMethod
+    @org.checkerframework.dataflow.qual.Pure
+    public int compareTo2(HeuristicsTest o) {
+        // Using == is OK if it's the first statement in the equals method
+        // and it compares "this" against the argument.
+
+        if (o == this) {
+            return 0;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (this == o) {
+            return 0;
+        }
+        return 0;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public int compareTo3(HeuristicsTest o) {
+        // Not compareTo or annotated as @CompareToMethod
+        // :: error: (not.interned)
+        if (o == this) {
+            return 0;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (this == o) {
+            return 0;
+        }
+        return 0;
+    }
+
+    @CompareToMethod
+    @org.checkerframework.dataflow.qual.Pure
+    public static int compareTo4(HeuristicsTest thisOne, HeuristicsTest o) {
+        // Using == is OK if it's the first statement in the equals method
+        // and it compares "this" against the argument.
+
+        if (o == thisOne) {
+            return 0;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (thisOne == o) {
+            return 0;
+        }
+        return 0;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public static int compareTo5(HeuristicsTest thisOne, HeuristicsTest o) {
+        // Not compareTo or annotated as @CompareToMethod
+        // :: error: (not.interned)
+        if (o == thisOne) {
+            return 0;
+        }
+        // Not the first statement in the method.
+        // :: error: (not.interned)
+        if (thisOne == o) {
+            return 0;
+        }
+        return 0;
+    }
+
+    @EqualsMethod
+    // :: error: (invalid.method.annotation)
+    public boolean compareTo6() {
+        return true;
+    }
+
+    @EqualsMethod
+    // :: error: (invalid.method.annotation)
+    public boolean compareTo7(int a, int b, int c) {
+        return true;
     }
 
     public boolean optimizeEqualsClient(Object a, Object b, Object[] arr) {

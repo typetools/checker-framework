@@ -343,7 +343,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         Kind valueTreeKind = valueTree.getKind();
 
@@ -430,7 +431,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     @Override
@@ -1087,6 +1088,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     public Void visitIdentifier(IdentifierTree tree, Void p) {
         // If the identifier is a field accessed via an implicit this,
         // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.

@@ -20,6 +20,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
      * @param to the annotated type mirror into which annotations should be combined
      * @param hierarchy the top type of the hierarchy whose annotations should be combined
      */
+    @SuppressWarnings("interning:not.interned") // assertion
     public static void combine(
             final AnnotatedTypeMirror from,
             final AnnotatedTypeMirror to,
@@ -43,6 +44,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // assertion
     protected Void compare(AnnotatedTypeMirror one, AnnotatedTypeMirror two) {
         assert one != two;
         if (one != null && two != null) {

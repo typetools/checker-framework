@@ -32,6 +32,8 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.CompareToMethod;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -78,6 +80,7 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 are the same annotation
      */
+    @EqualsMethod
     public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
@@ -105,8 +108,8 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 have the same annotation name
      * @see #areSame(AnnotationMirror, AnnotationMirror)
-     * @return true iff a1 and a2 have the same annotation name
      */
+    @EqualsMethod
     public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
@@ -358,6 +361,7 @@ public class AnnotationUtils {
      * @param av2 the second AnnotationValue to compare
      * @return 0 if if the two annotation values are the same
      */
+    @CompareToMethod
     private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
         if (av1 == av2) {
             return 0;
@@ -370,11 +374,14 @@ public class AnnotationUtils {
     }
 
     /**
-     * Return 0 if the two annotation values are the same.
+     * Compares two annotation values for order.
      *
      * @param val1 a value returned by {@code AnnotationValue.getValue()}
      * @param val2 a value returned by {@code AnnotationValue.getValue()}
+     * @return a negative integer, zero, or a positive integer as the first annotation value is less
+     *     than, equal to, or greater than the second annotation value
      */
+    @CompareToMethod
     private static int compareAnnotationValueValue(@Nullable Object val1, @Nullable Object val2) {
         if (val1 == val2) {
             return 0;
@@ -565,6 +572,7 @@ public class AnnotationUtils {
      * @param am2 the second AnnotationMirror to compare
      * @return true if if the two annotations have the same elements (fields)
      */
+    @EqualsMethod
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
         if (am1 == am2) {
             return true;

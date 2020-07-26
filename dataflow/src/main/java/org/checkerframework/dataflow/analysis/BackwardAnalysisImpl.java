@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
@@ -285,6 +286,7 @@ public class BackwardAnalysisImpl<
                         (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
                 if (!newExceptionStore.equals(exceptionStore)) {
                     exceptionStores.put(ebPred, newExceptionStore);
+                    inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
                     addBlockToWorklist = true;
                 }
             }
@@ -314,7 +316,7 @@ public class BackwardAnalysisImpl<
 
     @Override
     public S runAnalysisFor(
-            Node node,
+            @FindDistinct Node node,
             boolean before,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
@@ -339,11 +341,12 @@ public class BackwardAnalysisImpl<
                         ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                         while (reverseIter.hasPrevious()) {
                             Node n = reverseIter.previous();
-                            currentNode = n;
+                            setCurrentNode(n);
                             if (n == node && !before) {
                                 return store.getRegularStore();
                             }
-                            // Copy the store to preserve to change the state in {@link #inputs}
+                            // Copy the store to avoid changing other blocks' transfer inputs in
+                            // {@link #inputs}
                             TransferResult<V, S> transferResult =
                                     callTransferFunction(n, store.copy());
                             if (n == node) {
@@ -368,9 +371,11 @@ public class BackwardAnalysisImpl<
                         if (!before) {
                             return transferInput.getRegularStore();
                         }
-                        currentNode = node;
+                        setCurrentNode(node);
+                        // Copy the store to avoid changing other blocks' transfer inputs in {@link
+                        // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput);
+                                callTransferFunction(node, transferInput.copy());
                         // Merge transfer result with the exception store of this exceptional block
                         S exceptionStore = exceptionStores.get(eb);
                         return exceptionStore == null
@@ -383,7 +388,7 @@ public class BackwardAnalysisImpl<
             }
 
         } finally {
-            currentNode = oldCurrentNode;
+            setCurrentNode(oldCurrentNode);
             isRunning = false;
         }
     }

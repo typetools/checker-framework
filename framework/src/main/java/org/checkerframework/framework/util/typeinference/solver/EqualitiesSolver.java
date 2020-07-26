@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -83,7 +84,7 @@ public class EqualitiesSolver {
 
     /**
      * Let Ti be a target type parameter. When we reach this method we have inferred an argument,
-     * Ai, for Ti
+     * Ai, for Ti.
      *
      * <p>However, there still may be constraints of the form {@literal Ti = Tj}, {@literal Ti <:
      * Tj}, {@literal Tj <: Ti} in the constraint map. In this case we need to replace Ti with the
@@ -95,9 +96,10 @@ public class EqualitiesSolver {
      *
      * @param target the target for which we have inferred a concrete type argument
      * @param type the type inferred
+     * @param constraints the constraints that are side-effected by this method
      */
     private void rewriteWithInferredType(
-            final TypeVariable target,
+            final @FindDistinct TypeVariable target,
             final AnnotatedTypeMirror type,
             final ConstraintMap constraints) {
 
@@ -184,10 +186,12 @@ public class EqualitiesSolver {
      *
      * @param target the target for which we know another target is exactly equal to this target
      * @param inferredTarget the other target inferred to be equal
+     * @param constraints the constraints that are side-effected by this method
+     * @param typeFactory type factory
      */
     private void rewriteWithInferredTarget(
-            final TypeVariable target,
-            final TypeVariable inferredTarget,
+            final @FindDistinct TypeVariable target,
+            final @FindDistinct TypeVariable inferredTarget,
             final ConstraintMap constraints,
             final AnnotatedTypeFactory typeFactory) {
         final TargetConstraints targetRecord = constraints.getConstraints(target);

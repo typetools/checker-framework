@@ -54,6 +54,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -68,6 +69,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.UtilPlume;
 
@@ -251,6 +253,8 @@ import org.plumelib.util.UtilPlume;
 
     /// Amount of detail in messages
 
+    // Print the version of the Checker Framework
+    "version",
     // Print info about git repository from which the Checker Framework was compiled
     "printGitProperties",
 
@@ -398,13 +402,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected Trees trees;
 
     /** The source tree that is being scanned. */
-    protected CompilationUnitTree currentRoot;
+    protected @InternedDistinct CompilationUnitTree currentRoot;
 
     /**
      * If an error is detected in a CompilationUnitTree, skip all future calls of {@link
      * #typeProcess} with that same CompilationUnitTree.
      */
-    private CompilationUnitTree previousErrorCompilationUnit;
+    private @InternedDistinct CompilationUnitTree previousErrorCompilationUnit;
 
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
@@ -556,6 +560,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param newRoot the new compilation unit root
      */
+    @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
@@ -778,8 +783,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     }
                                 });
             }
+            if (hasOption("version")) {
+                messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
+            }
         } catch (UserError ce) {
             logUserError(ce);
+        } catch (TypeSystemError ce) {
+            logTypeSystemError(ce);
         } catch (BugInCF ce) {
             logBugInCF(ce);
         } catch (Throwable t) {
@@ -852,7 +862,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
-            previousErrorCompilationUnit = p.getCompilationUnit();
+            @SuppressWarnings("interning:assignment.type.incompatible") // will be compared with ==
+            @InternedDistinct CompilationUnitTree cu = p.getCompilationUnit();
+            previousErrorCompilationUnit = cu;
             return;
         }
         if (p.getCompilationUnit() == previousErrorCompilationUnit) {
@@ -895,6 +907,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             warnUnneededSuppressions();
         } catch (UserError ce) {
             logUserError(ce);
+        } catch (TypeSystemError ce) {
+            logTypeSystemError(ce);
         } catch (BugInCF ce) {
             logBugInCF(ce);
         } catch (Throwable t) {
@@ -2325,6 +2339,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
+     * Log (that is, print) a type system error.
+     *
+     * @param ce the type system error to output
+     */
+    private void logTypeSystemError(TypeSystemError ce) {
+        String msg = ce.getMessage();
+        printMessage(msg);
+    }
+
+    /**
      * Log (that is, print) an internal error in the framework or a checker.
      *
      * @param ce the internal error to output
@@ -2510,5 +2534,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         } catch (IOException e) {
             System.out.println("IOException while reading git.properties: " + e.getMessage());
         }
+    }
+
+    /**
+     * Returns the version of the Checker Framework.
+     *
+     * @return Checker Framework version
+     */
+    private String getCheckerVersion() {
+        Properties gitProperties = getProperties(getClass(), "/git.properties");
+        String version = gitProperties.getProperty("git.build.version");
+        if (version != null) {
+            return version;
+        }
+        throw new BugInCF("Could not find the version in git.properties");
     }
 }

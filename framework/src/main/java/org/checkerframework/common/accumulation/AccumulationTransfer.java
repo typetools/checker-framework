@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -75,18 +76,24 @@ public class AccumulationTransfer extends CFTransfer {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
-        CFValue flowValue = result.getResultValue();
-        if (flowValue != null) {
-            Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
-            assert flowAnnos.size() <= 1;
-            for (AnnotationMirror anno : flowAnnos) {
-                List<String> oldFlowValues =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
-                if (oldFlowValues != null) {
-                    // valuesAsList cannot have its length changed -- it is backed by an array.
-                    // getValueOfAnnotationWithStringArgument returns a new, modifiable list.
-                    oldFlowValues.addAll(valuesAsList);
-                    valuesAsList = oldFlowValues;
+        Receiver target = FlowExpressions.internalReprOf(typeFactory, node);
+        if (CFAbstractStore.canInsertReceiver(target)) {
+            CFValue flowValue = result.getRegularStore().getValue(target);
+            if (flowValue != null) {
+                Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
+                assert flowAnnos.size() <= 1;
+                for (AnnotationMirror anno : flowAnnos) {
+                    if (typeFactory.isAccumulatorAnnotation(anno)) {
+                        List<String> oldFlowValues =
+                                ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+                        if (oldFlowValues != null) {
+                            // valuesAsList cannot have its length changed -- it is backed by an
+                            // array.  getValueOfAnnotationWithStringArgument returns a new,
+                            // modifiable list.
+                            oldFlowValues.addAll(valuesAsList);
+                            valuesAsList = oldFlowValues;
+                        }
+                    }
                 }
             }
         }

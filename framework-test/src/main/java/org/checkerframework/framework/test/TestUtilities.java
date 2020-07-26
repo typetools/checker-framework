@@ -21,6 +21,8 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 
@@ -86,12 +88,14 @@ public class TestUtilities {
      * @return a list of list of Java test files
      */
     private static List<List<File>> findJavaTestFilesInDirectory(File dir) {
-        assert dir.isDirectory();
         List<List<File>> fileGroupedByDirectory = new ArrayList<>();
         List<File> filesInDir = new ArrayList<>();
 
         fileGroupedByDirectory.add(filesInDir);
         String[] dirContents = dir.list();
+        if (dirContents == null) {
+            throw new Error("Not a directory: " + dir);
+        }
         Arrays.sort(dirContents);
         for (String fileName : dirContents) {
             File file = new File(dir, fileName);
@@ -145,7 +149,8 @@ public class TestUtilities {
 
         List<File> javaFiles = new ArrayList<>();
 
-        File[] in = directory.listFiles();
+        @SuppressWarnings("nullness") // checked above that it's a directory
+        File @NonNull [] in = directory.listFiles();
         Arrays.sort(
                 in,
                 new Comparator<File>() {
@@ -201,7 +206,7 @@ public class TestUtilities {
         return true;
     }
 
-    public static String diagnosticToString(
+    public static @Nullable String diagnosticToString(
             final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
 
         String result = diagnostic.toString().trim();
@@ -274,10 +279,10 @@ public class TestUtilities {
         return comparisonFile;
     }
 
-    public static List<String> optionMapToList(Map<String, String> options) {
+    public static List<String> optionMapToList(Map<String, @Nullable String> options) {
         List<String> optionList = new ArrayList<>(options.size() * 2);
 
-        for (Map.Entry<String, String> opt : options.entrySet()) {
+        for (Map.Entry<String, @Nullable String> opt : options.entrySet()) {
             optionList.add(opt.getKey());
 
             if (opt.getValue() != null) {

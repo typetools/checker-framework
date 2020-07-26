@@ -51,6 +51,7 @@ public class PerFileSuite extends Suite {
      *
      * @param klass the class whose tests to run
      */
+    @SuppressWarnings("nullness") // JUnit needs to be annotated
     public PerFileSuite(Class<?> klass) throws Throwable {
         super(klass, Collections.emptyList());
         final TestClass testClass = getTestClass();
@@ -63,7 +64,10 @@ public class PerFileSuite extends Suite {
     }
 
     /** Returns a list of one-element arrays, each containing a Java File. */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({
+        "unchecked",
+        "nullness" // JUnit needs to be annotated
+    })
     private List<Object[]> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
 
@@ -126,9 +130,9 @@ public class PerFileSuite extends Suite {
                 break;
 
             case "getTestFiles":
-                // we'll force people to return a List for now but enforcing exactl List<File> or a
-                // subtype thereof is not easy
-                if (!returnType.getCanonicalName().equals(List.class.getCanonicalName())) {
+                // We'll force people to return a List for now but enforcing exactly List<File> or a
+                // subtype thereof is not easy.
+                if (!List.class.getCanonicalName().equals(returnType.getCanonicalName())) {
                     throw new RuntimeException(
                             "getTestFiles must return a List<File>, found " + returnType);
                 }

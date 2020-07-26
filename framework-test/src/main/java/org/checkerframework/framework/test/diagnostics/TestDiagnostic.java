@@ -1,5 +1,7 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by
  * the Javac compiler. See {@link JavaDiagnosticReader} and {@link TestDiagnosticLine}.
@@ -89,7 +91,7 @@ public class TestDiagnostic {
      * @return true if this and otherObj are equal according to lineNumber, kind, and message
      */
     @Override
-    public boolean equals(Object otherObj) {
+    public boolean equals(@Nullable Object otherObj) {
         if (otherObj == null || otherObj.getClass() != TestDiagnostic.class) {
             return false;
         }

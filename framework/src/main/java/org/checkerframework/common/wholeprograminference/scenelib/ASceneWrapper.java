@@ -163,7 +163,7 @@ public class ASceneWrapper {
     /**
      * Updates the symbol information stored in AClass for the given class. May be called multiple
      * times (and needs to be if the second parameter was null the first time it was called; only
-     * some calls provide the symbol inforamtion).
+     * some calls provide the symbol information).
      *
      * @param aClass the class representation in which the symbol information is to be updated
      * @param classSymbol the source of the symbol information; may be null, in which case this
