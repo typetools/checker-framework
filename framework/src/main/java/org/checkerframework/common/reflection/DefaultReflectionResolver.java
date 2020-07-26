@@ -206,17 +206,37 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return origResult;
     }
 
+    /**
+     * Checks arguments of a method invocation are consistent with their corresponding parameters.
+     *
+     * @param resolvedTree MethodInvocationTree
+     * @return result of checkArguments
+     */
     private boolean checkMethodArguments(MethodInvocationTree resolvedTree) {
         // type.getKind() == actualType.getKind()
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
         return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
+    /**
+     * Checks arguments of a new class are consistent with their corresponding parameters.
+     *
+     * @param resolvedTree NewClassTree
+     * @return result of checkArguments
+     */
     private boolean checkNewClassArguments(NewClassTree resolvedTree) {
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
         return checkArguments(methodDecl.getParameters(), resolvedTree.getArguments());
     }
 
+    /**
+     * Checks if array argument types are consistent with their corresponding parameter types.
+     *
+     * @param parameters Parameter list
+     * @param arguments Argument list
+     * @return true if array argument types are consistent with their corresponding parameter types;
+     *     false otherwise
+     */
     private boolean checkArguments(
             List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
         if (parameters.size() != arguments.size()) {
