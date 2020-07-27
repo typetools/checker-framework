@@ -68,7 +68,7 @@ public abstract class AbstractCFGVisualizer<
      * @param o an object to convert to boolean
      * @return {@code o} converted to boolean
      */
-    private static boolean toBoolean(Object o) {
+    private static boolean toBoolean(@Nullable Object o) {
         if (o == null) {
             return false;
         }
