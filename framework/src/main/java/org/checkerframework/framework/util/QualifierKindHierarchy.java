@@ -23,6 +23,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 
@@ -141,7 +142,9 @@ public class QualifierKindHierarchy {
          * @return the top qualifier kind of the hierarchy to which this qualifier kind belongs
          */
         public QualifierKind getTop() {
-            assert top != null : "@AssumeAssertion(nullness): top must be nonnull.";
+            if (top == null) {
+                throw new BugInCF("Top is null for QualifierKind %s.", name);
+            }
             return top;
         }
 
@@ -160,7 +163,9 @@ public class QualifierKindHierarchy {
          * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
          */
         public QualifierKind getBottom() {
-            assert bottom != null : "@AssumeAssertion(nullness): bottom must be nonnull.";
+            if (bottom == null) {
+                throw new BugInCF("Bottom is null for QualifierKind %s.", name);
+            }
             return bottom;
         }
 
