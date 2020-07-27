@@ -746,11 +746,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param node the method tree to check
      */
     protected void checkPurity(MethodTree node) {
+        if (!checker.hasOption("checkPurityAnnotations")) {
+            return;
+        }
+
         boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
         boolean suggestPureMethods = checker.hasOption("suggestPureMethods");
-        boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
-
-        if (!checkPurityAnnotations || (!anyPurityAnnotation && !suggestPureMethods)) {
+        if (!anyPurityAnnotation && !suggestPureMethods) {
             return;
         }
 
@@ -878,7 +880,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         String reason = r.second;
         @SuppressWarnings("CompilerMessages")
         @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
-        if (reason.equals("call")) {
+        if (reason.equals("call") || reason.equals("call.method")) {
             MethodInvocationTree mitree = (MethodInvocationTree) r.first;
             checker.reportError(r.first, msgKey, mitree.getMethodSelect());
         } else {
