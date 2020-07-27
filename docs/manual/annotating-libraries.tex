@@ -682,13 +682,13 @@ the stub files anywhere that is convenient.  However, please consider
 providing your stub files to the checker author, so that other users can
 also benefit from the stub files you wrote.
 
-If you are distributing stub files with a checker implementation,
-the stub files appear in the same directory as the checker's \<.java>
-source code.  A \refqualclass{framework/qual}{StubFiles} annotation on the
-checker implementation lists stub files that are always used.  For stub
-files whose use is optional (for example, because the behavior
-is unsound, or unsound except in certain circumstances), users must
-supply the \<-Astubs=...> command-line option.
+If you are distributing stub files with a checker implementation, the stub
+files appear in the same directory as the checker class, which is a subtype of
+\<BaseTypeChecker>.  A \refqualclass{framework/qual}{StubFiles} annotation
+on the checker class lists stub files that are always used.  For stub files
+whose use is optional (for example, because the behavior is unsound, or
+unsound except in certain circumstances), users must supply the
+\<-Astubs=...> command-line option.
 
 If a stub file contains annotations that are used by the framework rather
 than by any specific checker (such as purity annotations), and you wish to
