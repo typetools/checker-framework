@@ -225,6 +225,8 @@ public class ElementUtils {
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
             case NULL:
                 return "<nulltype>";
+            case VOID:
+                return "void";
             default:
                 if (type.getKind().isPrimitive()) {
                     return TypeAnnotationUtils.unannotatedType(type).toString();
