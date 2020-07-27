@@ -33,17 +33,14 @@ public @Interned class QualifierKind implements Comparable<QualifierKind> {
 
     /** The top of the hierarchy to which this belongs. */
     // Set while creating the QualifierKindHierarchy.
-    /** package-private */
     @MonotonicNonNull QualifierKind top;
 
     /** The bottom of the hierarchy to which this belongs. */
     // Set while creating the QualifierKindHierarchy.
-    /** package-private */
     @MonotonicNonNull QualifierKind bottom;
 
     /** The polymorphic qualifier of the hierarchy to which this belongs. */
     // Set while creating the QualifierKindHierarchy.
-    /** package-private */
     @Nullable QualifierKind poly;
 
     /** Whether or not the annotation class of this has annotation elements. */
@@ -54,7 +51,6 @@ public @Interned class QualifierKind implements Comparable<QualifierKind> {
      * qualifier kind itself.
      */
     // Set while creating the QualifierKindHierarchy.
-    /** package-private */
     @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
     /**
