@@ -446,7 +446,7 @@ invariantly.  For example, \code{List<@Nullable String>} is not a subtype
 of \code{List<String>}.
 
 When a type parameter is used in a read-only way --- that is, when clients
-read values of that type from the class are never pass values of that type
+read values of that type from the class but never pass values of that type
 to the class --- then it is safe for the
 type to be \emph{covariant} in the type parameter.  Use the
 \refqualclass{framework/qual}{Covariant} annotation to indicate this.
