@@ -35,7 +35,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
  * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
  * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds may or may
- * not be subtypes, depending on the values of any elements of the qualifiers.
+ * not be subtypes, depending on the values of any elements of the qualifiers. Also, if qualifier
+ * kinds are not subtypes, then qualifiers of those kinds are never subtypes.
  *
  * <p>By default, the subtyping information and information about polymorphic qualifiers is read
  * from meta-annotations on the annotation classes. This information is used to infer further
@@ -69,8 +70,10 @@ public class QualifierKindHierarchy {
      * {@link QualifierKind}s.
      *
      * <p>Exactly one qualifier kind is created for each annotation class.
+     *
+     * <p>QualifierKinds are like a enum in that there are immutable after initialization and only a
+     * finite number per type system exist.
      */
-    // The private non-final fields of this class are set while creating the QualifierKindHierarchy.
     @AnnotatedFor("nullness")
     public static @Interned class QualifierKind implements Comparable<QualifierKind> {
 
@@ -81,21 +84,25 @@ public class QualifierKindHierarchy {
         private final Class<? extends Annotation> clazz;
 
         /** The top of the hierarchy to which this belongs. */
+        // Set while creating the QualifierKindHierarchy.
         private @MonotonicNonNull QualifierKind top;
 
         /** The bottom of the hierarchy to which this belongs. */
+        // Set while creating the QualifierKindHierarchy.
         private @MonotonicNonNull QualifierKind bottom;
 
         /** The polymorphic qualifier of the hierarchy to which this belongs. */
+        // Set while creating the QualifierKindHierarchy.
         private @Nullable QualifierKind poly;
 
-        /** Whether or not this has elements. */
+        /** Whether or not the annotation class of this has annotation elements. */
         private final boolean hasElements;
 
         /**
          * All the qualifier kinds that are a strict super qualifier kind of this. Does not include
          * this qualifier kind itself.
          */
+        // Set while creating the QualifierKindHierarchy.
         private @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
         /**
@@ -108,12 +115,6 @@ public class QualifierKindHierarchy {
             this.hasElements = clazz.getDeclaredMethods().length != 0;
             this.name = annotationClassName(clazz).intern();
             this.poly = null;
-            // These non-final fields are set by QualifierKindHierarchy.
-            // Give them dummy values here, because the Java compiler requires it.
-            //            strictSuperTypes = null;
-            //            top = null;
-            //            bottom = null;
-
         }
 
         /**
@@ -121,7 +122,7 @@ public class QualifierKindHierarchy {
          *
          * @return the canonical name of the annotation class of this
          */
-        public String getName() {
+        public @Interned String getName() {
             return name;
         }
 
@@ -145,6 +146,15 @@ public class QualifierKindHierarchy {
         }
 
         /**
+         * Returns whether or not this is the top qualifier of its hierarchy.
+         *
+         * @return true if this is the top qualifier of its hierarchy
+         */
+        public boolean isTop() {
+            return this.top == this;
+        }
+
+        /**
          * Returns the bottom qualifier kind of the hierarchy to which this qualifier kind belongs.
          *
          * @return the bottom qualifier kind of the hierarchy to which this qualifier kind belongs
@@ -155,23 +165,23 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind
-         * belongs.
+         * Returns whether or not this is the bottom qualifier of its hierarchy.
          *
-         * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind
-         *     belongs
+         * @return true if this is the bottom qualifier of its hierarchy
          */
-        public @Nullable QualifierKind getPolymorphic() {
-            return poly;
+        public boolean isBottom() {
+            return this.bottom == this;
         }
 
         /**
-         * Returns whether or not the annotation class this qualifier kind represents has elements.
+         * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind
+         * belongs or null if one does not exist.
          *
-         * @return true if the annotation class this qualifier kind represents has elements
+         * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind
+         *     belongs or null if one does not exist
          */
-        public boolean hasElements() {
-            return hasElements;
+        public @Nullable QualifierKind getPolymorphic() {
+            return poly;
         }
 
         /**
@@ -184,6 +194,15 @@ public class QualifierKindHierarchy {
         }
 
         /**
+         * Returns whether or not the annotation class this qualifier kind represents has elements.
+         *
+         * @return true if the annotation class this qualifier kind represents has elements
+         */
+        public boolean hasElements() {
+            return hasElements;
+        }
+
+        /**
          * All the qualifier kinds that are a strict super qualifier of this qualifier. Does not
          * include this qualifier kind itself.
          *
@@ -193,24 +212,6 @@ public class QualifierKindHierarchy {
             assert strictSuperTypes != null
                     : "@AssumeAssertion(nullness): strictSuperTypes must be nonnull.";
             return strictSuperTypes;
-        }
-
-        /**
-         * Returns whether or not this is the top qualifier of its hierarchy.
-         *
-         * @return true if this is the top qualifier of its hierarchy
-         */
-        public boolean isTop() {
-            return this.top == this;
-        }
-
-        /**
-         * Returns whether or not this is the bottom qualifier of its hierarchy.
-         *
-         * @return true if this is the bottom qualifier of its hierarchy
-         */
-        public boolean isBottom() {
-            return this.bottom == this;
         }
 
         /**
@@ -243,7 +244,7 @@ public class QualifierKindHierarchy {
 
         @Override
         public String toString() {
-            return name.substring(name.lastIndexOf(".") + 1);
+            return clazz.getSimpleName();
         }
     }
 
@@ -301,7 +302,7 @@ public class QualifierKindHierarchy {
      * @return the least upper bound of {@code q1} and {@code q2}; {@code null} if the qualifier
      *     kinds are not in the same hierarchy
      */
-    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in lub.
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in lubs.
     public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
         return lubs.get(q1).get(q2);
     }
@@ -316,7 +317,7 @@ public class QualifierKindHierarchy {
      * @return the greatest lower bound of {@code q1} and {@code q2}; {@code null} if the qualifier
      *     kinds are not in the same hierarchy
      */
-    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in glb.
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in glbs.
     public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
         return glbs.get(q1).get(q2);
     }
@@ -363,7 +364,7 @@ public class QualifierKindHierarchy {
      *
      * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
      * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
-     * type systems, uses this constructor. Otherwise, use the other constructor.
+     * type systems, use this constructor. Otherwise, use the other constructor.
      *
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      * @param bottom the bottom qualifier of this hierarchy
