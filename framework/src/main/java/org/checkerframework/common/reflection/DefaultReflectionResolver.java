@@ -232,11 +232,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Checks that array argument types are consistent with their corresponding parameter types.
+     * Checks that argument are consistent with their corresponding parameter types. Common code
+     * used by {@link #checkMethodArguments} and {@link #checkNewClassArguments}.
      *
      * @param parameters formal parameters
      * @param arguments actual arguments
-     * @return true if array argument types are consistent with their corresponding parameter types
+     * @return true if argument are consistent with their corresponding parameter types
      */
     private boolean checkArguments(
             List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
