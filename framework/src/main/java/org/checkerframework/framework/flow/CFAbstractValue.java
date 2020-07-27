@@ -172,12 +172,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      */
     @SideEffectFree
     public String toStringFullyQualified() {
-        return "CFAbstractValue{"
-                + "annotations="
-                + annotations
-                + ", underlyingType="
-                + underlyingType
-                + '}';
+        return "CFAV{" + annotations + ", " + underlyingType + '}';
     }
 
     /**
@@ -193,10 +188,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             annotationsString.add(annoFormatter.formatAnnotationMirror(am));
         }
 
-        return "CFAbstractValue{"
-                + "annotations="
+        return "CFAV{"
                 + annotationsString
-                + ", underlyingType="
+                + ", "
                 + ElementUtils.simpleTypeName(underlyingType)
                 + '}';
     }
