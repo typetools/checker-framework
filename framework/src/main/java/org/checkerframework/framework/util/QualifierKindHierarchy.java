@@ -194,7 +194,8 @@ public class QualifierKindHierarchy {
         }
 
         /**
-         * Returns whether or not the annotation class this qualifier kind represents has elements.
+         * Returns whether or not the annotation class this qualifier kind represents has annotation
+         * elements.
          *
          * @return true if the annotation class this qualifier kind represents has elements
          */
@@ -534,21 +535,6 @@ public class QualifierKindHierarchy {
         } else {
             bottomDirectSuperQuals.addAll(currentLeaves);
         }
-    }
-
-    /**
-     * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code
-     * clazz} is anonymous or otherwise does not have a name.
-     *
-     * @param clazz annotation class
-     * @return the canonical name of {@code clazz}
-     */
-    public static String annotationClassName(Class<? extends Annotation> clazz) {
-        String name = clazz.getCanonicalName();
-        if (name == null) {
-            throw new TypeSystemError("Qualifier classes must not be anonymous.");
-        }
-        return name;
     }
 
     /**
@@ -918,4 +904,18 @@ public class QualifierKindHierarchy {
     }
     // </editor-fold> End of methods that initialize hierarchy
 
+    /**
+     * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code
+     * clazz} is anonymous or otherwise does not have a name.
+     *
+     * @param clazz annotation class
+     * @return the canonical name of {@code clazz}
+     */
+    public static String annotationClassName(Class<? extends Annotation> clazz) {
+        String name = clazz.getCanonicalName();
+        if (name == null) {
+            throw new TypeSystemError("Qualifier classes must not be anonymous.");
+        }
+        return name;
+    }
 }
