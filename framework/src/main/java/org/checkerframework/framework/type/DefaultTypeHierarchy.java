@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Covariant;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -36,8 +37,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
- * TypeHierarchy interface reference which will only allow isSubtype to be called. It does not make
- * sense to call the visit methods on their own.
+ * TypeHierarchy interface reference which will only allow isSubtype to be called. Clients should
+ * not call the visit methods.
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         implements TypeHierarchy {
@@ -52,13 +53,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     // TODO: Incorporate feedback from David/Suzanne
     // IMPORTANT_NOTE:
-
+    //
     // For MultigraphQualifierHierarchies, we check the subtyping relationship of each annotation
     // hierarchy individually.  This is done because when comparing a pair of type variables,
     // sometimes you need to traverse and compare the bounds of two type variables.  Other times it
     // is incorrect to compare the bounds.  These two cases can occur simultaneously when comparing
-    // two hierarchies at once.  In this case, comparing both hierarchies simultaneously will leadd
-    // ot an error.  More detail is given below.
+    // two hierarchies at once.  In this case, comparing both hierarchies simultaneously will lead
+    // to an error.  More detail is given below.
     //
     // Recall, type variables may or may not have a primary annotation for each individual
     // hierarchy.  When comparing
@@ -142,15 +143,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if subtype {@literal <:} supertype. This implementation iterates over all top
-     * annotations and invokes {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror,
-     * AnnotationMirror)}. Most type systems should not override this method, but instead override
-     * {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror, AnnotationMirror)} or some of the
-     * {@code visitXXX} methods.
+     * Returns true if subtype {@literal <:} supertype.
+     *
+     * <p>This implementation iterates over all top annotations and invokes {@link
+     * #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror, AnnotationMirror)}. Most type systems
+     * should not override this method, but instead override {@link #isSubtype(AnnotatedTypeMirror,
+     * AnnotatedTypeMirror, AnnotationMirror)} or some of the {@code visitXXX} methods.
      *
      * @param subtype expected subtype
      * @param supertype expected supertype
-     * @return true if subtype is actually a subtype of supertype
+     * @return true if subtype is a subtype of supertype or equal to it
      */
     @Override
     public boolean isSubtype(
@@ -170,9 +172,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * @param subtype expected subtype
      * @param supertype expected supertype
-     * @param top the hierarchy for which we want to make a comparison
-     * @return returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier
-     *     hierarchy whose top is {@code top}
+     * @param top the top of the hierarchy for which we want to make a comparison
+     * @return returns true if {@code subtype} is a subtype of, or equal to, {@code supertype} in
+     *     the qualifier hierarchy whose top is {@code top}
      */
     protected boolean isSubtype(
             final AnnotatedTypeMirror subtype,
@@ -200,8 +202,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Compare the primary annotations of subtype and supertype. Neither type can be missing
-     * annotations.
+     * Compare the primary annotations of {@code subtype} and {@code supertype}. Neither type can be
+     * missing annotations.
      *
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on
      *     supertype for the current top.
@@ -211,7 +213,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Compare the primary annotations of subtype and supertype.
+     * Compare the primary annotations of {@code subtype} and {@code supertype}.
      *
      * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on
@@ -233,16 +235,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Compare the primary annotations of subtype and supertype.
+     * Compare the primary annotations of {@code subtype} and {@code supertype}.
      *
-     * @param subtypeAnno annotation we expect to be a subtype
-     * @param supertypeAnno annotation we expect to be a supertype of subtype
+     * @param subtypeAnno annotation that may be a subtype
+     * @param supertypeAnno annotation that may be a supertype
      * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if subtype {@literal <:} supertype or both annotations are null. False is
      *     returned if one annotation is null and the other is not.
      */
     protected boolean isAnnoSubtype(
-            AnnotationMirror subtypeAnno, AnnotationMirror supertypeAnno, boolean annosCanBeEmtpy) {
+            @Nullable AnnotationMirror subtypeAnno,
+            @Nullable AnnotationMirror supertypeAnno,
+            boolean annosCanBeEmtpy) {
         if (annosCanBeEmtpy && subtypeAnno == null && supertypeAnno == null) {
             return true;
         }
@@ -251,10 +255,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Checks to see if subtype is bottom (if a bottom exists) If there is no explicit bottom then
-     * false is returned.
+     * Returns true if subtype is the bottom type in the current hierarchy.
      *
-     * @param subtype type to isValid against bottom
+     * @param subtype type to test against bottom
      * @return true if subtype's primary annotation is bottom
      */
     protected boolean isBottom(final AnnotatedTypeMirror subtype) {
@@ -281,17 +284,22 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Check and subtype first determines if the subtype/supertype combination has already been
-     * visited. If so, it returns true, otherwise add the subtype/supertype combination and then
-     * make a subtype check
+     * Like {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, but uses a cache to
+     * prevent infinite recursion on recursive types.
+     *
+     * @param subtype a type that may be a subtype
+     * @param supertype a type that may be a supertype
+     * @return true if subtype {@literal <:} supertype
      */
-    protected boolean checkAndSubtype(
+    protected boolean isSubtypeCaching(
             final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
         if (visitHistory.contains(subtype, supertype, currentTop)) {
+            // visitHistory only contains pairs in a subtype relationship.
             return true;
         }
 
         boolean result = isSubtype(subtype, supertype, currentTop);
+        // The call to add has no effect if result is false.
         visitHistory.add(subtype, supertype, currentTop, result);
         return result;
     }
@@ -326,11 +334,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
-     * @param inside the "subtype" type argument
-     * @param outside the "supertype" type argument
+     * @param inside a type argument of the "subtype"
+     * @param outside a type argument of the "supertype"
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
-     * @return true if inside is contained by outside OR, if canBeCovariant == true, inside is a
-     *     subtype of outside
+     * @return true if inside is contained by outside, or if canBeCovariant == true and {@code
+     *     inside <: outside}
      */
     protected boolean isContainedBy(
             final AnnotatedTypeMirror inside,
@@ -401,7 +409,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
         AnnotatedTypeMirror castedInside =
                 AnnotatedTypes.castedAsSuper(inside.atypeFactory, inside, outsideUpperBound);
-        if (!checkAndSubtype(castedInside, outsideUpperBound)) {
+        if (!isSubtypeCaching(castedInside, outsideUpperBound)) {
             return false;
         }
 
@@ -410,7 +418,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             // tests/all-systems/Issue1991.java crashes without this.
             return true;
         }
-        return canBeCovariant || checkAndSubtype(outsideLowerBound, inside);
+        return canBeCovariant || isSubtypeCaching(outsideLowerBound, inside);
     }
 
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
@@ -423,6 +431,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         }
         return false;
     }
+
+    // ------------------------------------------------------------------------
+    // The rest of this file is the visitor methods.  It is a lot of methods, one for each
+    // combination of types.
 
     // ------------------------------------------------------------------------
     // Arrays as subtypes
@@ -1004,10 +1016,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return result;
     }
 
-    /** A type variable is a supertype if its lower bound is above subtype. */
+    /**
+     * A type variable is a supertype if its lower bound is above subtype.
+     *
+     * @param subtype a type that might be a subtype
+     * @param supertype a type that might be a supertype
+     * @return true if {@code subtype} is a subtype of {@code supertype}
+     */
     protected boolean visitTypevarSupertype(
             AnnotatedTypeMirror subtype, AnnotatedTypeVariable supertype) {
-        return checkAndSubtype(subtype, supertype.getLowerBound());
+        return isSubtypeCaching(subtype, supertype.getLowerBound());
     }
 
     /**
@@ -1051,7 +1069,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 return false;
             }
         }
-        return checkAndSubtype(upperBound, supertype);
+        return isSubtypeCaching(upperBound, supertype);
     }
 
     /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
