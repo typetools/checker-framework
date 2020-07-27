@@ -1927,7 +1927,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
-  MyClass.java output/ -class MyClass -method test -pdf
+  MyClass.java -output output/ -class MyClass -method test -pdf
 \end{Verbatim}
 \end{smaller}
 
@@ -1938,7 +1938,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
-  MyClass.java output/ -class MyClass -method test -pdf
+  MyClass.java -output output/ -class MyClass -method test -pdf
 \end{Verbatim}
 \end{smaller}
 

@@ -66,7 +66,7 @@ public class CFGVisualizeLauncher {
                         continue;
                     }
                     i++;
-                    method = args[i];
+                    output = args[i];
                     break;
                 case "-pdf":
                     pdf = true;
