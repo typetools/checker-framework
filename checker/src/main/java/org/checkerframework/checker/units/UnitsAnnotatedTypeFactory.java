@@ -39,8 +39,9 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
-import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -608,7 +609,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** UnitsQualifierKindHierarchy */
     @AnnotatedFor("nullness")
-    protected static class UnitsQualifierKindHierarchy extends QualifierKindHierarchy {
+    protected static class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
 
         /**
          * Mapping from QualifierKind to an AnnotationMirror that represents its direct super

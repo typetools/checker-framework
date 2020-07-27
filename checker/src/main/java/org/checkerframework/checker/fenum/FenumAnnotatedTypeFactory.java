@@ -15,8 +15,9 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
-import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -120,7 +121,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         protected QualifierKindHierarchy createQualifierKindHierarchy(
                 @UnderInitialization FenumQualifierHierarchy this,
                 Collection<Class<? extends Annotation>> qualifierClasses) {
-            return new QualifierKindHierarchy(qualifierClasses, FenumBottom.class);
+            return new DefaultQualifierKindHierarchy(qualifierClasses, FenumBottom.class);
         }
 
         @Override

@@ -13,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -25,12 +24,10 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
  * <ul>
- *   <li>{@link #isSubtype(AnnotationMirror, QualifierKindHierarchy.QualifierKind, AnnotationMirror,
- *       QualifierKindHierarchy.QualifierKind)}
- *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKindHierarchy.QualifierKind,
- *       AnnotationMirror, QualifierKindHierarchy.QualifierKind)}
- *   <li>{@link #greatestLowerBound(AnnotationMirror, QualifierKindHierarchy.QualifierKind,
- *       AnnotationMirror, QualifierKindHierarchy.QualifierKind)}
+ *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
+ *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
+ *   <li>{@link #greatestLowerBound(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKind)}
  * </ul>
  *
  * For cases where the annotations have no elements, the {@link
@@ -110,7 +107,7 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
     protected QualifierKindHierarchy createQualifierKindHierarchy(
             @UnderInitialization ComplexQualifierHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
-        return new QualifierKindHierarchy(qualifierClasses);
+        return new DefaultQualifierKindHierarchy(qualifierClasses);
     }
 
     /**

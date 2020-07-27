@@ -13,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.QualifierKindHierarchy.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -75,7 +74,7 @@ public class SimpleQualifierHierarchy extends QualifierHierarchy {
     protected QualifierKindHierarchy createQualifierKindHierarchy(
             @UnderInitialization SimpleQualifierHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
-        return new QualifierKindHierarchy(qualifierClasses);
+        return new DefaultQualifierKindHierarchy(qualifierClasses);
     }
 
     /**
