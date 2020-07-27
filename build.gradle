@@ -274,8 +274,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xmaxwarns', '10000',
 		'-ArequirePrefixInWarningSuppressions',
 		// This stub file is only needed/desired for the Interning Checker.
-		'-Astubs=checker.jar/javax-lang-model-element-name.astub'
-		, '-AstubDebug'
+		'-Astubs=javax-lang-model-element-name.astub'
                 ]
         options.compilerArgs += args
 
