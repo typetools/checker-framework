@@ -1947,7 +1947,8 @@ java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
 \noindent
 The above command will generate the corresponding dot and pdf files for the
 method \code{test} in the class \code{MyClass} in the directory \<output>.
-To generate a String graph, remove \<output/> and \<-pdf> but add \<-string>.
+To generate a string representation of the graph to standard output,
+remove \<output/> and \<-pdf> but add \<-string>.
 For example (with JDK 8):
 
 \begin{smaller}
@@ -1961,6 +1962,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 
 For more information, run \refclass{dataflow/cfg}{CFGVisualizeLauncher} with
 no arguments to see the usage.
+
 
 \subsectionAndLabel{Miscellaneous debugging options}{creating-debugging-options-misc}
 
