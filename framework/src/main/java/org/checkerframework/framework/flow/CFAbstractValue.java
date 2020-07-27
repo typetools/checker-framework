@@ -63,6 +63,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /** Formats annotations without their package names. */
     AnnotationFormatter annoFormatter = new DefaultAnnotationFormatter();
 
+    /**
+     * Creates a new CFAbstractValue.
+     *
+     * @param analysis the analysis class this value belongs to
+     * @param annotations the annotations in this abstract value
+     * @param underlyingType the underlying (Java) type in this abstract value
+     */
     protected CFAbstractValue(
             CFAbstractAnalysis<V, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
