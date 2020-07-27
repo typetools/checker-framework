@@ -58,12 +58,24 @@ public abstract class AbstractCFGVisualizer<
 
     @Override
     public void init(Map<String, Object> args) {
-        Object verb = args.get("verbose");
-        this.verbose =
-                verb != null
-                        && (verb instanceof String
-                                ? Boolean.parseBoolean((String) verb)
-                                : (boolean) verb);
+        this.verbose = toBoolean(args.get("verbose"));
+    }
+
+    /**
+     * Convert the value to boolean, by parsing a string or casting any other value. null converts
+     * to false.
+     *
+     * @param o an object to convert to boolean
+     * @return {@code o} converted to boolean
+     */
+    private static boolean toBoolean(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (o instanceof String) {
+            return Boolean.parseBoolean((String) o);
+        }
+        return (boolean) o;
     }
 
     /**

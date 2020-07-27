@@ -215,7 +215,7 @@ public class ElementUtils {
      * @param type a type
      * @return the simple type name, without annotations
      */
-    private static String simpleTypeName(TypeMirror type) {
+    public static String simpleTypeName(TypeMirror type) {
         switch (type.getKind()) {
             case ARRAY:
                 return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
@@ -223,12 +223,17 @@ public class ElementUtils {
                 return ((TypeVariable) type).asElement().getSimpleName().toString();
             case DECLARED:
                 return ((DeclaredType) type).asElement().getSimpleName().toString();
+            case NULL:
+                return "<nulltype>";
             default:
                 if (type.getKind().isPrimitive()) {
                     return TypeAnnotationUtils.unannotatedType(type).toString();
+                } else {
+                    throw new BugInCF(
+                            "simpleTypeName: unhandled type kind: %s, type: %s",
+                            type.getKind(), type);
                 }
         }
-        throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
     }
 
     /**
