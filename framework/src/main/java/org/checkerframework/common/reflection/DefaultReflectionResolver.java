@@ -207,10 +207,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Checks arguments of a method invocation are consistent with their corresponding parameters.
+     * Checks that arguments of a method invocation are consistent with their corresponding
+     * parameters.
      *
-     * @param resolvedTree MethodInvocationTree
-     * @return result of checkArguments
+     * @param resolvedTree a method invocation
+     * @return true if arguments are consistent with parameters
      */
     private boolean checkMethodArguments(MethodInvocationTree resolvedTree) {
         // type.getKind() == actualType.getKind()
@@ -219,10 +220,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Checks arguments of a new class are consistent with their corresponding parameters.
+     * Checks that arguments of a constructor invocation are consistent with their corresponding
+     * parameters.
      *
-     * @param resolvedTree NewClassTree
-     * @return result of checkArguments
+     * @param resolvedTree a constructor invocation
+     * @return true if arguments are consistent with parameters
      */
     private boolean checkNewClassArguments(NewClassTree resolvedTree) {
         ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
@@ -230,12 +232,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Checks if array argument types are consistent with their corresponding parameter types.
+     * Checks that array argument types are consistent with their corresponding parameter types.
      *
-     * @param parameters Parameter list
-     * @param arguments Argument list
-     * @return true if array argument types are consistent with their corresponding parameter types;
-     *     false otherwise
+     * @param parameters formal parameters
+     * @param arguments actual arguments
+     * @return true if array argument types are consistent with their corresponding parameter types
      */
     private boolean checkArguments(
             List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
