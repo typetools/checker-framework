@@ -52,7 +52,7 @@ public class BaseAnnotatedTypeFactory
     }
 
     /** Checks the flow of data with regard to the Base Type checker. */
-    private class BaseTypeTransfer extends CFTransfer {
+    private static class BaseTypeTransfer extends CFTransfer {
 
         /** The type factory obtained from control flow analysis */
         private AnnotatedTypeFactory factory;

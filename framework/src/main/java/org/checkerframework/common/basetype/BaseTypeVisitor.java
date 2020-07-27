@@ -2176,7 +2176,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
             AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
             if (atypeFactory.getTypeHierarchy().isSubtype(type, exp)
-                    && !type.getAnnotations().equals(exp.getAnnotations())) {
+                    && !type.getAnnotations().equals(exp.getAnnotations())
+                    && !type.getAnnotations().isEmpty()) {
                 checker.reportWarning(node, "operand.instanceof.subtype", exp, type);
             }
         }
