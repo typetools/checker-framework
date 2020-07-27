@@ -58,6 +58,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  */
 @AnnotatedFor("nullness")
 public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
+
     /**
      * A mapping from canonical name of a qualifier class to the QualifierKind object representing
      * that class.
