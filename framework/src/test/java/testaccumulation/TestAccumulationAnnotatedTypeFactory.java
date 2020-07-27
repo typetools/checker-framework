@@ -10,6 +10,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
 import testaccumulation.qual.TestAccumulation;
 import testaccumulation.qual.TestAccumulationBottom;
+import testaccumulation.qual.TestAccumulationPredicate;
 
 /**
  * The annotated type factory for a test accumulation checker, which implements a basic called
@@ -22,7 +23,11 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
      * @param checker the checker
      */
     public TestAccumulationAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker, TestAccumulation.class, TestAccumulationBottom.class);
+        super(
+                checker,
+                TestAccumulation.class,
+                TestAccumulationBottom.class,
+                TestAccumulationPredicate.class);
         this.postInit();
     }
 

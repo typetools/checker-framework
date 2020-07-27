@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -224,5 +225,21 @@ public class SystemUtil {
                             toolsJarFilename, javaHome, System.getProperty("java.home")));
         }
         return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+    }
+
+    /**
+     * Concatenates two arrays. Can be invoked varargs-style.
+     *
+     * @param <T> the type of the array elements
+     * @param array1 the first array
+     * @param array2 the second array
+     * @return a new array containing the contents of the given arrays, in order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T[] array1, T... array2) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
     }
 }

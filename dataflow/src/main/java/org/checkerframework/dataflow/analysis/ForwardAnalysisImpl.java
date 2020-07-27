@@ -282,7 +282,8 @@ public class ForwardAnalysisImpl<
                             if (cache != null && cache.containsKey(n)) {
                                 transferResult = cache.get(n);
                             } else {
-                                // Copy the store to preserve to change the state in the cache
+                                // Copy the store to avoid changing other blocks' transfer inputs in
+                                // {@link #inputs}
                                 transferResult = callTransferFunction(n, store.copy());
                                 if (cache != null) {
                                     cache.put(n, transferResult);
@@ -312,8 +313,10 @@ public class ForwardAnalysisImpl<
                             return transferInput.getRegularStore();
                         }
                         setCurrentNode(node);
+                        // Copy the store to avoid changing other blocks' transfer inputs in {@link
+                        // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput);
+                                callTransferFunction(node, transferInput.copy());
                         return transferResult.getRegularStore();
                     }
                 default:
