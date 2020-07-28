@@ -127,7 +127,6 @@ public class HasQualParamDefaults {
         }
 
         void testVariableInOwnInitializer() {
-            // :: error: (assignment.type.incompatible)
             Buffer b = (b = null);
         }
     }

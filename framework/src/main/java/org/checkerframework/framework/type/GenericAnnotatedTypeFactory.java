@@ -1712,7 +1712,12 @@ public abstract class GenericAnnotatedTypeFactory<
         if (shouldCache && initializerCache.containsKey(initializer)) {
             initializerType = initializerCache.get(initializer);
         } else {
+            // When this method is call by getAnnotatedTypeLhs, flow is turned off.
+            // Turn it back on so the type of the initializer is the refined type.
+            boolean oldUseFlow = useFlow;
+            useFlow = everUseFlow;
             initializerType = getAnnotatedType(initializer);
+            useFlow = oldUseFlow;
         }
 
         Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
