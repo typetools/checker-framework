@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
  */
 @SuppressWarnings("interning") // TODO after https://tinyurl.com/cfissue/3404 is merged
-public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
+public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
 
     /**
      * Factory used to create an instance of {@link GraphQualifierHierarchy}. A factory can be used
