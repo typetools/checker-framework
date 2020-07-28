@@ -2175,9 +2175,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (node.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
             AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
+            if (exp.getAnnotations().isEmpty()) {
+                return super.visitInstanceOf(node, p);
+            }
             if (atypeFactory.getTypeHierarchy().isSubtype(type, exp)
-                    && !type.getAnnotations().equals(exp.getAnnotations())
-                    && !type.getAnnotations().isEmpty()) {
+                    && !type.getAnnotations().equals(exp.getAnnotations())) {
                 checker.reportWarning(node, "operand.instanceof.subtype", exp, type);
             }
         }
