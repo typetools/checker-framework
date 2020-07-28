@@ -9,8 +9,8 @@ Added an overloaded version of NullnessUtil.castNonNull that takes an error mess
 Added a new option `-Aversion` to print the version of the Checker Framework.
 
 New CFGVisualizeLauncher command-line arguments:
- * `-outdir`: directory in which to write output files
- * `-string`: print the control flow graph in the terminal
+ * `--outputdir`: directory in which to write output files
+ * `--string`: print the control flow graph in the terminal
 
 Implementation details:
 
