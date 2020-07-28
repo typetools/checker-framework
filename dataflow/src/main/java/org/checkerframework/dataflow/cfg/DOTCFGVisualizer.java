@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg;
 
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -9,6 +10,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -180,14 +182,18 @@ public class DOTCFGVisualizer<
             CFGMethod cfgMethod = (CFGMethod) ast;
             String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
-            String params = cfgMethod.getMethod().getParameters().toString();
+            StringJoiner params = new StringJoiner(",");
+            params.setEmptyValue("");
+            for (VariableTree tree : cfgMethod.getMethod().getParameters()) {
+                params.add(tree.getType().toString());
+            }
             outFile.append(clsName);
-            outFile.append("::");
+            outFile.append("-");
             outFile.append(methodName);
-            outFile.append("(");
-            outFile.append(params);
-            outFile.append(")");
-
+            if (params.length() != 0) {
+                outFile.append("-");
+                outFile.append(params);
+            }
             srcLoc.append("<");
             srcLoc.append(clsName);
             srcLoc.append("::");
