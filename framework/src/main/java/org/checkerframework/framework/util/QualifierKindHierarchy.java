@@ -35,14 +35,14 @@ public interface QualifierKindHierarchy {
      *
      * @return the qualifier kinds that are the top qualifier in their hierarchies
      */
-    Set<QualifierKind> getTops();
+    Set<? extends QualifierKind> getTops();
 
     /**
      * Returns the qualifier kinds that are the bottom qualifier in their hierarchies.
      *
      * @return the qualifier kinds that are the bottom qualifier in their hierarchies
      */
-    Set<QualifierKind> getBottoms();
+    Set<? extends QualifierKind> getBottoms();
 
     /**
      * Returns the least upper bound of {@code q1} and {@code q2}; or {@code null} if the qualifier
@@ -73,7 +73,7 @@ public interface QualifierKindHierarchy {
      *
      * @return a collection of all {@link QualifierKind}s sorted in ascending order
      */
-    Collection<QualifierKind> allQualifierKinds();
+    Collection<? extends QualifierKind> allQualifierKinds();
 
     /**
      * Returns the {@link QualifierKind} for the given annotation class name or null if one does not
