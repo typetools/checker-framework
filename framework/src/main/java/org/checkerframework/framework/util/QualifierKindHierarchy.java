@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * This class holds information about the subtyping relationships between kinds of qualifiers. A
+ * This interface holds information about the subtyping relationships between kinds of qualifiers. A
  * "kind" of qualifier is its annotation class and is represented by the {@link QualifierKind}
  * class. If a type system has more than one hierarchy, information about all hierarchies are stored
  * in this class.
@@ -27,9 +27,11 @@ import org.checkerframework.javacutil.TypeSystemError;
  * AnnotationMirror)}.
  *
  * @see DefaultQualifierKindHierarchy
+ * @see org.checkerframework.framework.util.DefaultQualifierKindHierarchy.DefaultQualifierKind
  */
 @AnnotatedFor("nullness")
 public interface QualifierKindHierarchy {
+
     /**
      * Returns the qualifier kinds that are the top qualifier in their hierarchies.
      *

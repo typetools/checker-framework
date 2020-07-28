@@ -12,7 +12,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.KeyFor;
@@ -28,16 +27,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * This class holds information about the subtyping relationships between kinds of qualifiers. A
- * "kind" of qualifier is its annotation class and is represented by the {@link QualifierKind}
- * class. If a type system has more than one hierarchy, information about all hierarchies are stored
- * in this class.
- *
- * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
- * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
- * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds may or may
- * not be subtypes, depending on the values of any elements of the qualifiers. Also, if qualifier
- * kinds are not subtypes, then qualifiers of those kinds are never subtypes.
+ * This is the default implementation of {@link QualifierKindHierarchy}.
  *
  * <p>By default, the subtyping information and information about polymorphic qualifiers is read
  * from meta-annotations on the annotation classes. This information is used to infer further
@@ -53,10 +43,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  *   <li>{@link #createGlbsMap()}
  * </ul>
  *
- * This class is used by {@link SimpleQualifierHierarchy} and {@link ComplexQualifierHierarchy} to
- * implement methods that compare {@link AnnotationMirror}s, such as {@link
- * org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
- * AnnotationMirror)}.
+ * {@link DefaultQualifierKindHierarchy.DefaultQualifierKind} is the implementation used for {@link
+ * QualifierKind} by this class.
  */
 @AnnotatedFor("nullness")
 public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {

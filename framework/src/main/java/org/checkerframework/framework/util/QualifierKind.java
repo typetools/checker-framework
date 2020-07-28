@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *
  * <p>Exactly one qualifier kind is created for each annotation class.
  *
- * <p>QualifierKinds are like a enum in that there are immutable after initialization and only a
+ * <p>QualifierKinds are like an enum in that there are immutable after initialization and only a
  * finite number per type system exist.
  */
 @AnnotatedFor("nullness")
