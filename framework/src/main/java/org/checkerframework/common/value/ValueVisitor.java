@@ -86,7 +86,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotatedTypeMirror arrType = atypeFactory.getAnnotatedType(args.get(0));
             if (TreeUtils.isArrayLengthAccess(args.get(1))) {
                 valueType = arrType;
-            } else if ((atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class))
+            } else if (atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class)
                     != null) {
                 AnnotationMirror argType =
                         atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class);

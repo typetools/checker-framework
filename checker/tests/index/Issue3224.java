@@ -1,3 +1,5 @@
+// Test case for https://tinyurl.com/cfissue/3224
+
 import java.util.Arrays;
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -8,11 +10,11 @@ public class Issue3224 {
         String @MinLen(1) [] args2 = Arrays.copyOf(args, i);
     }
 
-    public static void m2(String @MinLen(1) ... args) {
+    public static void m2(String @MinLen(1) [] args) {
         String @MinLen(1) [] args2 = Arrays.copyOf(args, args.length);
     }
 
-    public static void m3(String @MinLen(1) [] args) {
+    public static void m3(String @MinLen(1) ... args) {
         String @MinLen(1) [] args2 = Arrays.copyOf(args, args.length);
     }
 }
