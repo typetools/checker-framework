@@ -180,16 +180,20 @@ public class DOTCFGVisualizer<
             CFGMethod cfgMethod = (CFGMethod) ast;
             String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
+            String params = cfgMethod.getMethod().getParameters().toString();
             outFile.append(clsName);
-            outFile.append("-");
+            outFile.append("::");
             outFile.append(methodName);
+            outFile.append("(");
+            outFile.append(params);
+            outFile.append(")");
 
             srcLoc.append("<");
             srcLoc.append(clsName);
             srcLoc.append("::");
             srcLoc.append(methodName);
             srcLoc.append("(");
-            srcLoc.append(cfgMethod.getMethod().getParameters());
+            srcLoc.append(params);
             srcLoc.append(")::");
             srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
             srcLoc.append(">");
