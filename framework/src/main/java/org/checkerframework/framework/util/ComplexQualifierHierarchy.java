@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * return a subclass of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public abstract class ComplexQualifierHierarchy extends QualifierHierarchy {
+public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
 
     /** {@link org.checkerframework.javacutil.ElementUtils} */
     private Elements elements;
