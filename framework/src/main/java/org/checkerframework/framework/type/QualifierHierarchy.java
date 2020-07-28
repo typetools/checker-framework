@@ -41,6 +41,8 @@ public interface QualifierHierarchy {
     /**
      * Returns the width of this hierarchy, i.e. the expected number of annotations on any valid
      * type.
+     *
+     * @return the width of this QualifierHierarchy
      */
     default int getWidth() {
         return getTopAnnotations().size();
