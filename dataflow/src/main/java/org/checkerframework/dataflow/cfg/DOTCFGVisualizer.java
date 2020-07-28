@@ -183,7 +183,6 @@ public class DOTCFGVisualizer<
             String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
             StringJoiner params = new StringJoiner(",");
-            params.setEmptyValue("");
             for (VariableTree tree : cfgMethod.getMethod().getParameters()) {
                 params.add(tree.getType().toString());
             }
@@ -194,6 +193,7 @@ public class DOTCFGVisualizer<
                 outFile.append("-");
                 outFile.append(params);
             }
+
             srcLoc.append("<");
             srcLoc.append(clsName);
             srcLoc.append("::");
