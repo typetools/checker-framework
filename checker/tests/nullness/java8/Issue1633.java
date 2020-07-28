@@ -53,7 +53,7 @@ class Issue1633 {
     }
 
     void foo6(Optional1633<String> o, Supplier<@NonNull String> supplyNonNull) {
-        // :: error: (argument.type.incompatible) :: error: (assignment.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         @NonNull String str1 = o.orElseGetNullable(supplyNonNull);
     }
 
