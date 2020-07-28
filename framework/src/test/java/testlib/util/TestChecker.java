@@ -16,6 +16,7 @@ import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.SimpleQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -89,7 +90,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             @Override
             protected QualifierKindHierarchy createQualifierKindHierarchy(
                     Collection<Class<? extends Annotation>> qualifierClasses) {
-                return new QualifierKindHierarchy(qualifierClasses, Bottom.class);
+                return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
             }
         };
     }
