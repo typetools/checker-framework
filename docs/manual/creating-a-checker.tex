@@ -1927,7 +1927,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
-  MyClass.java -output output/ -class MyClass -method test -pdf
+  MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
 
@@ -1938,7 +1938,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
-  MyClass.java -output output/ -class MyClass -method test -pdf
+  MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
 
@@ -1946,17 +1946,16 @@ java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
 
 \noindent
 The above command will generate the corresponding dot and pdf files for the
-method \code{test} in the class \code{MyClass} in the directory \<output>.
+method \code{test} in the class \code{MyClass} in the project directory.
 To generate a string representation of the graph to standard output,
-remove \<output/> and \<-pdf> but add \<-string>.
-For example (with JDK 8):
+remove \<--pdf> but add \<--string>. For example (with JDK 8):
 
 \begin{smaller}
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
   org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
-  MyClass.java -class MyClass -method test -string
+  MyClass.java --class MyClass --method test --string
 \end{Verbatim}
 \end{smaller}
 

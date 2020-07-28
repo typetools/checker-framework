@@ -60,18 +60,19 @@ public class CFGVisualizeLauncher {
 
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
-                case "-output":
+                case "--outputdir":
                     if (i >= args.length - 1) {
-                        cfgVisualizeLauncher.printError("Did not find <outputdir> after -output.");
+                        cfgVisualizeLauncher.printError(
+                                "Did not find <outputdir> after -outputdir.");
                         continue;
                     }
                     i++;
                     output = args[i];
                     break;
-                case "-pdf":
+                case "--pdf":
                     pdf = true;
                     break;
-                case "-method":
+                case "--method":
                     if (i >= args.length - 1) {
                         cfgVisualizeLauncher.printError("Did not find <name> after -method.");
                         continue;
@@ -79,7 +80,7 @@ public class CFGVisualizeLauncher {
                     i++;
                     method = args[i];
                     break;
-                case "-class":
+                case "--class":
                     if (i >= args.length - 1) {
                         cfgVisualizeLauncher.printError("Did not find <name> after -class.");
                         continue;
@@ -87,10 +88,10 @@ public class CFGVisualizeLauncher {
                     i++;
                     clas = args[i];
                     break;
-                case "-verbose":
+                case "--verbose":
                     verbose = true;
                     break;
-                case "-string":
+                case "--string":
                     string = true;
                     break;
                 default:
@@ -311,17 +312,17 @@ public class CFGVisualizeLauncher {
         System.out.println(
                 "Generate the control flow graph of a Java method, represented as a DOT or String graph.");
         System.out.println(
-                "Parameters: <inputfile> [-output <outputdir>] [-method <name>] [-class <name>] [-pdf] [-verbose] [-string]");
+                "Parameters: <inputfile> [--outputdir <outputdir>] [--method <name>] [--class <name>] [--pdf] [--verbose] [--string]");
         System.out.println(
-                "    -output:  The output directory for the generated files (defaults to '.').");
+                "    --outputdir: The output directory for the generated files (defaults to '.').");
         System.out.println(
-                "    -method:  The method to generate the CFG for (defaults to 'test').");
+                "    --method:    The method to generate the CFG for (defaults to 'test').");
         System.out.println(
-                "    -class:   The class in which to find the method (defaults to 'Test').");
-        System.out.println("    -pdf:     Also generate the PDF by invoking 'dot'.");
-        System.out.println("    -verbose: Show the verbose output (defaults to 'false').");
+                "    --class:     The class in which to find the method (defaults to 'Test').");
+        System.out.println("    --pdf:       Also generate the PDF by invoking 'dot'.");
+        System.out.println("    --verbose:   Show the verbose output (defaults to 'false').");
         System.out.println(
-                "    -string:  Print the string representation of the control flow graph (defaults to 'false').");
+                "    --string:    Print the string representation of the control flow graph (defaults to 'false').");
     }
 
     /**
