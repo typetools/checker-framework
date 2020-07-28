@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -71,11 +71,11 @@ public interface QualifierKindHierarchy {
     @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2);
 
     /**
-     * Returns a collection of all {@link QualifierKind}s sorted in ascending order.
+     * Returns a list of all {@link QualifierKind}s sorted in ascending order.
      *
-     * @return a collection of all {@link QualifierKind}s sorted in ascending order
+     * @return a list of all {@link QualifierKind}s sorted in ascending order
      */
-    Collection<? extends QualifierKind> allQualifierKinds();
+    List<? extends QualifierKind> allQualifierKinds();
 
     /**
      * Returns the {@link QualifierKind} for the given annotation class name or null if one does not

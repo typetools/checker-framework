@@ -635,11 +635,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param elements element utils
          * @return the map
          */
-        @RequiresNonNull("this.nameToQualifierKind")
+        @RequiresNonNull("this.qualifierKinds")
         private Map<QualifierKind, AnnotationMirror> createDirectSuperQualifierMap(
                 @UnderInitialization UnitsQualifierKindHierarchy this, Elements elements) {
             Map<QualifierKind, AnnotationMirror> directSuperType = new TreeMap<>();
-            for (QualifierKind qualifierKind : nameToQualifierKind.values()) {
+            for (QualifierKind qualifierKind : qualifierKinds) {
                 QualifierKind directSuperTypeKind = getDirectSuperQualifierKind(qualifierKind);
                 AnnotationMirror directSuperTypeAnno;
                 try {
