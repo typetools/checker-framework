@@ -2029,8 +2029,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The return type is a pair of the type of the invoked method and the (inferred) type
      * arguments. Note that neither the explicitly passed nor the inferred type arguments are
      * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
-     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
-     * List)} for the checks of type argument well-formedness.
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments} for the checks of
+     * type argument well-formedness.
      *
      * <p>Note that "this" and "super" constructor invocations are also handled by this method
      * (explicit or implicit ones, at the beginning of a constructor). Method {@link
@@ -2210,8 +2210,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The return type is a pair of the type of the invoked constructor and the (inferred) type
      * arguments. Note that neither the explicitly passed nor the inferred type arguments are
      * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
-     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
-     * List)} for the checks of type argument well-formedness.
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments} for the checks of
+     * type argument well-formedness.
      *
      * <p>Note that "this" and "super" constructor invocations are handled by method {@link
      * #methodFromUse}. This method only handles constructor invocations in a "new" expression.
