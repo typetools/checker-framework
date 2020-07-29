@@ -2,11 +2,13 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -442,5 +444,114 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         }
         return transferInput.analysis.runAnalysisFor(
                 node, before, transferInput, nodeValues, analysisCaches);
+    }
+
+    /** Returns a string representation of this. */
+    public String repr() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("AnalysisResult{%n  "),
+                        String.format("%n}"));
+        result.add("nodeValues = " + nodeValuesRepr(nodeValues));
+        result.add("treeLookup = " + treeLookupRepr(treeLookup));
+        result.add("unaryAssignNodeLookup = " + unaryAssignNodeLookup);
+        result.add("finalLocalValues = " + finalLocalValues);
+        result.add("stores = " + stores);
+        result.add("analysisCaches = " + analysisCaches);
+        return result.toString();
+    }
+
+    /**
+     * Return a printed representation of a map with the same type as the {@code nodeValues} field.
+     *
+     * @param nodeValues a map to format
+     * @return a printed representation of the given map
+     */
+    public static <V> String nodeValuesRepr(Map<Node, V> nodeValues) {
+        if (nodeValues.isEmpty()) {
+            return "{}";
+        }
+        StringJoiner result = new StringJoiner(String.format("%n    "));
+        result.add("{");
+        for (Map.Entry<Node, V> entry : nodeValues.entrySet()) {
+            Node key = entry.getKey();
+            result.add(String.format("%s => %s", nodeRepr(key), entry.getValue()));
+        }
+        result.add("}");
+        return result.toString();
+    }
+
+    /**
+     * Return a printed representation of a node.
+     *
+     * @param n a node to format
+     * @return a printed representation of the given node
+     */
+    public static String nodeRepr(Node n) {
+        return String.format(
+                "%s [%s %s %s]",
+                n, n.getClass().getSimpleName(), n.hashCode(), System.identityHashCode(n));
+    }
+
+    /**
+     * Return a printed representation of a collection of nodes.
+     *
+     * @param n a collection of nodes to format
+     * @return a printed representation of the given collection
+     */
+    public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
+        StringJoiner result = new StringJoiner(", ", "[", "]");
+        for (Node n : nodes) {
+            result.add(nodeRepr(n));
+        }
+        ;
+        return result.toString();
+    }
+
+    /**
+     * Return a printed representation of a map with the same type as the {@code treeLookup} field.
+     *
+     * @param treeLookup a map to format
+     * @return a printed representation of the given map
+     */
+    public static String treeLookupRepr(Map<Tree, Set<Node>> treeLookup) {
+        if (treeLookup.isEmpty()) {
+            return "{}";
+        }
+        StringJoiner result = new StringJoiner(String.format("%n    "));
+        result.add("{");
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            Tree key = entry.getKey();
+            String treeString = key.toString().replaceAll("[ \n\t]+", " ");
+            if (treeString.length() > 65) {
+                treeString = "\"" + treeString.substring(0, 60) + "...\"";
+            }
+            result.add(treeString + " => " + nodeCollectionRepr(entry.getValue()));
+        }
+        result.add("}");
+        return result.toString();
+    }
+
+    /** Checks representation invariants on this. */
+    void checkRep() {
+        // Require that each node in treeLookup exists in nodeValues.
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            for (Node n : entry.getValue()) {
+                if (!nodeValues.containsKey(n)) {
+
+                    System.out.flush();
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                    }
+                    String message =
+                            String.format(
+                                    "node %s is in treeLookup but not in nodeValues%n%s",
+                                    nodeRepr(n), repr());
+                    throw new BugInCF(message);
+                }
+            }
+        }
     }
 }
