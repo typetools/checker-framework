@@ -150,8 +150,9 @@ public class CFGVisualizeLauncher {
         @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
         if (res != null) {
             String stringGraph = (String) res.get("stringGraph");
-            if (stringGraph == null)
+            if (stringGraph == null) {
                 return "Unexpected output from generating string control flow graph, shouldn't be null.";
+            }
             return stringGraph;
         } else {
             return "Unexpected output from generating string control flow graph, shouldn't be null.";
