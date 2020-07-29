@@ -11,8 +11,7 @@ Added a new option `-Aversion` to print the version of the Checker Framework.
 New CFGVisualizeLauncher command-line arguments:
  * `--outputdir`: directory in which to write output files
  * `--string`: print the control flow graph in the terminal
-
-All the CFGVisualizeLauncher command-line arguments now start from `--` instead of `-`.
+All CFGVisualizeLauncher command-line arguments now start with `--` instead of `-`.
 
 Implementation details:
 
