@@ -1447,7 +1447,7 @@ org.checkerframework.checker.nullness.NullnessStore
 
 Every store is associated with a particular point in the control-flow
 graph, and all stores are managed by the framework. It saves an explicit store
-for the start of each basic block (\code{Analysis.stores}).
+for the start of each basic block.
 When dataflow information
 is requested for a later point in a block, the analysis applies the
 transfer function to recompute it from the initial store.
@@ -1519,7 +1519,7 @@ every \code{Node} type, and also a transfer method for procedure entry.
   in \code n can be queried.
 
 \item A transfer method for procedure entry returns the initial store, given the
-  list of arguments (as \code{LocalVariableNode}s that represent the formal
+  list of parameters (as \code{LocalVariableNode}s that represent the formal
   parameters) and the
   \code{MethodTree} (useful if the initial store depends on the procedure
   signature, for instance).
