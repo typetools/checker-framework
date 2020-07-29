@@ -38,7 +38,7 @@ public class CFGVisualizeLauncher {
      */
     public static void main(String[] args) {
         CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-        if (args.length < 1) {
+        if (args.length == 0) {
             cfgVisualizeLauncher.printUsage();
             System.exit(1);
         }
@@ -63,7 +63,7 @@ public class CFGVisualizeLauncher {
                 case "--outputdir":
                     if (i >= args.length - 1) {
                         cfgVisualizeLauncher.printError(
-                                "Did not find <outputdir> after -outputdir.");
+                                "Did not find <outputdir> after --outputdir.");
                         continue;
                     }
                     i++;
@@ -74,7 +74,7 @@ public class CFGVisualizeLauncher {
                     break;
                 case "--method":
                     if (i >= args.length - 1) {
-                        cfgVisualizeLauncher.printError("Did not find <name> after -method.");
+                        cfgVisualizeLauncher.printError("Did not find <name> after --method.");
                         continue;
                     }
                     i++;
@@ -82,7 +82,7 @@ public class CFGVisualizeLauncher {
                     break;
                 case "--class":
                     if (i >= args.length - 1) {
-                        cfgVisualizeLauncher.printError("Did not find <name> after -class.");
+                        cfgVisualizeLauncher.printError("Did not find <name> after --class.");
                         continue;
                     }
                     i++;
@@ -137,8 +137,7 @@ public class CFGVisualizeLauncher {
     }
 
     /**
-     * Generate the String representation of the CFG for a method, only. Does no dataflow analysis
-     * analysis.
+     * Generate the String representation of the CFG for a method, only. Does no dataflow analysis.
      *
      * @param inputFile java source input file
      * @param method name of the method to generate the CFG for
@@ -146,13 +145,16 @@ public class CFGVisualizeLauncher {
      * @param verbose show verbose information in CFG
      * @return the String representation of the CFG
      */
-    protected @Nullable String generateStringOfCFGWithoutAnalysis(
+    protected String generateStringOfCFGWithoutAnalysis(
             String inputFile, String method, String clas, boolean verbose) {
         @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
         if (res != null) {
-            return (String) res.get("stringGraph");
+            String stringGraph = (String) res.get("stringGraph");
+            if (stringGraph == null)
+                return "Unexpected output from generating string control flow graph, shouldn't be null.";
+            return stringGraph;
         } else {
-            return "null";
+            return "Unexpected output from generating string control flow graph, shouldn't be null.";
         }
     }
 

@@ -12,6 +12,8 @@ New CFGVisualizeLauncher command-line arguments:
  * `--outputdir`: directory in which to write output files
  * `--string`: print the control flow graph in the terminal
 
+All the CFGVisualizeLauncher command-line arguments now start from `--` instead of `-`.
+
 Implementation details:
 
 commonAssignmentCheck() now takes an additional argument.  Type system
