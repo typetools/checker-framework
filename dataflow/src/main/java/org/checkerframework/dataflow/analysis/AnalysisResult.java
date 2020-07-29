@@ -467,7 +467,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 node, before, transferInput, nodeValues, analysisCaches);
     }
 
-    /** Returns a string representation of this. */
+    /**
+     * Returns a string representation of this.
+     *
+     * @return a string representation of this
+     */
     public String repr() {
         StringJoiner result =
                 new StringJoiner(
@@ -486,6 +490,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Return a printed representation of a map with the same type as the {@code nodeValues} field.
      *
+     * @param <V> the type of values in the map
      * @param nodeValues a map to format
      * @return a printed representation of the given map
      */
