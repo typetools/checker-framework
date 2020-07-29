@@ -600,7 +600,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final String message;
         /** The source code that the message is about. */
         final @InternedDistinct Tree source;
-        /** Stores the stack trace till the point the checker encounters an error. */
+        /** Stores the stack trace when the message is created. */
         final StackTraceElement[] trace;
 
         /**
@@ -616,7 +616,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
          * @param message error message that needs to be printed
          * @param source tree element causing the error
          * @param checker the type-checker in use
-         * @param trace the stack trace when the checker encounters an error
+         * @param trace the stack trace when the message is created
          */
         private CheckerMessage(
                 Diagnostic.Kind kind,
