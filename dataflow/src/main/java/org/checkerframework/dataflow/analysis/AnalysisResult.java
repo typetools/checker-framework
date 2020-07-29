@@ -510,7 +510,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         for (Node n : nodes) {
             result.add(nodeRepr(n));
         }
-        ;
         return result.toString();
     }
 
