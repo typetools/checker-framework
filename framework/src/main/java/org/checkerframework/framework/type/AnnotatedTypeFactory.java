@@ -779,10 +779,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the type subtyping checker using the current type qualifier hierarchy.
+     * Creates the type hierarchy to be used by this factory.
      *
      * <p>Subclasses may override this method to specify new type-checking rules beyond the typical
-     * java subtyping rules.
+     * Java subtyping rules.
      *
      * @return the type relations class to check type subtyping
      */
@@ -1306,7 +1306,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt the element from which to read stub types
      * @return the type, side-effected to add the stub types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(
+    protected AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt) {
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
         if (stubType != null) {
@@ -2029,8 +2029,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The return type is a pair of the type of the invoked method and the (inferred) type
      * arguments. Note that neither the explicitly passed nor the inferred type arguments are
      * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
-     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
-     * List)} for the checks of type argument well-formedness.
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments} for the checks of
+     * type argument well-formedness.
      *
      * <p>Note that "this" and "super" constructor invocations are also handled by this method
      * (explicit or implicit ones, at the beginning of a constructor). Method {@link
@@ -2210,8 +2210,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>The return type is a pair of the type of the invoked constructor and the (inferred) type
      * arguments. Note that neither the explicitly passed nor the inferred type arguments are
      * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
-     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
-     * List)} for the checks of type argument well-formedness.
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments} for the checks of
+     * type argument well-formedness.
      *
      * <p>Note that "this" and "super" constructor invocations are handled by method {@link
      * #methodFromUse}. This method only handles constructor invocations in a "new" expression.
@@ -2443,10 +2443,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * returns the annotated primitive type of the given declared type if it is a boxed declared
+     * Returns the annotated primitive type of the given declared type if it is a boxed declared
      * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * <p>The returned type would have the annotations on the given type and nothing else.
+     * <p>The returned type has the same primary annotations as the given type.
      *
      * @param type the declared type
      * @return the unboxed primitive type

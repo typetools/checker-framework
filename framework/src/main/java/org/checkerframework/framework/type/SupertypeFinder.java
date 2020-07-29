@@ -32,8 +32,9 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Finds the direct supertypes of an input AnnotatedTypeMirror. See
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2
+ * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2">JLS section
+ * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
  */
