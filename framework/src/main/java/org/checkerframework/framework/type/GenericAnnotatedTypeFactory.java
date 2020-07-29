@@ -1172,10 +1172,14 @@ public abstract class GenericAnnotatedTypeFactory<
 
                 while (!lambdaQueue.isEmpty()) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+                    MethodTree mt =
+                            (MethodTree)
+                                    TreeUtils.enclosingOfKind(
+                                            getPath(lambdaPair.first), Kind.METHOD);
                     analyze(
                             queue,
                             lambdaQueue,
-                            new CFGLambda(lambdaPair.first),
+                            new CFGLambda(lambdaPair.first, classTree, mt),
                             fieldValues,
                             classTree,
                             false,
