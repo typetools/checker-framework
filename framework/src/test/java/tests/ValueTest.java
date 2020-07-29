@@ -3,7 +3,7 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
  * ExceptionTest will fail because it cannot find the ExceptionTest.class file for reflective method
  * resolution.
  */
-public class ValueTest extends FrameworkPerDirectoryTest {
+public class ValueTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public ValueTest(List<File> testFiles) {
