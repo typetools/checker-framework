@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -235,7 +237,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the copied tree-lookup map.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup.
      *
      * @return the copied tree-lookup map
      */
@@ -302,5 +304,33 @@ public class ControlFlowGraph {
         }
         String stringGraph = (String) res.get("stringGraph");
         return stringGraph == null ? super.toString() : stringGraph;
+    }
+
+    /**
+     * Returns a string representation of this.
+     *
+     * @return a string representation of this
+     */
+    public String repr() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("ControlFlowGraph{%n  "),
+                        String.format("%n  }"));
+        result.add("entryBlock=" + entryBlock);
+        result.add("regularExitBlock=" + regularExitBlock);
+        result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        if (astString.length() > 65) {
+            astString = "\"" + astString.substring(0, 60) + "\"";
+        }
+        result.add("underlyingAST=" + underlyingAST);
+        result.add("treeLookup=" + AnalysisResult.treeLookupRepr(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupRepr(convertedTreeLookup));
+        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("returnNodes=" + AnalysisResult.nodeCollectionRepr(returnNodes));
+        result.add("declaredClasses=" + declaredClasses);
+        result.add("declaredLambdas=" + declaredLambdas);
+        return result.toString();
     }
 }
