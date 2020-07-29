@@ -3,6 +3,7 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -741,6 +742,15 @@ public abstract class InitializationAnnotatedTypeFactory<
                 type.addAnnotation(INITIALIZED);
             }
             return super.visitLiteral(tree, type);
+        }
+
+        @Override
+        public Void visitMemberSelect(
+                MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            if (TreeUtils.isArrayLengthAccess(node)) {
+                annotatedTypeMirror.replaceAnnotation(INITIALIZED);
+            }
+            return super.visitMemberSelect(node, annotatedTypeMirror);
         }
     }
 

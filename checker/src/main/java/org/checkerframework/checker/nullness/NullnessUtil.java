@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Utility class for the Nullness Checker.
@@ -23,6 +24,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     "nullness", // Nullness utilities are trusted regarding nullness.
     "cast" // Casts look redundant if Nullness Checker is not run.
 })
+@AnnotatedFor("nullness")
 public final class NullnessUtil {
 
     private NullnessUtil() {

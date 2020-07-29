@@ -1,10 +1,17 @@
-Version 3.?.?, August 3, 2020
+Version 3.6.0, August 3, 2020
 
 The Interning Checker supports method annotations @EqualsMethod and
 @CompareToMethod.  Place them on methods like equals(), compareTo(), and
 compare() to permit certain uses of == on non-interned values.
 
 Added an overloaded version of NullnessUtil.castNonNull that takes an error message.
+
+Added a new option `-Aversion` to print the version of the Checker Framework.
+
+Implementation details:
+
+commonAssignmentCheck() now takes an additional argument.  Type system
+authors must update their overriding implementations.
 
 ---------------------------------------------------------------------------
 
@@ -121,7 +128,7 @@ Renamings:
 For collection methods with `Object` formal parameter type, such as
 contains, indexOf, and remove, the annotated JDK now forbids null as an
 argument.  To make the Nullness Checker permit null, pass
-`-Astubs=checker.jar/collection-object-parameters-may-be-null.astub`.
+`-Astubs=collection-object-parameters-may-be-null.astub`.
 
 The argument to @SuppressWarnings can be a substring of a message key that
 extends at each end to a period or an end of the key.  (Previously, any

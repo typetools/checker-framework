@@ -9,6 +9,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -88,9 +89,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                     default:
                                         if (!fc.isValidParameter(formatCat, paramType)) {
                                             // II.3
+                                            ExecutableElement method =
+                                                    TreeUtils.elementFromUse(node);
+                                            Name methodName = method.getSimpleName();
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",
+                                                    "", // parameter name is not useful
+                                                    methodName,
                                                     paramType,
                                                     formatCat);
                                         }
@@ -176,8 +182,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);

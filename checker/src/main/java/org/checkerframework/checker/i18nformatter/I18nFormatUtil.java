@@ -15,12 +15,18 @@ import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * This class provides a collection of utilities to ease working with i18n format strings.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
+@AnnotatedFor("nullness")
 public class I18nFormatUtil {
 
     /**
@@ -28,6 +34,9 @@ public class I18nFormatUtil {
      *
      * @param format the format string to parse
      */
+    @SuppressWarnings(
+            "nullness:argument.type.incompatible") // It's not documented, but passing null as the
+    // argument array is supported.
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
@@ -48,19 +57,22 @@ public class I18nFormatUtil {
 
         for (I18nConversion c : cs) {
             int index = c.index;
+            Integer indexKey = index;
             conv.put(
-                    index,
+                    indexKey,
                     I18nConversionCategory.intersect(
                             c.category,
-                            conv.containsKey(index)
-                                    ? conv.get(index)
+                            conv.containsKey(indexKey)
+                                    ? conv.get(indexKey)
                                     : I18nConversionCategory.UNUSED));
             maxIndex = Math.max(maxIndex, index);
         }
 
         I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
         for (int i = 0; i <= maxIndex; i++) {
-            res[i] = conv.containsKey(i) ? conv.get(i) : I18nConversionCategory.UNUSED;
+            Integer indexKey = i;
+            res[i] =
+                    conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED;
         }
         return res;
     }
@@ -118,18 +130,22 @@ public class I18nFormatUtil {
 
         public static int maxOffset;
 
-        /** The locale to use for formatting numbers and dates. */
-        private static Locale locale;
+        /** The locale to use for formatting numbers and dates. Is set in {@link #parse}. */
+        private static @MonotonicNonNull Locale locale;
 
-        /** An array of formatters, which are used to format the arguments. */
-        private static List<I18nConversionCategory> categories;
+        /**
+         * An array of formatters, which are used to format the arguments. Is set in {@link #parse}.
+         */
+        private static @MonotonicNonNull List<I18nConversionCategory> categories;
 
         /**
          * The argument numbers corresponding to each formatter. (The formatters are stored in the
          * order they occur in the pattern, not in the order in which the arguments are specified.)
+         * Is set in {@link #parse}.
          */
-        private static List<Integer> argumentIndices;
+        private static @MonotonicNonNull List<Integer> argumentIndices;
 
+        // I think this means the number of format specifiers in the format string.
         /** The number of subformats. */
         private static int numFormat;
 
@@ -162,6 +178,7 @@ public class I18nFormatUtil {
             "", "short", "medium", "long", "full"
         };
 
+        @EnsuresNonNull({"categories", "argumentIndices", "locale"})
         public static I18nConversion[] parse(String pattern) {
             MessageFormatParser.categories = new ArrayList<>();
             MessageFormatParser.argumentIndices = new ArrayList<>();
@@ -175,8 +192,10 @@ public class I18nFormatUtil {
             return ret;
         }
 
+        @SuppressWarnings("nullness:dereference.of.nullable") // complex rules for segments[i]
+        @RequiresNonNull({"argumentIndices", "categories", "locale"})
         private static void applyPattern(String pattern) {
-            StringBuilder[] segments = new StringBuilder[4];
+            @Nullable StringBuilder[] segments = new StringBuilder[4];
             // Allocate only segments[SEG_RAW] here. The rest are
             // allocated on demand.
             segments[SEG_RAW] = new StringBuilder();
@@ -263,7 +282,8 @@ public class I18nFormatUtil {
         }
 
         /** Side-effects {@code categories} field, adding to it an I18nConversionCategory. */
-        private static void makeFormat(int offsetNumber, StringBuilder[] textSegments) {
+        @RequiresNonNull({"argumentIndices", "categories", "locale"})
+        private static void makeFormat(int offsetNumber, @Nullable StringBuilder[] textSegments) {
             String[] segments = new String[textSegments.length];
             for (int i = 0; i < textSegments.length; i++) {
                 StringBuilder oneseg = textSegments[i];

@@ -205,7 +205,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     @Override
-    @SuppressWarnings("contracts.postcondition.not.satisfied") // if closed, reader is non-null
+    @SuppressWarnings(
+            "nullness:contracts.postcondition.not.satisfied") // if closed, reader is non-null
     @EnsuresNonNull("reader")
     public boolean hasNext() {
         if (closed) {

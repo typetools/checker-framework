@@ -18,7 +18,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
@@ -455,11 +457,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     /**
      * This method is called to traverse the path back up from any anonymous inner class or lambda
-     * which has been inferred to be UI affecting and re-run {@link #commonAssignmentCheck(Tree,
-     * ExpressionTree, String)} as needed on places where the class declaration or lambda expression
-     * are being assigned to a variable, passed as a parameter or returned from a method. This is
-     * necessary because the normal visitor traversal only checks assignments on the way down the
-     * AST, before inference has had a chance to run.
+     * which has been inferred to be UI affecting and re-run {@code commonAssignmentCheck} as needed
+     * on places where the class declaration or lambda expression are being assigned to a variable,
+     * passed as a parameter or returned from a method. This is necessary because the normal visitor
+     * traversal only checks assignments on the way down the AST, before inference has had a chance
+     * to run.
+     *
+     * @param path the path to traverse up from a UI-affecting class
      */
     private void scanUp(TreePath path) {
         Tree tree = path.getLeaf();
@@ -485,6 +489,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 List<? extends ExpressionTree> args = invocationTree.getArguments();
                 ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
                 AnnotatedExecutableType invokedMethod = mType.executableType;
+                ExecutableElement method = invokedMethod.getElement();
+                Name methodName = method.getSimpleName();
+                List<? extends VariableElement> methodParams = method.getParameters();
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
@@ -495,7 +502,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                 argsTypes.get(i),
                                 atypeFactory.getAnnotatedType(args.get(i)),
                                 args.get(i),
-                                "argument.type.incompatible");
+                                "argument.type.incompatible",
+                                methodParams.get(i),
+                                methodName);
                     }
                 }
                 break;

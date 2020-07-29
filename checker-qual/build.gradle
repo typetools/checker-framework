@@ -4,7 +4,7 @@ buildscript {
     }
     dependencies {
         // Create OSGI bundles
-        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.1"
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.2"
     }
 }
 
@@ -28,7 +28,7 @@ task copySources(type: Copy) {
     include "**/Opt.java"
     include "**/RegexUtil.java"
     include "**/SignednessUtil.java"
-    // include "**/SignednessUtilExtra.java"
+    include "**/SignednessUtilExtra.java"
     include "**/UnitsTools.java"
 
     // Make files read only.

@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.source.tree.Tree;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -115,6 +116,16 @@ public interface Analysis<
      * @return the abstract value for node {@code n}, or {@code null} if no information is available
      */
     @Nullable V getValue(Node n);
+
+    /**
+     * Return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     * available. Note that if the analysis has not finished yet, this value might not represent the
+     * final value for this node.
+     *
+     * @param t the given tree
+     * @return the abstract value for the given tree
+     */
+    @Nullable V getValue(Tree t);
 
     /**
      * Returns the regular exit store, or {@code null}, if there is no such store (because the
