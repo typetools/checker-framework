@@ -1179,7 +1179,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     analyze(
                             queue,
                             lambdaQueue,
-                            new CFGLambda(lambdaPair.first, ct, mt),
+                            new CFGLambda(lambdaPair.first, classTree, mt),
                             fieldValues,
                             classTree,
                             false,
