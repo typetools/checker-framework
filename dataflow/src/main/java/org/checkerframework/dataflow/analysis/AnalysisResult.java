@@ -186,9 +186,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 return nodeValues.get(equalNodes.get(0));
             default:
                 return null;
-                // throw new BugInCF(
-                //         "Multiple nodes equal %s: %s%n%s",
-                //         nodeRepr(n), nodeCollectionRepr(equalNodes), repr());
         }
     }
 
