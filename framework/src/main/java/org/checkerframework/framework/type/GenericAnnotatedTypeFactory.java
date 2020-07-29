@@ -87,6 +87,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ComponentFinderUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -392,29 +393,22 @@ public abstract class GenericAnnotatedTypeFactory<
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
 
-        // Try to reflectively load the visitor.
-        Class<?> checkerClass = checker.getClass();
-
-        while (checkerClass != BaseTypeChecker.class) {
-            FlowAnalysis result =
-                    BaseTypeChecker.invokeConstructorFor(
-                            BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
-                            new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
-                            new Object[] {checker, this, fieldValues});
-            if (result != null) {
-                return result;
-            }
-            checkerClass = checkerClass.getSuperclass();
-        }
-
-        // If an analysis couldn't be loaded reflectively, return the
-        // default.
-        List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
-        for (Pair<VariableElement, Value> fieldVal : fieldValues) {
-            assert fieldVal.second instanceof CFValue;
-            tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
-        }
-        return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
+        return ComponentFinderUtil.find(
+                checker,
+                "Analysis",
+                checker1 -> {
+                    // If an analysis couldn't be loaded reflectively, return the
+                    // default.
+                    List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
+                    for (Pair<VariableElement, Value> fieldVal : fieldValues) {
+                        assert fieldVal.second instanceof CFValue;
+                        tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
+                    }
+                    return (FlowAnalysis)
+                            new CFAnalysis(checker1, (GenericAnnotatedTypeFactory) this, tmp);
+                },
+                new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
+                new Object[] {checker, this, fieldValues});
     }
 
     /**
