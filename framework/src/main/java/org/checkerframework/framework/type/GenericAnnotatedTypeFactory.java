@@ -428,28 +428,20 @@ public abstract class GenericAnnotatedTypeFactory<
     public TransferFunction createFlowTransferFunction(
             CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
-        // Try to reflectively load the visitor.
-        Class<?> checkerClass = checker.getClass();
-
-        while (checkerClass != BaseTypeChecker.class) {
-            TransferFunction result =
-                    BaseTypeChecker.invokeConstructorFor(
-                            BaseTypeChecker.getRelatedClassName(checkerClass, "Transfer"),
-                            new Class<?>[] {analysis.getClass()},
-                            new Object[] {analysis});
-            if (result != null) {
-                return result;
-            }
-            checkerClass = checkerClass.getSuperclass();
-        }
-
-        // If a transfer function couldn't be loaded reflectively, return the
-        // default.
-        @SuppressWarnings("unchecked")
-        TransferFunction ret =
-                (TransferFunction)
-                        new CFTransfer((CFAbstractAnalysis<CFValue, CFStore, CFTransfer>) analysis);
-        return ret;
+        return ComponentFinderUtil.find(
+                checker,
+                "Transfer",
+                checker1 -> {
+                    @SuppressWarnings("unchecked")
+                    TransferFunction ret =
+                            (TransferFunction)
+                                    new CFTransfer(
+                                            (CFAbstractAnalysis<CFValue, CFStore, CFTransfer>)
+                                                    analysis);
+                    return ret;
+                },
+                new Class<?>[] {analysis.getClass()},
+                new Object[] {analysis});
     }
 
     /**
