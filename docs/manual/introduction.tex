@@ -1096,7 +1096,7 @@ annotated \<@Nullable>, and a parameter that is compared against \<null>
 may need to be annotated \<@Nullable>.
 
 The specification should state any facts that are relevant to callees.
-When checking a method, uses only the specification, not the
+When checking a method, use only the specification, not the
 implementation, of other methods.  (Equivalently, type-checking is
 ``modular'' or ``intraprocedural''.)
 
@@ -1219,6 +1219,7 @@ as an argument.  Examples include
 \begin{Verbatim}
   java.lang.Double.valueOf(String)
   java.lang.String.contains(CharSequence)
+  java.lang.Object.checkNotNull(Object)
   org.junit.Assert.assertNotNull(Object)
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}

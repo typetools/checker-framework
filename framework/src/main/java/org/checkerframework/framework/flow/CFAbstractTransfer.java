@@ -157,6 +157,11 @@ public abstract class CFAbstractTransfer<
      * transfer function. By default, the value is not changed but subclasses might decide to
      * implement some functionality. The store at this position is also passed (two stores, as the
      * result is a {@link ConditionalTransferResult}.
+     *
+     * @param value the value to finish
+     * @param thenStore the "then" store
+     * @param elseStore the "else" store
+     * @return the finished value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
