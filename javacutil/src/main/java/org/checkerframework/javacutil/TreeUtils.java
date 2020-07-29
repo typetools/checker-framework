@@ -1284,7 +1284,7 @@ public final class TreeUtils {
             return false;
         }
 
-        MemberSelectTree memberSelectTree = (MemberSelectTree) (tree.getMethodSelect());
+        MemberSelectTree memberSelectTree = (MemberSelectTree) tree.getMethodSelect();
 
         if (memberSelectTree.getExpression().toString().equals("Arrays")
                 && getMethodName(memberSelectTree).equals("copyOf")) {
