@@ -22,7 +22,6 @@ class TryCatch {
         t.toString();
         try {
         } catch (Throwable e) {
-            // :: error: (dereference.of.nullable)
             t.toString();
         }
     }

@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -168,7 +169,27 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      *     available
      */
     public @Nullable V getValue(Node n) {
-        return nodeValues.get(n);
+        V result = nodeValues.get(n);
+        if (result != null) {
+            return result;
+        }
+        List<Node> equalNodes = new ArrayList<>();
+        for (Node candidate : nodeValues.keySet()) {
+            if (n.equals(candidate)) {
+                equalNodes.add(candidate);
+            }
+        }
+        switch (equalNodes.size()) {
+            case 0:
+                return null;
+            case 1:
+                return nodeValues.get(equalNodes.get(0));
+            default:
+                return null;
+                // throw new BugInCF(
+                //         "Multiple nodes equal %s: %s%n%s",
+                //         nodeRepr(n), nodeCollectionRepr(equalNodes), repr());
+        }
     }
 
     /**
