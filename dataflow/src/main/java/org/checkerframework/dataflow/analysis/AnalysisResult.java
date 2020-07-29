@@ -497,7 +497,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /**
      * Return a printed representation of a collection of nodes.
      *
-     * @param n a collection of nodes to format
+     * @param nodes a collection of nodes to format
      * @return a printed representation of the given collection
      */
     public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
@@ -534,24 +534,31 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /** Checks representation invariants on this. */
-    void checkRep() {
+    public void checkRep() {
         // Require that each node in treeLookup exists in nodeValues.
         for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
             for (Node n : entry.getValue()) {
                 if (!nodeValues.containsKey(n)) {
-
-                    System.out.flush();
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException ex) {
-                    }
-                    String message =
-                            String.format(
-                                    "node %s is in treeLookup but not in nodeValues%n%s",
-                                    nodeRepr(n), repr());
-                    throw new BugInCF(message);
+                    sleep(100);
+                    throw new BugInCF(
+                            "node %s is in treeLookup but not in nodeValues%n%s",
+                            nodeRepr(n), repr());
                 }
             }
+        }
+    }
+
+    /**
+     * Sleep (do nothing) for the given number of milliseconds. This can help to prevent output from
+     * being interleaved.
+     *
+     * @param msec the number of milliseconds to delay before the next action
+     */
+    private void sleep(int msec) {
+        try {
+            Thread.sleep(msec);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt(); // Here!
         }
     }
 }
