@@ -13,7 +13,9 @@ public class ObjectConstructionTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.checker.objectconstruction.ObjectConstructionChecker.class,
                 "objectconstruction",
                 "-Anomsgtext",
-                "-nowarn");
+                "-nowarn",
+                "-encoding",
+                "UTF-8");
     }
 
     @Parameters
