@@ -389,6 +389,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <p>Subclasses have to override this method to create the appropriate analysis if they do not
      * follow the checker naming convention.
+     *
+     * @param fieldValues initial abstract types for fields.
+     * @return the appropriate flow analysis class that is used for the
+     *     org.checkerframework.dataflow analysis.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
@@ -420,6 +424,10 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <p>Subclasses have to override this method to create the appropriate transfer function if
      * they do not follow the checker naming convention.
+     *
+     * @param analysis the analysis class this store belongs to.
+     * @return the appropriate transfer function that is used for the org.checkerframework.dataflow
+     *     analysis.
      */
     // A more precise type for the parameter would be FlowAnalysis, which
     // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
