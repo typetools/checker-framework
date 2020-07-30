@@ -1519,7 +1519,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                                     + " At most one separator "
                                     + OPTION_SEPARATOR
                                     + " expected, but found "
-                                    + split.length
+                                    + (split.length - 1)
                                     + ".");
             }
         }
