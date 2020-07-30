@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
@@ -83,19 +84,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && TreeUtils.isArrayscopyOfMethodInvocation((MethodInvocationTree) valueTree)
                 && valueType.getKind() == TypeKind.ARRAY) {
             List<? extends ExpressionTree> args = ((MethodInvocationTree) valueTree).getArguments();
-            AnnotatedTypeMirror arrType = atypeFactory.getAnnotatedType(args.get(0));
-            if (TreeUtils.isArrayLengthAccess(args.get(1))) {
-                valueType = arrType;
-            } else if (atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class)
+            if (getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntVal.class)
                     != null) {
                 AnnotationMirror argType =
-                        atypeFactory.getAnnotatedType(args.get(1)).getAnnotation(IntVal.class);
+                        getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntVal.class);
                 valueType.addAnnotation(
                         getTypeFactory()
                                 .createArrayLenAnnotation(
                                         ValueAnnotatedTypeFactory.getIntValues(argType).stream()
                                                 .map(Long::intValue)
                                                 .collect(Collectors.toList())));
+            }
+            if (getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntRange.class)
+                    != null) {
+                AnnotationMirror argType =
+                        getTypeFactory()
+                                .getAnnotatedType(args.get(1))
+                                .getAnnotation(IntRange.class);
+                Range range = ValueAnnotatedTypeFactory.getRange(argType);
+                valueType.addAnnotation(getTypeFactory().createArrayLenRangeAnnotation(range));
             }
         }
 

@@ -1,6 +1,7 @@
 // Test case for https://tinyurl.com/cfissue/3224
 
 import java.util.Arrays;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.MinLen;
 
 public class Issue3224 {
@@ -16,5 +17,9 @@ public class Issue3224 {
 
     public static void m3(String @MinLen(1) ... args) {
         String @MinLen(1) [] args2 = Arrays.copyOf(args, args.length);
+    }
+
+    public static void m4(String @MinLen(1) [] args, @IntRange(from = 10, to = 200) int len) {
+        String @MinLen(1) [] args2 = Arrays.copyOf(args, len);
     }
 }
