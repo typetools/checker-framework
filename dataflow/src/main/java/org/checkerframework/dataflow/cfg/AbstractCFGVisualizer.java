@@ -105,12 +105,15 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Adds the successors of the current block to the work list and the visited blocks list.
+     * Outputs, to sbGraph, a visualization of a block's edges, but not the block itself. (The block
+     * itself is output elsewhere.) Also adds the successors of the block to the work list and the
+     * visited blocks list.
      *
      * @param cur the current block
-     * @param visited the set of blocks that have already been visited or are in the work list
-     * @param workList the queue of blocks to be processed
-     * @param sbGraph the {@link StringBuilder} to store the graph
+     * @param visited the set of blocks that have already been visited or are in the work list; side
+     *     effected by this method
+     * @param workList the queue of blocks to be processed; side effected by this method
+     * @param sbGraph the {@link StringBuilder} to store the graph; side effected by this method
      */
     protected void handleSuccessorsHelper(
             Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbGraph) {
