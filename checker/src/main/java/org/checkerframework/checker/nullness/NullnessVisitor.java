@@ -659,13 +659,13 @@ public class NullnessVisitor
     }
 
     /**
-     * Nullness Validator. Check that primitive types are annotated with {@code @NonNull} even if
-     * they are the type of a local variable.
+     * Check that primitive types are annotated with {@code @NonNull} even if they are the type of a
+     * local variable.
      */
     private static class NullnessValidator extends BaseTypeValidator {
 
         /**
-         * Create Nullness validator.
+         * Create NullnessValidator.
          *
          * @param checker checker
          * @param visitor visitor

@@ -86,13 +86,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
-     * Should the top-level declared type be checked?
+     * Should the top-level declared or primitive type be checked?
+     *
+     * <p>If {@code type} is not a declared or primitive type, then this method returns true.
      *
      * <p>Top-level type is not checked if tree is a local variable or an expression tree.
      *
      * @param type AnnotatedTypeMirror being validated
      * @param tree a Tree whose type is {@code type}
-     * @return whether or not the top-level type should be checked
+     * @return whether or not the top-level type should be checked, if {@code type} is a declared or
+     *     primitive type.
      */
     protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
         if (type.getKind() != TypeKind.DECLARED && !type.getKind().isPrimitive()) {
