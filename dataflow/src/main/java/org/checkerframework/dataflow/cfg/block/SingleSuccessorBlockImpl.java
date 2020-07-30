@@ -1,7 +1,8 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 
@@ -28,7 +29,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 
     @Override
     public Collection<Block> getSuccessors() {
-        return Collections.singletonList(getSuccessor());
+        List<Block> result = new ArrayList<Block>();
+        if (successor != null) {
+            result.add(successor);
+        }
+        return result;
     }
 
     /** Set a basic block as the successor of this block. */

@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -64,7 +64,10 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 
     @Override
     public List<Block> getSuccessors() {
-        return Arrays.asList(getThenSuccessor(), getElseSuccessor());
+        List<Block> result = new ArrayList<>(2);
+        result.add(getThenSuccessor());
+        result.add(getElseSuccessor());
+        return result;
     }
 
     @Override
