@@ -1,0 +1,143 @@
+\htmlhr
+\chapterAndLabel{Object Construction Checker for the builder pattern}{object-construction-checker}
+
+The builder pattern is a flexible and readable way to construct objects, but it is error-prone.
+For example, failing to provide a required argument causes a run-time error that manifests during testing
+or in the field, instead of at compile time as for regular Java constructors.
+
+The Object Construction Checker verifies at compile time that your code correctly uses the builder pattern,
+never omitting a required argument. The checker has built-in support for \href{https://projectlombok.org/}{Lombok}
+(see the caveats about Lombok in \chapterpageref{object-construction-lombok}) and
+\href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
+Programmers can extend it to other builders by writing method specifications.
+
+The checker performs *verification* rather than *bug-finding*.  The checker
+might yield a false positive warning when your code is too tricky for it to
+verify (please submit an
+\href{https://github.com/typetools/checker-framework/issues}{issue} and mention the Object Construction Checker if
+you discover this).  However, if the checker issues no warnings, then you
+have a guarantee that your code supplies all the required information to
+the builder.
+
+\sectionAndLabel{How to run the Object Construction Checker}{object-construction-run-checker}
+
+\begin{Verbatim}
+javac -processor objectconstruction MyFile.java ...
+\end{Verbatim}
+
+\sectionAndLabel{For Lombok users}{object-construction-lombok}
+
+The Object Construction Checker supports projects that use Lombok via
+the \href{https://plugins.gradle.org/plugin/io.freefair.lombok}{io.freefair.lombok} Gradle plugin automatically.
+However, note that the checker's error messages refer to Lombok's output, which is a variant of your source code
+that appears in a \<delombok> directory.
+To fix issues, you should edit your original source code, \textbf{not} the files in the checker's error messages.
+
+If you use Lombok with a build system other than Gradle, you must configure it to do two tasks.
+If either of these are not done, the checker will not issue any errors on Lombok code.
+\begin{itemize}
+\item set Lombok configuration option \<lombok.addLombokGeneratedAnnotation = true>
+\item delombok the code before passing it to the checker
+\end{itemize}
+
+\sectionAndLabel{Specifying your code}{object-construction-spec}
+
+The Object Construction Checker reads method specifications or contracts:  what a method requires when it is called.
+It warns if method arguments do not satisfy the method's specification.
+
+If you use AutoValue or Lombok, most specifications are automatically
+inferred by the Object Construction Checker, from field annotations such as
+\<@Nullable> and field types such as \<Optional>. See the
+section on defaulting rules for Lombok and AutoValue for more details
+(\chapterpageref{object-construction-framework-details}).
+
+In some cases, you may need to specify your code. You do so by writing one of the following type
+annotations:
+\begin{description}
+\item[\refqualclasswithparams{checker/objectconstruction/qual}{CalledMethods}{String[] methodNames}]
+  The annotated type represents values on which all the given method were definitely called.
+  (Other methods might also have been called.) \<@CalledMethods()> is the default annotation.
+
+  Suppose that the method \<build> is annotated as
+
+  \begin{Verbatim}
+  class MyObjectBuilder {
+    MyObject build(@CalledMethods({"setX", "setY"}) MyObjectBuilder this) { ... }
+  }
+  \end{Verbatim}
+
+  Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
+
+\item[\refqualclasswithparams{checker/objectconstruction/qual}{CalledMethodsPredicate}{String expression}]
+  The annotated type specifies the required method calls using a Java boolean syntax that supports
+  disjunction (\<||>), conjunction (\<&&>), parentheses, and not (\<!>).
+
+  For example, the annotation \<@CalledMethodsPredicate("x && y || z")> on a type represents
+  objects such that either both the  \<x()> and \<y()> methods have been called on the object, \textbf{or}
+  the \<z()> method has been called on the object.
+
+  A note on the not operator (\<!?>): the annotation \<@CalledMethodsPredicate("!x")> means: "it is not true x was
+  definitely called", equivalently "there is some path on which x was not called".
+  The annotation \<@CalledMethodsPredicate("!x")> does \emph{not} mean "x was not called".
+
+  The Object Construction Checker does not have a way of expressing that a
+  method must never be called.  You can do unsound bug-finding for such a
+  property by using the `!` operator.  The Object Construction Checker will
+  detect if the method was always called, but will silently approve the code
+  if the method is called on some but not all paths.
+
+\item[\refqualclass{checker/objectconstruction/qual}{EnsuresCalledMethods}]
+  This declaration annotation specifies a post-condition on a method, indicating the methods it
+  guarantees to be called on some input expression.
+
+  For example, this specification:
+
+  \begin{Verbatim}
+    @EnsuresCalledMethods(value = "#1", methods = {"x","y"})
+    void m(Param p) { ... }
+  \end{Verbatim}
+
+  guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
+  The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{common/returnsreceiver/qual}{This}]
+  \<@This> may only be written on a method return type, and means that the method returns its receiver.
+  This is helpful when type-checking fluent APIs. This annotation is defined by the
+  Returns Receiver Checker (\chapterpageref{returns-receiver-checker}), but is particularly useful
+  for the Object Construction Checker because many builders are fluent APIs.
+
+\end{description}
+
+\sectionAndLabel{Default handling for Lombok and AutoValue}{object-construction-framework-details}
+
+This section gives detailed rules on how the Object Construction Checker infers types for the Lombok
+and AutoValue frameworks. Most readers can skip these details.
+
+The Object Construction Checker automatically assumes default annotations for code that uses builders generated
+by Lombok and AutoValue. There are three places annotations are usually assumed:
+\begin{itemize}
+\item An \<@CalledMethods> annotation is placed on the receiver of the \<build()> method, capturing the
+setter methods that must be invoked on the builder before calling \<build()>. For Lombok,
+this annotation's argument is the set of \<@lombok.NonNull> fields that do not have default values.
+For AutoValue, it is the set of fields that are not \<@Nullable>, \<Optional>, or a Guava Immutable
+Collection.
+\item If the object has a \<toBuilder()> method (for example, if the \<toBuilder = true> option is
+passed to Lombok's \<@Builder> annotation), then the return type of that method is annotated with
+the same \<@CalledMethods> annotation as the receiver of \<build()>, using the same rules as above.
+\item An \<@This> annotation is placed on the return type of each setter in the builder's implementation.
+
+You can disable the framework supports by specifying them in a comma-separated list to the
+command-line flag \<disableFrameworkSupports>.  For example, to disable both Lombok and AutoValue supports,
+use \<-AdisableFrameworkSupports=AutoValue,Lombok>.
+
+If you overwrite the definition of any of these methods (for example, by adding your own setters to
+a Lombok builder), you may need to write the annotations manually.
+
+Minor notes/caveats on these rules:
+\begin{itemize}
+\item Lombok fields annotated with \<@Singular> will be treated as defaulted (i.e. not required), because
+Lombok will set them to empty collections if the appropriate setter is not called.
+\item If you manually provide defaults to a Lombok builder (for example, by defining the builder yourself
+and assigning a default value to the builder's field), the checker will treat that field as defaulted
+\emph{most} of the time. In particular, it will not treat it as defaulted if it is defined in bytecode rather
+than in source code.

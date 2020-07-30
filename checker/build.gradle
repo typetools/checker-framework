@@ -1,3 +1,12 @@
+plugins {
+    // To only load the parts of the AWS SDK needed to test the Object Construction Checker, rather
+    // than the whole AWS SDK. Uses the "legacy" version listed here:
+    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
+    // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
+    // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+}
+
 sourceSets {
     main {
         resources {
@@ -18,11 +27,27 @@ dependencies {
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:0.2.2'
 
+    // Object Construction Checker AutoValue + Lombok support
+    implementation "com.google.auto.value:auto-value-annotations:1.7.4"
+    testCompile "com.google.auto.value:auto-value-annotations:1.7.4"
+    testCompile "com.google.auto.value:auto-value:1.7.4"
+    testCompile "com.ryanharter.auto.value:auto-value-parcel:0.2.8"
+    testCompile "org.projectlombok:lombok:1.18.12"
+    // Object Construction Checker support for detecting misuses of AWS APIs
+    testCompile "com.amazonaws:aws-java-sdk-ec2"
+    testCompile "com.amazonaws:aws-java-sdk-kms"
+
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
     testannotationsImplementation project(':checker-qual')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.808"
+    }
 }
 
 jar {
@@ -174,6 +199,11 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
 task allNullnessTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Nullness Checker.'
     include '**/Nullness*.class'
+}
+
+task allObjectConstructionTests(type: Test, group: 'Verification') {
+    description 'Run all Junit tests for the Object Construction Checker.'
+    include '**/ObjectConstruction*.class'
 }
 
 // These are tests that should only be run with JDK 11.

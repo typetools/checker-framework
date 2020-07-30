@@ -106,4 +106,10 @@ class SimpleFluent {
         // :: error: method.invocation.invalid
         s.build();
     }
+
+    static void m9() {
+        new SimpleFluent().a().b().build();
+        // :: error: method.invocation.invalid
+        new SimpleFluent().a().build();
+    }
 }
