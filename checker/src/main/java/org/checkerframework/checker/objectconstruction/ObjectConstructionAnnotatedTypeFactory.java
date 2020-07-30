@@ -39,8 +39,14 @@ import org.checkerframework.javacutil.TreeUtils;
 /** The annotated type factory for the object construction checker. */
 public class ObjectConstructionAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
 
+    /** {@link java.util.Collections#singletonList} is treated specially by the EC2 logic. */
     private final ExecutableElement collectionsSingletonList;
 
+    /**
+     * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing
+     * calls to the AWS SDK. Defaults to false. Controlled by the command-line option {@code
+     * -AuseValueChecker}.
+     */
     private final boolean useValueChecker;
 
     /** The collection of built-in framework support for the object construction checker. */
@@ -117,6 +123,10 @@ public class ObjectConstructionAnnotatedTypeFactory extends AccumulationAnnotate
      * Continue to trust but not check the old {@link
      * org.checkerframework.checker.builder.qual.ReturnsReceiver} annotation, for
      * backwards-compatibility.
+     *
+     * @param tree the method invocation whose invoked method is to be checked
+     * @return true if the declaration of the invoked method has a ReturnsReceiver declaration
+     *     annotation
      */
     private boolean hasOldReturnsReceiverAnnotation(MethodInvocationTree tree) {
         return this.getDeclAnnotation(TreeUtils.elementFromUse(tree), ReturnsReceiver.class)
@@ -130,6 +140,8 @@ public class ObjectConstructionAnnotatedTypeFactory extends AccumulationAnnotate
      *
      * <p>Package-private to permit calls from {@link ObjectConstructionTransfer}.
      *
+     * @param methodName the name of the method to adjust
+     * @param tree the invocation of the method
      * @return either the first argument, or "withOwners" or "withImageIds" if the tree is an
      *     equivalent filter addition.
      */
@@ -265,6 +277,11 @@ public class ObjectConstructionAnnotatedTypeFactory extends AccumulationAnnotate
      */
     private class ObjectConstructionTypeAnnotator extends TypeAnnotator {
 
+        /**
+         * Constructor matching super.
+         *
+         * @param atypeFactory the type factory
+         */
         public ObjectConstructionTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
@@ -306,7 +323,12 @@ public class ObjectConstructionAnnotatedTypeFactory extends AccumulationAnnotate
         return null;
     }
 
-    Collection<FrameworkSupport> getFrameworkSupports() {
+    /**
+     * Fetch the supported frameworks that are enabled.
+     *
+     * @return a collection of frameworks that are enabled in this run of the checker
+     */
+    /* package-private */ Collection<FrameworkSupport> getFrameworkSupports() {
         return frameworkSupports;
     }
 }

@@ -25,8 +25,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class LombokSupport implements FrameworkSupport {
 
+    /** The type factory. */
     private ObjectConstructionAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Simple constructor.
+     *
+     * @param atypeFactory the typechecker's type factory
+     */
     public LombokSupport(ObjectConstructionAnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
     }
@@ -56,9 +62,10 @@ public class LombokSupport implements FrameworkSupport {
                             "org.netbeans.api.annotations.common.NonNull",
                             "org.springframework.lang.NonNull"));
 
-    // Keep a cache of these so that when declarationFromElement doesn't work,
-    // we can still default correctly. Value is the property name to treat as
-    // defaulted.
+    /**
+     * Keep a cache of these so that when declarationFromElement doesn't work, we can still default
+     * correctly. Value is the property name to treat as defaulted.
+     */
     private final Map<Element, String> defaultedElements = new HashMap<>();
 
     /**

@@ -23,15 +23,42 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 @StubFiles({"DescribeImages.astub", "GenerateDataKey.astub"})
 public class ObjectConstructionChecker extends BaseTypeChecker {
 
+    /**
+     * If this option is supplied, use the Value Checker to reduce false positives when analyzing
+     * calls to the AWS SDK.
+     */
     public static final String USE_VALUE_CHECKER = "useValueChecker";
 
+    /**
+     * If this option is supplied, count the number of analyzed calls to build() in supported
+     * frameworks and print it when analysis is complete. Useful for collecting metrics.
+     */
     public static final String COUNT_FRAMEWORK_BUILD_CALLS = "countFrameworkBuildCalls";
 
+    /**
+     * This option can be used to disable the support (and therefore the automated checking of) code
+     * that uses the given frameworks. Useful when a user **only** wants to enforce specifications
+     * on custom builder objects (such as the AWS SDK examples).
+     */
     public static final String DISABLED_FRAMEWORK_SUPPORTS = "disableFrameworkSupports";
 
+    /**
+     * The key for the {@link #DISABLED_FRAMEWORK_SUPPORTS} option to disable Lombok support. Use it
+     * via {@code -AdisableFrameworkSupports=LOMBOK}.
+     */
     public static final String LOMBOK_SUPPORT = "LOMBOK";
 
+    /**
+     * The key for the {@link #DISABLED_FRAMEWORK_SUPPORTS} option to disable AutoValue support. Use
+     * it via {@code -AdisableFrameworkSupports=AUTOVALUE}.
+     */
     public static final String AUTOVALUE_SUPPORT = "AUTOVALUE";
+
+    /**
+     * The number of calls to build frameworks supported by this invocation, if the {@link
+     * #COUNT_FRAMEWORK_BUILD_CALLS} option was supplied.
+     */
+    int numBuildCalls = 0;
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
@@ -64,8 +91,6 @@ public class ObjectConstructionChecker extends BaseTypeChecker {
                 "An unparseable predicate was found in an annotation. Predicates must be produced by this grammar: S --> method name | (S) | S && S | S || S. The message from the evaluator was: %s \\n");
         return messages;
     }
-
-    int numBuildCalls = 0;
 
     @Override
     public void typeProcessingOver() {

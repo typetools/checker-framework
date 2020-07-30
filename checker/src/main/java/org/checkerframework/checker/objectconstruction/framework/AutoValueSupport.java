@@ -38,8 +38,14 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class AutoValueSupport implements FrameworkSupport {
 
+    /** The type factory. */
     private ObjectConstructionAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Simple constructor.
+     *
+     * @param atypeFactory the typechecker's type factory
+     */
     public AutoValueSupport(ObjectConstructionAnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
     }
@@ -189,6 +195,13 @@ public class AutoValueSupport implements FrameworkSupport {
         return atypeFactory.createAccumulatorAnnotation(calledMethodNames);
     }
 
+    /**
+     * Converts the name of a property (i.e. a field) into the name of its setter.
+     *
+     * @param prop the property name
+     * @param builderSetterNames names of all methods in the builder class
+     * @return the name of the setter for prop
+     */
     private static String autoValuePropToBuilderSetterName(
             String prop, Set<String> builderSetterNames) {
         // we have two cases, depending on whether AutoValue strips JavaBean-style prefixes 'get'
