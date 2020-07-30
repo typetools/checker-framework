@@ -398,6 +398,16 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
         }
 
+        if (TreeUtils.isArraygetLengthMethodInvocation(tree)) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
+            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
+            if (resultAnno != null) {
+                type.replaceAnnotation(resultAnno);
+            }
+            return null;
+        }
+
         if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
                 || !handledByValueChecker(type)) {
             return null;
@@ -407,6 +417,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
                 .getMethodIdentifier()
                 .isStringLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
+            System.out.println(receiverType);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
             if (resultAnno != null) {

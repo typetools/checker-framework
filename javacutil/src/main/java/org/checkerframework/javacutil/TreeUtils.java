@@ -1274,6 +1274,26 @@ public final class TreeUtils {
     }
 
     /**
+     * Determines if the tree is a call to Array.getLength()
+     *
+     * @param tree tree to check
+     * @return true if the given tree is a call to Array.getLength() method
+     */
+    public static boolean isArraygetLengthMethodInvocation(MethodInvocationTree tree) {
+        if (tree.getMethodSelect().getKind() != Kind.MEMBER_SELECT) {
+            return false;
+        }
+
+        MemberSelectTree memberSelectTree = (MemberSelectTree) tree.getMethodSelect();
+
+        if (memberSelectTree.getExpression().toString().equals("Array")
+                && getMethodName(memberSelectTree).equals("getLength")) {
+            return true;
+        }
+
+        return false;
+    }
+    /**
      * Converts the given AnnotationTrees to AnnotationMirrors.
      *
      * @param annoTreess list of annotation trees to convert to annotation mirrors
