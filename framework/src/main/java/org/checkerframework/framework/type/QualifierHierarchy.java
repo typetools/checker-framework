@@ -63,7 +63,7 @@ public interface QualifierHierarchy {
      * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype
      * of {@code qualifier} but no further supertypes exist.
      *
-     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
      * @return the top qualifier of {@code qualifier}'s hierarchy
      */
     AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
@@ -80,7 +80,7 @@ public interface QualifierHierarchy {
      * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
      * qualifier} but no further subtypes exist.
      *
-     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
      * @return the bottom qualifier of {@code qualifier}'s hierarchy
      */
     AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
@@ -89,7 +89,7 @@ public interface QualifierHierarchy {
      * Returns the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
      * null} if there is no polymorphic qualifier in that hierarchy.
      *
-     * @param qualifier any qualifier from one of the type hierarchies represented by this
+     * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
      * @return the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
      *     null} if there is no polymorphic qualifier in that hierarchy
      */
@@ -213,24 +213,24 @@ public interface QualifierHierarchy {
     }
 
     /**
-     * If the type hierarchy has an infinite ascending chain, then the dataflow analysis might never
-     * reach a fixed point. To prevent this, implement this method such that it returns an upper
-     * bound for the two qualifiers that is a strict super type of the least upper bound. If this
-     * method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to return a
-     * positive number.
+     * If the qualifier hierarchy has an infinite ascending chain, then the dataflow analysis might
+     * never reach a fixed point. To prevent this, implement this method such that it returns an
+     * upper bound for the two qualifiers that is a strict super type of the least upper bound. If
+     * this method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to
+     * return a positive number.
      *
      * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
      * previousQualifier} is the qualifier dataflow computed on the last iteration.
      *
-     * <p>If the type hierarchy has no infinite ascending chain, returns the least upper bound of
-     * the two annotations.
+     * <p>If the qualifier hierarchy has no infinite ascending chain, returns the least upper bound
+     * of the two annotations.
      *
      * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
      *     hierarchy as {@code previousQualifier}
      * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
      *     be in the same hierarchy as {@code previousQualifier}
      * @return an upper bound that is higher than the least upper bound of newQualifier and
-     *     previousQualifier (or the lub if the type hierarchy does not require this)
+     *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
      */
     default AnnotationMirror widenedUpperBound(
             AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
@@ -291,11 +291,11 @@ public interface QualifierHierarchy {
      * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set
      * with fewer qualifiers than the width of the QualifierHierarchy.
      *
-     * @param type annotated type mirror
+     * @param type the type to test
      * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set
      *     with fewer qualifiers than the width of the QualifierHierarchy
      */
-    public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
+    static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
         return type.getKind() == TypeKind.TYPEVAR
                 || type.getKind() == TypeKind.WILDCARD
                 ||
@@ -305,28 +305,29 @@ public interface QualifierHierarchy {
     }
 
     /**
-     * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
+     * Returns the annotation in qualifiers that is in the same hierarchy as qualifier.
      *
-     * @param annos set of annotations to search
-     * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
-     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
+     * @param qualifiers set of annotations to search
+     * @param qualifier annotation that is in the same hierarchy as the returned annotation
+     * @return annotation in the same hierarchy as qualifier, or null if one is not found
      */
     default @Nullable AnnotationMirror findAnnotationInSameHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
-        AnnotationMirror top = this.getTopAnnotation(annotationMirror);
-        return findAnnotationInHierarchy(annos, top);
+            Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror qualifier) {
+        AnnotationMirror top = this.getTopAnnotation(qualifier);
+        return findAnnotationInHierarchy(qualifiers, top);
     }
 
     /**
-     * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
+     * Returns the annotation in qualifiers that is in the hierarchy for which annotationMirror is
+     * top.
      *
-     * @param annos set of annotations to search
+     * @param qualifiers set of annotations to search
      * @param top the top annotation in the hierarchy to which the returned annotation belongs
      * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
     default @Nullable AnnotationMirror findAnnotationInHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
-        for (AnnotationMirror anno : annos) {
+            Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
+        for (AnnotationMirror anno : qualifiers) {
             if (isSubtype(anno, top)) {
                 return anno;
             }
@@ -342,14 +343,15 @@ public interface QualifierHierarchy {
      * qualifier}, then don't add it and return false.
      *
      * @param map the mapping to modify
-     * @param key the key to update
-     * @param qualifier the value to add
+     * @param key the key to update or add
+     * @param qualifier the value to update or add
      * @param <T> type of the map's keys
      * @return true if the update was done; false if there was a qualifier hierarchy collision
      */
     default <T> boolean updateMappingToMutableSet(
             Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror qualifier) {
-        @SuppressWarnings("nullness:argument.type.incompatible") // key is of type T.
+        // https://github.com/typetools/checker-framework/issues/2000
+        @SuppressWarnings("nullness:argument.type.incompatible")
         boolean mapContainsKey = map.containsKey(key);
         if (mapContainsKey) {
             @SuppressWarnings("nullness:assignment.type.incompatible") // key is a key for map.
@@ -419,7 +421,8 @@ public interface QualifierHierarchy {
      * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code
      *     superQualifier}
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the subtype relationship between "no qualifier" and a qualifier
+     *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
+     *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default boolean isSubtypeTypeVariable(
@@ -450,7 +453,8 @@ public interface QualifierHierarchy {
      * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code
      *     superQualifier}
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the subtype relationship between "no qualifier" and a qualifier
+     *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
+     *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default boolean isSubtype(
@@ -481,7 +485,8 @@ public interface QualifierHierarchy {
      * @return true iff an annotation in {@code supers} is a supertype of, or equal to, one in
      *     {@code subs}
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the subtype relationship between "no qualifier" and a qualifier
+     *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
+     *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default boolean isSubtype(
@@ -508,7 +513,8 @@ public interface QualifierHierarchy {
      * @param superAnnos qualifiers
      * @return true iff an annotation in superAnnos is a supertype of, or equal to, one in subAnnos
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the subtype relationship between "no qualifier" and a qualifier
+     *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
+     *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     // This method requires more revision.
     @Deprecated
@@ -542,7 +548,9 @@ public interface QualifierHierarchy {
      * @param a2 anno2
      * @return the least restrictive qualifiers for both types
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the relationship between "no qualifier" and a qualifier
+     *     the relationship between "no qualifier" and a qualifier. Use {@link
+     *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
+     *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default @Nullable AnnotationMirror leastUpperBoundTypeVariable(
@@ -574,7 +582,9 @@ public interface QualifierHierarchy {
      * @param a2 annotation
      * @return the least restrictive qualifiers for both types
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the relationship between "no qualifier" and a qualifier
+     *     the relationship between "no qualifier" and a qualifier. Use {@link
+     *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
+     *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default @Nullable AnnotationMirror leastUpperBound(
@@ -603,7 +613,9 @@ public interface QualifierHierarchy {
      * @param annos2 qualifiers
      * @return the least upper bound of annos1 and annos2
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the relationship between "no qualifier" and a qualifier
+     *     the relationship between "no qualifier" and a qualifier. Use {@link
+     *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
+     *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     @SuppressWarnings("nullness") // Don't check deprecated method.
@@ -649,7 +661,9 @@ public interface QualifierHierarchy {
      * @param annos2 qualifiers
      * @return the least upper bound of annos1 and annos2
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
-     *     the relationship between "no qualifier" and a qualifier
+     *     the relationship between "no qualifier" and a qualifier. Use {@link
+     *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
+     *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     @Deprecated
     default Set<? extends AnnotationMirror> leastUpperBounds(
