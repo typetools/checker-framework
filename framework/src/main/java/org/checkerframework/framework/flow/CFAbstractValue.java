@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -52,6 +51,10 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
+    /** Formats annotations without their package names. */
+    protected static DefaultAnnotationFormatter defaultAnnotationFormatter =
+            new DefaultAnnotationFormatter();
+
     /** The analysis class this value belongs to. */
     protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
@@ -59,9 +62,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     protected final TypeMirror underlyingType;
     /** The annotations in this abstract value. */
     protected final Set<AnnotationMirror> annotations;
-
-    /** Formats annotations without their package names. */
-    AnnotationFormatter annoFormatter = new DefaultAnnotationFormatter();
 
     /**
      * Creates a new CFAbstractValue.
@@ -194,7 +194,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
         StringJoiner annotationsString = new StringJoiner(", ");
         for (AnnotationMirror am : annotations) {
-            annotationsString.add(annoFormatter.formatAnnotationMirror(am));
+            annotationsString.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
         }
 
         return "CFAV{"
