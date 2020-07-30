@@ -251,7 +251,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is a boxed floating point type.
      *
-     * @param type type mirror
+     * @param type type to test
      * @return whether the argument is a boxed floating point type
      */
     public static boolean isBoxedFloating(TypeMirror type) {

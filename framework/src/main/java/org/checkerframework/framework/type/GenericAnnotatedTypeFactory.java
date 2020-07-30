@@ -1533,11 +1533,14 @@ public abstract class GenericAnnotatedTypeFactory<
                         + this.getClass();
 
         if (!TreeUtils.isExpressionTree(tree)) {
+            // Don't apply defaults to expressions. Their types may be computed from subexpressions
+            // in treeAnnotator.
             addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         }
         applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         if (TreeUtils.isExpressionTree(tree)) {
+            // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
         }
         typeAnnotator.visit(type, null);
@@ -1858,9 +1861,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If
      * {@code element} is a local variable, then the defaults are not added.
      *
+     * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
+     * DefaultForTypeAnnotator}.)
+     *
      * @param element possibly null element whose type is {@code type}
      * @param type the type to which defaults are added
      */
+    // TODO: rename in the next minor release.
     protected void addAnnotationsFromDefaultQualifierForUse(
             @Nullable Element element, AnnotatedTypeMirror type) {
         if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
