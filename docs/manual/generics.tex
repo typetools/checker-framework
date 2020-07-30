@@ -952,12 +952,12 @@ is that same as that on \<myBuffer>.
 
 \subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
 
-Normally, local variables default to the top type. Type refinement determines if
-a variable can be treated as a suitable subtype, and annotations on local
-variables are rarely needed as a result. However, since qualifier parameters add
-invariant subtyping, type refinement is no longer valid. For example, suppose in
-the following code that \<StringBuffer> is annotated with
-\<@HasQualifierParameter(Tainted.class)>.
+According to the CLIMB-to-top rule, local variables default to the top type (see
+Section~\ref{climb-to-top}). Type refinement determines if a variable can be
+treated as a suitable subtype, and annotations on local variables are rarely
+needed as a result. However, since qualifier parameters add invariant subtyping,
+type refinement is no longer valid. For example, suppose in the following code
+that \<StringBuffer> is annotated with \<@HasQualifierParameter(Tainted.class)>.
 
 \begin{Verbatim}
     void method(@Untainted StringBuffer buffer) {

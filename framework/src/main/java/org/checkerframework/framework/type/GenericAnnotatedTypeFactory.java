@@ -173,9 +173,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * To prevent this, variables in this set should not be typed based on their initializer, but by
      * using normal defaults.
      *
+     * <p>This set should only be modified in
+     * GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults which clears
+     * variables after computing their initializer types.
+     *
      * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
      */
-    private Set<Element> variablesUnderInitialization;
+    private Set<VariableElement> variablesUnderInitialization;
 
     /**
      * Caches types of initializers for local variables with a qualifier parameter, so that they
@@ -1617,7 +1621,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
      * polymorphic qualifier rather than the typical default. Local variables with a type that has a
-     * qualifier parameter are initialized to the type of their initializer, rather than top.
+     * qualifier parameter are initialized to the type of their initializer, rather than the default
+     * for local variables.
      *
      * @param tree Tree whose type is {@code type}
      * @param type where the defaults are applied
@@ -1631,7 +1636,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
      * polymorphic qualifier rather than the typical default. Local variables with a type that has a
-     * qualifier parameter are initialized to the type of their initializer, rather than top.
+     * qualifier parameter are initialized to the type of their initializer, rather than the default
+     * for local variables.
      *
      * @param elt Element whose type is {@code type}
      * @param type where the defaults are applied
@@ -1683,7 +1689,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Defaults local variables with types that have a qualifier parameter to type of their
+     * Defaults local variables with types that have a qualifier parameter to the type of their
+     * initializer, if an initializer is present. Does nothing for local variables with no
      * initializer.
      *
      * @param elt Element whose type is {@code type}
@@ -1707,17 +1714,21 @@ public abstract class GenericAnnotatedTypeFactory<
             return;
         }
 
-        variablesUnderInitialization.add(elt);
+        VariableElement variableElt = (VariableElement) elt;
+        variablesUnderInitialization.add(variableElt);
         AnnotatedTypeMirror initializerType;
         if (shouldCache && initializerCache.containsKey(initializer)) {
             initializerType = initializerCache.get(initializer);
         } else {
-            // When this method is call by getAnnotatedTypeLhs, flow is turned off.
+            // When this method is called by getAnnotatedTypeLhs, flow is turned off.
             // Turn it back on so the type of the initializer is the refined type.
             boolean oldUseFlow = useFlow;
             useFlow = everUseFlow;
-            initializerType = getAnnotatedType(initializer);
-            useFlow = oldUseFlow;
+            try {
+                initializerType = getAnnotatedType(initializer);
+            } finally {
+                useFlow = oldUseFlow;
+            }
         }
 
         Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
@@ -1729,7 +1740,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         type.addMissingAnnotations(qualParamTypes);
-        variablesUnderInitialization.remove(elt);
+        variablesUnderInitialization.remove(variableElt);
         if (shouldCache) {
             initializerCache.put(initializer, initializerType);
         }
