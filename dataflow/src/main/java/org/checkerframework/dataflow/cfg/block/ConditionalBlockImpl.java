@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.Arrays;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.BugInCF;
@@ -58,6 +60,11 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
                     "Requested elseSuccessor for conditional block before initialization");
         }
         return elseSuccessor;
+    }
+
+    @Override
+    public List<Block> getSuccessors() {
+        return Arrays.asList(getThenSuccessor(), getElseSuccessor());
     }
 
     @Override
