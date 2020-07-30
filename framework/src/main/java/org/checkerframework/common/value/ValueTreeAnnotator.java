@@ -417,7 +417,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
                 .getMethodIdentifier()
                 .isStringLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
-            System.out.println(receiverType);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
             if (resultAnno != null) {
