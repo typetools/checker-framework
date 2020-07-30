@@ -237,7 +237,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the copied tree-lookup map. Ignores convertedTreeLookup.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+     * #getNodesCorrespondingToTree} uses that field.
      *
      * @return the copied tree-lookup map
      */
@@ -307,7 +308,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns a string representation of this.
+     * Returns a verbose string representation of this, useful for debugging.
      *
      * @return a string representation of this
      */

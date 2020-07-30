@@ -447,7 +447,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns a string representation of this.
+     * Returns a verbose string representation of this, useful for debugging.
      *
      * @return a string representation of this
      */
@@ -467,7 +467,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Return a printed representation of a map with the same type as the {@code nodeValues} field.
+     * Returns a verbose printed representation, useful for debugging. The map has the same type as
+     * the {@code nodeValues} field.
      *
      * @param <V> the type of values in the map
      * @param nodeValues a map to format
@@ -488,7 +489,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Return a printed representation of a node.
+     * Returns a verbose printed representation of a node, useful for debugging.
      *
      * @param n a node to format
      * @return a printed representation of the given node
@@ -500,7 +501,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Return a printed representation of a collection of nodes.
+     * Returns a verbose printed representation of a collection of nodes, useful for debugging..
      *
      * @param nodes a collection of nodes to format
      * @return a printed representation of the given collection
@@ -514,7 +515,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Return a printed representation of a map with the same type as the {@code treeLookup} field.
+     * Returns a verbose printed representation of a map, useful for debugging. The map has the same
+     * type as the {@code treeLookup} field.
      *
      * @param treeLookup a map to format
      * @return a printed representation of the given map
@@ -549,20 +551,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                             nodeRepr(n), repr());
                 }
             }
-        }
-    }
-
-    /**
-     * Sleep (do nothing) for the given number of milliseconds. This can help to prevent output from
-     * being interleaved.
-     *
-     * @param msec the number of milliseconds to delay before the next action
-     */
-    private void sleep(int msec) {
-        try {
-            Thread.sleep(msec);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt(); // Here!
         }
     }
 }
