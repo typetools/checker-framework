@@ -1117,8 +1117,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param trace stack trace when the checker encountered a warning/error
      */
     private void printStackTrace(StackTraceElement[] trace) {
-        boolean dumpOnErrors = hasOption("dumpOnErrors") && getBooleanOption("dumpOnErrors", true);
-        if (dumpOnErrors) {
+        if (hasOption("dumpOnErrors")) {
             StringBuilder msg = new StringBuilder();
             for (StackTraceElement elem : trace) {
                 msg.append("\tat " + elem + "\n");
