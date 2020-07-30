@@ -445,16 +445,17 @@ type system.)  For the same reason, type parameter annotations are treated
 invariantly.  For example, \code{List<@Nullable String>} is not a subtype
 of \code{List<String>}.
 
-When a type parameter is used in a read-only way --- that is, when values
-of that type are read but are never assigned --- then it is safe for the
+When a type parameter is used in a read-only way --- that is, when clients
+read values of that type from the class but never pass values of that type
+to the class --- then it is safe for the
 type to be \emph{covariant} in the type parameter.  Use the
 \refqualclass{framework/qual}{Covariant} annotation to indicate this.
 When a type parameter is covariant, two instantiations of the class with
 different type arguments have the same subtyping relationship as the type
 arguments do.
 
-For example, consider \<Iterator>.  Its elements can be read but not
-written, so \code{Iterator<@Nullable String>} can be a subtype of
+For example, consider \<Iterator>.  A client can read elements but not
+write them, so \code{Iterator<@Nullable String>} can be a subtype of
 \code{Iterator<String>} without introducing a hole in the type system.
 Therefore, its type parameter is annotated with
 \refqualclass{framework/qual}{Covariant}.
@@ -464,7 +465,7 @@ Another example would be the type parameter of a hypothetical class
 
 The \<@Covariant> annotation is trusted but not checked.
 If you incorrectly specify as covariant a type parameter that can be
-written (say, the class performs a
+written (say, the class supports a
 \<set> operation or some other mutation on an object of that type), then
 you have created an unsoundness in the type system.
 For example, it would be incorrect to annotate the type parameter of

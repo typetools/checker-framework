@@ -110,15 +110,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * <p>Currently, the following is checked:
      *
      * <ol>
-     *   <li>There should not be multiple annotations from the same hierarchy.
-     *   <li>There should not be more annotations than the width of the qualifier hierarchy.
+     *   <li>There should not be multiple annotations from the same qualifier hierarchy.
+     *   <li>There should not be more annotations than the width of the QualifierHierarchy.
      *   <li>If the type is not a type variable, then the number of annotations should be the same
-     *       as the width of the qualifier hierarchy.
+     *       as the width of the QualifierHierarchy.
      *   <li>These properties should also hold recursively for component types of arrays, as wells
      *       as bounds of type variables and wildcards.
      * </ol>
      *
-     * @param qualifierHierarchy the qualifier hierachy
+     * @param qualifierHierarchy the QualifierHierarchy
      * @param type the type to test
      * @return list of reasons the type is invalid, or empty list if the type is valid
      */
@@ -136,7 +136,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Checks every property listed in {@link #isValidType}, but only for the top level type. If
      * successful, returns an empty list. If not successful, returns diagnostics.
      *
-     * @param qualifierHierarchy the qualifier hierarchy
+     * @param qualifierHierarchy the QualifierHierarchy
      * @param type the type to be checked
      * @return the diagnostics indicating failure, or an empty list if successful
      */
@@ -461,7 +461,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         List<AnnotatedTypeParameterBounds> bounds =
                 atypeFactory.typeVariablesFromUse(type, element);
 
-        visitor.checkTypeArguments(tree, bounds, type.getTypeArguments(), tree.getTypeArguments());
+        visitor.checkTypeArguments(
+                tree,
+                bounds,
+                type.getTypeArguments(),
+                tree.getTypeArguments(),
+                element.getSimpleName(),
+                element.getTypeParameters());
 
         return null;
     }
