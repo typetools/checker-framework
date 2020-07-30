@@ -244,7 +244,7 @@ public class SystemUtil {
     }
 
     /**
-     * Like Thread.sleep, but does not throw any exceptions, so it is easier fro clients to use.
+     * Like Thread.sleep, but does not throw any exceptions, so it is easier for clients to use.
      * Causes the currently executing thread to sleep (temporarily cease execution) for the
      * specified number of milliseconds.
      *
@@ -255,7 +255,6 @@ public class SystemUtil {
             Thread.sleep(millis);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException(ex);
         }
     }
 }
