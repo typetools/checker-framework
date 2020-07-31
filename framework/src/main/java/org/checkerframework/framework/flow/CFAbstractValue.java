@@ -21,7 +21,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -50,10 +49,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * be missing an annotation in a hierarchy.
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
-
-    /** Formats annotations without their package names. */
-    protected static DefaultAnnotationFormatter defaultAnnotationFormatter =
-            new DefaultAnnotationFormatter();
 
     /** The analysis class this value belongs to. */
     protected final CFAbstractAnalysis<V, ?, ?> analysis;
@@ -192,16 +187,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @SideEffectFree
     public String toStringSimple() {
 
+        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
         StringJoiner annotationsString = new StringJoiner(", ");
         for (AnnotationMirror am : annotations) {
             annotationsString.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
         }
 
-        return "CFAV{"
-                + annotationsString
-                + ", "
-                + ElementUtils.simpleTypeName(underlyingType)
-                + '}';
+        return "CFAV{" + annotationsString + ", " + TypesUtils.simpleTypeName(underlyingType) + '}';
     }
 
     /**
