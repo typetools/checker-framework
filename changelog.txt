@@ -21,7 +21,7 @@ authors must update their overriding implementations.
 Renamed GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse to
 #addAnnotationsFromDefaultForType and
 BaseTypeValidator#shouldCheckTopLevelDeclaredType to
-#shouldCheckTopLevelDeclaredType
+#shouldCheckTopLevelDeclaredOrPrimitiveType
 
 ---------------------------------------------------------------------------
 
