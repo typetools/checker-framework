@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -60,7 +59,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     }
 
     @Override
-    public Collection<Block> getSuccessors() {
+    public Set<Block> getSuccessors() {
         Set<Block> result = new LinkedHashSet<>(super.getSuccessors());
         for (Set<? extends Block> blocks : getExceptionalSuccessors().values()) {
             result.addAll(blocks);
