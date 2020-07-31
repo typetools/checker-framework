@@ -2,25 +2,21 @@ package org.checkerframework.common.value;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
-import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -78,32 +74,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 && valueType.hasAnnotation(getTypeFactory().UNKNOWNVAL)) {
             valueType.addAnnotation(
                     getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
-        }
-
-        if (valueTree.getKind() == Kind.METHOD_INVOCATION
-                && TreeUtils.isArrayscopyOfMethodInvocation((MethodInvocationTree) valueTree)
-                && valueType.getKind() == TypeKind.ARRAY) {
-            List<? extends ExpressionTree> args = ((MethodInvocationTree) valueTree).getArguments();
-            if (getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntVal.class)
-                    != null) {
-                AnnotationMirror argType =
-                        getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntVal.class);
-                valueType.addAnnotation(
-                        getTypeFactory()
-                                .createArrayLenAnnotation(
-                                        ValueAnnotatedTypeFactory.getIntValues(argType).stream()
-                                                .map(Long::intValue)
-                                                .collect(Collectors.toList())));
-            }
-            if (getTypeFactory().getAnnotatedType(args.get(1)).getAnnotation(IntRange.class)
-                    != null) {
-                AnnotationMirror argType =
-                        getTypeFactory()
-                                .getAnnotatedType(args.get(1))
-                                .getAnnotation(IntRange.class);
-                Range range = ValueAnnotatedTypeFactory.getRange(argType);
-                valueType.addAnnotation(getTypeFactory().createArrayLenRangeAnnotation(range));
-            }
         }
 
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);

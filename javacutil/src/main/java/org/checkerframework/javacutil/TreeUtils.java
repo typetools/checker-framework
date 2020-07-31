@@ -1274,27 +1274,6 @@ public final class TreeUtils {
     }
 
     /**
-     * Determines if the tree is a call to Arrays.copyOf()
-     *
-     * @param tree tree to check
-     * @return true if the given tree is a call to Arrays.copyOf() method
-     */
-    public static boolean isArrayscopyOfMethodInvocation(MethodInvocationTree tree) {
-        if (tree.getMethodSelect().getKind() != Kind.MEMBER_SELECT) {
-            return false;
-        }
-
-        MemberSelectTree memberSelectTree = (MemberSelectTree) tree.getMethodSelect();
-
-        if (memberSelectTree.getExpression().toString().equals("Arrays")
-                && getMethodName(memberSelectTree).equals("copyOf")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Converts the given AnnotationTrees to AnnotationMirrors.
      *
      * @param annoTreess list of annotation trees to convert to annotation mirrors
