@@ -44,7 +44,7 @@ public abstract class BlockImpl implements Block {
     }
 
     @Override
-    public Set<BlockImpl> getPredecessors() {
+    public Set<Block> getPredecessors() {
         return Collections.unmodifiableSet(predecessors);
     }
 
