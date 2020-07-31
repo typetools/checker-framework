@@ -482,7 +482,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         result.add("{");
         for (Map.Entry<Node, V> entry : nodeValues.entrySet()) {
             Node key = entry.getKey();
-            result.add(String.format("%s => %s", nodeRepr(key), entry.getValue()));
+            result.add(String.format("%s => %s", key.repr(), entry.getValue()));
         }
         result.add("}");
         return result.toString();
@@ -507,7 +507,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
             if (treeString.length() > 65) {
                 treeString = "\"" + treeString.substring(0, 60) + "...\"";
             }
-            result.add(treeString + " => " + nodeCollectionRepr(entry.getValue()));
+            result.add(treeString + " => " + Node.nodeCollectionRepr(entry.getValue()));
         }
         result.add("}");
         return result.toString();
@@ -521,8 +521,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 if (!nodeValues.containsKey(n)) {
                     SystemUtil.sleep(100); // without this, printf output is sometimes interleaved
                     throw new BugInCF(
-                            "node %s is in treeLookup but not in nodeValues%n%s",
-                            nodeRepr(n), repr());
+                            "node %s is in treeLookup but not in nodeValues%n%s", n.repr(), repr());
                 }
             }
         }

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
@@ -163,10 +164,13 @@ public abstract class Node {
      *
      * @return a printed representation of this
      */
-    public static String repr() {
+    public String repr() {
         return String.format(
                 "%s [%s %s %s]",
-                n, n.getClass().getSimpleName(), n.hashCode(), System.identityHashCode(n));
+                this,
+                this.getClass().getSimpleName(),
+                this.hashCode(),
+                System.identityHashCode(this));
     }
 
     /**
@@ -178,7 +182,7 @@ public abstract class Node {
     public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
         StringJoiner result = new StringJoiner(", ", "[", "]");
         for (Node n : nodes) {
-            result.add(nodeRepr(n));
+            result.add(n.repr());
         }
         return result.toString();
     }

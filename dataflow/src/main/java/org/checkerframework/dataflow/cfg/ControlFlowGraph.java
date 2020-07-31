@@ -329,7 +329,7 @@ public class ControlFlowGraph {
         result.add("treeLookup=" + AnalysisResult.treeLookupRepr(treeLookup));
         result.add("convertedTreeLookup=" + AnalysisResult.treeLookupRepr(convertedTreeLookup));
         result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
-        result.add("returnNodes=" + AnalysisResult.nodeCollectionRepr(returnNodes));
+        result.add("returnNodes=" + Node.nodeCollectionRepr(returnNodes));
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);
         return result.toString();
