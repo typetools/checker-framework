@@ -45,7 +45,12 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
         return Collections.singletonList(getNode());
     }
 
-    /** Add an exceptional successor. */
+    /**
+     * Add an exceptional successor.
+     *
+     * @param b the successor
+     * @param cause the exception type that leads to the given block
+     */
     public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
         Set<Block> blocks = exceptionalSuccessors.get(cause);
         if (blocks == null) {
