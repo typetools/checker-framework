@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
@@ -51,9 +53,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /** The analysis class this value belongs to. */
     protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
+    /** The underlying (Java) type in this abstract value. */
     protected final TypeMirror underlyingType;
+    /** The annotations in this abstract value. */
     protected final Set<AnnotationMirror> annotations;
 
+    /**
+     * Creates a new CFAbstractValue.
+     *
+     * @param analysis the analysis class this value belongs to
+     * @param annotations the annotations in this abstract value
+     * @param underlyingType the underlying (Java) type in this abstract value
+     */
     protected CFAbstractValue(
             CFAbstractAnalysis<V, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
@@ -159,19 +170,41 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     /**
-     * Returns the string representation as a comma-separated list.
+     * Returns the string representation, using fully-qualified names.
      *
-     * @return the string representation as a comma-separated list
+     * @return the string representation, using fully-qualified names
+     */
+    @SideEffectFree
+    public String toStringFullyQualified() {
+        return "CFAV{" + annotations + ", " + underlyingType + '}';
+    }
+
+    /**
+     * Returns the string representation, using simple (not fully-qualified) names.
+     *
+     * @return the string representation, using simple (not fully-qualified) names
+     */
+    @SideEffectFree
+    public String toStringSimple() {
+
+        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
+        StringJoiner annotationsString = new StringJoiner(", ");
+        for (AnnotationMirror am : annotations) {
+            annotationsString.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
+        }
+
+        return "CFAV{" + annotationsString + ", " + TypesUtils.simpleTypeName(underlyingType) + '}';
+    }
+
+    /**
+     * Returns the string representation.
+     *
+     * @return the string representation
      */
     @SideEffectFree
     @Override
     public String toString() {
-        return "CFAbstractValue{"
-                + "annotations="
-                + annotations
-                + ", underlyingType="
-                + underlyingType
-                + '}';
+        return toStringSimple();
     }
 
     /**
