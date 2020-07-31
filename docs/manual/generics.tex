@@ -951,6 +951,41 @@ type of the receiver of the field access (or in the case of type variables, the
 qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
 is that same as that on \<myBuffer>.
 
+\subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
+
+According to the CLIMB-to-top rule, local variables default to the top type (see
+Section~\ref{climb-to-top}). Type refinement determines if a variable can be
+treated as a suitable subtype, and annotations on local variables are rarely
+needed as a result. However, since qualifier parameters add invariant subtyping,
+type refinement is no longer valid. For example, suppose in the following code
+that \<StringBuffer> is annotated with \<@HasQualifierParameter(Tainted.class)>.
+
+\begin{Verbatim}
+    void method(@Untainted StringBuffer buffer) {
+        StringBuffer local = buffer;
+        executeSql(local.toString());
+    }
+
+    void executeSql(@Untainted String code) {
+        // ...
+    }
+\end{Verbatim}
+
+Normally, the framework would determine that \<local> has type \<@Untainted
+StringBuffer> and the call to \<executeSql> would be valid. However, since by
+default \<local> has type \<@Tainted StringBuffer>, and
+\<@Untainted StringBuffer> is not a subtype, no type refinement would be
+performed, leading to an error. Fixing this would require manually annotating
+\<local> as an \<@Untainted StringBuffer>, increasing the annotation burden on
+programmers.
+
+For this reason, local variables with types that have a qualifier parameter use
+different defaulting rules. When a local variable has an initializer, the type
+of that initializer is used as the default type of that variable if no other
+annotations are written. For example, in the above code, the type of \<local>
+would be \<@Untainted StringBuffer>. This eliminates the need for type
+refinement.
+
 \subsectionAndLabel{Qualifier parameters by default}{default-has-qualifier-parameter}
 
 If many classes in a project should have \<@HasQualifierParameter>, it's
@@ -1003,7 +1038,7 @@ on the same class for the same hierarchy.
 
 Types with qualifier parameters are only allowed as type arguments to type parameters whose upper bound
 have a qualifier parameter. If they were allowed for as type arguments for any type parameter, then
-unsound casts would be permitted.For example:
+unsound casts would be permitted. For example:
 
 \begin{Verbatim}
     @HasQualifierParameter(Tainted.class)

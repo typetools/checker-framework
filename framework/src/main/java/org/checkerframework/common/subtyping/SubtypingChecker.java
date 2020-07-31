@@ -16,7 +16,7 @@ import org.checkerframework.framework.source.SourceVisitor;
  *
  * <ul>
  *   <li>{@code -Aquals}: specifies the annotations in the qualifier hierarchy (as a comma-separated
- *       list of fully-qualified annotation names with no spaces in between). Only the annotation
+ *       list of fully-qualified annotation names with no spaces in between). Only the annotations
  *       for one qualified subtype hierarchy can be passed.
  * </ul>
  *

@@ -44,8 +44,9 @@ public abstract class AbstractCFGVisualizer<
         implements CFGVisualizer<V, S, T> {
 
     /**
-     * Initialized in {@link #init(Map)}. If its value is {@code true}, {@link CFGVisualizer}
-     * returns more detailed information.
+     * If {@code true}, {@link CFGVisualizer} returns more detailed information.
+     *
+     * <p>Initialized in {@link #init(Map)}.
      */
     protected boolean verbose;
 
