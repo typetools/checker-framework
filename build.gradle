@@ -224,7 +224,7 @@ allprojects {
                 // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
                 // All the classes in checker-qual are also in checker, so they are checked.
                 options.errorprone.enabled = false
-            }else if (name.contains('Test')){
+            } else if (name.contains('Test')) {
                 // TODO: enable Error Prone on test classes.
                 options.errorprone.enabled = false
             } else {
@@ -252,7 +252,7 @@ allprojects {
                         '-Xep:InlineFormatString:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
-                        // stops as soon as it one warning, rather than outputting them all.
+                        // stops as soon as it issues one warning, rather than outputting them all.
                         // https://github.com/google/error-prone/issues/436
                         '-Werror',
                 ]
