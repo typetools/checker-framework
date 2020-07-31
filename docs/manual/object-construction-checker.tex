@@ -11,7 +11,7 @@ never omitting a required argument. The checker has built-in support for \href{h
 \href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
 Programmers can extend it to other builders by writing method specifications.
 
-The checker performs *verification* rather than *bug-finding*.  The checker
+The checker performs verification rather than bug-finding.  The checker
 might yield a false positive warning when your code is too tricky for it to
 verify (please submit an
 \href{https://github.com/typetools/checker-framework/issues}{issue} and mention the Object Construction Checker if
@@ -125,6 +125,7 @@ Collection.
 passed to Lombok's \<@Builder> annotation), then the return type of that method is annotated with
 the same \<@CalledMethods> annotation as the receiver of \<build()>, using the same rules as above.
 \item An \<@This> annotation is placed on the return type of each setter in the builder's implementation.
+\end{itemize}
 
 You can disable the framework supports by specifying them in a comma-separated list to the
 command-line flag \<disableFrameworkSupports>.  For example, to disable both Lombok and AutoValue supports,
@@ -141,3 +142,4 @@ Lombok will set them to empty collections if the appropriate setter is not calle
 and assigning a default value to the builder's field), the checker will treat that field as defaulted
 \emph{most} of the time. In particular, it will not treat it as defaulted if it is defined in bytecode rather
 than in source code.
+\end{itemize}
