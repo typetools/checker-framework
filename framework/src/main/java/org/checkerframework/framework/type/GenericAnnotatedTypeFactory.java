@@ -1172,10 +1172,14 @@ public abstract class GenericAnnotatedTypeFactory<
 
                 while (!lambdaQueue.isEmpty()) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+                    MethodTree mt =
+                            (MethodTree)
+                                    TreeUtils.enclosingOfKind(
+                                            getPath(lambdaPair.first), Kind.METHOD);
                     analyze(
                             queue,
                             lambdaQueue,
-                            new CFGLambda(lambdaPair.first),
+                            new CFGLambda(lambdaPair.first, classTree, mt),
                             fieldValues,
                             classTree,
                             false,
@@ -1793,8 +1797,11 @@ public abstract class GenericAnnotatedTypeFactory<
         return checkerName;
     }
 
-    /* Parse values or key-value pairs into a map from value to true, respectively,
-     * from the value to the key.
+    /**
+     * Parse keys or key-value pairs into a map from key to value (to true if no value is provided).
+     *
+     * @param opts the CFG visualization options
+     * @return a map that represents the options
      */
     private Map<String, Object> processCFGVisualizerOption(String[] opts) {
         Map<String, Object> res = new HashMap<>(opts.length - 1);
@@ -1810,7 +1817,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     res.put(split[0], split[1]);
                     break;
                 default:
-                    throw new UserError("Too many `=` in cfgviz option: " + opt);
+                    throw new UserError("Too many '=' in cfgviz option: " + opt);
             }
         }
         return res;
