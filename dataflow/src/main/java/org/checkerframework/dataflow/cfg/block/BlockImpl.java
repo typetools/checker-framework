@@ -7,7 +7,7 @@ import java.util.Set;
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
 
-    /** A unique ID for this node. */
+    /** A unique ID for this block. */
     protected final long id = BlockImpl.uniqueID();
 
     /** The last ID that has already been used. */

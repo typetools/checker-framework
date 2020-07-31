@@ -480,15 +480,16 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a node, e.g., "Process order: 23". When a
-     * node have multiple process orders, a sequence of numbers will be returned, e.g., "Process
-     * order: 23,25".
+     * Given a list of process orders (integers), returns a string representation.
      *
-     * @param order the list of the process order to be processed
-     * @return the String representation of the process order of the node
+     * <p>Examples: "Process order: 23", "Process order: 23,25".
+     *
+     * @param order a list of process orders
+     * @return a String representation of the given process orders
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
-        return "Process order: " + order.toString().replaceAll("[\\[\\]]", "");
+        String orderString = order.toString();
+        return "Process order: " + orderString.substring(1, orderString.length() - 1);
     }
 
     /**

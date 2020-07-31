@@ -28,7 +28,14 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-/** A control flow graph (CFG for short) of a single method. */
+/**
+ * A control flow graph (CFG for short) of a single method.
+ *
+ * <p>The graph is represented by the successors (methods {@link SingleSuccessorBlock#getSuccessor},
+ * {@link ConditionalBlock#getThenSuccessor}, {@link ConditionalBlock#getElseSuccessor}, {@link
+ * ExceptionBlock#getExceptionalSuccessors}, {@link RegularBlock#getRegularSuccessor}) and
+ * predecessors (method {@link Block#getPredecessors}) of the entry and exit blocks.
+ */
 public class ControlFlowGraph {
 
     /** The entry block of the control flow graph. */
