@@ -162,6 +162,33 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     private boolean shouldDefaultTypeVarLocals;
 
+    /**
+     * Elements representing variables for which the type of the initializer is being determined in
+     * order to apply qualifier parameter defaults.
+     *
+     * <p>Local variables with a qualifier parameter get their declared type from the type of their
+     * initializer. Sometimes the initializer's type depends on the type of the variable, such as
+     * during type variable inference or when a variable is used in its own initializer as in
+     * "Object o = (o = null)". This creates a circular dependency resulting in infinite recursion.
+     * To prevent this, variables in this set should not be typed based on their initializer, but by
+     * using normal defaults.
+     *
+     * <p>This set should only be modified in
+     * GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults which clears
+     * variables after computing their initializer types.
+     *
+     * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
+     */
+    private Set<VariableElement> variablesUnderInitialization;
+
+    /**
+     * Caches types of initializers for local variables with a qualifier parameter, so that they
+     * aren't computed each time the type of a variable is looked up.
+     *
+     * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
+     */
+    private Map<Tree, AnnotatedTypeMirror> initializerCache;
+
     /** An empty store. */
     // Set in postInit only
     protected Store emptyStore;
@@ -204,6 +231,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
 
+        this.variablesUnderInitialization = new HashSet<>();
         this.scannedClasses = new HashMap<>();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -219,8 +247,10 @@ public abstract class GenericAnnotatedTypeFactory<
         if (shouldCache) {
             int cacheSize = getCacheSize();
             flowResultAnalysisCaches = CollectionUtils.createLRUCache(cacheSize);
+            initializerCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
             flowResultAnalysisCaches = null;
+            initializerCache = null;
         }
 
         // Every subclass must call postInit, but it must be called after
@@ -283,6 +313,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (shouldCache) {
             this.flowResultAnalysisCaches.clear();
+            this.initializerCache.clear();
             this.defaultQualifierForUseTypeAnnotator.clearCache();
         }
     }
@@ -1592,6 +1623,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Applies defaults for types in a class with an qualifier parameter.
      *
+     * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
+     * polymorphic qualifier rather than the typical default. Local variables with a type that has a
+     * qualifier parameter are initialized to the type of their initializer, rather than the default
+     * for local variables.
+     *
      * @param tree Tree whose type is {@code type}
      * @param type where the defaults are applied
      */
@@ -1601,6 +1637,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Applies defaults for types in a class with an qualifier parameter.
+     *
+     * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
+     * polymorphic qualifier rather than the typical default. Local variables with a type that has a
+     * qualifier parameter are initialized to the type of their initializer, rather than the default
+     * for local variables.
      *
      * @param elt Element whose type is {@code type}
      * @param type where the defaults are applied
@@ -1620,6 +1661,8 @@ public abstract class GenericAnnotatedTypeFactory<
             default:
                 return;
         }
+
+        applyLocalVariableQualifierParameterDefaults(elt, type);
 
         TypeElement enclosingClass = ElementUtils.enclosingClass(elt);
         Set<AnnotationMirror> tops;
@@ -1647,6 +1690,64 @@ public abstract class GenericAnnotatedTypeFactory<
                 return super.visitDeclared(type, aVoid);
             }
         }.visit(type);
+    }
+
+    /**
+     * Defaults local variables with types that have a qualifier parameter to the type of their
+     * initializer, if an initializer is present. Does nothing for local variables with no
+     * initializer.
+     *
+     * @param elt Element whose type is {@code type}
+     * @param type where the defaults are applied
+     */
+    private void applyLocalVariableQualifierParameterDefaults(
+            Element elt, AnnotatedTypeMirror type) {
+        if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+                || getQualifierParameterHierarchies(type).isEmpty()
+                || variablesUnderInitialization.contains(elt)) {
+            return;
+        }
+
+        Tree declTree = declarationFromElement(elt);
+        if (declTree == null || declTree.getKind() != Kind.VARIABLE) {
+            return;
+        }
+
+        ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+        if (initializer == null) {
+            return;
+        }
+
+        VariableElement variableElt = (VariableElement) elt;
+        variablesUnderInitialization.add(variableElt);
+        AnnotatedTypeMirror initializerType;
+        if (shouldCache && initializerCache.containsKey(initializer)) {
+            initializerType = initializerCache.get(initializer);
+        } else {
+            // When this method is called by getAnnotatedTypeLhs, flow is turned off.
+            // Turn it back on so the type of the initializer is the refined type.
+            boolean oldUseFlow = useFlow;
+            useFlow = everUseFlow;
+            try {
+                initializerType = getAnnotatedType(initializer);
+            } finally {
+                useFlow = oldUseFlow;
+            }
+        }
+
+        Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror initializerAnnotation : initializerType.getAnnotations()) {
+            if (hasQualifierParameterInHierarchy(
+                    type, qualHierarchy.getTopAnnotation(initializerAnnotation))) {
+                qualParamTypes.add(initializerAnnotation);
+            }
+        }
+
+        type.addMissingAnnotations(qualParamTypes);
+        variablesUnderInitialization.remove(variableElt);
+        if (shouldCache) {
+            initializerCache.put(initializer, initializerType);
+        }
     }
 
     /**
