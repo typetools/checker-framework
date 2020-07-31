@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -529,19 +528,5 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         }
         result.add("}");
         return result.toString();
-    }
-
-    /** Checks representation invariants on this. */
-    public void checkRep() {
-        // Require that each node in treeLookup exists in nodeValues.
-        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
-            for (Node n : entry.getValue()) {
-                if (!nodeValues.containsKey(n)) {
-                    SystemUtil.sleep(100); // without this, printf output is sometimes interleaved
-                    throw new BugInCF(
-                            "node %s is in treeLookup but not in nodeValues%n%s", n.repr(), repr());
-                }
-            }
-        }
     }
 }

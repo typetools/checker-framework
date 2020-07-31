@@ -283,13 +283,15 @@ public class CFGBuilder {
      * An extended node can be one of several things (depending on its {@code type}):
      *
      * <ul>
-     *   <li><em>NODE</em>. An extended node of this type is just a wrapper for a {@link Node} (that
-     *       cannot throw exceptions).
-     *   <li><em>EXCEPTION_NODE</em>. A wrapper for a {@link Node} which can throw exceptions. It
-     *       contains a label for every possible exception type the node might throw.
-     *   <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.
-     *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>. A conditional jump with two targets for both the
-     *       'then' and 'else' branch.
+     *   <li><em>NODE</em>: {@link CFGBuilder.NodeHolder}. An extended node of this type is just a
+     *       wrapper for a {@link Node} (that cannot throw exceptions).
+     *   <li><em>EXCEPTION_NODE</em>: {@link CFGBuilder.NodeWithExceptionsHolder}. A wrapper for a
+     *       {@link Node} which can throw exceptions. It contains a label for every possible
+     *       exception type the node might throw.
+     *   <li><em>UNCONDITIONAL_JUMP</em>: {@link CFGBuilder.UnconditionalJump}. An unconditional
+     *       jump to a label.
+     *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link CFGBuilder.ConditionalJump}. A conditional
+     *       jump with two targets for both the 'then' and 'else' branch.
      * </ul>
      */
     protected abstract static class ExtendedNode {
@@ -2757,7 +2759,7 @@ public class CFGBuilder {
             ExpressionTree variable = tree.getVariable();
             TypeMirror varType = TreeUtils.typeOf(variable);
 
-            // case 1: field access
+            // case 1: lhs is field access
             if (TreeUtils.isFieldAccess(variable)) {
                 // visit receiver
                 Node receiver = getReceiver(variable);
@@ -2785,7 +2787,7 @@ public class CFGBuilder {
                 extendWithNode(assignmentNode);
             }
 
-            // case 2: other cases
+            // case 2: lhs is not a field access
             else {
                 Node target = scan(variable, p);
                 target.setLValue();
