@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import org.checkerframework.dataflow.cfg.node.Node;
 
@@ -56,5 +57,5 @@ public interface Block {
      *
      * @return the nodes contained within this basic block
      */
-    Collection<Node> getNodes();
+    List<Node> getNodes();
 }
