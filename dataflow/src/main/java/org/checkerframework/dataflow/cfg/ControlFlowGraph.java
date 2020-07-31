@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
@@ -149,7 +150,8 @@ public class ControlFlowGraph {
      *
      * @return the set of all basic block in this control flow graph
      */
-    public Set<Block> getAllBlocks() {
+    public Set<Block> getAllBlocks(
+                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -181,7 +183,8 @@ public class ControlFlowGraph {
      *
      * @return all nodes in this control flow graph
      */
-    public List<Node> getAllNodes() {
+    public List<Node> getAllNodes(
+                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> result = new ArrayList<>();
         for (Block b : getAllBlocks()) {
             result.addAll(b.getNodes());
@@ -193,7 +196,8 @@ public class ControlFlowGraph {
      * Remove, from the values of {@code treeLookup}, nodes that do not appear in the control flow
      * graph.
      */
-    private void removeDeadNodesFromTreeLookup() {
+    private void removeDeadNodesFromTreeLookup(
+                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> allNodes = getAllNodes();
         // Remove references to dead code.
         for (Set<Node> nodes : treeLookup.values()) {
