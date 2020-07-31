@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * An arbitrary-size set that is very efficient ( more efficient than HashSet) for 0 and 1 elements.
+ * An arbitrary-size set that is very efficient (more efficient than HashSet) for 0 and 1 elements.
  * Uses object identity for object comparison.
  */
 public final class IdentityMostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
