@@ -200,16 +200,20 @@ public class ControlFlowGraph {
                     @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> allNodes = getAllNodes();
         // Remove references to dead code.
-        for (Set<Node> nodes : treeLookup.values()) {
-            for (Iterator<Node> i = nodes.iterator(); i.hasNext(); ) {
-                Node n = i.next();
+        for (Iterator<Set<Node>> i1 = treeLookup.values().iterator(); i1.hasNext(); ) {
+            Set<Node> nodeSet = i1.next();
+            for (Iterator<Node> i2 = nodeSet.iterator(); i2.hasNext(); ) {
+                Node n = i2.next();
                 if (!allNodes.contains(n)) {
                     try {
-                        i.remove();
+                        i2.remove();
                     } catch (UnsupportedOperationException e) {
-                        throw new Error("nodes.getClass()=" + nodes.getClass(), e);
+                        throw new Error("nodes.getClass()=" + nodeSet.getClass(), e);
                     }
                 }
+            }
+            if (nodeSet.isEmpty()) {
+                i1.remove();
             }
         }
     }
