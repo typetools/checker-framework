@@ -124,10 +124,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
 
-    /** for use in addAnnotationsFromDefaultQualifierForUse */
+    /** for use in addAnnotationsFromDefaultForType */
     private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
 
-    /** for use in addAnnotationsFromDefaultQualifierForUse */
+    /** for use in addAnnotationsFromDefaultForType */
     private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
@@ -1505,7 +1505,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addDefaultAnnotations(AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultQualifierForUse(null, type);
+        addAnnotationsFromDefaultForType(null, type);
         typeAnnotator.visit(type, null);
         defaults.annotate((Element) null, type);
     }
@@ -1539,13 +1539,13 @@ public abstract class GenericAnnotatedTypeFactory<
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
-            addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+            addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
         }
         applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
-            addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+            addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
         }
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
@@ -1687,7 +1687,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultQualifierForUse(elt, type);
+        addAnnotationsFromDefaultForType(elt, type);
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
@@ -1875,7 +1875,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param type the type to which defaults are added
      */
     // TODO: rename in the next minor release.
-    protected void addAnnotationsFromDefaultQualifierForUse(
+    protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
         if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
             if (type.getKind() == TypeKind.DECLARED) {

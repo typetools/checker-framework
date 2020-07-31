@@ -366,15 +366,15 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected void addAnnotationsFromDefaultQualifierForUse(
+    protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
         if (element != null
                 && element.getKind() == ElementKind.LOCAL_VARIABLE
                 && type.getKind().isPrimitive()) {
             // Always apply the DefaultQualifierForUse for primitives.
-            super.addAnnotationsFromDefaultQualifierForUse(null, type);
+            super.addAnnotationsFromDefaultForType(null, type);
         } else {
-            super.addAnnotationsFromDefaultQualifierForUse(element, type);
+            super.addAnnotationsFromDefaultForType(element, type);
         }
     }
 

@@ -679,11 +679,12 @@ public class NullnessVisitor
         }
 
         @Override
-        protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
+        protected boolean shouldCheckTopLevelDeclaredOrPrimitiveType(
+                AnnotatedTypeMirror type, Tree tree) {
             if (type.getKind().isPrimitive()) {
                 return true;
             }
-            return super.shouldCheckTopLevelDeclaredType(type, tree);
+            return super.shouldCheckTopLevelDeclaredOrPrimitiveType(type, tree);
         }
     }
 }
