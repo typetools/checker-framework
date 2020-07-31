@@ -124,8 +124,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
 
-    /** for use in addAnnotationsFromDefaultQualifierForUse */
+    /** for use in addAnnotationsFromDefaultForType */
     private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
+
+    /** for use in addAnnotationsFromDefaultForType */
+    private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -266,6 +269,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
         this.defaultQualifierForUseTypeAnnotator = createDefaultForUseTypeAnnotator();
+        this.defaultForTypeAnnotator = createDefaultForTypeAnnotator();
 
         this.poly = createQualifierPolymorphism();
 
@@ -383,8 +387,6 @@ public abstract class GenericAnnotatedTypeFactory<
      *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
-     *   <li>{@link DefaultForTypeAnnotator}: Adds annotations based on {@link DefaultFor}
-     *       meta-annotations.
      * </ol>
      *
      * @return a type annotator
@@ -401,13 +403,25 @@ public abstract class GenericAnnotatedTypeFactory<
                             this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
-        typeAnnotators.add(new DefaultForTypeAnnotator(this));
         return new ListTypeAnnotator(typeAnnotators);
     }
 
-    /** Creates an {@link DefaultQualifierForUseTypeAnnotator}. */
+    /**
+     * Creates an {@link DefaultQualifierForUseTypeAnnotator}.
+     *
+     * @return a new {@link DefaultQualifierForUseTypeAnnotator}
+     */
     protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
         return new DefaultQualifierForUseTypeAnnotator(this);
+    }
+
+    /**
+     * Creates an {@link DefaultForTypeAnnotator}.
+     *
+     * @return a new {@link DefaultForTypeAnnotator}
+     */
+    protected DefaultForTypeAnnotator createDefaultForTypeAnnotator() {
+        return new DefaultForTypeAnnotator(this);
     }
 
     /**
@@ -1522,7 +1536,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void addDefaultAnnotations(AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultQualifierForUse(null, type);
+        addAnnotationsFromDefaultForType(null, type);
         typeAnnotator.visit(type, null);
         defaults.annotate((Element) null, type);
     }
@@ -1541,6 +1555,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding
      * implementations typically simply pass the boolean to calls to super.
+     *
+     * @param tree an AST node
+     * @param type the type obtained from tree
+     * @param iUseFlow whether to use information from dataflow analysis
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1548,9 +1566,18 @@ public abstract class GenericAnnotatedTypeFactory<
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
-        addAnnotationsFromDefaultQualifierForUse(TreeUtils.elementFromTree(tree), type);
+
+        if (!TreeUtils.isExpressionTree(tree)) {
+            // Don't apply defaults to expressions. Their types may be computed from subexpressions
+            // in treeAnnotator.
+            addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+        }
         applyQualifierParameterDefaults(tree, type);
         treeAnnotator.visit(tree, type);
+        if (TreeUtils.isExpressionTree(tree)) {
+            // If a tree annotator, did not add a type, add the DefaultForUse default.
+            addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+        }
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
 
@@ -1761,7 +1788,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-        addAnnotationsFromDefaultQualifierForUse(elt, type);
+        addAnnotationsFromDefaultForType(elt, type);
         applyQualifierParameterDefaults(elt, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
@@ -1843,6 +1870,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
 
+    /**
+     * Create a new CFGVisualizer.
+     *
+     * @return a new CFGVisualizer
+     */
     protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
@@ -1942,25 +1974,36 @@ public abstract class GenericAnnotatedTypeFactory<
      * Adds default qualifiers bases on the underlying type of {@code type} to {@code type}. If
      * {@code element} is a local variable, then the defaults are not added.
      *
+     * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
+     * DefaultForTypeAnnotator}.)
+     *
      * @param element possibly null element whose type is {@code type}
      * @param type the type to which defaults are added
      */
-    protected void addAnnotationsFromDefaultQualifierForUse(
+    protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
-        if (element != null
-                && element.getKind() == ElementKind.LOCAL_VARIABLE
-                && type.getKind() == TypeKind.DECLARED) {
-            // If this is a type for a local variable, don't apply the default to the primary
-            // location.
-            AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
-            if (declaredType.getEnclosingType() != null) {
-                defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());
-            }
-            for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
-                defaultQualifierForUseTypeAnnotator.visit(typeArg);
+        if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+            if (type.getKind() == TypeKind.DECLARED) {
+                // If this is a type for a local variable, don't apply the default to the primary
+                // location.
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+                if (declaredType.getEnclosingType() != null) {
+                    defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());
+                    defaultForTypeAnnotator.visit(declaredType.getEnclosingType());
+                }
+                for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
+                    defaultQualifierForUseTypeAnnotator.visit(typeArg);
+                    defaultForTypeAnnotator.visit(typeArg);
+                }
+            } else if (type.getKind().isPrimitive()) {
+                // Don't apply the default for local variables with primitive types.
+            } else {
+                defaultQualifierForUseTypeAnnotator.visit(type);
+                defaultForTypeAnnotator.visit(type);
             }
         } else {
             defaultQualifierForUseTypeAnnotator.visit(type);
+            defaultForTypeAnnotator.visit(type);
         }
     }
 }

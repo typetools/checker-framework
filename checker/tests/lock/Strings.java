@@ -8,17 +8,14 @@ import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 public class Strings {
     final Object lock = new Object();
 
-    // Tests that @GuardedBy({}) is @ImplicitFor(typeNames = { java.lang.String.class })
+    // These casts are safe because if the casted Object is a String, it must be @GuardedBy({})
     void StringIsGBnothing(
             @GuardedByUnknown Object o1,
             @GuardedBy("lock") Object o2,
             @GuardSatisfied Object o3,
             @GuardedByBottom Object o4) {
-        // :: error: (assignment.type.incompatible)
         String s1 = (String) o1;
-        // :: error: (assignment.type.incompatible)
         String s2 = (String) o2;
-        // :: error: (assignment.type.incompatible)
         String s3 = (String) o3;
         String s4 = (String) o4; // OK
     }
