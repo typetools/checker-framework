@@ -324,6 +324,8 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 ]
        }
+        // ErrorProne already ran when building checker.jar, so don't run it again.
+        options.errorprone.enabled = false
     }
 }
 
