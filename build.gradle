@@ -225,7 +225,7 @@ allprojects {
                 // All the classes in checker-qual are also in checker, so they are checked.
                 options.errorprone.enabled = false
             }else if (name.contains('Test')){
-                // TODO: enable error on test classes.
+                // TODO: enable Error Prone on test classes.
                 options.errorprone.enabled = false
             } else {
                 // Error Prone must be available in the annotation processor path
