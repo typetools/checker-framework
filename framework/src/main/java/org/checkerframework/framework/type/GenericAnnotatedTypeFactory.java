@@ -1874,7 +1874,6 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param element possibly null element whose type is {@code type}
      * @param type the type to which defaults are added
      */
-    // TODO: rename in the next minor release.
     protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
         if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
