@@ -87,7 +87,6 @@ public class DOTCFGVisualizer<
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
-        sbDotNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
@@ -107,7 +106,13 @@ public class DOTCFGVisualizer<
                         .append(getProcessOrderSimpleString(processOrder.get(v)))
                         .append(leftJustifiedTerminator);
             }
-            String strBlock = visualizeBlock(v, analysis);
+            String strBlock;
+            if (v.getType() == BlockType.REGULAR_BLOCK
+                    || v.getType() == BlockType.EXCEPTION_BLOCK) {
+                strBlock = visualizeBlock(v, analysis) + leftJustifiedTerminator;
+            } else {
+                strBlock = visualizeBlock(v, analysis);
+            }
             if (strBlock.length() == 0) {
                 if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                     // The footer of the conditional block.
@@ -126,7 +131,7 @@ public class DOTCFGVisualizer<
 
     @Override
     protected String addEdge(long sId, long eId, String flowRule) {
-        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];" + lineSeparator;
+        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];";
     }
 
     @Override
@@ -136,7 +141,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "\\n");
+        return super.visualizeSpecialBlockHelper(sbb);
     }
 
     @Override
@@ -248,57 +253,37 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreThisVal(V value) {
-        return storeEntryIndent + "this > " + value + leftJustifiedTerminator;
+        return storeEntryIndent + "this > " + value;
     }
 
     @Override
     public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
-        return storeEntryIndent
-                + localVar
-                + " > "
-                + escapeDoubleQuotes(value)
-                + leftJustifiedTerminator;
+        return storeEntryIndent + localVar + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
     public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
-        return storeEntryIndent
-                + fieldAccess
-                + " > "
-                + escapeDoubleQuotes(value)
-                + leftJustifiedTerminator;
+        return storeEntryIndent + fieldAccess + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
     public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
-        return storeEntryIndent
-                + arrayValue
-                + " > "
-                + escapeDoubleQuotes(value)
-                + leftJustifiedTerminator;
+        return storeEntryIndent + arrayValue + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
     public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
-        return storeEntryIndent
-                + escapeDoubleQuotes(methodCall)
-                + " > "
-                + value
-                + leftJustifiedTerminator;
+        return storeEntryIndent + escapeDoubleQuotes(methodCall) + " > " + value;
     }
 
     @Override
     public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
-        return storeEntryIndent
-                + className
-                + " > "
-                + escapeDoubleQuotes(value)
-                + leftJustifiedTerminator;
+        return storeEntryIndent + className + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
     public String visualizeStoreKeyVal(String keyName, Object value) {
-        return storeEntryIndent + keyName + " = " + value + leftJustifiedTerminator;
+        return storeEntryIndent + keyName + " = " + value;
     }
 
     /**
@@ -323,12 +308,12 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustifiedTerminator;
+        return classCanonicalName + " (";
     }
 
     @Override
     public String visualizeStoreFooter() {
-        return ")" + leftJustifiedTerminator;
+        return ")";
     }
 
     /**

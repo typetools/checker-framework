@@ -2,11 +2,11 @@ package org.checkerframework.dataflow.cfg;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -35,33 +35,37 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeNodes(
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
-        StringJoiner sjStringNodes = new StringJoiner(lineSeparator, lineSeparator, "");
+        StringJoiner sjStringNodes = new StringJoiner(lineSeparator);
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
         // Generate all the Nodes.
-        for (@KeyFor("processOrder") Block v : blocks) {
+        Iterator<Block> iter = blocks.iterator();
+        boolean lastBlock = false;
+        while (iter.hasNext()) {
+            Block v = iter.next();
+            if (!iter.hasNext()) {
+                lastBlock = true;
+            }
             sjStringNodes.add(v.getId() + ":");
             if (verbose) {
                 sjStringNodes.add(getProcessOrderSimpleString(processOrder.get(v)));
             }
-            sjStringNodes.add(visualizeBlock(v, analysis));
+            if (!lastBlock) {
+                sjStringNodes.add(visualizeBlock(v, analysis) + lineSeparator);
+            } else {
+                sjStringNodes.add(visualizeBlock(v, analysis));
+            }
         }
 
-        // Remove the line separator from the end of the string.
-        String stringNodes = sjStringNodes.toString();
-        if (stringNodes.endsWith(lineSeparator)) {
-            stringNodes = stringNodes.substring(0, stringNodes.length() - lineSeparator.length());
-        }
-
-        return stringNodes;
+        return sjStringNodes.toString();
     }
 
     @Override
     protected String addEdge(long sId, long eId, String flowRule) {
         if (this.verbose) {
-            return sId + " -> " + eId + " " + flowRule + lineSeparator;
+            return sId + " -> " + eId + " " + flowRule;
         }
-        return sId + " -> " + eId + lineSeparator;
+        return sId + " -> " + eId;
     }
 
     @Override
@@ -71,7 +75,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, lineSeparator);
+        return super.visualizeSpecialBlockHelper(sbb);
     }
 
     @Override
@@ -79,8 +83,7 @@ public class StringCFGVisualizer<
         return "ConditionalBlock: then: "
                 + cbb.getThenSuccessor().getId()
                 + ", else: "
-                + cbb.getElseSuccessor().getId()
-                + lineSeparator;
+                + cbb.getElseSuccessor().getId();
     }
 
     @Override
@@ -100,47 +103,47 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeStoreThisVal(V value) {
-        return storeEntryIndent + "this > " + value + lineSeparator;
+        return storeEntryIndent + "this > " + value;
     }
 
     @Override
     public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
-        return storeEntryIndent + localVar + " > " + value + lineSeparator;
+        return storeEntryIndent + localVar + " > " + value;
     }
 
     @Override
     public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
-        return storeEntryIndent + fieldAccess + " > " + value + lineSeparator;
+        return storeEntryIndent + fieldAccess + " > " + value;
     }
 
     @Override
     public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
-        return storeEntryIndent + arrayValue + " > " + value + lineSeparator;
+        return storeEntryIndent + arrayValue + " > " + value;
     }
 
     @Override
     public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
-        return storeEntryIndent + methodCall + " > " + value + lineSeparator;
+        return storeEntryIndent + methodCall + " > " + value;
     }
 
     @Override
     public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
-        return storeEntryIndent + className + " > " + value + lineSeparator;
+        return storeEntryIndent + className + " > " + value;
     }
 
     @Override
     public String visualizeStoreKeyVal(String keyName, Object value) {
-        return storeEntryIndent + keyName + " = " + value + lineSeparator;
+        return storeEntryIndent + keyName + " = " + value;
     }
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + lineSeparator;
+        return classCanonicalName + " (";
     }
 
     @Override
     public String visualizeStoreFooter() {
-        return ")" + lineSeparator;
+        return ")";
     }
 
     /**

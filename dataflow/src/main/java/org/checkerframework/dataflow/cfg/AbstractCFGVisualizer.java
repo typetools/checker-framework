@@ -100,6 +100,7 @@ public abstract class AbstractCFGVisualizer<
             handleSuccessorsHelper(cur, visited, workList, sbGraph);
             cur = workList.poll();
         }
+        sbGraph.append(lineSeparator);
         sbGraph.append(visualizeNodes(visited, cfg, analysis));
         return sbGraph.toString();
     }
@@ -122,6 +123,7 @@ public abstract class AbstractCFGVisualizer<
                             ccur.getId(),
                             thenSuccessor.getId(),
                             ccur.getThenFlowRule().toString()));
+            sbGraph.append(lineSeparator);
             addBlock(thenSuccessor, visited, workList);
             Block elseSuccessor = ccur.getElseSuccessor();
             sbGraph.append(
@@ -129,12 +131,14 @@ public abstract class AbstractCFGVisualizer<
                             ccur.getId(),
                             elseSuccessor.getId(),
                             ccur.getElseFlowRule().toString()));
+            sbGraph.append(lineSeparator);
             addBlock(elseSuccessor, visited, workList);
         } else {
             SingleSuccessorBlock sscur = (SingleSuccessorBlock) cur;
             Block succ = sscur.getSuccessor();
             if (succ != null) {
                 sbGraph.append(addEdge(cur.getId(), succ.getId(), sscur.getFlowRule().name()));
+                sbGraph.append(lineSeparator);
                 addBlock(succ, visited, workList);
             }
         }
@@ -148,6 +152,7 @@ public abstract class AbstractCFGVisualizer<
                 }
                 for (Block b : e.getValue()) {
                     sbGraph.append(addEdge(cur.getId(), b.getId(), exception));
+                    sbGraph.append(lineSeparator);
                     addBlock(b, visited, workList);
                 }
             }
@@ -181,30 +186,34 @@ public abstract class AbstractCFGVisualizer<
      */
     protected String visualizeBlockHelper(
             Block bb, @Nullable Analysis<V, S, T> analysis, String escapeString) {
-        StringBuilder sbBlock = new StringBuilder();
-        sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
+        StringJoiner sjBlock = new StringJoiner(escapeString);
 
-        if (sbBlock.length() == 0) {
-            if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
-                sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
-            } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-                sbBlock.append(visualizeConditionalBlock((ConditionalBlock) bb));
-            } else {
-                sbBlock.append("<empty block>");
-            }
-        }
-
-        // Visualize transfer input if necessary.
+        // Visualize "transfer input before" if necessary.
         if (analysis != null) {
-            sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
-            if (verbose) {
-                Node lastNode = getLastNode(bb);
-                if (lastNode != null) {
-                    sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
-                }
+            sjBlock.add(visualizeBlockTransferInputBefore(bb, analysis));
+        }
+
+        String blockContents = loopOverBlockContents(bb, analysis, escapeString);
+        if (blockContents.isEmpty()) {
+            if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
+                sjBlock.add(visualizeSpecialBlock((SpecialBlock) bb));
+            } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
+                sjBlock.add(visualizeConditionalBlock((ConditionalBlock) bb));
+            } else {
+                sjBlock.add("<empty block>");
+            }
+        } else {
+            sjBlock.add(blockContents);
+        }
+
+        // Visualize "transfer input after" if necessary.
+        if (analysis != null && verbose) {
+            Node lastNode = getLastNode(bb);
+            if (lastNode != null) {
+                sjBlock.add(visualizeBlockTransferInputAfter(bb, analysis));
             }
         }
-        return sbBlock.toString();
+        return sjBlock.toString();
     }
 
     /**
@@ -219,8 +228,7 @@ public abstract class AbstractCFGVisualizer<
             Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
 
         List<Node> contents = addBlockContent(bb);
-        StringJoiner sjBlockContents = new StringJoiner(separator, "", separator);
-        sjBlockContents.setEmptyValue("");
+        StringJoiner sjBlockContents = new StringJoiner(separator);
         for (Node t : contents) {
             sjBlockContents.add(visualizeBlockNode(t, analysis));
         }
@@ -292,7 +300,7 @@ public abstract class AbstractCFGVisualizer<
         boolean isTwoStores = false;
 
         StringBuilder sbStore = new StringBuilder();
-        sbStore.append("Before: ");
+        sbStore.append("Before:");
 
         Direction analysisDirection = analysis.getDirection();
 
@@ -317,7 +325,7 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.append("~~~~~~~~~").append(escapeString);
+        sbStore.append(escapeString).append("~~~~~~~~~");
         return sbStore.toString();
     }
 
@@ -344,7 +352,7 @@ public abstract class AbstractCFGVisualizer<
         boolean isTwoStores = false;
 
         StringBuilder sbStore = new StringBuilder();
-        sbStore.append("After: ");
+        sbStore.append("After:");
 
         Direction analysisDirection = analysis.getDirection();
 
@@ -377,17 +385,16 @@ public abstract class AbstractCFGVisualizer<
      * Visualize a special block.
      *
      * @param sbb the special block
-     * @param separator the separator String to put at the end of the result
-     * @return the String representation of the special block, followed by the separator
+     * @return the String representation of the special block
      */
-    protected String visualizeSpecialBlockHelper(SpecialBlock sbb, String separator) {
+    protected String visualizeSpecialBlockHelper(SpecialBlock sbb) {
         switch (sbb.getSpecialType()) {
             case ENTRY:
-                return "<entry>" + separator;
+                return "<entry>";
             case EXIT:
-                return "<exit>" + separator;
+                return "<exit>";
             case EXCEPTIONAL_EXIT:
-                return "<exceptional-exit>" + separator;
+                return "<exceptional-exit>";
             default:
                 throw new BugInCF("Unrecognized special block type: " + sbb.getType());
         }

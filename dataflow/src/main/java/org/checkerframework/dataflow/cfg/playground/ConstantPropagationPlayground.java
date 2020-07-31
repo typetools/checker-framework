@@ -13,7 +13,7 @@ public class ConstantPropagationPlayground {
     public static void main(String[] args) {
 
         /* Configuration: change as appropriate */
-        String inputFile = "cfg-input.java"; // input file name and path
+        String inputFile = "Test.java"; // input file name and path
         String outputDir = "cfg"; // output directory
         String method = "test"; // name of the method to analyze
         String clazz = "Test"; // name of the class to consider
