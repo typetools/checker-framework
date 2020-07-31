@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.dataflow.cfg.node.Node;
 
+/** The implementation of a {@link SpecialBlock}. */
 public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock {
 
     /** The type of this special basic block. */
