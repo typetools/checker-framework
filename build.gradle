@@ -220,14 +220,12 @@ allprojects {
             if (isJava8) {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
             }
-            if (project.name.startsWith('checker-qual')) {
-                // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-                // All the classes in checker-qual are also in checker, so they are checked.
-                options.errorprone.enabled = false
-            } else if (name.contains('Test')) {
-                // TODO: enable Error Prone on test classes.
-                options.errorprone.enabled = false
-            } else {
+
+            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // All the classes in checker-qual are also in checker, so they are checked.
+            // TODO: enable Error Prone on test classes.
+            if (name.is('compileJava') && !project.name.startsWith('checker-qual')){
+                println "${project.name} ${name}"
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
@@ -256,6 +254,8 @@ allprojects {
                         // https://github.com/google/error-prone/issues/436
                         '-Werror',
                 ]
+            } else {
+                options.errorprone.enabled = false
             }
         }
     }
@@ -324,8 +324,6 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 ]
        }
-        // ErrorProne already ran when building checker.jar, so don't run it again.
-        options.errorprone.enabled = false
     }
 }
 
