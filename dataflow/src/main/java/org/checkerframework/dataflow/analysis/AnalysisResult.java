@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.analysis;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -18,6 +17,7 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -465,7 +465,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns a string representation of this.
+     * Returns a verbose string representation of this, useful for debugging.
      *
      * @return a string representation of this
      */
@@ -485,7 +485,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Return a printed representation of a map with the same type as the {@code nodeValues} field.
+     * Returns a verbose printed representation, useful for debugging. The map has the same type as
+     * the {@code nodeValues} field.
      *
      * @param <V> the type of values in the map
      * @param nodeValues a map to format
@@ -499,41 +500,15 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         result.add("{");
         for (Map.Entry<Node, V> entry : nodeValues.entrySet()) {
             Node key = entry.getKey();
-            result.add(String.format("%s => %s", nodeRepr(key), entry.getValue()));
+            result.add(String.format("%s => %s", key.repr(), entry.getValue()));
         }
         result.add("}");
         return result.toString();
     }
 
     /**
-     * Return a printed representation of a node.
-     *
-     * @param n a node to format
-     * @return a printed representation of the given node
-     */
-    public static String nodeRepr(Node n) {
-        return String.format(
-                "%s [%s %s %s]",
-                n, n.getClass().getSimpleName(), n.hashCode(), System.identityHashCode(n));
-    }
-
-    /**
-     * Return a printed representation of a collection of nodes.
-     *
-     * @param nodes a collection of nodes to format
-     * @return a printed representation of the given collection
-     */
-    public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
-        StringJoiner result = new StringJoiner(", ", "[", "]");
-        for (Node n : nodes) {
-            result.add(nodeRepr(n));
-        }
-        ;
-        return result.toString();
-    }
-
-    /**
-     * Return a printed representation of a map with the same type as the {@code treeLookup} field.
+     * Returns a verbose printed representation of a map, useful for debugging. The map has the same
+     * type as the {@code treeLookup} field.
      *
      * @param treeLookup a map to format
      * @return a printed representation of the given map
@@ -550,7 +525,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
             if (treeString.length() > 65) {
                 treeString = "\"" + treeString.substring(0, 60) + "...\"";
             }
-            result.add(treeString + " => " + nodeCollectionRepr(entry.getValue()));
+            result.add(treeString + " => " + Node.nodeCollectionRepr(entry.getValue()));
         }
         result.add("}");
         return result.toString();
@@ -562,26 +537,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
             for (Node n : entry.getValue()) {
                 if (!nodeValues.containsKey(n)) {
-                    sleep(100);
+                    SystemUtil.sleep(100); // without this, printf output is sometimes interleaved
                     throw new BugInCF(
-                            "node %s is in treeLookup but not in nodeValues%n%s",
-                            nodeRepr(n), repr());
+                            "node %s is in treeLookup but not in nodeValues%n%s", n.repr(), repr());
                 }
             }
-        }
-    }
-
-    /**
-     * Sleep (do nothing) for the given number of milliseconds. This can help to prevent output from
-     * being interleaved.
-     *
-     * @param msec the number of milliseconds to delay before the next action
-     */
-    private void sleep(int msec) {
-        try {
-            Thread.sleep(msec);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt(); // Here!
         }
     }
 }
