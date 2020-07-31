@@ -918,9 +918,9 @@ public class CFGBuilder {
             // fix predecessor lists by removing any unreachable predecessors
             for (Block c : worklist) {
                 BlockImpl cur = (BlockImpl) c;
-                for (BlockImpl pred : new HashSet<>(cur.getPredecessors())) {
+                for (Block pred : new HashSet<>(cur.getPredecessors())) {
                     if (!worklist.contains(pred)) {
-                        cur.removePredecessor(pred);
+                        cur.removePredecessor((BlockImpl) pred);
                     }
                 }
             }
@@ -1055,7 +1055,8 @@ public class CFGBuilder {
 
             RegularBlockImpl cur = start;
             empty.add(cur);
-            for (final BlockImpl pred : cur.getPredecessors()) {
+            for (final Block p : cur.getPredecessors()) {
+                BlockImpl pred = (BlockImpl) p;
                 switch (pred.getType()) {
                     case SPECIAL_BLOCK:
                         // add pred correctly to predecessor list
