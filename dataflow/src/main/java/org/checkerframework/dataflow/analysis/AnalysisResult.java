@@ -529,4 +529,17 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         result.add("}");
         return result.toString();
     }
+
+    /** Checks representation invariants on this. */
+    public void checkRep() {
+        // Require that each node in treeLookup exists in nodeValues.
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            for (Node n : entry.getValue()) {
+                if (!nodeValues.containsKey(n)) {
+                    throw new BugInCF(
+                            "node %s is in treeLookup but not in nodeValues%n%s", n.repr(), repr());
+                }
+            }
+        }
+    }
 }
