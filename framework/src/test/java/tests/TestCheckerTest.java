@@ -2,12 +2,12 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testchecker.TestChecker;
 
 /** */
-public class TestCheckerTest extends FrameworkPerDirectoryTest {
+public class TestCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public TestCheckerTest(List<File> testFiles) {
