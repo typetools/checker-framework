@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -39,7 +40,17 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
         return node;
     }
 
-    /** Add an exceptional successor. */
+    @Override
+    public Collection<Node> getNodes() {
+        return Collections.singletonList(getNode());
+    }
+
+    /**
+     * Add an exceptional successor.
+     *
+     * @param b the successor
+     * @param cause the exception type that leads to the given block
+     */
     public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
         Set<Block> blocks = exceptionalSuccessors.get(cause);
         if (blocks == null) {
@@ -56,6 +67,15 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
             return Collections.emptyMap();
         }
         return Collections.unmodifiableMap(exceptionalSuccessors);
+    }
+
+    @Override
+    public Collection<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>(super.getSuccessors());
+        for (Set<? extends Block> blocks : getExceptionalSuccessors().values()) {
+            result.addAll(blocks);
+        }
+        return result;
     }
 
     @Override
