@@ -1769,6 +1769,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
     protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
 
+    /** Create a new CFGVisualizer. */
     protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
