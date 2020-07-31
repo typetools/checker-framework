@@ -13,6 +13,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -186,6 +187,27 @@ public class ControlFlowGraph {
             result.addAll(b.getNodes());
         }
         return result;
+    }
+
+    /**
+     * Remove, from the values of {@code treeLookup}, nodes that do not appear in the control flow
+     * graph.
+     */
+    private void removeDeadNodesFromTreeLookup() {
+        List<Node> allNodes = getAllNodes();
+        // Remove references to dead code.
+        for (Set<Node> nodes : treeLookup.values()) {
+            for (Iterator<Node> i = nodes.iterator(); i.hasNext(); ) {
+                Node n = i.next();
+                if (!allNodes.contains(n)) {
+                    try {
+                        i.remove();
+                    } catch (UnsupportedOperationException e) {
+                        throw new Error("nodes.getClass()=" + nodes.getClass(), e);
+                    }
+                }
+            }
+        }
     }
 
     /**
