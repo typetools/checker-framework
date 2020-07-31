@@ -205,11 +205,7 @@ public class ControlFlowGraph {
             for (Iterator<Node> i2 = nodeSet.iterator(); i2.hasNext(); ) {
                 Node n = i2.next();
                 if (!allNodes.contains(n)) {
-                    try {
-                        i2.remove();
-                    } catch (UnsupportedOperationException e) {
-                        throw new Error("nodes.getClass()=" + nodeSet.getClass(), e);
-                    }
+                    i2.remove();
                 }
             }
             if (nodeSet.isEmpty()) {

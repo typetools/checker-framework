@@ -1461,14 +1461,7 @@ public abstract class GenericAnnotatedTypeFactory<
         List<Node> args;
         switch (tree.getKind()) {
             case METHOD_INVOCATION:
-                MethodInvocationNode miNode =
-                        getFirstNodeOfKindForTree(tree, MethodInvocationNode.class);
-                if (miNode == null) {
-                    throw new BugInCF(
-                            "No MethodInvocationNode within tree of kind %s:%n%s%nnodes = %s",
-                            tree.getKind(), tree, getNodesForTree(tree));
-                }
-                args = miNode.getArguments();
+                args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
                 break;
             case NEW_CLASS:
                 args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
