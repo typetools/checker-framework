@@ -157,4 +157,29 @@ public abstract class Node {
         }
         return transitiveOperands;
     }
+
+    /**
+     * Returns a verbose printed representation of this, useful for debugging.
+     *
+     * @return a printed representation of this
+     */
+    public static String repr() {
+        return String.format(
+                "%s [%s %s %s]",
+                n, n.getClass().getSimpleName(), n.hashCode(), System.identityHashCode(n));
+    }
+
+    /**
+     * Returns a verbose printed representation of a collection of nodes, useful for debugging..
+     *
+     * @param nodes a collection of nodes to format
+     * @return a printed representation of the given collection
+     */
+    public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
+        StringJoiner result = new StringJoiner(", ", "[", "]");
+        for (Node n : nodes) {
+            result.add(nodeRepr(n));
+        }
+        return result.toString();
+    }
 }

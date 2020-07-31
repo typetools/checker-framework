@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -490,32 +489,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns a verbose printed representation of a node, useful for debugging.
-     *
-     * @param n a node to format
-     * @return a printed representation of the given node
-     */
-    public static String nodeRepr(Node n) {
-        return String.format(
-                "%s [%s %s %s]",
-                n, n.getClass().getSimpleName(), n.hashCode(), System.identityHashCode(n));
-    }
-
-    /**
-     * Returns a verbose printed representation of a collection of nodes, useful for debugging..
-     *
-     * @param nodes a collection of nodes to format
-     * @return a printed representation of the given collection
-     */
-    public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
-        StringJoiner result = new StringJoiner(", ", "[", "]");
-        for (Node n : nodes) {
-            result.add(nodeRepr(n));
-        }
-        return result.toString();
-    }
-
-    /**
      * Returns a verbose printed representation of a map, useful for debugging. The map has the same
      * type as the {@code treeLookup} field.
      *
@@ -546,7 +519,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
             for (Node n : entry.getValue()) {
                 if (!nodeValues.containsKey(n)) {
-                    SystemUtil.sleep(100);
+                    SystemUtil.sleep(100); // without this, printf output is sometimes interleaved
                     throw new BugInCF(
                             "node %s is in treeLookup but not in nodeValues%n%s",
                             nodeRepr(n), repr());
