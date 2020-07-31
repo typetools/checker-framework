@@ -1,9 +1,12 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Implementation of a conditional basic block. */
@@ -88,6 +91,11 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     @Override
     public void setElseFlowRule(Store.FlowRule rule) {
         elseFlowRule = rule;
+    }
+
+    @Override
+    public Collection<Node> getNodes() {
+        return Collections.emptyList();
     }
 
     @Override

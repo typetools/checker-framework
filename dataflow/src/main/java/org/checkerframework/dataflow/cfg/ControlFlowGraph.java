@@ -175,6 +175,19 @@ public class ControlFlowGraph {
     }
 
     /**
+     * Returns all nodes in this control flow graph.
+     *
+     * @return all nodes in this control flow graph
+     */
+    public List<Node> getAllNodes() {
+        List<Node> result = new ArrayList<>();
+        for (Block b : getAllBlocks()) {
+            result.addAll(b.getNodes());
+        }
+        return result;
+    }
+
+    /**
      * Rreturns the list of all basic block in this control flow graph in reversed depth-first
      * postorder sequence. Blocks may appear more than once in the sequence.
      *

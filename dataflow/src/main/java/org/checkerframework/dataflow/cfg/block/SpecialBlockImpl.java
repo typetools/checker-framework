@@ -1,5 +1,9 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.checkerframework.dataflow.cfg.node.Node;
+
 public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock {
 
     /** The type of this special basic block. */
@@ -13,6 +17,11 @@ public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements Specia
     @Override
     public SpecialBlockType getSpecialType() {
         return specialType;
+    }
+
+    @Override
+    public Collection<Node> getNodes() {
+        return Collections.emptyList();
     }
 
     @Override
