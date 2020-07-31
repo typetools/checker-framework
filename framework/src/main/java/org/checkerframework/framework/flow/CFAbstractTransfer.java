@@ -37,28 +37,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
-import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
-import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.CaseNode;
-import org.checkerframework.dataflow.cfg.node.ClassNameNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
-import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
-import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
-import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -984,6 +963,29 @@ public abstract class CFAbstractTransfer<
 
         return new ConditionalTransferResult<>(
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+    }
+
+    @Override
+    public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitInstanceOf(node, in);
+        if (node.getTree().getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror type =
+                    analysis.atypeFactory.getAnnotatedType(node.getTree().getType());
+            AnnotatedTypeMirror exp =
+                    analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+            if (analysis.atypeFactory.getTypeHierarchy().isSubtype(type, exp)
+                    && !type.getAnnotations().equals(exp.getAnnotations())
+                    && !exp.getAnnotations().isEmpty()) {
+                FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), node.getTree().getExpression());
+                for (AnnotationMirror anno : type.getAnnotations()) {
+                    in.getRegularStore().insertOrRefine(receiver, anno);
+                }
+                return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+            }
+        }
+        return result;
     }
 
     /**
