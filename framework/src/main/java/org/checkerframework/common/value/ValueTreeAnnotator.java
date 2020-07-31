@@ -410,7 +410,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             Range range =
                     ValueCheckerUtils.getPossibleValues(
                             atypeFactory.getAnnotatedType(args.get(1)), atypeFactory);
-            type.replaceAnnotation(atypeFactory.createArrayLenRangeAnnotation(r));
+            type.replaceAnnotation(atypeFactory.createArrayLenRangeAnnotation(range));
         }
 
         if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
