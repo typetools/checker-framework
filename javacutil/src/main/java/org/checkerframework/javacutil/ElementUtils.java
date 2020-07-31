@@ -21,11 +21,9 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
@@ -199,7 +197,7 @@ public class ElementUtils {
         sb.append("(");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
                 i.hasNext(); ) {
-            sb.append(simpleTypeName(i.next().asType()));
+            sb.append(TypesUtils.simpleTypeName(i.next().asType()));
             if (i.hasNext()) {
                 sb.append(",");
             }
@@ -207,28 +205,6 @@ public class ElementUtils {
         sb.append(")");
 
         return sb.toString();
-    }
-
-    /**
-     * Returns the simple type name, without annotations.
-     *
-     * @param type a type
-     * @return the simple type name, without annotations
-     */
-    private static String simpleTypeName(TypeMirror type) {
-        switch (type.getKind()) {
-            case ARRAY:
-                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
-            case TYPEVAR:
-                return ((TypeVariable) type).asElement().getSimpleName().toString();
-            case DECLARED:
-                return ((DeclaredType) type).asElement().getSimpleName().toString();
-            default:
-                if (type.getKind().isPrimitive()) {
-                    return TypeAnnotationUtils.unannotatedType(type).toString();
-                }
-        }
-        throw new BugInCF("ElementUtils: unhandled type kind: %s, type: %s", type.getKind(), type);
     }
 
     /**
