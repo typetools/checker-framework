@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.objectconstruction.framework.FrameworkSupport;
 import org.checkerframework.checker.objectconstruction.qual.CalledMethods;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
@@ -19,6 +20,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * counting the number of framework build calls.
  */
 public class ObjectConstructionVisitor extends AccumulationVisitor {
+
+    public static final @CompilerMessageKey String FINALIZER_INVOCATION_INVALID =
+            "finalizer.invocation.invalid";
+
     /**
      * Constructor matching super.
      *
@@ -69,7 +74,7 @@ public class ObjectConstructionVisitor extends AccumulationVisitor {
                 }
             }
 
-            checker.reportError(node, "finalizer.invocation.invalid", missingMethods.toString());
+            checker.reportError(node, FINALIZER_INVOCATION_INVALID, missingMethods.toString());
         } else {
             super.reportMethodInvocabilityError(node, found, expected);
         }

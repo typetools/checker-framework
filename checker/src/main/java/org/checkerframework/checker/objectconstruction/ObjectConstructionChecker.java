@@ -1,7 +1,6 @@
 package org.checkerframework.checker.objectconstruction;
 
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -73,23 +72,6 @@ public class ObjectConstructionChecker extends BaseTypeChecker {
             checkers.add(ValueChecker.class);
         }
         return checkers;
-    }
-
-    /**
-     * Overridden because the messages.properties file isn't being loaded, for some reason. I think
-     * it has to do with relative paths? For whatever reason, this has to be hardcoded into the
-     * checker itself here for checkers that aren't part of the CF itself.
-     */
-    @Override
-    public Properties getMessagesProperties() {
-        Properties messages = super.getMessagesProperties();
-        messages.setProperty(
-                "finalizer.invocation.invalid",
-                "This finalizer cannot be invoked, because the following methods have not been called: %s\n");
-        messages.setProperty(
-                "predicate.invalid",
-                "An unparseable predicate was found in an annotation. Predicates must be produced by this grammar: S --> method name | (S) | S && S | S || S. The message from the evaluator was: %s \\n");
-        return messages;
     }
 
     @Override
