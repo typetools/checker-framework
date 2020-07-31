@@ -36,7 +36,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
         return result;
     }
 
-    /** Set a basic block as the successor of this block. */
+    /**
+     * Set a basic block as the successor of this block.
+     *
+     * @param successor the block that will be the successor of this
+     */
     public void setSuccessor(BlockImpl successor) {
         this.successor = successor;
         successor.addPredecessor(this);
