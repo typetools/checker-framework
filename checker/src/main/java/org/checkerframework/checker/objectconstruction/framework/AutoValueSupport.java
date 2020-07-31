@@ -63,7 +63,7 @@ public class AutoValueSupport implements FrameworkSupport {
         ExecutableElement element = TreeUtils.elementFromUse(tree);
         TypeMirror superclass = ((TypeElement) element.getEnclosingElement()).getSuperclass();
 
-        if (!superclass.getKind().equals(TypeKind.NONE)
+        if (superclass.getKind() != TypeKind.NONE
                 && FrameworkSupportUtils.hasAnnotation(
                         TypesUtils.getTypeElement(superclass), AutoValue.Builder.class)
                 && element.getParameters().size() > 0) {
@@ -148,7 +148,7 @@ public class AutoValueSupport implements FrameworkSupport {
                 handleToBuilderType(returnType, returnType.getUnderlyingType(), enclosingElement);
             }
 
-            if (!superclass.getKind().equals(TypeKind.NONE)) {
+            if (superclass.getKind() != TypeKind.NONE) {
                 TypeElement superElement = TypesUtils.getTypeElement(superclass);
                 if (FrameworkSupportUtils.hasAnnotation(superElement, AutoValue.class)) {
                     handleToBuilderType(returnType, returnType.getUnderlyingType(), superElement);
@@ -266,7 +266,7 @@ public class AutoValueSupport implements FrameworkSupport {
             return false;
         }
         TypeMirror returnType = ((ExecutableElement) member).getReturnType();
-        if (returnType.getKind().equals(TypeKind.VOID)) {
+        if (returnType.getKind() == TypeKind.VOID) {
             return false;
         }
         // shouldn't have a nullable return
@@ -366,7 +366,7 @@ public class AutoValueSupport implements FrameworkSupport {
      */
     private boolean isAutoValueBuilderSetter(Element member, Element builderElement) {
         TypeMirror retType = ((ExecutableElement) member).getReturnType();
-        if (retType.getKind().equals(TypeKind.TYPEVAR)) {
+        if (retType.getKind() == TypeKind.TYPEVAR) {
             // instantiate the type variable for the Builder class
             retType =
                     AnnotatedTypes.asMemberOf(
@@ -396,7 +396,7 @@ public class AutoValueSupport implements FrameworkSupport {
         Set<Element> overriddenMethods = new HashSet<>();
         for (Element t : supertypes) {
             for (Element member : t.getEnclosedElements()) {
-                if (!member.getKind().equals(ElementKind.METHOD)) {
+                if (member.getKind() != ElementKind.METHOD) {
                     continue;
                 }
                 Set<Modifier> modifiers = member.getModifiers();
