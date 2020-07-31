@@ -2,11 +2,11 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.flowexpression.FlowExpressionChecker;
 
-public class FlowExpressionCheckerTest extends FrameworkPerDirectoryTest {
+public class FlowExpressionCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public FlowExpressionCheckerTest(List<File> testFiles) {
