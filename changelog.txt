@@ -23,6 +23,9 @@ Renamed GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse to
 BaseTypeValidator#shouldCheckTopLevelDeclaredType to
 #shouldCheckTopLevelDeclaredOrPrimitiveType
 
+Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test classes.
+Use CheckerFrameworkPer(Directory/File)Test instead.
+
 ---------------------------------------------------------------------------
 
 Version 3.5.0, July 1, 2020

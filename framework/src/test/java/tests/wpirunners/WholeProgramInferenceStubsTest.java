@@ -2,7 +2,7 @@ package tests.wpirunners;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
@@ -16,7 +16,7 @@ import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
  * the expected ones. The errors on .java files must be ignored.
  */
 @Category(WholeProgramInferenceStubsTest.class)
-public class WholeProgramInferenceStubsTest extends FrameworkPerDirectoryTest {
+public class WholeProgramInferenceStubsTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public WholeProgramInferenceStubsTest(List<File> testFiles) {
