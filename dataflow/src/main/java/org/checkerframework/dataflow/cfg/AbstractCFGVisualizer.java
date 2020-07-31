@@ -117,12 +117,15 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Adds the successors of the current block to the work list and the visited blocks list.
+     * Outputs, to sbGraph, a visualization of a block's edges, but not the block itself. (The block
+     * itself is output elsewhere.) Also adds the successors of the block to the work list and the
+     * visited blocks list.
      *
      * @param cur the current block
-     * @param visited the set of blocks that have already been visited or are in the work list
-     * @param workList the queue of blocks to be processed
-     * @param sbGraph the {@link StringBuilder} to store the graph
+     * @param visited the set of blocks that have already been visited or are in the work list; side
+     *     effected by this method
+     * @param workList the queue of blocks to be processed; side effected by this method
+     * @param sbGraph the {@link StringBuilder} to store the graph; side effected by this method
      */
     protected void handleSuccessorsHelper(
             Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbGraph) {
@@ -489,15 +492,16 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a node, e.g., "Process order: 23". When a
-     * node have multiple process orders, a sequence of numbers will be returned, e.g., "Process
-     * order: 23,25".
+     * Given a list of process orders (integers), returns a string representation.
      *
-     * @param order the list of the process order to be processed
-     * @return the String representation of the process order of the node
+     * <p>Examples: "Process order: 23", "Process order: 23,25".
+     *
+     * @param order a list of process orders
+     * @return a String representation of the given process orders
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
-        return "Process order: " + order.toString().replaceAll("[\\[\\]]", "");
+        String orderString = order.toString();
+        return "Process order: " + orderString.substring(1, orderString.length() - 1);
     }
 
     /**
