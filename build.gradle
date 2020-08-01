@@ -220,8 +220,43 @@ allprojects {
             if (isJava8) {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
             }
-            // Don't use error-prone by default
-            options.errorprone.enabled = false
+
+            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // All the classes in checker-qual are also in checker, so they are checked.
+            // TODO: enable Error Prone on test classes.
+            if (name.is('compileJava') && !project.name.startsWith('checker-qual')){
+                println "${project.name} ${name}"
+                // Error Prone must be available in the annotation processor path
+                options.annotationProcessorPath = configurations.errorprone
+                // Enable Error Prone
+                options.errorprone.enabled = true
+                options.errorprone.disableWarningsInGeneratedCode = true
+                options.errorprone.errorproneArgs = [
+                        // Many compiler classes are interned.
+                        '-Xep:ReferenceEquality:OFF',
+                        // These might be worth fixing.
+                        '-Xep:DefaultCharset:OFF',
+                        // Not useful to suggest Splitter; maybe clean up.
+                        '-Xep:StringSplitter:OFF',
+                        // Too broad, rejects seemingly-correct code.
+                        '-Xep:EqualsGetClass:OFF',
+                        // Not a real problem
+                        '-Xep:MixedMutabilityReturnType:OFF',
+                        // Don't want to add a dependency to ErrorProne.
+                        '-Xep:AnnotateFormatMethod:OFF',
+                        // Warns for every use of "@checker_framework.manual"
+                        '-Xep:InvalidBlockTag:OFF',
+                        // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
+                        '-Xep:InlineFormatString:OFF',
+                        // -Werror halts the build if Error Prone issues a warning, which ensures that
+                        // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
+                        // stops as soon as it issues one warning, rather than outputting them all.
+                        // https://github.com/google/error-prone/issues/436
+                        '-Werror',
+                ]
+            } else {
+                options.errorprone.enabled = false
+            }
         }
     }
 }
@@ -530,7 +565,7 @@ subprojects {
         // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
         // If you update this:
         //  * Temporarily comment out "-Werror" elsewhere in this file
-        //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
+        //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
@@ -763,44 +798,6 @@ subprojects {
                 }
 
             }
-        }
-
-        // Create a runErrorProne task.
-        tasks.create(name: 'runErrorProne', type: JavaCompile, group: 'Verification') {
-            description 'Run the error-prone compiler on the main sources'
-
-            source = sourceSets.main.java.asFileTree
-            classpath = sourceSets.main.compileClasspath.asFileTree
-            destinationDir = new File("${buildDir}", 'errorprone')
-
-            // Error Prone must be available in the annotation processor path
-            options.annotationProcessorPath = configurations.errorprone
-            // Enable Error Prone
-            options.errorprone.enabled = true
-            options.errorprone.disableWarningsInGeneratedCode = true
-            options.errorprone.errorproneArgs = [
-                    // Many compiler classes are interned.
-                    '-Xep:ReferenceEquality:OFF',
-                    // These might be worth fixing.
-                    '-Xep:DefaultCharset:OFF',
-                    // Not useful to suggest Splitter; maybe clean up.
-                    '-Xep:StringSplitter:OFF',
-                    // Too broad, rejects seemingly-correct code.
-                    '-Xep:EqualsGetClass:OFF',
-                    // Not a real problem
-                    '-Xep:MixedMutabilityReturnType:OFF',
-                    // Don't want to add a dependency to ErrorProne.
-                    '-Xep:AnnotateFormatMethod:OFF',
-                    // Warns for every use of "@checker_framework.manual"
-                    '-Xep:InvalidBlockTag:OFF',
-                    // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
-                    '-Xep:InlineFormatString:OFF',
-                    // -Werror halts the build if Error Prone issues a warning, which ensures that
-                    // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
-                    // stops as soon as it one warning, rather than outputting them all.
-                    // https://github.com/google/error-prone/issues/436
-                    '-Werror',
-            ]
         }
 
         // Create a nonJunitTests task per project
