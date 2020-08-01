@@ -15,9 +15,6 @@ source "$SCRIPTDIR"/build.sh
 # Code style and formatting
 ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
 
-# Run error-prone
-./gradlew runErrorProne --console=plain --warning-mode=all --no-daemon
-
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
