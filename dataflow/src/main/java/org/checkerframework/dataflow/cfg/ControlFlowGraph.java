@@ -105,6 +105,8 @@ public class ControlFlowGraph {
         this.returnNodes = returnNodes;
         this.declaredClasses = declaredClasses;
         this.declaredLambdas = declaredLambdas;
+        removeDeadNodesFromTreeLookup();
+        checkRep();
     }
 
     /**
