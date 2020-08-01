@@ -40,6 +40,11 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
     }
 
     @Override
+    public List<Node> getNodes() {
+        return getContents();
+    }
+
+    @Override
     public @Nullable BlockImpl getRegularSuccessor() {
         return successor;
     }

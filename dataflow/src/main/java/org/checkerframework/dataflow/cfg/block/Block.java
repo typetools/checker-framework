@@ -1,6 +1,8 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.List;
 import java.util.Set;
+import org.checkerframework.dataflow.cfg.node.Node;
 
 /** Represents a basic block in a control flow graph. */
 public interface Block {
@@ -41,4 +43,18 @@ public interface Block {
      * @return the predecessors of this basic block
      */
     Set<Block> getPredecessors();
+
+    /**
+     * Returns the successors of this basic block.
+     *
+     * @return the successors of this basic block
+     */
+    Set<Block> getSuccessors();
+
+    /**
+     * Returns the nodes contained within this basic block.
+     *
+     * @return the nodes contained within this basic block
+     */
+    List<Node> getNodes();
 }
