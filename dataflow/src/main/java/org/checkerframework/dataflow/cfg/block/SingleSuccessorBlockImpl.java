@@ -1,9 +1,9 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -30,8 +30,8 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     }
 
     @Override
-    public Collection<Block> getSuccessors() {
-        List<Block> result = new ArrayList<Block>();
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>();
         if (successor != null) {
             result.add(successor);
         }
@@ -49,7 +49,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     }
 
     @Override
-    public Collection<Node> getNodes() {
+    public List<Node> getNodes() {
         return Collections.emptyList();
     }
 

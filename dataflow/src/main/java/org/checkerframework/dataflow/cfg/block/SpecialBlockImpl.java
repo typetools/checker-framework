@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /** The implementation of a {@link SpecialBlock}. */
@@ -21,7 +21,7 @@ public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements Specia
     }
 
     @Override
-    public Collection<Node> getNodes() {
+    public List<Node> getNodes() {
         return Collections.emptyList();
     }
 

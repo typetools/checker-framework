@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import org.checkerframework.dataflow.cfg.node.Node;
 
@@ -45,16 +45,16 @@ public interface Block {
     Set<Block> getPredecessors();
 
     /**
-     * Returns all the successors of this basic block.
+     * Returns the successors of this basic block.
      *
-     * @return all the successors of this basic block
+     * @return the successors of this basic block
      */
-    Collection<Block> getSuccessors();
+    Set<Block> getSuccessors();
 
     /**
      * Returns the nodes contained within this basic block.
      *
      * @return the nodes contained within this basic block
      */
-    Collection<Node> getNodes();
+    List<Node> getNodes();
 }
