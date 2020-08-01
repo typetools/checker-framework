@@ -536,8 +536,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
             for (Node n : entry.getValue()) {
                 if (!nodeValues.containsKey(n)) {
-                    throw new BugInCF(
-                            "node %s is in treeLookup but not in nodeValues%n%s", n.repr(), repr());
+                    throw new BugInCF("node %s is in treeLookup but not in nodeValues", n);
                 }
             }
         }
