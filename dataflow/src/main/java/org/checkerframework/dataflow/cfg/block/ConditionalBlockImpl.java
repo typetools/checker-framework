@@ -1,7 +1,12 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Implementation of a conditional basic block. */
@@ -61,6 +66,14 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     }
 
     @Override
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>(2);
+        result.add(getThenSuccessor());
+        result.add(getElseSuccessor());
+        return result;
+    }
+
+    @Override
     public Store.FlowRule getThenFlowRule() {
         return thenFlowRule;
     }
@@ -78,6 +91,11 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     @Override
     public void setElseFlowRule(Store.FlowRule rule) {
         elseFlowRule = rule;
+    }
+
+    @Override
+    public List<Node> getNodes() {
+        return Collections.emptyList();
     }
 
     @Override
