@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -367,21 +368,18 @@ public class StubGenerator {
     }
 
     /**
-     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}.
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...},
+     * without surrounding square brackets as the default representation has.
      *
-     * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
+     * @param lst a list to format
+     * @return a string representation of the list, without surrounding square brackets
      */
     private String formatList(List<?> lst) {
-        StringBuilder sb = new StringBuilder();
-        boolean isFirst = true;
+        StringJoiner sj = new StringJoiner(", ");
         for (Object o : lst) {
-            if (!isFirst) {
-                sb.append(", ");
-            }
-            sb.append(o);
-            isFirst = false;
+            sj.add(o.toString());
         }
-        return sb.toString();
+        return sj.toString();
     }
 
     /** Returns true if the element is public or protected element. */

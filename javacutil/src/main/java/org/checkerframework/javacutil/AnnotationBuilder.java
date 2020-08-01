@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -660,19 +661,12 @@ public class AnnotationBuilder {
             } else if (value instanceof Character) {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
-                StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
-                sb.append('{');
-                boolean isFirst = true;
+                StringJoiner sj = new StringJoiner(", ", "{", "}");
                 for (Object o : list) {
-                    if (!isFirst) {
-                        sb.append(", ");
-                    }
-                    isFirst = false;
-                    sb.append(Objects.toString(o));
+                    sj.add(Objects.toString(o));
                 }
-                sb.append('}');
-                toStringVal = sb.toString();
+                toStringVal = sj.toString();
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

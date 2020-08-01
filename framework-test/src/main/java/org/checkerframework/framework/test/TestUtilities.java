@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.tools.Diagnostic;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -253,19 +254,17 @@ public class TestUtilities {
         return actualDiagnosticsStr;
     }
 
+    /**
+     * Return the file absolute pathnames, separated by commas.
+     *
+     * @param javaFiles a list of Java files
+     * @return the file absolute pathnames, separated by commas
+     */
     public static String summarizeSourceFiles(List<File> javaFiles) {
-        StringBuilder listStrBuilder = new StringBuilder();
-
-        boolean first = true;
+        StringJoiner listStrBuilder = new StringJoiner(", ");
         for (File file : javaFiles) {
-            if (first) {
-                first = false;
-            } else {
-                listStrBuilder.append(", ");
-            }
-            listStrBuilder.append(file.getAbsolutePath());
+            listStrBuilder.add(file.getAbsolutePath());
         }
-
         return listStrBuilder.toString();
     }
 

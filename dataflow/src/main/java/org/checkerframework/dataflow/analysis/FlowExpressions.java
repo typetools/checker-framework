@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -1133,16 +1134,11 @@ public class FlowExpressions {
             result.append(".");
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
-            result.append("(");
-            boolean first = true;
+            StringJoiner params = new StringJoiner(", ", "(", ")");
             for (Receiver p : parameters) {
-                if (!first) {
-                    result.append(", ");
-                }
-                result.append(p.toString());
-                first = false;
+                params.add(p.toString());
             }
-            result.append(")");
+            result.append(params);
             return result.toString();
         }
     }
@@ -1489,16 +1485,11 @@ public class FlowExpressions {
                 }
             }
             if (!initializers.isEmpty()) {
-                boolean needComma = false;
-                sb.append(" {");
+                StringJoiner initString = new StringJoiner(", ", " {", "}");
                 for (Receiver init : initializers) {
-                    if (needComma) {
-                        sb.append(", ");
-                    }
-                    sb.append(init);
-                    needComma = true;
+                    initString.add(init.toString());
                 }
-                sb.append("}");
+                sb.append(initString);
             }
             return sb.toString();
         }

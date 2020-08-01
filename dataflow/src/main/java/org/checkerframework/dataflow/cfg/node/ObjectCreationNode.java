@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -64,23 +65,15 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("new " + constructor + "(");
-        boolean needComma = false;
+        StringJoiner sj = new StringJoiner(", ", "new " + constructor + "(", ")");
         for (Node arg : arguments) {
-            if (needComma) {
-                sb.append(", ");
-            }
-            sb.append(arg);
-            needComma = true;
+            sj.add(arg.toString());
         }
-        sb.append(")");
-        if (classbody != null) {
-            // TODO: maybe this can be done nicer...
-            sb.append(" ");
-            sb.append(classbody.toString());
+        if (classbody == null) {
+            return sj.toString();
+        } else {
+            return sj.toString() + " " + classbody.toString();
         }
-        return sb.toString();
     }
 
     @Override

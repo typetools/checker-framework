@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
@@ -84,19 +85,11 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(target);
-        sb.append("(");
-        boolean needComma = false;
+        StringJoiner sj = new StringJoiner(", ", target + "(", ")");
         for (Node arg : arguments) {
-            if (needComma) {
-                sb.append(", ");
-            }
-            sb.append(arg);
-            needComma = true;
+            sj.add(arg.toString());
         }
-        sb.append(")");
-        return sb.toString();
+        return sj.toString();
     }
 
     @Override
