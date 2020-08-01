@@ -19,7 +19,7 @@ class ValueMethodIdentifier {
     private final List<ExecutableElement> mathMinMethod;
     /** The {@code java.lang.Math#max()} methods. */
     private final List<ExecutableElement> mathMaxMethod;
-    /** Arrays.copyOf() method. */
+    /** Arrays.copyOf() methods. */
     private final List<ExecutableElement> copyOfMethod;
 
     public ValueMethodIdentifier(ProcessingEnvironment processingEnv) {
@@ -63,7 +63,13 @@ class ValueMethodIdentifier {
         return method.equals(endsWithMethod);
     }
 
-    /** Determines whether a tree is an invocation of the {@code Arrays.copyOf()} method. */
+    /**
+     * Determines whether a tree is an invocation of the {@code Arrays.copyOf()} method.
+     *
+     * @param tree tree to check
+     * @param processingEnv the processing environment
+     * @return true iff the argument is an invocation of {@code Arrays.copyOf()} method.
+     */
     public boolean isArraysCopyOfInvocation(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, copyOfMethod, processingEnv);
     }
