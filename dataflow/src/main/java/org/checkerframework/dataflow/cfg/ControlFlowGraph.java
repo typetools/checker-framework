@@ -311,4 +311,21 @@ public class ControlFlowGraph {
         String stringGraph = (String) res.get("stringGraph");
         return stringGraph == null ? super.toString() : stringGraph;
     }
+
+    /** Checks representation invariants on this. */
+    public void checkRep() {
+        List<Node> allNodes = getAllNodes();
+
+        // Require that each node in treeLookup exists in this ControlFlowGraph
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            for (Node n : entry.getValue()) {
+                if (!allNodes.contains(n)) {
+                    SystemUtil.sleep(100);
+                    throw new BugInCF(
+                            "node %s is in treeLookup but not in the CFG%nnode.getTree()=%s",
+                            n, n.getTree());
+                }
+            }
+        }
+    }
 }
