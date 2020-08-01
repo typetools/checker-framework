@@ -30,6 +30,8 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A control flow graph (CFG for short) of a single method.
