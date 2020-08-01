@@ -470,12 +470,12 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Generate the String representation of an edge.
      *
-     * @param sId the ID of current block
-     * @param eId the ID of successor block
+     * @param sId a representation of the current block, such as its ID
+     * @param eId a representation of the successor block, such as its ID
      * @param flowRule the content of the edge
      * @return the String representation of the edge
      */
-    protected abstract String addEdge(long sId, long eId, String flowRule);
+    protected abstract String addEdge(Object sId, Object eId, String flowRule);
 
     /**
      * Return the header of the generated graph.

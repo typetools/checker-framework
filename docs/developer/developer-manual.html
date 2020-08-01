@@ -26,7 +26,10 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#Directory_structure">Directory structure</a></li>
       <li><a href="#Build_tasks">Build tasks</a></li>
       <li><a href="#tests">Testing the Checker Framework</a></li>
-      <li><a href="#Code_style">Code style</a></li>
+      <li><a href="#Code_style">Code style</a>
+        <ul>
+          <li><a href="#repr_method">The <code>repr()</code> method</a></li>
+        </ul></li>
       <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
@@ -155,6 +158,19 @@ version control system, such as by running <code>git annotate <em>filename</em><
 <p>
   Every class, method, and field (even private ones) must have a
   descriptive Javadoc comment.
+</p>
+
+
+<h3 id="repr_method">The <code>repr()</code> method</h3>
+
+<p>
+  Some classes contain a <code>repr()</code> method, for use during
+  debugging or logging.  It returns a string that shows the internal
+  representation of the receiver.  It is like <code>toString()</code> in
+  that it returns a string, but its result gives lower-level, and more
+  verbose details.  A client of the class can decide whether to see the
+  more concise and high-level <code>toString()</code> or the more verbose
+  and low-level <code>repr()</code>, or both.
 </p>
 
 
