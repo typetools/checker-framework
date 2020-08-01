@@ -335,7 +335,7 @@ public class ControlFlowGraph {
         for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
             for (Node n : entry.getValue()) {
                 if (!allNodes.contains(n)) {
-                    SystemUtil.sleep(100);
+                    SystemUtil.sleep(100); // without this, printf output is interleaved
                     throw new BugInCF(
                             "node %s is in treeLookup but not in the CFG%nnode.getTree()=%s",
                             n, n.getTree());
