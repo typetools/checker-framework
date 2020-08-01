@@ -41,7 +41,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     protected boolean isValid = true;
 
     /** Should the primary annotation on the top level type be checked? */
-    protected boolean checkTopLevelDeclaredType = true;
+    protected boolean checkTopLevelDeclaredOrPrimitiveType = true;
 
     /** BaseTypeChecker. */
     protected final BaseTypeChecker checker;
@@ -80,22 +80,27 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             return false;
         }
         this.isValid = true;
-        this.checkTopLevelDeclaredType = shouldCheckTopLevelDeclaredType(type, tree);
+        this.checkTopLevelDeclaredOrPrimitiveType =
+                shouldCheckTopLevelDeclaredOrPrimitiveType(type, tree);
         visit(type, tree);
         return this.isValid;
     }
 
     /**
-     * Should the top-level declared type be checked?
+     * Should the top-level declared or primitive type be checked?
+     *
+     * <p>If {@code type} is not a declared or primitive type, then this method returns true.
      *
      * <p>Top-level type is not checked if tree is a local variable or an expression tree.
      *
      * @param type AnnotatedTypeMirror being validated
      * @param tree a Tree whose type is {@code type}
-     * @return whether or not the top-level type should be checked
+     * @return whether or not the top-level type should be checked, if {@code type} is a declared or
+     *     primitive type.
      */
-    protected boolean shouldCheckTopLevelDeclaredType(AnnotatedTypeMirror type, Tree tree) {
-        if (type.getKind() != TypeKind.DECLARED) {
+    protected boolean shouldCheckTopLevelDeclaredOrPrimitiveType(
+            AnnotatedTypeMirror type, Tree tree) {
+        if (type.getKind() != TypeKind.DECLARED && !type.getKind().isPrimitive()) {
             return true;
         }
         return !TreeUtils.isLocalVariable(tree)
@@ -253,7 +258,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
-        if (checkTopLevelDeclaredType && !skipChecks) {
+        if (checkTopLevelDeclaredOrPrimitiveType && !skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
 
@@ -270,7 +275,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
         // Set checkTopLevelDeclaredType to true, because the next time visitDeclared is called,
         // the type isn't the top level, so always do the check.
-        checkTopLevelDeclaredType = true;
+        checkTopLevelDeclaredOrPrimitiveType = true;
 
         /*
          * Try to reconstruct the ParameterizedTypeTree from the given tree.
@@ -403,7 +408,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
-        if (checker.shouldSkipUses(type.getUnderlyingType().toString())) {
+        if (!checkTopLevelDeclaredOrPrimitiveType
+                || checker.shouldSkipUses(type.getUnderlyingType().toString())) {
             return super.visitPrimitive(type, tree);
         }
 
