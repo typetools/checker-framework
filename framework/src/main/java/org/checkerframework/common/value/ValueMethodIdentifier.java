@@ -22,6 +22,7 @@ class ValueMethodIdentifier {
     /** Arrays.copyOf() methods. */
     private final List<ExecutableElement> copyOfMethod;
 
+    /** Initialize elements with methods that have special handling in the value checker */
     public ValueMethodIdentifier(ProcessingEnvironment processingEnv) {
         lengthMethod = TreeUtils.getMethod("java.lang.String", "length", 0, processingEnv);
         startsWithMethod = TreeUtils.getMethod("java.lang.String", "startsWith", 1, processingEnv);
