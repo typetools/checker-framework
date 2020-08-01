@@ -1468,6 +1468,10 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
+        if (getNodesForTree(tree) == null) {
+            return null;
+        }
+
         List<Node> args;
         switch (tree.getKind()) {
             case METHOD_INVOCATION:
