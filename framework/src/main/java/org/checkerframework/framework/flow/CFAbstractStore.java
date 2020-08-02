@@ -1024,11 +1024,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        StringBuilder sbVisualize = new StringBuilder();
-        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getSimpleName()));
-        sbVisualize.append(internalVisualize(castedViz));
-        sbVisualize.append(castedViz.visualizeStoreFooter());
-        return sbVisualize.toString();
+        String header = castedViz.visualizeStoreHeader(this.getClass().getSimpleName());
+        String internal = internalVisualize(castedViz);
+        String footer = castedViz.visualizeStoreFooter();
+        if (internal.trim().isEmpty()) {
+            return header.replaceAll("\\s+$", "") + footer.replaceAll("^\\s+", "");
+        } else {
+            return header + internal + footer;
+        }
     }
 
     /**
