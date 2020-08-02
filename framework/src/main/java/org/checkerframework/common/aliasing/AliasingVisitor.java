@@ -1,6 +1,8 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -17,8 +19,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
+import org.checkerframework.common.aliasing.qual.Linear;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
+import org.checkerframework.common.aliasing.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -159,7 +163,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
         super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
-        if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
+        if (atypeFactory.getAnnotatedType(valueExp).hasAnnotation(Unusable.class)) {
+            checkLegality(valueExp);
+        } else if (atypeFactory.getAnnotatedType(valueExp).hasAnnotation(Linear.class)) {
+            if (canBeLinearLeaked(valueExp)) {
+                checker.reportError(valueExp, "linear.leaked");
+            }
+        } else if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
             // If an assignment occurs inside a constructor with
             // result type @Unique, it will invalidate the @Unique property
             // by using the "this" reference.
@@ -177,7 +187,6 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
-
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
         TreePath path = visitorState.getPath();
@@ -186,7 +195,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         }
         Kind visitorLeafKind = path.getLeaf().getKind();
 
-        if (visitorLeafKind == Kind.NEW_CLASS || visitorLeafKind == Kind.METHOD_INVOCATION) {
+        if (valueType.hasAnnotation(Unusable.class)) {
+            checkLegality((ExpressionTree) valueTree);
+        } else if (valueType.hasAnnotation(Linear.class)) {
+            if (canBeLinearLeaked(valueTree)) {
+                checker.reportError(valueTree, "linear.leaked");
+            }
+        } else if (visitorLeafKind == Kind.NEW_CLASS || visitorLeafKind == Kind.METHOD_INVOCATION) {
             // Handling pseudo-assignments
             if (canBeLeaked(valueTree)) {
                 Kind parentKind = visitorState.getPath().getParentPath().getLeaf().getKind();
@@ -286,6 +301,22 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     /**
+     * Returns true if {@code exp} has type {@code @Linear} and is not a method invocation nor a new
+     * class expression. It checks whether the tree expression is unique by either checking for an
+     * explicit annotation or checking whether the class of the tree expression {@code exp} has type
+     * {@code @Linear}
+     *
+     * @param exp the Tree to check
+     */
+    private boolean canBeLinearLeaked(Tree exp) {
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
+        boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
+        boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
+        boolean isLinearType = isLinearClass(type) || type.hasExplicitAnnotation(Linear.class);
+        return isLinearType && !isMethodInvocation && !isNewClass;
+    }
+
+    /**
      * Return true if the class declaration for annotated type {@code type} has annotation
      * {@code @Unique}.
      *
@@ -307,6 +338,28 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         return false;
     }
 
+    /**
+     * Return true if the class declaration for annotated type {@code type} has annotation
+     * {@code @Linear}.
+     *
+     * @param type the annotated type whose class must be checked
+     * @return boolean true if class is unique and false otherwise
+     */
+    private boolean isLinearClass(AnnotatedTypeMirror type) {
+        Element el = types.asElement(type.getUnderlyingType());
+        if (el == null) {
+            return false;
+        }
+        Set<AnnotationMirror> annoMirrors = atypeFactory.getDeclAnnotations(el);
+        if (annoMirrors == null) {
+            return false;
+        }
+        if (AnnotationUtils.containsSameByClass(annoMirrors, Linear.class)) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean isInUniqueConstructor() {
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
         if (enclosingMethod == null) {
@@ -317,5 +370,51 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                         .getAnnotatedType(enclosingMethod)
                         .getReturnType()
                         .hasAnnotation(Unique.class);
+    }
+
+    /**
+     * Return true if the node represents a reference to a local variable or parameter.
+     *
+     * <p>Only local variables and method parameters can be of {@link Linear} or {@link Unusable}
+     * types.
+     *
+     * @param node a tree
+     * @return true if node is a local variable or parameter reference
+     */
+    static boolean isLocalVarOrParam(ExpressionTree node) {
+        Element elem = TreeUtils.elementFromUse(node);
+        if (elem == null) return false;
+        switch (elem.getKind()) {
+            case PARAMETER:
+            case LOCAL_VARIABLE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Issue an error if the node represents a reference that has been used up.
+     *
+     * @param node whose legality is being checked
+     */
+    private void checkLegality(ExpressionTree node) {
+        if (isLocalVarOrParam(node)) {
+            if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
+                checker.reportError(node, "use.unsafe", TreeUtils.elementFromUse(node));
+            }
+        }
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+        checkLegality(node);
+        return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree node, Void p) {
+        checkLegality(node);
+        return super.visitMemberSelect(node, p);
     }
 }

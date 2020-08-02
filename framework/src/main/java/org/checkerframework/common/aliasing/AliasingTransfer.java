@@ -3,11 +3,17 @@ package org.checkerframework.common.aliasing;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
+import org.checkerframework.common.aliasing.qual.Linear;
+import org.checkerframework.common.aliasing.qual.MaybeAliased;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
+import org.checkerframework.common.aliasing.qual.Unusable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -25,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -46,9 +53,17 @@ public class AliasingTransfer extends CFTransfer {
 
     private AnnotatedTypeFactory factory;
 
+    /** The @{@link Unusable} annotation. */
+    protected final AnnotationMirror UNUSABLE;
+    /** The @{@link MaybeAliased} annotation. */
+    protected final AnnotationMirror MAYBE_ALIASED;
+
     public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         factory = analysis.getTypeFactory();
+        Elements elements = factory.getElementUtils();
+        UNUSABLE = AnnotationBuilder.fromClass(elements, Unusable.class);
+        MAYBE_ALIASED = AnnotationBuilder.fromClass(elements, MaybeAliased.class);
     }
 
     /**
@@ -164,6 +179,30 @@ public class AliasingTransfer extends CFTransfer {
         }
         // If parent is a statement, processPostconditions will handle the
         // pseudo-assignments.
-        return super.visitMethodInvocation(n, in);
+
+        TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
+        Tree receiverTree = n.getTarget().getReceiver().getTree();
+        if (receiverTree != null) {
+            AnnotatedTypeMirror type = factory.getAnnotatedType(receiverTree);
+            Set<AnnotationMirror> x = type.getAnnotations();
+            if (type.hasAnnotation(Linear.class)) {
+                FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), n.getTarget().getReceiver());
+                in.getRegularStore().insertOrRefine(receiver, UNUSABLE);
+                return new RegularTransferResult<>(
+                        analysis.createSingleAnnotationValue(
+                                MAYBE_ALIASED, result.getResultValue().getUnderlyingType()),
+                        in.getRegularStore());
+            }
+            if (type.hasAnnotation(Unusable.class)) {
+                FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), n.getTarget().getReceiver());
+                in.getRegularStore().insertOrRefine(receiver, UNUSABLE);
+                return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+            }
+        }
+        return result;
     }
 }
