@@ -43,7 +43,7 @@ public @interface UpperBoundFor {
      * Returns {@link Class}es that should get an upper bound. The meta-annotated annotation is the
      * upper bound.
      *
-     * @return {@link Class}es that get an upper bound.
+     * @return {@link Class}es that get an upper bound
      */
     Class<?>[] types() default {};
 }

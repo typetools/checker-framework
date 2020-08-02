@@ -130,8 +130,8 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    protected String addEdge(long sId, long eId, String flowRule) {
-        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];";
+    protected String addEdge(Object sId, Object eId, String flowRule) {
+        return "    " + format(sId) + " -> " + format(eId) + " [label=\"" + flowRule + "\"];";
     }
 
     @Override

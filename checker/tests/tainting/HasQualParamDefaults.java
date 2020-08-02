@@ -44,6 +44,31 @@ public class HasQualParamDefaults {
             someString = s;
             return s;
         }
+
+        void initializeLocalTainted(@Tainted Buffer b) {
+            Buffer local = b;
+            @Tainted Buffer copy1 = local;
+            // :: error: (assignment.type.incompatible)
+            @Untainted Buffer copy2 = local;
+        }
+
+        void initializeLocalUntainted(@Untainted Buffer b) {
+            Buffer local = b;
+            @Untainted Buffer copy1 = local;
+            // :: error: (assignment.type.incompatible)
+            @Tainted Buffer copy2 = local;
+        }
+
+        void initializeLocalPolyTainted(@PolyTainted Buffer b) {
+            Buffer local = b;
+            @PolyTainted Buffer copy = local;
+        }
+
+        void noInitializer(@Untainted Buffer b) {
+            Buffer local;
+            // :: error: (assignment.type.incompatible)
+            local = b;
+        }
     }
 
     class Use {
@@ -83,4 +108,49 @@ public class HasQualParamDefaults {
             @PolyTainted Buffer b3 = new @PolyTainted Buffer();
         }
     }
+
+    // For classes with @HasQualifierParameter, different defaulting rules are applied on that type
+    // inside the class body and outside the class body, so local variables need to be tested
+    // outside the class as well.
+    class LocalVars {
+        void initializeLocalTainted(@Tainted Buffer b) {
+            Buffer local = b;
+            @Tainted Buffer copy1 = local;
+            // :: error: (assignment.type.incompatible)
+            @Untainted Buffer copy2 = local;
+        }
+
+        void initializeLocalUntainted(@Untainted Buffer b) {
+            Buffer local = b;
+            @Untainted Buffer copy1 = local;
+            // :: error: (assignment.type.incompatible)
+            @Tainted Buffer copy2 = local;
+        }
+
+        void initializeLocalPolyTainted(@PolyTainted Buffer b) {
+            Buffer local = b;
+            @PolyTainted Buffer copy = local;
+        }
+
+        void noInitializer(@Untainted Buffer b) {
+            Buffer local;
+            // :: error: (assignment.type.incompatible)
+            local = b;
+        }
+
+        // These next two cases test circular dependencies. Calculating the type of a local variable
+        // looks at the type of initializer, but if the type of the initializer depends on the type
+        // of the variable, then infinite recursion could occur.
+
+        void testTypeVariableInference() {
+            GenericWithQualParam<String> set = new GenericWithQualParam<>();
+        }
+
+        void testVariableInOwnInitializer() {
+            Buffer b = (b = null);
+        }
+    }
+
+    @HasQualifierParameter(Tainted.class)
+    static class GenericWithQualParam<T> {}
 }
