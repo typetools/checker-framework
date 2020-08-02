@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 public class ReferenceInfoUtil {
 
@@ -159,7 +159,7 @@ public class ReferenceInfoUtil {
 
     public static String positionCompareStr(
             TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 "type = " + p1.type + ", " + p2.type,
                 "offset = " + p1.offset + ", " + p2.offset,
                 "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset,
@@ -234,7 +234,7 @@ class ComparisonException extends RuntimeException {
     }
 
     public String toString() {
-        return PluginUtil.joinLines(
+        return SystemUtil.joinLines(
                 super.toString(),
                 "\tExpected: "
                         + expected.size()
