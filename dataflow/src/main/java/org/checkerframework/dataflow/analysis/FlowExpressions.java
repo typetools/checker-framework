@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -49,6 +48,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -1134,11 +1134,9 @@ public class FlowExpressions {
             result.append(".");
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
-            StringJoiner params = new StringJoiner(", ", "(", ")");
-            for (Receiver p : parameters) {
-                params.add(p.toString());
-            }
-            result.append(params);
+            result.append("(");
+            result.append(SystemUtil.join(", ", parameters));
+            result.append(")");
             return result.toString();
         }
     }
@@ -1485,11 +1483,9 @@ public class FlowExpressions {
                 }
             }
             if (!initializers.isEmpty()) {
-                StringJoiner initString = new StringJoiner(", ", " {", "}");
-                for (Receiver init : initializers) {
-                    initString.add(init.toString());
-                }
-                sb.append(initString);
+                sb.append(" {");
+                sb.append(SystemUtil.join(", ", initializers));
+                sb.append("}");
             }
             return sb.toString();
         }

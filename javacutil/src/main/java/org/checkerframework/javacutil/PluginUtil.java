@@ -16,12 +16,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.UtilPlume;
 
 /**
  * This file contains basic utility functions that should be reused to create a command-line call to
@@ -153,7 +152,13 @@ public class PluginUtil {
         }
     }
 
-    /** Return a list of Strings, one per line of the file. */
+    /**
+     * Return a list of Strings, one per line of the file.
+     *
+     * @param argFile argument file
+     * @return a list of Strings, one per line of the file
+     * @throws IOException when reading the argFile
+     */
     public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
@@ -175,15 +180,11 @@ public class PluginUtil {
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
-    public static <T> String join(final CharSequence delimiter, final T[] objs) {
+    public static <T> String join(CharSequence delimiter, T @Nullable [] objs) {
         if (objs == null) {
             return "null";
         }
-        final StringJoiner sb = new StringJoiner(delimiter);
-        for (final Object obj : objs) {
-            sb.add(Objects.toString(obj));
-        }
-        return sb.toString();
+        return UtilPlume.join(delimiter, objs);
     }
 
     /**
@@ -198,11 +199,7 @@ public class PluginUtil {
         if (values == null) {
             return "null";
         }
-        StringJoiner sb = new StringJoiner(delimiter);
-        for (Object value : values) {
-            sb.add(Objects.toString(value));
-        }
-        return sb.toString();
+        return UtilPlume.join(delimiter, values);
     }
 
     /**
@@ -215,7 +212,7 @@ public class PluginUtil {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> String joinLines(T... a) {
+    public static <T> String joinLines(T @Nullable ... a) {
         return join(LINE_SEPARATOR, a);
     }
 
@@ -226,7 +223,7 @@ public class PluginUtil {
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
      */
-    public static String joinLines(Iterable<? extends Object> v) {
+    public static String joinLines(@Nullable Iterable<? extends Object> v) {
         return join(LINE_SEPARATOR, v);
     }
 
@@ -353,6 +350,10 @@ public class PluginUtil {
     /**
      * Return its boolean value if the system property is set. Return defaultValue if the system
      * property is not set. Errs if the system property is set to a non-boolean value.
+     *
+     * @param key system property to check
+     * @param defaultValue value to use if the property is not set
+     * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
      */
     public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
         String value = System.getProperty(key);

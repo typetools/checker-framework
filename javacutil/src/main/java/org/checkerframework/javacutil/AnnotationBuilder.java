@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -32,6 +31,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -662,11 +662,7 @@ public class AnnotationBuilder {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
-                StringJoiner sj = new StringJoiner(", ", "{", "}");
-                for (Object o : list) {
-                    sj.add(Objects.toString(o));
-                }
-                toStringVal = sj.toString();
+                toStringVal = "{" + UtilPlume.join(", ", list) + "}";
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

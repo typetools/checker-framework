@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -65,15 +65,16 @@ public class ObjectCreationNode extends Node {
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(", ", "new " + constructor + "(", ")");
-        for (Node arg : arguments) {
-            sj.add(arg.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append("new " + constructor + "(");
+        sb.append(SystemUtil.join(", ", arguments));
+        sb.append(")");
+        if (classbody != null) {
+            // TODO: maybe this can be done nicer...
+            sb.append(" ");
+            sb.append(classbody.toString());
         }
-        if (classbody == null) {
-            return sj.toString();
-        } else {
-            return sj.toString() + " " + classbody.toString();
-        }
+        return sb.toString();
     }
 
     @Override

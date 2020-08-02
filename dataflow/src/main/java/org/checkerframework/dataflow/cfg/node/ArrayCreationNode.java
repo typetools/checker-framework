@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A node for new array creation.
@@ -73,18 +73,14 @@ public class ArrayCreationNode extends Node {
         StringBuilder sb = new StringBuilder();
         sb.append("new " + type);
         if (!dimensions.isEmpty()) {
-            StringJoiner dimsString = new StringJoiner(", ", " (", ")");
-            for (Node dim : dimensions) {
-                dimsString.add(dim.toString());
-            }
-            sb.append(dimsString);
+            sb.append(" (");
+            sb.append(SystemUtil.join(", ", dimensions));
+            sb.append(")");
         }
         if (!initializers.isEmpty()) {
-            StringJoiner initString = new StringJoiner(", ", " = {", "}");
-            for (Node init : initializers) {
-                initString.add(init.toString());
-            }
-            sb.append(initString);
+            sb.append(" = {");
+            sb.append(SystemUtil.join(", ", initializers));
+            sb.append("}");
         }
         return sb.toString();
     }

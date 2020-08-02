@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -26,6 +25,7 @@ import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Generates a stub file from a single class or an entire package.
@@ -375,11 +375,7 @@ public class StubGenerator {
      * @return a string representation of the list, without surrounding square brackets
      */
     private String formatList(List<?> lst) {
-        StringJoiner sj = new StringJoiner(", ");
-        for (Object o : lst) {
-            sj.add(o.toString());
-        }
-        return sj.toString();
+        return UtilPlume.join(", ", lst);
     }
 
     /** Returns true if the element is public or protected element. */

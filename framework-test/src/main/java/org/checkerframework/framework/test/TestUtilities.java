@@ -261,11 +261,11 @@ public class TestUtilities {
      * @return the file absolute pathnames, separated by commas
      */
     public static String summarizeSourceFiles(List<File> javaFiles) {
-        StringJoiner listStrBuilder = new StringJoiner(", ");
+        StringJoiner sj = new StringJoiner(", ");
         for (File file : javaFiles) {
-            listStrBuilder.add(file.getAbsolutePath());
+            sj.add(file.getAbsolutePath());
         }
-        return listStrBuilder.toString();
+        return sj.toString();
     }
 
     public static File getTestFile(String fileRelativeToTestsDir) {
