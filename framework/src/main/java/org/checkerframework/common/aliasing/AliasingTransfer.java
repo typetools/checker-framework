@@ -51,6 +51,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AliasingTransfer extends CFTransfer {
 
+    /** The type factory obtained from control flow analysis. */
     private AnnotatedTypeFactory factory;
 
     /** The @{@link Unusable} annotation. */
@@ -58,6 +59,11 @@ public class AliasingTransfer extends CFTransfer {
     /** The @{@link MaybeAliased} annotation. */
     protected final AnnotationMirror MAYBE_ALIASED;
 
+    /**
+     * Create the transfer function for the Aliasing Checker.
+     *
+     * @param analysis the control flow analysis whose annotated type factory is required
+     */
     public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         factory = analysis.getTypeFactory();

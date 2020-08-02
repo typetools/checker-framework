@@ -302,11 +302,12 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     /**
      * Returns true if {@code exp} has type {@code @Linear} and is not a method invocation nor a new
-     * class expression. It checks whether the tree expression is unique by either checking for an
+     * class expression. It checks whether the tree expression is linear by either checking for an
      * explicit annotation or checking whether the class of the tree expression {@code exp} has type
      * {@code @Linear}
      *
      * @param exp the Tree to check
+     * @return boolean true if the linear expression can be leaked
      */
     private boolean canBeLinearLeaked(Tree exp) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
@@ -343,7 +344,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
      * {@code @Linear}.
      *
      * @param type the annotated type whose class must be checked
-     * @return boolean true if class is unique and false otherwise
+     * @return boolean true if class is linear and false otherwise
      */
     private boolean isLinearClass(AnnotatedTypeMirror type) {
         Element el = types.asElement(type.getUnderlyingType());
@@ -360,6 +361,12 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         return false;
     }
 
+    /**
+     * Checks whether the return type of an enclosing constructor method is annotated as
+     * {@code @Unique}.
+     *
+     * @return boolean true if the enclosing constructor method has unique return type
+     */
     private boolean isInUniqueConstructor() {
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
         if (enclosingMethod == null) {
