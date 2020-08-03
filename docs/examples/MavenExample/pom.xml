@@ -108,10 +108,10 @@
                     <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
                   -->
                   <arg>-Alint</arg>
-		<!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
-		<!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
-		<!-- -Awarns turns type-checking errors into warnings. -->
-		<!-- <arg>-Awarns</arg> -->
+                <!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
+                <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
+                <!-- -Awarns turns type-checking errors into warnings. -->
+                <!-- <arg>-Awarns</arg> -->
               </compilerArgs>
           </configuration>
       </plugin>
