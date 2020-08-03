@@ -1,6 +1,5 @@
 package org.checkerframework.checker.objectconstruction.framework;
 
-import com.google.auto.value.AutoValue;
 import com.sun.source.tree.NewClassTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Types;
@@ -65,7 +64,8 @@ public class AutoValueSupport implements FrameworkSupport {
 
         if (superclass.getKind() != TypeKind.NONE
                 && FrameworkSupportUtils.hasAnnotation(
-                        TypesUtils.getTypeElement(superclass), AutoValue.Builder.class)
+                        TypesUtils.getTypeElement(superclass),
+                        getAutoValuePackageName() + ".AutoValue.Builder")
                 && element.getParameters().size() > 0) {
             handleToBuilderType(
                     type, superclass, TypesUtils.getTypeElement(superclass).getEnclosingElement());
@@ -77,8 +77,10 @@ public class AutoValueSupport implements FrameworkSupport {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
         Element nextEnclosingElement = enclosingElement.getEnclosingElement();
 
-        if (FrameworkSupportUtils.hasAnnotation(enclosingElement, AutoValue.Builder.class)) {
-            assert FrameworkSupportUtils.hasAnnotation(nextEnclosingElement, AutoValue.class)
+        if (FrameworkSupportUtils.hasAnnotation(
+                enclosingElement, getAutoValuePackageName() + ".AutoValue.Builder")) {
+            assert FrameworkSupportUtils.hasAnnotation(
+                            nextEnclosingElement, getAutoValuePackageName() + ".AutoValue")
                     : "class "
                             + nextEnclosingElement.getSimpleName()
                             + " is missing @AutoValue annotation";
@@ -143,14 +145,16 @@ public class AutoValueSupport implements FrameworkSupport {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
             TypeMirror superclass = enclosingElement.getSuperclass();
 
-            if (FrameworkSupportUtils.hasAnnotation(enclosingElement, AutoValue.class)
+            if (FrameworkSupportUtils.hasAnnotation(
+                            enclosingElement, getAutoValuePackageName() + ".AutoValue")
                     && element.getModifiers().contains(Modifier.ABSTRACT)) {
                 handleToBuilderType(returnType, returnType.getUnderlyingType(), enclosingElement);
             }
 
             if (superclass.getKind() != TypeKind.NONE) {
                 TypeElement superElement = TypesUtils.getTypeElement(superclass);
-                if (FrameworkSupportUtils.hasAnnotation(superElement, AutoValue.class)) {
+                if (FrameworkSupportUtils.hasAnnotation(
+                        superElement, getAutoValuePackageName() + ".AutoValue")) {
                     handleToBuilderType(returnType, returnType.getUnderlyingType(), superElement);
                 }
             }
@@ -420,6 +424,18 @@ public class AutoValueSupport implements FrameworkSupport {
             }
         }
         return abstractMethods;
+    }
+
+    /**
+     * Get the qualified name of the package containing AutoValue annotations. This method
+     * constructs the String dynamically, to ensure it does not get rewritten due to relocation of
+     * the {@code "com.google"} package during the build process.
+     *
+     * @return {@code "com.google.auto.value"}
+     */
+    private String getAutoValuePackageName() {
+        String com = "com";
+        return com + "." + "google.auto.value";
     }
 
     /**

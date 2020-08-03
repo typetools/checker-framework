@@ -1,6 +1,5 @@
 package org.checkerframework.checker.objectconstruction.framework;
 
-import java.lang.annotation.Annotation;
 import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
@@ -31,17 +30,6 @@ public class FrameworkSupportUtils {
      */
     public static String capitalize(String prop) {
         return prop.substring(0, 1).toUpperCase() + prop.substring(1);
-    }
-
-    /**
-     * Given an annotation class, return true if the element has the annotation
-     *
-     * @param element the element
-     * @param annotClass class for the annotation
-     * @return true if the element has the annotation
-     */
-    public static boolean hasAnnotation(Element element, Class<? extends Annotation> annotClass) {
-        return element.getAnnotation(annotClass) != null;
     }
 
     /**
