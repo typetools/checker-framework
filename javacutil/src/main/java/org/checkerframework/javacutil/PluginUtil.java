@@ -195,7 +195,7 @@ public class PluginUtil {
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
      */
-    public static String join(CharSequence delimiter, Iterable<?> values) {
+    public static String join(CharSequence delimiter, @Nullable Iterable<?> values) {
         if (values == null) {
             return "null";
         }
