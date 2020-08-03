@@ -300,7 +300,7 @@ public class ControlFlowGraph {
     }
 
     /** Checks representation invariants on this. */
-    public void checkRep() {
+    public void checkRep(@UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> allNodes = getAllNodes();
 
         // Require that each node in treeLookup exists in this ControlFlowGraph
