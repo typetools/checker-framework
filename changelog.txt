@@ -26,6 +26,10 @@ BaseTypeValidator#shouldCheckTopLevelDeclaredType to
 Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test classes.
 Use CheckerFrameworkPer(Directory/File)Test instead.
 
+Closed issues:
+1395, 2483, 3207, 3223, 3224, 3313, 3381, 3422, 3424, 3428, 3429, 3438, 3442,
+3443, 3447, 3449, 3461, 3482, 3485, 3495, 3500, 3528.
+
 ---------------------------------------------------------------------------
 
 Version 3.5.0, July 1, 2020
