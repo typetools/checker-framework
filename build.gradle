@@ -803,16 +803,6 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessOnlyAnnotatedFor')
-            } else {
-                dependsOn('checkNullness')
-            }
-
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
-            }
             if (project.name.is('framework')) {
                 dependsOn('wholeProgramInferenceTests', 'loaderTests')
             }
@@ -830,12 +820,27 @@ subprojects {
             }
         }
 
+        // Create a typecheck task per project (dogfooding the Checker Framework on itself).
+        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        tasks.create(name: 'typecheck', group: 'Verification') {
+            description 'Run the Checker Framework on itself'
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkNullnessOnlyAnnotatedFor')
+            } else {
+                dependsOn('checkNullness')
+            }
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkCompilerMessages', 'jtregTests')
+            }
+        }
+
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests
+        // allTests = test + nonJunitTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test')
+            dependsOn('nonJunitTests', 'test', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {
