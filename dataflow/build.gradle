@@ -48,7 +48,7 @@ task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
             if (!JavaVersion.current().java9Compatible) {
                 jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             }
-            classpath = sourceSets.test.compileClasspath
+            classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
             main = 'livevar.LiveVariable'
         }
@@ -71,8 +71,9 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
             if (!JavaVersion.current().java9Compatible) {
                 jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}"
             }
-            classpath = sourceSets.test.compileClasspath
+            classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
+
             main = 'livevar.LiveVariable'
         }
     }
