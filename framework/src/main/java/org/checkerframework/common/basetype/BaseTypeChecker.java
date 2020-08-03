@@ -218,7 +218,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
-     * {@code replacement}.
+     * {@code replacement}. The class is not guaranteed to exist; this method just returns a name.
      *
      * @param checkerClass the checker class
      * @param replacement the string to replace "Checker" or "Subchecker" by

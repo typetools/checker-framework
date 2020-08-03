@@ -29,7 +29,7 @@ public class ComponentFinderUtil {
     /**
      * Find a component named with the checker naming convention.
      *
-     * @param <T> type of the component
+     * @param <T> type of the component to return
      * @param checker the current checker
      * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
      * @param defaultGetter a getter for the default value when cannot find the class
@@ -65,7 +65,7 @@ public class ComponentFinderUtil {
      * Find a component named with the checker naming convention with its constructor invoked with
      * the only argument {@code checker}
      *
-     * @param <T> type of the component
+     * @param <T> type of the component to return
      * @param checker a checker
      * @param replacement the component suffix, e.g. "Visitor" or "AnnotatedTypeFactory"
      * @param defaultGetter a getter for the default value when cannot find the class
