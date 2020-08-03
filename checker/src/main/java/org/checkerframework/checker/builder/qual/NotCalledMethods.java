@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation speculatively used by Lombok's lombok.config checkerframework = true option. It has
- * no meaning to the Object Construction Checker, which treats it as {@link
- * org.checkerframework.checker.objectconstruction.qual.CalledMethods}.
+ * no meaning to the Called Methods Checker, which treats it as {@link
+ * org.checkerframework.checker.calledmethods.qual.CalledMethods}.
  *
  * <p>A similar annotation might be supported in the future.
  */

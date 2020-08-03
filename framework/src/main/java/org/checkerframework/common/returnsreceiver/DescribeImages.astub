@@ -1,4 +1,4 @@
-// Support for the EC2 classes that are automatically handled by the Object Construction Checker.
+// Support for the EC2 classes that are automatically handled by the Called Methods Checker.
 
 import org.checkerframework.common.returnsreceiver.qual.*;
 

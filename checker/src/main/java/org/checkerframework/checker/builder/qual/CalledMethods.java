@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 /**
  * For compatibility with Lombok, retain the old annotations it generates.
  *
- * <p>You should use {@link org.checkerframework.checker.objectconstruction.qual.CalledMethods}
- * instead. The Object Construction Checker treats this annotation as identical to that one.
+ * <p>You should use {@link org.checkerframework.checker.calledmethods.qual.CalledMethods} instead.
+ * The Called Methods Checker treats this annotation as identical to that one.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
