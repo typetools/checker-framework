@@ -1,4 +1,4 @@
-import org.checkerframework.checker.linear.qual.Unusable;
+import org.checkerframework.common.aliasing.qual.Unusable;
 
 public class UnusableTest {
 

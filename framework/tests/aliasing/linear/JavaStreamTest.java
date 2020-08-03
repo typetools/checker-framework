@@ -1,6 +1,6 @@
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.checkerframework.checker.linear.qual.Linear;
+import org.checkerframework.common.aliasing.qual.Linear;
 
 public class JavaStreamTest {
 

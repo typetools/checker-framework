@@ -1,9 +1,9 @@
-import org.checkerframework.checker.linear.qual.Linear;
+import org.checkerframework.common.aliasing.qual.Linear;
 
 public class LinearTest {
 
     void Test() {
-        @Linear String s = "Linear string";
+        @Linear String s = getLinear();
 
         String b = s.toLowerCase();
         // Due to the method invocation, s is used up and is now unusable
@@ -15,5 +15,10 @@ public class LinearTest {
 
         // :: error: (use.unsafe)
         String d = s.toUpperCase();
+    }
+
+    @SuppressWarnings("return.type.incompatible")
+    static @Linear String getLinear() {
+        return "hi";
     }
 }
