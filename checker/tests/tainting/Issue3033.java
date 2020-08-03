@@ -6,9 +6,8 @@ class Issue3033 {
     void main() {
         @Tainted String a = getTainted();
         // :: warning: (operand.instanceof.subtype)
-        if (a
-                instanceof
-                @Untainted String) { // Since 'a' is @Tainted and reference type is @Untainted
+        if (a instanceof @Untainted String) {
+            // Since 'a' is @Tainted and reference type is @Untainted
             isUntainted(a); // 'a' is now refined to the reference type and hence, we get no error
         }
     }
