@@ -52,7 +52,14 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 return o == value;
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
-                return set.contains(o);
+                // "set" is an array list, which uses equals to compare, but this is an identity set
+                // so manually search.
+                for (T setObj : set) {
+                    if (setObj == set) {
+                        return true;
+                    }
+                }
+                return false;
             default:
                 throw new BugInCF("Unhandled state " + state);
         }
