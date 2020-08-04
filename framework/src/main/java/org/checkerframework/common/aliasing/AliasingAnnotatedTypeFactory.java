@@ -5,11 +5,7 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.common.aliasing.qual.LeakedToResult;
-import org.checkerframework.common.aliasing.qual.MaybeAliased;
-import org.checkerframework.common.aliasing.qual.MaybeLeaked;
-import org.checkerframework.common.aliasing.qual.NonLeaked;
-import org.checkerframework.common.aliasing.qual.Unique;
+import org.checkerframework.common.aliasing.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -55,7 +51,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiers(MaybeLeaked.class);
+        return getBundledTypeQualifiers(MaybeLeaked.class, Unusable.class);
     }
 
     @Override
