@@ -72,6 +72,7 @@ task allSourcesJar(type: Jar) {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-source.jar"
+    archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 }
@@ -81,6 +82,7 @@ task allJavadocJar(type: Jar) {
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-javadoc.jar"
+    archiveClassifier = "javadoc"
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
@@ -89,6 +91,7 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist/.'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker.jar"
+    archiveClassifier = ''
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
@@ -226,5 +229,45 @@ task deployArtifactsToSonatype {
     dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
     doLast {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
+    }
+}
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final checkerPom(publication) {
+    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+    publication.pom {
+        name = 'Checker Framework'
+        description = 'The Checker Framework enhances Java\'s type system to' +
+                ' make it more powerful and useful. This lets software developers' +
+                ' detect and prevent errors in their Java programs.' +
+                ' The Checker Framework includes compiler plug-ins ("checkers")' +
+                ' that find bugs or verify their absence. It also permits you to ' +
+                ' write your own compiler plug-ins.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        remote(MavenPublication) {
+            checkerPom it
+            artifact shadowJar
+            artifact allSourcesJar
+            artifact allJavadocJar
+        }
+
+        local(MavenPublication) {
+            checkerPom it
+            artifact shadowJar
+            artifact allSourcesJar
+            artifact allJavadocJar
+        }
     }
 }
