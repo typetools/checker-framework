@@ -100,6 +100,10 @@ If you get an error like one of the following,
 \begin{Verbatim}
 .../bin/javac: Command not found
 \end{Verbatim}
+
+\begin{Verbatim}
+error: Annotation processor 'org.checkerframework.checker.signedness.SignednessChecker' not found
+\end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
@@ -126,7 +130,6 @@ either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or one of the alternatives
 described in Section~\ref{javac-wrapper}.
 \end{sloppypar}
 
-
 \item
 If you get the error
 
@@ -139,7 +142,6 @@ If you get the error
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
-You can use JDK 8 at run time.
 
 \item
 If you get an error that contains lines like these:

@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import java.util.Queue;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -170,7 +170,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Deque<Block> succs = getSuccessors(cur);
+            Collection<Block> succs = cur.getSuccessors();
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {
@@ -204,7 +204,7 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Deque<Block> successors = getSuccessors(cur);
+                Collection<Block> successors = cur.getSuccessors();
                 successors.removeAll(visited);
                 worklist.addAll(successors);
             }
@@ -212,34 +212,6 @@ public class ControlFlowGraph {
 
         Collections.reverse(dfsOrderResult);
         return dfsOrderResult;
-    }
-
-    /**
-     * Get a list of all successor Blocks for cur.
-     *
-     * @return a Deque of successor Blocks
-     */
-    private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
-            succs.add(ccur.getThenSuccessor());
-            succs.add(ccur.getElseSuccessor());
-        } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                succs.add(b);
-            }
-        }
-
-        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-            ExceptionBlock ecur = (ExceptionBlock) cur;
-            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                succs.addAll(exceptionSuccSet);
-            }
-        }
-        return succs;
     }
 
     /**

@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.BugInCF;
@@ -58,6 +60,14 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
                     "Requested elseSuccessor for conditional block before initialization");
         }
         return elseSuccessor;
+    }
+
+    @Override
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>(2);
+        result.add(getThenSuccessor());
+        result.add(getElseSuccessor());
+        return result;
     }
 
     @Override
