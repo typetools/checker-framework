@@ -6,9 +6,11 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessBottom;
@@ -22,7 +24,6 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -33,7 +34,6 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -86,12 +86,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        // Prevent @ImplicitFor from applying to local variables of type byte, short, int, and long,
-        // but adding the top type to them, which permits flow-sensitive type refinement.
-        // (When it is possible to default types based on their TypeKinds,
-        // this whole method will no longer be needed.)
-        addUnknownSignednessToSomeLocals(tree, type);
-
         if (!computingAnnotatedTypeMirrorOfLHS) {
             addSignednessGlbAnnotation(tree, type);
         }
@@ -175,25 +169,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * If the tree is a local variable and the type is byte, short, int, or long, then add the
-     * UnknownSignedness annotation so that dataflow can refine it.
-     */
-    private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
-        switch (type.getKind()) {
-            case BYTE:
-            case SHORT:
-            case INT:
-            case LONG:
-                QualifierDefaults defaults = new QualifierDefaults(elements, this);
-                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
-                defaults.annotate(tree, type);
-                break;
-            default:
-                // Nothing for other cases.
-        }
-    }
-
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -250,6 +225,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBooleanAsUnknownSignedness(type);
             return null;
+        }
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultForType(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (TypesUtils.isFloating(type.getUnderlyingType())
+                || TypesUtils.isBoxedFloating(type.getUnderlyingType())
+                || type.getKind() == TypeKind.CHAR
+                || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
+            // Floats are always signed and chars are always unsigned.
+            super.addAnnotationsFromDefaultForType(null, type);
+        } else {
+            super.addAnnotationsFromDefaultForType(element, type);
         }
     }
 

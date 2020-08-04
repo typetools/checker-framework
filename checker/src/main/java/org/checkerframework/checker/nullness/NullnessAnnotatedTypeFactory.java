@@ -45,6 +45,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -357,14 +359,30 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator() {
+    protected DefaultForTypeAnnotator createDefaultForTypeAnnotator() {
         DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
-        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        defaultForTypeAnnotator.addAtmClass(
-                AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedPrimitiveType.class, NONNULL);
+        return defaultForTypeAnnotator;
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultForType(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (element != null
+                && element.getKind() == ElementKind.LOCAL_VARIABLE
+                && type.getKind().isPrimitive()) {
+            // Always apply the DefaultQualifierForUse for primitives.
+            super.addAnnotationsFromDefaultForType(null, type);
+        } else {
+            super.addAnnotationsFromDefaultForType(element, type);
+        }
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
