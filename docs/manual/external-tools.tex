@@ -223,14 +223,10 @@ Set the \code{jsr308javac} property:
 %END LATEX
 \begin{Verbatim}
   <property environment="env"/>
-
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
@@ -1084,14 +1080,10 @@ Set the \code{jsr308javac} property:
 %END LATEX
 \begin{Verbatim}
   <property environment="env"/>
-
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
