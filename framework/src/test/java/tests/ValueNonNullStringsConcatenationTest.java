@@ -3,10 +3,10 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ValueNonNullStringsConcatenationTest extends FrameworkPerDirectoryTest {
+public class ValueNonNullStringsConcatenationTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public ValueNonNullStringsConcatenationTest(List<File> testFiles) {

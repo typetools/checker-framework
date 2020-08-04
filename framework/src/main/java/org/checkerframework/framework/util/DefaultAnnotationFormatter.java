@@ -12,7 +12,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A utility for converting AnnotationMirrors to Strings. */
+/** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
