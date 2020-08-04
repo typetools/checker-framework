@@ -12,6 +12,9 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.calledmethods.qual.CalledMethods}.
  *
  * <p>A similar annotation might be supported in the future.
+ *
+ * <p>This annotation could be marked as deprecated, but that causes extra warnings when processing
+ * delombok'd code.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -12,7 +12,7 @@ public class CalledMethodsLombokTest extends CheckerFrameworkPerDirectoryTest {
         super(
                 testFiles,
                 CalledMethodsChecker.class,
-                "calledmethods-lombok",
+                "calledmethods-delomboked",
                 "-Anomsgtext",
                 "-nowarn",
                 "-AsuppressWarnings=type.anno.before.modifier");
@@ -20,6 +20,6 @@ public class CalledMethodsLombokTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"calledmethods-lombok"};
+        return new String[] {"calledmethods-delomboked"};
     }
 }

@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
  *
  * <p>You should use {@link org.checkerframework.checker.calledmethods.qual.CalledMethods} instead.
  * The Called Methods Checker treats this annotation as identical to that one.
+ *
+ * <p>This annotation could be marked as deprecated, but that causes extra warnings when processing
+ * delombok'd code.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

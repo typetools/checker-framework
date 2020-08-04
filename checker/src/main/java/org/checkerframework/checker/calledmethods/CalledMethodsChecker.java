@@ -9,9 +9,10 @@ import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
- * The primary typechecker for the Called Methods checker, which allows programmers to specify
- * unsafe combinations of options to builder or builder-like interfaces and prevent dangerous
- * objects from being instantiated.
+ * The primary typechecker for the Called Methods Checker, which tracks the methods that have
+ * definitely been called on an object. One common use case for the Called Methods Checker is
+ * permitting programmers to specify unsafe combinations of options to builder or builder-like
+ * interfaces and prevent dangerous objects from being instantiated.
  *
  * <p>Note that this checker respects the suppress warning keys from its earlier names ("builder",
  * "object.construction", and "objectconstruction" in addition to its own keys ("calledmethods" and
@@ -36,7 +37,7 @@ public class CalledMethodsChecker extends BaseTypeChecker {
      * If this option is supplied, use the Value Checker to reduce false positives when analyzing
      * calls to the AWS SDK.
      */
-    public static final String USE_VALUE_CHECKER = "useValueChecker";
+    public static final String USE_VALUE_CHECKER = "calledMethodsUseValueChecker";
 
     /**
      * If this option is supplied, count the number of analyzed calls to build() in supported

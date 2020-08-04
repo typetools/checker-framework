@@ -45,7 +45,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     /**
      * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing
      * calls to the AWS SDK. Defaults to false. Controlled by the command-line option {@code
-     * -AuseValueChecker}.
+     * -AcalledMethodsUseValueChecker}.
      */
     private final boolean useValueChecker;
 
@@ -105,13 +105,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                super.createTreeAnnotator(), new calledmethodsTreeAnnotator(this));
+                super.createTreeAnnotator(), new CalledMethodsTreeAnnotator(this));
     }
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(
-                super.createTypeAnnotator(), new calledmethodsTypeAnnotator(this));
+                super.createTypeAnnotator(), new CalledMethodsTypeAnnotator(this));
     }
 
     @Override
@@ -227,13 +227,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     /** Necessary for the type rule for called methods described below. */
-    private class calledmethodsTreeAnnotator extends AccumulationTreeAnnotator {
+    private class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
         /**
          * Creates an instance of this tree annotator for the given type factory.
          *
          * @param factory the type factory
          */
-        public calledmethodsTreeAnnotator(AccumulationAnnotatedTypeFactory factory) {
+        public CalledMethodsTreeAnnotator(AccumulationAnnotatedTypeFactory factory) {
             super(factory);
         }
 
@@ -275,14 +275,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * Adds @CalledMethod annotations for build() methods of AutoValue and Lombok Builders to ensure
      * required properties have been set.
      */
-    private class calledmethodsTypeAnnotator extends TypeAnnotator {
+    private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
         /**
          * Constructor matching super.
          *
          * @param atypeFactory the type factory
          */
-        public calledmethodsTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public CalledMethodsTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

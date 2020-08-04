@@ -43,6 +43,7 @@ dependencies {
     testannotationsImplementation project(':checker-qual')
 }
 
+// The AWS SDK is used for testing the Called Methods Checker.
 dependencyManagement {
     imports {
         mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.808"
@@ -125,6 +126,7 @@ artifacts {
 
 clean {
     delete "${projectDir}/dist"
+    delete "tests/calledmethods-delomboked"
 }
 
 // Add non-junit tests
@@ -203,6 +205,7 @@ task allNullnessTests(type: Test, group: 'Verification') {
 task allCalledMethodsTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Called Methods Checker.'
     include '**/CalledMethods*.class'
+    dependsOn 'delombok'
 }
 
 // These are tests that should only be run with JDK 11.
@@ -257,3 +260,25 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
     }
 }
+
+task delombok {
+    description 'Delomboks the source code tree in tests/calledmethods-lombok'
+
+    def srcDelomboked = 'tests/calledmethods-delomboked'
+    def srcJava = 'tests/calledmethods-lombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    // Because there are Checker Framework annotations in the test source.
+    dependsOn project(':checker-qual').tasks.jar
+
+    doLast {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: collection.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    }
+}
+
+tasks.test.dependsOn("delombok")
