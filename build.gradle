@@ -307,7 +307,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
-		'-ArequirePrefixInWarningSuppressions',
+                '-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
@@ -862,6 +862,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.gradle',
                                   '.idea',
                                   '.plume-scripts',
+                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
                                   'bib',
@@ -894,8 +895,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
-	    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
-	    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
@@ -908,11 +909,18 @@ task checkBasicStyle(group: 'Format') {
         boolean failed = false
         tree.visit {
             if (!it.file.isDirectory()) {
-                int isBlankLine
+                boolean blankLineAtEnd = false
+                String fileName = it.file.getName()
+                boolean checkTabs = !fileName.equals("Makefile")
                 it.file.eachLine { line ->
                     if (line.endsWith(' ')) {
                         println("Trailing whitespace: ${it.file.absolutePath}")
                         failed = true
+                    }
+                    if (checkTabs && line.contains('\t')) {
+                        println("Contains tab (use spaces): ${it.file.absolutePath}")
+                        failed = true
+                        checkTabs = false
                     }
                     if (!line.startsWith('\\') &&
                             (line.matches('^.* (else|finally|try)\\{}.*$')
@@ -923,13 +931,13 @@ task checkBasicStyle(group: 'Format') {
                         failed = true
                     }
                     if (line.isEmpty()) {
-                        isBlankLine++;
+                        blankLineAtEnd = true;
                     } else {
-                        isBlankLine = 0;
+                        blankLineAtEnd = false;
                     }
                 }
 
-                if (isBlankLine > 1) {
+                if (blankLineAtEnd) {
                     println("Blank line at end of file: ${it.file.absolutePath}")
                     failed = true
                 }
