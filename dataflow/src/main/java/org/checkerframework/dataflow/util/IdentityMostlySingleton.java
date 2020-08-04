@@ -28,7 +28,11 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 value = e;
                 return true;
             case SINGLETON:
+                if (value == e) {
+                    return false;
+                }
                 state = State.ANY;
+                // Use ArrayList, but make sure to use reference comparisons.
                 set = new ArrayList<>();
                 assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
@@ -36,6 +40,11 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 // fallthrough
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
+                for (T x : set) {
+                    if (x == e) {
+                        return false;
+                    }
+                }
                 return set.add(e);
             default:
                 throw new BugInCF("Unhandled state " + state);
@@ -52,7 +61,12 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 return o == value;
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
-                return set.contains(o);
+                for (T x : set) {
+                    if (x == o) {
+                        return true;
+                    }
+                }
+                return false;
             default:
                 throw new BugInCF("Unhandled state " + state);
         }
