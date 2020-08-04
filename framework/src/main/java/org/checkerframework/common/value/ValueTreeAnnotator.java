@@ -398,7 +398,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
         }
 
-        if (TreeUtils.isArraygetLengthMethodInvocation(tree)) {
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
             List<? extends ExpressionTree> args = tree.getArguments();
             AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
             AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
