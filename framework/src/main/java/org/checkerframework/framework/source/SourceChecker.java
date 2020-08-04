@@ -52,6 +52,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -316,6 +317,10 @@ import org.plumelib.util.UtilPlume;
     // Output information about intermediate steps in method type argument inference
     // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
     "showInferenceSteps",
+
+    // Output a stack trace when reporting errors or warnings
+    // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
+    "dumpOnErrors",
 
     /// Visualizing the CFG
 
@@ -1073,7 +1078,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param kind the kind of message to print
      * @param message the message text
-     * @param source the souce code position of the diagnostic message
+     * @param source the source code position of the diagnostic message
      * @param root the compilation unit
      */
     protected void printOrStoreMessage(
@@ -1081,7 +1086,44 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             String message,
             Tree source,
             CompilationUnitTree root) {
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        printOrStoreMessage(kind, message, source, root, trace);
+    }
+
+    /**
+     * Stores all messages and sorts them by location before outputting them for compound checkers.
+     * This method is overloaded with an additional stack trace argument. The stack trace is printed
+     * when the dumpOnErrors option is enabled.
+     *
+     * @param kind the kind of message to print
+     * @param message the message text
+     * @param source the source code position of the diagnostic message
+     * @param root the compilation unit
+     * @param trace the stack trace where the checker encountered an error
+     */
+    protected void printOrStoreMessage(
+            javax.tools.Diagnostic.Kind kind,
+            String message,
+            Tree source,
+            CompilationUnitTree root,
+            StackTraceElement[] trace) {
         Trees.instance(processingEnv).printMessage(kind, message, source, root);
+        printStackTrace(trace);
+    }
+
+    /**
+     * Output the given stack trace if the "dumpOnErrors" option is enabled.
+     *
+     * @param trace stack trace when the checker encountered a warning/error
+     */
+    private void printStackTrace(StackTraceElement[] trace) {
+        if (hasOption("dumpOnErrors")) {
+            StringBuilder msg = new StringBuilder();
+            for (StackTraceElement elem : trace) {
+                msg.append("\tat " + elem + "\n");
+            }
+            message(Diagnostic.Kind.NOTE, msg.toString());
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1492,35 +1534,35 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             String[] split = key.split(OPTION_SEPARATOR);
 
+            splitlengthswitch:
             switch (split.length) {
                 case 1:
-                    // No separator, option always active
+                    // No separator, option always active.
                     activeOpts.put(key, value);
                     break;
                 case 2:
-                    // Valid class-option pair
                     Class<?> clazz = this.getClass();
 
                     do {
                         if (clazz.getCanonicalName().equals(split[0])
                                 || clazz.getSimpleName().equals(split[0])) {
+                            // Valid class-option pair.
                             activeOpts.put(split[1], value);
+                            break splitlengthswitch;
                         }
 
                         clazz = clazz.getSuperclass();
                     } while (clazz != null
                             && !clazz.getName()
                                     .equals(AbstractTypeProcessor.class.getCanonicalName()));
+                    // Didn't find a matching class. Option might be for another processor. Add
+                    // option anyways. javac will warn if no processor supports the option.
+                    activeOpts.put(key, value);
                     break;
                 default:
-                    throw new UserError(
-                            "Invalid option name: "
-                                    + key
-                                    + " At most one separator "
-                                    + OPTION_SEPARATOR
-                                    + " expected, but found "
-                                    + split.length
-                                    + ".");
+                    // Too many separators. Option might be for another processor. Add option
+                    // anyways. javac will warn if no processor supports the option.
+                    activeOpts.put(key, value);
             }
         }
         return Collections.unmodifiableMap(activeOpts);

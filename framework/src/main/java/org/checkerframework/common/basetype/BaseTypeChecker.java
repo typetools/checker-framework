@@ -554,10 +554,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
         assert this.currentRoot == root;
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         if (messageStore == null) {
-            super.printOrStoreMessage(kind, message, source, root);
+            super.printOrStoreMessage(kind, message, source, root, trace);
         } else {
-            CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this);
+            CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
             messageStore.add(checkerMessage);
         }
     }
@@ -572,7 +573,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     private void printStoredMessages(CompilationUnitTree unit) {
         if (messageStore != null) {
             for (CheckerMessage msg : messageStore) {
-                super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit);
+                super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
             }
         }
     }
@@ -585,6 +586,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         final String message;
         /** The source code that the message is about. */
         final @InternedDistinct Tree source;
+        /** Stores the stack trace when the message is created. */
+        final StackTraceElement[] trace;
 
         /**
          * The checker that issued this message. The compound checker that depends on this checker
@@ -595,20 +598,23 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         /**
          * Create a new CheckerMessage.
          *
-         * @param kind the severity of the message
-         * @param message the text of the message
-         * @param source the source code that the message is about
-         * @param checker the checker that issued the message.
+         * @param kind kind of diagnostic, for example, error or warning
+         * @param message error message that needs to be printed
+         * @param source tree element causing the error
+         * @param checker the type-checker in use
+         * @param trace the stack trace when the message is created
          */
         private CheckerMessage(
                 Diagnostic.Kind kind,
                 String message,
                 @FindDistinct Tree source,
-                @FindDistinct BaseTypeChecker checker) {
+                @FindDistinct BaseTypeChecker checker,
+                StackTraceElement[] trace) {
             this.kind = kind;
             this.message = message;
             this.source = source;
             this.checker = checker;
+            this.trace = trace;
         }
 
         @Override
