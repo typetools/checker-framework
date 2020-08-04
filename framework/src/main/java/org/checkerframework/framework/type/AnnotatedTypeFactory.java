@@ -4297,4 +4297,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         return null;
     }
+
+    /**
+     * Returns true if the given tree is dead code (will never be executed at run time).
+     *
+     * @param tree a tree
+     * @return true if the tree is dead
+     */
+    public boolean isDeadCode(Tree tree) {
+        return false;
+    }
 }

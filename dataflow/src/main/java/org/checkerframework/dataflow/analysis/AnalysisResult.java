@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
@@ -194,6 +195,46 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
             }
         }
         return merged;
+    }
+
+    /**
+     * Returns true if the given tree is dead code (will never be executed at run time).
+     *
+     * @param tree a tree
+     * @return true if the tree is dead code
+     */
+    public boolean isDeadCode(Tree tree) {
+        if (!(tree instanceof ExpressionTree)) {
+            return false;
+        }
+        switch (tree.getKind()) {
+            case MEMBER_SELECT:
+                return false;
+            case ASSIGNMENT:
+                // This may be an expression or a statement.
+                return false;
+            case IDENTIFIER:
+            case ARRAY_ACCESS:
+                // There might be a missing "this." prefix.  (Can I test that?)
+                return false;
+            default:
+                // No special behavior.
+                break;
+        }
+
+        if (!treeLookup.containsKey(tree)) {
+            return false;
+        }
+        Set<Node> nodes = treeLookup.get(tree);
+        if (nodes == null) {
+            return true;
+        }
+        for (Node aNode : nodes) {
+            if (getValue(aNode) != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

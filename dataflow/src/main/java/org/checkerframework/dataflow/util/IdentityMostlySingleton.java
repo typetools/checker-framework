@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -29,7 +30,7 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 return true;
             case SINGLETON:
                 state = State.ANY;
-                set = new ArrayList<>();
+                set = Collections.newSetFromMap(new IdentityHashMap<>());
                 assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
                 value = null;
