@@ -22,7 +22,7 @@ class TryCatch {
         t.toString();
         try {
         } catch (Throwable e) {
-            // :: error: (dereference.of.nullable)
+            // Dead code, no warning is issued
             t.toString();
         }
     }

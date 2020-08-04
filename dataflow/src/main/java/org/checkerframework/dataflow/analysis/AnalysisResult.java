@@ -198,7 +198,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns true if the given tree is dead code (will never be executed at run time).
+     * Returns true if the given tree is dead code (will never be executed at run time). May return
+     * false even if the tree is dead code.
      *
      * @param tree a tree
      * @return true if the tree is dead code
