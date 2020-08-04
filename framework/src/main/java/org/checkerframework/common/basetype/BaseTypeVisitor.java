@@ -103,7 +103,7 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ComponentFinderUtil;
+import org.checkerframework.framework.util.ComponentFinder;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
@@ -242,16 +242,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return the appropriate type factory
      */
     protected Factory createTypeFactory() {
-        return ComponentFinderUtil.findAndInitWithChecker(
+        return ComponentFinder.findAndInitWithChecker(
                 checker, "AnnotatedTypeFactory", this::createDefaultTypeFactory);
     }
 
     /**
-     * Create a default type factory if {@link ComponentFinderUtil} failed to find a factory
+     * Create a default type factory if {@link ComponentFinder} failed to find a factory
      *
      * @param checker the checker previously passed to {@link
-     *     ComponentFinderUtil#findAndInitWithChecker(BaseTypeChecker, String,
-     *     ComponentFinderUtil.DefaultGetter)}
+     *     ComponentFinder#findAndInitWithChecker(BaseTypeChecker, String,
+     *     ComponentFinder.DefaultGetter)}
      * @return a {@link BaseAnnotatedTypeFactory}
      */
     @SuppressWarnings("unchecked")

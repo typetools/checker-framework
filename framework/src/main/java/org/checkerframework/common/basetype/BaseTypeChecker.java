@@ -38,7 +38,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.util.ComponentFinderUtil;
+import org.checkerframework.framework.util.ComponentFinder;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -213,7 +213,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        return ComponentFinderUtil.findAndInitWithChecker(this, "Visitor", BaseTypeVisitor::new);
+        return ComponentFinder.findAndInitWithChecker(this, "Visitor", BaseTypeVisitor::new);
     }
 
     /**

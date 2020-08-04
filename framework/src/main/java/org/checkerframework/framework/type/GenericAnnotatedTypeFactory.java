@@ -87,7 +87,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ComponentFinderUtil;
+import org.checkerframework.framework.util.ComponentFinder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -397,7 +397,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
 
-        return ComponentFinderUtil.find(
+        return ComponentFinder.find(
                 checker,
                 "Analysis",
                 checker1 -> {
@@ -436,7 +436,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public TransferFunction createFlowTransferFunction(
             CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
-        return ComponentFinderUtil.find(
+        return ComponentFinder.find(
                 checker,
                 "Transfer",
                 checker1 -> {
