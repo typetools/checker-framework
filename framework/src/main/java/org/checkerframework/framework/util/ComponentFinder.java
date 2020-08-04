@@ -1,30 +1,15 @@
 package org.checkerframework.framework.util;
 
+import java.util.function.Supplier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
- * Find components (e.g. visitors and factories) following the naming convention
- * reflectively. For example, ABCChecker's default naming for visitor is "ABCVisitor". If a visitor
- * class with that name exists, then instantiate it and returns. Otherwise try to find the super,
- * and finally uses the {@code defaultGetter} callback to get a default value if all attempt fails.
+ * Find components (e.g. visitors and factories) following the naming convention reflectively. For
+ * example, ABCChecker's default naming for visitor is "ABCVisitor". If a visitor class with that
+ * name exists, then instantiate it and returns. Otherwise try to find the super, and finally uses
+ * the {@code defaultGetter} callback to get a default value if all attempt fails.
  */
 public class ComponentFinder {
-
-    /**
-     * A single method interface for getting default type for components by method reference.
-     *
-     * @param <DefaultType> the type for the default value
-     */
-    public interface DefaultGetter<DefaultType> {
-
-        /**
-         * The logic for getting the default value if all attempt fails
-         *
-         * @param checker a checker as the argument of constructor
-         * @return the default value
-         */
-        DefaultType getDefault(BaseTypeChecker checker);
-    }
 
     /**
      * Find a component named with the checker naming convention.
@@ -41,7 +26,7 @@ public class ComponentFinder {
     public static <T> T find(
             BaseTypeChecker checker,
             String replacement,
-            DefaultGetter<T> defaultGetter,
+            Supplier<T> defaultGetter,
             Class<?>[] constructorParamTypes,
             Object[] constructorArgs) {
         // Try to reflectively load the component.
@@ -58,7 +43,7 @@ public class ComponentFinder {
             }
             checkerClass = checkerClass.getSuperclass();
         }
-        return defaultGetter.getDefault(checker);
+        return defaultGetter.get();
     }
 
     /**
@@ -72,7 +57,7 @@ public class ComponentFinder {
      * @return the properly-named component found
      */
     public static <T> T findAndInitWithChecker(
-            BaseTypeChecker checker, String replacement, DefaultGetter<T> defaultGetter) {
+            BaseTypeChecker checker, String replacement, Supplier<T> defaultGetter) {
         return find(
                 checker,
                 replacement,

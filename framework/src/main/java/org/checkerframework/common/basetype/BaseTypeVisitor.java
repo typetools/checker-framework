@@ -249,13 +249,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Create a default type factory if {@link ComponentFinder} failed to find a factory
      *
-     * @param checker the checker previously passed to {@link
-     *     ComponentFinder#findAndInitWithChecker(BaseTypeChecker, String,
-     *     ComponentFinder.DefaultGetter)}
      * @return a {@link BaseAnnotatedTypeFactory}
      */
     @SuppressWarnings("unchecked")
-    private Factory createDefaultTypeFactory(BaseTypeChecker checker) {
+    private Factory createDefaultTypeFactory() {
         try {
             return (Factory) new BaseAnnotatedTypeFactory(checker);
         } catch (Throwable t) {

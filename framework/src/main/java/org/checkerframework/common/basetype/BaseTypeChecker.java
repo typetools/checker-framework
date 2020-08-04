@@ -213,7 +213,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      */
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        return ComponentFinder.findAndInitWithChecker(this, "Visitor", BaseTypeVisitor::new);
+        return ComponentFinder.findAndInitWithChecker(
+                this, "Visitor", () -> new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this));
     }
 
     /**

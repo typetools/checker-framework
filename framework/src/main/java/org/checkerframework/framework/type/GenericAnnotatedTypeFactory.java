@@ -400,7 +400,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return ComponentFinder.find(
                 checker,
                 "Analysis",
-                checker1 -> {
+                () -> {
                     // If an analysis couldn't be loaded reflectively, return the
                     // default.
                     List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
@@ -409,7 +409,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         tmp.add(Pair.of(fieldVal.first, (CFValue) fieldVal.second));
                     }
                     return (FlowAnalysis)
-                            new CFAnalysis(checker1, (GenericAnnotatedTypeFactory) this, tmp);
+                            new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
                 },
                 new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
                 new Object[] {checker, this, fieldValues});
@@ -439,7 +439,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return ComponentFinder.find(
                 checker,
                 "Transfer",
-                checker1 -> {
+                () -> {
                     @SuppressWarnings("unchecked")
                     TransferFunction ret =
                             (TransferFunction)
