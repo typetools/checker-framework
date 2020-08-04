@@ -29,8 +29,8 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
     protected State state;
     /** The current value, non-null when the state is SINGLETON. */
     protected @Nullable T value;
-    /** The wrapped set, non-null when the state is ANY. */
-    protected @Nullable Set<T> set;
+    /** The wrapped collection, non-null when the state is ANY. */
+    protected @Nullable Collection<T> set;
 
     /** Create an AbstractMostlySingleton. */
     protected AbstractMostlySingleton(State s) {
