@@ -20,7 +20,7 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "interning"}) // class is supposed to use identity
     public boolean add(T e) {
         switch (state) {
             case EMPTY:

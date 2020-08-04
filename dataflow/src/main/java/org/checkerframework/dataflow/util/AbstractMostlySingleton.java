@@ -10,12 +10,12 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Base class for arbitrary-size sets that very efficient (more efficient than HashSet) for 0 and 1
- * elements.
+ * Base class for arbitrary-size sets that are very efficient (more efficient than HashSet) for 0
+ * and 1 elements.
  */
 public abstract class AbstractMostlySingleton<T extends Object> implements Set<T> {
 
-    /** The possible states of the collection. */
+    /** The possible states of a set. */
     public enum State {
         /** An empty set. */
         EMPTY,
@@ -29,8 +29,8 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
     protected State state;
     /** The current value, non-null when the state is SINGLETON. */
     protected @Nullable T value;
-    /** The wrapped collection, non-null when the state is ANY. */
-    protected @Nullable Collection<T> set;
+    /** The wrapped set, non-null when the state is ANY. */
+    protected @Nullable Set<T> set;
 
     /** Create an AbstractMostlySingleton. */
     protected AbstractMostlySingleton(State s) {
