@@ -1028,6 +1028,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         String internal = internalVisualize(castedViz);
         String footer = castedViz.visualizeStoreFooter();
         if (internal.trim().isEmpty()) {
+            // This removes trailing spaces from header and leading spaces from footer.
             return header.replaceAll("\\s+$", "") + footer.replaceAll("^\\s+", "");
         } else {
             return header + internal + footer;
