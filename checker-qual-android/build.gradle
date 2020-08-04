@@ -53,3 +53,43 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/checker-qual-android-pom.xml")
     }
 }
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final checkerQualPom(publication) {
+    publication.from components.java
+    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+    publication.pom {
+        name = 'Checker Qual Android'
+        description = 'Checker Qual Android is the set of annotations (qualifiers) and supporting classes\n' +
+                'used by the Checker Framework to type check Java source code.\n' +
+                '\n' +
+                'The checker-qual-android artifact is identical to the checker-qual\n' +
+                'artifact, except that in checker-qual-android annotations have classfile\n' +
+                'retention.  The default Android Gradle plugin retains types annotated with\n' +
+                'runtime annotations in the main dex, but strips out class-retention\n' +
+                'annotations.\n' +
+                '\n' +
+                'Please\n' +
+                'see artifact:\n' +
+                'org.checkerframework:checker'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'http://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        remote(MavenPublication) {
+            checkerQualPom it
+        }
+
+        local(MavenPublication) {
+            checkerQualPom it
+        }
+    }
+}

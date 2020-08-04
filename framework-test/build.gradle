@@ -33,3 +33,33 @@ task deployArtifactsToSonatype {
         mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/framework-test-pom.xml")
     }
 }
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final frameworkTest(publication) {
+    publication.from components.java
+    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+    publication.pom {
+        name = 'Checker Framework Testing Library'
+        description = 'Framework-Test is a collection of utility classes for testing checkers that use the Checker Framework.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        remote(MavenPublication) {
+            frameworkTest it
+        }
+
+        local(MavenPublication) {
+            frameworkTest it
+        }
+    }
+}

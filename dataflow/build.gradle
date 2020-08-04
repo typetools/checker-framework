@@ -78,3 +78,33 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
         }
     }
 }
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final dataflowPom(publication) {
+    publication.from components.java
+    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+    publication.pom {
+        name = 'Dataflow'
+        description = 'Dataflow is a dataflow framework based on the javac compiler.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        remote(MavenPublication) {
+            dataflowPom it
+        }
+
+        local(MavenPublication) {
+            dataflowPom it
+        }
+    }
+}
