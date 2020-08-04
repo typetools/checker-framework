@@ -1,6 +1,7 @@
 package h1h2checker;
 
 import com.sun.source.tree.Tree;
+import h1h2checker.quals.H1Invalid;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -9,7 +10,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import h1h2checker.quals.H1Invalid;
 
 public class H1H2Visitor extends BaseTypeVisitor<H1H2AnnotatedTypeFactory> {
 

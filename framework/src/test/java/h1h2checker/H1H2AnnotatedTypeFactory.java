@@ -3,16 +3,6 @@ package h1h2checker;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import java.lang.annotation.Annotation;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import h1h2checker.quals.H1Bot;
 import h1h2checker.quals.H1Invalid;
 import h1h2checker.quals.H1Poly;
@@ -24,6 +14,16 @@ import h1h2checker.quals.H2Poly;
 import h1h2checker.quals.H2S1;
 import h1h2checker.quals.H2S2;
 import h1h2checker.quals.H2Top;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 

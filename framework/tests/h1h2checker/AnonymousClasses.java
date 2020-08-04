@@ -1,6 +1,6 @@
-import java.util.Comparator;
 import h1h2checker.quals.H1S1;
 import h1h2checker.quals.H1S2;
+import java.util.Comparator;
 
 class AnonymousClasses {
     private <@H1S1 T extends @H1S1 Comparator<T>> void testGenericAnonymous() {
