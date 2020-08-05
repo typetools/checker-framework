@@ -21,6 +21,11 @@ public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements Specia
         return specialType;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns an empty list.
+     */
     @Override
     public List<Node> getNodes() {
         return Collections.emptyList();

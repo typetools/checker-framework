@@ -40,6 +40,11 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
         return getNodes();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns an non-empty list.
+     */
     @Override
     public List<Node> getNodes() {
         return Collections.unmodifiableList(contents);

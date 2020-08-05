@@ -93,6 +93,11 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
         elseFlowRule = rule;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns an empty list.
+     */
     @Override
     public List<Node> getNodes() {
         return Collections.emptyList();

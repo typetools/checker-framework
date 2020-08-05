@@ -40,6 +40,11 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
         return node;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns a singleton list.
+     */
     @Override
     public List<Node> getNodes() {
         return Collections.singletonList(getNode());
