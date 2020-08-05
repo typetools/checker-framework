@@ -2,7 +2,9 @@ package org.checkerframework.dataflow.cfg.block;
 
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
 
 /** Represents a basic block in a control flow graph. */
 public interface Block {
@@ -52,9 +54,30 @@ public interface Block {
     Set<Block> getSuccessors();
 
     /**
-     * Returns the nodes contained within this basic block.
+     * Returns the nodes contained within this basic block. The list may be empty.
+     *
+     * <p>The following invariant holds.
+     *
+     * <pre>
+     * forall n in getNodes() :: n.getBlock() == this
+     * </pre>
      *
      * @return the nodes contained within this basic block
      */
+    @Pure
     List<Node> getNodes();
+
+    /**
+     * Returns the last node of this block, or null if none.
+     *
+     * @return the last node of this block or {@code null}
+     */
+    @Nullable Node getLastNode();
+
+    /**
+     * Returns the successors of this basic block.
+     *
+     * @return the successors of this basic block
+     */
+    Set<Block> getSuccessors();
 }

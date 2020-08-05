@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /** The implementation of a {@link SpecialBlock}. */
@@ -20,9 +21,19 @@ public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements Specia
         return specialType;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns an empty list.
+     */
     @Override
     public List<Node> getNodes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public @Nullable Node getLastNode() {
+        return null;
     }
 
     @Override

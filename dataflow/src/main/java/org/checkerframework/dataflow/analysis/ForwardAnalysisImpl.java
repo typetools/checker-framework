@@ -124,7 +124,7 @@ public class ForwardAnalysisImpl<
                     currentInput = inputBefore.copy();
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
-                    for (Node n : rb.getContents()) {
+                    for (Node n : rb.getNodes()) {
                         assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
@@ -274,7 +274,7 @@ public class ForwardAnalysisImpl<
                         // looking for.
                         TransferInput<V, S> store = transferInput;
                         TransferResult<V, S> transferResult;
-                        for (Node n : rb.getContents()) {
+                        for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
                             if (n == node && before) {
                                 return store.getRegularStore();
