@@ -1,6 +1,8 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -21,15 +23,18 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
 
     @Override
     @SuppressWarnings("fallthrough")
-    public boolean add(T e) {
+    public boolean add(@FindDistinct T e) {
         switch (state) {
             case EMPTY:
                 state = State.SINGLETON;
                 value = e;
                 return true;
             case SINGLETON:
+                if (value == e) {
+                    return false;
+                }
                 state = State.ANY;
-                set = new ArrayList<>();
+                set = Collections.newSetFromMap(new IdentityHashMap<>());
                 assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
                 value = null;
