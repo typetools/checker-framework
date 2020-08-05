@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -16,9 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -170,7 +172,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Deque<Block> succs = getSuccessors(cur);
+            Collection<Block> succs = cur.getSuccessors();
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {
@@ -183,6 +185,19 @@ public class ControlFlowGraph {
         }
 
         return visited;
+    }
+
+    /**
+     * Returns all nodes in this control flow graph.
+     *
+     * @return all nodes in this control flow graph
+     */
+    public List<Node> getAllNodes() {
+        List<Node> result = new ArrayList<>();
+        for (Block b : getAllBlocks()) {
+            result.addAll(b.getNodes());
+        }
+        return result;
     }
 
     /**
@@ -204,7 +219,7 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Deque<Block> successors = getSuccessors(cur);
+                Collection<Block> successors = cur.getSuccessors();
                 successors.removeAll(visited);
                 worklist.addAll(successors);
             }
@@ -217,11 +232,12 @@ public class ControlFlowGraph {
     /**
      * Get a list of all successor Blocks for cur.
      *
+     * @param cur a block whose successors to retrieve
      * @return a Deque of successor Blocks
      */
     private Deque<Block> getSuccessors(Block cur) {
         Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
+        if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
             ConditionalBlock ccur = ((ConditionalBlock) cur);
             succs.add(ccur.getThenSuccessor());
             succs.add(ccur.getElseSuccessor());
@@ -233,7 +249,7 @@ public class ControlFlowGraph {
             }
         }
 
-        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+        if (cur.getType() == Block.BlockType.EXCEPTION_BLOCK) {
             ExceptionBlock ecur = (ExceptionBlock) cur;
             for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
                 succs.addAll(exceptionSuccSet);
@@ -243,7 +259,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the copied tree-lookup map.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+     * #getNodesCorrespondingToTree} uses that field.
      *
      * @return the copied tree-lookup map
      */
@@ -310,5 +327,33 @@ public class ControlFlowGraph {
         }
         String stringGraph = (String) res.get("stringGraph");
         return stringGraph == null ? super.toString() : stringGraph;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a string representation of this
+     */
+    public String toStringDebug() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("ControlFlowGraph{%n  "),
+                        String.format("%n  }"));
+        result.add("entryBlock=" + entryBlock);
+        result.add("regularExitBlock=" + regularExitBlock);
+        result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        if (astString.length() > 65) {
+            astString = "\"" + astString.substring(0, 60) + "\"";
+        }
+        result.add("underlyingAST=" + underlyingAST);
+        result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
+        result.add("declaredClasses=" + declaredClasses);
+        result.add("declaredLambdas=" + declaredLambdas);
+        return result.toString();
     }
 }
