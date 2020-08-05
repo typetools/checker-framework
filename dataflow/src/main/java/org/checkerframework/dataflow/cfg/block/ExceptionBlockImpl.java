@@ -45,6 +45,11 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
         return Collections.singletonList(getNode());
     }
 
+    @Override
+    public @Nullable Node getLastNode() {
+        return null;
+    }
+
     /**
      * Add an exceptional successor.
      *

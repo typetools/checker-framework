@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.block;
 
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -65,4 +66,11 @@ public interface Block {
      */
     @Pure
     List<Node> getNodes();
+
+    /**
+     * Returns the last node of this block, or null if none.
+     *
+     * @return the last node of this block or {@code null}
+     */
+    @Nullable Node getLastNode();
 }

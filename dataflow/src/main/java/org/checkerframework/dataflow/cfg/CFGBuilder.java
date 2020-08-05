@@ -1309,7 +1309,7 @@ public class CFGBuilder {
                             assert target != null;
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
+                                            new RegularBlockImpl() {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setThenSuccessor(successor);
@@ -1320,7 +1320,7 @@ public class CFGBuilder {
                             assert target != null;
                             missingEdges.add(
                                     new Tuple<>(
-                                            new SingleSuccessorBlockImpl(BlockType.REGULAR_BLOCK) {
+                                            new RegularBlockImpl() {
                                                 @Override
                                                 public void setSuccessor(BlockImpl successor) {
                                                     cb.setElseSuccessor(successor);

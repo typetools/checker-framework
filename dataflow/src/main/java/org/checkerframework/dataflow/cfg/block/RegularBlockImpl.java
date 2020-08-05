@@ -46,6 +46,11 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
     }
 
     @Override
+    public @Nullable Node getLastNode() {
+        return contents.get(contents.size() - 1);
+    }
+
+    @Override
     public @Nullable BlockImpl getRegularSuccessor() {
         return successor;
     }
