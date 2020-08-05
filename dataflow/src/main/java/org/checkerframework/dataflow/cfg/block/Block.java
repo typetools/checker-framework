@@ -73,4 +73,11 @@ public interface Block {
      * @return the last node of this block or {@code null}
      */
     @Nullable Node getLastNode();
+
+    /**
+     * Returns the successors of this basic block.
+     *
+     * @return the successors of this basic block
+     */
+    Set<Block> getSuccessors();
 }
