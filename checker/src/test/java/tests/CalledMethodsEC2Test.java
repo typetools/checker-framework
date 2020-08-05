@@ -13,7 +13,7 @@ public class CalledMethodsEC2Test extends CheckerFrameworkPerDirectoryTest {
                 CalledMethodsChecker.class,
                 "calledmethods-cve",
                 "-Anomsgtext",
-                "-AcalledMethodsUseValueChecker",
+                "-AuseValueChecker",
                 "-nowarn");
     }
 

@@ -32,7 +32,7 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
                 "-Anomsgtext",
                 "-AdisableFrameworkSupports=AutoValue,Lombok",
                 // The next option is so that we can run the EC2 tests under this configuration.
-                "-AcalledMethodsUseValueChecker",
+                "-ACalledMethodsChecker_useValueChecker",
                 "-nowarn");
     }
 

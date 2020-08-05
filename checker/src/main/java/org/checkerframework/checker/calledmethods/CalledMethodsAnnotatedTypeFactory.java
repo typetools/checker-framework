@@ -45,7 +45,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     /**
      * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing
      * calls to the AWS SDK. Defaults to false. Controlled by the command-line option {@code
-     * -AcalledMethodsUseValueChecker}.
+     * -AuseValueChecker}.
      */
     private final boolean useValueChecker;
 

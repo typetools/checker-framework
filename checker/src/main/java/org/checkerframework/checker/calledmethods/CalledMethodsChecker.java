@@ -37,7 +37,7 @@ public class CalledMethodsChecker extends BaseTypeChecker {
      * If this option is supplied, use the Value Checker to reduce false positives when analyzing
      * calls to the AWS SDK.
      */
-    public static final String USE_VALUE_CHECKER = "calledMethodsUseValueChecker";
+    public static final String USE_VALUE_CHECKER = "useValueChecker";
 
     /**
      * If this option is supplied, count the number of analyzed calls to build() in supported
@@ -79,7 +79,10 @@ public class CalledMethodsChecker extends BaseTypeChecker {
         // BaseTypeChecker#hasOption calls this method (so that all subcheckers' options are
         // considered),
         // so the processingEnvironment must be checked for the option directly.
-        if (this.processingEnv.getOptions().containsKey(USE_VALUE_CHECKER)) {
+        if (this.processingEnv.getOptions().containsKey(USE_VALUE_CHECKER)
+                || this.processingEnv
+                        .getOptions()
+                        .containsKey(this.getClass().getSimpleName() + "_" + USE_VALUE_CHECKER)) {
             checkers.add(ValueChecker.class);
         }
         return checkers;
