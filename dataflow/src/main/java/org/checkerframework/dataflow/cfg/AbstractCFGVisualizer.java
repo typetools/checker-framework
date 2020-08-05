@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.cfg;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -213,7 +211,7 @@ public abstract class AbstractCFGVisualizer<
         if (analysis != null) {
             sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
             if (verbose) {
-                Node lastNode = getLastNode(bb);
+                Node lastNode = bb.getLastNode();
                 if (lastNode != null) {
                     sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
                 }
@@ -249,17 +247,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the contents of the block, as a list of nodes
      */
     protected List<Node> addBlockContent(Block bb) {
-        switch (bb.getType()) {
-            case REGULAR_BLOCK:
-                return ((RegularBlock) bb).getContents();
-            case EXCEPTION_BLOCK:
-                return Collections.singletonList(((ExceptionBlock) bb).getNode());
-            case CONDITIONAL_BLOCK:
-            case SPECIAL_BLOCK:
-                return Collections.emptyList();
-            default:
-                throw new BugInCF("Unrecognized basic block type: " + bb.getType());
-        }
+        return bb.getNodes();
     }
 
     /**
@@ -405,27 +393,6 @@ public abstract class AbstractCFGVisualizer<
                 return "<exceptional-exit>" + separator;
             default:
                 throw new BugInCF("Unrecognized special block type: " + sbb.getType());
-        }
-    }
-
-    /**
-     * Returns the last node of a block, or null if none.
-     *
-     * @param bb the block
-     * @return the last node of this block or {@code null}
-     */
-    protected @Nullable Node getLastNode(Block bb) {
-        switch (bb.getType()) {
-            case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) bb).getContents();
-                return blockContents.get(blockContents.size() - 1);
-            case CONDITIONAL_BLOCK:
-            case SPECIAL_BLOCK:
-                return null;
-            case EXCEPTION_BLOCK:
-                return ((ExceptionBlock) bb).getNode();
-            default:
-                throw new Error("Unrecognized block type: " + bb.getType());
         }
     }
 
