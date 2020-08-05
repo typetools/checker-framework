@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -12,7 +11,6 @@ import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
@@ -285,7 +283,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 Node firstNode;
                 switch (block.getType()) {
                     case REGULAR_BLOCK:
-                        firstNode = ((RegularBlock) block).getContents().get(0);
+                        firstNode = block.getNodes().get(0);
                         break;
                     case EXCEPTION_BLOCK:
                         firstNode = ((ExceptionBlock) block).getNode();
@@ -317,9 +315,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         Analysis<V, S, ?> analysis = transferInput.analysis;
         switch (analysis.getDirection()) {
             case FORWARD:
-                Node lastNode = getLastNode(block);
+                Node lastNode = block.getLastNode();
                 if (lastNode == null) {
-                    // This block doesn't contains any node, return the store in the transfer input
+                    // This block doesn't contain any node, return the store in the transfer input
                     return transferInput.getRegularStore();
                 }
                 return analysis.runAnalysisFor(
@@ -328,27 +326,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 return transferInput.getRegularStore();
             default:
                 throw new BugInCF("Unknown direction: " + analysis.getDirection());
-        }
-    }
-
-    /**
-     * Returns the last node of the given block, or {@code null} if none.
-     *
-     * @param block the block
-     * @return the last node of this block or {@code null}
-     */
-    protected @Nullable Node getLastNode(Block block) {
-        switch (block.getType()) {
-            case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) block).getContents();
-                return blockContents.get(blockContents.size() - 1);
-            case CONDITIONAL_BLOCK:
-            case SPECIAL_BLOCK:
-                return null;
-            case EXCEPTION_BLOCK:
-                return ((ExceptionBlock) block).getNode();
-            default:
-                throw new BugInCF("Unrecognized block type: " + block.getType());
         }
     }
 
