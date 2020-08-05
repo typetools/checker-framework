@@ -992,7 +992,7 @@ public class CFGBuilder {
                         RegularBlockImpl rs = (RegularBlockImpl) succ;
                         if (rs.getPredecessors().size() == 1) {
                             b.setSuccessor(rs.getRegularSuccessor());
-                            b.addNodes(rs.getContents());
+                            b.addNodes(rs.getNodes());
                             rs.getRegularSuccessor().removePredecessor(rs);
                         }
                     }

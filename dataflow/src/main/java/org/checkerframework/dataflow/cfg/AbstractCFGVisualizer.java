@@ -251,7 +251,7 @@ public abstract class AbstractCFGVisualizer<
     protected List<Node> addBlockContent(Block bb) {
         switch (bb.getType()) {
             case REGULAR_BLOCK:
-                return ((RegularBlock) bb).getContents();
+                return ((RegularBlock) bb).getNodes();
             case EXCEPTION_BLOCK:
                 return Collections.singletonList(((ExceptionBlock) bb).getNode());
             case CONDITIONAL_BLOCK:
@@ -417,7 +417,7 @@ public abstract class AbstractCFGVisualizer<
     protected @Nullable Node getLastNode(Block bb) {
         switch (bb.getType()) {
             case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) bb).getContents();
+                List<Node> blockContents = ((RegularBlock) bb).getNodes();
                 return blockContents.get(blockContents.size() - 1);
             case CONDITIONAL_BLOCK:
             case SPECIAL_BLOCK:

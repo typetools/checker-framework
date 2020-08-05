@@ -284,7 +284,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 Node firstNode;
                 switch (block.getType()) {
                     case REGULAR_BLOCK:
-                        firstNode = ((RegularBlock) block).getContents().get(0);
+                        firstNode = ((RegularBlock) block).getNodes().get(0);
                         break;
                     case EXCEPTION_BLOCK:
                         firstNode = ((ExceptionBlock) block).getNode();
@@ -339,7 +339,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     protected @Nullable Node getLastNode(Block block) {
         switch (block.getType()) {
             case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) block).getContents();
+                List<Node> blockContents = ((RegularBlock) block).getNodes();
                 return blockContents.get(blockContents.size() - 1);
             case CONDITIONAL_BLOCK:
             case SPECIAL_BLOCK:

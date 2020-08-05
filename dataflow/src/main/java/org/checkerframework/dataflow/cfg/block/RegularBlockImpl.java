@@ -34,14 +34,15 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
         }
     }
 
+    @SuppressWarnings("deprecation") // implementation of deprecated method in interface
     @Override
     public List<Node> getContents() {
-        return Collections.unmodifiableList(contents);
+        return getNodes();
     }
 
     @Override
     public List<Node> getNodes() {
-        return getContents();
+        return Collections.unmodifiableList(contents);
     }
 
     @Override
