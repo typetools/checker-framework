@@ -12,6 +12,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -82,7 +83,7 @@ public class TypecheckExecutor {
                     "javac "
                             + String.join(" ", options)
                             + " "
-                            + SystemUtil.join(" ", configuration.getTestSourceFiles()));
+                            + UtilPlume.join(" ", configuration.getTestSourceFiles()));
         }
 
         JavaCompiler.CompilationTask task =

@@ -25,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+import org.plumelib.util.UtilPlume;
 
 public class TestUtilities {
 
@@ -330,19 +331,19 @@ public class TestUtilities {
             pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
             pw.println("Expected:");
-            pw.println(SystemUtil.joinLines(expected));
+            pw.println(UtilPlume.joinLines(expected));
             pw.println();
 
             pw.println("Actual:");
-            pw.println(SystemUtil.joinLines(actual));
+            pw.println(UtilPlume.joinLines(actual));
             pw.println();
 
             pw.println("Missing:");
-            pw.println(SystemUtil.joinLines(missing));
+            pw.println(UtilPlume.joinLines(missing));
             pw.println();
 
             pw.println("Unexpected:");
-            pw.println(SystemUtil.joinLines(unexpected));
+            pw.println(UtilPlume.joinLines(unexpected));
             pw.println();
 
             pw.println();
