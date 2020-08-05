@@ -1006,8 +1006,8 @@ public class FlowExpressionParseUtil {
          *
          * @return a verbose printed representation of this
          */
-        public String debugToString() {
-            return debugToString(4);
+        public String toStringDebug() {
+            return toStringDebug(4);
         }
 
         /**
@@ -1016,12 +1016,12 @@ public class FlowExpressionParseUtil {
          *
          * @return a verbose printed representation of this
          */
-        public String debugToString(int indent) {
+        public String toStringDebug(int indent) {
             String indentString = String.join("", Collections.nCopies(indent, " "));
             StringJoiner sj = new StringJoiner(indentString, indentString, "");
-            sj.add(String.format("receiver=%s%n", receiver.debugToString()));
+            sj.add(String.format("receiver=%s%n", receiver.toStringDebug()));
             sj.add(String.format("arguments=%s%n", arguments));
-            sj.add(String.format("outerReceiver=%s%n", outerReceiver.debugToString()));
+            sj.add(String.format("outerReceiver=%s%n", outerReceiver.toStringDebug()));
             sj.add(String.format("checkerContext=%s%n", "..."));
             // sj.add(String.format("checkerContext=%s%n", checkerContext));
             sj.add(String.format("parsingMember=%s%n", parsingMember));

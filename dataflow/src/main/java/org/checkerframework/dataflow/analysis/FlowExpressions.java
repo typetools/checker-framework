@@ -549,7 +549,7 @@ public class FlowExpressions {
          *
          * @return a verbose printed representation of this
          */
-        public String debugToString() {
+        public String toStringDebug() {
             return String.format(
                     "Receiver (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
         }
