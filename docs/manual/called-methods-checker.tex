@@ -1,5 +1,11 @@
 \htmlhr
-\chapterAndLabel{Called Methods Checker for the builder pattern}{called-methods-checker}
+\chapterAndLabel{Called Methods Checker}{called-methods-checker}
+
+The Called Methods Checker tracks the names of methods that have definitely been called
+on each object in a program. This checker is useful for checking any property of the form
+"call method A before method B." The Called Methods Checker provides built-in support for one
+such property: that clients of classes that use the builder pattern for object construction
+always provide all required arguments before calling \<build()>.
 
 The builder pattern is a flexible and readable way to construct objects, but it is error-prone.
 For example, failing to provide a required argument causes a run-time error that manifests during testing
@@ -10,8 +16,10 @@ never omitting a required argument. The checker has built-in support for \href{h
 (see the caveats about Lombok in \chapterpageref{called-methods-lombok}) and
 \href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
 Programmers can extend it to other builders by writing method specifications.
-The Called Methods Checker can also be used to verify any property of the form "foo() must be called
+
+The Called Methods Checker can also be used to verify other properties of the form "foo() must be called
 before bar()" if the user writes a custom specification; builders are a common example.
+\chapterpageref{called-methods-other} describes another example related to a security property.
 
 The checker performs verification rather than bug-finding.  The checker
 might yield a false positive warning when your code is too tricky for it to
@@ -145,3 +153,19 @@ and assigning a default value to the builder's field), the checker will treat th
 \emph{most} of the time. In particular, it will not treat it as defaulted if it is defined in bytecode rather
 than in source code.
 \end{itemize}
+
+\sectionAndLabel{Using the Called Methods Checker for properties unrelated to builders}{called-methods-other}
+
+The Called Methods Checker can be used to verify any property of the form "always call A before B", even
+if the property is unrelated to builders. For example, consider the AWS EC2 \<describeImages> API, which
+clients use during the process of initializing a new cloud instance.
+\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869} describes how an
+improperly-configured request to this API can make the requesting client vulnerable to a "machine-image sniping"
+attack that would allow a malicious third-party to control the operating system image used to initialize the
+machine. To prevent this attack, clients must specify some trusted source for the image by calling the
+\<withOwners> or \<withImageIds> methods on the request prior to sending it to AWS. Using a stub file for the
+\<describeImages> API
+(\href{https://github.com/typetools/checker-framework/blob/master/checker/src/main/java/org/checkerframework/calledmethods/DescribeImages.astub}{DescribeImages.astub}),
+the Called Methods Checker can prove that a client is not vulnerable to such an attack. To improve precision,
+the \<-AcalledMethodsUseValueChecker> command-line option to treat provably-safe calls to the \<withFilters>
+method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or \<withImageIds> methods.
