@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 
@@ -24,7 +26,20 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
         return successor;
     }
 
-    /** Set a basic block as the successor of this block. */
+    @Override
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>();
+        if (successor != null) {
+            result.add(successor);
+        }
+        return result;
+    }
+
+    /**
+     * Set a basic block as the successor of this block.
+     *
+     * @param successor the block that will be the successor of this
+     */
     public void setSuccessor(BlockImpl successor) {
         this.successor = successor;
         successor.addPredecessor(this);
