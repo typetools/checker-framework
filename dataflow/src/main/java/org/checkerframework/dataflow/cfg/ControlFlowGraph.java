@@ -165,7 +165,7 @@ public class ControlFlowGraph {
      * @return the set of all basic block in this control flow graph
      */
     public Set<Block> getAllBlocks(
-                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -198,7 +198,7 @@ public class ControlFlowGraph {
      * @return all nodes in this control flow graph
      */
     public List<Node> getAllNodes(
-                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> result = new ArrayList<>();
         for (Block b : getAllBlocks()) {
             result.addAll(b.getNodes());
