@@ -91,7 +91,8 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
 
                     @Override
                     public void remove() {
-                        throw new UnsupportedOperationException();
+                        state = State.EMPTY;
+                        value = null;
                     }
                 };
             case ANY:

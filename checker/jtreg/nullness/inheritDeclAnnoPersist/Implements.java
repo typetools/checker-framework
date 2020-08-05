@@ -1,4 +1,4 @@
-import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 /*
  * @test
@@ -23,7 +23,7 @@ public class Implements {
 
 class TestWrapper {
     public static String wrap(String... method) {
-        return PluginUtil.joinLines(
-                "class Test extends AbstractClass {", PluginUtil.joinLines(method), "}");
+        return SystemUtil.joinLines(
+                "class Test extends AbstractClass {", SystemUtil.joinLines(method), "}");
     }
 }

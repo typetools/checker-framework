@@ -40,5 +40,12 @@ public interface Block {
      *
      * @return the predecessors of this basic block
      */
-    Set<BlockImpl> getPredecessors();
+    Set<Block> getPredecessors();
+
+    /**
+     * Returns the successors of this basic block.
+     *
+     * @return the successors of this basic block
+     */
+    Set<Block> getSuccessors();
 }

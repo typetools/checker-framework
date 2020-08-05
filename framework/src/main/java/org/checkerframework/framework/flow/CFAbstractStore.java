@@ -1025,7 +1025,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
         StringBuilder sbVisualize = new StringBuilder();
-        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getCanonicalName()));
+        sbVisualize.append(castedViz.visualizeStoreHeader(this.getClass().getSimpleName()));
         sbVisualize.append(internalVisualize(castedViz));
         sbVisualize.append(castedViz.visualizeStoreFooter());
         return sbVisualize.toString();
