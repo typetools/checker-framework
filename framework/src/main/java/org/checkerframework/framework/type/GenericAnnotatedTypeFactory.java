@@ -1468,6 +1468,9 @@ public abstract class GenericAnnotatedTypeFactory<
             return null;
         }
 
+        // Get the synthetic NewArray tree that dataflow creates as the last argument of a call to a
+        // vararg method. Do this by getting the MethodInvocationNode to which "tree" maps. The last
+        // argument node of the MethodInvocationNode stores the synthetic NewArray tree.
         List<Node> args;
         switch (tree.getKind()) {
             case METHOD_INVOCATION:
