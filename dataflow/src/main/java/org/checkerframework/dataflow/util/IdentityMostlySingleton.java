@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.util;
 
 import java.util.ArrayList;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -20,8 +21,8 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
     }
 
     @Override
-    @SuppressWarnings({"fallthrough", "interning"}) // class is supposed to use identity
-    public boolean add(T e) {
+    @SuppressWarnings("fallthrough")
+    public boolean add(@FindDistinct T e) {
         switch (state) {
             case EMPTY:
                 state = State.SINGLETON;
