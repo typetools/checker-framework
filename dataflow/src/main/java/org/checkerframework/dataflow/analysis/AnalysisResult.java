@@ -225,6 +225,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 break;
         }
 
+        // A tree is dead if the tree is a key in the treeLookup map, but does not map to any nodes
+        // that dataflow has given a value.
+
         if (!treeLookup.containsKey(tree)) {
             return false;
         }
