@@ -139,7 +139,6 @@ public class LombokSupport implements FrameworkSupport {
             if (member.getKind() == ElementKind.FIELD) {
                 for (AnnotationMirror anm :
                         atypeFactory.getElementUtils().getAllAnnotationMirrors(member)) {
-                    //	          System.out.println();
                     if (NONNULL_ANNOTATIONS.contains(AnnotationUtils.annotationName(anm))) {
                         requiredPropertyNames.add(member.getSimpleName().toString());
                     }

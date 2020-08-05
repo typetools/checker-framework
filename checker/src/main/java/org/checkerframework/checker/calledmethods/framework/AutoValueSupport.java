@@ -275,7 +275,6 @@ public class AutoValueSupport implements FrameworkSupport {
         // shouldn't have a nullable return
         boolean hasNullable =
                 Stream.concat(
-                                //	        		elements.getAllannotationMirrors()
                                 atypeFactory.getElementUtils().getAllAnnotationMirrors(member)
                                         .stream(),
                                 returnType.getAnnotationMirrors().stream())
