@@ -8,9 +8,11 @@ import org.checkerframework.dataflow.qual.Pure;
 public interface SingleSuccessorBlock extends Block {
 
     /**
-     * Returns the non-exceptional successor block, or {@code null} if there is no successor.
+     * Returns the non-exceptional successor block, or {@code null} if there is no non-exceptional
+     * successor.
      *
-     * @return the non-exceptional successor block, or {@code null} if there is no successor
+     * @return the non-exceptional successor block, or {@code null} if there is no non-exceptional
+     *     successor
      */
     @Pure
     @Nullable Block getSuccessor();

@@ -330,7 +330,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustifiedTerminator;
+        return classCanonicalName + "(" + leftJustifiedTerminator;
     }
 
     @Override

@@ -59,6 +59,15 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     }
 
     @Override
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>(super.getSuccessors());
+        for (Set<? extends Block> blocks : getExceptionalSuccessors().values()) {
+            result.addAll(blocks);
+        }
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "ExceptionBlock(" + node + ")";
     }
