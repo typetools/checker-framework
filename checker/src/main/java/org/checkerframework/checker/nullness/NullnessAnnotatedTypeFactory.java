@@ -610,11 +610,12 @@ public class NullnessAnnotatedTypeFactory
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (!qual1.isInSameHierarchyAs(NULLABLE) || !qual2.isInSameHierarchyAs(NULLABLE)) {
-                return this.leastUpperBoundInitialization(a1, qual1, a2, qual2);
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
             }
             throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
         }
@@ -622,10 +623,11 @@ public class NullnessAnnotatedTypeFactory
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (!qual1.isInSameHierarchyAs(NULLABLE) || !qual2.isInSameHierarchyAs(NULLABLE)) {
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return FBCBOTTOM;
             }
             throw new BugInCF("Unexpected annotations %s %s.", a1, a2);

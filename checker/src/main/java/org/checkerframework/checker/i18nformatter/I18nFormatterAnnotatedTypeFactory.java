@@ -276,14 +276,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror anno1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qual2) {
-            if (qual1.isBottom()) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.isBottom()) {
                 return anno2;
-            } else if (qual2.isBottom()) {
+            } else if (qualifierKind2.isBottom()) {
                 return anno1;
-            } else if (qual1 == I18NFORMAT_KIND && qual2 == I18NFORMAT_KIND) {
+            } else if (qualifierKind1 == I18NFORMAT_KIND && qualifierKind2 == I18NFORMAT_KIND) {
                 I18nConversionCategory[] shorterArgTypesList =
                         treeUtil.formatAnnotationToCategories(anno1);
                 I18nConversionCategory[] longerArgTypesList =
@@ -310,7 +310,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                     resultArgTypes[i] = longerArgTypesList[i];
                 }
                 return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
-            } else if (qual1 == I18NINVALIDFORMAT_KIND && qual2 == I18NINVALIDFORMAT_KIND) {
+            } else if (qualifierKind1 == I18NINVALIDFORMAT_KIND
+                    && qualifierKind2 == I18NINVALIDFORMAT_KIND) {
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno1.getElementValues().isEmpty();
 
@@ -324,7 +325,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                 + " or "
                                 + treeUtil.invalidFormatAnnotationToErrorMessage(anno2)
                                 + ")");
-            } else if (qual1 == I18NFORMATFOR_KIND && AnnotationUtils.areSame(anno1, anno2)) {
+            } else if (qualifierKind1 == I18NFORMATFOR_KIND
+                    && AnnotationUtils.areSame(anno1, anno2)) {
                 // All @I18nFormatFor annotations are unrelated by subtyping.
                 return anno1;
             }
@@ -335,14 +337,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror anno1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qual2) {
-            if (qual1.isTop()) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.isTop()) {
                 return anno2;
-            } else if (qual2.isTop()) {
+            } else if (qualifierKind2.isTop()) {
                 return anno1;
-            } else if (qual1 == I18NFORMAT_KIND && qual2 == I18NFORMAT_KIND) {
+            } else if (qualifierKind1 == I18NFORMAT_KIND && qualifierKind2 == I18NFORMAT_KIND) {
                 I18nConversionCategory[] anno1ArgTypes =
                         treeUtil.formatAnnotationToCategories(anno1);
                 I18nConversionCategory[] anno2ArgTypes =
@@ -363,7 +365,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                             I18nConversionCategory.union(anno1ArgTypes[i], anno2ArgTypes[i]);
                 }
                 return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
-            } else if (qual1 == I18NINVALIDFORMAT_KIND && qual2 == I18NINVALIDFORMAT_KIND) {
+            } else if (qualifierKind1 == I18NINVALIDFORMAT_KIND
+                    && qualifierKind2 == I18NINVALIDFORMAT_KIND) {
 
                 assert !anno2.getElementValues().isEmpty();
 
@@ -377,7 +380,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                 + " and "
                                 + treeUtil.invalidFormatAnnotationToErrorMessage(anno2)
                                 + ")");
-            } else if (qual1 == I18NFORMATFOR_KIND && AnnotationUtils.areSame(anno1, anno2)) {
+            } else if (qualifierKind1 == I18NFORMATFOR_KIND
+                    && AnnotationUtils.areSame(anno1, anno2)) {
                 // All @I18nFormatFor annotations are unrelated by subtyping.
                 return anno1;
             }

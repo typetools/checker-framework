@@ -283,18 +283,23 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
     }
 
     /**
-     * Returns the least upper bound between {@code a1} and {@code a2}.
-     *
-     * <p>This method is only called when the lub is an annotation with elements.
+     * Returns the least upper bound of {@code a1} and {@code a2} in cases where the lub of {@code
+     * qualiferKind1} and {@code qualiferKind2} is a qualifier kind that has elements. If the lub of
+     * {@code qualiferKind1} and {@code qualiferKind2} does not have elements, then {@link
+     * #leastUpperBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
+     * AnnotationMirror} without calling this method.
      *
      * @param a1 first annotation
-     * @param qual1 QualifierKind for {@code a1}
+     * @param qualifierKind1 QualifierKind for {@code a1}
      * @param a2 second annotation
-     * @param qual2 QualifierKind for {@code a2}
+     * @param qualifierKind2 QualifierKind for {@code a2}
      * @return the least upper bound between {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror leastUpperBound(
-            AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
+            AnnotationMirror a1,
+            QualifierKind qualifierKind1,
+            AnnotationMirror a2,
+            QualifierKind qualifierKind2);
 
     @Override
     public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
@@ -312,16 +317,21 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
     }
 
     /**
-     * Returns the greatest lower bound between {@code a1} and {@code a2}.
-     *
-     * <p>This method is only called when the glb is an annotation with elements.
+     * Returns the greatest lower bound of {@code a1} and {@code a2} in cases where the glb of
+     * {@code qualiferKind1} and {@code qualiferKind2} is a qualifier kind that has elements. If the
+     * glb of {@code qualiferKind1} and {@code qualiferKind2} does not have elements, then {@link
+     * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
+     * AnnotationMirror} without calling this method.
      *
      * @param a1 first annotation
-     * @param qual1 QualifierKind for {@code a1}
+     * @param qualifierKind1 QualifierKind for {@code a1}
      * @param a2 second annotation
-     * @param qual2 QualifierKind for {@code a2}
+     * @param qualifierKind2 QualifierKind for {@code a2}
      * @return the greatest lower bound between {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror greatestLowerBound(
-            AnnotationMirror a1, QualifierKind qual1, AnnotationMirror a2, QualifierKind qual2);
+            AnnotationMirror a1,
+            QualifierKind qualifierKind1,
+            AnnotationMirror a2,
+            QualifierKind qualifierKind2);
 }

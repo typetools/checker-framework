@@ -136,36 +136,36 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == FENUM_KIND && qualifierKind2 == FENUM_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 }
                 return FENUM_TOP;
-            } else if (qual1 == FENUM_KIND) {
+            } else if (qualifierKind1 == FENUM_KIND) {
                 return a1;
-            } else if (qual2 == FENUM_KIND) {
+            } else if (qualifierKind2 == FENUM_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
 
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == FENUM_KIND && qual2 == FENUM_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == FENUM_KIND && qualifierKind2 == FENUM_KIND) {
                 return FENUM_BOTTOM;
-            } else if (qual1 == FENUM_KIND) {
+            } else if (qualifierKind1 == FENUM_KIND) {
                 return a2;
-            } else if (qual2 == FENUM_KIND) {
+            } else if (qualifierKind2 == FENUM_KIND) {
                 return a1;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
     }
 }

@@ -253,42 +253,42 @@ public class KeyForAnnotatedTypeFactory
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == KEYFOR_KIND && qual2 == KEYFOR_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.retainAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
-            } else if (qual1 == KEYFOR_KIND) {
+            } else if (qualifierKind1 == KEYFOR_KIND) {
                 return a1;
-            } else if (qual2 == KEYFOR_KIND) {
+            } else if (qualifierKind2 == KEYFOR_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
 
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == KEYFOR_KIND && qual2 == KEYFOR_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
 
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
                 LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
                 set.addAll(a2Values);
                 return createKeyForAnnotationMirrorWithValue(set);
-            } else if (qual1 == KEYFOR_KIND) {
+            } else if (qualifierKind1 == KEYFOR_KIND) {
                 return a1;
-            } else if (qual2 == KEYFOR_KIND) {
+            } else if (qualifierKind2 == KEYFOR_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qual1, qual2);
+            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
     }
 

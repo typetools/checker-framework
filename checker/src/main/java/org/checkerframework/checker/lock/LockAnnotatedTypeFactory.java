@@ -323,10 +323,10 @@ public class LockAnnotatedTypeFactory
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == GUARDEDBY_KIND && qual2 == GUARDEDBY_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
                 List<String> locks2 =
@@ -336,15 +336,16 @@ public class LockAnnotatedTypeFactory
                 } else {
                     return GUARDEDBYUNKNOWN;
                 }
-            } else if (qual1 == GUARDSATISFIED_KIND && qual2 == GUARDSATISFIED_KIND) {
+            } else if (qualifierKind1 == GUARDSATISFIED_KIND
+                    && qualifierKind2 == GUARDSATISFIED_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
                     return GUARDEDBYUNKNOWN;
                 }
-            } else if (qual1 == GUARDEDBYBOTTOM_KIND) {
+            } else if (qualifierKind1 == GUARDEDBYBOTTOM_KIND) {
                 return a2;
-            } else if (qual2 == GUARDEDBYBOTTOM_KIND) {
+            } else if (qualifierKind2 == GUARDEDBYBOTTOM_KIND) {
                 return a1;
             }
             throw new RuntimeException("Unexpected");
@@ -353,10 +354,10 @@ public class LockAnnotatedTypeFactory
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1 == GUARDEDBY_KIND && qual2 == GUARDEDBY_KIND) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
                 List<String> locks2 =
@@ -366,15 +367,16 @@ public class LockAnnotatedTypeFactory
                 } else {
                     return GUARDEDBYBOTTOM;
                 }
-            } else if (qual1 == GUARDSATISFIED_KIND && qual2 == GUARDSATISFIED_KIND) {
+            } else if (qualifierKind1 == GUARDSATISFIED_KIND
+                    && qualifierKind2 == GUARDSATISFIED_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
                     return GUARDEDBYBOTTOM;
                 }
-            } else if (qual1 == GUARDEDBYUNKNOWN_KIND) {
+            } else if (qualifierKind1 == GUARDEDBYUNKNOWN_KIND) {
                 return a2;
-            } else if (qual2 == GUARDEDBYUNKNOWN_KIND) {
+            } else if (qualifierKind2 == GUARDEDBYUNKNOWN_KIND) {
                 return a1;
             }
             throw new RuntimeException("Unexpected");

@@ -575,14 +575,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
-            if (qual1.isBottom()) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.isBottom()) {
                 return a2;
-            } else if (qual2.isBottom()) {
+            } else if (qualifierKind2.isBottom()) {
                 return a1;
-            } else if (qual1 == qual2) {
+            } else if (qualifierKind1 == qualifierKind2) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
@@ -590,19 +590,19 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     @SuppressWarnings("nullness:assignment.type.incompatible")
                     @NonNull AnnotationMirror lub =
                             ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
-                                    .directSuperQualifierMap.get(qual1);
+                                    .directSuperQualifierMap.get(qualifierKind1);
                     return lub;
                 }
             }
-            throw new BugInCF("Unexpected QualifierKinds: %s %s", qual1, qual2);
+            throw new BugInCF("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
         }
 
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror a1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qual2) {
+                QualifierKind qualifierKind2) {
             return UnitsAnnotatedTypeFactory.this.BOTTOM;
         }
     }

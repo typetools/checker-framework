@@ -143,14 +143,14 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected AnnotationMirror leastUpperBound(
                 AnnotationMirror anno1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qual2) {
-            if (qual1.isBottom()) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.isBottom()) {
                 return anno2;
-            } else if (qual2.isBottom()) {
+            } else if (qualifierKind2.isBottom()) {
                 return anno1;
-            } else if (qual1 == FORMAT_KIND && qual2 == FORMAT_KIND) {
+            } else if (qualifierKind1 == FORMAT_KIND && qualifierKind2 == FORMAT_KIND) {
                 ConversionCategory[] shorterArgTypesList =
                         treeUtil.formatAnnotationToCategories(anno1);
                 ConversionCategory[] longerArgTypesList =
@@ -177,7 +177,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     resultArgTypes[i] = longerArgTypesList[i];
                 }
                 return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
-            } else if (qual1 == INVALIDFORMAT_KIND && qual2 == INVALIDFORMAT_KIND) {
+            } else if (qualifierKind1 == INVALIDFORMAT_KIND
+                    && qualifierKind2 == INVALIDFORMAT_KIND) {
 
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
@@ -200,14 +201,14 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected AnnotationMirror greatestLowerBound(
                 AnnotationMirror anno1,
-                QualifierKind qual1,
+                QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qual2) {
-            if (qual1.isTop()) {
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.isTop()) {
                 return anno2;
-            } else if (qual2.isTop()) {
+            } else if (qualifierKind2.isTop()) {
                 return anno1;
-            } else if (qual1 == FORMAT_KIND && qual2 == FORMAT_KIND) {
+            } else if (qualifierKind1 == FORMAT_KIND && qualifierKind2 == FORMAT_KIND) {
                 ConversionCategory[] anno1ArgTypes = treeUtil.formatAnnotationToCategories(anno1);
                 ConversionCategory[] anno2ArgTypes = treeUtil.formatAnnotationToCategories(anno2);
 
@@ -225,7 +226,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     anno3ArgTypes[i] = ConversionCategory.union(anno1ArgTypes[i], anno2ArgTypes[i]);
                 }
                 return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
-            } else if (qual1 == INVALIDFORMAT_KIND && qual2 == INVALIDFORMAT_KIND) {
+            } else if (qualifierKind1 == INVALIDFORMAT_KIND
+                    && qualifierKind2 == INVALIDFORMAT_KIND) {
 
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
