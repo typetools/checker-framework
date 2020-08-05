@@ -52,7 +52,7 @@ public interface Block {
     Set<Block> getSuccessors();
 
     /**
-     * Returns the nodes contained within this basic block.
+     * Returns the nodes contained within this basic block. The list may be empty.
      *
      * @return the nodes contained within this basic block
      */

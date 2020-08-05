@@ -223,14 +223,10 @@ Set the \code{jsr308javac} property:
 %END LATEX
 \begin{Verbatim}
   <property environment="env"/>
-
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
-      <os family="windows" />
+    <os family="windows" />
   </condition>
-
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
@@ -268,6 +264,8 @@ indicated in this example:
 %END LATEX
 
 Fill in each ellipsis (\ldots) from the original compilation target.
+However, do not copy any \<fork=> setting from the original \code{<javac>}
+task invocation.
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
@@ -1082,14 +1080,10 @@ Set the \code{jsr308javac} property:
 %END LATEX
 \begin{Verbatim}
   <property environment="env"/>
-
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-
-  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
-      <os family="windows" />
+    <os family="windows" />
   </condition>
-
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
