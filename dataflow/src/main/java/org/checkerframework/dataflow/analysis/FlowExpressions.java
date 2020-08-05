@@ -548,7 +548,7 @@ public class FlowExpressions {
         /**
          * Print this verbosely, for debugging.
          *
-         * @return a verbose printed representation of this
+         * @return a verbose string representation of this
          */
         public String debugToString() {
             return String.format(

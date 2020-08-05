@@ -342,6 +342,10 @@ public class PluginUtil {
     /**
      * Return true if the system property is set to "true". Return false if the system property is
      * not set or is set to "false". Otherwise, errs.
+     *
+     * @param key system property to check
+     * @return true if the system property is set to "true". Return false if the system property is
+     *     not set or is set to "false". Otherwise, errs.
      */
     public static boolean getBooleanSystemProperty(String key) {
         return Boolean.valueOf(System.getProperty(key, "false"));
