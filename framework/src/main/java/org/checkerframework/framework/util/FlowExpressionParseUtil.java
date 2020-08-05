@@ -1014,7 +1014,8 @@ public class FlowExpressionParseUtil {
          * Format this object verbosely, with each line indented by the given number of spaces but
          * without a trailing newline.
          *
-         * @return a verbose printed representation of this
+         * @param indent the number of spaces to indent the string representation of this
+         * @return a verbose string representation of this
          */
         public String toStringDebug(int indent) {
             String indentString = String.join("", Collections.nCopies(indent, " "));
