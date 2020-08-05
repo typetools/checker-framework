@@ -103,7 +103,7 @@ public class BackwardAnalysisImpl<
                     currentInput = inputAfter.copy();
                     Node firstNode = null;
                     boolean addToWorklistAgain = false;
-                    List<Node> nodeList = rb.getContents();
+                    List<Node> nodeList = rb.getNodes();
                     ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                     while (reverseIter.hasPrevious()) {
                         Node node = reverseIter.previous();
@@ -336,7 +336,7 @@ public class BackwardAnalysisImpl<
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
                         TransferInput<V, S> store = transferInput;
-                        List<Node> nodeList = rBlock.getContents();
+                        List<Node> nodeList = rBlock.getNodes();
                         ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                         while (reverseIter.hasPrevious()) {
                             Node n = reverseIter.previous();

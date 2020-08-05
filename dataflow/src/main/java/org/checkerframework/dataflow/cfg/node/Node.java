@@ -16,9 +16,7 @@ import org.checkerframework.dataflow.qual.Pure;
  *
  * <pre>
  * block == null || block instanceof RegularBlock || block instanceof ExceptionBlock
- * block instanceof RegularBlock &rArr; block.getContents().contains(this)
- * block instanceof ExceptionBlock &rArr; block.getNode() == this
- * block == null &hArr; "This object represents a parameter of the method."
+ * block != null &hArr; block.getNodes().contains(this)
  * </pre>
  *
  * <pre>
@@ -34,7 +32,10 @@ import org.checkerframework.dataflow.qual.Pure;
  */
 public abstract class Node {
 
-    /** The basic block this node belongs to (see invariant about this field above). */
+    /**
+     * The basic block this node belongs to. If null, this object represents a method formal
+     * parameter.
+     */
     protected @Nullable Block block;
 
     /** Is this node an l-value? */
