@@ -12,7 +12,7 @@ public class Exceptions {
 
     void exception(@Nullable Exception m) {
         try {
-
+            System.out.println();
         } catch (Exception e) {
             e.getClass();
             // :: error: (dereference.of.nullable)
@@ -37,6 +37,7 @@ public class Exceptions {
 
     void reassignException() {
         try {
+            System.out.println();
         } catch (RuntimeException e) {
             // :: error: (assignment.type.incompatible)
             e = null;
