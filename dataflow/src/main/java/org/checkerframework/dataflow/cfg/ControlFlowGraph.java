@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -20,7 +21,6 @@ import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -172,7 +172,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Deque<Block> succs = getSuccessors(cur);
+            Collection<Block> succs = cur.getSuccessors();
 
             for (Block b : succs) {
                 if (!visited.contains(b)) {
@@ -206,7 +206,7 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Deque<Block> successors = getSuccessors(cur);
+                Collection<Block> successors = cur.getSuccessors();
                 successors.removeAll(visited);
                 worklist.addAll(successors);
             }
