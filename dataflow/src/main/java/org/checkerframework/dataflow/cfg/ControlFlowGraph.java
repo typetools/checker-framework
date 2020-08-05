@@ -211,7 +211,7 @@ public class ControlFlowGraph {
      * graph.
      */
     private void removeDeadNodesFromTreeLookup(
-                    @UnknownInitialization(org.checkerframework.dataflow.cfg.ControlFlowGraph.class) ControlFlowGraph this) {
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> allNodes = getAllNodes();
         // Remove references to dead code.
         for (Iterator<Set<Node>> i1 = treeLookup.values().iterator(); i1.hasNext(); ) {
