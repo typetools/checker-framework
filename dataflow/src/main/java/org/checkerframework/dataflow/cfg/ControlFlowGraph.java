@@ -223,7 +223,7 @@ public class ControlFlowGraph {
      */
     private Deque<Block> getSuccessors(Block cur) {
         Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
+        if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
             ConditionalBlock ccur = ((ConditionalBlock) cur);
             succs.add(ccur.getThenSuccessor());
             succs.add(ccur.getElseSuccessor());
@@ -235,7 +235,7 @@ public class ControlFlowGraph {
             }
         }
 
-        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+        if (cur.getType() == Block.BlockType.EXCEPTION_BLOCK) {
             ExceptionBlock ecur = (ExceptionBlock) cur;
             for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
                 succs.addAll(exceptionSuccSet);
@@ -320,7 +320,7 @@ public class ControlFlowGraph {
      *
      * @return a string representation of this
      */
-    public String repr() {
+    public String toStringDebug() {
         StringJoiner result =
                 new StringJoiner(
                         String.format("%n  "),
@@ -334,10 +334,10 @@ public class ControlFlowGraph {
             astString = "\"" + astString.substring(0, 60) + "\"";
         }
         result.add("underlyingAST=" + underlyingAST);
-        result.add("treeLookup=" + AnalysisResult.treeLookupRepr(treeLookup));
-        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupRepr(convertedTreeLookup));
+        result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
         result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
-        result.add("returnNodes=" + Node.nodeCollectionRepr(returnNodes));
+        result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);
         return result.toString();

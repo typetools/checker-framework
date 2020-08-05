@@ -164,7 +164,7 @@ public abstract class Node {
      *
      * @return a printed representation of this
      */
-    public String repr() {
+    public String toStringDebug() {
         return String.format(
                 "%s [%s %s %s]",
                 this,
@@ -179,10 +179,10 @@ public abstract class Node {
      * @param nodes a collection of nodes to format
      * @return a printed representation of the given collection
      */
-    public static String nodeCollectionRepr(Collection<? extends Node> nodes) {
+    public static String nodeCollectionToString(Collection<? extends Node> nodes) {
         StringJoiner result = new StringJoiner(", ", "[", "]");
         for (Node n : nodes) {
-            result.add(n.repr());
+            result.add(n.toStringDebug());
         }
         return result.toString();
     }

@@ -450,14 +450,14 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      *
      * @return a string representation of this
      */
-    public String repr() {
+    public String toStringDebug() {
         StringJoiner result =
                 new StringJoiner(
                         String.format("%n  "),
                         String.format("AnalysisResult{%n  "),
                         String.format("%n}"));
-        result.add("nodeValues = " + nodeValuesRepr(nodeValues));
-        result.add("treeLookup = " + treeLookupRepr(treeLookup));
+        result.add("nodeValues = " + nodeValuesToString(nodeValues));
+        result.add("treeLookup = " + treeLookupToString(treeLookup));
         result.add("unaryAssignNodeLookup = " + unaryAssignNodeLookup);
         result.add("finalLocalValues = " + finalLocalValues);
         result.add("stores = " + stores);
@@ -473,7 +473,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * @param nodeValues a map to format
      * @return a printed representation of the given map
      */
-    public static <V> String nodeValuesRepr(Map<Node, V> nodeValues) {
+    public static <V> String nodeValuesToString(Map<Node, V> nodeValues) {
         if (nodeValues.isEmpty()) {
             return "{}";
         }
@@ -481,7 +481,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         result.add("{");
         for (Map.Entry<Node, V> entry : nodeValues.entrySet()) {
             Node key = entry.getKey();
-            result.add(String.format("%s => %s", key.repr(), entry.getValue()));
+            result.add(String.format("%s => %s", key.toStringDebug(), entry.getValue()));
         }
         result.add("}");
         return result.toString();
@@ -494,7 +494,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * @param treeLookup a map to format
      * @return a printed representation of the given map
      */
-    public static String treeLookupRepr(Map<Tree, Set<Node>> treeLookup) {
+    public static String treeLookupToString(Map<Tree, Set<Node>> treeLookup) {
         if (treeLookup.isEmpty()) {
             return "{}";
         }
@@ -506,7 +506,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
             if (treeString.length() > 65) {
                 treeString = "\"" + treeString.substring(0, 60) + "...\"";
             }
-            result.add(treeString + " => " + Node.nodeCollectionRepr(entry.getValue()));
+            result.add(treeString + " => " + Node.nodeCollectionToString(entry.getValue()));
         }
         result.add("}");
         return result.toString();
