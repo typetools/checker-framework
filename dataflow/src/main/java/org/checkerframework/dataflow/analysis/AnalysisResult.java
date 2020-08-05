@@ -466,7 +466,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns a verbose printed representation, useful for debugging. The map has the same type as
+     * Returns a verbose string representation, useful for debugging. The map has the same type as
      * the {@code nodeValues} field.
      *
      * @param <V> the type of values in the map
@@ -488,7 +488,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     }
 
     /**
-     * Returns a verbose printed representation of a map, useful for debugging. The map has the same
+     * Returns a verbose string representation of a map, useful for debugging. The map has the same
      * type as the {@code treeLookup} field.
      *
      * @param treeLookup a map to format

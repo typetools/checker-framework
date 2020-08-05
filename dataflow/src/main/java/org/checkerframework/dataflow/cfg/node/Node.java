@@ -160,7 +160,7 @@ public abstract class Node {
     }
 
     /**
-     * Returns a verbose printed representation of this, useful for debugging.
+     * Returns a verbose string representation of this, useful for debugging.
      *
      * @return a printed representation of this
      */
@@ -174,7 +174,7 @@ public abstract class Node {
     }
 
     /**
-     * Returns a verbose printed representation of a collection of nodes, useful for debugging..
+     * Returns a verbose string representation of a collection of nodes, useful for debugging..
      *
      * @param nodes a collection of nodes to format
      * @return a printed representation of the given collection
