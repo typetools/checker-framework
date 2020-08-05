@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -442,5 +443,72 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         }
         return transferInput.analysis.runAnalysisFor(
                 node, before, transferInput, nodeValues, analysisCaches);
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a string representation of this
+     */
+    public String toStringDebug() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("AnalysisResult{%n  "),
+                        String.format("%n}"));
+        result.add("nodeValues = " + nodeValuesToString(nodeValues));
+        result.add("treeLookup = " + treeLookupToString(treeLookup));
+        result.add("unaryAssignNodeLookup = " + unaryAssignNodeLookup);
+        result.add("finalLocalValues = " + finalLocalValues);
+        result.add("stores = " + stores);
+        result.add("analysisCaches = " + analysisCaches);
+        return result.toString();
+    }
+
+    /**
+     * Returns a verbose string representation, useful for debugging. The map has the same type as
+     * the {@code nodeValues} field.
+     *
+     * @param <V> the type of values in the map
+     * @param nodeValues a map to format
+     * @return a printed representation of the given map
+     */
+    public static <V> String nodeValuesToString(Map<Node, V> nodeValues) {
+        if (nodeValues.isEmpty()) {
+            return "{}";
+        }
+        StringJoiner result = new StringJoiner(String.format("%n    "));
+        result.add("{");
+        for (Map.Entry<Node, V> entry : nodeValues.entrySet()) {
+            Node key = entry.getKey();
+            result.add(String.format("%s => %s", key.toStringDebug(), entry.getValue()));
+        }
+        result.add("}");
+        return result.toString();
+    }
+
+    /**
+     * Returns a verbose string representation of a map, useful for debugging. The map has the same
+     * type as the {@code treeLookup} field.
+     *
+     * @param treeLookup a map to format
+     * @return a printed representation of the given map
+     */
+    public static String treeLookupToString(Map<Tree, Set<Node>> treeLookup) {
+        if (treeLookup.isEmpty()) {
+            return "{}";
+        }
+        StringJoiner result = new StringJoiner(String.format("%n    "));
+        result.add("{");
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            Tree key = entry.getKey();
+            String treeString = key.toString().replaceAll("[ \n\t]+", " ");
+            if (treeString.length() > 65) {
+                treeString = "\"" + treeString.substring(0, 60) + "...\"";
+            }
+            result.add(treeString + " => " + Node.nodeCollectionToString(entry.getValue()));
+        }
+        result.add("}");
+        return result.toString();
     }
 }

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
@@ -156,5 +157,33 @@ public abstract class Node {
             transitiveOperands.add(next);
         }
         return transitiveOperands;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a printed representation of this
+     */
+    public String toStringDebug() {
+        return String.format(
+                "%s [%s %s %s]",
+                this,
+                this.getClass().getSimpleName(),
+                this.hashCode(),
+                System.identityHashCode(this));
+    }
+
+    /**
+     * Returns a verbose string representation of a collection of nodes, useful for debugging..
+     *
+     * @param nodes a collection of nodes to format
+     * @return a printed representation of the given collection
+     */
+    public static String nodeCollectionToString(Collection<? extends Node> nodes) {
+        StringJoiner result = new StringJoiner(", ", "[", "]");
+        for (Node n : nodes) {
+            result.add(n.toStringDebug());
+        }
+        return result.toString();
     }
 }
