@@ -13,9 +13,11 @@ import org.checkerframework.common.subtyping.qual.Bottom;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -74,6 +76,12 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
             this.VALUE_KIND = getQualifierKind(VALUE);
+        }
+
+        @Override
+        protected QualifierKindHierarchy createQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
         }
 
         @Override
