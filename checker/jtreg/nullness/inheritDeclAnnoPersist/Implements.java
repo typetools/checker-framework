@@ -1,5 +1,3 @@
-import org.checkerframework.javacutil.SystemUtil;
-
 /*
  * @test
  * @summary Test that inherited declaration annotations are stored in bytecode.
@@ -23,7 +21,10 @@ public class Implements {
 
 class TestWrapper {
     public static String wrap(String... method) {
-        return SystemUtil.joinLines(
-                "class Test extends AbstractClass {", SystemUtil.joinLines(method), "}");
+        return String.join(
+                System.lineSeparator(),
+                "class Test extends AbstractClass {",
+                String.join(System.lineSeparator(), method),
+                "}");
     }
 }

@@ -12,6 +12,8 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
 
+    implementation 'org.plumelib:plume-util:1.1.5'
+
     if (Jvm.current().toolsJar) {
         tagletImplementation files(Jvm.current().toolsJar)
     }
