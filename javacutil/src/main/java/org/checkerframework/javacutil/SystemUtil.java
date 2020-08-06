@@ -50,7 +50,7 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@link UtilPlume.join}
+     * @deprecated use {@code UtilPlume.join}
      */
     @Deprecated // use UtilPlume.join
     public static <T> String join(CharSequence delimiter, T[] objs) {
@@ -67,7 +67,7 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
-     * @deprecated use {@link UtilPlume.join}
+     * @deprecated use {@code UtilPlume.join}
      */
     @Deprecated // use UtilPlume.join
     public static String join(CharSequence delimiter, Iterable<?> values) {
@@ -84,7 +84,7 @@ public class SystemUtil {
      * @param <T> the type of array elements
      * @param a array of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@link UtilPlume.joinLines}
+     * @deprecated use {@code UtilPlume.joinLines}
      */
     @Deprecated // use UtilPlume.joinLines
     @SafeVarargs
@@ -99,7 +99,7 @@ public class SystemUtil {
      *
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
-     * @deprecated use {@link UtilPlume.joinLines}
+     * @deprecated use {@code UtilPlume.joinLines}
      */
     @Deprecated // use UtilPlume.joinLines
     public static String joinLines(Iterable<? extends Object> v) {

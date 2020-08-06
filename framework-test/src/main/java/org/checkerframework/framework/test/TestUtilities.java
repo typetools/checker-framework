@@ -27,6 +27,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 import org.plumelib.util.UtilPlume;
 
+/** Utilities for testing. */
 public class TestUtilities {
 
     public static final boolean IS_AT_LEAST_9_JVM;
