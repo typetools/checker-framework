@@ -1623,11 +1623,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (tree == null || flowResult == null || analysis.isRunning()) {
             return false;
         } else {
-            boolean result = flowResult.isDeadCode(tree);
-            if (result) {
-                // System.out.printf("dead: %s %s%n", tree.getKind(), tree);
-            }
-            return result;
+            return flowResult.isDeadCode(tree);
         }
     }
 

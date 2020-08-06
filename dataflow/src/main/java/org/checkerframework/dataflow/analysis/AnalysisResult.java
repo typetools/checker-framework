@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -211,21 +211,18 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * @return true if the tree is dead code
      */
     public boolean isDeadCode(Tree tree) {
-        if (!(tree instanceof ExpressionTree)) {
+        // Return false for statements.
+        if (!TreeUtils.isExpressionTree(tree)) {
             return false;
         }
+        // Return false for expressions that might be statements.
         switch (tree.getKind()) {
+            case ARRAY_ACCESS:
+            case ASSIGNMENT:
+            case IDENTIFIER:
             case MEMBER_SELECT:
                 return false;
-            case ASSIGNMENT:
-                // This may be an expression or a statement.
-                return false;
-            case IDENTIFIER:
-            case ARRAY_ACCESS:
-                // There might be a missing "this." prefix.  (Can I test that?)
-                return false;
             default:
-                // No special behavior.
                 break;
         }
 
