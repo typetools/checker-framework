@@ -27,8 +27,11 @@ import org.checkerframework.javacutil.BugInCF;
  * hierarchies.
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
+ *
+ * @deprecated Use {@link QualifierHierarchyWithElements} instead.
  */
-@SuppressWarnings("interning") // TODO after https://tinyurl.com/cfissue/3404 is merged
+@SuppressWarnings("interning") // Class is deprecated.
+@Deprecated
 public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
 
     /**
@@ -52,7 +55,10 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      * <p>Clients build the hierarchy using {@link #addQualifier(AnnotationMirror)} and {@link
      * #addSubtype(AnnotationMirror, AnnotationMirror)}, then get the instance with calling {@link
      * #build()}
+     *
+     * @deprecated Use {@link QualifierHierarchyWithElements} instead.
      */
+    @Deprecated
     public static class MultiGraphFactory {
         /**
          * Map from qualifiers to the direct supertypes of the qualifier. Only the subtype relations
@@ -186,7 +192,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
         }
 
         protected QualifierHierarchy createQualifierHierarchy() {
-            return atypeFactory.createQualifierHierarchy(this);
+            return atypeFactory.createQualifierHierarchyWithMultiGraphFactory(this);
         }
 
         /** True if the factory has already been built. */

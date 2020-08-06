@@ -339,7 +339,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return createMultiGraphQualifierHierarchy();
     }
 
     @Override

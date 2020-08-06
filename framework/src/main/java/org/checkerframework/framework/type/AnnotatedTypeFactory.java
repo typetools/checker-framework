@@ -91,9 +91,6 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.QualifierHierarchyWithoutElements;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
@@ -662,47 +659,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getClass().getSimpleName() + "#" + uid;
     }
 
-    /** Factory method to easily change what Factory is used to create a QualifierHierarchy. */
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
-    /**
-     * Factory method to easily change what QualifierHierarchy is created. Needs to be public only
-     * because the GraphFactory must be able to call this method. No external use of this method is
-     * necessary.
-     */
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, null);
-    }
-
     /**
      * Returns the type qualifier hierarchy graph to be used by this processor.
      *
      * <p>The implementation builds the type qualifier hierarchy for the {@link
      * #getSupportedTypeQualifiers()} using the meta-annotations found in them. The current
-     * implementation returns an instance of {@code GraphQualifierHierarchy}.
+     * implementation returns an instance of {@code QualifierHierarchyWithoutElements}.
      *
-     * <p>Subclasses may override this method to express any relationships that cannot be inferred
-     * using meta-annotations (e.g. due to lack of meta-annotations).
+     * <p>Subclasses must override this method if their qualifiers have elements.
      *
-     * @return an annotation relation tree representing the supported qualifiers
+     * @return a QualifierHierarchy for this type system
      */
     protected QualifierHierarchy createQualifierHierarchy() {
         return new QualifierHierarchyWithoutElements(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
-     * Creates the QualifierHierarchy using the old method. TODO: Remove.
+     * Returns the type qualifier hierarchy graph to be used by this processor.
+     *
+     * @see #createQualifierHierarchy()
+     * @return the {@link QualifierHierarchy} for this checker
+     */
+    public final QualifierHierarchy getQualifierHierarchy() {
+        return qualHierarchy;
+    }
+
+    /**
+     * Creates the QualifierHierarchy using {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
      *
      * @return qualifier hierarchy
+     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
+     *     instead.
      */
-    protected QualifierHierarchy oldCreateQualifierHierarchy() {
+    @Deprecated
+    protected QualifierHierarchy createMultiGraphQualifierHierarchy() {
         Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-        MultiGraphQualifierHierarchy.MultiGraphFactory factory =
+        org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory =
                 this.createQualifierHierarchyFactory();
 
-        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+        return createMultiGraphQualifierHierarchy(elements, supportedTypeQualifiers, factory);
     }
 
     /**
@@ -716,11 +712,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param supportedTypeQualifiers the type qualifiers for this type system
      * @param factory the type factory for this type system
      * @return an annotation relation tree representing the supported qualifiers
+     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
+     *     instead.
      */
-    protected QualifierHierarchy createQualifierHierarchy(
+    @Deprecated
+    protected QualifierHierarchy createMultiGraphQualifierHierarchy(
             Elements elements,
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
-            MultiGraphFactory factory) {
+            org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+                    factory) {
 
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno =
@@ -781,15 +781,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type qualifier hierarchy graph to be used by this processor.
+     * Factory method to easily change what Factory is used to create a QualifierHierarchy.
      *
-     * @see #createQualifierHierarchy()
-     * @return the {@link QualifierHierarchy} for this checker
+     * @return QualifierHierarchy
+     * @deprecated Use either {@link
+     *     org.checkerframework.framework.util.QualifierHierarchyWithElements} or {@link
+     *     QualifierHierarchyWithoutElements} instead.
      */
-    public final QualifierHierarchy getQualifierHierarchy() {
-        // if (qualHierarchy == null)
-        //    qualHierarchy = createQualifierHierarchy();
-        return qualHierarchy;
+    @Deprecated
+    protected org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+            createQualifierHierarchyFactory() {
+        return new org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+                .MultiGraphFactory(this);
+    }
+
+    /**
+     * Factory method to easily change what QualifierHierarchy is created. Needs to be public only
+     * because the GraphFactory must be able to call this method. No external use of this method is
+     * necessary.
+     *
+     * @param factory MultiGraphFactory
+     * @return QualifierHierarchy
+     * @deprecated Use either {@link
+     *     org.checkerframework.framework.util.QualifierHierarchyWithElements} or {@link
+     *     QualifierHierarchyWithoutElements} instead.
+     */
+    @Deprecated
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+            org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+                    factory) {
+        return new org.checkerframework.framework.util.GraphQualifierHierarchy(factory, null);
     }
 
     /**

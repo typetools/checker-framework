@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -32,8 +33,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -97,19 +98,21 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new ClassValQualifierHierarchy(factory);
+        return new ClassValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /** The qualifier hierarchy for the ClassVal type system. */
-    protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class ClassValQualifierHierarchy extends QualifierHierarchyWithElements {
 
-        public ClassValQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        public ClassValQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /*
@@ -142,6 +145,15 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            return null;
+        }
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
@@ -166,6 +178,15 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return createClassBound(new ArrayList<>(glbClassNames));
                 }
             }
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            return null;
         }
 
         /*
@@ -196,6 +217,15 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> subValues = getClassNamesFromAnnotation(subAnno);
 
             return supValues.containsAll(subValues);
+        }
+
+        @Override
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return false;
         }
     }
 

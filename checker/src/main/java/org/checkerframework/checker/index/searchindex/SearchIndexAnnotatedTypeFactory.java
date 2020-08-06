@@ -63,11 +63,11 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return createMultiGraphQualifierHierarchy();
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new SearchIndexQualifierHierarchy(factory);
     }

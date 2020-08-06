@@ -71,11 +71,12 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return createMultiGraphQualifierHierarchy();
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+            MultiGraphFactory factory) {
         return new LessThanQualifierHierarchy(factory);
     }
 

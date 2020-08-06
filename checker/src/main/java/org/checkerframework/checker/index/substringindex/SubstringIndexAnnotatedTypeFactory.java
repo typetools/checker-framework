@@ -57,12 +57,12 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return createMultiGraphQualifierHierarchy();
     }
 
     /** Creates the Substring Index qualifier hierarchy. */
     @Override
-    public QualifierHierarchy createQualifierHierarchy(
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
         return new SubstringIndexQualifierHierarchy(factory);
     }

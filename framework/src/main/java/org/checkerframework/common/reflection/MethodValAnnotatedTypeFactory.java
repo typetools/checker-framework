@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -30,8 +31,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -147,19 +148,19 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return new MethodValQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new MethodValQualifierHierarchy(factory, METHODVAL_BOTTOM);
-    }
-
-    protected class MethodValQualifierHierarchy extends MultiGraphQualifierHierarchy {
-
+    protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
         protected MethodValQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory, AnnotationMirror bottom) {
-            super(factory, bottom);
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /*
@@ -189,6 +190,24 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        protected AnnotationMirror leastUpperBound(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            return null;
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            return null;
+        }
+
+        @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
             if (AnnotationUtils.areSame(subAnno, superAnno)
                     || areSameByClass(superAnno, UnknownMethod.class)
@@ -210,6 +229,15 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return true;
+        }
+
+        @Override
+        protected boolean isSubtype(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return false;
         }
     }
 
