@@ -1,95 +1,157 @@
 package org.checkerframework.common.value;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** The qualifier hierarchy for the Value type system. */
-final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
+final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
 
     /** The type factory to use. */
-    final ValueAnnotatedTypeFactory atypeFactory;
+    private final ValueAnnotatedTypeFactory atypeFactory;
 
-    /** @param factory the MultiGraphFactory to use to construct this */
-    public ValueQualifierHierarchy(
-            MultiGraphFactory factory, ValueAnnotatedTypeFactory atypeFactory) {
-        super(factory);
+    /**
+     * Creates a QualifierHierarchy from the given classes.
+     *
+     * @param qualifierClasses class of annotations that are the qualifiers
+     */
+    protected ValueQualifierHierarchy(
+            ValueAnnotatedTypeFactory atypeFactory,
+            Collection<Class<? extends Annotation>> qualifierClasses) {
+        super(qualifierClasses, atypeFactory.getElementUtils());
         this.atypeFactory = atypeFactory;
     }
 
     /**
-     * Computes greatest lower bound of a @StringVal annotation with another value checker
-     * annotation.
+     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+     * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno contains
+     * at least every element of subAnno.
      *
-     * @param stringValAnno annotation of type @StringVal
-     * @param otherAnno annotation from the value checker hierarchy
-     * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
+     * @return true if subAnno is a subtype of superAnno, false otherwise
      */
-    private AnnotationMirror glbOfStringVal(
-            AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
-        List<String> values = ValueAnnotatedTypeFactory.getStringValues(stringValAnno);
-        switch (AnnotationUtils.annotationName(otherAnno)) {
-            case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                // Intersection of value lists
-                List<String> otherValues = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
-                values.retainAll(otherValues);
-                break;
-            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                // Retain strings of correct lengths
-                List<Integer> otherLengths = ValueAnnotatedTypeFactory.getArrayLength(otherAnno);
-                ArrayList<String> result = new ArrayList<>();
-                for (String s : values) {
-                    if (otherLengths.contains(s.length())) {
-                        result.add(s);
-                    }
-                }
-                values = result;
-                break;
-            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                // Retain strings of lengths from a range
-                Range otherRange = ValueAnnotatedTypeFactory.getRange(otherAnno);
-                ArrayList<String> range = new ArrayList<>();
-                for (String s : values) {
-                    if (otherRange.contains(s.length())) {
-                        range.add(s);
-                    }
-                }
-                values = range;
-                break;
-            default:
-                return atypeFactory.BOTTOMVAL;
+    @Override
+    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+        subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
+        superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
+        String subQual = AnnotationUtils.annotationName(subAnno);
+        if (subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
+            superAnno = atypeFactory.convertToUnknown(superAnno);
         }
+        String superQual = AnnotationUtils.annotationName(superAnno);
+        if (superQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)
+                || subQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
+            return true;
+        } else if (superQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)
+                || subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
+            return false;
+        } else if (superQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
+            return subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME);
+        } else if (subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
+            return false;
+        } else if (superQual.equals(subQual)) {
+            // Same type, so might be subtype
+            if (subQual.equals(ValueAnnotatedTypeFactory.INTRANGE_NAME)
+                    || subQual.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
+                // Special case for range-based annotations
+                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
+                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
+                return superRange.contains(subRange);
+            } else {
+                List<Object> superValues =
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, "value", Object.class, true);
+                List<Object> subValues =
+                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
+                return superValues.containsAll(subValues);
+            }
+        }
+        switch (superQual + subQual) {
+            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
+                List<Double> superValues = ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
+                List<Double> subValues =
+                        atypeFactory.convertLongListToDoubleList(
+                                ValueAnnotatedTypeFactory.getIntValues(subAnno));
+                return superValues.containsAll(subValues);
+            case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
+            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
+                    + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
+                List<Long> subLongValues = atypeFactory.getArrayLenOrIntValue(subAnno);
+                Range subLongRange = Range.create(subLongValues);
+                return superRange.contains(subLongRange);
+            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
+                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
+                if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                    return false;
+                }
+                List<Double> superDoubleValues =
+                        ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
+                List<Double> subDoubleValues =
+                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
+                return superDoubleValues.containsAll(subDoubleValues);
+            case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
+            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME
+                    + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+                Range subRange2 = ValueAnnotatedTypeFactory.getRange(subAnno);
+                if (subRange2.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+                    return false;
+                }
+                List<Long> superValues2 = atypeFactory.getArrayLenOrIntValue(superAnno);
+                List<Long> subValues2 = ValueCheckerUtils.getValuesFromRange(subRange2, Long.class);
+                return superValues2.containsAll(subValues2);
+            case ValueAnnotatedTypeFactory.STRINGVAL_NAME
+                    + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+            case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
 
-        return atypeFactory.createStringAnnotation(values);
+                // Allow @ArrayLen(0) to be converted to @StringVal("")
+                List<String> superStringValues =
+                        ValueAnnotatedTypeFactory.getStringValues(superAnno);
+                return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
+            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                // StringVal is a subtype of ArrayLen, if all the strings have one of the
+                // correct
+                // lengths
+                List<Integer> superIntValues = ValueAnnotatedTypeFactory.getArrayLength(superAnno);
+                List<String> subStringValues = ValueAnnotatedTypeFactory.getStringValues(subAnno);
+                for (String value : subStringValues) {
+                    if (!superIntValues.contains(value.length())) {
+                        return false;
+                    }
+                }
+                return true;
+            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
+                    + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in
+                // the
+                // range.
+                Range superRange2 = ValueAnnotatedTypeFactory.getRange(superAnno);
+                List<String> subValues3 = ValueAnnotatedTypeFactory.getStringValues(subAnno);
+                for (String value : subValues3) {
+                    if (!superRange2.contains(value.length())) {
+                        return false;
+                    }
+                }
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (isSubtype(a1, a2)) {
-            return a1;
-        } else if (isSubtype(a2, a1)) {
-            return a2;
-        } else {
-
-            // Implementation of GLB where one of the annotations is StringVal is needed for
-            // length-based refinement of constant string values. Other cases of length-based
-            // refinement are handled by subtype check.
-            if (AnnotationUtils.areSameByName(a1, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
-                return glbOfStringVal(a1, a2);
-            } else if (AnnotationUtils.areSameByName(
-                    a2, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
-                return glbOfStringVal(a2, a1);
-            }
-
-            // Simply return BOTTOMVAL in other cases. Refine this if we discover use cases
-            // that need a more precise GLB.
-            return atypeFactory.BOTTOMVAL;
-        }
+    protected boolean isSubtype(
+            AnnotationMirror subAnno,
+            QualifierKind subKind,
+            AnnotationMirror superAnno,
+            QualifierKind superKind) {
+        return false;
     }
 
     @Override
@@ -360,118 +422,91 @@ final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
         return atypeFactory.UNKNOWNVAL;
     }
 
-    /**
-     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-     * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno contains
-     * at least every element of subAnno.
-     *
-     * @return true if subAnno is a subtype of superAnno, false otherwise
-     */
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-        subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
-        superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
-        String subQual = AnnotationUtils.annotationName(subAnno);
-        if (subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
-            superAnno = atypeFactory.convertToUnknown(superAnno);
-        }
-        String superQual = AnnotationUtils.annotationName(superAnno);
-        if (superQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)
-                || subQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
-            return true;
-        } else if (superQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)
-                || subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
-            return false;
-        } else if (superQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
-            return subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME);
-        } else if (subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
-            return false;
-        } else if (superQual.equals(subQual)) {
-            // Same type, so might be subtype
-            if (subQual.equals(ValueAnnotatedTypeFactory.INTRANGE_NAME)
-                    || subQual.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-                // Special case for range-based annotations
-                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
-                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
-                return superRange.contains(subRange);
-            } else {
-                List<Object> superValues =
-                        AnnotationUtils.getElementValueArray(
-                                superAnno, "value", Object.class, true);
-                List<Object> subValues =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", Object.class, true);
-                return superValues.containsAll(subValues);
-            }
-        }
-        switch (superQual + subQual) {
-            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
-                List<Double> superValues = ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
-                List<Double> subValues =
-                        atypeFactory.convertLongListToDoubleList(
-                                ValueAnnotatedTypeFactory.getIntValues(subAnno));
-                return superValues.containsAll(subValues);
-            case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
-            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
-                    + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-                Range superRange = ValueAnnotatedTypeFactory.getRange(superAnno);
-                List<Long> subLongValues = atypeFactory.getArrayLenOrIntValue(subAnno);
-                Range subLongRange = Range.create(subLongValues);
-                return superRange.contains(subLongRange);
-            case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
-                Range subRange = ValueAnnotatedTypeFactory.getRange(subAnno);
-                if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                    return false;
-                }
-                List<Double> superDoubleValues =
-                        ValueAnnotatedTypeFactory.getDoubleValues(superAnno);
-                List<Double> subDoubleValues =
-                        ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
-                return superDoubleValues.containsAll(subDoubleValues);
-            case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
-            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME
-                    + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                Range subRange2 = ValueAnnotatedTypeFactory.getRange(subAnno);
-                if (subRange2.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                    return false;
-                }
-                List<Long> superValues2 = atypeFactory.getArrayLenOrIntValue(superAnno);
-                List<Long> subValues2 = ValueCheckerUtils.getValuesFromRange(subRange2, Long.class);
-                return superValues2.containsAll(subValues2);
-            case ValueAnnotatedTypeFactory.STRINGVAL_NAME
-                    + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-            case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+    protected AnnotationMirror leastUpperBound(
+            AnnotationMirror a1,
+            QualifierKind qualifierKind1,
+            AnnotationMirror a2,
+            QualifierKind qualifierKind2) {
+        return null;
+    }
 
-                // Allow @ArrayLen(0) to be converted to @StringVal("")
-                List<String> superStringValues =
-                        ValueAnnotatedTypeFactory.getStringValues(superAnno);
-                return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
-            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                // StringVal is a subtype of ArrayLen, if all the strings have one of the
-                // correct
-                // lengths
-                List<Integer> superIntValues = ValueAnnotatedTypeFactory.getArrayLength(superAnno);
-                List<String> subStringValues = ValueAnnotatedTypeFactory.getStringValues(subAnno);
-                for (String value : subStringValues) {
-                    if (!superIntValues.contains(value.length())) {
-                        return false;
+    /**
+     * Computes greatest lower bound of a @StringVal annotation with another value checker
+     * annotation.
+     *
+     * @param stringValAnno annotation of type @StringVal
+     * @param otherAnno annotation from the value checker hierarchy
+     * @return greatest lower bound of {@code stringValAnno} and {@code otherAnno}
+     */
+    private AnnotationMirror glbOfStringVal(
+            AnnotationMirror stringValAnno, AnnotationMirror otherAnno) {
+        List<String> values = ValueAnnotatedTypeFactory.getStringValues(stringValAnno);
+        switch (AnnotationUtils.annotationName(otherAnno)) {
+            case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                // Intersection of value lists
+                List<String> otherValues = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
+                values.retainAll(otherValues);
+                break;
+            case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+                // Retain strings of correct lengths
+                List<Integer> otherLengths = ValueAnnotatedTypeFactory.getArrayLength(otherAnno);
+                ArrayList<String> result = new ArrayList<>();
+                for (String s : values) {
+                    if (otherLengths.contains(s.length())) {
+                        result.add(s);
                     }
                 }
-                return true;
-            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME
-                    + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                // StringVal is a subtype of ArrayLenRange, if all the strings have a length in
-                // the
-                // range.
-                Range superRange2 = ValueAnnotatedTypeFactory.getRange(superAnno);
-                List<String> subValues3 = ValueAnnotatedTypeFactory.getStringValues(subAnno);
-                for (String value : subValues3) {
-                    if (!superRange2.contains(value.length())) {
-                        return false;
+                values = result;
+                break;
+            case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+                // Retain strings of lengths from a range
+                Range otherRange = ValueAnnotatedTypeFactory.getRange(otherAnno);
+                ArrayList<String> range = new ArrayList<>();
+                for (String s : values) {
+                    if (otherRange.contains(s.length())) {
+                        range.add(s);
                     }
                 }
-                return true;
+                values = range;
+                break;
             default:
-                return false;
+                return atypeFactory.BOTTOMVAL;
         }
+
+        return atypeFactory.createStringAnnotation(values);
+    }
+
+    @Override
+    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+        if (isSubtype(a1, a2)) {
+            return a1;
+        } else if (isSubtype(a2, a1)) {
+            return a2;
+        } else {
+
+            // Implementation of GLB where one of the annotations is StringVal is needed for
+            // length-based refinement of constant string values. Other cases of length-based
+            // refinement are handled by subtype check.
+            if (AnnotationUtils.areSameByName(a1, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
+                return glbOfStringVal(a1, a2);
+            } else if (AnnotationUtils.areSameByName(
+                    a2, ValueAnnotatedTypeFactory.STRINGVAL_NAME)) {
+                return glbOfStringVal(a2, a1);
+            }
+
+            // Simply return BOTTOMVAL in other cases. Refine this if we discover use cases
+            // that need a more precise GLB.
+            return atypeFactory.BOTTOMVAL;
+        }
+    }
+
+    @Override
+    protected AnnotationMirror greatestLowerBound(
+            AnnotationMirror a1,
+            QualifierKind qualifierKind1,
+            AnnotationMirror a2,
+            QualifierKind qualifierKind2) {
+        return null;
     }
 }
