@@ -878,10 +878,5 @@ public abstract class InitializationAnnotatedTypeFactory<
 
             return TypesUtils.leastUpperBound(a, b, processingEnv);
         }
-
-        @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror anno1, AnnotationMirror anno2) {
-            return super.greatestLowerBound(anno1, anno2);
-        }
     }
 }
