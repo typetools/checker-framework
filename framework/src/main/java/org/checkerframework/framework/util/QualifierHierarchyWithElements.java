@@ -33,12 +33,12 @@ import org.checkerframework.javacutil.TypeSystemError;
  * For cases where the annotations have no elements, the {@link
  * org.checkerframework.framework.qual.SubtypeOf} meta-annotation is used.
  *
- * <p>ComplexQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
- * between qualifiers. Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to
- * return a subclass of QualifierKindHierarchy.
+ * <p>QualifierHierarchyWithElements uses a {@link QualifierKindHierarchy} to model the
+ * relationships between qualifiers. Subclasses can override {@link
+ * #createQualifierKindHierarchy(Collection)} to return a subclass of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
+public abstract class QualifierHierarchyWithElements implements QualifierHierarchy {
 
     /** {@link org.checkerframework.javacutil.ElementUtils} */
     private Elements elements;
@@ -70,7 +70,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
      * @param qualifierClasses class of annotations that are the qualifiers
      * @param elements element utils
      */
-    protected ComplexQualifierHierarchy(
+    protected QualifierHierarchyWithElements(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
@@ -105,7 +105,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
-            @UnderInitialization ComplexQualifierHierarchy this,
+            @UnderInitialization QualifierHierarchyWithElements this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new DefaultQualifierKindHierarchy(qualifierClasses);
     }
@@ -118,7 +118,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+            @UnderInitialization QualifierHierarchyWithElements this) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
@@ -139,7 +139,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createTopsMap(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+            @UnderInitialization QualifierHierarchyWithElements this) {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
             topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -158,7 +158,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createBottomsMap(
-            @UnderInitialization ComplexQualifierHierarchy this) {
+            @UnderInitialization QualifierHierarchyWithElements this) {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -218,7 +218,7 @@ public abstract class ComplexQualifierHierarchy implements QualifierHierarchy {
         AnnotationMirror poly = kindToElementLessQualifier.get(polyKind);
         if (poly == null) {
             throw new TypeSystemError(
-                    "Poly %s has an element. Override ComplexQualifierHierarchy#getPolymorphicAnnotation.",
+                    "Poly %s has an element. Override QualifierHierarchyWithElements#getPolymorphicAnnotation.",
                     polyKind);
         }
         return poly;

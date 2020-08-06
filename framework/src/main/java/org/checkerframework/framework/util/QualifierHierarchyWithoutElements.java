@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public class SimpleQualifierHierarchy implements QualifierHierarchy {
+public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
 
     /** {@link QualifierKindHierarchy}. */
     protected final QualifierKindHierarchy qualifierKindHierarchy;
@@ -51,7 +51,7 @@ public class SimpleQualifierHierarchy implements QualifierHierarchy {
      * @param qualifierClasses classes of annotations that are the qualifiers
      * @param elements element utils
      */
-    public SimpleQualifierHierarchy(
+    public QualifierHierarchyWithoutElements(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
@@ -72,7 +72,7 @@ public class SimpleQualifierHierarchy implements QualifierHierarchy {
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
-            @UnderInitialization SimpleQualifierHierarchy this,
+            @UnderInitialization QualifierHierarchyWithoutElements this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new DefaultQualifierKindHierarchy(qualifierClasses);
     }
@@ -86,12 +86,12 @@ public class SimpleQualifierHierarchy implements QualifierHierarchy {
      */
     @RequiresNonNull("this.qualifierKindHierarchy")
     protected Map<QualifierKind, AnnotationMirror> createAnnotationMirrors(
-            @UnderInitialization SimpleQualifierHierarchy this, Elements elements) {
+            @UnderInitialization QualifierHierarchyWithoutElements this, Elements elements) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (kind.hasElements()) {
                 throw new TypeSystemError(
-                        "SimpleQualifierHierarchy cannot be used with annotations that have elements. Found %s: ",
+                        "QualifierHierarchyWithoutElements cannot be used with annotations that have elements. Found %s: ",
                         kind);
             }
             quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -105,7 +105,8 @@ public class SimpleQualifierHierarchy implements QualifierHierarchy {
      * @return the unmodifiable set of top {@link AnnotationMirror}s
      */
     @RequiresNonNull("this.kindToAnnotationMirror")
-    protected Set<AnnotationMirror> createTops(@UnderInitialization SimpleQualifierHierarchy this) {
+    protected Set<AnnotationMirror> createTops(
+            @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isTop()) {
@@ -122,7 +123,7 @@ public class SimpleQualifierHierarchy implements QualifierHierarchy {
      */
     @RequiresNonNull("this.kindToAnnotationMirror")
     protected Set<AnnotationMirror> createBottoms(
-            @UnderInitialization SimpleQualifierHierarchy this) {
+            @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
             if (entry.getKey().isBottom()) {
