@@ -225,7 +225,6 @@ allprojects {
             // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
             if (it.name.equals('compileJava')    && !project.name.startsWith('checker-qual')){
-                println "${project.name} ${name}"
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone

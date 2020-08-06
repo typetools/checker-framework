@@ -235,6 +235,7 @@ public class ControlFlowGraph {
      * @param cur a block whose successors to retrieve
      * @return a Deque of successor Blocks
      */
+    @SuppressWarnings("UnusedMethod")
     private Deque<Block> getSuccessors(Block cur) {
         Deque<Block> succs = new ArrayDeque<>();
         if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
