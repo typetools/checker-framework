@@ -48,10 +48,10 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Collection of classes and helper functions to represent Java expressions about which the
@@ -1135,7 +1135,7 @@ public class FlowExpressions {
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
             result.append("(");
-            result.append(SystemUtil.join(", ", parameters));
+            result.append(UtilPlume.join(", ", parameters));
             result.append(")");
             return result.toString();
         }
@@ -1484,7 +1484,7 @@ public class FlowExpressions {
             }
             if (!initializers.isEmpty()) {
                 sb.append(" {");
-                sb.append(SystemUtil.join(", ", initializers));
+                sb.append(UtilPlume.join(", ", initializers));
                 sb.append("}");
             }
             return sb.toString();

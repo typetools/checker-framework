@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A node for new array creation.
@@ -74,12 +74,12 @@ public class ArrayCreationNode extends Node {
         sb.append("new " + type);
         if (!dimensions.isEmpty()) {
             sb.append(" (");
-            sb.append(SystemUtil.join(", ", dimensions));
+            sb.append(UtilPlume.join(", ", dimensions));
             sb.append(")");
         }
         if (!initializers.isEmpty()) {
             sb.append(" = {");
-            sb.append(SystemUtil.join(", ", initializers));
+            sb.append(UtilPlume.join(", ", initializers));
             sb.append("}");
         }
         return sb.toString();

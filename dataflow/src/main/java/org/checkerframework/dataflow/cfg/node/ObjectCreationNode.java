@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A node for new object creation.
@@ -67,7 +67,7 @@ public class ObjectCreationNode extends Node {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("new " + constructor + "(");
-        sb.append(SystemUtil.join(", ", arguments));
+        sb.append(UtilPlume.join(", ", arguments));
         sb.append(")");
         if (classbody != null) {
             // TODO: maybe this can be done nicer...
