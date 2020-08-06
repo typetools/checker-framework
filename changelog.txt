@@ -1,8 +1,9 @@
 Version 3.7.0, September 1, 2020
 
-Dead code is not type-checked, because doing so can lead to false positive
-warnings.  As a result, this version of the Checker Framework may issue
-fewer warnings than the previous version.
+Some dead code (notably in unreachable catch clauses) is not type-checked,
+because doing so can lead to false positive warnings.  As a result, this
+version of the Checker Framework may issue fewer warnings than the previous
+version.
 
 ---------------------------------------------------------------------------
 

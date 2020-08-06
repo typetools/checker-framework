@@ -232,11 +232,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         if (!treeLookup.containsKey(tree)) {
             return false;
         }
-        Set<Node> nodes = treeLookup.get(tree);
-        if (nodes == null) {
-            return true;
-        }
-        for (Node aNode : nodes) {
+        for (Node aNode : treeLookup.get(tree)) {
             if (getValue(aNode) != null) {
                 return false;
             }

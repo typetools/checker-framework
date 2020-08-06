@@ -75,8 +75,9 @@ a comment at the top of the file, in this format:
 
   // @skip-test until the issue is fixed
 
-The Checker Framework does not issue warnings within dead code.  Ensure that
-expected errors are not in dead code.
+The Checker Framework does not issue warnings within some dead code
+(notably unreachable catch clauses).  Ensure that expected errors are not
+in such dead code.
 
 
 Specifying expected warnings and errors
