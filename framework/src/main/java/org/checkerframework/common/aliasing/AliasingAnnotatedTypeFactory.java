@@ -90,7 +90,9 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected class AliasingQualifierHierarchy extends QualifierHierarchyWithoutElements {
 
         /**
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * Create AliasingQualifierHierarchy.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils
          */
         protected AliasingQualifierHierarchy(
