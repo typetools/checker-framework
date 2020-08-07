@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -156,11 +157,12 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the set of all basic block in this control flow graph.
+     * Returns the set of all basic blocks in this control flow graph.
      *
-     * @return the set of all basic block in this control flow graph
+     * @return the set of all basic blocks in this control flow graph
      */
-    public Set<Block> getAllBlocks() {
+    public Set<Block> getAllBlocks(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -192,7 +194,8 @@ public class ControlFlowGraph {
      *
      * @return all nodes in this control flow graph
      */
-    public List<Node> getAllNodes() {
+    public List<Node> getAllNodes(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> result = new ArrayList<>();
         for (Block b : getAllBlocks()) {
             result.addAll(b.getNodes());
@@ -201,8 +204,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
