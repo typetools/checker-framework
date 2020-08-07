@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -204,7 +206,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
+     * Returns the list of all basic block in this control flow graph in reversed depth-first
      * postorder sequence. Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
@@ -233,7 +235,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the copied tree-lookup map.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+     * #getNodesCorrespondingToTree} uses that field.
      *
      * @return the copied tree-lookup map
      */
@@ -300,6 +303,34 @@ public class ControlFlowGraph {
         }
         String stringGraph = (String) res.get("stringGraph");
         return stringGraph == null ? super.toString() : stringGraph;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a string representation of this
+     */
+    public String toStringDebug() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("ControlFlowGraph{%n  "),
+                        String.format("%n  }"));
+        result.add("entryBlock=" + entryBlock);
+        result.add("regularExitBlock=" + regularExitBlock);
+        result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        if (astString.length() > 65) {
+            astString = "\"" + astString.substring(0, 60) + "\"";
+        }
+        result.add("underlyingAST=" + underlyingAST);
+        result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
+        result.add("declaredClasses=" + declaredClasses);
+        result.add("declaredLambdas=" + declaredLambdas);
+        return result.toString();
     }
 
     /** Checks representation invariants on this. */
