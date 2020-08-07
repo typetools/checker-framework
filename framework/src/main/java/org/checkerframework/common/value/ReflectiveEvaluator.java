@@ -21,9 +21,9 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Evaluates expressions (such as method calls and field accesses) at compile time, to determine
@@ -117,7 +117,7 @@ public class ReflectiveEvaluator {
                     return null;
                 } catch (IllegalArgumentException e) {
                     if (reportWarnings) {
-                        String args = SystemUtil.join(", ", arguments);
+                        String args = UtilPlume.join(", ", arguments);
                         checker.reportWarning(
                                 tree,
                                 "method.evaluation.exception",
@@ -329,7 +329,7 @@ public class ReflectiveEvaluator {
                             tree,
                             "constructor.evaluation.failed",
                             typeToCreate,
-                            SystemUtil.join(", ", arguments));
+                            UtilPlume.join(", ", arguments));
                 }
                 return null;
             }

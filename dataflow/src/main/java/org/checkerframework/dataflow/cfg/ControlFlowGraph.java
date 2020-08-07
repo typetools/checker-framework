@@ -260,35 +260,6 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get a list of all successor Blocks for cur.
-     *
-     * @param cur a block whose successors to retrieve
-     * @return a Deque of successor Blocks
-     */
-    private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
-            succs.add(ccur.getThenSuccessor());
-            succs.add(ccur.getElseSuccessor());
-        } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                succs.add(b);
-            }
-        }
-
-        if (cur.getType() == Block.BlockType.EXCEPTION_BLOCK) {
-            ExceptionBlock ecur = (ExceptionBlock) cur;
-            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                succs.addAll(exceptionSuccSet);
-            }
-        }
-        return succs;
-    }
-
-    /**
      * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
      * #getNodesCorrespondingToTree} uses that field.
      *

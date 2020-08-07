@@ -51,6 +51,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Collection of classes and helper functions to represent Java expressions about which the
@@ -1134,14 +1135,7 @@ public class FlowExpressions {
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
             result.append("(");
-            boolean first = true;
-            for (Receiver p : parameters) {
-                if (!first) {
-                    result.append(", ");
-                }
-                result.append(p.toString());
-                first = false;
-            }
+            result.append(UtilPlume.join(", ", parameters));
             result.append(")");
             return result.toString();
         }
@@ -1489,15 +1483,8 @@ public class FlowExpressions {
                 }
             }
             if (!initializers.isEmpty()) {
-                boolean needComma = false;
                 sb.append(" {");
-                for (Receiver init : initializers) {
-                    if (needComma) {
-                        sb.append(", ");
-                    }
-                    sb.append(init);
-                    needComma = true;
-                }
+                sb.append(UtilPlume.join(", ", initializers));
                 sb.append("}");
             }
             return sb.toString();
