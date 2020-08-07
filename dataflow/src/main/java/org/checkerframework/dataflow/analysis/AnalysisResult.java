@@ -225,8 +225,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         if (!TreeUtils.isExpressionTree(tree)) {
             return false;
         }
-        // Don't consider the LHS of an assignment dead even though dataflow has no value for it.
         Tree parent = parentPath.getLeaf();
+        if (parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+            return false;
+        }
+
+        // Don't consider the LHS of an assignment dead even though dataflow has no value for it.
         @SuppressWarnings("interning:not.interned") // test if tree is lhs of parent
         boolean lhsOfAssignment =
                 parent.getKind() == Tree.Kind.ASSIGNMENT
