@@ -567,6 +567,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
+	//  * Edit framework/build.gradle to use the same version number.
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
