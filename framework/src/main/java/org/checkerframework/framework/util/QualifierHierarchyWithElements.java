@@ -284,8 +284,8 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
 
     /**
      * Returns the least upper bound of {@code a1} and {@code a2} in cases where the lub of {@code
-     * qualiferKind1} and {@code qualiferKind2} is a qualifier kind that has elements. If the lub of
-     * {@code qualiferKind1} and {@code qualiferKind2} does not have elements, then {@link
+     * qualifierKind1} and {@code qualifierKind2} is a qualifier kind that has elements. If the lub
+     * of {@code qualifierKind1} and {@code qualifierKind2} does not have elements, then {@link
      * #leastUpperBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
      * AnnotationMirror} without calling this method.
      *
@@ -318,9 +318,9 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
 
     /**
      * Returns the greatest lower bound of {@code a1} and {@code a2} in cases where the glb of
-     * {@code qualiferKind1} and {@code qualiferKind2} is a qualifier kind that has elements. If the
-     * glb of {@code qualiferKind1} and {@code qualiferKind2} does not have elements, then {@link
-     * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
+     * {@code qualifierKind1} and {@code qualifierKind2} is a qualifier kind that has elements. If
+     * the glb of {@code qualifierKind1} and {@code qualifierKind2} does not have elements, then
+     * {@link #greatestLowerBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
      * AnnotationMirror} without calling this method.
      *
      * @param a1 first annotation

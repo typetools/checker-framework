@@ -23,7 +23,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
      *
      * @param qualifierClasses class of annotations that are the qualifiers
      */
-    protected ValueQualifierHierarchy(
+    ValueQualifierHierarchy(
             ValueAnnotatedTypeFactory atypeFactory,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         super(qualifierClasses, atypeFactory.getElementUtils());
