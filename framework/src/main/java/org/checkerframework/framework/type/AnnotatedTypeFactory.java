@@ -4304,10 +4304,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>This method is conservative. If it returns true, the tree is dead code. If it returns
      * false, the tree may or may not be dead code.
      *
+     * @param path the path to the tree
      * @param tree a tree
      * @return true if the tree is dead
      */
-    public boolean isDeadCode(Tree tree) {
+    public boolean isDeadCode(TreePath path, Tree tree) {
         return false;
     }
 }

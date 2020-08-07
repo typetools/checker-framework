@@ -1619,11 +1619,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public boolean isDeadCode(@Nullable Tree tree) {
+    public boolean isDeadCode(TreePath path, @Nullable Tree tree) {
         if (tree == null || flowResult == null || analysis.isRunning()) {
             return false;
         } else {
-            return flowResult.isDeadCode(tree);
+            return flowResult.isDeadCode(path, tree);
         }
     }
 

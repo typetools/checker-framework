@@ -288,7 +288,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (tree != null && getCurrentPath() != null) {
             this.visitorState.setPath(new TreePath(getCurrentPath(), tree));
         }
-        if (tree != null && atypeFactory.isDeadCode(tree)) {
+        if (tree != null && atypeFactory.isDeadCode(getCurrentPath(), tree)) {
             return null;
         }
         return super.scan(tree, p);

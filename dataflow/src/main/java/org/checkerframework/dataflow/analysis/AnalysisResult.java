@@ -1,7 +1,10 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreePath;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -207,28 +210,30 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * <p>This method is conservative. If it returns true, the tree is dead code. If it returns
      * false, the tree may or may not be dead code.
      *
+     * @param parentPath the path to the tree's parent
      * @param tree a tree
      * @return true if the tree is dead code
      */
-    public boolean isDeadCode(Tree tree) {
+    public boolean isDeadCode(TreePath parentPath, Tree tree) {
+        // This implementation retrieves information about expressions from dataflow. Dataflow does
+        // not store information about statements, so this method conservatively returns false for
+        // statements.
+
+        boolean debug = false;
+
         // Return false for statements.
         if (!TreeUtils.isExpressionTree(tree)) {
             return false;
         }
-        // Return false for expressions that might be statements.
-        switch (tree.getKind()) {
-            case ARRAY_ACCESS:
-            case ASSIGNMENT:
-            case IDENTIFIER:
-            case MEMBER_SELECT:
-                return false;
-            default:
-                break;
+        // Don't consider the LHS of an assignment dead even though dataflow has no value for it.
+        Tree parent = parentPath.getLeaf();
+        if (parent.getKind() == Tree.Kind.ASSIGNMENT
+                && ((AssignmentTree) parent).getVariable() == tree) {
+            return false;
         }
 
         // A tree is dead if the tree is a key in the treeLookup map, but does not map to any nodes
         // that dataflow has given a value.
-
         if (!treeLookup.containsKey(tree)) {
             return false;
         }
@@ -237,6 +242,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
                 return false;
             }
         }
+
+        // If a MEMBER_SELECT seems dead, check its receiver.
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+            return isDeadCode(parentPath, ((MemberSelectTree) tree).getExpression());
+        }
+
         return true;
     }
 
