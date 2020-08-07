@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -138,7 +138,7 @@ public interface QualifierHierarchy {
             if (superQual == null) {
                 throw new BugInCF(
                         "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-                        subQual, SystemUtil.join(",", superQualifiers));
+                        subQual, UtilPlume.join(",", superQualifiers));
             }
             if (!isSubtype(subQual, superQual)) {
                 return false;
@@ -380,7 +380,7 @@ public interface QualifierHierarchy {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
                     "inconsistent sizes (%d, %d):%n  %s%n  %s",
-                    c1.size(), c2.size(), SystemUtil.join(",", c1), SystemUtil.join(",", c1));
+                    c1.size(), c2.size(), UtilPlume.join(",", c1), UtilPlume.join(",", c1));
         }
     }
 
@@ -399,9 +399,9 @@ public interface QualifierHierarchy {
                     c1.size(),
                     c2.size(),
                     result.size(),
-                    SystemUtil.join(",", c1),
-                    SystemUtil.join(",", c2),
-                    SystemUtil.join(",", result));
+                    UtilPlume.join(",", c1),
+                    UtilPlume.join(",", c2),
+                    UtilPlume.join(",", result));
         }
     }
 
