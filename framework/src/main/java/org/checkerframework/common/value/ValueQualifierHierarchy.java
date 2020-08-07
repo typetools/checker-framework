@@ -21,6 +21,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     /**
      * Creates a QualifierHierarchy from the given classes.
      *
+     * @param atypeFactory ValueAnnotatedTypeFactory
      * @param qualifierClasses class of annotations that are the qualifiers
      */
     ValueQualifierHierarchy(
