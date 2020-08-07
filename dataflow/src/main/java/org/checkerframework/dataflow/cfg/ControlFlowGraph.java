@@ -64,8 +64,8 @@ public class ControlFlowGraph {
      * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
      *
      * <p>WARNING: Not every Node in this mapping appears in the control flow graph! For example,
-     * Nodes in dead code do not appear in this.getAllNodes() because their blocks are not reachable
-     * in the control flow graph.
+     * Nodes in dead code do not appear in {@link #getAllNodes} because their blocks are not
+     * reachable in the control flow graph.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
