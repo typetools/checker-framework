@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A node for method invocation.
@@ -84,19 +85,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(target);
-        sb.append("(");
-        boolean needComma = false;
-        for (Node arg : arguments) {
-            if (needComma) {
-                sb.append(", ");
-            }
-            sb.append(arg);
-            needComma = true;
-        }
-        sb.append(")");
-        return sb.toString();
+        return target + "(" + UtilPlume.join(", ", arguments) + ")";
     }
 
     @Override
