@@ -1453,11 +1453,19 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the type of a varargs array of a method invocation or a constructor invocation.
      *
+     * <p>A null return value might mean:
+     *
+     * <ul>
+     *   <li>This type-checker is not using dataflow analysis.
+     *   <li>The given tree is dead code, so dataflow analysis never reached it to refine its type.
+     *   <li>TODO: Are there other reasons the return value might be null?
+     * </ul>
+     *
      * @param tree a method invocation or a constructor invocation
      * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
      *     tree}
      */
-    public AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
+    public @Nullable AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
         if (!useFlow) {
             return null;
         }
