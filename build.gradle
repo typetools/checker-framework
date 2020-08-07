@@ -224,7 +224,7 @@ allprojects {
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
-            if (it.name.equals('compileJava')    && !project.name.startsWith('checker-qual')){
+            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
