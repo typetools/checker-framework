@@ -62,6 +62,10 @@ public class ControlFlowGraph {
      * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
      * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
      * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
+     *
+     * <p>WARNING: Not every Node in this mapping appears in the control flow graph! For example,
+     * Nodes in dead code do not appear in this.getAllNodes() because their blocks are not reachable
+     * in the control flow graph.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
@@ -231,8 +235,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns the list of all basic blocks in this control flow graph in reversed depth-first
+     * postorder. Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
