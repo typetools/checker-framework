@@ -219,8 +219,6 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         // not store information about statements, so this method conservatively returns false for
         // statements.
 
-        boolean debug = false;
-
         // Return false for statements.
         if (!TreeUtils.isExpressionTree(tree)) {
             return false;
