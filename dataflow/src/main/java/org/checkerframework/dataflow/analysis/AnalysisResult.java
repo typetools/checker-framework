@@ -227,8 +227,11 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
         }
         // Don't consider the LHS of an assignment dead even though dataflow has no value for it.
         Tree parent = parentPath.getLeaf();
-        if (parent.getKind() == Tree.Kind.ASSIGNMENT
-                && ((AssignmentTree) parent).getVariable() == tree) {
+        @SuppressWarnings("interning:not.interned") // test if tree is lhs of parent
+        boolean lhsOfAssignment =
+                parent.getKind() == Tree.Kind.ASSIGNMENT
+                        && ((AssignmentTree) parent).getVariable() == tree;
+        if (lhsOfAssignment) {
             return false;
         }
 
