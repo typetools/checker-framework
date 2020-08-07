@@ -250,7 +250,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
             }
         }
 
-        // If a MEMBER_SELECT seems dead, check its receiver.
+        // If a MEMBER_SELECT seems dead, check its receiver.  In method call "a.foo()", dataflow
+        // keeps no information about "a.foo", but that doesn't mean that it is dead.
         if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             return isDeadCode(parentPath, ((MemberSelectTree) tree).getExpression());
         }
