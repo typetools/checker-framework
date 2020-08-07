@@ -228,8 +228,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
