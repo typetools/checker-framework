@@ -1016,6 +1016,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the store immediately after a given {@link Node}.
      *
+     * @param node node after which the store is returned
      * @return the store immediately after a given {@link Node}
      */
     public Store getStoreAfter(Node node) {
