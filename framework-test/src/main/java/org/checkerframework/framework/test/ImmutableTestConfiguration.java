@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -91,11 +91,11 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
-                "processors=" + SystemUtil.join(", ", processors),
-                "options=" + SystemUtil.join(", ", getFlatOptions()),
+                "testSourceFiles=" + UtilPlume.join(" ", testSourceFiles),
+                "processors=" + String.join(", ", processors),
+                "options=" + String.join(", ", getFlatOptions()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 }
