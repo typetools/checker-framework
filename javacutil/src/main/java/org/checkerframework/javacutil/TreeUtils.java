@@ -1426,4 +1426,27 @@ public final class TreeUtils {
         }
         return false;
     }
+
+    /**
+     * Return either toString() if it is less than {@code length} characters, or toString quoted and
+     * truncated. The result contains no line separators.
+     *
+     * @param tree a tree
+     * @param length the maximum length for the result; must be at least 6
+     * @return a string representation of the tree that is no longer than {@code length} characters
+     *     long
+     */
+    public static String truncatedString(Tree tree, int length) {
+        if (length < 6) {
+            throw new IllegalArgumentException("bad length " + length);
+        }
+        String result = tree.toString().trim().replaceAll("\\s+", " ");
+        if (result.length() > length) {
+            // The quoting increases the likelihood that all delimiters are balanced in the result.
+            // That makes it easier to manipulate the result (such as skipping over it) in an
+            // editor.  The quoting also makes clear that the value is truncated.
+            result = "\"" + result.substring(0, length - 5) + "...\"";
+        }
+        return result;
+    }
 }
