@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 
 /**
  * Indicates that the method, if it terminates successfully, always invokes the given methods on the
- * value expressions.
+ * given expressions.
  *
  * <p>Consider the following method:
  *
@@ -17,6 +17,8 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * </pre>
  *
  * <p>This method guarantees that {@code t.m()} is always called before the method returns.
+ *
+ * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @PostconditionAnnotation(qualifier = CalledMethods.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

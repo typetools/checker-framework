@@ -8,13 +8,15 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation speculatively used by Lombok's lombok.config checkerframework = true option. It has
- * no meaning to the Called Methods Checker, which treats it as {@link
- * org.checkerframework.checker.calledmethods.qual.CalledMethods}.
+ * no meaning to the Called Methods Checker, which treats it as {@code @}{@link
+ * org.checkerframework.checker.calledmethods.qual.CalledMethods}{@code ()}.
  *
  * <p>A similar annotation might be supported in the future.
  *
  * <p>This annotation could be marked as deprecated, but that causes extra warnings when processing
  * delombok'd code.
+ *
+ * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

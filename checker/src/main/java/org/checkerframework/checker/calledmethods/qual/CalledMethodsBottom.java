@@ -9,9 +9,11 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type for the CalledMethods type system, a part of the Called Methods checker.
+ * The bottom type for the Called Methods type system.
  *
  * <p>It should rarely be written by a programmer.
+ *
+ * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @SubtypeOf({CalledMethods.class, CalledMethodsPredicate.class})
 @Retention(RetentionPolicy.RUNTIME)

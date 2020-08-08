@@ -15,6 +15,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>The subtyping relationship is:
  *
  * <pre>{@code @CalledMethods({"m1", "m2", "m3"}) <: @CalledMethods({"m1", "m2"})}</pre>
+ *
+ * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
@@ -22,9 +24,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @DefaultQualifierInHierarchy
 public @interface CalledMethods {
     /**
-     * Methods that have been called, on any expression whose type is annotated.
+     * Methods that have definitely been called, on any expression whose type is annotated.
      *
-     * @return methods that have been called
+     * @return methods that have definitely been called
      */
     public String[] value() default {};
 }
