@@ -571,14 +571,18 @@ documentation.
 
 To pass an option to only a particular checker,
 prefix the option with the canonical or simple name
-of a checker, separated by an underscore ``\<\_>''.
+of a checker, followed by an underscore ``\<\_>''.
 Such an option will apply only to a checker with that name or any subclass of that checker.
 For example, you can use
 \begin{Verbatim}
--ANullnessChecker_lint=redundantNullComparison
--Aorg.checkerframework.checker.guieffect.GuiEffectChecker_lint=debugSpew
+    -ANullnessChecker_lint=redundantNullComparison
+    -Aorg.checkerframework.checker.guieffect.GuiEffectChecker_lint=debugSpew
 \end{Verbatim}
-\noindent to pass different lint options to the Nullness and GUI Effect Checkers.
+
+\noindent
+to pass different lint options to the Nullness and GUI Effect -Checkers.  A
+downside is that, in this example, each of the checkers will issue one
+``The following options were not recognized by any processor'' warning.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
