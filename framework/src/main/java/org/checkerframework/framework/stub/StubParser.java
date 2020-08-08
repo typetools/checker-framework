@@ -511,6 +511,8 @@ public class StubParser {
         // be refactored to be nicer.
         allStubAnnotations = getAllStubAnnotations();
         if (allStubAnnotations.isEmpty()) {
+            // This issues a warning if the stub file contains no import statements.  That is
+            // incorrect if the stub file contains fully-qualified annotations.
             stubWarnNotFound(
                     String.format(
                             "No supported annotations found! Does stub file %s import them?",
