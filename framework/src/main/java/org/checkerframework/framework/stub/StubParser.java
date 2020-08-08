@@ -511,7 +511,7 @@ public class StubParser {
         // be refactored to be nicer.
         allStubAnnotations = getAllStubAnnotations();
         if (allStubAnnotations.isEmpty()) {
-            stubWarn(
+            stubWarnNotFound(
                     String.format(
                             "No supported annotations found! Does stub file %s import them?",
                             filename));
