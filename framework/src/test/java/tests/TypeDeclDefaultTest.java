@@ -2,11 +2,11 @@ package tests;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** Create the TypeDeclDefault test. */
-public class TypeDeclDefaultTest extends FrameworkPerDirectoryTest {
+public class TypeDeclDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public TypeDeclDefaultTest(List<File> testFiles) {

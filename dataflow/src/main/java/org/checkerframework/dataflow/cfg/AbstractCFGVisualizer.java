@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.cfg;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -58,12 +56,24 @@ public abstract class AbstractCFGVisualizer<
 
     @Override
     public void init(Map<String, Object> args) {
-        Object verb = args.get("verbose");
-        this.verbose =
-                verb != null
-                        && (verb instanceof String
-                                ? Boolean.parseBoolean((String) verb)
-                                : (boolean) verb);
+        this.verbose = toBoolean(args.get("verbose"));
+    }
+
+    /**
+     * Convert the value to boolean, by parsing a string or casting any other value. null converts
+     * to false.
+     *
+     * @param o an object to convert to boolean
+     * @return {@code o} converted to boolean
+     */
+    private static boolean toBoolean(@Nullable Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (o instanceof String) {
+            return Boolean.parseBoolean((String) o);
+        }
+        return (boolean) o;
     }
 
     /**
@@ -105,12 +115,15 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Adds the successors of the current block to the work list and the visited blocks list.
+     * Outputs, to sbGraph, a visualization of a block's edges, but not the block itself. (The block
+     * itself is output elsewhere.) Also adds the successors of the block to the work list and the
+     * visited blocks list.
      *
      * @param cur the current block
-     * @param visited the set of blocks that have already been visited or are in the work list
-     * @param workList the queue of blocks to be processed
-     * @param sbGraph the {@link StringBuilder} to store the graph
+     * @param visited the set of blocks that have already been visited or are in the work list; side
+     *     effected by this method
+     * @param workList the queue of blocks to be processed; side effected by this method
+     * @param sbGraph the {@link StringBuilder} to store the graph; side effected by this method
      */
     protected void handleSuccessorsHelper(
             Block cur, Set<Block> visited, Queue<Block> workList, StringBuilder sbGraph) {
@@ -198,7 +211,7 @@ public abstract class AbstractCFGVisualizer<
         if (analysis != null) {
             sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
             if (verbose) {
-                Node lastNode = getLastNode(bb);
+                Node lastNode = bb.getLastNode();
                 if (lastNode != null) {
                     sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
                 }
@@ -234,17 +247,7 @@ public abstract class AbstractCFGVisualizer<
      * @return the contents of the block, as a list of nodes
      */
     protected List<Node> addBlockContent(Block bb) {
-        switch (bb.getType()) {
-            case REGULAR_BLOCK:
-                return ((RegularBlock) bb).getContents();
-            case EXCEPTION_BLOCK:
-                return Collections.singletonList(((ExceptionBlock) bb).getNode());
-            case CONDITIONAL_BLOCK:
-            case SPECIAL_BLOCK:
-                return Collections.emptyList();
-            default:
-                throw new BugInCF("Unrecognized basic block type: " + bb.getType());
-        }
+        return bb.getNodes();
     }
 
     /**
@@ -394,27 +397,6 @@ public abstract class AbstractCFGVisualizer<
     }
 
     /**
-     * Returns the last node of a block, or null if none.
-     *
-     * @param bb the block
-     * @return the last node of this block or {@code null}
-     */
-    protected @Nullable Node getLastNode(Block bb) {
-        switch (bb.getType()) {
-            case REGULAR_BLOCK:
-                List<Node> blockContents = ((RegularBlock) bb).getContents();
-                return blockContents.get(blockContents.size() - 1);
-            case CONDITIONAL_BLOCK:
-            case SPECIAL_BLOCK:
-                return null;
-            case EXCEPTION_BLOCK:
-                return ((ExceptionBlock) bb).getNode();
-            default:
-                throw new Error("Unrecognized block type: " + bb.getType());
-        }
-    }
-
-    /**
      * Generate the order of processing blocks. Because a block may appears more than once in {@link
      * ControlFlowGraph#getDepthFirstOrderedBlocks()}, the orders of each block are stored in a
      * separate array list.
@@ -455,12 +437,12 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Generate the String representation of an edge.
      *
-     * @param sId the ID of current block
-     * @param eId the ID of successor block
+     * @param sId a representation of the current block, such as its ID
+     * @param eId a representation of the successor block, such as its ID
      * @param flowRule the content of the edge
      * @return the String representation of the edge
      */
-    protected abstract String addEdge(long sId, long eId, String flowRule);
+    protected abstract String addEdge(Object sId, Object eId, String flowRule);
 
     /**
      * Return the header of the generated graph.
@@ -477,15 +459,16 @@ public abstract class AbstractCFGVisualizer<
     protected abstract String visualizeGraphFooter();
 
     /**
-     * Return the simple String of the process order of a node, e.g., "Process order: 23". When a
-     * node have multiple process orders, a sequence of numbers will be returned, e.g., "Process
-     * order: 23,25".
+     * Given a list of process orders (integers), returns a string representation.
      *
-     * @param order the list of the process order to be processed
-     * @return the String representation of the process order of the node
+     * <p>Examples: "Process order: 23", "Process order: 23,25".
+     *
+     * @param order a list of process orders
+     * @return a String representation of the given process orders
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
-        return "Process order: " + order.toString().replaceAll("[\\[\\]]", "");
+        String orderString = order.toString();
+        return "Process order: " + orderString.substring(1, orderString.length() - 1);
     }
 
     /**

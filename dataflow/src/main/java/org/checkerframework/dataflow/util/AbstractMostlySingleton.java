@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public abstract class AbstractMostlySingleton<T extends Object> implements Set<T> {
 
-    /** The possible states of the collection. */
+    /** The possible states of this set. */
     public enum State {
         /** An empty set. */
         EMPTY,
@@ -29,8 +29,8 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
     protected State state;
     /** The current value, non-null when the state is SINGLETON. */
     protected @Nullable T value;
-    /** The wrapped collection, non-null when the state is ANY. */
-    protected @Nullable Collection<T> set;
+    /** The wrapped set, non-null when the state is ANY. */
+    protected @Nullable Set<T> set;
 
     /** Create an AbstractMostlySingleton. */
     protected AbstractMostlySingleton(State s) {
@@ -91,7 +91,8 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
 
                     @Override
                     public void remove() {
-                        throw new UnsupportedOperationException();
+                        state = State.EMPTY;
+                        value = null;
                     }
                 };
             case ANY:

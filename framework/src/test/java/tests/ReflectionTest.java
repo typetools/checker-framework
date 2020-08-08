@@ -3,12 +3,12 @@ package tests;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.framework.test.FrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import testlib.reflection.ReflectionTestChecker;
 
 /** Tests the reflection resolution using a simple type system. */
-public class ReflectionTest extends FrameworkPerDirectoryTest {
+public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public ReflectionTest(List<File> testFiles) {

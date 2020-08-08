@@ -125,8 +125,15 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    protected String addEdge(long sId, long eId, String flowRule) {
-        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];" + lineSeparator;
+    protected String addEdge(Object sId, Object eId, String flowRule) {
+        return "    "
+                + format(sId)
+                + " -> "
+                + format(eId)
+                + " [label=\""
+                + flowRule
+                + "\"];"
+                + lineSeparator;
     }
 
     @Override
@@ -323,7 +330,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustifiedTerminator;
+        return classCanonicalName + "(" + leftJustifiedTerminator;
     }
 
     @Override
