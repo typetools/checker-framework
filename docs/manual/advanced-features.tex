@@ -88,7 +88,7 @@ The examples in this section use the type qualifier hierarchy \code{@A :> @B :> 
 
 A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
 The upper bound of qualifiers used on a given type is specified by annotating the type declaration
-with some qualifier.
+with some qualifier --- that is, by writing an annotation on a class declaration.
 \begin{Verbatim}
   @C class MyClass {}
 \end{Verbatim}
@@ -116,7 +116,7 @@ There are two exceptions.
   For consistency, users are allowed to write such a type on a local variable declaration.
 \end{itemize}
 
-Due to existing type rules, an expression of type \<A MyClass> can only be used in limited ways.
+Due to existing type rules, an expression of type \<@A MyClass> can only be used in limited ways.
 \begin{itemize}
   \item
   Since every field, formal parameter, and return type of type MyClass (or lower) is annotated as
