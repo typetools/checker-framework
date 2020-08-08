@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -154,11 +157,12 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the set of all basic block in this control flow graph.
+     * Returns the set of all basic blocks in this control flow graph.
      *
-     * @return the set of all basic block in this control flow graph
+     * @return the set of all basic blocks in this control flow graph
      */
-    public Set<Block> getAllBlocks() {
+    public Set<Block> getAllBlocks(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -186,8 +190,22 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns all nodes in this control flow graph.
+     *
+     * @return all nodes in this control flow graph
+     */
+    public List<Node> getAllNodes(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+        List<Node> result = new ArrayList<>();
+        for (Block b : getAllBlocks()) {
+            result.addAll(b.getNodes());
+        }
+        return result;
+    }
+
+    /**
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
@@ -215,7 +233,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the copied tree-lookup map.
+     * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+     * #getNodesCorrespondingToTree} uses that field.
      *
      * @return the copied tree-lookup map
      */
@@ -282,5 +301,33 @@ public class ControlFlowGraph {
         }
         String stringGraph = (String) res.get("stringGraph");
         return stringGraph == null ? super.toString() : stringGraph;
+    }
+
+    /**
+     * Returns a verbose string representation of this, useful for debugging.
+     *
+     * @return a string representation of this
+     */
+    public String toStringDebug() {
+        StringJoiner result =
+                new StringJoiner(
+                        String.format("%n  "),
+                        String.format("ControlFlowGraph{%n  "),
+                        String.format("%n  }"));
+        result.add("entryBlock=" + entryBlock);
+        result.add("regularExitBlock=" + regularExitBlock);
+        result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        if (astString.length() > 65) {
+            astString = "\"" + astString.substring(0, 60) + "\"";
+        }
+        result.add("underlyingAST=" + underlyingAST);
+        result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+        result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
+        result.add("declaredClasses=" + declaredClasses);
+        result.add("declaredLambdas=" + declaredLambdas);
+        return result.toString();
     }
 }

@@ -9,7 +9,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents the test results from typechecking one or more java files using the given
@@ -106,7 +106,7 @@ public class TypecheckResult {
     public String summarize() {
         if (testFailed) {
             StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-            summaryBuilder.add(SystemUtil.joinLines(getErrorHeaders()));
+            summaryBuilder.add(UtilPlume.joinLines(getErrorHeaders()));
 
             if (!unexpectedDiagnostics.isEmpty()) {
                 summaryBuilder.add(

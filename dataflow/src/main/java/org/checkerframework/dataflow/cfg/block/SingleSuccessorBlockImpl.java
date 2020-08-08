@@ -12,8 +12,8 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     protected @Nullable BlockImpl successor;
 
     /**
-     * The rule below say that EACH store at the end of a single successor block flow to the
-     * corresponding store of the successor.
+     * The initial value for the rule below says that EACH store at the end of a single successor
+     * block flows to the corresponding store of the successor.
      */
     protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
 

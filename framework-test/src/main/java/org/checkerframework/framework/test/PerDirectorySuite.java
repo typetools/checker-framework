@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import org.checkerframework.javacutil.BugInCF;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -82,20 +83,17 @@ public class PerDirectorySuite extends Suite {
         final List<FrameworkMethod> parameterMethods =
                 testClass.getAnnotatedMethods(Parameters.class);
         if (parameterMethods.size() != 1) {
-            StringBuilder methods = new StringBuilder();
+            // Construct error message
 
+            String methods;
             if (parameterMethods.isEmpty()) {
-                methods.append("[No methods specified]");
+                methods = "[No methods specified]";
             } else {
-                boolean first = true;
+                StringJoiner sj = new StringJoiner(", ");
                 for (FrameworkMethod method : parameterMethods) {
-                    if (!first) {
-                        methods.append(", ");
-                    } else {
-                        first = false;
-                    }
-                    methods.append(method.getName());
+                    sj.add(method.getName());
                 }
+                methods = sj.toString();
             }
 
             throw new BugInCF(

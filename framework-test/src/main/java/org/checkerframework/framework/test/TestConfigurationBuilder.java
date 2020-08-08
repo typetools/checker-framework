@@ -14,6 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -410,11 +411,11 @@ public class TestConfigurationBuilder {
 
     @Override
     public String toString() {
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
-                "processors=" + SystemUtil.join(", ", processors),
-                "options=" + SystemUtil.join(", ", options.getOptionsAsList()),
+                "testSourceFiles=" + UtilPlume.join(" ", testSourceFiles),
+                "processors=" + String.join(", ", processors),
+                "options=" + String.join(", ", options.getOptionsAsList()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 

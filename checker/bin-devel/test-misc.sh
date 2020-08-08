@@ -12,8 +12,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
-# Code style, formatting, and plugable type-checking
-./gradlew checkBasicStyle checkFormat typecheck --console=plain --warning-mode=all --no-daemon
+# Code style and formatting
+./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
 
 # HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon

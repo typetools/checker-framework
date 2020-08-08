@@ -486,6 +486,22 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 \end{smaller}
 
 
+\item
+  The Checker Framework can issue false positive warnings in dead code.  An
+  example is
+
+\begin{smaller}
+\begin{Verbatim}
+  void m() {
+    String t = "";
+    t.toString();
+    try {
+    } catch (Throwable e) {
+        t.toString(); // Nullness Checker issues spurious (dereference.of.nullable)
+    }
+\end{Verbatim}
+\end{smaller}
+
 \end{itemize}
 
 
@@ -506,19 +522,6 @@ values as an annotation argument, you need to put curly braces around them:
 \begin{Verbatim}
         @LTLengthOf({"firstName", "lastName"}) int index;
 \end{Verbatim}
-
-A message of the form
-
-\begin{Verbatim}
-  Error: cannot find symbol
-\end{Verbatim}
-
-\noindent
-for an annotation type that is imported, and is a applied to a
-statically-imported enum, is caused by a javac bug, unrelated to the
-Checker Framework.  See
-\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
-% Also see https://github.com/typetools/checker-framework/issues/1304
 
 
 \sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
@@ -543,7 +546,7 @@ helpful if you:
 % If you update this, also update ../../.github/ISSUE_TEMPLATE
 \begin{itemize}
 \item
-  Add \code{-version -verbose -AprintAllQualifiers}
+  Add \code{-version -AprintGitProperties -verbose -AprintAllQualifiers}
   to the javac options.  This causes the compiler to output
   debugging information, including its version number.
 \item
