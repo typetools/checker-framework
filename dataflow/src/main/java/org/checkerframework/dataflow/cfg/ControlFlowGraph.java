@@ -58,14 +58,18 @@ public class ControlFlowGraph {
     protected final UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
-     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s.
      *
-     * <p>WARNING: Not every Node in this mapping appears in the control flow graph! For example,
-     * Nodes in dead code do not appear in {@link #getAllNodes} because their blocks are not
-     * reachable in the control flow graph.
+     * <ul>
+     *   <li>Most Trees that produce a value will have at least one corresponding Node.
+     *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
+     *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while
+     *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+     *   <li>Some trees that produce a value have no corresponding Nodes. An example is Trees in
+     *       dead code. They would map to nodes that do not appear in {@link #getAllNodes} because
+     *       their blocks are not reachable in the control flow graph, but {@link
+     *       #removeDeadNodesFromTreeLookup} removes such nodes.
+     * </ul>
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
@@ -228,9 +232,8 @@ public class ControlFlowGraph {
                     i2.remove();
                 }
             }
-            if (nodeSet.isEmpty()) {
-                i1.remove();
-            }
+            // nodeSet might be empty.  That indicates that the tree is in dead code, as opposed to
+            // being a tree that doesn't produce a value.
         }
     }
 
