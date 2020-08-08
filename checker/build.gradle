@@ -26,6 +26,7 @@ dependencies {
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:0.2.2'
+    implementation 'org.plumelib:plume-util:1.1.5'
 
     // Called Methods Checker AutoValue + Lombok support
     testCompile "com.google.auto.value:auto-value-annotations:1.7.4"

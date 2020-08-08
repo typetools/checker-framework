@@ -257,6 +257,7 @@
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
                 <include name="manual001.png"/>
+                <include name="manual001.svg"/>
             </fileset>
         </copy>
 

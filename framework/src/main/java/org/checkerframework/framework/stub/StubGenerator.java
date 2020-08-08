@@ -25,6 +25,7 @@ import javax.lang.model.util.ElementFilter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Generates a stub file from a single class or an entire package.
@@ -367,21 +368,14 @@ public class StubGenerator {
     }
 
     /**
-     * Return a string representation of the list in the form of {@code item1, item2, item3, ...}.
+     * Return a string representation of the list in the form of {@code item1, item2, item3, ...},
+     * without surrounding square brackets as the default representation has.
      *
-     * <p>instead of the default representation, {@code [item1, item2, item3, ...]}
+     * @param lst a list to format
+     * @return a string representation of the list, without surrounding square brackets
      */
     private String formatList(List<?> lst) {
-        StringBuilder sb = new StringBuilder();
-        boolean isFirst = true;
-        for (Object o : lst) {
-            if (!isFirst) {
-                sb.append(", ");
-            }
-            sb.append(o);
-            isFirst = false;
-        }
-        return sb.toString();
+        return UtilPlume.join(", ", lst);
     }
 
     /** Returns true if the element is public or protected element. */

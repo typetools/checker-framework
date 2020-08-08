@@ -37,7 +37,8 @@ public class Extends {
 
 class TestWrapper {
     public static String wrap(String... method) {
-        return SystemUtil.joinLines(
-                "class Test extends Super {", SystemUtil.joinLines(method), "}");
+        return String.join(
+                System.lineSeparator(),
+                SystemUtil.concatenate("class Test extends Super {", method, "}"));
     }
 }

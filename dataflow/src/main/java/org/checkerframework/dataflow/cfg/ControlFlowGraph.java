@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -156,11 +157,12 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the set of all basic block in this control flow graph.
+     * Returns the set of all basic blocks in this control flow graph.
      *
-     * @return the set of all basic block in this control flow graph
+     * @return the set of all basic blocks in this control flow graph
      */
-    public Set<Block> getAllBlocks() {
+    public Set<Block> getAllBlocks(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -192,7 +194,8 @@ public class ControlFlowGraph {
      *
      * @return all nodes in this control flow graph
      */
-    public List<Node> getAllNodes() {
+    public List<Node> getAllNodes(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> result = new ArrayList<>();
         for (Block b : getAllBlocks()) {
             result.addAll(b.getNodes());
@@ -201,8 +204,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
@@ -227,35 +230,6 @@ public class ControlFlowGraph {
 
         Collections.reverse(dfsOrderResult);
         return dfsOrderResult;
-    }
-
-    /**
-     * Get a list of all successor Blocks for cur.
-     *
-     * @param cur a block whose successors to retrieve
-     * @return a Deque of successor Blocks
-     */
-    private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
-            succs.add(ccur.getThenSuccessor());
-            succs.add(ccur.getElseSuccessor());
-        } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                succs.add(b);
-            }
-        }
-
-        if (cur.getType() == Block.BlockType.EXCEPTION_BLOCK) {
-            ExceptionBlock ecur = (ExceptionBlock) cur;
-            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                succs.addAll(exceptionSuccSet);
-            }
-        }
-        return succs;
     }
 
     /**
