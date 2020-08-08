@@ -1010,9 +1010,13 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the store immediately after a given {@link Node}.
      *
+     * @param node node after which the store is returned
      * @return the store immediately after a given {@link Node}
      */
     public Store getStoreAfter(Node node) {
+        if (!analysis.isRunning()) {
+            return flowResult.getStoreAfter(node);
+        }
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
