@@ -231,8 +231,9 @@ public class ControlFlowGraph {
                     i2.remove();
                 }
             }
-            // nodeSet might be empty.  That indicates that the tree is in dead code, as opposed to
-            // being a tree that doesn't produce a value.
+            // nodeSet, which is treeLookup.get(tree) for the tree, might be empty.  That indicates
+            // that the tree is in dead code, as opposed to being a tree that doesn't produce a
+            // value.
         }
     }
 
