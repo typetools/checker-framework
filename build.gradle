@@ -424,7 +424,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+    requireJavadoc "org.plumelib:require-javadoc:0.3.1"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
