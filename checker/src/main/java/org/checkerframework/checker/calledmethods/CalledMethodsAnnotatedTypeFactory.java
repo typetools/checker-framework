@@ -39,7 +39,10 @@ import org.checkerframework.javacutil.TreeUtils;
 /** The annotated type factory for the Called Methods checker. */
 public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
 
-    /** {@link java.util.Collections#singletonList} is treated specially by the EC2 logic. */
+    /**
+     * The {@link java.util.Collections#singletonList} method. It is treated specially by the EC2
+     * logic.
+     */
     private final ExecutableElement collectionsSingletonList;
 
     /**
@@ -49,7 +52,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      */
     private final boolean useValueChecker;
 
-    /** The collection of built-in framework support for the Called Methods checker. */
+    /** The frameworks (such as Lombok and AutoValue) supported by the Called Methods checker. */
     private Collection<FrameworkSupport> frameworkSupports;
 
     /**
