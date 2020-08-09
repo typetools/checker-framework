@@ -135,7 +135,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + lineSeparator;
+        return classCanonicalName + "(" + lineSeparator;
     }
 
     @Override

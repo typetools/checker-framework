@@ -101,7 +101,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.5.1-SNAPSHOT'
+    version '3.6.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -224,8 +224,7 @@ allprojects {
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
-            if (name.is('compileJava') && !project.name.startsWith('checker-qual')){
-                println "${project.name} ${name}"
+            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
@@ -307,7 +306,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
-		'-ArequirePrefixInWarningSuppressions',
+                '-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
@@ -425,7 +424,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+    requireJavadoc "org.plumelib:require-javadoc:0.3.1"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
@@ -803,16 +802,6 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessOnlyAnnotatedFor')
-            } else {
-                dependsOn('checkNullness')
-            }
-
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
-            }
             if (project.name.is('framework')) {
                 dependsOn('wholeProgramInferenceTests', 'loaderTests')
             }
@@ -830,12 +819,27 @@ subprojects {
             }
         }
 
+        // Create a typecheck task per project (dogfooding the Checker Framework on itself).
+        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        tasks.create(name: 'typecheck', group: 'Verification') {
+            description 'Run the Checker Framework on itself'
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkNullnessOnlyAnnotatedFor')
+            } else {
+                dependsOn('checkNullness')
+            }
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkCompilerMessages', 'jtregTests')
+            }
+        }
+
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests
+        // allTests = test + nonJunitTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test')
+            dependsOn('nonJunitTests', 'test', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {
@@ -857,6 +861,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.gradle',
                                   '.idea',
                                   '.plume-scripts',
+                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
                                   'bib',
@@ -889,8 +894,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
-	    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
-	    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
@@ -903,11 +908,18 @@ task checkBasicStyle(group: 'Format') {
         boolean failed = false
         tree.visit {
             if (!it.file.isDirectory()) {
-                int isBlankLine
+                boolean blankLineAtEnd = false
+                String fileName = it.file.getName()
+                boolean checkTabs = !fileName.equals("Makefile")
                 it.file.eachLine { line ->
                     if (line.endsWith(' ')) {
                         println("Trailing whitespace: ${it.file.absolutePath}")
                         failed = true
+                    }
+                    if (checkTabs && line.contains('\t')) {
+                        println("Contains tab (use spaces): ${it.file.absolutePath}")
+                        failed = true
+                        checkTabs = false
                     }
                     if (!line.startsWith('\\') &&
                             (line.matches('^.* (else|finally|try)\\{}.*$')
@@ -918,13 +930,13 @@ task checkBasicStyle(group: 'Format') {
                         failed = true
                     }
                     if (line.isEmpty()) {
-                        isBlankLine++;
+                        blankLineAtEnd = true;
                     } else {
-                        isBlankLine = 0;
+                        blankLineAtEnd = false;
                     }
                 }
 
-                if (isBlankLine > 1) {
+                if (blankLineAtEnd) {
                     println("Blank line at end of file: ${it.file.absolutePath}")
                     failed = true
                 }

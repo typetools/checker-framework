@@ -15,6 +15,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -37,6 +38,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -59,6 +61,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -76,11 +79,33 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
+- job: typecheck_jdk8
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - typecheck_jdk11
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk8-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-typecheck.sh
+    displayName: test-typecheck.sh
+- job: typecheck_jdk11
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk11-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-typecheck.sh
+    displayName: test-typecheck.sh
 - job: cf_inference_jdk8
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
-   - misc_jdk11
+   - typecheck_jdk11
    - cf_inference_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -104,6 +129,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
    - daikon_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -127,6 +153,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
    - guava_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -152,6 +179,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
    - plume_lib_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -175,6 +203,7 @@ jobs:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
    - misc_jdk11
+   - typecheck_jdk11
    - downstream_jdk11
   pool:
     vmImage: 'ubuntu-latest'
