@@ -124,8 +124,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     /**
      * Continue to trust but not check the old {@link
-     * org.checkerframework.checker.builder.qual.ReturnsReceiver} annotation, for
-     * backwards-compatibility.
+     * org.checkerframework.checker.builder.qual.ReturnsReceiver} annotation, for backwards
+     * compatibility.
      *
      * @param tree the method invocation whose invoked method is to be checked
      * @return true if the declaration of the invoked method has a ReturnsReceiver declaration
@@ -137,9 +137,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     /**
-     * Given a tree, returns the method that the tree should be considered as calling. Returns
-     * "withOwners" if the call sets an "owner", "owner-alias", or "owner-id" filter. Returns
-     * "withImageIds" if the call sets an "image-ids" filter.
+     * Given a tree, returns the name of the method that the tree should be considered as calling.
+     * Returns "withOwners" if the call sets an "owner", "owner-alias", or "owner-id" filter.
+     * Returns "withImageIds" if the call sets an "image-ids" filter.
      *
      * <p>Package-private to permit calls from {@link CalledMethodsTransfer}.
      *
@@ -169,9 +169,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 // or code of the form:
                 // new Filter().*.withName("owner").*
 
-                // Set to non-null iff a call to withName was observed; in that case, this
-                // variable's
-                // value is the argument to withName.
+                // The argument to withName, or null if no all to withName was observed.
                 String withNameArg = null;
                 ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
 
