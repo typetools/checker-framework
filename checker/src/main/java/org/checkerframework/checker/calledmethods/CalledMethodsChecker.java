@@ -15,10 +15,10 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * from being instantiated incompletely.
  */
 @SuppressWarningsPrefix({
-    // Preferred warning keys.
+    // Preferred checkername.
     "calledmethods",
     "called.methods",
-    // Deprecated warning keys, supported for backward compatibility.
+    // Preferred checkernames, supported for backward compatibility.
     "builder",
     "object.construction",
     "objectconstruction"
