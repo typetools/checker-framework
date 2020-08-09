@@ -32,12 +32,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 public class CalledMethodsChecker extends BaseTypeChecker {
 
     /**
-     * If this option is supplied, use the Value Checker to reduce false positives when analyzing
-     * calls to the AWS SDK.
-     */
-    public static final String USE_VALUE_CHECKER = "useValueChecker";
-
-    /**
      * If this option is supplied, count the number of analyzed calls to build() in supported
      * frameworks and print it when analysis is complete. Useful for collecting metrics.
      */
@@ -61,6 +55,12 @@ public class CalledMethodsChecker extends BaseTypeChecker {
      * it via {@code -AdisableFrameworkSupports=AUTOVALUE}.
      */
     public static final String AUTOVALUE_SUPPORT = "AUTOVALUE";
+
+    /**
+     * If this option is supplied, use the Value Checker to reduce false positives when analyzing
+     * calls to the AWS SDK.
+     */
+    public static final String USE_VALUE_CHECKER = "useValueChecker";
 
     /**
      * The number of calls to build frameworks supported by this invocation, if the {@link
