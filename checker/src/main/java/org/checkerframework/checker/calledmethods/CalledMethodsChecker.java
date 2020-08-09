@@ -18,7 +18,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
     // Preferred checkername.
     "calledmethods",
     "called.methods",
-    // Preferred checkernames, supported for backward compatibility.
+    // Deprecated checkernames, supported for backward compatibility.
     "builder",
     "object.construction",
     "objectconstruction"
