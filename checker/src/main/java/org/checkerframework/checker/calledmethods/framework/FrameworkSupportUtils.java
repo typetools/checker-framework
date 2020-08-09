@@ -15,7 +15,7 @@ public class FrameworkSupportUtils {
      * Checks whether the given type is one of the immutable collections defined in
      * com.google.common.collect.
      *
-     * @param type a Java type
+     * @param type a type
      * @return whether the type is a Guava immutable collection
      */
     public static boolean isGuavaImmutableType(TypeMirror type) {
@@ -23,7 +23,7 @@ public class FrameworkSupportUtils {
     }
 
     /**
-     * Capitalizes the first letter of the given string
+     * Capitalizes the first letter of the given string.
      *
      * @param prop a String
      * @return the same String, but with the first character capitalized
@@ -33,7 +33,7 @@ public class FrameworkSupportUtils {
     }
 
     /**
-     * Given an annotation name, return true if the element has the annotation of that name
+     * Given an annotation name, return true if the element has the annotation of that name.
      *
      * @param element the element
      * @param annotName name of the annotation
