@@ -15,7 +15,7 @@ public interface FrameworkSupport {
      *
      * @param t a method that is possibly the {@code toBuilder} method for a type that has an
      *     associated builder. An implementation must check that this is actually the {@code
-     *     toBuilder} method for the corresponding framework
+     *     toBuilder} method for the corresponding framework.
      */
     void handlePossibleToBuilder(AnnotatedTypeMirror.AnnotatedExecutableType t);
 
@@ -34,7 +34,7 @@ public interface FrameworkSupport {
      * org.checkerframework.checker.calledmethods.qual.CalledMethods} annotation to a constructor
      * call
      *
-     * @param tree AST for the call
+     * @param tree a constructor call
      * @param type type of the call expression
      */
     void handleConstructor(NewClassTree tree, AnnotatedTypeMirror type);
@@ -42,9 +42,9 @@ public interface FrameworkSupport {
     /**
      * Determines if a method is a {@code build} method on a {@code Builder} type for the framework
      *
-     * @param e element for the method
+     * @param e a method
      * @return {@code true} if {@code e} is a {@code build} method on a {@code Builder} type for the
-     *     framework, {@code false} otherwise
+     *     framework
      */
     boolean isBuilderBuildMethod(ExecutableElement e);
 }

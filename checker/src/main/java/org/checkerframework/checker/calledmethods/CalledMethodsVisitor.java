@@ -21,10 +21,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class CalledMethodsVisitor extends AccumulationVisitor {
 
-    /**
-     * Custom error message key for finalizer invocations. The custom error message makes it easier
-     * for users to tell what methods weren't called.
-     */
+    /** Error message key for incorrect finalizer invocations. */
     public static final @CompilerMessageKey String FINALIZER_INVOCATION_INVALID =
             "finalizer.invocation.invalid";
 
