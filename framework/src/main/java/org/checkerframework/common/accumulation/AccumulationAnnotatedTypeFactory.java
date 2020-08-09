@@ -260,6 +260,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         /**
          * Implements rule RRA.
          *
+         * <p>This implementation propagates types from the receiver to the return value, without
+         * change. Subclasses may override this method to also add additional properties, as
+         * appropriate.
+         *
          * @param tree a method invocation tree
          * @param type the type of {@code tree} (i.e. the return type of the invoked method). Is
          *     (possibly) side-effected by this method.

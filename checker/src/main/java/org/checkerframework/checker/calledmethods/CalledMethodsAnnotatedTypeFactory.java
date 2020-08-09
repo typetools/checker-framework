@@ -196,6 +196,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                                         filterTreeAsMethodInvocation.getMethodSelect());
                     }
                 }
+                // The loop has reached the beginning of a fluent sequence of method calls.
+                // If the ultimate receiver at the beginning of that fluent sequence is a
                 if (filterTree == null) {
                     continue;
                 }
@@ -227,7 +229,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         return methodName;
     }
 
-    /** Necessary for the type rule for called methods described below. */
+    /**
+     * At a fluent method call (which returns {@code this}), add the method to the type of the
+     * return value.
+     */
     private class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
         /**
          * Creates an instance of this tree annotator for the given type factory.
@@ -240,17 +245,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            // CalledMethods requires special treatment of the return values of methods that return
-            // their receiver: the default return type must include the method being invoked.
-            //
-            // The basic accumulation analysis cannot handle this case - it can use the RR checker
-            // to transfer an annotation from the receiver to the return type, but because
-            // accumulation
-            // (has to) happen in dataflow, the correct annotation may not yet be available. The
-            // basic
-            // accumulation analysis therefore only supports "pass-through" returns receiver
-            // methods;
-            // it does not support automatically accumulating at the same time.
+            // Accumulate a method call, by adding the method being invoked to the return type.
             if (returnsThis(tree)) {
                 String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
                 methodName = adjustMethodNameUsingValueChecker(methodName, tree);
@@ -260,6 +255,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                                 oldAnno, createAccumulatorAnnotation(methodName));
                 type.replaceAnnotation(newAnno);
             }
+
+            // Also do the standard accumulation analysis behavior: copy any accumulation
+            // annotations from the receiver to the return type.
             return super.visitMethodInvocation(tree, type);
         }
 

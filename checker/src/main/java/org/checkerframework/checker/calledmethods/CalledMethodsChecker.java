@@ -10,20 +10,18 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * The primary typechecker for the Called Methods Checker, which tracks the methods that have
- * definitely been called on an object. One common use case for the Called Methods Checker is
- * permitting programmers to specify unsafe combinations of options to builder or builder-like
- * interfaces and prevent dangerous objects from being instantiated.
- *
- * <p>Note that this checker respects the suppress warning keys from its earlier names ("builder",
- * "object.construction", and "objectconstruction" in addition to its own keys ("calledmethods" and
- * "called.methods").
+ * definitely been called on an object. One common use case for the Called Methods Checker is to
+ * specify safe combinations of options to builder or builder-like interfaces, preventing objects
+ * from being instantiated incompletely.
  */
 @SuppressWarningsPrefix({
+    // Preferred warning keys.
+    "calledmethods",
+    "called.methods",
+    // Deprecated warning keys, supported for backward compatibility.
     "builder",
     "object.construction",
-    "objectconstruction",
-    "calledmethods",
-    "called.methods"
+    "objectconstruction"
 })
 @SupportedOptions({
     CalledMethodsChecker.USE_VALUE_CHECKER,
