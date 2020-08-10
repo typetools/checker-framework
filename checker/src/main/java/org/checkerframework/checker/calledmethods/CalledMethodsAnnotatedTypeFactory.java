@@ -5,8 +5,12 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -16,7 +20,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.builder.qual.ReturnsReceiver;
 import org.checkerframework.checker.calledmethods.framework.AutoValueSupport;
 import org.checkerframework.checker.calledmethods.framework.FrameworkSupport;
-import org.checkerframework.checker.calledmethods.framework.FrameworkSupportUtils;
 import org.checkerframework.checker.calledmethods.framework.LombokSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
@@ -33,15 +36,17 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** The annotated type factory for the Called Methods checker. */
 public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
 
     /**
-     * The {@link java.util.Collections#singletonList} method. It is treated specially by the EC2
-     * logic.
+     * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
+     * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
      */
     private final ExecutableElement collectionsSingletonList;
 
@@ -80,20 +85,31 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 CalledMethods.class,
                 CalledMethodsBottom.class,
                 CalledMethodsPredicate.class);
-        EnumSet<FrameworkSupportUtils.Framework> frameworkSet =
-                FrameworkSupportUtils.getFrameworkSet(
-                        checker.getOption(CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS));
+        Set<String> disabledFrameworks = new HashSet<>();
+        if (checker.hasOption(CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS)) {
+            disabledFrameworks.addAll(
+                    Arrays.asList(
+                                    checker.getOption(
+                                                    CalledMethodsChecker
+                                                            .DISABLED_FRAMEWORK_SUPPORTS)
+                                            .split(","))
+                            .stream()
+                            .map(String::toUpperCase)
+                            .collect(Collectors.toList()));
+        }
         frameworkSupports = new ArrayList<>();
+        enableFramework(CalledMethodsChecker.LOMBOK_SUPPORT, disabledFrameworks);
+        enableFramework(CalledMethodsChecker.AUTOVALUE_SUPPORT, disabledFrameworks);
 
-        for (FrameworkSupportUtils.Framework framework : frameworkSet) {
-            switch (framework) {
-                case AUTO_VALUE:
-                    frameworkSupports.add(new AutoValueSupport(this));
-                    break;
-                case LOMBOK:
-                    frameworkSupports.add(new LombokSupport(this));
-                    break;
-            }
+        if (!disabledFrameworks.isEmpty()) {
+            StringJoiner sj = new StringJoiner(", ");
+            disabledFrameworks.iterator().forEachRemaining(s -> sj.add(s));
+            String unrecognized = sj.toString();
+            throw new UserError(
+                    "The following argument(s) to the "
+                            + CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS
+                            + " command-line argument to the Called Methods Checker were unrecognized: "
+                            + unrecognized);
         }
 
         this.useValueChecker = checker.hasOption(CalledMethodsChecker.USE_VALUE_CHECKER);
@@ -103,6 +119,25 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         addAliasedAnnotation(OLD_CALLED_METHODS, CalledMethods.class, true);
         addAliasedAnnotation(OLD_NOT_CALLED_METHODS, this.top);
         this.postInit();
+    }
+
+    private void enableFramework(String framework, Set<String> disabledFrameworks) {
+        if (disabledFrameworks == null || !disabledFrameworks.contains(framework)) {
+            switch (framework) {
+                case CalledMethodsChecker.AUTOVALUE_SUPPORT:
+                    frameworkSupports.add(new AutoValueSupport(this));
+                    return;
+                case CalledMethodsChecker.LOMBOK_SUPPORT:
+                    frameworkSupports.add(new LombokSupport(this));
+                    return;
+                default:
+                    throw new BugInCF(
+                            "Called Methods Checker tried to enable an unsupported framework: "
+                                    + framework);
+            }
+        } else {
+            disabledFrameworks.remove(framework);
+        }
     }
 
     @Override

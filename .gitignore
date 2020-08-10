@@ -45,6 +45,10 @@ checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
 checker/bin-devel/dockerdir
 checker/src/main/resources/git.properties
+# These tests are generated from those in checker/tests/calledmethods-lombok during the build.
+# They must be in the tests/ directory rather than the build/ directory so that CheckerFrameworkPerDirectoryTest
+# can be used.
+checker/tests/calledmethods-delomboked
 
 # manual files
 bib

@@ -1,9 +1,7 @@
 package org.checkerframework.checker.calledmethods.framework;
 
-import java.util.EnumSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** A utility class of static methods used in supporting builder-generation frameworks. */
@@ -42,35 +40,5 @@ public class FrameworkSupportUtils {
     public static boolean hasAnnotation(Element element, String annotName) {
         return element.getAnnotationMirrors().stream()
                 .anyMatch(anm -> AnnotationUtils.areSameByName(anm, annotName));
-    }
-
-    /** The frameworks supported by the checker. */
-    public enum Framework {
-        AUTO_VALUE,
-        LOMBOK;
-    }
-
-    /**
-     * Gets the list of supported that are currently enabled frameworks.
-     *
-     * @param option the value of the framework support option
-     * @return the list of enabled frameworks
-     */
-    public static EnumSet<Framework> getFrameworkSet(String option) {
-        EnumSet<Framework> frameworkSet = EnumSet.allOf(Framework.class);
-
-        if (option != null) {
-            for (String disabledFrameworkSupport : option.split("\\s?,\\s?")) {
-                switch (disabledFrameworkSupport.toUpperCase()) {
-                    case CalledMethodsChecker.AUTOVALUE_SUPPORT:
-                        frameworkSet.remove(Framework.AUTO_VALUE);
-                        break;
-                    case CalledMethodsChecker.LOMBOK_SUPPORT:
-                        frameworkSet.remove(Framework.LOMBOK);
-                        break;
-                }
-            }
-        }
-        return frameworkSet;
     }
 }
