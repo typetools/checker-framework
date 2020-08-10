@@ -595,4 +595,16 @@ public class ElementUtils {
         return questioned.equals(method)
                 || env.getElementUtils().overrides(questioned, method, enclosing);
     }
+
+    /**
+     * Given an annotation name, return true if the element has the annotation of that name.
+     *
+     * @param element the element
+     * @param annotName name of the annotation
+     * @return true if the element has the annotation of that name
+     */
+    public static boolean hasAnnotation(Element element, String annotName) {
+        return element.getAnnotationMirrors().stream()
+                .anyMatch(anm -> AnnotationUtils.areSameByName(anm, annotName));
+    }
 }

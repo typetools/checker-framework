@@ -31,14 +31,15 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
                 "calledmethods-disableframeworks",
                 "-Anomsgtext",
                 "-AdisableFrameworkSupports=AutoValue,Lombok",
-                // The next option is so that we can run the EC2 tests under this configuration.
+                // The next option is so that we can run the usevaluechecker tests under this
+                // configuration.
                 "-ACalledMethodsChecker_useValueChecker",
                 "-nowarn");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"calledmethods-disableframeworks", "calledmethods-cve"};
+        return new String[] {"calledmethods-disableframeworks", "calledmethods-usevaluechecker"};
     }
 
     /**

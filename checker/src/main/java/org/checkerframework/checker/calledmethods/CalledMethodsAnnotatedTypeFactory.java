@@ -18,9 +18,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.builder.qual.ReturnsReceiver;
-import org.checkerframework.checker.calledmethods.framework.AutoValueSupport;
-import org.checkerframework.checker.calledmethods.framework.FrameworkSupport;
-import org.checkerframework.checker.calledmethods.framework.LombokSupport;
+import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
+import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
+import org.checkerframework.checker.calledmethods.builder.LombokSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
@@ -58,7 +58,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     private final boolean useValueChecker;
 
     /** The frameworks (such as Lombok and AutoValue) supported by the Called Methods checker. */
-    private Collection<FrameworkSupport> frameworkSupports;
+    private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
     /**
      * Lombok has a flag to generate @CalledMethods annotations, but they used the old package name,
@@ -86,18 +86,17 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 CalledMethodsBottom.class,
                 CalledMethodsPredicate.class);
         Set<String> disabledFrameworks = new HashSet<>();
-        if (checker.hasOption(CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS)) {
+        if (checker.hasOption(CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS)) {
             disabledFrameworks.addAll(
                     Arrays.asList(
                                     checker.getOption(
-                                                    CalledMethodsChecker
-                                                            .DISABLED_FRAMEWORK_SUPPORTS)
+                                                    CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS)
                                             .split(","))
                             .stream()
                             .map(String::toUpperCase)
                             .collect(Collectors.toList()));
         }
-        frameworkSupports = new ArrayList<>();
+        builderFrameworkSupports = new ArrayList<>();
         enableFramework(CalledMethodsChecker.LOMBOK_SUPPORT, disabledFrameworks);
         enableFramework(CalledMethodsChecker.AUTOVALUE_SUPPORT, disabledFrameworks);
 
@@ -107,7 +106,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             String unrecognized = sj.toString();
             throw new UserError(
                     "The following argument(s) to the "
-                            + CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS
+                            + CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS
                             + " command-line argument to the Called Methods Checker were unrecognized: "
                             + unrecognized);
         }
@@ -125,10 +124,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         if (disabledFrameworks == null || !disabledFrameworks.contains(framework)) {
             switch (framework) {
                 case CalledMethodsChecker.AUTOVALUE_SUPPORT:
-                    frameworkSupports.add(new AutoValueSupport(this));
+                    builderFrameworkSupports.add(new AutoValueSupport(this));
                     return;
                 case CalledMethodsChecker.LOMBOK_SUPPORT:
-                    frameworkSupports.add(new LombokSupport(this));
+                    builderFrameworkSupports.add(new LombokSupport(this));
                     return;
                 default:
                     throw new BugInCF(
@@ -196,76 +195,99 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         }
 
         if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
+            ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
             for (Tree filterTree : tree.getArguments()) {
-                // Search the arguments to withFilters for a Filter constructor invocation,
-                // passing through as many method invocation trees (that return their receiver) as
-                // needed.
+                // Search the arguments to withFilters for either: (1) a constructor invocation of
+                // the Filter
+                // constructor, whose first argument is the name, or (2) a call to the withName
+                // method.
+                //
                 // This code is searching for code such as:
                 // new Filter("owner").withValues("...")
                 // or:
                 // new Filter().*.withName("owner").*
-
-                // The argument to withName, or null if no all to withName was observed.
-                String withNameArg = null;
-                ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
-
-                while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
-
-                    MethodInvocationTree filterTreeAsMethodInvocation =
-                            (MethodInvocationTree) filterTree;
-                    String filterMethodName =
-                            TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
-                    if ("withName".equals(filterMethodName)
-                            && withNameArg == null
-                            && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
-                        Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
-                        withNameArg =
-                                ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
-                    }
-
-                    // Descend into a call to Collections.singletonList()
-                    if (TreeUtils.isMethodInvocation(
-                            filterTree, collectionsSingletonList, getProcessingEnv())) {
-                        filterTree = filterTreeAsMethodInvocation.getArguments().get(0);
-                    } else {
-                        filterTree =
-                                TreeUtils.getReceiverTree(
-                                        filterTreeAsMethodInvocation.getMethodSelect());
-                    }
-                }
-                // The loop has reached the beginning of a fluent sequence of method calls.
-                // If the ultimate receiver at the beginning of that fluent sequence is a
-                // call to the Filter() constructor, then the adjustment is made.
-                if (filterTree == null) {
-                    continue;
-                }
-                if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
-
-                    String filterKindName;
-                    if (withNameArg != null) {
-                        filterKindName = withNameArg;
-                    } else {
-                        ExpressionTree constructorArg =
-                                ((NewClassTree) filterTree).getArguments().get(0);
-                        filterKindName =
-                                ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
-                    }
-
-                    if (filterKindName != null) {
-                        switch (filterKindName) {
-                            case "owner":
-                            case "owner-alias":
-                            case "owner-id":
-                                return "withOwners";
-                            case "image-id":
-                                return "withImageIds";
-                            default:
-                        }
-                    }
+                //
+                // It is attempting to recover either the argument to the constructor or the
+                // argument
+                // to the last invocation of withName ("owner" in both of the above examples).
+                String adjustedMethodName = filterTreeToMethodName(filterTree, valueATF);
+                if (adjustedMethodName != null) {
+                    return adjustedMethodName;
                 }
             }
         }
         return methodName;
+    }
+
+    /**
+     * Determine the name of the method in DescribeImagesRequest that is equivalent to the Filter in
+     * the given tree.
+     *
+     * @param filterTree the tree that represents the filter (an argument to the withFilters or
+     *     setFilters method)
+     * @param valueATF the type factory from the Value Checker
+     * @return the adjusted method name, or null if the method name should not be adjusted
+     */
+    private @Nullable String filterTreeToMethodName(
+            Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
+        while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+
+            MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
+            String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
+            if ("withName".equals(filterMethodName)
+                    && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
+                Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
+                String withNameArg =
+                        ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
+                return filterKindToMethodName(withNameArg);
+            }
+
+            // Descend into a call to Collections.singletonList()
+            if (TreeUtils.isMethodInvocation(
+                    filterTree, collectionsSingletonList, getProcessingEnv())) {
+                filterTree = filterTreeAsMethodInvocation.getArguments().get(0);
+            } else {
+                filterTree =
+                        TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
+            }
+        }
+        // The loop has reached the beginning of a fluent sequence of method calls.
+        // If the ultimate receiver at the beginning of that fluent sequence is a
+        // call to the Filter() constructor, then use the first argument to the Filter
+        // constructor, which is the name of the filter.
+        if (filterTree == null) {
+            return null;
+        }
+        if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
+
+            ExpressionTree constructorArg = ((NewClassTree) filterTree).getArguments().get(0);
+            String filterKindName = ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
+            if (filterKindName != null) {
+                return filterKindToMethodName(filterKindName);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts from a kind of filter to the name of the corresponding method on a
+     * DescribeImagesRequest object.
+     *
+     * @param filterKind the kind of filter
+     * @return withOwners if filterKind is "owner", "owner-alias", or "owner-id"; "withImageIds" if
+     *     filterKind is "image-id"; null otherwise
+     */
+    private static @Nullable String filterKindToMethodName(String filterKind) {
+        switch (filterKind) {
+            case "owner":
+            case "owner-alias":
+            case "owner-id":
+                return "withOwners";
+            case "image-id":
+                return "withImageIds";
+            default:
+                return null;
+        }
     }
 
     /**
@@ -302,8 +324,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
         @Override
         public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
-            for (FrameworkSupport frameworkSupport : frameworkSupports) {
-                frameworkSupport.handleConstructor(tree, type);
+            for (BuilderFrameworkSupport builderFrameworkSupport : builderFrameworkSupports) {
+                builderFrameworkSupport.handleConstructor(tree, type);
             }
             return super.visitNewClass(tree, type);
         }
@@ -330,14 +352,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
-            for (FrameworkSupport frameworkSupport : frameworkSupports) {
-                frameworkSupport.handlePossibleToBuilder(t);
+            for (BuilderFrameworkSupport builderFrameworkSupport : builderFrameworkSupports) {
+                builderFrameworkSupport.handlePossibleToBuilder(t);
             }
 
             Element nextEnclosingElement = enclosingElement.getEnclosingElement();
             if (nextEnclosingElement.getKind().isClass()) {
-                for (FrameworkSupport frameworkSupport : frameworkSupports) {
-                    frameworkSupport.handlePossibleBuilderBuildMethod(t);
+                for (BuilderFrameworkSupport builderFrameworkSupport : builderFrameworkSupports) {
+                    builderFrameworkSupport.handlePossibleBuilderBuildMethod(t);
                 }
             }
 
@@ -366,7 +388,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      *
      * @return a collection of frameworks that are enabled in this run of the checker
      */
-    /* package-private */ Collection<FrameworkSupport> getFrameworkSupports() {
-        return frameworkSupports;
+    /* package-private */ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
+        return builderFrameworkSupports;
     }
 }

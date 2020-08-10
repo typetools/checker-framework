@@ -5,9 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.calledmethods.framework.FrameworkSupport;
+import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
@@ -26,7 +27,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
             "finalizer.invocation.invalid";
 
     /**
-     * Constructor matching super.
+     * Constructor that only calls super.
      *
      * @param checker the type-checker associated with this visitor
      */
@@ -39,9 +40,10 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
 
         if (checker.getBooleanOption(CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS)) {
             ExecutableElement element = TreeUtils.elementFromUse(node);
-            for (FrameworkSupport frameworkSupport :
-                    ((CalledMethodsAnnotatedTypeFactory) getTypeFactory()).getFrameworkSupports()) {
-                if (frameworkSupport.isBuilderBuildMethod(element)) {
+            for (BuilderFrameworkSupport builderFrameworkSupport :
+                    ((CalledMethodsAnnotatedTypeFactory) getTypeFactory())
+                            .getBuilderFrameworkSupports()) {
+                if (builderFrameworkSupport.isBuilderBuildMethod(element)) {
                     ((CalledMethodsChecker) checker).numBuildCalls++;
                     break;
                 }
@@ -66,11 +68,10 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
                             ? Collections.emptySet()
                             : new HashSet<>(atypeFactory.getAccumulatedValues(foundCM));
             List<String> expectedMethods = atypeFactory.getAccumulatedValues(expectedCM);
-            StringBuilder missingMethods = new StringBuilder();
+            StringJoiner missingMethods = new StringJoiner(" ");
             for (String expectedMethod : expectedMethods) {
                 if (!foundMethods.contains(expectedMethod)) {
-                    missingMethods.append(expectedMethod);
-                    missingMethods.append("() ");
+                    missingMethods.add(expectedMethod + "()");
                 }
             }
 

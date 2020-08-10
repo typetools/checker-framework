@@ -16,7 +16,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     private final CalledMethodsAnnotatedTypeFactory atypeFactory;
 
     /**
-     * default constructor
+     * Constructor that calls super() and sets the type factory field.
      *
      * @param analysis the analysis
      */
@@ -29,10 +29,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
-        String methodName = node.getTarget().getMethod().getSimpleName().toString();
-        methodName = atypeFactory.adjustMethodNameUsingValueChecker(methodName, node.getTree());
         Node receiver = node.getTarget().getReceiver();
-        if (!"<init>".equals(methodName) && receiver != null) {
+        if (receiver != null) {
+            String methodName = node.getTarget().getMethod().getSimpleName().toString();
+            methodName = atypeFactory.adjustMethodNameUsingValueChecker(methodName, node.getTree());
             accumulate(receiver, result, methodName);
         }
         return result;

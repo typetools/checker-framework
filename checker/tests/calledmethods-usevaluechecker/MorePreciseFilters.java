@@ -51,4 +51,19 @@ class MorePreciseFilters {
         request.withFilters(new Filter().withName("foo").withName("image-id").withValues("12345"));
         DescribeImagesResult result = ec2Client.describeImages(request);
     }
+
+    void withName4(AmazonEC2 ec2Client) {
+        DescribeImagesRequest request = new DescribeImagesRequest();
+        request.withFilters(
+                new Filter().withName("owner-id").withName("foo").withValues("12345"),
+                new Filter("owner-id", Arrays.asList("12345")));
+        DescribeImagesResult result = ec2Client.describeImages(request);
+    }
+
+    void withName5(AmazonEC2 ec2Client) {
+        DescribeImagesRequest request = new DescribeImagesRequest();
+        Filter f = new Filter();
+        request.withFilters(f.withName("owner-id").withValues("12345"));
+        DescribeImagesResult result = ec2Client.describeImages(request);
+    }
 }

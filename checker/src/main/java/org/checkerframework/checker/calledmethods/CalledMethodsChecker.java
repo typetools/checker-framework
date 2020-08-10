@@ -17,7 +17,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 @SuppressWarningsPrefix({
     // Preferred checkername.
     "calledmethods",
-    "called.methods",
     // Deprecated checkernames, supported for backward compatibility.
     "builder",
     "object.construction",
@@ -26,7 +25,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 @SupportedOptions({
     CalledMethodsChecker.USE_VALUE_CHECKER,
     CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS,
-    CalledMethodsChecker.DISABLED_FRAMEWORK_SUPPORTS,
+    CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS,
 })
 @StubFiles({"DescribeImages.astub", "GenerateDataKey.astub"})
 public class CalledMethodsChecker extends BaseTypeChecker {
@@ -42,16 +41,16 @@ public class CalledMethodsChecker extends BaseTypeChecker {
      * that uses the given frameworks. Useful when a user **only** wants to enforce specifications
      * on custom builder objects (such as the AWS SDK examples).
      */
-    public static final String DISABLED_FRAMEWORK_SUPPORTS = "disableFrameworkSupports";
+    public static final String DISABLE_FRAMEWORK_SUPPORTS = "disableFrameworkSupports";
 
     /**
-     * The key for the {@link #DISABLED_FRAMEWORK_SUPPORTS} option to disable Lombok support. Use it
+     * The key for the {@link #DISABLE_FRAMEWORK_SUPPORTS} option to disable Lombok support. Use it
      * via {@code -AdisableFrameworkSupports=LOMBOK}.
      */
     public static final String LOMBOK_SUPPORT = "LOMBOK";
 
     /**
-     * The key for the {@link #DISABLED_FRAMEWORK_SUPPORTS} option to disable AutoValue support. Use
+     * The key for the {@link #DISABLE_FRAMEWORK_SUPPORTS} option to disable AutoValue support. Use
      * it via {@code -AdisableFrameworkSupports=AUTOVALUE}.
      */
     public static final String AUTOVALUE_SUPPORT = "AUTOVALUE";
@@ -75,8 +74,7 @@ public class CalledMethodsChecker extends BaseTypeChecker {
         checkers.add(ReturnsReceiverChecker.class);
 
         // BaseTypeChecker#hasOption calls this method (so that all subcheckers' options are
-        // considered),
-        // so the processingEnvironment must be checked for the option directly.
+        // considered), so the processingEnvironment must be checked for the option directly.
         if (this.processingEnv.getOptions().containsKey(USE_VALUE_CHECKER)
                 || this.processingEnv
                         .getOptions()
@@ -89,7 +87,7 @@ public class CalledMethodsChecker extends BaseTypeChecker {
     @Override
     public void typeProcessingOver() {
         if (getBooleanOption(COUNT_FRAMEWORK_BUILD_CALLS)) {
-            System.out.printf("Found %d build() method calls.\n", numBuildCalls);
+            System.out.printf("Found %d build() method calls.%n", numBuildCalls);
         }
         super.typeProcessingOver();
     }
