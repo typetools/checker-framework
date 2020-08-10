@@ -64,4 +64,27 @@ class Postconditions {
         // :: error: finalizer.invocation.invalid
         y.build();
     }
+
+    @EnsuresCalledMethodsIf(
+            value = "#1",
+            methods = {"a", "b", "c"},
+            result = true)
+    static boolean ensuresABCIfTrue(Postconditions p, boolean b) {
+        if (b) {
+            p.a();
+            p.b();
+            p.c();
+            return true;
+        }
+        return false;
+    }
+
+    static void testEnsuresCalledMethodsIf(Postconditions p, boolean b) {
+        if (ensuresABCIfTrue(p, b)) {
+            p.build();
+        } else {
+            // :: error: finalizer.invocation.invalid
+            p.build();
+        }
+    }
 }
