@@ -86,11 +86,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 CalledMethodsBottom.class,
                 CalledMethodsPredicate.class);
         Set<String> disabledFrameworks = new HashSet<>();
-        if (checker.hasOption(CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS)) {
+        if (checker.hasOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS)) {
             disabledFrameworks.addAll(
                     Arrays.asList(
                                     checker.getOption(
-                                                    CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS)
+                                                    CalledMethodsChecker
+                                                            .DISABLE_BUILDER_FRAMEWORK_SUPPORTS)
                                             .split(","))
                             .stream()
                             .map(String::toUpperCase)
@@ -106,7 +107,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             String unrecognized = sj.toString();
             throw new UserError(
                     "The following argument(s) to the "
-                            + CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS
+                            + CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS
                             + " command-line argument to the Called Methods Checker were unrecognized: "
                             + unrecognized);
         }
@@ -120,6 +121,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         this.postInit();
     }
 
+    /**
+     * Enables support for the given builder-generation framework, unless it is listed in the
+     * disabled frameworks parsed from the -AdisableBuilderFrameworkSupport option's arguments.
+     *
+     * @param framework the framework to enable
+     * @param disabledFrameworks the set of disabled frameworks. This argument will be side-effect
+     *     to remove a framework if it was actually disabled.
+     */
     private void enableFramework(String framework, Set<String> disabledFrameworks) {
         if (disabledFrameworks == null || !disabledFrameworks.contains(framework)) {
             switch (framework) {

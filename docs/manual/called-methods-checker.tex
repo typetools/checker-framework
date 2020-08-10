@@ -137,7 +137,7 @@ There are also method annotations:
   For example, this specification:
 
   \begin{Verbatim}
-    @EnsuresCalledMethodsIf(value = "#1", methods = {"x", "y"}, result=true)
+    @EnsuresCalledMethodsIf(expression = "#1", methods = {"x", "y"}, result=true)
     boolean m(Param p) { ... }
   \end{Verbatim}
 
@@ -166,8 +166,8 @@ the same \<@CalledMethods> annotation as the receiver of \<build()>, using the s
 \end{itemize}
 
 You can disable the framework supports by specifying them in a comma-separated list to the
-command-line flag \<disableFrameworkSupports>.  For example, to disable both Lombok and AutoValue supports,
-use: \\ \<-ACalledMethodsChecker\_disableFrameworkSupports=AutoValue,Lombok>
+command-line flag \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok and AutoValue supports,
+use: \\ \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=AutoValue,Lombok>
 
 If your program directly defines any of these methods (for example, by adding your own setters to
 a Lombok builder), you may need to write the annotations manually.

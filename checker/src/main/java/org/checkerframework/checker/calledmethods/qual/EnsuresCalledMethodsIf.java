@@ -31,7 +31,7 @@ public @interface EnsuresCalledMethodsIf {
      * @return an array of Java expression(s)
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
-    String[] value();
+    String[] expression();
 
     /**
      * Returns the return value of the method under which the postcondition to hold.

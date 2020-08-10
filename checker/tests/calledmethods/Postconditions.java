@@ -66,7 +66,7 @@ class Postconditions {
     }
 
     @EnsuresCalledMethodsIf(
-            value = "#1",
+            expression = "#1",
             methods = {"a", "b", "c"},
             result = true)
     static boolean ensuresABCIfTrue(Postconditions p, boolean b) {

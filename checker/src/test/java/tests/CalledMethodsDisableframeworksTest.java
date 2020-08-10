@@ -30,7 +30,7 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
                 CalledMethodsChecker.class,
                 "calledmethods-disableframeworks",
                 "-Anomsgtext",
-                "-AdisableFrameworkSupports=AutoValue,Lombok",
+                "-AdisableBuilderFrameworkSupports=AutoValue,Lombok",
                 // The next option is so that we can run the usevaluechecker tests under this
                 // configuration.
                 "-ACalledMethodsChecker_useValueChecker",

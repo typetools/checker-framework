@@ -25,7 +25,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 @SupportedOptions({
     CalledMethodsChecker.USE_VALUE_CHECKER,
     CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS,
-    CalledMethodsChecker.DISABLE_FRAMEWORK_SUPPORTS,
+    CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS,
 })
 @StubFiles({"DescribeImages.astub", "GenerateDataKey.astub"})
 public class CalledMethodsChecker extends BaseTypeChecker {
@@ -41,17 +41,18 @@ public class CalledMethodsChecker extends BaseTypeChecker {
      * that uses the given frameworks. Useful when a user **only** wants to enforce specifications
      * on custom builder objects (such as the AWS SDK examples).
      */
-    public static final String DISABLE_FRAMEWORK_SUPPORTS = "disableFrameworkSupports";
+    public static final String DISABLE_BUILDER_FRAMEWORK_SUPPORTS =
+            "disableBuilderFrameworkSupports";
 
     /**
-     * The key for the {@link #DISABLE_FRAMEWORK_SUPPORTS} option to disable Lombok support. Use it
-     * via {@code -AdisableFrameworkSupports=LOMBOK}.
+     * The key for the {@link #DISABLE_BUILDER_FRAMEWORK_SUPPORTS} option to disable Lombok support.
+     * Use it via {@code -AdisableBuilderFrameworkSupports=LOMBOK}.
      */
     public static final String LOMBOK_SUPPORT = "LOMBOK";
 
     /**
-     * The key for the {@link #DISABLE_FRAMEWORK_SUPPORTS} option to disable AutoValue support. Use
-     * it via {@code -AdisableFrameworkSupports=AUTOVALUE}.
+     * The key for the {@link #DISABLE_BUILDER_FRAMEWORK_SUPPORTS} option to disable AutoValue
+     * support. Use it via {@code -AdisableBuilderFrameworkSupports=AUTOVALUE}.
      */
     public static final String AUTOVALUE_SUPPORT = "AUTOVALUE";
 
