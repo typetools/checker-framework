@@ -5,6 +5,8 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 public class FindDistinctTest {
 
     public void ok1(@FindDistinct Object o) {
+        // TODO: The fact that this type-checks is an (undesired) artifact of the current
+        // implementation of @FindDistinct.
         @InternedDistinct Object o2 = o;
     }
 
