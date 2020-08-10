@@ -66,10 +66,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             for (AnnotationMirror anno : modifierAnnos) {
                 if (AnnotationUtils.isDeclarationAnnotation(anno)) {
                     // This does not treat Checker Framework compatqual annotations differently,
-                    // becuase
-                    // it's not clear whether the annotation should apply to the outer most
-                    // enclosing type
-                    // or the inner most.
+                    // because it's not clear whether the annotation should apply to the outermost
+                    // enclosing type or the innermost.
                     result.addAnnotation(anno);
                 } // if anno is not a declaration annotations, it should have been applied in the
                 // call to applyAnnotationsFromDeclaredType above.
