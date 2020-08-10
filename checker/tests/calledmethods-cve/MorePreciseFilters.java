@@ -41,8 +41,8 @@ class MorePreciseFilters {
 
     void withName2(AmazonEC2 ec2Client) {
         DescribeImagesRequest request = new DescribeImagesRequest();
-        // :: (argument.type.incompatible)
         request.withFilters(new Filter().withName("image-id").withName("foo").withValues("12345"));
+        // :: error: (argument.type.incompatible)
         DescribeImagesResult result = ec2Client.describeImages(request);
     }
 

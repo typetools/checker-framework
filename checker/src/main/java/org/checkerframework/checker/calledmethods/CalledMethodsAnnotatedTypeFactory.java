@@ -163,10 +163,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
             for (Tree filterTree : tree.getArguments()) {
                 // Search the arguments to withFilters for a Filter constructor invocation,
-                // passing through as many method invocation trees as needed. This code is searching
-                // for code of the form:
+                // passing through as many method invocation trees (that return their receiver) as
+                // needed.
+                // This code is searching for code such as:
                 // new Filter("owner").withValues("...")
-                // or code of the form:
+                // or:
                 // new Filter().*.withName("owner").*
 
                 // The argument to withName, or null if no all to withName was observed.
@@ -180,6 +181,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                     String filterMethodName =
                             TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
                     if ("withName".equals(filterMethodName)
+                            && withNameArg == null
                             && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
                         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
                         withNameArg =
@@ -198,22 +200,24 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 }
                 // The loop has reached the beginning of a fluent sequence of method calls.
                 // If the ultimate receiver at the beginning of that fluent sequence is a
+                // call to the Filter() constructor, then the adjustment is made.
                 if (filterTree == null) {
                     continue;
                 }
                 if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
 
-                    String value;
+                    String filterKindName;
                     if (withNameArg != null) {
-                        value = withNameArg;
+                        filterKindName = withNameArg;
                     } else {
                         ExpressionTree constructorArg =
                                 ((NewClassTree) filterTree).getArguments().get(0);
-                        value = ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
+                        filterKindName =
+                                ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
                     }
 
-                    if (value != null) {
-                        switch (value) {
+                    if (filterKindName != null) {
+                        switch (filterKindName) {
                             case "owner":
                             case "owner-alias":
                             case "owner-id":
