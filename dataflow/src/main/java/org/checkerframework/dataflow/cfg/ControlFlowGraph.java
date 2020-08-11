@@ -13,6 +13,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -31,6 +32,8 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -55,10 +58,18 @@ public class ControlFlowGraph {
     protected final UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
-     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s.
+     *
+     * <ul>
+     *   <li>Most Trees that produce a value will have at least one corresponding Node.
+     *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
+     *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while
+     *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+     *   <li>Some trees that produce a value have no corresponding Nodes (they map to an empty set).
+     *       An example is Trees in dead code. They would map to nodes that do not appear in {@link
+     *       #getAllNodes} because their blocks are not reachable in the control flow graph, but
+     *       {@link #removeDeadNodesFromTreeLookup} removes such nodes.
+     * </ul>
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
@@ -108,6 +119,8 @@ public class ControlFlowGraph {
         this.returnNodes = returnNodes;
         this.declaredClasses = declaredClasses;
         this.declaredLambdas = declaredLambdas;
+        removeDeadNodesFromTreeLookup();
+        checkRep();
     }
 
     /**
@@ -201,6 +214,27 @@ public class ControlFlowGraph {
             result.addAll(b.getNodes());
         }
         return result;
+    }
+
+    /**
+     * Remove, from the values of {@code treeLookup}, nodes that do not appear in the control flow
+     * graph.
+     */
+    private void removeDeadNodesFromTreeLookup(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+        List<Node> allNodes = getAllNodes();
+        // Remove references to dead code.
+        for (Set<Node> nodeSet : treeLookup.values()) {
+            for (Iterator<Node> i2 = nodeSet.iterator(); i2.hasNext(); ) {
+                Node n = i2.next();
+                if (!allNodes.contains(n)) {
+                    i2.remove();
+                }
+            }
+            // nodeSet, which is treeLookup.get(tree) for the tree, might be empty.  That indicates
+            // that the tree is in dead code, as opposed to being a tree that doesn't produce a
+            // value.
+        }
     }
 
     /**
@@ -329,5 +363,22 @@ public class ControlFlowGraph {
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);
         return result.toString();
+    }
+
+    /** Checks representation invariants on this. */
+    public void checkRep(@UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+        List<Node> allNodes = getAllNodes();
+
+        // Require that each node in treeLookup exists in this ControlFlowGraph
+        for (Map.Entry<Tree, Set<Node>> entry : treeLookup.entrySet()) {
+            for (Node n : entry.getValue()) {
+                if (!allNodes.contains(n)) {
+                    SystemUtil.sleep(100); // without this, printf output is interleaved
+                    throw new BugInCF(
+                            "node %s is in treeLookup but not in the CFG%nnode.getTree()=%s",
+                            n, n.getTree());
+                }
+            }
+        }
     }
 }
