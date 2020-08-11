@@ -7,12 +7,14 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.regex.qual.PartialRegex;
 import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
@@ -36,10 +38,11 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -84,6 +87,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link PolyRegex} annotation. */
     protected final AnnotationMirror POLYREGEX =
             AnnotationBuilder.fromClass(elements, PolyRegex.class);
+    /** The @{@link UnknownRegex} annotation. */
+    protected final AnnotationMirror UNKNOWNREGEX =
+            AnnotationBuilder.fromClass(elements, UnknownRegex.class);
 
     /** The method that returns the value element of a {@code @Regex} annotation. */
     protected final ExecutableElement regexValueElement =
@@ -154,12 +160,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new RegexQualifierHierarchy(factory, REGEXBOTTOM);
+        return new RegexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -168,35 +169,92 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
      * a default value of 0.
      */
-    private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
-
-        public RegexQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
-            super(f, bottom);
+    private final class RegexQualifierHierarchy extends ComplexQualifierHierarchy {
+        private final QualifierKind REGEX_KIND;
+        private final QualifierKind PARTIALREGEX_KIND;
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        private RegexQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            REGEX_KIND = getQualifierKind(REGEX);
+            PARTIALREGEX_KIND = getQualifierKind(PARTIALREGEX);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(subAnno, REGEX)
-                    && AnnotationUtils.areSameByName(superAnno, REGEX)) {
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (REGEX_KIND == subKind && REGEX_KIND == superKind) {
                 int rhsValue = getRegexValue(subAnno);
                 int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
+            } else if (PARTIALREGEX_KIND == subKind && PARTIALREGEX_KIND == superKind) {
+                return AnnotationUtils.areSame(subAnno, superAnno);
             }
-            // TODO: subtyping between PartialRegex?
-            // Ignore annotation values to ensure that annotation is in supertype map.
-            if (AnnotationUtils.areSameByName(superAnno, REGEX)) {
-                superAnno = REGEX;
+            throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
+        }
+
+        @Override
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (REGEX_KIND == qualifierKind1 && REGEX_KIND == qualifierKind2) {
+                int value1 = getRegexValue(a1);
+                int value2 = getRegexValue(a2);
+                if (value1 < value2) {
+                    return a1;
+                } else {
+                    return a2;
+                }
+            } else if (PARTIALREGEX_KIND == qualifierKind1 && PARTIALREGEX_KIND == qualifierKind2) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return UNKNOWNREGEX;
+                }
+            } else if (PARTIALREGEX_KIND == qualifierKind1 || REGEX_KIND == qualifierKind1) {
+                return a1;
+            } else if (PARTIALREGEX_KIND == qualifierKind2 || REGEX_KIND == qualifierKind2) {
+                return a2;
             }
-            if (AnnotationUtils.areSameByName(subAnno, REGEX)) {
-                subAnno = REGEX;
+            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (REGEX_KIND == qualifierKind1 && REGEX_KIND == qualifierKind2) {
+                int value1 = getRegexValue(a1);
+                int value2 = getRegexValue(a2);
+                if (value1 > value2) {
+                    return a1;
+                } else {
+                    return a2;
+                }
+            } else if (PARTIALREGEX_KIND == qualifierKind1 && PARTIALREGEX_KIND == qualifierKind2) {
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return REGEXBOTTOM;
+                }
+            } else if (PARTIALREGEX_KIND == qualifierKind1 || REGEX_KIND == qualifierKind1) {
+                return a1;
+            } else if (PARTIALREGEX_KIND == qualifierKind2 || REGEX_KIND == qualifierKind2) {
+                return a2;
             }
-            if (AnnotationUtils.areSameByName(superAnno, PARTIALREGEX)) {
-                superAnno = PARTIALREGEX;
-            }
-            if (AnnotationUtils.areSameByName(subAnno, PARTIALREGEX)) {
-                subAnno = PARTIALREGEX;
-            }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
         }
 
         /** Gets the value out of a regex annotation. */
