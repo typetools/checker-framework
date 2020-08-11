@@ -3,6 +3,11 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchStmt;
+import com.github.javaparser.ast.visitor.TreeVisitor;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -22,8 +27,10 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -630,7 +637,56 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param root the new compilation unit to use
      */
     // What's a better name? Maybe "reset" or "restart"?
+    @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
+        if (root != null) {
+            new TreePathScanner<Void, Void>() {
+                @Override
+                public Void scan(Tree node, Void p) {
+                    if (node != null) {
+                        System.out.println(
+                                "Visiting javac tree class "
+                                        + node.getClass()
+                                        + " of kind "
+                                        + node.getKind());
+                        System.out.println(
+                                "Interfaces: " + Arrays.toString(node.getClass().getInterfaces()));
+                        System.out.println(node);
+                    }
+                    return super.scan(node, p);
+                }
+            }.scan(root, null);
+            try {
+                java.io.InputStream in = root.getSourceFile().openInputStream();
+                com.github.javaparser.ast.CompilationUnit u = StaticJavaParser.parse(in);
+                new TreeVisitor() {
+                    @Override
+                    public void process(Node n) {
+                        System.out.println("Visiting JavaParser node " + n.getClass());
+                        System.out.println(
+                                "Interfaces: " + Arrays.toString(n.getClass().getInterfaces()));
+                        if (n instanceof SwitchStmt) {
+                            System.out.println("In SwitchStmt");
+                            SwitchStmt n2 = (SwitchStmt) n;
+                            System.out.println("Entries: " + n2.getEntries());
+                        }
+                        if (n instanceof SwitchEntry) {
+                            System.out.println("In SwitchEntry");
+                            SwitchEntry n2 = (SwitchEntry) n;
+                            System.out.println("labels:");
+                            System.out.println(n2.getLabels());
+                            System.out.println("statements:");
+                            System.out.println(n2.getStatements());
+                        }
+                        System.out.println(n);
+                    }
+                }.visitPreOrder(u);
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
         // treePathCache.clear();
