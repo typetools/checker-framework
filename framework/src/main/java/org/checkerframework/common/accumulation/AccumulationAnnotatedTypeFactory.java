@@ -12,9 +12,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -27,8 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -285,12 +286,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new AccumulationQualifierHierarchy(factory);
+        return new AccumulationQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -346,15 +342,17 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *       not very precise.)
      * </ul>
      */
-    protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class AccumulationQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Create the qualifier hierarchy.
+         * Creates a QualifierHierarchy from the given classes.
          *
-         * @param factory the factory
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
          */
-        public AccumulationQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory);
+        public AccumulationQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

@@ -5,6 +5,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -21,8 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -172,24 +172,25 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
         @Override
         protected QualifierHierarchy createQualifierHierarchy() {
-            return oldCreateQualifierHierarchy();
-        }
-
-        @Override
-        public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-            return new GeneralQualifierHierarchy(factory);
+            return new GeneralQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
         }
 
         /**
          * A very limited QualifierHierarchy that is used for access to qualifiers from different
          * type systems.
          */
-        static class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
+        static class GeneralQualifierHierarchy extends QualifierHierarchyWithElements {
 
-            public GeneralQualifierHierarchy(MultiGraphFactory factory) {
-                super(factory);
+            /**
+             * Creates a QualifierHierarchy from the given classes.
+             *
+             * @param qualifierClasses class of annotations that are the qualifiers
+             * @param elements element utils
+             */
+            public GeneralQualifierHierarchy(
+                    Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+                super(qualifierClasses, elements);
             }
-
             // Always return true
             @Override
             public boolean isValid() {

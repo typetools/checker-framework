@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.SubstringIndexBottom;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
@@ -14,7 +15,7 @@ import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthO
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -57,14 +58,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    /** Creates the Substring Index qualifier hierarchy. */
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-        return new SubstringIndexQualifierHierarchy(factory);
+        return new SubstringIndexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -82,11 +76,17 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      * SubstringIndexBottom}, and elements of type {@link SubstringIndexFor} that follow the
      * subtyping relation of {@link UBQualifier}.
      */
-    private final class SubstringIndexQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    private final class SubstringIndexQualifierHierarchy extends QualifierHierarchyWithElements {
 
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
         public SubstringIndexQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

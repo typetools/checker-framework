@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -32,8 +33,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -97,21 +97,22 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new ClassValQualifierHierarchy(factory);
+        return new ClassValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /** The qualifier hierarchy for the ClassVal type system. */
-    protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class ClassValQualifierHierarchy extends QualifierHierarchyWithElements {
 
-        public ClassValQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        public ClassValQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
-
         /*
          * Determines the least upper bound of a1 and a2. If both are ClassVal
          * annotations, then the least upper bound is the set of elements
