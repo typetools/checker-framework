@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** @{@link UnknownMethod} annotation mirror. */
+    /** {@link UnknownMethod} annotation mirror. */
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
