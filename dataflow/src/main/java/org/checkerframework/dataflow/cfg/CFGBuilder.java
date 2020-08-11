@@ -373,7 +373,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Returns a string representation of this.
+         * Returns a verbose string representation of this, useful for debugging.
          *
          * @return a string representation of this
          */
@@ -581,7 +581,8 @@ public class CFGBuilder {
      * @param nodes a collection of extended nodes to format
      * @return a printed representation of the given collection
      */
-    public static String extendedNodeCollectionToString(Collection<? extends ExtendedNode> nodes) {
+    public static String extendedNodeCollectionToStringDebug(
+            Collection<? extends ExtendedNode> nodes) {
         StringJoiner result = new StringJoiner(", ", "[", "]");
         for (ExtendedNode n : nodes) {
             result.add(n.toStringDebug());
@@ -1545,7 +1546,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Returns a string representation of this.
+         * Returns a verbose string representation of this, useful for debugging.
          *
          * @return a string representation of this
          */
@@ -1560,7 +1561,7 @@ public class CFGBuilder {
             result.add("unaryAssignNodeLookupMap=" + unaryAssignNodeLookupMap);
             result.add("underlyingAST=" + underlyingAST);
             result.add("bindings=" + bindings);
-            result.add("nodeList=" + extendedNodeCollectionToString(nodeList));
+            result.add("nodeList=" + extendedNodeCollectionToStringDebug(nodeList));
             result.add("leaders=" + leaders);
             result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
             result.add("regularExitLabel=" + regularExitLabel);
