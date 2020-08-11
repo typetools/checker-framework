@@ -7,3 +7,7 @@ package javax.lang.model.element;
 import org.checkerframework.checker.interning.qual.Interned;
 
 public @Interned interface Name extends java.lang.CharSequence {}
+
+package com.sun.tools.javac.util.Name;
+
+public @Interned class Name implements javax.lang.model.element.Name {}
