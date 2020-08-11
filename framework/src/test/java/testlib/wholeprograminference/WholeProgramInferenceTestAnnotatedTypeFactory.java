@@ -110,21 +110,6 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (areSameByClass(a1, SiblingWithFields.class) && areSameByClass(a2, DefaultType.class)
-                    || areSameByClass(a1, SiblingWithFields.class)
-                            && areSameByClass(a2, Parent.class)) {
-                return a1;
-            }
-            if (areSameByClass(a2, SiblingWithFields.class) && areSameByClass(a1, DefaultType.class)
-                    || areSameByClass(a2, SiblingWithFields.class)
-                            && areSameByClass(a1, Parent.class)) {
-                return a2;
-            }
-            return super.greatestLowerBound(a1, a2);
-        }
-
-        @Override
         protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
