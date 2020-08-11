@@ -2,24 +2,26 @@ package testlib.wholeprograminference;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import testlib.wholeprograminference.qual.DefaultType;
 import testlib.wholeprograminference.qual.ImplicitAnno;
 import testlib.wholeprograminference.qual.Parent;
@@ -40,6 +42,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
             new AnnotationBuilder(processingEnv, Parent.class).build();
     private final AnnotationMirror BOTTOM =
             new AnnotationBuilder(processingEnv, WholeProgramInferenceBottom.class).build();
+    private final AnnotationMirror IMPLICIT_ANNO =
+            new AnnotationBuilder(processingEnv, ImplicitAnno.class).build();
 
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -71,23 +75,28 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new WholeProgramInferenceTestQualifierHierarchy(factory);
+        return new WholeProgramInferenceTestQualifierHierarchy(
+                this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
      * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain
      * fields. @see SiblingWithFields.
      */
-    protected class WholeProgramInferenceTestQualifierHierarchy
-            extends MultiGraphQualifierHierarchy {
+    protected class WholeProgramInferenceTestQualifierHierarchy extends ComplexQualifierHierarchy {
 
-        public WholeProgramInferenceTestQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
+        private final QualifierKind SIBLING_WITH_FIELDS_KIND;
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        protected WholeProgramInferenceTestQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            SIBLING_WITH_FIELDS_KIND =
+                    getQualifierKind("testlib.wholeprograminference.qual.SiblingWithFields");
         }
 
         @Override
@@ -116,64 +125,52 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if ((areSameByClass(a1, Sibling1.class) && areSameByClass(a2, Sibling2.class))
-                    || (areSameByClass(a1, Sibling2.class) && areSameByClass(a2, Sibling1.class))
-                    || (areSameByClass(a1, Sibling1.class)
-                            && areSameByClass(a2, SiblingWithFields.class))
-                    || (areSameByClass(a1, SiblingWithFields.class)
-                            && areSameByClass(a2, Sibling2.class))
-                    || (areSameByClass(a1, Sibling2.class)
-                            && areSameByClass(a2, SiblingWithFields.class))) {
-                return PARENT;
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == qualifierKind2 && qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
+                if (isSubtypeWithElements(a1, qualifierKind1, a2, qualifierKind2)) {
+                    return a1;
+                } else {
+                    return IMPLICIT_ANNO;
+                }
+            } else if (qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
+                return a1;
+            } else if (qualifierKind2 == SIBLING_WITH_FIELDS_KIND) {
+                return a2;
             }
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSame(subAnno, superAnno)
-                    || areSameByClass(superAnno, UnknownClass.class)
-                    || areSameByClass(subAnno, WholeProgramInferenceBottom.class)
-                    || areSameByClass(superAnno, Top.class)) {
-                return true;
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == qualifierKind2 && qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
+                if (isSubtypeWithElements(a1, qualifierKind1, a2, qualifierKind2)) {
+                    return a1;
+                } else {
+                    return PARENT;
+                }
+            } else if (qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
+                return a1;
+            } else if (qualifierKind2 == SIBLING_WITH_FIELDS_KIND) {
+                return a2;
             }
+            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+        }
 
-            if (areSameByClass(subAnno, UnknownClass.class)
-                    || areSameByClass(superAnno, WholeProgramInferenceBottom.class)) {
-                return false;
-            }
-
-            if (areSameByClass(subAnno, Top.class)) {
-                return false;
-            }
-
-            if (areSameByClass(subAnno, ImplicitAnno.class)
-                    && (areSameByClass(superAnno, Sibling1.class)
-                            || areSameByClass(superAnno, Sibling2.class)
-                            || areSameByClass(superAnno, SiblingWithFields.class))) {
-                return true;
-            }
-
-            if ((areSameByClass(subAnno, Sibling1.class)
-                            || areSameByClass(subAnno, Sibling2.class)
-                            || areSameByClass(subAnno, ImplicitAnno.class)
-                            || areSameByClass(subAnno, SiblingWithFields.class))
-                    && areSameByClass(superAnno, Parent.class)) {
-                return true;
-            }
-
-            if ((areSameByClass(subAnno, Sibling1.class)
-                            || areSameByClass(subAnno, Sibling2.class)
-                            || areSameByClass(subAnno, ImplicitAnno.class)
-                            || areSameByClass(subAnno, SiblingWithFields.class)
-                            || areSameByClass(subAnno, Parent.class))
-                    && areSameByClass(superAnno, DefaultType.class)) {
-                return true;
-            }
-
-            if (areSameByClass(subAnno, SiblingWithFields.class)
-                    && areSameByClass(superAnno, SiblingWithFields.class)) {
+        @Override
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
                 List<String> subVal1 =
                         AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
                 List<String> supVal1 =
@@ -185,7 +182,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                         AnnotationUtils.getElementValue(superAnno, "value2", String.class, true);
                 return subVal1.equals(supVal1) && subVal2.equals(supVal2);
             }
-            return false;
+            throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
         }
     }
 }
