@@ -67,6 +67,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new SearchIndexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
+    /** SearchIndexQualifierHierarchy */
     private final class SearchIndexQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**

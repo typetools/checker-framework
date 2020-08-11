@@ -74,6 +74,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new LessThanQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
+    /** LessThanQualifierHierarchy */
     class LessThanQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
