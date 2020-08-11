@@ -566,6 +566,8 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
+        //  * Don't edit framework/build.gradle to use the same version number
+        //    (it is updated when the annotated version of Guava is updated).
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 

@@ -50,8 +50,12 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li value="6">is a use of a class declared to be @Interned
  * </ol>
  *
- * This type factory adds {@link InternedDistinct} to formal parameters that have a {@link
- * FindDistinct} declaration annotation.
+ * This type factory adds {@link InternedDistinct} to formal parameters that have a {@code @}{@link
+ * FindDistinct} declaration annotation. (TODO: That isn't a good implementation, because it is not
+ * accurate: the value might be equals() to some other Java value. More seriously, it permits too
+ * much. Writing {@code @FindDistinct} should permit equality tests on the given formal parameter,
+ * but should not (for example) permit the formal parameter to be assigned into an
+ * {@code @InternedDistinct} location.)
  *
  * <p>This factory extends {@link BaseAnnotatedTypeFactory} and inherits its functionality,
  * including: flow-sensitive qualifier inference, qualifier polymorphism (of {@link PolyInterned}),
@@ -199,6 +203,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
             Element e = TreeUtils.elementFromTree(node);
             if (atypeFactory.getDeclAnnotation(e, FindDistinct.class) != null) {
+                // TODO: See note above about this being a poor implementation.
                 type.replaceAnnotation(INTERNED_DISTINCT);
             }
             return super.visitIdentifier(node, type);
