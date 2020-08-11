@@ -9,7 +9,13 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
 /**
- * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
+ * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements,
+ * but most of the qualifiers do not have elements. In contrast to {@link
+ * QualifierHierarchyWithElements}, this class partially implements, {@link
+ * #isSubtype(AnnotationMirror, AnnotationMirror)}, {@link #leastUpperBound(AnnotationMirror,
+ * AnnotationMirror)}, and {@link #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls
+ * *WithElements when the result cannot be computing from the meta-annotations {@link
+ * org.checkerframework.framework.qual.SubtypeOf}.
  *
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
@@ -22,15 +28,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  *       QualifierKind)}
  * </ul>
  *
- * For cases where the annotations have no elements, the {@link
- * org.checkerframework.framework.qual.SubtypeOf} meta-annotation is used.
- *
  * <p>QualifierHierarchyWithElements uses a {@link QualifierKindHierarchy} to model the
  * relationships between qualifiers. Subclasses can override {@link
  * #createQualifierKindHierarchy(Collection)} to return a subclass of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public abstract class ComplexQualifierHierarchy extends QualifierHierarchyWithElements {
+public abstract class QualifierHierarchyMostlyWithoutElements
+        extends QualifierHierarchyWithElements {
 
     /**
      * Creates a QualifierHierarchy from the given classes.
@@ -38,13 +42,13 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchyWithEl
      * @param qualifierClasses class of annotations that are the qualifiers
      * @param elements element utils
      */
-    protected ComplexQualifierHierarchy(
+    protected QualifierHierarchyMostlyWithoutElements(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         super(qualifierClasses, elements);
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public final boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         QualifierKind subKind = getQualifierKind(subAnno);
         QualifierKind superKind = getQualifierKind(superAnno);
         if (subKind.isSubtype(superKind)) {
@@ -74,7 +78,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchyWithEl
             QualifierKind superKind);
 
     @Override
-    public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public final @Nullable AnnotationMirror leastUpperBound(
+            AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind lub = qualifierKindHierarchy.leastUpperBound(qual1, qual2);
@@ -108,7 +113,8 @@ public abstract class ComplexQualifierHierarchy extends QualifierHierarchyWithEl
             QualifierKind qualifierKind2);
 
     @Override
-    public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public final @Nullable AnnotationMirror greatestLowerBound(
+            AnnotationMirror a1, AnnotationMirror a2) {
         QualifierKind qual1 = getQualifierKind(a1);
         QualifierKind qual2 = getQualifierKind(a2);
         QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);

@@ -38,8 +38,8 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.ComplexQualifierHierarchy;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -550,7 +550,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Qualifier Hierarchy for the Units Checker. */
     @AnnotatedFor("nullness")
-    protected class UnitsQualifierHierarchy extends ComplexQualifierHierarchy {
+    protected class UnitsQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
         /** Constructor. */
         public UnitsQualifierHierarchy() {
             super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);

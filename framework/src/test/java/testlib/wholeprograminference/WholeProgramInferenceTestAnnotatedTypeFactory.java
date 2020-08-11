@@ -17,7 +17,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -83,7 +83,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
      * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain
      * fields. @see SiblingWithFields.
      */
-    protected class WholeProgramInferenceTestQualifierHierarchy extends ComplexQualifierHierarchy {
+    protected class WholeProgramInferenceTestQualifierHierarchy
+            extends QualifierHierarchyMostlyWithoutElements {
 
         private final QualifierKind SIBLING_WITH_FIELDS_KIND;
         /**

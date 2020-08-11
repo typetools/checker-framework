@@ -7,7 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.util.ComplexQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -35,7 +35,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         return new FlowExpressionQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    private class FlowExpressionQualifierHierarchy extends ComplexQualifierHierarchy {
+    private class FlowExpressionQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /**
          * Create {@code FlowExpressionQualifierHierarchy}
