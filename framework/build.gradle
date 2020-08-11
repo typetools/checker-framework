@@ -36,14 +36,14 @@ dependencies {
     implementation 'org.plumelib:plume-util:1.1.5'
     implementation 'org.plumelib:reflection-util:0.2.2'
 
-    // TODO: org.checkerframework.annotatedlib:guava:28.2-jre requires the below dependency.
-    // Get the version number from the "compile dependencies" section of
-    // https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
+    // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
+    // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
+    // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
+    // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
     implementation 'com.google.errorprone:error_prone_annotations:2.3.4'
     implementation ('org.checkerframework.annotatedlib:guava:28.2-jre') {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
-
     }
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'

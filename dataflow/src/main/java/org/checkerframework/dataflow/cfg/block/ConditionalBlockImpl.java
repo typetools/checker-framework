@@ -1,9 +1,12 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Implementation of a conditional basic block. */
@@ -16,9 +19,9 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     protected @Nullable BlockImpl elseSuccessor;
 
     /**
-     * The rules below say that the THEN store before a conditional block flows to BOTH of the
-     * stores of the then successor, while the ELSE store before a conditional block flows to BOTH
-     * of the stores of the else successor.
+     * The initial values for the rules below say that the THEN store before a conditional block
+     * flows to BOTH of the stores of the then successor, while the ELSE store before a conditional
+     * block flows to BOTH of the stores of the else successor.
      */
     protected Store.FlowRule thenFlowRule = Store.FlowRule.THEN_TO_BOTH;
 
@@ -88,6 +91,21 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     @Override
     public void setElseFlowRule(Store.FlowRule rule) {
         elseFlowRule = rule;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This implementation returns an empty list.
+     */
+    @Override
+    public List<Node> getNodes() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public @Nullable Node getLastNode() {
+        return null;
     }
 
     @Override
