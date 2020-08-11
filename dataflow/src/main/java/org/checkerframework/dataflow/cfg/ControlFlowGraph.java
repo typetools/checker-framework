@@ -65,11 +65,11 @@ public class ControlFlowGraph {
      *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
      *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while
      *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
-     *   <li>Some trees that produce a value have no corresponding Nodes (they map to an empty set).
-     *       An example is Trees in dead code. They would map to nodes that do not appear in {@link
-     *       #getAllNodes} because their blocks are not reachable in the control flow graph, but
-     *       {@link #removeDeadNodesFromTreeLookup} removes such nodes.
      * </ul>
+     *
+     * Some of the mapped-to nodes (in both maps) do not appear in {@link #getAllNodes} because
+     * their blocks are not reachable in the control flow graph. Dataflow will not compute abstract
+     * values for these nodes.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
