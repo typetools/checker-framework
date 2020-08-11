@@ -5,12 +5,14 @@ import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -30,15 +32,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    private final AnnotationMirror METHODVAL_BOTTOM =
-            AnnotationBuilder.fromClass(elements, MethodValBottom.class);
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
@@ -147,19 +146,20 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return oldCreateQualifierHierarchy();
+        return new MethodValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new MethodValQualifierHierarchy(factory, METHODVAL_BOTTOM);
-    }
+    protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
 
-    protected class MethodValQualifierHierarchy extends MultiGraphQualifierHierarchy {
-
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
         protected MethodValQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory, AnnotationMirror bottom) {
-            super(factory, bottom);
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /*
@@ -168,7 +168,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * concatenating all value lists of a1 and a2.
          */
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror leastUpperBound(
+                AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
@@ -181,6 +182,28 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
                 lubSigs.addAll(a2Sigs);
+
+                AnnotationMirror result = createMethodVal(lubSigs);
+                return result;
+            }
+            return null;
+        }
+
+        @Override
+        public @Nullable AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, a2)) {
+                List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
+                List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
+
+                Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
+                lubSigs.retainAll(a2Sigs);
 
                 AnnotationMirror result = createMethodVal(lubSigs);
                 return result;
