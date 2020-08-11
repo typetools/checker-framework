@@ -34,10 +34,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
         // Create the ATM and add non-primary annotations
         // (node.getType() does not include the annotation before the type, so those
-        // are added to the type below.
+        // are added to the type below).
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
 
-        // Handle the annotation in node.getModifiers().
+        // Handle any annotations in node.getModifiers().
         List<AnnotationMirror> modifierAnnos;
         List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
         if (annoTrees != null && !annoTrees.isEmpty()) {
@@ -49,12 +49,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (result.getKind() == TypeKind.DECLARED
                 &&
                 // Annotations on enum constants are not in the TypeMirror and always apply to the
-                // inner most type, so handle them in the else block.
+                // innermost type, so handle them in the else block.
                 elt.getKind() != ElementKind.ENUM_CONSTANT) {
 
             // Decode the annotations from the type mirror because the annotations are already in
             // the correct place for enclosing types. For example, @Tainted Outer.Inner and @Tainted
-            // Inner. For both types @Tainted is store in node.getModifier(), but they apply to
+            // Inner. For both types @Tainted is stored in node.getModifiers(), but they apply to
             // different types.
             AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
             // The underlying type of result does not have all annotations, but the TypeMirror of
@@ -69,11 +69,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // because it's not clear whether the annotation should apply to the outermost
                     // enclosing type or the innermost.
                     result.addAnnotation(anno);
-                } // if anno is not a declaration annotations, it should have been applied in the
+                } // If anno is not a declaration annotation, it should have been applied in the
                 // call to applyAnnotationsFromDeclaredType above.
             }
         } else {
-            // Add  the primary annotation from the node.getModifiers();
+            // Add the primary annotation from the node.getModifiers();
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
             for (AnnotationMirror anno : modifierAnnos) {
                 // The code here is similar to
