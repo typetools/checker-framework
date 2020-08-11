@@ -170,7 +170,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * a default value of 0.
      */
     private final class RegexQualifierHierarchy extends ComplexQualifierHierarchy {
+
+        /** Regex Qualifier Kind. */
         private final QualifierKind REGEX_KIND;
+        /** PartialRegex Qualifier Kind. */
         private final QualifierKind PARTIALREGEX_KIND;
         /**
          * Creates a QualifierHierarchy from the given classes.

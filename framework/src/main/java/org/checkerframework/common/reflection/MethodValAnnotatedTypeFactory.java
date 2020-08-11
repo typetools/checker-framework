@@ -37,7 +37,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /** @{@link UnknownMethod} annotation mirror. */
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
@@ -149,6 +152,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new MethodValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
+    /** MethodValQualifierHierarchy */
     protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
