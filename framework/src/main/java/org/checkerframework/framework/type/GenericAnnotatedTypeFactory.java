@@ -1467,7 +1467,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param tree a method invocation or a constructor invocation
      * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
-     *     tree}, or null if dataflow did not
+     *     tree}; may return null
      */
     public @Nullable AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
         if (!useFlow) {
