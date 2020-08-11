@@ -24,9 +24,11 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
  * <ul>
- *   <li>{@link #isSubtype(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
- *   <li>{@link #leastUpperBound(AnnotationMirror, QualifierKind, AnnotationMirror, QualifierKind)}
- *   <li>{@link #greatestLowerBound(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *   <li>{@link #isSubtypeWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKind)}
+ *   <li>{@link #leastUpperBoundWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
+ *       QualifierKind)}
+ *   <li>{@link #greatestLowerBoundWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
  *       QualifierKind)}
  * </ul>
  *
@@ -243,7 +245,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         QualifierKind superKind = getQualifierKind(superAnno);
         if (subKind.isSubtype(superKind)) {
             if (superKind.hasElements() && subKind.hasElements()) {
-                return isSubtype(subAnno, subKind, superAnno, superKind);
+                return isSubtypeWithElements(subAnno, subKind, superAnno, superKind);
             } else {
                 return true;
             }
@@ -261,7 +263,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * @param superKind QualifierKind of{@code superAnno}
      * @return whether or not {@code subAnno} is a subtype of {@code superAnno}
      */
-    protected abstract boolean isSubtype(
+    protected abstract boolean isSubtypeWithElements(
             AnnotationMirror subAnno,
             QualifierKind subKind,
             AnnotationMirror superAnno,
@@ -277,7 +279,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
             return null;
         }
         if (lub.hasElements()) {
-            return leastUpperBound(a1, qual1, a2, qual2);
+            return leastUpperBoundWithElements(a1, qual1, a2, qual2);
         }
         return kindToElementLessQualifier.get(lub);
     }
@@ -295,7 +297,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * @param qualifierKind2 QualifierKind for {@code a2}
      * @return the least upper bound between {@code a1} and {@code a2}
      */
-    protected abstract AnnotationMirror leastUpperBound(
+    protected abstract AnnotationMirror leastUpperBoundWithElements(
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,
@@ -311,7 +313,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
             return null;
         }
         if (glb.hasElements()) {
-            return greatestLowerBound(a1, qual1, a2, qual2);
+            return greatestLowerBoundWithElements(a1, qual1, a2, qual2);
         }
         return kindToElementLessQualifier.get(glb);
     }
@@ -329,7 +331,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * @param qualifierKind2 QualifierKind for {@code a2}
      * @return the greatest lower bound between {@code a1} and {@code a2}
      */
-    protected abstract AnnotationMirror greatestLowerBound(
+    protected abstract AnnotationMirror greatestLowerBoundWithElements(
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,

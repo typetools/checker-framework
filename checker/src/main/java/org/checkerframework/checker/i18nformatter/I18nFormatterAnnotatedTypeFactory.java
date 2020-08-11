@@ -244,7 +244,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -274,7 +274,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
@@ -335,7 +335,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,

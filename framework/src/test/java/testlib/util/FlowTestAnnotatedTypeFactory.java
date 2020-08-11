@@ -85,7 +85,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -94,7 +94,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
@@ -115,7 +115,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,

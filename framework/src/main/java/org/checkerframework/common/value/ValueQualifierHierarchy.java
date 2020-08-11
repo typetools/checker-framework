@@ -147,7 +147,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     }
 
     @Override
-    protected boolean isSubtype(
+    protected boolean isSubtypeWithElements(
             AnnotationMirror subAnno,
             QualifierKind subKind,
             AnnotationMirror superAnno,
@@ -424,7 +424,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     }
 
     @Override
-    protected AnnotationMirror leastUpperBound(
+    protected AnnotationMirror leastUpperBoundWithElements(
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,
@@ -503,7 +503,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     }
 
     @Override
-    protected AnnotationMirror greatestLowerBound(
+    protected AnnotationMirror greatestLowerBoundWithElements(
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,
