@@ -52,9 +52,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     /** The @{@link I18nFormatBottom} annotation. */
     protected final AnnotationMirror I18NFORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
-    /** The @{@link I18nFormatFor} annotation. */
-    protected final AnnotationMirror I18NFORMATFOR =
-            AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
     /** The fully-qualified name of {@link I18nFormat}. */
     protected static final String I18NFORMAT_NAME =
