@@ -5,6 +5,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,14 +33,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierHierarchyWithElements;
-import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    private final AnnotationMirror METHODVAL_BOTTOM =
-            AnnotationBuilder.fromClass(elements, MethodValBottom.class);
+
+    /** {@link UnknownMethod} annotation mirror. */
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
@@ -148,10 +149,12 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new MethodValQualifierHierarchy(getSupportedTypeQualifiers(), elements);
+        return new MethodValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
+    /** MethodValQualifierHierarchy */
     protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
+
         /**
          * Creates a QualifierHierarchy from the given classes.
          *
@@ -159,7 +162,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param elements element utils
          */
         protected MethodValQualifierHierarchy(
-                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
         }
 
@@ -169,7 +172,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * concatenating all value lists of a1 and a2.
          */
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror leastUpperBound(
+                AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
@@ -190,20 +194,24 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            return null;
-        }
+        public @Nullable AnnotationMirror greatestLowerBound(
+                AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByName(a1, a2)) {
+                List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
+                List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
-        @Override
-        protected AnnotationMirror greatestLowerBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
+                lubSigs.retainAll(a2Sigs);
+
+                AnnotationMirror result = createMethodVal(lubSigs);
+                return result;
+            }
             return null;
         }
 
@@ -229,15 +237,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return true;
-        }
-
-        @Override
-        protected boolean isSubtype(
-                AnnotationMirror subAnno,
-                QualifierKind subKind,
-                AnnotationMirror superAnno,
-                QualifierKind superKind) {
-            return false;
         }
     }
 

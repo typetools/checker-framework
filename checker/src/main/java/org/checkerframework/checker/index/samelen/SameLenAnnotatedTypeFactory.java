@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.PolyLength;
@@ -33,8 +34,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -106,13 +106,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return createMultiGraphQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            MultiGraphFactory factory) {
-        return new SameLenQualifierHierarchy(factory);
+        return new SameLenQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     // Handles case "user-written SameLen"
@@ -168,15 +162,17 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type -- both
      * should usually be replaced by a SameLen with the union of the lists of names.
      */
-    private final class SameLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    private final class SameLenQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Create a SameLenQualifierHierarchy.
+         * Creates a QualifierHierarchy from the given classes.
          *
-         * @param factory the MultiGraphFactory to use to construct this
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
          */
-        public SameLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+        public SameLenQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

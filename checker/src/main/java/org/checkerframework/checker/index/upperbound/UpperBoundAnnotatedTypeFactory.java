@@ -11,12 +11,14 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -65,8 +67,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -339,27 +340,23 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return createMultiGraphQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UpperBoundQualifierHierarchy(factory);
+        return new UpperBoundQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
      * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
      * the relationships within the qualifiers - especially subtyping relations.
      */
-    protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected final class UpperBoundQualifierHierarchy extends QualifierHierarchyWithElements {
         /**
-         * Create an UpperBoundQualifierHierarchy.
+         * Creates a QualifierHierarchy from the given classes.
          *
-         * @param factory the MultiGraphFactory to use to construct this
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
          */
-        public UpperBoundQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+        UpperBoundQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

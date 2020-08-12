@@ -25,8 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -52,9 +51,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     /** The @{@link I18nFormatBottom} annotation. */
     protected final AnnotationMirror I18NFORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
-    /** The @{@link I18nFormatFor} annotation. */
-    protected final AnnotationMirror I18NFORMATFOR =
-            AnnotationBuilder.fromClass(elements, I18nFormatFor.class);
 
     /** The fully-qualified name of {@link I18nFormat}. */
     protected static final String I18NFORMAT_NAME =
@@ -176,12 +172,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return createMultiGraphQualifierHierarchy();
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            MultiGraphFactory factory) {
         return new I18nFormatterQualifierHierarchy();
     }
 
@@ -227,7 +217,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     }
 
     /** I18nFormatterQualifierHierarchy */
-    class I18nFormatterQualifierHierarchy extends QualifierHierarchyWithElements {
+    class I18nFormatterQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /** Qualifier kind for {@link I18nFormat} annotation. */
         private final QualifierKind I18NFORMAT_KIND;
@@ -245,7 +235,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -275,7 +265,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
@@ -336,7 +326,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,

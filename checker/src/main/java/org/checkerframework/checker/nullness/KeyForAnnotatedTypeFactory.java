@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -206,7 +206,7 @@ public class KeyForAnnotatedTypeFactory
     }
 
     /** KeyForQualifierHierarchy */
-    private final class KeyForQualifierHierarchy extends QualifierHierarchyWithElements {
+    private final class KeyForQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /** Qualifier kind for {@link KeyFor} annotation. */
         private final QualifierKind KEYFOR_KIND;
@@ -237,7 +237,7 @@ public class KeyForAnnotatedTypeFactory
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -251,7 +251,7 @@ public class KeyForAnnotatedTypeFactory
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
@@ -271,7 +271,7 @@ public class KeyForAnnotatedTypeFactory
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,

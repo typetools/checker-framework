@@ -2,28 +2,34 @@ package testlib.util;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.qual.Bottom;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    protected final AnnotationMirror VALUE, BOTTOM;
+    protected final AnnotationMirror VALUE, BOTTOM, TOP;
 
     public FlowTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
         VALUE = AnnotationBuilder.fromClass(elements, Value.class);
         BOTTOM = AnnotationBuilder.fromClass(elements, Bottom.class);
+        TOP = AnnotationBuilder.fromClass(elements, Unqualified.class);
 
         this.postInit();
     }
@@ -31,8 +37,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
         defs.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
-        AnnotationMirror unqualified = AnnotationBuilder.fromClass(elements, Unqualified.class);
-        defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
+        defs.addCheckedCodeDefault(TOP, TypeUseLocation.OTHERWISE);
     }
 
     @Override
@@ -48,34 +53,80 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return createMultiGraphQualifierHierarchy();
+        return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            MultiGraphFactory factory) {
-        return new FlowQualifierHierarchy(factory, BOTTOM);
-    }
+    /** FlowQualifierHierarchy: {@code @Value(a) <: @Value(b) iff a == b} */
+    class FlowQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
+        final QualifierKind VALUE_KIND;
 
-    class FlowQualifierHierarchy extends GraphQualifierHierarchy {
-
-        public FlowQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
-            super(f, bottom);
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        public FlowQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
+            this.VALUE_KIND = getQualifierKind(VALUE);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (AnnotationUtils.areSameByName(superAnno, VALUE)
-                    && AnnotationUtils.areSameByName(subAnno, VALUE)) {
-                return AnnotationUtils.areSame(superAnno, subAnno);
+        protected QualifierKindHierarchy createQualifierKindHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses) {
+            return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
+        }
+
+        @Override
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            return AnnotationUtils.areSame(superAnno, subAnno);
+        }
+
+        @Override
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == qualifierKind2) {
+                // Both are Value
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return TOP;
+                }
+            } else if (qualifierKind1 == VALUE_KIND) {
+                return a1;
+            } else if (qualifierKind2 == VALUE_KIND) {
+                return a2;
             }
-            if (AnnotationUtils.areSameByName(superAnno, VALUE)) {
-                superAnno = VALUE;
+            throw new BugInCF("Unexpected annotations: %s %s.", a1, a2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1 == qualifierKind2) {
+                // Both are Value
+                if (AnnotationUtils.areSame(a1, a2)) {
+                    return a1;
+                } else {
+                    return BOTTOM;
+                }
+            } else if (qualifierKind1 == VALUE_KIND) {
+                return a1;
+            } else if (qualifierKind2 == VALUE_KIND) {
+                return a2;
             }
-            if (AnnotationUtils.areSameByName(subAnno, VALUE)) {
-                subAnno = VALUE;
-            }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF("Unexpected annotations: %s %s.", a1, a2);
         }
     }
 }

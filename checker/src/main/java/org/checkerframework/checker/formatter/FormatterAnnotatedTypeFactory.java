@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -99,7 +99,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Qualifier hierarchy for the Formatter Checker. */
-    class FormatterQualifierHierarchy extends QualifierHierarchyWithElements {
+    class FormatterQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /** Qualifier kind for {@link Format} annotation. */
         private final QualifierKind FORMAT_KIND;
@@ -115,7 +115,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -141,7 +141,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
@@ -199,7 +199,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,

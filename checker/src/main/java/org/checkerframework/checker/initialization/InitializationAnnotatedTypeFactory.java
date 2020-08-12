@@ -50,7 +50,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -764,7 +764,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * example.
      */
     protected abstract class InitializationQualifierHierarchy
-            extends QualifierHierarchyWithElements {
+            extends QualifierHierarchyMostlyWithoutElements {
 
         /** Qualifier kind for {@link UnknownInitialization} annotation. */
         private final QualifierKind UNKNOWN_INIT;
@@ -824,13 +824,6 @@ public abstract class InitializationAnnotatedTypeFactory<
                 QualifierKind qual1,
                 AnnotationMirror anno2,
                 QualifierKind qual2) {
-            // qual1=UnknownInitialization, qual2=UnknownInitialization UnknownInitialization
-            // qual1=UnderInitialization, qual2=UnderInitialization UnderInitialization
-            // qual1=UnderInitialization, qual2=Initialized UnknownInitialization
-            // qual1=UnknownInitialization, qual2=UnderInitialization UnknownInitialization
-            // qual1=UnderInitialization, qual2=FBCBottom UnderInitialization
-            // qual1=UnknownInitialization, qual2=Initialized UnknownInitialization
-            // qual1=UnknownInitialization, qual2=FBCBottom UnknownInitialization
             if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
                 return null;
             }

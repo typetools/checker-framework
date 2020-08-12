@@ -401,7 +401,7 @@ public class CheckerMain {
         args.add(java);
 
         if (SystemUtil.getJreVersion() == 8) {
-            args.add("-Xbootclasspath/p:" + SystemUtil.join(File.pathSeparator, runtimeClasspath));
+            args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, runtimeClasspath));
         } else {
             args.addAll(
                     Arrays.asList(
@@ -781,7 +781,7 @@ public class CheckerMain {
                     // Forward slash is used instead of File.separator because checker.jar uses / as
                     // the separator.
                     checkerClassNames.add(
-                            SystemUtil.join(
+                            String.join(
                                     ".",
                                     name.substring(0, name.length() - ".class".length())
                                             .split("/")));
@@ -837,7 +837,7 @@ public class CheckerMain {
             }
         }
 
-        return SystemUtil.join(",", processors);
+        return String.join(",", processors);
     }
 
     /**

@@ -50,8 +50,10 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param objs the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code UtilPlume.join}
      */
-    public static <T> String join(CharSequence delimiter, T @Nullable [] objs) {
+    @Deprecated // use UtilPlume.join
+    public static <T> String join(CharSequence delimiter, T[] objs) {
         if (objs == null) {
             return "null";
         }
@@ -65,8 +67,10 @@ public class SystemUtil {
      * @param delimiter the delimiter that separates each element
      * @param values the values whose string representations to join together
      * @return a new string that concatenates the string representations of the elements
+     * @deprecated use {@code UtilPlume.join}
      */
-    public static String join(CharSequence delimiter, @Nullable Iterable<?> values) {
+    @Deprecated // use UtilPlume.join
+    public static String join(CharSequence delimiter, Iterable<?> values) {
         if (values == null) {
             return "null";
         }
@@ -80,10 +84,12 @@ public class SystemUtil {
      * @param <T> the type of array elements
      * @param a array of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code UtilPlume.joinLines}
      */
+    @Deprecated // use UtilPlume.joinLines
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> String joinLines(T @Nullable ... a) {
+    public static <T> String joinLines(T... a) {
         return join(LINE_SEPARATOR, a);
     }
 
@@ -93,8 +99,10 @@ public class SystemUtil {
      *
      * @param v list of values to concatenate
      * @return the concatenation of the string representations of the values, each on its own line
+     * @deprecated use {@code UtilPlume.joinLines}
      */
-    public static String joinLines(@Nullable Iterable<? extends Object> v) {
+    @Deprecated // use UtilPlume.joinLines
+    public static String joinLines(Iterable<? extends Object> v) {
         return join(LINE_SEPARATOR, v);
     }
 
@@ -238,6 +246,25 @@ public class SystemUtil {
         @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
         T[] result = Arrays.copyOf(array1, array1.length + array2.length);
         System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
+    }
+
+    /**
+     * Concatenates an element, an array, and an element.
+     *
+     * @param <T> the type of the array elements
+     * @param firstElt the first element
+     * @param array the array
+     * @param lastElt the last elemeent
+     * @return a new array containing first element, the array, and the last element, in that order
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
+        @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
+        T[] result = Arrays.copyOf(array, array.length + 2);
+        result[0] = firstElt;
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[result.length - 1] = lastElt;
         return result;
     }
 

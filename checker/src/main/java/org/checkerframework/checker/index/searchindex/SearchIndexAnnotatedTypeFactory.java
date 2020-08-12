@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
@@ -19,7 +20,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -63,20 +64,21 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return createMultiGraphQualifierHierarchy();
+        return new SearchIndexQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-        return new SearchIndexQualifierHierarchy(factory);
-    }
+    /** SearchIndexQualifierHierarchy */
+    private final class SearchIndexQualifierHierarchy extends QualifierHierarchyWithElements {
 
-    private final class SearchIndexQualifierHierarchy extends MultiGraphQualifierHierarchy {
-
+        /**
+         * Creates a QualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param elements element utils
+         */
         public SearchIndexQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

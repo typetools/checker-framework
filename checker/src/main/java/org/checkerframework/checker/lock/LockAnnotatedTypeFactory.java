@@ -54,7 +54,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -275,7 +275,7 @@ public class LockAnnotatedTypeFactory
     }
 
     /** LockQualifierHierarchy */
-    class LockQualifierHierarchy extends QualifierHierarchyWithElements {
+    class LockQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /** Qualifier kind for {@link GuardedBy} annotation. */
         private final QualifierKind GUARDEDBY_KIND;
@@ -302,7 +302,7 @@ public class LockAnnotatedTypeFactory
         }
 
         @Override
-        protected boolean isSubtype(
+        protected boolean isSubtypeWithElements(
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
@@ -321,7 +321,7 @@ public class LockAnnotatedTypeFactory
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
+        protected AnnotationMirror leastUpperBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
@@ -352,7 +352,7 @@ public class LockAnnotatedTypeFactory
         }
 
         @Override
-        protected AnnotationMirror greatestLowerBound(
+        protected AnnotationMirror greatestLowerBoundWithElements(
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,

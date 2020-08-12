@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.util.QualifierHierarchyWithElements;
-import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -21,9 +20,10 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     /**
      * Creates a QualifierHierarchy from the given classes.
      *
+     * @param atypeFactory ValueAnnotatedTypeFactory
      * @param qualifierClasses class of annotations that are the qualifiers
      */
-    protected ValueQualifierHierarchy(
+    ValueQualifierHierarchy(
             ValueAnnotatedTypeFactory atypeFactory,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         super(qualifierClasses, atypeFactory.getElementUtils());
@@ -143,15 +143,6 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
             default:
                 return false;
         }
-    }
-
-    @Override
-    protected boolean isSubtype(
-            AnnotationMirror subAnno,
-            QualifierKind subKind,
-            AnnotationMirror superAnno,
-            QualifierKind superKind) {
-        return false;
     }
 
     @Override
@@ -422,15 +413,6 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
         return atypeFactory.UNKNOWNVAL;
     }
 
-    @Override
-    protected AnnotationMirror leastUpperBound(
-            AnnotationMirror a1,
-            QualifierKind qualifierKind1,
-            AnnotationMirror a2,
-            QualifierKind qualifierKind2) {
-        return null;
-    }
-
     /**
      * Computes greatest lower bound of a @StringVal annotation with another value checker
      * annotation.
@@ -499,14 +481,5 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
             // that need a more precise GLB.
             return atypeFactory.BOTTOMVAL;
         }
-    }
-
-    @Override
-    protected AnnotationMirror greatestLowerBound(
-            AnnotationMirror a1,
-            QualifierKind qualifierKind1,
-            AnnotationMirror a2,
-            QualifierKind qualifierKind2) {
-        return null;
     }
 }

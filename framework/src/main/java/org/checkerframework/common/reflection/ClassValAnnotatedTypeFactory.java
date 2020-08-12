@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierHierarchyWithElements;
-import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -114,7 +113,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
         }
-
         /*
          * Determines the least upper bound of a1 and a2. If both are ClassVal
          * annotations, then the least upper bound is the set of elements
@@ -145,15 +143,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        protected AnnotationMirror leastUpperBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            return null;
-        }
-
-        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
@@ -178,15 +167,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return createClassBound(new ArrayList<>(glbClassNames));
                 }
             }
-        }
-
-        @Override
-        protected AnnotationMirror greatestLowerBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            return null;
         }
 
         /*
@@ -217,15 +197,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> subValues = getClassNamesFromAnnotation(subAnno);
 
             return supValues.containsAll(subValues);
-        }
-
-        @Override
-        protected boolean isSubtype(
-                AnnotationMirror subAnno,
-                QualifierKind subKind,
-                AnnotationMirror superAnno,
-                QualifierKind superKind) {
-            return false;
         }
     }
 

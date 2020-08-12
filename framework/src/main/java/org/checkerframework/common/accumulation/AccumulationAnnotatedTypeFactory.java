@@ -10,9 +10,9 @@ import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -30,7 +30,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierHierarchyWithElements;
-import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -287,7 +286,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new AccumulationQualifierHierarchy(getSupportedTypeQualifiers(), elements);
+        return new AccumulationQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -346,13 +345,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     protected class AccumulationQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Create the qualifier hierarchy.
+         * Creates a QualifierHierarchy from the given classes.
          *
          * @param qualifierClasses class of annotations that are the qualifiers
          * @param elements element utils
          */
         public AccumulationQualifierHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
         }
 
@@ -399,15 +398,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             return createAccumulatorAnnotation(a1Val);
         }
 
-        @Override
-        protected AnnotationMirror greatestLowerBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            return null;
-        }
-
         /**
          * LUB in this type system is set intersection of the arguments of the two annotations,
          * unless one of them is bottom, in which case the result is the other annotation.
@@ -448,15 +438,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             return createAccumulatorAnnotation(a1Val);
         }
 
-        @Override
-        protected AnnotationMirror leastUpperBound(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            return null;
-        }
-
         /** isSubtype in this type system is subset. */
         @Override
         public boolean isSubtype(final AnnotationMirror subAnno, final AnnotationMirror superAnno) {
@@ -476,15 +457,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             List<String> subVal = getAccumulatedValues(subAnno);
             List<String> superVal = getAccumulatedValues(superAnno);
             return subVal.containsAll(superVal);
-        }
-
-        @Override
-        protected boolean isSubtype(
-                AnnotationMirror subAnno,
-                QualifierKind subKind,
-                AnnotationMirror superAnno,
-                QualifierKind superKind) {
-            return false;
         }
     }
 

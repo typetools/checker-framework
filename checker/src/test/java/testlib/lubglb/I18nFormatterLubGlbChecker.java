@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /**
  * This class tests the implementation of GLB computation in the I18n Format String Checker (see
  * issue 723), but it does not test for the crash that occurs if I18nFormatterAnnotatedTypeFactory
- * does not override greatestLowerBound. That is done by tests/all-systems/Issue691.java. It also
+ * does not overridegreatestLowerBound. That is done by tests/all-systems/Issue691.java. It also
  * tests the implementation of LUB computation in the I18n Format String Checker.
  */
 public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
