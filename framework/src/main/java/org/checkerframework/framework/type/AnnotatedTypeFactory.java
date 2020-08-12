@@ -685,15 +685,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Factory method to easily change what QualifierHierarchy is created. Needs to be public only
-     * because the GraphFactory must be able to call this method. No external use of this method is
-     * necessary.
+     * To continue to use a subclass of {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy} or {@link
+     * org.checkerframework.framework.util.GraphQualifierHierarchy}, override this method so that it
+     * returns a new instance of the subclass. Then override {@link #createQualifierHierarchy()} so
+     * that it returns the result of a call to {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy#createMultiGraphQualifierHierarchy(AnnotatedTypeFactory)}.
      *
      * @param factory MultiGraphFactory
      * @return QualifierHierarchy
      * @deprecated Use either {@link
      *     org.checkerframework.framework.util.QualifierHierarchyWithElements} or {@link
-     *     QualifierHierarchyWithoutElements} instead.
+     *     QualifierHierarchyWithoutElements} instead. This method will be removed in a future
+     *     release.
      */
     @Deprecated
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(

@@ -40,6 +40,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      * Creates the QualifierHierarchy using {@link
      * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
      *
+     * @param annotatedTypeFactory annotated type factory
      * @return qualifier hierarchy
      * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
      *     instead.
