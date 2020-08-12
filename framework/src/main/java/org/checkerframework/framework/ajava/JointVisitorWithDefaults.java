@@ -107,8 +107,8 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 
-public class JointVisitorWithDefaults extends JointJavacJavaParserVisitor {
-    public void defaultAction(Tree javacTree, Node javaParserNode) {}
+public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisitor {
+    public abstract void defaultAction(Tree javacTree, Node javaParserNode);
 
     @Override
     public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {
