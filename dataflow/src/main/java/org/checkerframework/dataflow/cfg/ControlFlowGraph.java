@@ -317,15 +317,17 @@ public class ControlFlowGraph {
      * @return a string representation of this
      */
     public String toStringDebug() {
-        StringJoiner result =
-                new StringJoiner(
-                        String.format("%n  "),
-                        String.format("ControlFlowGraph{%n  "),
-                        String.format("%n  }"));
+        String className = this.getClass().getSimpleName();
+        if (className.equals("ControlFlowGraph") && this.getClass() != ControlFlowGraph.class) {
+            className = this.getClass().getCanonicalName();
+        }
+
+        StringJoiner result = new StringJoiner(String.format("%n  "));
+        result.add(className + "{");
         result.add("entryBlock=" + entryBlock);
         result.add("regularExitBlock=" + regularExitBlock);
         result.add("exceptionalExitBlock=" + exceptionalExitBlock);
-        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        String astString = underlyingAST.toString().replaceAll("\\s", " ");
         if (astString.length() > 65) {
             astString = "\"" + astString.substring(0, 60) + "\"";
         }
@@ -336,6 +338,7 @@ public class ControlFlowGraph {
         result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);
+        result.add("}");
         return result.toString();
     }
 }
