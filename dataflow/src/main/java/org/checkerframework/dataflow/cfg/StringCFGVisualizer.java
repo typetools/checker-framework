@@ -57,7 +57,7 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    protected String addEdge(long sId, long eId, String flowRule) {
+    protected String addEdge(Object sId, Object eId, String flowRule) {
         if (this.verbose) {
             return sId + " -> " + eId + " " + flowRule + lineSeparator;
         }
@@ -135,7 +135,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + lineSeparator;
+        return classCanonicalName + "(" + lineSeparator;
     }
 
     @Override

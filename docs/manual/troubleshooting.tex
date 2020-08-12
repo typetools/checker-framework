@@ -100,6 +100,10 @@ If you get an error like one of the following,
 \begin{Verbatim}
 .../bin/javac: Command not found
 \end{Verbatim}
+
+\begin{Verbatim}
+error: Annotation processor 'org.checkerframework.checker.signedness.SignednessChecker' not found
+\end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
@@ -126,7 +130,6 @@ either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or one of the alternatives
 described in Section~\ref{javac-wrapper}.
 \end{sloppypar}
 
-
 \item
 If you get the error
 
@@ -139,7 +142,6 @@ If you get the error
 then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
-You can use JDK 8 at run time.
 
 \item
 If you get an error that contains lines like these:
@@ -484,6 +486,22 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 \end{smaller}
 
 
+\item
+  The Checker Framework can issue false positive warnings in dead code.  An
+  example is
+
+\begin{smaller}
+\begin{Verbatim}
+  void m() {
+    String t = "";
+    t.toString();
+    try {
+    } catch (Throwable e) {
+        t.toString(); // Nullness Checker issues spurious (dereference.of.nullable)
+    }
+\end{Verbatim}
+\end{smaller}
+
 \end{itemize}
 
 
@@ -504,19 +522,6 @@ values as an annotation argument, you need to put curly braces around them:
 \begin{Verbatim}
         @LTLengthOf({"firstName", "lastName"}) int index;
 \end{Verbatim}
-
-A message of the form
-
-\begin{Verbatim}
-  Error: cannot find symbol
-\end{Verbatim}
-
-\noindent
-for an annotation type that is imported, and is a applied to a
-statically-imported enum, is caused by a javac bug, unrelated to the
-Checker Framework.  See
-\url{https://bugs.openjdk.java.net/browse/JDK-7101822} and \url{https://bugs.openjdk.java.net/browse/JDK-8169095}.
-% Also see https://github.com/typetools/checker-framework/issues/1304
 
 
 \sectionAndLabel{How to report problems (bug reporting)}{reporting-bugs}
@@ -541,7 +546,7 @@ helpful if you:
 % If you update this, also update ../../.github/ISSUE_TEMPLATE
 \begin{itemize}
 \item
-  Add \code{-version -verbose -AprintAllQualifiers}
+  Add \code{-version -AprintGitProperties -verbose -AprintAllQualifiers}
   to the javac options.  This causes the compiler to output
   debugging information, including its version number.
 \item

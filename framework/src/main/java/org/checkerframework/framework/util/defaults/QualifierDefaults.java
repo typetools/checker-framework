@@ -47,9 +47,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -186,11 +186,11 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "Checked code defaults: ",
-                SystemUtil.joinLines(checkedCodeDefaults),
+                UtilPlume.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                SystemUtil.joinLines(uncheckedCodeDefaults),
+                UtilPlume.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -793,7 +793,7 @@ public class QualifierDefaults {
 
             return !(type == null
                     // TODO: executables themselves should not be annotated
-                    // For some reason testchecker-tests fails with this.
+                    // For some reason h1h2checker-tests fails with this.
                     // || type.getKind() == TypeKind.EXECUTABLE
                     || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD
@@ -1168,7 +1168,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));

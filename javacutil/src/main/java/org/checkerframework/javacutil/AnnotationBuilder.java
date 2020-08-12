@@ -31,6 +31,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -660,19 +661,8 @@ public class AnnotationBuilder {
             } else if (value instanceof Character) {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
-                StringBuilder sb = new StringBuilder();
                 List<?> list = (List<?>) value;
-                sb.append('{');
-                boolean isFirst = true;
-                for (Object o : list) {
-                    if (!isFirst) {
-                        sb.append(", ");
-                    }
-                    isFirst = false;
-                    sb.append(Objects.toString(o));
-                }
-                sb.append('}');
-                toStringVal = sb.toString();
+                toStringVal = "{" + UtilPlume.join(", ", list) + "}";
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

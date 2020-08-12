@@ -101,7 +101,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.5.1-SNAPSHOT'
+    version '3.6.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -220,8 +220,42 @@ allprojects {
             if (isJava8) {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
             }
-            // Don't use error-prone by default
-            options.errorprone.enabled = false
+
+            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // All the classes in checker-qual are also in checker, so they are checked.
+            // TODO: enable Error Prone on test classes.
+            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+                // Error Prone must be available in the annotation processor path
+                options.annotationProcessorPath = configurations.errorprone
+                // Enable Error Prone
+                options.errorprone.enabled = true
+                options.errorprone.disableWarningsInGeneratedCode = true
+                options.errorprone.errorproneArgs = [
+                        // Many compiler classes are interned.
+                        '-Xep:ReferenceEquality:OFF',
+                        // These might be worth fixing.
+                        '-Xep:DefaultCharset:OFF',
+                        // Not useful to suggest Splitter; maybe clean up.
+                        '-Xep:StringSplitter:OFF',
+                        // Too broad, rejects seemingly-correct code.
+                        '-Xep:EqualsGetClass:OFF',
+                        // Not a real problem
+                        '-Xep:MixedMutabilityReturnType:OFF',
+                        // Don't want to add a dependency to ErrorProne.
+                        '-Xep:AnnotateFormatMethod:OFF',
+                        // Warns for every use of "@checker_framework.manual"
+                        '-Xep:InvalidBlockTag:OFF',
+                        // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
+                        '-Xep:InlineFormatString:OFF',
+                        // -Werror halts the build if Error Prone issues a warning, which ensures that
+                        // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
+                        // stops as soon as it issues one warning, rather than outputting them all.
+                        // https://github.com/google/error-prone/issues/436
+                        '-Werror',
+                ]
+            } else {
+                options.errorprone.enabled = false
+            }
         }
     }
 }
@@ -272,7 +306,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xlint:-processing',
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
-		'-ArequirePrefixInWarningSuppressions',
+                '-ArequirePrefixInWarningSuppressions',
                 ]
         options.compilerArgs += args
 
@@ -390,7 +424,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+    requireJavadoc "org.plumelib:require-javadoc:0.3.1"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
@@ -530,8 +564,10 @@ subprojects {
         // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
         // If you update this:
         //  * Temporarily comment out "-Werror" elsewhere in this file
-        //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
+        //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
+        //  * Don't edit framework/build.gradle to use the same version number
+        //    (it is updated when the annotated version of Guava is updated).
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
@@ -765,57 +801,9 @@ subprojects {
             }
         }
 
-        // Create a runErrorProne task.
-        tasks.create(name: 'runErrorProne', type: JavaCompile, group: 'Verification') {
-            description 'Run the error-prone compiler on the main sources'
-
-            source = sourceSets.main.java.asFileTree
-            classpath = sourceSets.main.compileClasspath.asFileTree
-            destinationDir = new File("${buildDir}", 'errorprone')
-
-            // Error Prone must be available in the annotation processor path
-            options.annotationProcessorPath = configurations.errorprone
-            // Enable Error Prone
-            options.errorprone.enabled = true
-            options.errorprone.disableWarningsInGeneratedCode = true
-            options.errorprone.errorproneArgs = [
-                    // Many compiler classes are interned.
-                    '-Xep:ReferenceEquality:OFF',
-                    // These might be worth fixing.
-                    '-Xep:DefaultCharset:OFF',
-                    // Not useful to suggest Splitter; maybe clean up.
-                    '-Xep:StringSplitter:OFF',
-                    // Too broad, rejects seemingly-correct code.
-                    '-Xep:EqualsGetClass:OFF',
-                    // Not a real problem
-                    '-Xep:MixedMutabilityReturnType:OFF',
-                    // Don't want to add a dependency to ErrorProne.
-                    '-Xep:AnnotateFormatMethod:OFF',
-                    // Warns for every use of "@checker_framework.manual"
-                    '-Xep:InvalidBlockTag:OFF',
-                    // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
-                    '-Xep:InlineFormatString:OFF',
-                    // -Werror halts the build if Error Prone issues a warning, which ensures that
-                    // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
-                    // stops as soon as it one warning, rather than outputting them all.
-                    // https://github.com/google/error-prone/issues/436
-                    '-Werror',
-            ]
-        }
-
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessOnlyAnnotatedFor')
-            } else {
-                dependsOn('checkNullness')
-            }
-
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
-            }
             if (project.name.is('framework')) {
                 dependsOn('wholeProgramInferenceTests', 'loaderTests')
             }
@@ -833,12 +821,27 @@ subprojects {
             }
         }
 
+        // Create a typecheck task per project (dogfooding the Checker Framework on itself).
+        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        tasks.create(name: 'typecheck', group: 'Verification') {
+            description 'Run the Checker Framework on itself'
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkNullnessOnlyAnnotatedFor')
+            } else {
+                dependsOn('checkNullness')
+            }
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkCompilerMessages', 'jtregTests')
+            }
+        }
+
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests
+        // allTests = test + nonJunitTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test')
+            dependsOn('nonJunitTests', 'test', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {
@@ -860,6 +863,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.gradle',
                                   '.idea',
                                   '.plume-scripts',
+                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
                                   'bib',
@@ -892,8 +896,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
-	    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
-	    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
@@ -906,11 +910,18 @@ task checkBasicStyle(group: 'Format') {
         boolean failed = false
         tree.visit {
             if (!it.file.isDirectory()) {
-                int isBlankLine
+                boolean blankLineAtEnd = false
+                String fileName = it.file.getName()
+                boolean checkTabs = !fileName.equals("Makefile")
                 it.file.eachLine { line ->
                     if (line.endsWith(' ')) {
                         println("Trailing whitespace: ${it.file.absolutePath}")
                         failed = true
+                    }
+                    if (checkTabs && line.contains('\t')) {
+                        println("Contains tab (use spaces): ${it.file.absolutePath}")
+                        failed = true
+                        checkTabs = false
                     }
                     if (!line.startsWith('\\') &&
                             (line.matches('^.* (else|finally|try)\\{}.*$')
@@ -921,13 +932,13 @@ task checkBasicStyle(group: 'Format') {
                         failed = true
                     }
                     if (line.isEmpty()) {
-                        isBlankLine++;
+                        blankLineAtEnd = true;
                     } else {
-                        isBlankLine = 0;
+                        blankLineAtEnd = false;
                     }
                 }
 
-                if (isBlankLine > 1) {
+                if (blankLineAtEnd) {
                     println("Blank line at end of file: ${it.file.absolutePath}")
                     failed = true
                 }

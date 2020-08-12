@@ -469,8 +469,8 @@ public class ValueTransfer extends CFTransfer {
      */
     private void refineArrayAtGetLengthInvocation(
             MethodInvocationNode arrayLengthNode, CFStore store) {
-        MethodAccessNode methodAccessNode = arrayLengthNode.getTarget();
-        refineAtLengthAccess(arrayLengthNode, methodAccessNode.getReceiver(), store);
+        Node node = arrayLengthNode.getArguments().get(0);
+        refineAtLengthAccess(arrayLengthNode, node, store);
     }
 
     /**

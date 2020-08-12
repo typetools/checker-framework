@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg;
 
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -9,6 +10,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -16,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -122,8 +125,15 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    protected String addEdge(long sId, long eId, String flowRule) {
-        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];" + lineSeparator;
+    protected String addEdge(Object sId, Object eId, String flowRule) {
+        return "    "
+                + format(sId)
+                + " -> "
+                + format(eId)
+                + " [label=\""
+                + flowRule
+                + "\"];"
+                + lineSeparator;
     }
 
     @Override
@@ -180,18 +190,46 @@ public class DOTCFGVisualizer<
             CFGMethod cfgMethod = (CFGMethod) ast;
             String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
+            StringJoiner params = new StringJoiner(",");
+            for (VariableTree tree : cfgMethod.getMethod().getParameters()) {
+                params.add(tree.getType().toString());
+            }
             outFile.append(clsName);
             outFile.append("-");
             outFile.append(methodName);
+            if (params.length() != 0) {
+                outFile.append("-");
+                outFile.append(params);
+            }
 
             srcLoc.append("<");
             srcLoc.append(clsName);
             srcLoc.append("::");
             srcLoc.append(methodName);
             srcLoc.append("(");
-            srcLoc.append(cfgMethod.getMethod().getParameters());
+            srcLoc.append(params);
             srcLoc.append(")::");
             srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
+            srcLoc.append(">");
+        } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
+            CFGLambda cfgLambda = (CFGLambda) ast;
+            String clsName = cfgLambda.getClassTree().getSimpleName().toString();
+            String methodName = cfgLambda.getMethod().getName().toString();
+            int hashCode = cfgLambda.getCode().hashCode();
+            outFile.append(clsName);
+            outFile.append("-");
+            outFile.append(methodName);
+            outFile.append("-");
+            outFile.append(hashCode);
+
+            srcLoc.append("<");
+            srcLoc.append(clsName);
+            srcLoc.append("::");
+            srcLoc.append(methodName);
+            srcLoc.append("(");
+            srcLoc.append(cfgLambda.getMethod().getParameters());
+            srcLoc.append(")::");
+            srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
             srcLoc.append(">");
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
@@ -292,7 +330,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustifiedTerminator;
+        return classCanonicalName + "(" + leftJustifiedTerminator;
     }
 
     @Override
