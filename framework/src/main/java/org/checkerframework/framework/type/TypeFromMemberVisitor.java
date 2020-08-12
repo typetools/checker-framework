@@ -29,17 +29,17 @@ import org.checkerframework.javacutil.TypesUtils;
 class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
     @Override
-    public AnnotatedTypeMirror visitVariable(VariableTree node, AnnotatedTypeFactory f) {
-        Element elt = TreeUtils.elementFromDeclaration(node);
+    public AnnotatedTypeMirror visitVariable(VariableTree variableTree, AnnotatedTypeFactory f) {
+        Element elt = TreeUtils.elementFromDeclaration(variableTree);
 
         // Create the ATM and add non-primary annotations
-        // (node.getType() does not include the annotation before the type, so those
+        // (variableTree.getType() does not include the annotation before the type, so those
         // are added to the type below).
-        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
+        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
 
-        // Handle any annotations in node.getModifiers().
+        // Handle any annotations in variableTree.getModifiers().
         List<AnnotationMirror> modifierAnnos;
-        List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
+        List<? extends AnnotationTree> annoTrees = variableTree.getModifiers().getAnnotations();
         if (annoTrees != null && !annoTrees.isEmpty()) {
             modifierAnnos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         } else {
@@ -53,13 +53,16 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                 elt.getKind() != ElementKind.ENUM_CONSTANT) {
 
             // Decode the annotations from the type mirror because the annotations are already in
-            // the correct place for enclosing types. For example, @Tainted Outer.Inner and @Tainted
-            // Inner. For both types @Tainted is stored in node.getModifiers(), but they apply to
-            // different types.
+            // the correct place for enclosing types.  The annotations in
+            // variableTree.getModifiers()
+            // might apply to the enclosing type or the type itself. For example, @Tainted
+            // Outer.Inner y and @Tainted
+            // Inner x.  @Tainted is stored in variableTree.getModifiers() of the variable tree
+            // corresponding to both x and y, but @Tainted applies to different types.
             AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
             // The underlying type of result does not have all annotations, but the TypeMirror of
-            // node.getType() does.
-            DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(node.getType());
+            // variableTree.getType() does.
+            DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
             AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
 
             // Handle declaration annotations
@@ -69,11 +72,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // because it's not clear whether the annotation should apply to the outermost
                     // enclosing type or the innermost.
                     result.addAnnotation(anno);
-                } // If anno is not a declaration annotation, it should have been applied in the
-                // call to applyAnnotationsFromDeclaredType above.
+                }
+                // If anno is not a declaration annotation, it should have been applied in the call
+                // to applyAnnotationsFromDeclaredType above.
             }
         } else {
-            // Add the primary annotation from the node.getModifiers();
+            // Add the primary annotation from the variableTree.getModifiers();
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
             for (AnnotationMirror anno : modifierAnnos) {
                 // The code here is similar to
