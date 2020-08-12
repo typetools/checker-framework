@@ -5,6 +5,11 @@ package org.checkerframework.framework.type;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.visitor.TreeVisitor;
@@ -652,6 +657,44 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         System.out.println(
                                 "Interfaces: " + Arrays.toString(node.getClass().getInterfaces()));
                         System.out.println(node);
+                        if (node.getKind() == Kind.MEMBER_REFERENCE) {
+                            System.out.println(
+                                    "Member reference with type arguments: "
+                                            + ((MemberReferenceTree) node).getTypeArguments());
+                        }
+                        if (node.getKind() == Kind.METHOD) {
+                            MethodTree t = (MethodTree) node;
+                            System.out.println(
+                                    "Method with type arguments: \""
+                                            + t.getTypeParameters()
+                                            + "\", is null: "
+                                            + (t.getTypeParameters() == null));
+                            System.out.println("Throws: \"" + t.getThrows() + "\"");
+                        }
+                        if (node.getKind() == Kind.METHOD_INVOCATION) {
+                            MethodInvocationTree t = (MethodInvocationTree) node;
+                            System.out.println("Method invocation");
+                            System.out.println(
+                                    "Type arguments: \""
+                                            + t.getTypeArguments()
+                                            + "\", is null: "
+                                            + (t.getTypeArguments() == null));
+                            System.out.println("Method select: \"" + t.getMethodSelect() + "\"");
+                        }
+                        if (node.getKind() == Kind.NEW_ARRAY) {
+                            NewArrayTree t = (NewArrayTree) node;
+                            System.out.println("New array tree");
+                            System.out.println("Type: " + t.getType());
+                            System.out.println("Annotations: " + t.getAnnotations());
+                            System.out.println("Dimension annotations: " + t.getDimAnnotations());
+                            System.out.println("Dimensions: " + t.getDimensions());
+                            System.out.println("Initializers: \"" + t.getInitializers() + "\"");
+                        }
+                        if (node.getKind() == Kind.NEW_CLASS) {
+                            NewClassTree t = (NewClassTree) node;
+                            System.out.println("New class tree");
+                            System.out.println("Type arguments: \"" + t.getTypeArguments() + "\"");
+                        }
                     }
                     return super.scan(node, p);
                 }
@@ -677,6 +720,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             System.out.println(n2.getLabels());
                             System.out.println("statements:");
                             System.out.println(n2.getStatements());
+                        }
+                        if (n instanceof MethodReferenceExpr) {
+                            System.out.println("In MethodReferenceExpr");
+                            MethodReferenceExpr n2 = (MethodReferenceExpr) n;
+                            System.out.println("type arguments: " + n2.getTypeArguments());
+                        }
+                        if (n instanceof MethodDeclaration) {
+                            System.out.println("In MethodDeclaration");
+                            MethodDeclaration n2 = (MethodDeclaration) n;
+                            System.out.println("Type arguments: " + n2.getTypeParameters());
+                            System.out.println("Throws: \"" + n2.getThrownExceptions() + "\"");
+                        }
+                        if (n instanceof MethodCallExpr) {
+                            System.out.println("In MethodCallExpr");
+                            MethodCallExpr n2 = (MethodCallExpr) n;
+                            System.out.println("Type arguments: " + n2.getTypeArguments());
+                            System.out.println("Scope: " + n2.getScope());
+                        }
+                        if (n instanceof ArrayCreationExpr) {
+                            System.out.println("In ArrayCreationExpr");
+                            ArrayCreationExpr n2 = (ArrayCreationExpr) n;
+                            System.out.println("Type: " + n2.getElementType());
+                            System.out.println("Levels: " + n2.getLevels());
+                            System.out.println("Initializer: " + n2.getInitializer());
+                        }
+                        if (n instanceof ObjectCreationExpr) {
+                            System.out.println("In ObjectCreationExpr");
+                            ObjectCreationExpr n2 = (ObjectCreationExpr) n;
+                            System.out.println("Type arguments: " + n2.getTypeArguments());
                         }
                         System.out.println(n);
                     }
