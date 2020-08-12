@@ -56,6 +56,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -807,11 +808,14 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     @Override
     public Void visitPrimitiveType(PrimitiveTypeTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof PrimitiveType)) {
-            throwUnexpectedNodeType(javaParserNode, PrimitiveType.class);
+        if (javaParserNode instanceof PrimitiveType) {
+            processPrimitiveType(javacTree, (PrimitiveType) javaParserNode);
+        } else if (javaParserNode instanceof VoidType) {
+            processPrimitiveType(javacTree, (VoidType) javaParserNode);
+        } else {
+            throwUnexpectedNodeType(javaParserNode);
         }
 
-        processPrimitiveType(javacTree, (PrimitiveType) javaParserNode);
         return null;
     }
 
@@ -1116,6 +1120,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     public void processParenthesized(ParenthesizedTree javacTree, EnclosedExpr javaParserNode) {}
 
     public void processPrimitiveType(PrimitiveTypeTree javacTree, PrimitiveType javaParserNode) {}
+
+    public void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode) {}
 
     public void processProvides(ProvidesTree javacTree, ModuleProvidesDirective javaParserNode) {}
 

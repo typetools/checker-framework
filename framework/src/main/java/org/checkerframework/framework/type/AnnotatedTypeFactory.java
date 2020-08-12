@@ -748,8 +748,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 new JointVisitorWithDefaults() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        System.out.println("Visiting tree: " + javacTree);
-                        System.out.println("With node: " + javaParserNode);
+                        System.out.println("Visiting tree:");
+                        System.out.println(javacTree);
+                        System.out.println("With node:");
+                        System.out.println(javaParserNode);
                     }
                 }.visitCompilationUnit(root, u);
                 in.close();
