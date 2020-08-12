@@ -25,6 +25,8 @@ public @interface CalledMethodsPredicate {
      * <p>S &rarr; method name | S &amp;&amp; S | S || S | !S | (S)
      *
      * <p>The expression uses standard Java operator precedence: "!" then "&amp;&amp;" then "||".
+     *
+     * @return the boolean expression
      */
     String value();
 }
