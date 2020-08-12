@@ -16,11 +16,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
@@ -33,6 +35,81 @@ import org.checkerframework.javacutil.BugInCF;
 @SuppressWarnings("interning") // Class is deprecated.
 @Deprecated
 public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
+
+    /**
+     * Creates the QualifierHierarchy using {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
+     *
+     * @return qualifier hierarchy
+     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
+     *     instead.
+     */
+    @Deprecated
+    public static QualifierHierarchy createMultiGraphQualifierHierarchy(
+            AnnotatedTypeFactory annotatedTypeFactory) {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers =
+                annotatedTypeFactory.getSupportedTypeQualifiers();
+        MultiGraphFactory factory = new MultiGraphFactory(annotatedTypeFactory);
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
+            AnnotationMirror typeQualifierAnno =
+                    AnnotationBuilder.fromClass(
+                            annotatedTypeFactory.getElementUtils(), typeQualifier);
+            factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    throw new TypeSystemError(
+                            "AnnotatedTypeFactory: "
+                                    + typeQualifier
+                                    + " is polymorphic and specifies super qualifiers. "
+                                    + "Remove the @org.checkerframework.framework.qual.SubtypeOf or @org.checkerframework.framework.qual.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
+            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
+                throw new TypeSystemError(
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
+                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                        typeQualifier);
+            }
+            Class<? extends Annotation>[] superQualifiers =
+                    typeQualifier.getAnnotation(SubtypeOf.class).value();
+            for (Class<? extends Annotation> superQualifier : superQualifiers) {
+                if (!supportedTypeQualifiers.contains(superQualifier)) {
+                    throw new TypeSystemError(
+                            "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                    // This is currently not supported. No qualifier can have a polymorphic
+                    // qualifier as super qualifier.
+                    throw new TypeSystemError(
+                            "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                AnnotationMirror superAnno =
+                        AnnotationBuilder.fromClass(
+                                annotatedTypeFactory.getElementUtils(), superQualifier);
+                factory.addSubtype(typeQualifierAnno, superAnno);
+            }
+        }
+
+        QualifierHierarchy hierarchy = factory.build();
+
+        if (!hierarchy.isValid()) {
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory: invalid qualifier hierarchy: "
+                            + hierarchy.getClass()
+                            + " "
+                            + hierarchy);
+        }
+
+        return hierarchy;
+    }
 
     /**
      * Factory used to create an instance of {@link GraphQualifierHierarchy}. A factory can be used

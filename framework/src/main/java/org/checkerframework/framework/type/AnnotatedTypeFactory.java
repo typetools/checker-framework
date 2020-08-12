@@ -73,8 +73,6 @@ import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.NoQualifierParameter;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -660,13 +658,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type qualifier hierarchy graph to be used by this processor.
+     * Returns the {@link QualifierHierarchy}to be used by this checker.
      *
      * <p>The implementation builds the type qualifier hierarchy for the {@link
      * #getSupportedTypeQualifiers()} using the meta-annotations found in them. The current
      * implementation returns an instance of {@code QualifierHierarchyWithoutElements}.
      *
-     * <p>Subclasses must override this method if their qualifiers have elements.
+     * <p>Subclasses must override this method if their qualifiers have elements and return an
+     * implementation of {@link QualifierHierarchy}, such as {@link
+     * org.checkerframework.framework.util.QualifierHierarchyWithElements}.
      *
      * @return a QualifierHierarchy for this type system
      */
@@ -685,117 +685,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the QualifierHierarchy using {@link
-     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
-     *
-     * @return qualifier hierarchy
-     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
-     *     instead.
-     */
-    @Deprecated
-    protected QualifierHierarchy createMultiGraphQualifierHierarchy() {
-        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-        org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory =
-                this.createQualifierHierarchyFactory();
-
-        return createMultiGraphQualifierHierarchy(elements, supportedTypeQualifiers, factory);
-    }
-
-    /**
-     * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
-     *
-     * <p>The implementation builds the type qualifier hierarchy for the {@code
-     * supportedTypeQualifiers}. The current implementation returns an instance of {@code
-     * GraphQualifierHierarchy}.
-     *
-     * @param elements the element utilities to use
-     * @param supportedTypeQualifiers the type qualifiers for this type system
-     * @param factory the type factory for this type system
-     * @return an annotation relation tree representing the supported qualifiers
-     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
-     *     instead.
-     */
-    @Deprecated
-    protected QualifierHierarchy createMultiGraphQualifierHierarchy(
-            Elements elements,
-            Set<Class<? extends Annotation>> supportedTypeQualifiers,
-            org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
-                    factory) {
-
-        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
-            AnnotationMirror typeQualifierAnno =
-                    AnnotationBuilder.fromClass(elements, typeQualifier);
-            factory.addQualifier(typeQualifierAnno);
-            // Polymorphic qualifiers can't declare their supertypes.
-            // An error is raised if one is present.
-            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
-                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
-                    // This is currently not supported. At some point we might add
-                    // polymorphic qualifiers with upper and lower bounds.
-                    throw new TypeSystemError(
-                            "AnnotatedTypeFactory: "
-                                    + typeQualifier
-                                    + " is polymorphic and specifies super qualifiers. "
-                                    + "Remove the @org.checkerframework.framework.qual.SubtypeOf or @org.checkerframework.framework.qual.PolymorphicQualifier annotation from it.");
-                }
-                continue;
-            }
-            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                throw new TypeSystemError(
-                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
-                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
-                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
-                        typeQualifier);
-            }
-            Class<? extends Annotation>[] superQualifiers =
-                    typeQualifier.getAnnotation(SubtypeOf.class).value();
-            for (Class<? extends Annotation> superQualifier : superQualifiers) {
-                if (!supportedTypeQualifiers.contains(superQualifier)) {
-                    throw new TypeSystemError(
-                            "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
-                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
-                }
-                if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
-                    // This is currently not supported. No qualifier can have a polymorphic
-                    // qualifier as super qualifier.
-                    throw new TypeSystemError(
-                            "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
-                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
-                }
-                AnnotationMirror superAnno = AnnotationBuilder.fromClass(elements, superQualifier);
-                factory.addSubtype(typeQualifierAnno, superAnno);
-            }
-        }
-
-        QualifierHierarchy hierarchy = factory.build();
-
-        if (!hierarchy.isValid()) {
-            throw new TypeSystemError(
-                    "AnnotatedTypeFactory: invalid qualifier hierarchy: "
-                            + hierarchy.getClass()
-                            + " "
-                            + hierarchy);
-        }
-
-        return hierarchy;
-    }
-
-    /**
-     * Factory method to easily change what Factory is used to create a QualifierHierarchy.
-     *
-     * @return QualifierHierarchy
-     * @deprecated Use either {@link
-     *     org.checkerframework.framework.util.QualifierHierarchyWithElements} or {@link
-     *     QualifierHierarchyWithoutElements} instead.
-     */
-    @Deprecated
-    protected org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
-            createQualifierHierarchyFactory() {
-        return new org.checkerframework.framework.util.MultiGraphQualifierHierarchy
-                .MultiGraphFactory(this);
-    }
-
-    /**
      * Factory method to easily change what QualifierHierarchy is created. Needs to be public only
      * because the GraphFactory must be able to call this method. No external use of this method is
      * necessary.
@@ -810,7 +699,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
             org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
                     factory) {
-        return new org.checkerframework.framework.util.GraphQualifierHierarchy(factory, null);
+        throw new TypeSystemError(
+                "Checker must override AnnotatedTypeFactory#createQualifierHierarchyWithMultiGraphFactory when using AnnotatedTypeFactory#createMultiGraphQualifierHierarchy.");
     }
 
     /**
