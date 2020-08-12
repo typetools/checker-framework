@@ -1143,7 +1143,7 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     public void processWhileLoop(WhileLoopTree javacTree, WhileStmt javaParserNode) {}
 
-    public void processWildcard(WildcardTree javacTree, WildcardType javaParserNodey) {}
+    public void processWildcard(WildcardTree javacTree, WildcardType javaParserNode) {}
 
     // TODO: Documentation on how to use getKind to determine the type of compound assignment like
     // in the javadoc for CompoundAssignmentTree. You could also get it from the javaparser node.
