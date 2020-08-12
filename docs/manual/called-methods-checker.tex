@@ -67,10 +67,21 @@ inferred by the Called Methods Checker, from field annotations such as
 section on defaulting rules for Lombok and AutoValue for more details
 (Section~\ref{called-methods-framework-details}).
 
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{calledmethods}{5cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Called Methods type system, for an object with two methods: \<a()> and \<b()>.
+  Types displayed in gray should rarely be written by the programmer.}
+  \label{fig-called-methods-types}
+\end{figure}
+
 In some cases, you may need to specify your code. You do so by writing one of the following type
-annotations:
+annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
-\item[\refqualclasswithparams{checker/CalledMethods/qual}{CalledMethods}{String[] methodNames}]
+\item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
   The annotated type represents values on which all the given method were definitely called.
   (Other methods might also have been called.) \<@CalledMethods()> is the default annotation.
 
@@ -84,7 +95,7 @@ annotations:
 
   Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
 
-\item[\refqualclasswithparams{checker/CalledMethods/qual}{CalledMethodsPredicate}{String expression}]
+\item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethodsPredicate}{String expression}]
   The boolean expression specifies the required method calls.  The string
   is a boolean expression composed of method names, disjunction (\<||>),
   conjunction (\<\&\&>), not (\<!>), and parentheses.
@@ -111,12 +122,18 @@ annotations:
   Returns Receiver Checker (\chapterpageref{returns-receiver-checker}), but is particularly useful
   for the Called Methods Checker because many builders are fluent APIs.
 
+\item[\refqualclass{checker/calledmethods/qual}{CalledMethodsBottom}]
+  The bottom type for the Called Methods hierarchy. Conceptually, this annotation
+  means that all possible methods have been called on the object. Programmers should rarely,
+  if ever, need to write this annotation---write an appropriate \<@CalledMethods> annotation
+  instead.
+
 \end{description}
 
 There are also method annotations:
 
 \begin{description}
-\item[\refqualclass{checker/CalledMethods/qual}{EnsuresCalledMethods}]
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called.
 
@@ -130,7 +147,7 @@ There are also method annotations:
   guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
 
-\item[\refqualclass{checker/CalledMethods/qual}{EnsuresCalledMethodsIf}]
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsIf}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called if it returns a given result.
 
