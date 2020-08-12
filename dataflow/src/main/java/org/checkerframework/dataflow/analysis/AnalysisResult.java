@@ -28,7 +28,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
     /** Abstract values of nodes. */
     protected final IdentityHashMap<Node, V> nodeValues;
 
-    /** Map from AST {@link Tree}s to sets of {@link Node}s. */
+    /**
+     * Map from AST {@link Tree}s to sets of {@link Node}s.
+     *
+     * <p>Some of those Nodes might not be keys in {@link #nodeValues}. One reason is that the Node
+     * is unreachable in the control flow graph, so dataflow never gave it a value.
+     */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
     /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
