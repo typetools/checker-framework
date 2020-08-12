@@ -64,9 +64,9 @@ public class ControlFlowGraph {
      *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
      * </ul>
      *
-     * Some of the mapped-to nodes (in both maps) do not appear in {@link #getAllNodes} because
-     * their blocks are not reachable in the control flow graph. Dataflow will not compute abstract
-     * values for these nodes.
+     * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link #convertedTreeLookup}) do
+     * not appear in {@link #getAllNodes} because their blocks are not reachable in the control flow
+     * graph. Dataflow will not compute abstract values for these nodes.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
