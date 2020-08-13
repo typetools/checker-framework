@@ -342,7 +342,11 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * </ul>
      */
     protected class AccumulationQualifierHierarchy implements QualifierHierarchy {
+
+        /** A set that includes only the {@link #top} annotation. */
         final Set<AnnotationMirror> tops = AnnotationMirrorSet.singleElementSet(top);
+
+        /** A set that includes only the {@link #bottom} annotation. */
         final Set<AnnotationMirror> bottoms = AnnotationMirrorSet.singleElementSet(bottom);
 
         @Override
