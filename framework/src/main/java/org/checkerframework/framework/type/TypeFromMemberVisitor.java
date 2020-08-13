@@ -6,11 +6,15 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -25,18 +29,57 @@ import org.checkerframework.javacutil.TypesUtils;
 class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
     @Override
-    public AnnotatedTypeMirror visitVariable(VariableTree node, AnnotatedTypeFactory f) {
-        // Create the ATM and add non-primary annotations
-        // (node.getType() does not include primary annotations, those are in
-        // node.getModifier()
-        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
+    public AnnotatedTypeMirror visitVariable(VariableTree variableTree, AnnotatedTypeFactory f) {
+        Element elt = TreeUtils.elementFromDeclaration(variableTree);
 
-        // Add primary annotations
-        List<? extends AnnotationTree> annoTrees = node.getModifiers().getAnnotations();
+        // Create the ATM and add non-primary annotations
+        // (variableTree.getType() does not include the annotation before the type, so those
+        // are added to the type below).
+        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+
+        // Handle any annotations in variableTree.getModifiers().
+        List<AnnotationMirror> modifierAnnos;
+        List<? extends AnnotationTree> annoTrees = variableTree.getModifiers().getAnnotations();
         if (annoTrees != null && !annoTrees.isEmpty()) {
-            List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+            modifierAnnos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+        } else {
+            modifierAnnos = new ArrayList<>();
+        }
+
+        if (result.getKind() == TypeKind.DECLARED
+                &&
+                // Annotations on enum constants are not in the TypeMirror and always apply to the
+                // innermost type, so handle them in the else block.
+                elt.getKind() != ElementKind.ENUM_CONSTANT) {
+
+            // Decode the annotations from the type mirror because the annotations are already in
+            // the correct place for enclosing types.  The annotations in
+            // variableTree.getModifiers()
+            // might apply to the enclosing type or the type itself. For example, @Tainted
+            // Outer.Inner y and @Tainted
+            // Inner x.  @Tainted is stored in variableTree.getModifiers() of the variable tree
+            // corresponding to both x and y, but @Tainted applies to different types.
+            AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
+            // The underlying type of result does not have all annotations, but the TypeMirror of
+            // variableTree.getType() does.
+            DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
+            AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
+
+            // Handle declaration annotations
+            for (AnnotationMirror anno : modifierAnnos) {
+                if (AnnotationUtils.isDeclarationAnnotation(anno)) {
+                    // This does not treat Checker Framework compatqual annotations differently,
+                    // because it's not clear whether the annotation should apply to the outermost
+                    // enclosing type or the innermost.
+                    result.addAnnotation(anno);
+                }
+                // If anno is not a declaration annotation, it should have been applied in the call
+                // to applyAnnotationsFromDeclaredType above.
+            }
+        } else {
+            // Add the primary annotation from the variableTree.getModifiers();
             AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(result);
-            for (AnnotationMirror anno : annos) {
+            for (AnnotationMirror anno : modifierAnnos) {
                 // The code here is similar to
                 // org.checkerframework.framework.util.element.ElementAnnotationUtil.addDeclarationAnnotationsFromElement.
                 if (AnnotationUtils.isDeclarationAnnotation(anno)
@@ -52,7 +95,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             }
         }
 
-        Element elt = TreeUtils.elementFromDeclaration(node);
         AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
         if (lambdaParamType != null) {
             return lambdaParamType;

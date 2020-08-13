@@ -1010,9 +1010,13 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the store immediately after a given {@link Node}.
      *
+     * @param node node after which the store is returned
      * @return the store immediately after a given {@link Node}
      */
     public Store getStoreAfter(Node node) {
+        if (!analysis.isRunning()) {
+            return flowResult.getStoreAfter(node);
+        }
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
@@ -1452,10 +1456,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Returns the type of a varargs array of a method invocation or a constructor invocation.
+     * Returns null only if private field {@code useFlow} is false.
      *
      * @param tree a method invocation or a constructor invocation
      * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
-     *     tree}
+     *     tree}; returns null if private field {@code useFlow} is false
      */
     public @Nullable AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
         if (!useFlow) {
