@@ -16,7 +16,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
@@ -32,7 +31,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 public abstract class QualifierHierarchyWithElements implements QualifierHierarchy {
 
     /** {@link org.checkerframework.javacutil.ElementUtils} */
-    private Elements elements;
+    protected Elements elements;
 
     /** {@link QualifierKindHierarchy}. */
     protected final QualifierKindHierarchy qualifierKindHierarchy;
@@ -49,11 +48,8 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
     /** The set of bottom annotation mirrors. */
     protected final Set<AnnotationMirror> bottoms;
 
-    /**
-     * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
-     * have elements.
-     */
-    protected final Map<QualifierKind, AnnotationMirror> kindToElementLessQualifier;
+    /** A mapping from polymorphic QualifierKinds to their corresponding AnnotationMirror. */
+    protected final Map<QualifierKind, AnnotationMirror> polysMap;
 
     /**
      * Creates a QualifierHierarchy from the given classes.
@@ -76,16 +72,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
 
-        this.kindToElementLessQualifier = createElementLessQualifierMap();
-    }
-
-    @Override
-    public boolean isValid() {
-        for (AnnotationMirror top : tops) {
-            // This throws an error if poly is a qualifier that has an element.
-            getPolymorphicAnnotation(top);
-        }
-        return true;
+        this.polysMap = Collections.unmodifiableMap(createPolysMap());
     }
 
     /**
@@ -99,24 +86,6 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
             @UnderInitialization QualifierHierarchyWithElements this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new DefaultQualifierKindHierarchy(qualifierClasses);
-    }
-
-    /**
-     * Creates a mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations
-     * do not have elements.
-     *
-     * @return the mapping
-     */
-    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
-    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
-            @UnderInitialization QualifierHierarchyWithElements this) {
-        Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
-            if (!kind.hasElements()) {
-                quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
-            }
-        }
-        return Collections.unmodifiableMap(quals);
     }
 
     /**
@@ -155,6 +124,32 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
         }
         return bottomsMap;
+    }
+
+    /**
+     * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is a kind
+     * of polymorphic qualifier and the AnnotationMirror is the polymorphic qualifier, in their
+     * respective hierarchies.
+     *
+     * <p>This implementation works if the polymorphic annotation has no elements, or it has
+     * elements, provides a default, and that default is the polymorphic annotation. Otherwise,
+     * subclasses must override this.
+     *
+     * @return a mapping from polymorphic QualifierKind to polymorphic AnnotationMirror
+     */
+    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
+    protected Map<QualifierKind, AnnotationMirror> createPolysMap(
+            @UnderInitialization QualifierHierarchyWithElements this) {
+        Map<QualifierKind, AnnotationMirror> polyMap = new TreeMap<>();
+        for (QualifierKind top : qualifierKindHierarchy.getTops()) {
+            QualifierKind polyKind = top.getPolymorphic();
+            if (polyKind != null) {
+                polyMap.put(
+                        polyKind,
+                        AnnotationBuilder.fromClass(elements, polyKind.getAnnotationClass()));
+            }
+        }
+        return polyMap;
     }
 
     /**
@@ -202,17 +197,8 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
 
     @Override
     public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-        QualifierKind polyKind = getQualifierKind(start).getPolymorphic();
-        if (polyKind == null) {
-            return null;
-        }
-        AnnotationMirror poly = kindToElementLessQualifier.get(polyKind);
-        if (poly == null) {
-            throw new TypeSystemError(
-                    "Poly %s has an element. Override QualifierHierarchyWithElements#getPolymorphicAnnotation.",
-                    polyKind);
-        }
-        return poly;
+        QualifierKind kind = getQualifierKind(start);
+        return polysMap.get(kind);
     }
 
     @Override
