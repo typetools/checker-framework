@@ -6,7 +6,9 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -32,6 +34,7 @@ import com.github.javaparser.ast.modules.ModuleOpensDirective;
 import com.github.javaparser.ast.modules.ModuleProvidesDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.BreakStmt;
@@ -121,7 +124,6 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.javacutil.BugInCF;
@@ -132,7 +134,6 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
         // It seems javac stores annotation arguments assignments, so @MyAnno("myArg") might be
         // stored the same as @MyAnno(value="myArg") which has a single element argument list with
         // an assignment.
-        // TODO: Visit name trees for name=value assignments in annotations?
         if (javaParserNode instanceof MarkerAnnotationExpr) {
             processAnnotation(javacTree, (MarkerAnnotationExpr) javaParserNode);
         } else if (javaParserNode instanceof SingleMemberAnnotationExpr) {
@@ -142,7 +143,6 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             ExpressionTree value = javacTree.getArguments().get(0);
             assert value instanceof AssignmentTree;
             AssignmentTree assignment = (AssignmentTree) value;
-            // TODO: Is getMemberValue actually the expression value?
             assignment.getExpression().accept(this, node.getMemberValue());
         } else if (javaParserNode instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr node = (NormalAnnotationExpr) javaParserNode;
@@ -163,9 +163,19 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {
-        // TODO: can't generate a tree of this type in tests.
-        // TODO: There doesn't seem to be a JavaParser equivalent, I think it instead adds the
-        // NodeWithAnnotations interface to types that may have annotations. How to deal with that?
+        // In javac, a type like @Tainted String would be an IdentifierTree for String stored in an
+        // AnnotatedTypeTree, whereas in JavaParser it would be a single ClassOrIntefaceType that
+        // stores the annotations. For types with annotations we must unwrap the inner type in
+        // javac. As a result, the JavaParserNode may be visited twice, once for the outer type and
+        // once for the inner type.
+        if (!(javaParserNode instanceof NodeWithAnnotations)) {
+            throwUnexpectedNodeType(javaParserNode, NodeWithAnnotations.class);
+        }
+
+        NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
+        processAnnotatedType(javacTree, node);
+        visitLists(javacTree.getAnnotations(), node.getAnnotations());
+        javacTree.getUnderlyingType().accept(this, javaParserNode);
         return null;
     }
 
@@ -231,7 +241,6 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             throwUnexpectedNodeType(javaParserNode, BinaryExpr.class);
         }
 
-        // TODO: Check that the operator types match?
         BinaryExpr node = (BinaryExpr) javaParserNode;
         processBinary(javacTree, node);
         javacTree.getLeftOperand().accept(this, node.getLeft());
@@ -320,16 +329,59 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     private void visitClassMembers(
             List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
-        // TODO: Fix this, find a better way.
-        // The javac members might have an artificially generated default constructor, remove it
-        // from the list if present.
-        List<? extends Tree> realMembers = new ArrayList<>(javacMembers);
-        if (realMembers.size() == javaParserMembers.size() + 1) {
-            realMembers.remove(0);
+        // The javac members might have an artificially generated default constructor, don't process
+        // it if present.
+        Iterator<? extends Tree> javacIter = javacMembers.iterator();
+        for (BodyDeclaration<?> javaParserMember : javaParserMembers) {
+            Tree javacMember = null;
+            while (javacMember == null) {
+                if (!javacIter.hasNext()) {
+                    throw new BugInCF(
+                            "Non-matching class member lists: %s, %s",
+                            javacMembers, javaParserMembers);
+                }
+
+                Tree candidate = javacIter.next();
+                if (areMatchingMembers(candidate, javaParserMember)) {
+                    javacMember = candidate;
+                }
+            }
+
+            javacMember.accept(this, javaParserMember);
         }
 
-        assert realMembers.size() == javaParserMembers.size();
-        visitLists(realMembers, javaParserMembers);
+        assert !javacIter.hasNext();
+    }
+
+    /**
+     * Deteremines if a member of a javac and JavaParser class match.
+     *
+     * <p>This is used to determine if a synthetic javac default constructor is being matched with
+     * an actual source code member. As such, all it must do is differentiate between a no-argument
+     * constructor and anything that's not a no-argument constructor. It doesn't check for matching
+     * field names, for example.
+     *
+     * @param javacMember member of a javac class to check
+     * @param javaParserMember member of a JavaParser class to check
+     * @return false if {@code javacMember} is a no-argument constructor and {@code
+     *     javaParserMember} is not, true otherwise.
+     */
+    private boolean areMatchingMembers(Tree javacMember, BodyDeclaration<?> javaParserMember) {
+        if (javacMember.getKind() != Kind.METHOD) {
+            return true;
+        }
+
+        MethodTree methodTree = (MethodTree) javacMember;
+        if (!methodTree.getName().contentEquals("<init>")
+                || !methodTree.getParameters().isEmpty()) {
+            return true;
+        }
+
+        if (!javaParserMember.isConstructorDeclaration()) {
+            return true;
+        }
+
+        return javaParserMember.asConstructorDeclaration().getParameters().isEmpty();
     }
 
     @Override
@@ -605,8 +657,16 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
+        if (javaParserNode instanceof CallableDeclaration) {}
+
+        // TODO: Use methods like isMethodDeclaration and asMethodDeclaration here.
         if (javaParserNode instanceof MethodDeclaration) {
             return visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
+        }
+
+        if (javaParserNode instanceof ConstructorDeclaration) {
+            return visitMethodForConstructorDeclaration(
+                    javacTree, (ConstructorDeclaration) javaParserNode);
         }
 
         if (javaParserNode instanceof AnnotationMemberDeclaration) {
@@ -646,6 +706,27 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             javacTree.getBody().accept(this, javaParserNode.getBody().get());
         }
 
+        return null;
+    }
+
+    private Void visitMethodForConstructorDeclaration(
+            MethodTree javacTree, ConstructorDeclaration javaParserNode) {
+        processMethod(javacTree, javaParserNode);
+        // TODO: Handle modifiers.
+        // Unlike other constructs, the list is non-null even if no type parameters are present.
+        visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
+        // TODO: For constructors, when is the receiver present? Always? Never?
+        assert (javacTree.getReceiverParameter() != null)
+                == javaParserNode.getReceiverParameter().isPresent();
+        if (javacTree.getReceiverParameter() != null) {
+            javacTree
+                    .getReceiverParameter()
+                    .accept(this, javaParserNode.getReceiverParameter().get());
+        }
+
+        visitLists(javacTree.getParameters(), javaParserNode.getParameters());
+        visitLists(javacTree.getThrows(), javaParserNode.getThrownExceptions());
+        javacTree.getBody().accept(this, javaParserNode.getBody());
         return null;
     }
 
@@ -1038,6 +1119,9 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     public void processAnnotation(
             AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {}
 
+    public void processAnnotatedType(
+            AnnotatedTypeTree javacTree, NodeWithAnnotations<?> javaParserNode) {}
+
     public void processArrayAccess(ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode) {}
 
     public void processArrayType(ArrayTypeTree javacTree, ArrayType javaParserNode) {}
@@ -1101,6 +1185,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
 
     public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
+
+    public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {}
 
     public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}
 

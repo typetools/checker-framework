@@ -661,6 +661,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // + t.getTypeParameters()
             // + "\", is null: "
             // + (t.getTypeParameters() == null));
+            // System.out.println("Name: " + t.getName());
             // System.out.println("Throws: \"" + t.getThrows() + "\"");
             // }
             // if (node.getKind() == Kind.METHOD_INVOCATION) {
@@ -721,6 +722,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // if (n instanceof MethodDeclaration) {
                 // System.out.println("In MethodDeclaration");
                 // MethodDeclaration n2 = (MethodDeclaration) n;
+                // System.out.println("Name: " + n2.getName());
                 // System.out.println("Type arguments: " + n2.getTypeParameters());
                 // System.out.println("Throws: \"" + n2.getThrownExceptions() + "\"");
                 // }
