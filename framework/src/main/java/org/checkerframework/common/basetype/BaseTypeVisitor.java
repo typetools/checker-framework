@@ -2181,7 +2181,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!type.hasAnnotation(NonNull.class)
                     && atypeFactory.getTypeHierarchy().isSubtype(type, exp)
                     && !type.getAnnotations().equals(exp.getAnnotations())) {
-                checker.reportWarning(node, "operand.instanceof.subtype", exp, type);
+                checker.reportWarning(node, "instanceof.unsafe", exp, type);
             }
         }
         return super.visitInstanceOf(node, p);

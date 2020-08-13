@@ -12,7 +12,7 @@ class Issue3033 {
             if (obj1 instanceof Test) {
                 Test obj2 = new Test();
 
-                // :: error: (instanceof.nullable.error)
+                // :: error: (instanceof.nullable)
                 if (obj1 instanceof @Nullable Test) {
                     obj1 = null;
                 }

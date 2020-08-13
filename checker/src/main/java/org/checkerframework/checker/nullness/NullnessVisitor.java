@@ -396,7 +396,7 @@ public class NullnessVisitor
             List<? extends AnnotationMirror> annotations =
                     TreeUtils.annotationsFromTree((AnnotatedTypeTree) node.getType());
             if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
-                checker.reportError(node, "instanceof.nullable.error");
+                checker.reportError(node, "instanceof.nullable");
             }
             if (AnnotationUtils.containsSame(annotations, NONNULL)) {
                 checker.reportWarning(node, "instanceof.nonnull.redundant");
