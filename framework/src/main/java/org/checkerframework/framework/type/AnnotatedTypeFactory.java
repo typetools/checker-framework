@@ -1733,7 +1733,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
         if (receiver == null) {
-            if (tree.getKind() != Kind.NEW_CLASS && isMostEnclosingThisDeref(tree)) {
+            if (isMostEnclosingThisDeref(tree)) {
                 // TODO: problem with ambiguity with implicit receivers.
                 // We need a way to find the correct class. We cannot use the
                 // element, as generics might have to be substituted in a subclass.
