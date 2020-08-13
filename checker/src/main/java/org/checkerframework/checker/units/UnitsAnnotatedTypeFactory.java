@@ -553,9 +553,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected class UnitsQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
         /** Constructor. */
         public UnitsQualifierHierarchy() {
-            super(
-                    UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
-                    UnitsAnnotatedTypeFactory.this.elements);
+            super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
         }
 
         @Override
