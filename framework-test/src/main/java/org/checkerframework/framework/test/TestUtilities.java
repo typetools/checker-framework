@@ -8,6 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -420,11 +423,18 @@ public class TestUtilities {
         }
     }
 
-    public static void ensureDirectoryExists(File path) {
-        if (!path.exists()) {
-            if (!path.mkdirs()) {
-                throw new RuntimeException("Could not make directory: " + path.getAbsolutePath());
-            }
+    /**
+     * Create the directory (and its parents) if it does not exist.
+     *
+     * @param dir the directory to create
+     */
+    public static void ensureDirectoryExists(String dir) {
+        try {
+            Files.createDirectories(Paths.get(dir));
+        } catch (FileAlreadyExistsException e) {
+            // directory already exists
+        } catch (IOException e) {
+            throw new RuntimeException("Could not make directory: " + dir + ": " + e.getMessage());
         }
     }
 

@@ -1456,6 +1456,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Returns the type of a varargs array of a method invocation or a constructor invocation.
+     * Returns null only if private field {@code useFlow} is false.
      *
      * <p>A null return value might mean:
      *
@@ -1467,7 +1468,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param tree a method invocation or a constructor invocation
      * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
-     *     tree}; may return null
+     *     tree}; returns null if private field {@code useFlow} is false
      */
     public @Nullable AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
         if (!useFlow) {
