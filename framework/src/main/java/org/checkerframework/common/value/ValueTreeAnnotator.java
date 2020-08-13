@@ -563,6 +563,22 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
 
     @Override
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+        if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
+            return null;
+        }
+        VariableElement ele = (VariableElement) TreeUtils.elementFromTree(tree);
+        Object value = ele.getConstantValue();
+        if (value != null) {
+            // The field is a compile time constant.
+            type.replaceAnnotation(
+                    atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
+            return null;
+        }
+        return null;
+    }
+
+    @Override
     public Void visitConditionalExpression(
             ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         // Work around for https://github.com/typetools/checker-framework/issues/602.
