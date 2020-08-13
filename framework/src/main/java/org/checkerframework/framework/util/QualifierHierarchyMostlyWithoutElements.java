@@ -2,17 +2,11 @@ package org.checkerframework.framework.util;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
  * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements,
@@ -43,12 +37,6 @@ public abstract class QualifierHierarchyMostlyWithoutElements
         extends QualifierHierarchyWithElements {
 
     /**
-     * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
-     * have elements.
-     */
-    protected final Map<QualifierKind, AnnotationMirror> kindToElementLessQualifier;
-
-    /**
      * Creates a QualifierHierarchy from the given classes.
      *
      * @param qualifierClasses class of annotations that are the qualifiers
@@ -57,25 +45,6 @@ public abstract class QualifierHierarchyMostlyWithoutElements
     protected QualifierHierarchyMostlyWithoutElements(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         super(qualifierClasses, elements);
-        this.kindToElementLessQualifier = createElementLessQualifierMap();
-    }
-
-    /**
-     * Creates a mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations
-     * do not have elements.
-     *
-     * @return the mapping
-     */
-    @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
-    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
-            @UnderInitialization QualifierHierarchyMostlyWithoutElements this) {
-        Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
-        for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
-            if (!kind.hasElements()) {
-                quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
-            }
-        }
-        return Collections.unmodifiableMap(quals);
     }
 
     @Override
