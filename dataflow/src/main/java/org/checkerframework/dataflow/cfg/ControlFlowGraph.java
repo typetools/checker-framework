@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -54,10 +55,18 @@ public class ControlFlowGraph {
     protected final UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
-     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to sets of {@link Node}s.
+     *
+     * <ul>
+     *   <li>Most Trees that produce a value will have at least one corresponding Node.
+     *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
+     *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while
+     *       the Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+     * </ul>
+     *
+     * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link #convertedTreeLookup}) do
+     * not appear in {@link #getAllNodes} because their blocks are not reachable in the control flow
+     * graph. Dataflow will not compute abstract values for these nodes.
      */
     protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
@@ -156,11 +165,12 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Returns the set of all basic block in this control flow graph.
+     * Returns the set of all basic blocks in this control flow graph.
      *
-     * @return the set of all basic block in this control flow graph
+     * @return the set of all basic blocks in this control flow graph
      */
-    public Set<Block> getAllBlocks() {
+    public Set<Block> getAllBlocks(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
@@ -192,7 +202,8 @@ public class ControlFlowGraph {
      *
      * @return all nodes in this control flow graph
      */
-    public List<Node> getAllNodes() {
+    public List<Node> getAllNodes(
+            @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         List<Node> result = new ArrayList<>();
         for (Block b : getAllBlocks()) {
             result.addAll(b.getNodes());
@@ -201,8 +212,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
+     * Returns all basic blocks in this control flow graph, in reversed depth-first postorder.
+     * Blocks may appear more than once in the sequence.
      *
      * @return the list of all basic block in this control flow graph in reversed depth-first
      *     postorder sequence
@@ -306,15 +317,17 @@ public class ControlFlowGraph {
      * @return a string representation of this
      */
     public String toStringDebug() {
-        StringJoiner result =
-                new StringJoiner(
-                        String.format("%n  "),
-                        String.format("ControlFlowGraph{%n  "),
-                        String.format("%n  }"));
+        String className = this.getClass().getSimpleName();
+        if (className.equals("ControlFlowGraph") && this.getClass() != ControlFlowGraph.class) {
+            className = this.getClass().getCanonicalName();
+        }
+
+        StringJoiner result = new StringJoiner(String.format("%n  "));
+        result.add(className + "{");
         result.add("entryBlock=" + entryBlock);
         result.add("regularExitBlock=" + regularExitBlock);
         result.add("exceptionalExitBlock=" + exceptionalExitBlock);
-        String astString = underlyingAST.toString().replaceAll("[ \t\n]", " ");
+        String astString = underlyingAST.toString().replaceAll("\\s", " ");
         if (astString.length() > 65) {
             astString = "\"" + astString.substring(0, 60) + "\"";
         }
@@ -325,6 +338,7 @@ public class ControlFlowGraph {
         result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);
+        result.add("}");
         return result.toString();
     }
 }

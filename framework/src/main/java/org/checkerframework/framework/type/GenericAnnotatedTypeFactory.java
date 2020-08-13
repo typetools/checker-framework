@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -584,19 +585,12 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // display the number of qualifiers as well as the names of each
         // qualifier.
-        StringBuilder sb = new StringBuilder();
-        sb.append(sortedSupportedQuals.size());
-        sb.append(" qualifiers examined");
-
-        sb.append(": ");
-        // for each qualifier, add its canonical name, a comma and a space
-        // to the string.
+        StringJoiner sj =
+                new StringJoiner(", ", sortedSupportedQuals.size() + " qualifiers examined: ", "");
         for (Class<? extends Annotation> qual : sortedSupportedQuals) {
-            sb.append(qual.getCanonicalName());
-            sb.append(", ");
+            sj.add(qual.getCanonicalName());
         }
-        // remove last comma and space
-        return sb.substring(0, sb.length() - 2);
+        return sj.toString();
     }
 
     /**
@@ -1016,9 +1010,13 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the store immediately after a given {@link Node}.
      *
+     * @param node node after which the store is returned
      * @return the store immediately after a given {@link Node}
      */
     public Store getStoreAfter(Node node) {
+        if (!analysis.isRunning()) {
+            return flowResult.getStoreAfter(node);
+        }
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
@@ -1458,12 +1456,13 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Returns the type of a varargs array of a method invocation or a constructor invocation.
+     * Returns null only if private field {@code useFlow} is false.
      *
      * @param tree a method invocation or a constructor invocation
      * @return AnnotatedTypeMirror of varargs array for a method or constructor invocation {@code
-     *     tree}
+     *     tree}; returns null if private field {@code useFlow} is false
      */
-    public AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
+    public @Nullable AnnotatedTypeMirror getAnnotatedTypeVarargsArray(Tree tree) {
         if (!useFlow) {
             return null;
         }

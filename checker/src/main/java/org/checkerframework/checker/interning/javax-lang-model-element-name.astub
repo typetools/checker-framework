@@ -1,0 +1,13 @@
+// Name is interned within one instance of the Java compiler, but may differ between different
+// instances.  Use this stub file if your program interacts with only one instance of the compiler
+// and doesn't make its own Name objects.
+
+package javax.lang.model.element;
+
+import org.checkerframework.checker.interning.qual.Interned;
+
+public @Interned interface Name extends java.lang.CharSequence {}
+
+package com.sun.tools.javac.util;
+
+public @Interned class Name implements javax.lang.model.element.Name {}

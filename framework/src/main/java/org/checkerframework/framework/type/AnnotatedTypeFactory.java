@@ -1414,7 +1414,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         while (declaringType.getKind() == TypeKind.WILDCARD
                 || declaringType.getKind() == TypeKind.TYPEVAR) {
             if (declaringType.getKind() == TypeKind.WILDCARD) {
-                declaringType = ((WildcardType) declaringType).getExtendsBound();
+                declaringType = TypesUtils.wildUpperBound(declaringType, processingEnv);
             } else if (declaringType.getKind() == TypeKind.TYPEVAR) {
                 declaringType = ((TypeVariable) declaringType).getUpperBound();
             }
@@ -1743,8 +1743,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
-     * expression like "f.g" and want to know whether it is an access "this.f.g" or whether e.g. f
-     * is a field of an outer class or e.g. f is a local variable.
+     * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f
+     * is a field of an outer class or f is a local variable.
      *
      * @param tree the tree to check
      * @return true, iff the tree is an explicit or implicit reference to the most enclosing "this"
