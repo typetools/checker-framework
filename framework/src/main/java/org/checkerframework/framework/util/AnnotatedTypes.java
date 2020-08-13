@@ -27,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -1442,6 +1443,27 @@ public class AnnotatedTypes {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Add all the annotations in {@code declaredType} to {@code annotatedDeclaredType}.
+     *
+     * <p>(The {@code TypeMirror} returned by {@code annotatedDeclaredType#getUnderlyingType} may
+     * have not have all the annotations on the type, so allow the user to specify a different one.)
+     *
+     * @param annotatedDeclaredType annotated type to which annotations are added
+     * @param declaredType TypeMirror that may have annotations
+     */
+    public static void applyAnnotationsFromDeclaredType(
+            AnnotatedDeclaredType annotatedDeclaredType, DeclaredType declaredType) {
+        TypeMirror underlyingTypeMirror = declaredType;
+        while (annotatedDeclaredType != null) {
+            List<? extends AnnotationMirror> annosOnTypeMirror =
+                    underlyingTypeMirror.getAnnotationMirrors();
+            annotatedDeclaredType.addAnnotations(annosOnTypeMirror);
+            annotatedDeclaredType = annotatedDeclaredType.getEnclosingType();
+            underlyingTypeMirror = ((DeclaredType) underlyingTypeMirror).getEnclosingType();
         }
     }
 }
