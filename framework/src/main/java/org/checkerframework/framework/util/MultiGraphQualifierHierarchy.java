@@ -269,6 +269,11 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
             return result;
         }
 
+        /**
+         * Create {@link QualifierHierarchy}
+         *
+         * @return QualifierHierarchy
+         */
         protected QualifierHierarchy createQualifierHierarchy() {
             return atypeFactory.createQualifierHierarchyWithMultiGraphFactory(this);
         }
