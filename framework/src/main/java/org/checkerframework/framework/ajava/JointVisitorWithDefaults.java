@@ -301,6 +301,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }

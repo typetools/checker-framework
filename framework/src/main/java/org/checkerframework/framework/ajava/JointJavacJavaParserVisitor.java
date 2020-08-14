@@ -653,7 +653,10 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
         ImportDeclaration node = (ImportDeclaration) javaParserNode;
         processImport(javacTree, node);
+        System.out.println(
+                "About to visit import identifier: " + javacTree.getQualifiedIdentifier());
         javacTree.getQualifiedIdentifier().accept(this, node.getName());
+        System.out.println("Finished import identifier");
         return null;
     }
 
@@ -747,6 +750,11 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             FieldAccessExpr node = (FieldAccessExpr) javaParserNode;
             processMemberSelect(javacTree, node);
             javacTree.getExpression().accept(this, node.getScope());
+        } else if (javaParserNode instanceof Name) {
+            Name node = (Name) javaParserNode;
+            processMemberSelect(javacTree, node);
+            assert node.getQualifier().isPresent();
+            javacTree.getExpression().accept(this, node.getQualifier().get());
         } else {
             throwUnexpectedNodeType(javaParserNode);
         }
@@ -1301,6 +1309,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
 
     public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {}
+
+    public void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode) {}
 
     public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
 
