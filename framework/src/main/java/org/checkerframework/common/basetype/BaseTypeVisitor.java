@@ -69,6 +69,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -2174,6 +2175,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
         validateTypeOf(node.getType());
+        if (node.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
+            AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
+            if (!type.hasAnnotation(NonNull.class)
+                    && atypeFactory.getTypeHierarchy().isSubtype(type, exp)
+                    && !type.getAnnotations().equals(exp.getAnnotations())) {
+                checker.reportWarning(node, "instanceof.unsafe", exp, type);
+            }
+        }
         return super.visitInstanceOf(node, p);
     }
 

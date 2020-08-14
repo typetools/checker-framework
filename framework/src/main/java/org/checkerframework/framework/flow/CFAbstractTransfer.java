@@ -45,6 +45,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -984,6 +985,29 @@ public abstract class CFAbstractTransfer<
 
         return new ConditionalTransferResult<>(
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+    }
+
+    @Override
+    public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitInstanceOf(node, in);
+        if (node.getTree().getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror type =
+                    analysis.atypeFactory.getAnnotatedType(node.getTree().getType());
+            AnnotatedTypeMirror exp =
+                    analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+            if (analysis.atypeFactory.getTypeHierarchy().isSubtype(type, exp)
+                    && !type.getAnnotations().equals(exp.getAnnotations())
+                    && !exp.getAnnotations().isEmpty()) {
+                FlowExpressions.Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), node.getTree().getExpression());
+                for (AnnotationMirror anno : type.getAnnotations()) {
+                    in.getRegularStore().insertOrRefine(receiver, anno);
+                }
+                return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+            }
+        }
+        return result;
     }
 
     /**
