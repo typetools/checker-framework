@@ -13,6 +13,7 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LiteralExpr;
@@ -56,6 +57,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
+import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -88,6 +90,7 @@ import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModuleTree;
@@ -293,6 +296,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
@@ -340,6 +348,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processPrimitiveType(PrimitiveTypeTree javacTree, PrimitiveType javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 

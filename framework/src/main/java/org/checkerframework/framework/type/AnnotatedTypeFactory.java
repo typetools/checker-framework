@@ -644,7 +644,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
-        boolean shouldPrint = false;
+        boolean shouldPrint = true;
         if (root != null && shouldPrint) {
             new TreePathScanner<Void, Void>() {
                 @Override

@@ -18,6 +18,7 @@ import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LiteralExpr;
@@ -295,8 +296,6 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
                                 .getExpression()
                                 .asVariableDeclarationExpr()
                                 .getVariables()) {
-                    System.out.println("Processing decl: " + decl);
-                    System.out.println("javacStatement currently: " + javacStatement);
                     assert hasNextJavac;
                     assert javacStatement.getKind() == Kind.VARIABLE;
                     javacStatement.accept(this, decl);
@@ -737,12 +736,21 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     }
 
     @Override
-    public Void visitMemberSelect(MemberSelectTree arg0, Node arg1) {
+    public Void visitMemberSelect(MemberSelectTree javacTree, Node javaParserNode) {
         // TODO: a member select tree can be many things, see the javadoc which references JLS
         // sections. For example, it could be a field access, method invocations, each of which
         // javaparser has its own types for. The hardest may be something like java.lang.String,
         // which javac stores as member references but javaparser uses nested ClassOrInterfaceTypes
         // for.
+
+        if (javaParserNode instanceof FieldAccessExpr) {
+            FieldAccessExpr node = (FieldAccessExpr) javaParserNode;
+            processMemberSelect(javacTree, node);
+            javacTree.getExpression().accept(this, node.getScope());
+        } else {
+            throwUnexpectedNodeType(javaParserNode);
+        }
+
         return null;
     }
 
@@ -852,10 +860,21 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
 
-        // TODO: Handle method select. In javac both the receiver and method name are stored in
-        // getMemberSelect(). If there's no explicit receiver, this may return a single
-        // IdentifierTree with the method name. In JavaParser, the method name is always stored in
-        // the MethodCallExpr itself and the receiver is an optional that may or may not be present.
+        // In JavaParser, the method name itself and receiver are stored as fields of the invocation
+        // itself, but in javac they might be combined into one MemberSelectTree. That member select
+        // may also be a single IdentifierTree if no receiver was written. This requires one layer
+        // of unnesting.
+        ExpressionTree methodSelect = javacTree.getMethodSelect();
+        if (methodSelect.getKind() == Kind.IDENTIFIER) {
+            methodSelect.accept(this, node.getName());
+        } else if (methodSelect.getKind() == Kind.MEMBER_SELECT) {
+            MemberSelectTree selection = (MemberSelectTree) methodSelect;
+            assert node.getScope().isPresent();
+            selection.getExpression().accept(this, node.getScope().get());
+        } else {
+            throw new BugInCF("Unexpected method selection type: %s", methodSelect);
+        }
+
         visitLists(javacTree.getArguments(), node.getArguments());
         return null;
     }
@@ -1280,6 +1299,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
     public void processMemberReference(
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
+
+    public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {}
 
     public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
 

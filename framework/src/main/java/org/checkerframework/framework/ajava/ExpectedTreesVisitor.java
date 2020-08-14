@@ -1,9 +1,11 @@
 package org.checkerframework.framework.ajava;
 
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +48,19 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
 
         return super.visitMethod(tree, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+        Void result = super.visitMethodInvocation(tree, p);
+        // In a method invocation like myObject.myMethod(), the method invocation stores
+        // myObject.myMethod as its own MemberSelectTree which has no corresponding JavaParserNode.
+        // This node should not be checked.
+        if (tree.getMethodSelect().getKind() == Kind.MEMBER_SELECT) {
+            trees.remove(tree.getMethodSelect());
+        }
+
+        return result;
     }
 
     @Override
