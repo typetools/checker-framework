@@ -506,7 +506,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param env the environment
      * @return the (potentially empty) set of corresponding method Symbol(s)
      */
-    @SuppressWarnings("interning:not.interned") // bug?
     private List<Symbol> getMethodSymbolsfor(
             String className, String methodName, int paramLength, Env<AttrContext> env) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
