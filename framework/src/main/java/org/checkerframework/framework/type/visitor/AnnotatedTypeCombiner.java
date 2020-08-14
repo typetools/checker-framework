@@ -39,7 +39,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
      *
      * @param hierarchy the hierarchy used to the compute the GLB
      */
-    private AnnotatedTypeCombiner(final QualifierHierarchy hierarchy) {
+    protected AnnotatedTypeCombiner(final QualifierHierarchy hierarchy) {
         this.hierarchy = hierarchy;
     }
 
@@ -74,7 +74,7 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
             AnnotationMirror aFrom = from.getAnnotationInHierarchy(top);
             AnnotationMirror aTo = to.getAnnotationInHierarchy(top);
             if (aFrom != null && aTo != null) {
-                combinedAnnotations.add(hierarchy.greatestLowerBound(aFrom, aTo));
+                combinedAnnotations.add(combineAnnotations(aFrom, aTo));
             } else if (aFrom != null) {
                 combinedAnnotations.add(aFrom);
             } else if (aTo != null) {
@@ -82,5 +82,16 @@ public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
             }
         }
         to.replaceAnnotations(combinedAnnotations);
+    }
+
+    /**
+     * Combine the annotations from a given hierarchy.
+     *
+     * @param aFrom one annotation
+     * @param aTo the other annotation
+     * @return the combined annotation
+     */
+    protected AnnotationMirror combineAnnotations(AnnotationMirror aFrom, AnnotationMirror aTo) {
+        return this.hierarchy.greatestLowerBound(aFrom, aTo);
     }
 }
