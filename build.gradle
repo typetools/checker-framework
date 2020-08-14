@@ -307,7 +307,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
                 '-ArequirePrefixInWarningSuppressions',
-                ]
+        ]
         options.compilerArgs += args
 
         if (isJava8) {
@@ -566,6 +566,8 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
+        //  * Don't edit framework/build.gradle to use the same version number
+        //    (it is updated when the annotated version of Guava is updated).
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
@@ -674,7 +676,7 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning')
+        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-Astubs=javax-lang-model-element-name.astub'])
         createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessOnlyAnnotatedFor', ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
         createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
