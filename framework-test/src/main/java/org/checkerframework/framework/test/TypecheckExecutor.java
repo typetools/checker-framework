@@ -34,7 +34,7 @@ public class TypecheckExecutor {
         if (dOption == null) {
             throw new Error("-d not supplied");
         }
-        TestUtilities.ensureDirectoryExists(new File(dOption));
+        TestUtilities.ensureDirectoryExists(dOption);
 
         final StringWriter javacOutput = new StringWriter();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
