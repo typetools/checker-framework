@@ -176,8 +176,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             throwUnexpectedNodeType(javaParserNode, NodeWithAnnotations.class);
         }
 
+        processAnnotatedType(javacTree, javaParserNode);
         NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
-        processAnnotatedType(javacTree, node);
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getUnderlyingType().accept(this, javaParserNode);
         return null;
@@ -1199,8 +1199,8 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     public void processAnnotation(
             AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {}
 
-    public void processAnnotatedType(
-            AnnotatedTypeTree javacTree, NodeWithAnnotations<?> javaParserNode) {}
+    /** {@code javaParserNode} is guaranteed to implement {@code NodeWithAnnotations<?>}. */
+    public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
 
     public void processArrayAccess(ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode) {}
 

@@ -54,6 +54,7 @@ import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.WildcardType;
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -123,6 +124,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     @Override
     public void processAnnotation(
             AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
