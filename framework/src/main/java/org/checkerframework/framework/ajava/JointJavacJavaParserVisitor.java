@@ -10,6 +10,7 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -42,12 +43,14 @@ import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.EmptyStmt;
+import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.stmt.SynchronizedStmt;
@@ -109,6 +112,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -256,8 +260,98 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
 
         BlockStmt node = (BlockStmt) javaParserNode;
         processBlock(javacTree, node);
-        visitLists(javacTree.getStatements(), node.getStatements());
+        Iterator<? extends StatementTree> javacIter = javacTree.getStatements().iterator();
+        boolean hasNextJavac = javacIter.hasNext();
+        StatementTree javacStatement = hasNextJavac ? javacIter.next() : null;
+
+        Iterator<Statement> javaParserIter = node.getStatements().iterator();
+        boolean hasNextJavaParser = javaParserIter.hasNext();
+        Statement javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+
+        while (hasNextJavac || hasNextJavaParser) {
+            // Skip synthetic javac super() calls by checking if the JavaParser statement matches.
+            if (hasNextJavac
+                    && isDefaultSuperConstructorCall(javacStatement)
+                    && (!hasNextJavaParser
+                            || !isDefaultSuperConstructorCall(javaParserStatement))) {
+                continue;
+            }
+
+            // In javac, a line like int i = 0, j = 0 is expanded as two sibling VariableTree
+            // instances. In javaParser this is one VariableDeclarationExpr with two nested
+            // VariableDeclarators. Match the declarators with the VariableTrees.
+            if (hasNextJavaParser
+                    && javaParserStatement.isExpressionStmt()
+                    && javaParserStatement
+                            .asExpressionStmt()
+                            .getExpression()
+                            .isVariableDeclarationExpr()) {
+                for (VariableDeclarator decl :
+                        javaParserStatement
+                                .asExpressionStmt()
+                                .getExpression()
+                                .asVariableDeclarationExpr()
+                                .getVariables()) {
+                    System.out.println("Processing decl: " + decl);
+                    System.out.println("javacStatement currently: " + javacStatement);
+                    assert hasNextJavac;
+                    assert javacStatement.getKind() == Kind.VARIABLE;
+                    javacStatement.accept(this, decl);
+                    hasNextJavac = javacIter.hasNext();
+                    javacStatement = hasNextJavac ? javacIter.next() : null;
+                }
+
+                hasNextJavaParser = javaParserIter.hasNext();
+                javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+                continue;
+            }
+
+            assert hasNextJavac;
+            assert hasNextJavaParser;
+            javacStatement.accept(this, javaParserStatement);
+            hasNextJavac = javacIter.hasNext();
+            javacStatement = hasNextJavac ? javacIter.next() : null;
+
+            hasNextJavaParser = javaParserIter.hasNext();
+            javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+        }
+
+        assert !hasNextJavac;
+        assert !hasNextJavaParser;
         return null;
+    }
+
+    private boolean isDefaultSuperConstructorCall(StatementTree statement) {
+        if (statement.getKind() != Kind.EXPRESSION_STATEMENT) {
+            return false;
+        }
+
+        ExpressionStatementTree expressionStatement = (ExpressionStatementTree) statement;
+        if (expressionStatement.getExpression().getKind() != Kind.METHOD_INVOCATION) {
+            return false;
+        }
+
+        MethodInvocationTree invocation =
+                (MethodInvocationTree) expressionStatement.getExpression();
+        if (invocation.getMethodSelect().getKind() != Kind.IDENTIFIER) {
+            return false;
+        }
+
+        if (!((IdentifierTree) invocation.getMethodSelect()).getName().contentEquals("super")) {
+            return false;
+        }
+
+        return invocation.getArguments().isEmpty();
+    }
+
+    private boolean isDefaultSuperConstructorCall(Statement statement) {
+        if (!statement.isExplicitConstructorInvocationStmt()) {
+            return false;
+        }
+
+        ExplicitConstructorInvocationStmt invocation =
+                statement.asExplicitConstructorInvocationStmt();
+        return !invocation.isThis() && invocation.getArguments().isEmpty();
     }
 
     @Override
@@ -331,57 +425,36 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
         // The javac members might have an artificially generated default constructor, don't process
         // it if present.
-        Iterator<? extends Tree> javacIter = javacMembers.iterator();
-        for (BodyDeclaration<?> javaParserMember : javaParserMembers) {
-            Tree javacMember = null;
-            while (javacMember == null) {
-                if (!javacIter.hasNext()) {
-                    throw new BugInCF(
-                            "Non-matching class member lists: %s, %s",
-                            javacMembers, javaParserMembers);
-                }
-
-                Tree candidate = javacIter.next();
-                if (areMatchingMembers(candidate, javaParserMember)) {
-                    javacMember = candidate;
-                }
+        Iterator<BodyDeclaration<?>> javaParserIter = javaParserMembers.iterator();
+        boolean hasNextJavaParser = javaParserIter.hasNext();
+        BodyDeclaration<?> javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
+        for (Tree javacMember : javacMembers) {
+            if (isNoArgumentConstructor(javacMember)
+                    && (!hasNextJavaParser || !isNoArgumentConstructor(javaParserStatement))) {
+                continue;
             }
 
-            javacMember.accept(this, javaParserMember);
+            assert hasNextJavaParser;
+            javacMember.accept(this, javaParserStatement);
+            hasNextJavaParser = javaParserIter.hasNext();
+            javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
         }
 
-        assert !javacIter.hasNext();
+        assert !hasNextJavaParser;
     }
 
-    /**
-     * Deteremines if a member of a javac and JavaParser class match.
-     *
-     * <p>This is used to determine if a synthetic javac default constructor is being matched with
-     * an actual source code member. As such, all it must do is differentiate between a no-argument
-     * constructor and anything that's not a no-argument constructor. It doesn't check for matching
-     * field names, for example.
-     *
-     * @param javacMember member of a javac class to check
-     * @param javaParserMember member of a JavaParser class to check
-     * @return false if {@code javacMember} is a no-argument constructor and {@code
-     *     javaParserMember} is not, true otherwise.
-     */
-    private boolean areMatchingMembers(Tree javacMember, BodyDeclaration<?> javaParserMember) {
-        if (javacMember.getKind() != Kind.METHOD) {
-            return true;
+    private boolean isNoArgumentConstructor(Tree member) {
+        if (member.getKind() != Kind.METHOD) {
+            return false;
         }
 
-        MethodTree methodTree = (MethodTree) javacMember;
-        if (!methodTree.getName().contentEquals("<init>")
-                || !methodTree.getParameters().isEmpty()) {
-            return true;
-        }
+        MethodTree methodTree = (MethodTree) member;
+        return methodTree.getName().contentEquals("<init>") && methodTree.getParameters().isEmpty();
+    }
 
-        if (!javaParserMember.isConstructorDeclaration()) {
-            return true;
-        }
-
-        return javaParserMember.asConstructorDeclaration().getParameters().isEmpty();
+    private boolean isNoArgumentConstructor(BodyDeclaration<?> member) {
+        return member.isConstructorDeclaration()
+                && member.asConstructorDeclaration().getParameters().isEmpty();
     }
 
     @Override
@@ -527,7 +600,14 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             javacTree.getCondition().accept(this, node.getCompare().get());
         }
 
-        visitLists(javacTree.getUpdate(), node.getUpdate());
+        // Javac stores a list of expression statements and JavaParser stores a list of statements,
+        // the javac statements must be unwrapped.
+        assert javacTree.getUpdate().size() == node.getUpdate().size();
+        Iterator<Expression> javaParserIter = node.getUpdate().iterator();
+        for (ExpressionStatementTree update : javacTree.getUpdate()) {
+            update.getExpression().accept(this, javaParserIter.next());
+        }
+
         return null;
     }
 

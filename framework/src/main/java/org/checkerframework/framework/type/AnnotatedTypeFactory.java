@@ -4,7 +4,12 @@ package org.checkerframework.framework.type;
 // Try to avoid using non-@jdk.Exported classes.
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.visitor.TreeVisitor;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -24,6 +29,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.io.IOException;
@@ -637,116 +643,116 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
         if (root != null) {
-            // new TreePathScanner<Void, Void>() {
-            // @Override
-            // public Void scan(Tree node, Void p) {
-            // if (node != null) {
-            // System.out.println(
-            // "Visiting javac tree class "
-            // + node.getClass()
-            // + " of kind "
-            // + node.getKind());
-            // System.out.println(
-            // "Interfaces: " + Arrays.toString(node.getClass().getInterfaces()));
-            // System.out.println(node);
-            // if (node.getKind() == Kind.MEMBER_REFERENCE) {
-            // System.out.println(
-            // "Member reference with type arguments: "
-            // + ((MemberReferenceTree) node).getTypeArguments());
-            // }
-            // if (node.getKind() == Kind.METHOD) {
-            // MethodTree t = (MethodTree) node;
-            // System.out.println(
-            // "Method with type arguments: \""
-            // + t.getTypeParameters()
-            // + "\", is null: "
-            // + (t.getTypeParameters() == null));
-            // System.out.println("Name: " + t.getName());
-            // System.out.println("Throws: \"" + t.getThrows() + "\"");
-            // }
-            // if (node.getKind() == Kind.METHOD_INVOCATION) {
-            // MethodInvocationTree t = (MethodInvocationTree) node;
-            // System.out.println("Method invocation");
-            // System.out.println(
-            // "Type arguments: \""
-            // + t.getTypeArguments()
-            // + "\", is null: "
-            // + (t.getTypeArguments() == null));
-            // System.out.println("Method select: \"" + t.getMethodSelect() + "\"");
-            // }
-            // if (node.getKind() == Kind.NEW_ARRAY) {
-            // NewArrayTree t = (NewArrayTree) node;
-            // System.out.println("New array tree");
-            // System.out.println("Type: " + t.getType());
-            // System.out.println("Annotations: " + t.getAnnotations());
-            // System.out.println("Dimension annotations: " + t.getDimAnnotations());
-            // System.out.println("Dimensions: " + t.getDimensions());
-            // System.out.println("Initializers: \"" + t.getInitializers() + "\"");
-            // }
-            // if (node.getKind() == Kind.NEW_CLASS) {
-            // NewClassTree t = (NewClassTree) node;
-            // System.out.println("New class tree");
-            // System.out.println("Type arguments: \"" + t.getTypeArguments() + "\"");
-            // }
-            // }
-            // return super.scan(node, p);
-            // }
-            // }.scan(root, null);
+            new TreePathScanner<Void, Void>() {
+                @Override
+                public Void scan(Tree node, Void p) {
+                    if (node != null) {
+                        System.out.println(
+                                "Visiting javac tree class "
+                                        + node.getClass()
+                                        + " of kind "
+                                        + node.getKind());
+                        System.out.println(
+                                "Interfaces: " + Arrays.toString(node.getClass().getInterfaces()));
+                        System.out.println(node);
+                        if (node.getKind() == Kind.MEMBER_REFERENCE) {
+                            System.out.println(
+                                    "Member reference with type arguments: "
+                                            + ((MemberReferenceTree) node).getTypeArguments());
+                        }
+                        if (node.getKind() == Kind.METHOD) {
+                            MethodTree t = (MethodTree) node;
+                            System.out.println(
+                                    "Method with type arguments: \""
+                                            + t.getTypeParameters()
+                                            + "\", is null: "
+                                            + (t.getTypeParameters() == null));
+                            System.out.println("Name: " + t.getName());
+                            System.out.println("Throws: \"" + t.getThrows() + "\"");
+                        }
+                        if (node.getKind() == Kind.METHOD_INVOCATION) {
+                            MethodInvocationTree t = (MethodInvocationTree) node;
+                            System.out.println("Method invocation");
+                            System.out.println(
+                                    "Type arguments: \""
+                                            + t.getTypeArguments()
+                                            + "\", is null: "
+                                            + (t.getTypeArguments() == null));
+                            System.out.println("Method select: \"" + t.getMethodSelect() + "\"");
+                        }
+                        if (node.getKind() == Kind.NEW_ARRAY) {
+                            NewArrayTree t = (NewArrayTree) node;
+                            System.out.println("New array tree");
+                            System.out.println("Type: " + t.getType());
+                            System.out.println("Annotations: " + t.getAnnotations());
+                            System.out.println("Dimension annotations: " + t.getDimAnnotations());
+                            System.out.println("Dimensions: " + t.getDimensions());
+                            System.out.println("Initializers: \"" + t.getInitializers() + "\"");
+                        }
+                        if (node.getKind() == Kind.NEW_CLASS) {
+                            NewClassTree t = (NewClassTree) node;
+                            System.out.println("New class tree");
+                            System.out.println("Type arguments: \"" + t.getTypeArguments() + "\"");
+                        }
+                    }
+                    return super.scan(node, p);
+                }
+            }.scan(root, null);
             try {
                 java.io.InputStream in = root.getSourceFile().openInputStream();
                 com.github.javaparser.ast.CompilationUnit u = StaticJavaParser.parse(in);
-                // new TreeVisitor() {
-                // @Override
-                // public void process(Node n) {
-                // System.out.println("Visiting JavaParser node " + n.getClass());
-                // System.out.println(
-                // "Interfaces: " + Arrays.toString(n.getClass().getInterfaces()));
-                // if (n instanceof SwitchStmt) {
-                // System.out.println("In SwitchStmt");
-                // SwitchStmt n2 = (SwitchStmt) n;
-                // System.out.println("Entries: " + n2.getEntries());
-                // }
-                // if (n instanceof SwitchEntry) {
-                // System.out.println("In SwitchEntry");
-                // SwitchEntry n2 = (SwitchEntry) n;
-                // System.out.println("labels:");
-                // System.out.println(n2.getLabels());
-                // System.out.println("statements:");
-                // System.out.println(n2.getStatements());
-                // }
-                // if (n instanceof MethodReferenceExpr) {
-                // System.out.println("In MethodReferenceExpr");
-                // MethodReferenceExpr n2 = (MethodReferenceExpr) n;
-                // System.out.println("type arguments: " + n2.getTypeArguments());
-                // }
-                // if (n instanceof MethodDeclaration) {
-                // System.out.println("In MethodDeclaration");
-                // MethodDeclaration n2 = (MethodDeclaration) n;
-                // System.out.println("Name: " + n2.getName());
-                // System.out.println("Type arguments: " + n2.getTypeParameters());
-                // System.out.println("Throws: \"" + n2.getThrownExceptions() + "\"");
-                // }
-                // if (n instanceof MethodCallExpr) {
-                // System.out.println("In MethodCallExpr");
-                // MethodCallExpr n2 = (MethodCallExpr) n;
-                // System.out.println("Type arguments: " + n2.getTypeArguments());
-                // System.out.println("Scope: " + n2.getScope());
-                // }
-                // if (n instanceof ArrayCreationExpr) {
-                // System.out.println("In ArrayCreationExpr");
-                // ArrayCreationExpr n2 = (ArrayCreationExpr) n;
-                // System.out.println("Type: " + n2.getElementType());
-                // System.out.println("Levels: " + n2.getLevels());
-                // System.out.println("Initializer: " + n2.getInitializer());
-                // }
-                // if (n instanceof ObjectCreationExpr) {
-                // System.out.println("In ObjectCreationExpr");
-                // ObjectCreationExpr n2 = (ObjectCreationExpr) n;
-                // System.out.println("Type arguments: " + n2.getTypeArguments());
-                // }
-                // System.out.println(n);
-                // }
-                // }.visitPreOrder(u);
+                new TreeVisitor() {
+                    @Override
+                    public void process(Node n) {
+                        System.out.println("Visiting JavaParser node " + n.getClass());
+                        System.out.println(
+                                "Interfaces: " + Arrays.toString(n.getClass().getInterfaces()));
+                        if (n instanceof SwitchStmt) {
+                            System.out.println("In SwitchStmt");
+                            SwitchStmt n2 = (SwitchStmt) n;
+                            System.out.println("Entries: " + n2.getEntries());
+                        }
+                        if (n instanceof SwitchEntry) {
+                            System.out.println("In SwitchEntry");
+                            SwitchEntry n2 = (SwitchEntry) n;
+                            System.out.println("labels:");
+                            System.out.println(n2.getLabels());
+                            System.out.println("statements:");
+                            System.out.println(n2.getStatements());
+                        }
+                        if (n instanceof MethodReferenceExpr) {
+                            System.out.println("In MethodReferenceExpr");
+                            MethodReferenceExpr n2 = (MethodReferenceExpr) n;
+                            System.out.println("type arguments: " + n2.getTypeArguments());
+                        }
+                        if (n instanceof MethodDeclaration) {
+                            System.out.println("In MethodDeclaration");
+                            MethodDeclaration n2 = (MethodDeclaration) n;
+                            System.out.println("Name: " + n2.getName());
+                            System.out.println("Type arguments: " + n2.getTypeParameters());
+                            System.out.println("Throws: \"" + n2.getThrownExceptions() + "\"");
+                        }
+                        if (n instanceof MethodCallExpr) {
+                            System.out.println("In MethodCallExpr");
+                            MethodCallExpr n2 = (MethodCallExpr) n;
+                            System.out.println("Type arguments: " + n2.getTypeArguments());
+                            System.out.println("Scope: " + n2.getScope());
+                        }
+                        if (n instanceof ArrayCreationExpr) {
+                            System.out.println("In ArrayCreationExpr");
+                            ArrayCreationExpr n2 = (ArrayCreationExpr) n;
+                            System.out.println("Type: " + n2.getElementType());
+                            System.out.println("Levels: " + n2.getLevels());
+                            System.out.println("Initializer: " + n2.getInitializer());
+                        }
+                        if (n instanceof ObjectCreationExpr) {
+                            System.out.println("In ObjectCreationExpr");
+                            ObjectCreationExpr n2 = (ObjectCreationExpr) n;
+                            System.out.println("Type arguments: " + n2.getTypeArguments());
+                        }
+                        System.out.println(n);
+                    }
+                }.visitPreOrder(u);
                 new JointVisitorWithDefaults() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
