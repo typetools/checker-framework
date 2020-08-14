@@ -197,7 +197,9 @@ public class StubTypes {
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
-                stubPath = stubPath.replace("checker.jar/", "/");
+                if (stubPath.startsWith("checker.jar/")) {
+                    stubPath = stubPath.substring("checker.jar/".length());
+                }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 // Didn't find the stub file.
                 if (in == null) {

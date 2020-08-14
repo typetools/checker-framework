@@ -156,13 +156,16 @@ The Signedness Checker prohibits the following uses of operators:
 
 \end{itemize}
 
+There are some special cases where these operations are permitted; see
+Section~\ref{signedness-checker-permitted-shifts}.
+
 Like every type-checker built with the Checker Framework, the Signedness
 Checker ensures that assignments and pseudo-assignments have consistent types.
 For example, it is not permitted to assign a \code{@Signed} expression to an
 \code{@Unsigned} variable or vice versa.
 
 
-\sectionAndLabel{Rationale}{signedness-checker-rationale}
+\subsectionAndLabel{Rationale}{signedness-checker-rationale}
 
 The Signedness Checker prevents misuse of unsigned values in Java code.
 Most Java operations interpret operands as signed.  If applied to unsigned
@@ -201,6 +204,33 @@ These examples illustrate why division and modulus with an unsigned operand
 are illegal.  Other uses of operators are prohibited for similar reasons.
 
 
+\subsectionAndLabel{Permitted shifts}{signedness-checker-permitted-shifts}
+
+As exceptions to the rules given above, the Signedness Checker permits
+certain right shifts which are immediately followed by a cast or
+masking operation.
+
+For example, right shift by 8 then mask by 0xFF evaluates to the same value
+whether the argument is interpreted as signed or unsigned.  Thus, the
+Signedness Checker permits both \verb|((myInt >> 8) & 0xFF)| and
+\verb|((myInt >>> 8) & 0xFF)|, regardless of the qualifier on the type of
+\<myInt>.
+
+% There are two distinct reasons to use \verb|>>>|, the unsigned right shift operator:
+% \begin{itemize}
+% \item
+%    To perform arithmetic:  dividing or multiplying by 2.
+%    The left-hand operand must be an unsigned value, and
+%    the result is an unsigned value.
+%  \item
+%    To extract bits.
+%    The left-hand operand may be arbitrary, and \verb|>>>| behaves the same
+%    as \verb|>>|.
+%    % TODO: The result should be @SignednessUnknown.
+%    % The result is a bit string: no arithmetic should be performed on it (@SignednessUnknown).
+% \end{itemize}
+
+
 \sectionAndLabel{Utility routines for manipulating unsigned values}{signedness-utilities}
 
 Class \refclass{checker/signedness}{SignednessUtil} provides static
@@ -221,8 +251,8 @@ surprising for the Signedness type system.  Ordinarily, an expression with
 unsigned type may not participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
 and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
-to a variable that was declared with \<@Unsigned> type, then---just like
-the constant---the variable may be treated as either signed or unsigned.
+to a variable that was declared with \<@Unsigned> type, then --- just like
+the constant --- the variable may be treated as either signed or unsigned.
 For example, it can participate in division.  Since the result of the
 division is signed, you cannot accidentally assign the division result to
 an \<@Unsigned> variable.
