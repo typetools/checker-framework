@@ -25,6 +25,8 @@ import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
@@ -58,6 +60,7 @@ import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -321,7 +324,7 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
         return null;
     }
 
-    private boolean isDefaultSuperConstructorCall(StatementTree statement) {
+    public static boolean isDefaultSuperConstructorCall(StatementTree statement) {
         if (statement.getKind() != Kind.EXPRESSION_STATEMENT) {
             return false;
         }
@@ -443,7 +446,7 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
         assert !hasNextJavaParser;
     }
 
-    private boolean isNoArgumentConstructor(Tree member) {
+    public static boolean isNoArgumentConstructor(Tree member) {
         if (member.getKind() != Kind.METHOD) {
             return false;
         }
@@ -469,10 +472,9 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
         // TODO: A CompilationUnitTree could also be a package-info.java file. Currently skipping
         // descending into these specific constructs such as getPackageAnnotations, because they
         // probably won't be useful and TreeScanner also skips them. Should we process them?
-        // TODO: Why is this called getPackageName? Does it always return a PackageTree?
-        assert (javacTree.getPackageName() != null) == node.getPackageDeclaration().isPresent();
-        if (javacTree.getPackageName() != null) {
-            javacTree.getPackageName().accept(this, node.getPackageDeclaration().get());
+        assert (javacTree.getPackage() != null) == node.getPackageDeclaration().isPresent();
+        if (javacTree.getPackage() != null) {
+            javacTree.getPackage().accept(this, node.getPackageDeclaration().get());
         }
 
         visitLists(javacTree.getImports(), node.getImports());
@@ -612,8 +614,17 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree arg0, Node arg1) {
-        // TODO Auto-generated method stub
+    public Void visitIdentifier(IdentifierTree javacTree, Node javaParserNode) {
+        if (javaParserNode instanceof ClassOrInterfaceType) {
+            processIdentifier(javacTree, (ClassOrInterfaceType) javaParserNode);
+        } else if (javaParserNode instanceof Name) {
+            processIdentifier(javacTree, (Name) javaParserNode);
+        } else if (javaParserNode instanceof NameExpr) {
+            processIdentifier(javacTree, (NameExpr) javaParserNode);
+        } else {
+            throwUnexpectedNodeType(javaParserNode);
+        }
+
         return null;
     }
 
@@ -1242,6 +1253,12 @@ public class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
             ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {}
 
     public void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode) {}
+
+    public void processIdentifier(IdentifierTree javacTree, ClassOrInterfaceType javaParserNode) {}
+
+    public void processIdentifier(IdentifierTree javacTree, Name javaParserNode) {}
+
+    public void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode) {}
 
     public void processIf(IfTree javacTree, IfStmt javaParserNode) {}
 

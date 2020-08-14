@@ -23,6 +23,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -77,6 +78,7 @@ import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaults;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -642,7 +644,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
-        if (root != null) {
+        boolean shouldPrint = false;
+        if (root != null && shouldPrint) {
             new TreePathScanner<Void, Void>() {
                 @Override
                 public Void scan(Tree node, Void p) {
@@ -693,6 +696,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             NewClassTree t = (NewClassTree) node;
                             System.out.println("New class tree");
                             System.out.println("Type arguments: \"" + t.getTypeArguments() + "\"");
+                        }
+                        if (node.getKind() == Kind.COMPILATION_UNIT) {
+                            CompilationUnitTree t = (CompilationUnitTree) node;
+                            System.out.println("Compilation unit");
+                            System.out.println("getPackage(): " + t.getPackage());
+                            System.out.println("getPackageName(): " + t.getPackageName());
+                        }
+                        if (node.getKind() == Kind.PACKAGE) {
+                            PackageTree t = (PackageTree) node;
+                            System.out.println("PackageTree");
+                            System.out.println("getPackage(): " + t.getPackageName());
                         }
                     }
                     return super.scan(node, p);
@@ -765,6 +779,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 in.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+        if (checker.hasOption("checkJavaParserVisitor") && root != null) {
+            Map<Tree, Node> treePairs = new HashMap<>();
+            try {
+                java.io.InputStream reader = root.getSourceFile().openInputStream();
+                com.github.javaparser.ast.CompilationUnit javaParserRoot =
+                        StaticJavaParser.parse(reader);
+                reader.close();
+                new JointVisitorWithDefaults() {
+                    @Override
+                    public void defaultAction(Tree javacTree, Node javaParserNode) {
+                        treePairs.put(javacTree, javaParserNode);
+                    }
+                }.visitCompilationUnit(root, javaParserRoot);
+                ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
+                expectedTreesVisitor.visitCompilationUnit(root, null);
+                for (Tree expected : expectedTreesVisitor.getTrees()) {
+                    if (!treePairs.containsKey(expected)) {
+                        throw new BugInCF(
+                                "Javac tree not matched to JavaParser node: %s", expected);
+                    }
+                }
+            } catch (IOException e) {
+                throw new BugInCF("Error reading Java source file", e);
             }
         }
 

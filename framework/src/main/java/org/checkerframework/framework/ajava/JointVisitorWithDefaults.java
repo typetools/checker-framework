@@ -19,6 +19,8 @@ import com.github.javaparser.ast.expr.LiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
@@ -49,6 +51,7 @@ import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
 import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -76,6 +79,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
@@ -227,6 +231,21 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processIdentifier(IdentifierTree javacTree, ClassOrInterfaceType javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processIdentifier(IdentifierTree javacTree, Name javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
