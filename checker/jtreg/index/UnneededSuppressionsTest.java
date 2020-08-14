@@ -36,4 +36,12 @@ public class UnneededSuppressionsTest {
 
     @SuppressWarnings("purity")
     void method6() {}
+
+    // TODO: It is a bug that this is not reported as an unused suppression
+    @SuppressWarnings("index:foo.bar.baz")
+    void method7() {}
+
+    // TODO: It is a bug that this is not reported as an unused suppression
+    @SuppressWarnings("allcheckers:purity.not.deterministic.call")
+    void method8() {}
 }
