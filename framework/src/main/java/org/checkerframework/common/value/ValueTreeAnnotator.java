@@ -563,6 +563,14 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
 
     @Override
+    public Void visitConditionalExpression(
+            ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+        // Work around for https://github.com/typetools/checker-framework/issues/602.
+        annotatedTypeMirror.replaceAnnotation(atypeFactory.UNKNOWNVAL);
+        return null;
+    }
+
+    @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
         if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
             return null;
@@ -575,14 +583,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
                     atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
             return null;
         }
-        return null;
-    }
-
-    @Override
-    public Void visitConditionalExpression(
-            ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
-        // Work around for https://github.com/typetools/checker-framework/issues/602.
-        annotatedTypeMirror.replaceAnnotation(atypeFactory.UNKNOWNVAL);
         return null;
     }
 }
