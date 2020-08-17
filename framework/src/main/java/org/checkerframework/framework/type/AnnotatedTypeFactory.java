@@ -644,7 +644,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
-        boolean shouldPrint = false;
+        boolean shouldPrint = true;
         if (root != null && shouldPrint) {
             new TreePathScanner<Void, Void>() {
                 @Override
@@ -777,7 +777,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 new JointVisitorWithDefaults() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        System.out.println("Visiting tree:");
+                        System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
                         System.out.println(javacTree);
                         System.out.println("With node:");
                         System.out.println(javaParserNode);
@@ -807,7 +807,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 for (Tree expected : expectedTreesVisitor.getTrees()) {
                     if (!treePairs.containsKey(expected)) {
                         throw new BugInCF(
-                                "Javac tree not matched to JavaParser node: %s, in file: %s", expected, root.getSourceFile().getName());
+                                "Javac tree not matched to JavaParser node: %s, in file: %s",
+                                expected, root.getSourceFile().getName());
                     }
                 }
             } catch (IOException e) {

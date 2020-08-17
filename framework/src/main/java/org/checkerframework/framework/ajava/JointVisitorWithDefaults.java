@@ -4,6 +4,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -194,6 +195,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processClass(ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
@@ -376,7 +382,8 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
-    public void processParameterizedType(ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode) {
+    public void processParameterizedType(
+            ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 

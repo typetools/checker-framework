@@ -1,9 +1,11 @@
 package org.checkerframework.framework.ajava;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -28,6 +30,13 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public void defaultAction(Tree tree) {
         trees.add(tree);
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree tree, Void p) {
+        // Skip annotations because ajava files are not required to have the same annotations as
+        // their corresponding java files.
+        return null;
     }
 
     @Override
@@ -67,6 +76,12 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitModifiers(ModifiersTree tree, Void p) {
         // Don't add ModifierTrees or children because they have no corresponding JavaParser node.
+        return null;
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree tree, Void p) {
+        // Skip array initialization because it's not implemented yet.
         return null;
     }
 
