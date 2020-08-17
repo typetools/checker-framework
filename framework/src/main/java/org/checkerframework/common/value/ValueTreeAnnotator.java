@@ -410,6 +410,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
             return null;
         }
+
         if (atypeFactory
                 .getMethodIdentifier()
                 .isArraysCopyOfInvocation(tree, atypeFactory.getProcessingEnv())) {
