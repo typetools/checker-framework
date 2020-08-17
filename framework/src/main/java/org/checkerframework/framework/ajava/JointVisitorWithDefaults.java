@@ -6,7 +6,11 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -24,7 +28,10 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
+import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsDirective;
@@ -97,6 +104,7 @@ import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.PackageTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
@@ -112,6 +120,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.UsesTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 
@@ -253,6 +262,21 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processIdentifier(IdentifierTree javacTree, SimpleName javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processIdentifier(IdentifierTree javacTree, SuperExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processIdentifier(IdentifierTree javacTree, ThisExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processIf(IfTree javacTree, IfStmt javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
@@ -311,6 +335,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
@@ -343,6 +372,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processPackage(PackageTree javacTree, PackageDeclaration javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processParameterizedType(ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
@@ -418,6 +452,21 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processVariable(VariableTree javacTree, Parameter javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processVariable(VariableTree javacTree, ReceiverParameter javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processVariable(VariableTree javacTree, VariableDeclarator javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 

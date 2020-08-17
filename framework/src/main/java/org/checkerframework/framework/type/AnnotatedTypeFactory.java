@@ -789,6 +789,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         if (checker.hasOption("checkJavaParserVisitor") && root != null) {
+            System.out.println("checking root " + root.getSourceFile().getName());
             Map<Tree, Node> treePairs = new HashMap<>();
             try {
                 java.io.InputStream reader = root.getSourceFile().openInputStream();
@@ -806,7 +807,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 for (Tree expected : expectedTreesVisitor.getTrees()) {
                     if (!treePairs.containsKey(expected)) {
                         throw new BugInCF(
-                                "Javac tree not matched to JavaParser node: %s", expected);
+                                "Javac tree not matched to JavaParser node: %s, in file: %s", expected, root.getSourceFile().getName());
                     }
                 }
             } catch (IOException e) {

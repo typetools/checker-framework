@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.util.HashSet;
@@ -67,5 +68,17 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     public Void visitModifiers(ModifiersTree tree, Void p) {
         // Don't add ModifierTrees or children because they have no corresponding JavaParser node.
         return null;
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, Void p) {
+        Void result = super.visitNewClass(tree, p);
+        // Javac stores anonymous class bodies as a whole ClassTree but JavaParser just stores a
+        // list of members, so remove the class body itself.
+        if (tree.getClassBody() != null) {
+            trees.remove(tree.getClassBody());
+        }
+
+        return result;
     }
 }
