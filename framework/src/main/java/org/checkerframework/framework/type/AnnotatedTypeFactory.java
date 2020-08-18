@@ -708,6 +708,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             System.out.println("PackageTree");
                             System.out.println("getPackage(): " + t.getPackageName());
                         }
+                        if (node.getKind() == Kind.VARIABLE) {
+                            VariableTree t = (VariableTree) node;
+                            System.out.println("Variable");
+                            System.out.println("Type: " + t.getType());
+                            System.out.println("Name: " + t.getName());
+                            System.out.println("Name expression: " + t.getNameExpression());
+                        }
                     }
                     return super.scan(node, p);
                 }
@@ -771,18 +778,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             System.out.println("Identifier: " + n2.getIdentifier());
                             System.out.println("Qualifier: " + n2.getQualifier());
                         }
+                        if (n instanceof EnumDeclaration) {
+                            System.out.println("In EnumDeclaration");
+                            EnumDeclaration n2 = (EnumDeclaration) n;
+                            System.out.println("members: " + n2.getMembers());
+                        }
                         System.out.println(n);
                     }
                 }.visitPreOrder(u);
-                new JointVisitorWithDefaults() {
-                    @Override
-                    public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
-                        System.out.println(javacTree);
-                        System.out.println("With node:");
-                        System.out.println(javaParserNode);
-                    }
-                }.visitCompilationUnit(root, u);
+                // new JointVisitorWithDefaults() {
+                    // @Override
+                    // public void defaultAction(Tree javacTree, Node javaParserNode) {
+                        // System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
+                        // System.out.println(javacTree);
+                        // System.out.println("With node:");
+                        // System.out.println(javaParserNode);
+                    // }
+                // }.visitCompilationUnit(root, u);
                 in.close();
             } catch (IOException e) {
                 e.printStackTrace();

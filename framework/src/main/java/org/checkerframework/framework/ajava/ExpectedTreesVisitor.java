@@ -1,7 +1,10 @@
 package org.checkerframework.framework.ajava;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -9,7 +12,9 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -36,6 +41,46 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     public Void visitAnnotation(AnnotationTree tree, Void p) {
         // Skip annotations because ajava files are not required to have the same annotations as
         // their corresponding java files.
+        return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, Void p) {
+        defaultAction(tree);
+        visit(tree.getModifiers(), p);
+        visit(tree.getTypeParameters(), p);
+        visit(tree.getExtendsClause(), p);
+        visit(tree.getImplementsClause(), p);
+        if (tree.getKind() == Kind.ENUM) {
+            // Enum constants expand to a VariableTree like
+            // public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
+            // The constructor invocation in the initializer has no corresponding JavaParser node.
+            // Remove these invocations. This is safe because it's illegal to explicitly construct
+            // an instance of an enum anyway.
+            for (Tree member : tree.getMembers()) {
+                member.accept(this, p);
+                if (member.getKind() != Kind.VARIABLE) {
+                    continue;
+                }
+
+                VariableTree variable = (VariableTree) member;
+                ExpressionTree initializer = variable.getInitializer();
+                if (initializer == null || initializer.getKind() != Kind.NEW_CLASS) {
+                    continue;
+                }
+
+                NewClassTree constructor = (NewClassTree) initializer;
+                if (constructor.getIdentifier().getKind() != Kind.IDENTIFIER) {
+                    continue;
+                }
+
+                IdentifierTree name = (IdentifierTree) constructor.getIdentifier();
+                if (name.getName().contentEquals(tree.getSimpleName())) {
+                    trees.remove(constructor);
+                }
+            }
+        }
+
         return null;
     }
 
@@ -87,13 +132,60 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     @Override
     public Void visitNewClass(NewClassTree tree, Void p) {
-        Void result = super.visitNewClass(tree, p);
-        // Javac stores anonymous class bodies as a whole ClassTree but JavaParser just stores a
-        // list of members, so remove the class body itself.
-        if (tree.getClassBody() != null) {
-            trees.remove(tree.getClassBody());
+        defaultAction(tree);
+
+        if (tree.getEnclosingExpression() != null) {
+            tree.getEnclosingExpression().accept(this, p);
         }
 
-        return result;
+        tree.getIdentifier().accept(this, p);
+        for (Tree typeArgument : tree.getTypeArguments()) {
+            typeArgument.accept(this, p);
+        }
+
+        for (Tree arg : tree.getTypeArguments()) {
+            arg.accept(this, p);
+        }
+
+        if (tree.getClassBody() == null) {
+            return null;
+        }
+
+        // Anonymous class bodies require special handling. There isn't a corresponding JavaParser
+        // node, and synthetic constructors must be skipped.
+        ClassTree body = tree.getClassBody();
+        visit(body.getModifiers(), p);
+        visit(body.getTypeParameters(), p);
+        visit(body.getExtendsClause(), p);
+        visit(body.getImplementsClause(), p);
+        for (Tree member : body.getMembers()) {
+            // Constructors cannot be declared in an anonymous class, so don't add them.
+            if (member.getKind() == Kind.METHOD) {
+                MethodTree methodTree = (MethodTree) member;
+                if (methodTree.getName().contentEquals("<init>")) {
+                    continue;
+                }
+            }
+
+            member.accept(this, p);
+        }
+
+        return null;
+    }
+
+    private void visit(Tree tree, Void p) {
+        if (tree != null) {
+            tree.accept(this, p);
+        }
+    }
+
+    private void visit(List<? extends Tree> trees, Void p) {
+        if (trees == null) {
+            return;
+        }
+
+        for (Tree tree : trees) {
+            visit(tree, p);
+        }
     }
 }

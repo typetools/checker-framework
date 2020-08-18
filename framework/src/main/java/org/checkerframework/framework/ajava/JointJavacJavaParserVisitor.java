@@ -9,6 +9,8 @@ import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
@@ -138,6 +140,8 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.javacutil.BugInCF;
@@ -432,6 +436,21 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         } else if (javaParserNode instanceof LocalClassDeclarationStmt) {
             javacTree.accept(
                     this, ((LocalClassDeclarationStmt) javaParserNode).getClassDeclaration());
+        } else if (javaParserNode instanceof EnumDeclaration) {
+            EnumDeclaration node = (EnumDeclaration) javaParserNode;
+            processClass(javacTree, node);
+            visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
+            // In an enum declaration, the enum constants are expanded as constant variable members
+            // whereas in JavaParser they're stored as one object, need to match them.
+            assert javacTree.getKind() == Kind.ENUM;
+            List<Tree> javacMembers = new ArrayList<>(javacTree.getMembers());
+            for (EnumConstantDeclaration entry : node.getEntries()) {
+                assert !javacMembers.isEmpty();
+                javacMembers.get(0).accept(this, entry);
+                javacMembers.remove(0);
+            }
+
+            visitClassMembers(javacMembers, node.getMembers());
         } else {
             throwUnexpectedNodeType(javaParserNode);
         }
@@ -449,7 +468,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         Iterator<BodyDeclaration<?>> javaParserIter = javaParserMembers.iterator();
         boolean hasNextJavaParser = javaParserIter.hasNext();
         BodyDeclaration<?> javaParserMember = hasNextJavaParser ? javaParserIter.next() : null;
+
         while (hasNextJavac || hasNextJavaParser) {
+            // Skip javac's synthetic no-argument constructors.
             if (hasNextJavac
                     && isNoArgumentConstructor(javacMember)
                     && (!hasNextJavaParser || !isNoArgumentConstructor(javaParserMember))) {
@@ -489,6 +510,30 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         assert !hasNextJavac;
         assert !hasNextJavaParser;
+    }
+
+    private void visitAnonymouClassBody(ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
+        // Like normal class bodies, javac will insert synthetic constructors. In an anonymous
+        // class, the generated constructor will have the same parameter types as the type it
+        // extends and will pass them to the superconstructor. This means that just checking for a
+        // no-argument constructor doesn't work in this case. However, it's impossible to declare
+        // constructors in an anonymous class, so any constructor is synthetic. We skip those
+        // members before processing the rest like normal.
+        List<Tree> members = new ArrayList<>(javacBody.getMembers());
+        while (!members.isEmpty()) {
+            Tree member = members.get(0);
+            if (member.getKind() == Kind.METHOD) {
+                MethodTree methodTree = (MethodTree) member;
+                if (methodTree.getName().contentEquals("<init>")) {
+                    members.remove(0);
+                    continue;
+                }
+            }
+
+            break;
+        }
+
+        visitClassMembers(members, javaParserMembers);
     }
 
     public static boolean isNoArgumentConstructor(Tree member) {
@@ -630,9 +675,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         ExpressionStmt node = (ExpressionStmt) javaParserNode;
         processExpressionStatemen(javacTree, node);
-        System.out.println("Processing expression: " + javacTree.getExpression());
         javacTree.getExpression().accept(this, node.getExpression());
-        System.out.println("Done processing expression");
         return null;
     }
 
@@ -995,8 +1038,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         visitLists(javacTree.getArguments(), node.getArguments());
         assert (javacTree.getClassBody() != null) == node.getAnonymousClassBody().isPresent();
         if (javacTree.getClassBody() != null) {
-            visitClassMembers(
-                    javacTree.getClassBody().getMembers(), node.getAnonymousClassBody().get());
+            visitAnonymouClassBody(javacTree.getClassBody(), node.getAnonymousClassBody().get());
         }
 
         return null;
@@ -1274,6 +1316,23 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             assert javacTree.getInitializer() == null;
+        } else if (javaParserNode instanceof EnumConstantDeclaration) {
+            // An enum constant is expanded as a variable declaration initialized to a constuctor
+            // call.
+            EnumConstantDeclaration node = (EnumConstantDeclaration) javaParserNode;
+            processVariable(javacTree, node);
+            if (javacTree.getNameExpression() != null) {
+                javacTree.getNameExpression().accept(this, node.getName());
+            }
+
+            assert javacTree.getInitializer().getKind() == Kind.NEW_CLASS;
+            NewClassTree constructor = (NewClassTree) javacTree.getInitializer();
+            visitLists(constructor.getArguments(), node.getArguments());
+            if (constructor.getClassBody() != null) {
+                visitAnonymouClassBody(constructor.getClassBody(), node.getClassBody());
+            } else {
+                assert node.getClassBody().isEmpty();
+            }
         } else {
             throwUnexpectedNodeType(javaParserNode);
         }
@@ -1357,6 +1416,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     public abstract void processClass(
             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode);
+
+    public abstract void processClass(ClassTree javacTree, EnumDeclaration javaParserNode);
 
     public abstract void processCompilationUnit(
             CompilationUnitTree javacTree, CompilationUnit javaParserNode);
@@ -1480,6 +1541,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processUnionType(UnionTypeTree javacTree, UnionType javaParserNode);
 
     public abstract void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode);
+
+    public abstract void processVariable(VariableTree javacTree, EnumConstantDeclaration javaParserNode);
 
     public abstract void processVariable(VariableTree javacTree, Parameter javaParserNode);
 

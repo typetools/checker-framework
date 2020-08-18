@@ -8,6 +8,8 @@ import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
@@ -201,6 +203,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processClass(ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
@@ -459,6 +466,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processVariable(VariableTree javacTree, EnumConstantDeclaration javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
