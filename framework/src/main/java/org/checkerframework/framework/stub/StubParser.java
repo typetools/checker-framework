@@ -142,8 +142,9 @@ public class StubParser {
     private final Elements elements;
 
     /**
-     * The set of annotations found in the stub file. Keys are names. There are two entries for each
-     * annotation: the annotation's simple name and its fully-qualified name.
+     * The set of annotations found in the stub file. Keys are both fully-qualified and simple
+     * names: there are two entries for each annotation: the annotation's simple name and its
+     * fully-qualified name.
      *
      * @see #getAllStubAnnotations
      */
@@ -236,7 +237,7 @@ public class StubParser {
 
     /**
      * All annotations defined in the package (but not those nested within classes in the package).
-     * Keys are names.
+     * Keys are both fully-qualified and simple names.
      *
      * @param packageElement a package
      * @return a map from annotation name to TypeElement
@@ -247,7 +248,8 @@ public class StubParser {
     }
 
     /**
-     * All annotations declared (directly) within a class. Keys are names.
+     * All annotations declared (directly) within a class. Keys are both fully-qualified and simple
+     * names.
      *
      * @param typeElement a type
      * @return a map from annotation name to TypeElement
@@ -297,7 +299,7 @@ public class StubParser {
     }
 
     //  TODO: This method collects only those that are imported, so it will miss ones whose
-    //   fully-qualified name is used in the stub file. The #annotate method in this class
+    //   fully-qualified name is used in the stub file. The #getAnnotation method in this class
     //   compensates for this deficiency by attempting to add any fully-qualified annotation
     //   that it encounters.
     /**
@@ -307,7 +309,7 @@ public class StubParser {
      *
      * @return a map from names to TypeElement, for all annotations imported by the stub file. Two
      *     entries for each annotation: one for the simple name and another for the fully-qualified
-     *     name.
+     *     name, with the same value.
      * @see #allStubAnnotations
      */
     private Map<String, TypeElement> getAllStubAnnotations() {
@@ -1185,18 +1187,6 @@ public class StubParser {
         }
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, allStubAnnotations);
-            if (annoMirror == null) {
-                // If the annotation was not imported, then #getAllStubAnnotations does
-                // not add it to the allStubAnnotations field. This code compensates for
-                // that deficiency by adding the annotation when it is encountered (i.e. here).
-                TypeElement annoTypeElt = getTypeElement(annotation.getNameAsString());
-                if (annoTypeElt != null) {
-                    putAllNew(
-                            allStubAnnotations,
-                            createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
-                    annoMirror = getAnnotation(annotation, allStubAnnotations);
-                }
-            }
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
@@ -1637,7 +1627,19 @@ public class StubParser {
 
         TypeElement annoTypeElm = allStubAnnotations.get(annoName);
         if (annoTypeElm == null) {
-            // Not a supported qualifier -> ignore
+            // If the annotation was not imported, then #getAllStubAnnotations does
+            // not add it to the allStubAnnotations field. This code compensates for
+            // that deficiency by adding the annotation when it is encountered (i.e. here).
+            // Note that this goes not call #getTypeElement to avoid a spurious diagnostic
+            // if the annotation is actually unknown.
+            TypeElement annoTypeElt = elements.getTypeElement(annotation.getNameAsString());
+            if (annoTypeElt != null) {
+                putAllNew(
+                        allStubAnnotations,
+                        createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
+                return getAnnotation(annotation, allStubAnnotations);
+            }
+            // Not a supported annotation -> ignore
             return null;
         }
         annoName = annoTypeElm.getQualifiedName().toString();
