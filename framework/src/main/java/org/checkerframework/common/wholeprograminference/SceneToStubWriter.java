@@ -173,79 +173,29 @@ public final class SceneToStubWriter {
      * @return the type formatted to be written to Java source code, followed by a space character
      */
     private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
-        int levels =
-                2; // 1 for the final non-array component type, another for the original array type.
         TypeMirror componentType = javacRep.getComponentType();
+        ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
         while (componentType.getKind() == TypeKind.ARRAY) {
             componentType = ((ArrayType) componentType).getComponentType();
-            levels++;
+            scenelibComponent = getNextArrayLevel(scenelibComponent);
         }
-
-        List<ATypeElement> scenelibRepInJavacOrder =
-                getSceneLibRepInJavacOrder(scenelibRep, levels);
-        return formatArrayTypeImpl(scenelibRepInJavacOrder, javacRep);
-    }
-
-    /**
-     * This method returns each array level in scenelib's representation of an array in a list in
-     * the same order used by javac. This is necessary because javac's TypeMirror and its
-     * derivatives represent arrays differently than scene-lib does.
-     *
-     * <p>If we label an array as such: (0) int (1) [] (2) [] (3) [], then level 0 is the component
-     * type, level 1 is the "outermost" type, and 3 is the "innermost" array type. Scene-lib's
-     * representation of this type is a nested ATypeElement, with this structure: (1) - (2) - (3) -
-     * (0). The TypeMirror, on the other hand, represents the type like this: (3) - (2) - (1) - (0),
-     * for ease of printing. This method therefore descends through the scenelib structure until it
-     * finds the component, adding each item to a list. It then reverses the list, and then adds the
-     * component type to the end.
-     *
-     * <p><a
-     * href="https://checkerframework.org/jsr308/specification/java-annotation-design.html#array-syntax">The
-     * JSR 308 specification</a> explains the reasoning for scenelib's representation.
-     *
-     * @param scenelibRep scenelib's representation of an array type
-     * @param levels the number of component types the type should have, derived from the javac
-     *     representation
-     * @return a list of the array levels in scenelib's representation, but in the order used by
-     *     javac. Guaranteed to have exactly {@code levels} entries. Entries may be null, if the
-     *     corresponding parts of {@code scenelibRep} are null. See <a
-     *     href="https://github.com/typetools/checker-framework/issues/3422">issue 3422</a> for an
-     *     example of code that causes a null ATypeElement, because the component type is unknown,
-     *     but the primary type of the array is known.
-     */
-    private static List<@Nullable ATypeElement> getSceneLibRepInJavacOrder(
-            ATypeElement scenelibRep, int levels) {
-        List<ATypeElement> result = new ArrayList<>();
-        ATypeElement array = scenelibRep;
-        ATypeElement component = getNextArrayLevel(scenelibRep);
-        for (int i = 0; i < levels - 1; i++) {
-            result.add(array);
-            array = component;
-            component = getNextArrayLevel(array);
-        }
-        Collections.reverse(result);
-        // at this point, array has become the actual base component
-        result.add(array);
-        return result;
+        return formatType(scenelibComponent, componentType)
+                + formatArrayTypeImpl(scenelibRep, javacRep);
     }
 
     /**
      * Formats the type of an array to be printable in Java source code, with the annotations from
-     * the scenelib representation added. This method formats a single level of the array, and then
-     * either calls itself recursively (if the component is an array) or formats the component type
-     * using {@link #formatType(ATypeElement, TypeMirror)}.
+     * the scenelib representation added. This method formats only the "array" parts of an array
+     * type; it does not format (or attempt to format) the ultimate component type (that is, the
+     * non-array part of the array type).
      *
-     * @param scenelibRepInJavacOrder the scenelib representation, reordered to match javac's order.
-     *     See {@link #getSceneLibRepInJavacOrder} for an explanation of why this is necessary and
-     *     why the elements may be null.
+     * @param scenelibRep the scene-lib representation
      * @param javacRep the javac representation of the array type
      * @return the type formatted to be written to Java source code, followed by a space character
      */
-    private static String formatArrayTypeImpl(
-            List<@Nullable ATypeElement> scenelibRepInJavacOrder, ArrayType javacRep) {
+    private static String formatArrayTypeImpl(ATypeElement scenelibRep, ArrayType javacRep) {
         TypeMirror javacComponent = javacRep.getComponentType();
-        ATypeElement scenelibRep = scenelibRepInJavacOrder.get(0);
-        ATypeElement scenelibComponent = scenelibRepInJavacOrder.get(1);
+        ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
         String result = "";
         List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
         for (AnnotationMirror explicitAnno : explicitAnnos) {
@@ -257,12 +207,10 @@ public final class SceneToStubWriter {
         }
         result += "[] ";
         if (javacComponent.getKind() == TypeKind.ARRAY) {
-            return formatArrayTypeImpl(
-                            scenelibRepInJavacOrder.subList(1, scenelibRepInJavacOrder.size()),
-                            (ArrayType) javacComponent)
-                    + result;
+            return result + formatArrayTypeImpl(scenelibComponent, (ArrayType) javacComponent);
+        } else {
+            return result;
         }
-        return formatType(scenelibComponent, javacComponent) + result;
     }
 
     /**
