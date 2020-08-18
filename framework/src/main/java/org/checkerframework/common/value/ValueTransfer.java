@@ -466,6 +466,9 @@ public class ValueTransfer extends CFTransfer {
     /**
      * If Array.getLength() is encountered, transform its @IntVal annotation into an @ArrayLen
      * annotation for array.
+     *
+     * @param arrayLengthNode the {@code Array.getLength()} method invocation node
+     * @param store the Checker Framework store
      */
     private void refineArrayAtGetLengthInvocation(
             MethodInvocationNode arrayLengthNode, CFStore store) {
