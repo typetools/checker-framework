@@ -61,17 +61,6 @@ class ValueMethodIdentifier {
         return method.equals(lengthMethod);
     }
 
-    /** Determines whether a tree is an invocation of the {@code Array.getLength()} method. */
-    public boolean isArrayGetLengthInvocation(Tree tree, ProcessingEnvironment processingEnv) {
-        return TreeUtils.isMethodInvocation(tree, getLengthMethod, processingEnv);
-    }
-
-    /** Determines whether a method is the {@code Array.getLength()} method. */
-    public boolean isArrayGetLengthMethod(ExecutableElement method) {
-        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
-        return method.equals(getLengthMethod);
-    }
-
     /** Determines whether a method is the {@code String.startsWith(String)} method. */
     public boolean isStartsWithMethod(ExecutableElement method) {
         // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
@@ -92,5 +81,27 @@ class ValueMethodIdentifier {
      */
     public boolean isArraysCopyOfInvocation(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, copyOfMethod, processingEnv);
+    }
+
+    /**
+     * Determines whether a tree is an invocation of the {@code Array.getLength()} method.
+     *
+     * @param tree tree to check
+     * @param processingEnv the processing environment
+     * @return true iff the argument is an invocation of {@code Array.getLength()} method
+     */
+    public boolean isArrayGetLengthInvocation(Tree tree, ProcessingEnvironment processingEnv) {
+        return TreeUtils.isMethodInvocation(tree, getLengthMethod, processingEnv);
+    }
+
+    /**
+     * Determines whether a method is the {@code Array.getLength()} method.
+     *
+     * @param method the element to check
+     * @return true iff the argument method is {@code Array.getLength()} method
+     */
+    public boolean isArrayGetLengthMethod(ExecutableElement method) {
+        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
+        return method.equals(getLengthMethod);
     }
 }
