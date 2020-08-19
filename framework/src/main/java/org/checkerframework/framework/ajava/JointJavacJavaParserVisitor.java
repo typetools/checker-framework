@@ -140,7 +140,6 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -444,6 +443,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             // whereas in JavaParser they're stored as one object, need to match them.
             assert javacTree.getKind() == Kind.ENUM;
             List<Tree> javacMembers = new ArrayList<>(javacTree.getMembers());
+            // If there are any constants in this enum, then they will show up as the first members
+            // of the javac tree, except for possibly a synthetic constructor. Thus, in this case
+            // any member before the first variable instance should be discarded.
+            if (!node.getEntries().isEmpty()) {
+                while (!javacMembers.isEmpty() && javacMembers.get(0).getKind() != Kind.VARIABLE) {
+                    javacMembers.remove(0);
+                }
+            }
+
             for (EnumConstantDeclaration entry : node.getEntries()) {
                 assert !javacMembers.isEmpty();
                 javacMembers.get(0).accept(this, entry);
@@ -512,7 +520,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         assert !hasNextJavaParser;
     }
 
-    private void visitAnonymouClassBody(ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
+    private void visitAnonymouClassBody(
+            ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
         // Like normal class bodies, javac will insert synthetic constructors. In an anonymous
         // class, the generated constructor will have the same parameter types as the type it
         // extends and will pass them to the superconstructor. This means that just checking for a
@@ -858,6 +867,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
+        System.out.println("In visitMethod with tree");
+        System.out.println(javacTree);
+        System.out.println("JavaPaser tree");
+        System.out.println(javaParserNode);
         if (javaParserNode instanceof MethodDeclaration) {
             return visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
         }
@@ -1542,7 +1555,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     public abstract void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode);
 
-    public abstract void processVariable(VariableTree javacTree, EnumConstantDeclaration javaParserNode);
+    public abstract void processVariable(
+            VariableTree javacTree, EnumConstantDeclaration javaParserNode);
 
     public abstract void processVariable(VariableTree javacTree, Parameter javaParserNode);
 

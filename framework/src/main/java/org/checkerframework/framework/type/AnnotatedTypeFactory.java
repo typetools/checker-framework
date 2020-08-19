@@ -786,15 +786,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         System.out.println(n);
                     }
                 }.visitPreOrder(u);
-                // new JointVisitorWithDefaults() {
-                    // @Override
-                    // public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        // System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
-                        // System.out.println(javacTree);
-                        // System.out.println("With node:");
-                        // System.out.println(javaParserNode);
-                    // }
-                // }.visitCompilationUnit(root, u);
+                System.out.println("About to run that visitor that prints");
+                new JointVisitorWithDefaults() {
+                    @Override
+                    public void defaultAction(Tree javacTree, Node javaParserNode) {
+                        System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
+                        System.out.println(javacTree);
+                        System.out.println("With node:");
+                        System.out.println(javaParserNode);
+                    }
+                }.visitCompilationUnit(root, u);
                 in.close();
             } catch (IOException e) {
                 e.printStackTrace();
