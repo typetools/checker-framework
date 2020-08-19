@@ -333,6 +333,12 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processMemberSelect(
+            MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }

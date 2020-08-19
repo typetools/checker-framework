@@ -5,6 +5,8 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -93,6 +95,21 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
 
         return super.visitExpressionStatement(tree, p);
+    }
+
+    @Override
+    public Void visitImport(ImportTree tree, Void p) {
+        // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
+        // don't add the whole member select in that case.
+        if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
+            MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
+            if (memberSelect.getIdentifier().contentEquals("*")) {
+                memberSelect.getExpression().accept(this, p);
+                return null;
+            }
+        }
+
+        return super.visitImport(tree, p);
     }
 
     @Override

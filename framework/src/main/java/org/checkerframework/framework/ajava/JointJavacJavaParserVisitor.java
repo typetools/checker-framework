@@ -760,7 +760,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         ImportDeclaration node = (ImportDeclaration) javaParserNode;
         processImport(javacTree, node);
-        javacTree.getQualifiedIdentifier().accept(this, node.getName());
+        // In javac trees, a name like a.* is stored as a member select, but JavaParser just stores
+        // a and records that the name ends in an asterisk.
+        if (node.isAsterisk()) {
+            assert javacTree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT;
+            MemberSelectTree identifier = (MemberSelectTree) javacTree.getQualifiedIdentifier();
+            identifier.getExpression().accept(this, node.getName());
+        } else {
+            javacTree.getQualifiedIdentifier().accept(this, node.getName());
+        }
         return null;
     }
 
@@ -843,12 +851,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitMemberSelect(MemberSelectTree javacTree, Node javaParserNode) {
-        // TODO: a member select tree can be many things, see the javadoc which references JLS
-        // sections. For example, it could be a field access, method invocations, each of which
-        // javaparser has its own types for. The hardest may be something like java.lang.String,
-        // which javac stores as member references but javaparser uses nested ClassOrInterfaceTypes
-        // for.
-
         if (javaParserNode instanceof FieldAccessExpr) {
             FieldAccessExpr node = (FieldAccessExpr) javaParserNode;
             processMemberSelect(javacTree, node);
@@ -858,6 +860,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processMemberSelect(javacTree, node);
             assert node.getQualifier().isPresent();
             javacTree.getExpression().accept(this, node.getQualifier().get());
+        } else if (javaParserNode instanceof ClassOrInterfaceType) {
+            ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
+            processMemberSelect(javacTree, node);
+            assert node.getScope().isPresent();
+            javacTree.getExpression().accept(this, node.getScope().get());
         } else {
             throwUnexpectedNodeType(javaParserNode);
         }
@@ -867,10 +874,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
-        System.out.println("In visitMethod with tree");
-        System.out.println(javacTree);
-        System.out.println("JavaPaser tree");
-        System.out.println(javaParserNode);
         if (javaParserNode instanceof MethodDeclaration) {
             return visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
         }
@@ -1489,6 +1492,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     public abstract void processMemberReference(
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode);
+
+    public abstract void processMemberSelect(
+            MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode);
 
     public abstract void processMemberSelect(
             MemberSelectTree javacTree, FieldAccessExpr javaParserNode);
