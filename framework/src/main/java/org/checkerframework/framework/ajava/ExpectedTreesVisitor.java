@@ -81,6 +81,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
                 if (name.getName().contentEquals(tree.getSimpleName())) {
                     trees.remove(variable.getType());
                     trees.remove(constructor);
+                    trees.remove(constructor.getIdentifier());
                 }
             }
         } else {
@@ -98,7 +99,23 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             return null;
         }
 
-        return super.visitExpressionStatement(tree, p);
+        // Whereas synthetic constructors should be entirely, regular super() and this() should
+        // still be added. However, in JavaParser there's no matching expression statement
+        // surrounding these, so remove the expression statement itself.
+        Void result = super.visitExpressionStatement(tree, p);
+        if (tree.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+            MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
+            if (invocation.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
+                if (identifier.getName().contentEquals("this")
+                        || identifier.getName().contentEquals("super")) {
+                    trees.remove(tree);
+                    trees.remove(identifier);
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override
