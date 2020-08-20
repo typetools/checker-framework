@@ -5,6 +5,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -78,9 +79,12 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
                 IdentifierTree name = (IdentifierTree) constructor.getIdentifier();
                 if (name.getName().contentEquals(tree.getSimpleName())) {
+                    trees.remove(variable.getType());
                     trees.remove(constructor);
                 }
             }
+        } else {
+            visit(tree.getMembers(), p);
         }
 
         return null;
@@ -95,6 +99,16 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
 
         return super.visitExpressionStatement(tree, p);
+    }
+
+    @Override
+    public Void visitIf(IfTree tree, Void p) {
+        // In an if statement, javac stores the condition as a parenthesized expression, which has
+        // no corresponding JavaParserNode, so remove the parenthesized expression, but not its
+        // child.
+        Void result = super.visitIf(tree, p);
+        trees.remove(tree.getCondition());
+        return result;
     }
 
     @Override

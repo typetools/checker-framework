@@ -757,7 +757,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         IfStmt node = (IfStmt) javaParserNode;
         processIf(javacTree, node);
-        javacTree.getCondition().accept(this, node.getCondition());
+        assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
+        ParenthesizedTree condition = (ParenthesizedTree) javacTree.getCondition();
+        condition.getExpression().accept(this, node.getCondition());
         javacTree.getThenStatement().accept(this, node.getThenStmt());
         assert (javacTree.getElseStatement() != null) == node.getElseStmt().isPresent();
         if (javacTree.getElseStatement() != null) {
