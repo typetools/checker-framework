@@ -1730,7 +1730,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) != null) {
             return null;
         }
+
         TypeElement typeElt = ElementUtils.enclosingClass(element);
+        if (typeElt == null) {
+            Element e = getEnclosingElementForArtificialTree(tree);
+            typeElt = ElementUtils.enclosingClass(e);
+        }
         ClassTree enclosingClass = getCurrentClassTree(tree);
         if (enclosingClass != null
                 && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt)) {
@@ -1783,16 +1788,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isClassTree(tree)) {
             return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
         }
-        TreePath path = getPath(tree);
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-        if (enclosingClass == null) {
-            // I hope this only happens when tree is a fake tree that
-            // we created, e.g. when desugaring enhanced-for-loops.
-            enclosingClass = getCurrentClassTree(tree);
-        }
+        ClassTree enclosingClass = getEnclosingClassTree(tree);
         AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
 
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        MethodTree enclosingMethod = getEnclosingMethodTree(tree);
         if (enclosingClass.getSimpleName().length() != 0 && enclosingMethod != null) {
             AnnotatedDeclaredType methodReceiver;
             if (TreeUtils.isConstructor(enclosingMethod)) {
@@ -1812,6 +1811,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return type;
+    }
+
+    ClassTree getEnclosingClassTree(Tree tree) {
+        TreePath path = getPath(tree);
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        if (enclosingClass != null) {
+            return enclosingClass;
+        }
+        Element e = getEnclosingElementForArtificialTree(tree);
+        if (e != null) {
+            TypeElement typeElt = ElementUtils.enclosingClass(e);
+            return (ClassTree) declarationFromElement(typeElt);
+        }
+
+        return getCurrentClassTree(tree);
+    }
+
+    MethodTree getEnclosingMethodTree(Tree tree) {
+        TreePath path = getPath(tree);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (enclosingMethod != null) {
+            return enclosingMethod;
+        }
+        Element e = getEnclosingElementForArtificialTree(tree);
+        if (e != null
+                && (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR)) {
+            return (MethodTree) declarationFromElement(e);
+        }
+
+        return null;
     }
 
     /**
