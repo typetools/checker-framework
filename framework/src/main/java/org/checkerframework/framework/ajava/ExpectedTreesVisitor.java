@@ -114,12 +114,24 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     @Override
     public Void visitMethod(MethodTree tree, Void p) {
-        // Synthetic default constructors don't have matching JavaParser nodes.
+        // Synthetic default constructors don't have matching JavaParser nodes. Consertaively skip
+        // no argument constructor calls, even if they may not be synthetic.
         if (JointJavacJavaParserVisitor.isNoArgumentConstructor(tree)) {
             return null;
         }
 
-        return super.visitMethod(tree, p);
+        Void result = super.visitMethod(tree, p);
+        // A varargs parameter like String... is converted to String[], where the array type doesn't
+        // have a corresponding JavaParser node. Conservatively skip the array type (but not the
+        // component type) if it's the last argument.
+        if (!tree.getParameters().isEmpty()) {
+            VariableTree last = tree.getParameters().get(tree.getParameters().size() - 1);
+            if (last.getType().getKind() == Kind.ARRAY_TYPE) {
+                trees.remove(last.getType());
+            }
+        }
+
+        return result;
     }
 
     @Override

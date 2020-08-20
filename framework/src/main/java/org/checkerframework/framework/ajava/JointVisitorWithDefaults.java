@@ -49,6 +49,7 @@ import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.ContinueStmt;
 import com.github.javaparser.ast.stmt.DoStmt;
 import com.github.javaparser.ast.stmt.EmptyStmt;
+import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.ForStmt;
@@ -360,6 +361,12 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processMethodInvocation(
+            MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 

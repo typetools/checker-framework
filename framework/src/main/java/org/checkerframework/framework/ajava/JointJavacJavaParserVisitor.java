@@ -38,6 +38,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsDirective;
@@ -419,14 +420,19 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             ClassOrInterfaceDeclaration node = (ClassOrInterfaceDeclaration) javaParserNode;
             processClass(javacTree, node);
             visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
-            if (javacTree.getExtendsClause() == null) {
-                assert node.getExtendedTypes().isEmpty();
-            } else {
-                assert node.getExtendedTypes().size() == 1;
-                javacTree.getExtendsClause().accept(this, node.getExtendedTypes().get(0));
+            if (javacTree.getKind() == Kind.CLASS) {
+                if (javacTree.getExtendsClause() == null) {
+                    assert node.getExtendedTypes().isEmpty();
+                } else {
+                    assert node.getExtendedTypes().size() == 1;
+                    javacTree.getExtendsClause().accept(this, node.getExtendedTypes().get(0));
+                }
+
+                visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
+            } else if (javacTree.getKind() == Kind.INTERFACE) {
+                visitLists(javacTree.getImplementsClause(), node.getExtendedTypes());
             }
 
-            visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
             visitClassMembers(javacTree.getMembers(), node.getMembers());
         } else if (javaParserNode instanceof AnnotationDeclaration) {
             AnnotationDeclaration node = (AnnotationDeclaration) javaParserNode;
@@ -678,13 +684,18 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitExpressionStatement(ExpressionStatementTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof ExpressionStmt)) {
-            throwUnexpectedNodeType(javaParserNode, ExpressionStmt.class);
+        if (javaParserNode instanceof ExpressionStmt) {
+            ExpressionStmt node = (ExpressionStmt) javaParserNode;
+            processExpressionStatemen(javacTree, node);
+            javacTree.getExpression().accept(this, node.getExpression());
+        } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
+            // In this case the expression will be a MethodTree, which would be better to match with
+            // the statement than the expression statement itself.
+            javacTree.getExpression().accept(this, javaParserNode);
+        } else {
+            throwUnexpectedNodeType(javaParserNode);
         }
 
-        ExpressionStmt node = (ExpressionStmt) javaParserNode;
-        processExpressionStatemen(javacTree, node);
-        javacTree.getExpression().accept(this, node.getExpression());
         return null;
     }
 
@@ -727,6 +738,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processIdentifier(javacTree, (ThisExpr) javaParserNode);
         } else if (javaParserNode instanceof SuperExpr) {
             processIdentifier(javacTree, (SuperExpr) javaParserNode);
+        } else if (javaParserNode instanceof TypeExpr) {
+            // This occurs in a member reference like MyClass::myMember. The MyClass is wrapped in a
+            // TypeExpr.
+            javacTree.accept(this, ((TypeExpr) javaParserNode).getType());
         } else {
             throwUnexpectedNodeType(javaParserNode);
         }
@@ -957,37 +972,52 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof MethodCallExpr)) {
-            throwUnexpectedNodeType(javaParserNode, MethodCallExpr.class);
+        if (javaParserNode instanceof MethodCallExpr) {
+            MethodCallExpr node = (MethodCallExpr) javaParserNode;
+            processMethodInvocation(javacTree, node);
+            // In javac, the type arguments will be empty even if no type arguments are specified,
+            // but
+            // in JavaParser the type arguments will have the none Optional value.
+            // The left side of this assert is checking if the list is empty and the right side is a
+            // check on the prescence of an optional.
+            assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
+            if (!javacTree.getTypeArguments().isEmpty()) {
+                visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
+            }
+
+            // In JavaParser, the method name itself and receiver are stored as fields of the
+            // invocation
+            // itself, but in javac they might be combined into one MemberSelectTree. That member
+            // select
+            // may also be a single IdentifierTree if no receiver was written. This requires one
+            // layer
+            // of unnesting.
+            ExpressionTree methodSelect = javacTree.getMethodSelect();
+            if (methodSelect.getKind() == Kind.IDENTIFIER) {
+                methodSelect.accept(this, node.getName());
+            } else if (methodSelect.getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree selection = (MemberSelectTree) methodSelect;
+                assert node.getScope().isPresent();
+                selection.getExpression().accept(this, node.getScope().get());
+            } else {
+                throw new BugInCF("Unexpected method selection type: %s", methodSelect);
+            }
+
+            visitLists(javacTree.getArguments(), node.getArguments());
+        } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
+            ExplicitConstructorInvocationStmt node =
+                    (ExplicitConstructorInvocationStmt) javaParserNode;
+            processMethodInvocation(javacTree, node);
+            // The left side of this assert is checking if the list is empty and the right side is a
+            // check on the prescence of an optional.
+            assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
+            if (!javacTree.getTypeArguments().isEmpty()) {
+                visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
+            }
+
+            visitLists(javacTree.getArguments(), node.getArguments());
         }
 
-        MethodCallExpr node = (MethodCallExpr) javaParserNode;
-        processMethodInvocation(javacTree, node);
-        // In javac, the type arguments will be empty even if no type arguments are specified, but
-        // in JavaParser the type arguments will have the none Optional value.
-        if (javacTree.getTypeArguments().isEmpty()) {
-            assert node.getTypeArguments().isEmpty();
-        } else {
-            assert node.getTypeArguments().isPresent();
-            visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
-        }
-
-        // In JavaParser, the method name itself and receiver are stored as fields of the invocation
-        // itself, but in javac they might be combined into one MemberSelectTree. That member select
-        // may also be a single IdentifierTree if no receiver was written. This requires one layer
-        // of unnesting.
-        ExpressionTree methodSelect = javacTree.getMethodSelect();
-        if (methodSelect.getKind() == Kind.IDENTIFIER) {
-            methodSelect.accept(this, node.getName());
-        } else if (methodSelect.getKind() == Kind.MEMBER_SELECT) {
-            MemberSelectTree selection = (MemberSelectTree) methodSelect;
-            assert node.getScope().isPresent();
-            selection.getExpression().accept(this, node.getScope().get());
-        } else {
-            throw new BugInCF("Unexpected method selection type: %s", methodSelect);
-        }
-
-        visitLists(javacTree.getArguments(), node.getArguments());
         return null;
     }
 
@@ -1315,7 +1345,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         } else if (javaParserNode instanceof Parameter) {
             Parameter node = (Parameter) javaParserNode;
             processVariable(javacTree, node);
-            javacTree.getType().accept(this, node.getType());
+            if (node.isVarArgs()) {
+                assert javacTree.getType().getKind() == Kind.ARRAY_TYPE;
+                ArrayTypeTree arrayType = (ArrayTypeTree) javacTree.getType();
+                arrayType.getType().accept(this, node.getType());
+            } else {
+                javacTree.getType().accept(this, node.getType());
+            }
+
             // The name expression can be null, even when a name exists.
             if (javacTree.getNameExpression() != null) {
                 javacTree.getNameExpression().accept(this, node.getName());
@@ -1507,6 +1544,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     public abstract void processMethod(
             MethodTree javacTree, AnnotationMemberDeclaration javaParserNode);
+
+    public abstract void processMethodInvocation(
+            MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode);
 
     public abstract void processMethodInvocation(
             MethodInvocationTree javacTree, MethodCallExpr javaParserNode);
