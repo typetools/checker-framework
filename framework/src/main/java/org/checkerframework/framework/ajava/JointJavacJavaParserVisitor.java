@@ -19,6 +19,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -841,11 +842,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitLiteral(LiteralTree javacTree, Node javaParserNode) {
-        if (!(javaParserNode instanceof LiteralExpr)) {
-            throwUnexpectedNodeType(javacTree, javaParserNode, LiteralExpr.class);
+        if (javaParserNode instanceof LiteralExpr) {
+            processLiteral(javacTree, (LiteralExpr) javaParserNode);
+        } else if (javaParserNode instanceof UnaryExpr) {
+            processLiteral(javacTree, (UnaryExpr) javaParserNode);
+        } else {
+            throwUnexpectedNodeType(javacTree, javaParserNode);
         }
 
-        processLiteral(javacTree, (LiteralExpr) javaParserNode);
         return null;
     }
 
@@ -882,6 +886,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processMemberSelect(javacTree, node);
             assert node.getScope().isPresent();
             javacTree.getExpression().accept(this, node.getScope().get());
+        } else if (javaParserNode instanceof ClassExpr) {
+            ClassExpr node = (ClassExpr) javaParserNode;
+            processMemberSelect(javacTree, node);
+            javacTree.getExpression().accept(this, node.getType());
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1527,10 +1535,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processLambdaExpression(
             LambdaExpressionTree javacTree, LambdaExpr javaParserNode);
 
+    public abstract void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode);
+
     public abstract void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode);
 
     public abstract void processMemberReference(
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode);
+
+    public abstract void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode);
 
     public abstract void processMemberSelect(
             MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode);

@@ -18,6 +18,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -323,6 +324,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
@@ -330,6 +336,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     @Override
     public void processMemberReference(
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 
