@@ -324,6 +324,11 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
     }
 
     @Override
+    public void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode) {
+        defaultAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }

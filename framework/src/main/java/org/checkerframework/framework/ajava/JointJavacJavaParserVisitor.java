@@ -845,7 +845,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         if (javaParserNode instanceof LiteralExpr) {
             processLiteral(javacTree, (LiteralExpr) javaParserNode);
         } else if (javaParserNode instanceof UnaryExpr) {
+            // Occurs for negative literals such as -7.
             processLiteral(javacTree, (UnaryExpr) javaParserNode);
+        } else if (javaParserNode instanceof BinaryExpr) {
+            // Occurs for expression like "a" + "b" where javac compresses them to "ab" but
+            // JavaParser doesn't.
+            processLiteral(javacTree, (BinaryExpr) javaParserNode);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1534,6 +1539,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     public abstract void processLambdaExpression(
             LambdaExpressionTree javacTree, LambdaExpr javaParserNode);
+
+    public abstract void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode);
 
     public abstract void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode);
 
