@@ -9,7 +9,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -1700,7 +1699,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Return the implicit receiver type of an expression tree.
      *
      * <p>The result is null for expressions that don't have a receiver, e.g. for a local variable
-     * or method parameter access.
+     * or method parameter access. The result is also null for expressions that have an explicit
+     * receiver.
      *
      * <p>Clients should generally call {@link #getReceiverType}.
      *
@@ -1726,131 +1726,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Element element = TreeUtils.elementFromTree(tree);
         assert element != null : "Unexpected null element for tree: " + tree;
-        // Return null if the element kind has no receiver.
-        if (!ElementUtils.hasReceiver(element)) {
+        // Return null if the element kind has no receiver or if the expression has a receiver.
+        if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) != null) {
             return null;
         }
-
-        ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-        if (receiver == null) {
-            if (isMostEnclosingThisDeref(tree)) {
-                // TODO: problem with ambiguity with implicit receivers.
-                // We need a way to find the correct class. We cannot use the
-                // element, as generics might have to be substituted in a subclass.
-                // See GenericsEnclosing test case.
-                // TODO: is this fixed?
-                return getSelfType(tree);
-            } else {
-                TreePath path = getPath(tree);
-                if (path == null) {
-                    // The path is null if the field is in a compilation unit we haven't
-                    // processed yet. TODO: is there a better way?
-                    return null;
-                }
-                TypeElement typeElt = ElementUtils.enclosingClass(element);
-                if (typeElt == null) {
-                    throw new BugInCF(
-                            "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
-                                    + element);
-                }
-                if (tree.getKind() == Kind.NEW_CLASS) {
-                    if (typeElt.getEnclosingElement() != null) {
-                        typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
-                    } else {
-                        typeElt = null;
-                    }
-                    if (typeElt == null) {
-                        // If the typeElt does not have an enclosing class, then the NewClassTree
-                        // does not have an implicit receiver.
-                        return null;
-                    }
-                }
-                // TODO: method receiver annotations on outer this
-                return getEnclosingType(typeElt, tree);
-            }
-        }
-
-        Element rcvelem = TreeUtils.elementFromTree(receiver);
-        assert rcvelem != null : "Unexpected null element for receiver: " + receiver;
-
-        if (!ElementUtils.hasReceiver(rcvelem)) {
-            return null;
-        }
-
-        if (receiver.getKind() == Tree.Kind.IDENTIFIER
-                && ((IdentifierTree) receiver).getName().contentEquals("this")) {
-            // TODO: also "super"?
-            return this.getSelfType(tree);
-        }
-
-        TypeElement typeElt = ElementUtils.enclosingClass(rcvelem);
-        if (typeElt == null) {
-            throw new BugInCF(
-                    "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
-                            + rcvelem);
-        }
-
-        AnnotatedDeclaredType type = getAnnotatedType(typeElt);
-
-        // TODO: go through _all_ enclosing methods to see whether any of them has a
-        // receiver annotation of the correct type.
-        // TODO: Can we reuse getSelfType for outer this accesses?
-
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (methodReceiver != null) {
-            // TODO: this only takes the main annotations.
-            // What about other annotations (annotations on the type argument, outer types, ...)
-            type.clearAnnotations();
-            type.addAnnotations(methodReceiver.getAnnotations());
-        }
-
-        return type;
-    }
-
-    /**
-     * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
-     * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f
-     * is a field of an outer class or f is a local variable.
-     *
-     * @param tree the tree to check
-     * @return true, iff the tree is an explicit or implicit reference to the most enclosing "this"
-     */
-    public final boolean isMostEnclosingThisDeref(ExpressionTree tree) {
-        if (!isAnyEnclosingThisDeref(tree)) {
-            return false;
-        }
-
-        Element element = TreeUtils.elementFromUse(tree);
         TypeElement typeElt = ElementUtils.enclosingClass(element);
-
         ClassTree enclosingClass = getCurrentClassTree(tree);
         if (enclosingClass != null
                 && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt)) {
-            return true;
-        }
-
-        // ran out of options
-        return false;
-    }
-
-    /**
-     * Does this expression have (the innermost or an outer) "this" as receiver? Note that the
-     * receiver can be either explicit or implicit.
-     *
-     * @param tree the tree to test
-     * @return true, iff the expression uses (the innermost or an outer) "this" as receiver
-     */
-    // Is the (implicit or explicit) receiver of {@code tree} "this" or "Outer.this"?
-    public final boolean isAnyEnclosingThisDeref(ExpressionTree tree) {
-        ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
-        if (receiverTree != null) {
-            return TreeUtils.isExplicitThisDereference(receiverTree);
+            // TODO: problem with ambiguity with implicit receivers.
+            // We need a way to find the correct class. We cannot use the
+            // element, as generics might have to be substituted in a subclass.
+            // See GenericsEnclosing test case.
+            // TODO: is this fixed?
+            return getSelfType(tree);
         } else {
-            Element element = TreeUtils.elementFromUse(tree);
-            // tree references an element that has a receiver, but the tree does not have an
-            // explicit receiver. So, the tree must have an implicit receiver of "this" or
-            // "Outer.this".
-            return element != null && ElementUtils.hasReceiver(element);
+            TreePath path = getPath(tree);
+            if (path == null) {
+                // The path is null if the field is in a compilation unit we haven't
+                // processed yet. TODO: is there a better way?
+                return null;
+            }
+            if (typeElt == null) {
+                throw new BugInCF(
+                        "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
+                                + element);
+            }
+            if (tree.getKind() == Kind.NEW_CLASS) {
+                if (typeElt.getEnclosingElement() != null) {
+                    typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
+                } else {
+                    typeElt = null;
+                }
+                if (typeElt == null) {
+                    // If the typeElt does not have an enclosing class, then the NewClassTree
+                    // does not have an implicit receiver.
+                    return null;
+                }
+            }
+            // TODO: method receiver annotations on outer this
+            return getEnclosingType(typeElt, tree);
         }
     }
 
@@ -1957,11 +1872,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (receiver != null) {
             return getAnnotatedType(receiver);
         }
+
         Element element = TreeUtils.elementFromUse(expression);
-        // tree references an element that has a receiver, but the tree does not have an
-        // explicit receiver. So, the tree must have an implicit receiver of "this" or
-        // "Outer.this".
         if (element != null && ElementUtils.hasReceiver(element)) {
+            // tree references an element that has a receiver, but the tree does not have an
+            // explicit receiver. So, the tree must have an implicit receiver of "this" or
+            // "Outer.this".
             return getImplicitReceiverType(expression);
         } else {
             return null;
@@ -2274,12 +2190,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
 
-        AnnotatedDeclaredType enclosingType;
-        if (newClassTree.getEnclosingExpression() != null) {
-            enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
-        } else {
-            enclosingType = getImplicitReceiverType(newClassTree);
-        }
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+
         // Diamond trees that are not anonymous classes.
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
