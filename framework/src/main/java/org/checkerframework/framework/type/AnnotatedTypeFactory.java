@@ -1797,7 +1797,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // TODO: Can we reuse getSelfType for outer this accesses?
 
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (shouldTakeFromReceiver(methodReceiver)) {
+        if (methodReceiver != null) {
             // TODO: this only takes the main annotations.
             // What about other annotations (annotations on the type argument, outer types, ...)
             type.clearAnnotations();
@@ -1805,11 +1805,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return type;
-    }
-
-    // Determine whether we should take annotations from the given method receiver.
-    private boolean shouldTakeFromReceiver(AnnotatedDeclaredType methodReceiver) {
-        return methodReceiver != null;
     }
 
     /**
@@ -1845,46 +1840,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree the tree to test
      * @return true, iff the expression uses (the innermost or an outer) "this" as receiver
      */
+    // Is the (implicit or explicit) receiver of {@code tree} "this" or "Outer.this"?
     public final boolean isAnyEnclosingThisDeref(ExpressionTree tree) {
-        if (!TreeUtils.isUseOfElement(tree)) {
-            return false;
-        }
-        ExpressionTree recv = TreeUtils.getReceiverTree(tree);
-
-        if (recv == null) {
+        ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
+        if (receiverTree != null) {
+            return TreeUtils.isExplicitThisDereference(receiverTree);
+        } else {
             Element element = TreeUtils.elementFromUse(tree);
-
-            if (!ElementUtils.hasReceiver(element)) {
-                return false;
-            }
-
-            tree = TreeUtils.withoutParens(tree);
-
-            if (tree.getKind() == Tree.Kind.IDENTIFIER) {
-                Name n = ((IdentifierTree) tree).getName();
-                if ("this".contentEquals(n) || "super".contentEquals(n)) {
-                    // An explicit reference to "this"/"super" has no receiver.
-                    return false;
-                }
-            }
-            // Must be some access through this.
-            return true;
-        } else if (!TreeUtils.isUseOfElement(recv)) {
-            // The receiver is e.g. a String literal.
-            return false;
-            // TODO: I think this:
-            //  (i==9 ? this : this).toString();
-            // is not a use of an element, as the receiver is an
-            // expression. How should this be handled?
+            // tree references an element that has a receiver, but the tree does not have an
+            // explicit receiver. So, the tree must have an implicit receiver of "this" or
+            // "Outer.this".
+            return element != null && ElementUtils.hasReceiver(element);
         }
-
-        Element element = TreeUtils.elementFromUse(recv);
-
-        if (!ElementUtils.hasReceiver(element)) {
-            return false;
-        }
-
-        return TreeUtils.isExplicitThisDereference(recv);
     }
 
     /**
@@ -1922,7 +1889,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else {
                 methodReceiver = getAnnotatedType(enclosingMethod).getReceiverType();
             }
-            if (shouldTakeFromReceiver(methodReceiver)) {
+            if (methodReceiver != null) {
                 // TODO  what about all annotations on the receiver?
                 // Code is also duplicated above.
                 type.clearAnnotations();
@@ -1986,15 +1953,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
-        if (this.isAnyEnclosingThisDeref(expression)) {
-            return getImplicitReceiverType(expression);
-        }
-
         ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
         if (receiver != null) {
             return getAnnotatedType(receiver);
+        }
+        Element element = TreeUtils.elementFromUse(expression);
+        // tree references an element that has a receiver, but the tree does not have an
+        // explicit receiver. So, the tree must have an implicit receiver of "this" or
+        // "Outer.this".
+        if (element != null && ElementUtils.hasReceiver(element)) {
+            return getImplicitReceiverType(expression);
         } else {
-            // E.g. local variables
             return null;
         }
     }
