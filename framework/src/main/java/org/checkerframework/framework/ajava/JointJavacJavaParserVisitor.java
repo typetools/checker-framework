@@ -11,6 +11,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
@@ -269,6 +270,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitBlock(BlockTree javacTree, Node javaParserNode) {
+        if (javaParserNode instanceof InitializerDeclaration) {
+            return javacTree.accept(this, ((InitializerDeclaration) javaParserNode).getBody());
+        }
+
         if (!(javaParserNode instanceof BlockStmt)) {
             throwUnexpectedNodeType(javacTree, javaParserNode, BlockStmt.class);
         }
