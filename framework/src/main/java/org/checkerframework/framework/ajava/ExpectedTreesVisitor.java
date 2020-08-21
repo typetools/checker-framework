@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
@@ -113,6 +114,18 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
                     trees.remove(identifier);
                 }
             }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Void visitForLoop(ForLoopTree tree, Void p) {
+        // Javac nests a for loop's updates in expression statements but JavaParser stores the
+        // statements directly, so remove the expression statements.
+        Void result = super.visitForLoop(tree, p);
+        for (ExpressionStatementTree update : tree.getUpdate()) {
+            trees.remove(update);
         }
 
         return result;

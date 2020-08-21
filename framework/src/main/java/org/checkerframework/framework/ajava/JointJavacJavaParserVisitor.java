@@ -708,7 +708,21 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         ForStmt node = (ForStmt) javaParserNode;
         processForLoop(javacTree, node);
-        visitLists(javacTree.getInitializer(), node.getInitialization());
+        Iterator<? extends StatementTree> javacIter = javacTree.getInitializer().iterator();
+        for (Expression initializer : node.getInitialization()) {
+            if (initializer.isVariableDeclarationExpr()) {
+                for (VariableDeclarator declarator :
+                        initializer.asVariableDeclarationExpr().getVariables()) {
+                    assert javacIter.hasNext();
+                    javacIter.next().accept(this, declarator);
+                }
+            } else {
+                assert javacIter.hasNext();
+                javacIter.next().accept(this, initializer);
+            }
+        }
+
+        assert !javacIter.hasNext();
         assert (javacTree.getCondition() != null) == node.getCompare().isPresent();
         if (javacTree.getCondition() != null) {
             javacTree.getCondition().accept(this, node.getCompare().get());
@@ -722,6 +736,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             update.getExpression().accept(this, javaParserIter.next());
         }
 
+        javacTree.getStatement().accept(this, node.getBody());
         return null;
     }
 
@@ -895,6 +910,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             ClassExpr node = (ClassExpr) javaParserNode;
             processMemberSelect(javacTree, node);
             javacTree.getExpression().accept(this, node.getType());
+        } else if (javaParserNode instanceof ThisExpr) {
+            ThisExpr node = (ThisExpr) javaParserNode;
+            processMemberSelect(javacTree, node);
+            assert node.getTypeName().isPresent();
+            javacTree.getExpression().accept(this, node.getTypeName().get());
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1558,6 +1578,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             MemberSelectTree javacTree, FieldAccessExpr javaParserNode);
 
     public abstract void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode);
+
+    public abstract void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode);
 
     public abstract void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode);
 
