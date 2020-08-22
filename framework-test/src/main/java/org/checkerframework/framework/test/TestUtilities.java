@@ -8,6 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.tools.Diagnostic;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -255,20 +259,18 @@ public class TestUtilities {
         return actualDiagnosticsStr;
     }
 
+    /**
+     * Return the file absolute pathnames, separated by commas.
+     *
+     * @param javaFiles a list of Java files
+     * @return the file absolute pathnames, separated by commas
+     */
     public static String summarizeSourceFiles(List<File> javaFiles) {
-        StringBuilder listStrBuilder = new StringBuilder();
-
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ");
         for (File file : javaFiles) {
-            if (first) {
-                first = false;
-            } else {
-                listStrBuilder.append(", ");
-            }
-            listStrBuilder.append(file.getAbsolutePath());
+            sj.add(file.getAbsolutePath());
         }
-
-        return listStrBuilder.toString();
+        return sj.toString();
     }
 
     public static File getTestFile(String fileRelativeToTestsDir) {
@@ -421,11 +423,18 @@ public class TestUtilities {
         }
     }
 
-    public static void ensureDirectoryExists(File path) {
-        if (!path.exists()) {
-            if (!path.mkdirs()) {
-                throw new RuntimeException("Could not make directory: " + path.getAbsolutePath());
-            }
+    /**
+     * Create the directory (and its parents) if it does not exist.
+     *
+     * @param dir the directory to create
+     */
+    public static void ensureDirectoryExists(String dir) {
+        try {
+            Files.createDirectories(Paths.get(dir));
+        } catch (FileAlreadyExistsException e) {
+            // directory already exists
+        } catch (IOException e) {
+            throw new RuntimeException("Could not make directory: " + dir + ": " + e.getMessage());
         }
     }
 

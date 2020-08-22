@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -188,23 +189,19 @@ public class ElementUtils {
     /**
      * Returns the canonical representation of the method declaration, which contains simple names
      * of the types only.
+     *
+     * @param element a method declaration
+     * @return the simple name of the method, followed by the simple names of the formal parameter
+     *     types
      */
     public static String getSimpleName(ExecutableElement element) {
-        StringBuilder sb = new StringBuilder();
-
         // note: constructor simple name is <init>
-        sb.append(element.getSimpleName());
-        sb.append("(");
+        StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
                 i.hasNext(); ) {
-            sb.append(TypesUtils.simpleTypeName(i.next().asType()));
-            if (i.hasNext()) {
-                sb.append(",");
-            }
+            sj.add(TypesUtils.simpleTypeName(i.next().asType()));
         }
-        sb.append(")");
-
-        return sb.toString();
+        return sj.toString();
     }
 
     /**

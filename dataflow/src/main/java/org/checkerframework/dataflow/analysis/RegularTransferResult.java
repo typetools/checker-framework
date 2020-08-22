@@ -136,8 +136,9 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
         StringJoiner result = new StringJoiner(System.lineSeparator());
         result.add("RegularTransferResult(");
         result.add("  resultValue = " + resultValue);
-        result.add("  store = " + store);
-        result.add(")");
+        // "toString().trim()" works around bug where toString ends with a newline.
+        result.add("  store = " + store.toString().trim());
+        result.add("  )");
         return result.toString();
     }
 
