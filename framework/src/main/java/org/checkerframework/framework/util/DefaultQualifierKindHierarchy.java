@@ -175,7 +175,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 throw new TypeSystemError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
                                 + "Add an @SubtypeOf or @PolymorphicQualifier annotation to it,%n"
-                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.",
                         qualifierKind);
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
@@ -246,7 +246,6 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 continue;
             }
             Set<DefaultQualifierKind> directSupers = new TreeSet<>();
-            directSuperMap.put(qualifierKind, directSupers);
             for (Class<? extends Annotation> superClazz : subtypeOfMetaAnno.value()) {
                 String superName = QualifierKindHierarchy.annotationClassName(superClazz);
                 DefaultQualifierKind superQualifier = nameToQualifierKind.get(superName);
@@ -257,12 +256,13 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 }
                 directSupers.add(superQualifier);
             }
+            directSuperMap.put(qualifierKind, directSupers);
         }
         return directSuperMap;
     }
 
     /**
-     * If {@code bottom} is nonnull, then this method sets bottom to the given class and modify
+     * If {@code bottom} is non-null, then this method sets bottom to the given class and modifies
      * {@code directSuperMap} to add all leaves to its super qualifier kinds. Leaves are qualifier
      * kinds that are not super qualifier kinds of another qualifier kind.
      *

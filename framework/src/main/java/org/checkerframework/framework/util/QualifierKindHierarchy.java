@@ -11,14 +11,14 @@ import org.checkerframework.javacutil.TypeSystemError;
 /**
  * This interface holds information about the subtyping relationships between kinds of qualifiers. A
  * "kind" of qualifier is its annotation class and is represented by the {@link QualifierKind}
- * class. If a type system has more than one hierarchy, information about all hierarchies are stored
+ * class. If a type system has more than one hierarchy, information about all hierarchies is stored
  * in this class.
  *
  * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
  * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
  * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds may or may
- * not be subtypes, depending on the values of any elements of the qualifiers. Also, if qualifier
- * kinds are not subtypes, then qualifiers of those kinds are never subtypes.
+ * not be subtypes, depending on the values of any elements of the qualifiers. If qualifier kinds
+ * are not subtypes, then qualifiers of those kinds are never subtypes.
  *
  * <p>This interface is used by {@link QualifierHierarchyWithoutElements} and {@link
  * QualifierHierarchyWithElements} to implement methods that compare {@link
@@ -47,26 +47,26 @@ public interface QualifierKindHierarchy {
     Set<? extends QualifierKind> getBottoms();
 
     /**
-     * Returns the least upper bound of {@code q1} and {@code q2}; or {@code null} if the qualifier
+     * Returns the least upper bound of {@code q1} and {@code q2}, or {@code null} if the qualifier
      * kinds are not in the same hierarchy. Ignores elements/arguments (as QualifierKind always
      * does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
-     * @return the least upper bound of {@code q1} and {@code q2}; {@code null} if the qualifier
+     * @return the least upper bound of {@code q1} and {@code q2}, or {@code null} if the qualifier
      *     kinds are not in the same hierarchy
      */
     @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2);
 
     /**
-     * Returns the greatest lower bound of {@code q1} and {@code q2}; or {@code null} if the
+     * Returns the greatest lower bound of {@code q1} and {@code q2}, or {@code null} if the
      * qualifier kinds are not in the same hierarchy. Ignores elements/arguments (as QualifierKind
      * always does).
      *
      * @param q1 a qualifier kind
      * @param q2 a qualifier kind
-     * @return the greatest lower bound of {@code q1} and {@code q2}; {@code null} if the qualifier
-     *     kinds are not in the same hierarchy
+     * @return the greatest lower bound of {@code q1} and {@code q2}, or {@code null} if the
+     *     qualifier kinds are not in the same hierarchy
      */
     @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2);
 
@@ -78,12 +78,12 @@ public interface QualifierKindHierarchy {
     List<? extends QualifierKind> allQualifierKinds();
 
     /**
-     * Returns the {@link QualifierKind} for the given annotation class name or null if one does not
-     * exist.
+     * Returns the {@link QualifierKind} for the given annotation class name, or null if one does
+     * not exist.
      *
      * @param name canonical name of an annotation class
-     * @return the {@link QualifierKind} for the given annotation class name or null if one does not
-     *     exist
+     * @return the {@link QualifierKind} for the given annotation class name, or null if one does
+     *     not exist
      */
     @Nullable QualifierKind getQualifierKind(String name);
 

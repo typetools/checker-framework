@@ -66,10 +66,10 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     boolean isBottom();
 
     /**
-     * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs
+     * Returns the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
      * or null if one does not exist.
      *
-     * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs
+     * @return the polymorphic qualifier kind of the hierarchy to which this qualifier kind belongs,
      *     or null if one does not exist
      */
     @Nullable QualifierKind getPolymorphic();
@@ -83,9 +83,9 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
 
     /**
      * Returns whether or not the annotation class this qualifier kind represents has annotation
-     * elements.
+     * elements/arguments.
      *
-     * @return true if the annotation class this qualifier kind represents has elements
+     * @return true if the annotation class this qualifier kind represents has elements/arguments
      */
     boolean hasElements();
 
