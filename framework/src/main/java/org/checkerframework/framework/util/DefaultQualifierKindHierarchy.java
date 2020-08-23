@@ -530,10 +530,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         } else if (qual2.isSubtype(qual1)) {
             return qual1;
         }
-        // strictSuperTypes should be nonnull by this point.
-        @SuppressWarnings("nullness:argument.type.incompatible")
-        Set<QualifierKind> allSuperTypes =
-                new TreeSet<>(qual1.getStrictSuperTypes()).retainAll(qual2.getStrictSuperTypes());
+        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.getStrictSuperTypes());
+        Set<? extends QualifierKind> qual2StrictSuperTypes = qual2.getStrictSuperTypes();
+        allSuperTypes.retainAll(qual2StrictSuperTypes);
         Set<? extends QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
         if (lubs.size() != 1) {
             throw new TypeSystemError(

@@ -165,9 +165,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final class SameLenQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a SameLenQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils
          */
         public SameLenQualifierHierarchy(

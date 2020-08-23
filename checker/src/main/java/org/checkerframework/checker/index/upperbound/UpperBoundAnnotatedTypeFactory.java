@@ -349,9 +349,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected final class UpperBoundQualifierHierarchy extends QualifierHierarchyWithElements {
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates an UpperBoundQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils
          */
         UpperBoundQualifierHierarchy(

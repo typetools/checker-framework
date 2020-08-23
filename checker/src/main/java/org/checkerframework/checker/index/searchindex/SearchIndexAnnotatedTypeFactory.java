@@ -71,9 +71,9 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final class SearchIndexQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a SearchIndexQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils
          */
         public SearchIndexQualifierHierarchy(

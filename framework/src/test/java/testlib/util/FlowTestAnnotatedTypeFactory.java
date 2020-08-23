@@ -100,9 +100,9 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         final QualifierKind VALUE_KIND;
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a FlowQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         public FlowQualifierHierarchy(

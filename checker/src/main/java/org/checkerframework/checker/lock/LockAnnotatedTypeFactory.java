@@ -287,9 +287,9 @@ public class LockAnnotatedTypeFactory
         private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
         /**
-         * Creates LockQualifierHierarchy.
+         * Creates a LockQualifierHierarchy.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         public LockQualifierHierarchy(

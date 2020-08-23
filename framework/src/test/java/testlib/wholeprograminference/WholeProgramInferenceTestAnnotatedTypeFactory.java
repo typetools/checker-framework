@@ -88,9 +88,9 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
         private final QualifierKind SIBLING_WITH_FIELDS_KIND;
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a WholeProgramInferenceTestQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         protected WholeProgramInferenceTestQualifierHierarchy(

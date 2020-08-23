@@ -212,9 +212,9 @@ public class KeyForAnnotatedTypeFactory
         private final QualifierKind KEYFOR_KIND;
 
         /**
-         * Creates KeyForQualifierHierarchy.
+         * Creates a KeyForQualifierHierarchy.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         public KeyForQualifierHierarchy(

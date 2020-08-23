@@ -46,7 +46,7 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     protected final Set<? extends AnnotationMirror> qualifiers;
 
     /**
-     * Creates a QualifierHierarchy from the given classes.
+     * Creates a QualifierHierarchyWithoutElements from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers
      * @param elements element utils

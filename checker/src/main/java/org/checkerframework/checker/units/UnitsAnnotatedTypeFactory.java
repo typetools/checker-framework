@@ -618,9 +618,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private final Map<QualifierKind, AnnotationMirror> directSuperQualifierMap;
 
         /**
-         * Creates UnitsQualifierKindHierarchy.
+         * Creates a UnitsQualifierKindHierarchy.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers for this hierarchy
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         public UnitsQualifierKindHierarchy(

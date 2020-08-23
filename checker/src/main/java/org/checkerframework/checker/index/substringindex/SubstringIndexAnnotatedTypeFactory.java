@@ -79,9 +79,9 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     private final class SubstringIndexQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a SubstringIndexQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils
          */
         public SubstringIndexQualifierHierarchy(

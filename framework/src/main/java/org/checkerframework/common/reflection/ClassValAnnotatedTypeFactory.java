@@ -104,9 +104,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected class ClassValQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a ClassValQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         public ClassValQualifierHierarchy(

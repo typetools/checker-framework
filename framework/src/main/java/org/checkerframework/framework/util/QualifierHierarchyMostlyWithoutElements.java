@@ -37,9 +37,9 @@ public abstract class QualifierHierarchyMostlyWithoutElements
         extends QualifierHierarchyWithElements {
 
     /**
-     * Creates a QualifierHierarchy from the given classes.
+     * Creates a QualifierHierarchyMostlyWithoutElements from the given classes.
      *
-     * @param qualifierClasses class of annotations that are the qualifiers
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
     protected QualifierHierarchyMostlyWithoutElements(
@@ -66,9 +66,9 @@ public abstract class QualifierHierarchyMostlyWithoutElements
      * subAnno} and {@code superAnno} are annotations with elements.
      *
      * @param subAnno possible subtype annotation; has elements
-     * @param subKind QualifierKind of{@code subAnno}
+     * @param subKind QualifierKind of {@code subAnno}
      * @param superAnno possible super annotation; has elements
-     * @param superKind QualifierKind of{@code superAnno}
+     * @param superKind QualifierKind of {@code superAnno}
      * @return whether or not {@code subAnno} is a subtype of {@code superAnno}
      */
     protected abstract boolean isSubtypeWithElements(
@@ -90,7 +90,7 @@ public abstract class QualifierHierarchyMostlyWithoutElements
         if (lub.hasElements()) {
             return leastUpperBoundWithElements(a1, qual1, a2, qual2);
         }
-        return kindToElementLessQualifier.get(lub);
+        return kindToElementlessQualifier.get(lub);
     }
 
     /**
@@ -104,7 +104,7 @@ public abstract class QualifierHierarchyMostlyWithoutElements
      * @param qualifierKind1 QualifierKind for {@code a1}
      * @param a2 second annotation
      * @param qualifierKind2 QualifierKind for {@code a2}
-     * @return the least upper bound between {@code a1} and {@code a2}
+     * @return the least upper bound of {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror leastUpperBoundWithElements(
             AnnotationMirror a1,
@@ -125,7 +125,7 @@ public abstract class QualifierHierarchyMostlyWithoutElements
         if (glb.hasElements()) {
             return greatestLowerBoundWithElements(a1, qual1, a2, qual2);
         }
-        return kindToElementLessQualifier.get(glb);
+        return kindToElementlessQualifier.get(glb);
     }
 
     /**

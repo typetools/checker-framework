@@ -18,10 +18,10 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     private final ValueAnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a QualifierHierarchy from the given classes.
+     * Creates a ValueQualifierHierarchy from the given classes.
      *
      * @param atypeFactory ValueAnnotatedTypeFactory
-     * @param qualifierClasses class of annotations that are the qualifiers
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      */
     ValueQualifierHierarchy(
             ValueAnnotatedTypeFactory atypeFactory,

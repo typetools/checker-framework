@@ -156,9 +156,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
 
         /**
-         * Creates a QualifierHierarchy from the given classes.
+         * Creates a MethodValQualifierHierarchy from the given classes.
          *
-         * @param qualifierClasses class of annotations that are the qualifiers
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
          * @param elements element utils
          */
         protected MethodValQualifierHierarchy(

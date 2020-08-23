@@ -31,7 +31,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 @AnnotatedFor("nullness")
 public abstract class QualifierHierarchyWithElements implements QualifierHierarchy {
 
-    /** {@link org.checkerframework.javacutil.ElementUtils} */
+    /** {@link org.checkerframework.javacutil.ElementUtils}. */
     private Elements elements;
 
     /** {@link QualifierKindHierarchy}. */
@@ -53,12 +53,12 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * A mapping from QualifierKind to AnnotationMirror for all qualifiers whose annotations do not
      * have elements.
      */
-    protected final Map<QualifierKind, AnnotationMirror> kindToElementLessQualifier;
+    protected final Map<QualifierKind, AnnotationMirror> kindToElementlessQualifier;
 
     /**
-     * Creates a QualifierHierarchy from the given classes.
+     * Creates a QualifierHierarchyWithElements from the given classes.
      *
-     * @param qualifierClasses class of annotations that are the qualifiers
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
     protected QualifierHierarchyWithElements(
@@ -76,7 +76,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         bottoms.addAll(bottomsMap.values());
         this.bottoms = Collections.unmodifiableSet(bottoms);
 
-        this.kindToElementLessQualifier = createElementLessQualifierMap();
+        this.kindToElementlessQualifier = createElementLessQualifierMap();
     }
 
     @Override
@@ -92,7 +92,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
      * QualifierKindHierarchy.)
      *
-     * @param qualifierClasses class of annotations that are the qualifiers
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
@@ -206,7 +206,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         if (polyKind == null) {
             return null;
         }
-        AnnotationMirror poly = kindToElementLessQualifier.get(polyKind);
+        AnnotationMirror poly = kindToElementlessQualifier.get(polyKind);
         if (poly == null) {
             throw new TypeSystemError(
                     "Poly %s has an element. Override QualifierHierarchyWithElements#getPolymorphicAnnotation.",
