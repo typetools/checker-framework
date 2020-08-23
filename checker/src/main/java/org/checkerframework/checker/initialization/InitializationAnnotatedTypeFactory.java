@@ -766,9 +766,9 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected abstract class InitializationQualifierHierarchy
             extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Qualifier kind for {@link UnknownInitialization} annotation. */
+        /** Qualifier kind for the @{@link UnknownInitialization} annotation. */
         private final QualifierKind UNKNOWN_INIT;
-        /** Qualifier kind for {@link UnderInitialization} annotation. */
+        /** Qualifier kind for the @{@link UnderInitialization} annotation. */
         private final QualifierKind UNDER_INIT;
 
         /** Create an InitializationQualifierHierarchy. */
@@ -787,7 +787,7 @@ public abstract class InitializationAnnotatedTypeFactory<
          * @param subKind subtype kind
          * @param superAnno supertype annotation
          * @param superKind supertype kind
-         * @return where subAnno is a subtype of superAnno in the initialization hierarchy
+         * @return true if subAnno is a subtype of superAnno in the initialization hierarchy
          */
         public boolean isSubtypeInitialization(
                 AnnotationMirror subAnno,

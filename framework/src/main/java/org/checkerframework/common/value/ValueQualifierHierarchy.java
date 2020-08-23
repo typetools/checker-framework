@@ -33,7 +33,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
     /**
      * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
      * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno contains
-     * at least every element of subAnno.
+     * every element of subAnno.
      *
      * @return true if subAnno is a subtype of superAnno, false otherwise
      */
@@ -117,8 +117,7 @@ final class ValueQualifierHierarchy extends QualifierHierarchyWithElements {
                 return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the
-                // correct
-                // lengths
+                // correct lengths.
                 List<Integer> superIntValues = ValueAnnotatedTypeFactory.getArrayLength(superAnno);
                 List<String> subStringValues = ValueAnnotatedTypeFactory.getStringValues(subAnno);
                 for (String value : subStringValues) {

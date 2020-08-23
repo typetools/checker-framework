@@ -123,7 +123,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is top and
      * the AnnotationMirror is top in their respective hierarchies.
      *
-     * <p>This implementation works if the top annotation has no elements, or it has elements,
+     * <p>This implementation works if the top annotation has no elements, or if it has elements,
      * provides a default, and that default is the top. Otherwise, subclasses must override this.
      *
      * @return a mapping from top QualifierKind to top AnnotationMirror
@@ -142,7 +142,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * Creates a mapping from QualifierKind to AnnotationMirror, where the QualifierKind is bottom
      * and the AnnotationMirror is bottom in their respective hierarchies.
      *
-     * <p>This implementation works if the bottom annotation has no elements, or it has elements,
+     * <p>This implementation works if the bottom annotation has no elements, or if it has elements,
      * provides a default, and that default is the bottom. Otherwise, subclasses must override this.
      *
      * @return a mapping from bottom QualifierKind to bottom AnnotationMirror
@@ -172,12 +172,12 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * Returns the qualifier kind for the annotation with the fully qualified name {@code name}.
      *
      * @param name fully qualified annotation name
-     * @return the qualifier kind for the annotation with {@code name}
+     * @return the qualifier kind for the annotation named {@code name}
      */
     protected QualifierKind getQualifierKind(String name) {
         QualifierKind kind = qualifierKindHierarchy.getQualifierKind(name);
         if (kind == null) {
-            throw new BugInCF("QualifierKind not in hierarchy: %s", name);
+            throw new BugInCF("QualifierKind %s not in hierarchy", name);
         }
         return kind;
     }
@@ -188,8 +188,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
     }
 
     @Override
-    // All tops are a key for topsMap.
-    @SuppressWarnings("nullness:return.type.incompatible")
+    @SuppressWarnings("nullness:return.type.incompatible") // All tops are a key for topsMap.
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return topsMap.get(kind.getTop());
@@ -221,8 +220,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
     }
 
     @Override
-    // All bottoms are keys for bottomsMap.
-    @SuppressWarnings("nullness:return.type.incompatible")
+    @SuppressWarnings("nullness:return.type.incompatible") // All bottoms are keys for bottomsMap.
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return bottomsMap.get(kind.getBottom());

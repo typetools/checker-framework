@@ -208,7 +208,7 @@ public class KeyForAnnotatedTypeFactory
     /** KeyForQualifierHierarchy */
     private final class KeyForQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Qualifier kind for {@link KeyFor} annotation. */
+        /** Qualifier kind for the @{@link KeyFor} annotation. */
         private final QualifierKind KEYFOR_KIND;
 
         /**

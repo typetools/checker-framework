@@ -585,7 +585,7 @@ public class NullnessAnnotatedTypeFactory
     /** NullnessQualifierHierarchy */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
-        /** Qualifier kind for {@link Nullable} annotation. */
+        /** Qualifier kind for the @{@link Nullable} annotation. */
         private final QualifierKind NULLABLE;
 
         /** Creates NullnessQualifierHierarchy. */
@@ -604,7 +604,8 @@ public class NullnessAnnotatedTypeFactory
                     || !superKind.isInSameHierarchyAs(NULLABLE)) {
                 return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
-            throw new BugInCF("Unexpected annotations %s %s.", subAnno, superAnno);
+            throw new BugInCF(
+                    "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
         }
 
         @Override
@@ -617,7 +618,7 @@ public class NullnessAnnotatedTypeFactory
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
             }
-            throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
+            throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
         }
 
         @Override
@@ -630,7 +631,8 @@ public class NullnessAnnotatedTypeFactory
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return FBCBOTTOM;
             }
-            throw new BugInCF("Unexpected annotations %s %s.", a1, a2);
+            throw new BugInCF(
+                    "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
     }
 }

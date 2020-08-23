@@ -277,13 +277,13 @@ public class LockAnnotatedTypeFactory
     /** LockQualifierHierarchy */
     class LockQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Qualifier kind for {@link GuardedBy} annotation. */
+        /** Qualifier kind for the @{@link GuardedBy} annotation. */
         private final QualifierKind GUARDEDBY_KIND;
-        /** Qualifier kind for {@link GuardSatisfied} annotation. */
+        /** Qualifier kind for the @{@link GuardSatisfied} annotation. */
         private final QualifierKind GUARDSATISFIED_KIND;
-        /** Qualifier kind for {@link GuardedByBottom} annotation. */
+        /** Qualifier kind for the @{@link GuardedByBottom} annotation. */
         private final QualifierKind GUARDEDBYBOTTOM_KIND;
-        /** Qualifier kind for {@link GuardedByUnknown} annotation. */
+        /** Qualifier kind for the @{@link GuardedByUnknown} annotation. */
         private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
         /**

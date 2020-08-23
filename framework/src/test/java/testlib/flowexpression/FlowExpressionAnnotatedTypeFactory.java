@@ -38,7 +38,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     private class FlowExpressionQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
         /**
-         * Create {@code FlowExpressionQualifierHierarchy}
+         * Create a {@code FlowExpressionQualifierHierarchy}.
          *
          * @param qualifierClasses classes of annotations that are the qualifiers
          * @param elements element utils

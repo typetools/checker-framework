@@ -658,14 +658,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the {@link QualifierHierarchy}to be used by this checker.
+     * Returns the {@link QualifierHierarchy} to be used by this checker.
      *
      * <p>The implementation builds the type qualifier hierarchy for the {@link
      * #getSupportedTypeQualifiers()} using the meta-annotations found in them. The current
      * implementation returns an instance of {@code QualifierHierarchyWithoutElements}.
      *
-     * <p>Subclasses must override this method if their qualifiers have elements and return an
-     * implementation of {@link QualifierHierarchy}, such as {@link
+     * <p>Subclasses must override this method if their qualifiers have elements; the method must
+     * return an implementation of {@link QualifierHierarchy}, such as {@link
      * org.checkerframework.framework.util.QualifierHierarchyWithElements}.
      *
      * @return a QualifierHierarchy for this type system

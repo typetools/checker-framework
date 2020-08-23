@@ -343,10 +343,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new UpperBoundQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /**
-     * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
-     * the relationships within the qualifiers - especially subtyping relations.
-     */
+    /** The qualifier hierarchy for the upperbound type system. */
     protected final class UpperBoundQualifierHierarchy extends QualifierHierarchyWithElements {
         /**
          * Creates an UpperBoundQualifierHierarchy from the given classes.
@@ -398,7 +395,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are the same. In this case, rhs is a subtype of lhs iff rhs contains at least
+         * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains
          * every element of lhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise

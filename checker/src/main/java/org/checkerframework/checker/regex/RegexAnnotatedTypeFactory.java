@@ -171,9 +171,9 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final class RegexQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Regex Qualifier Kind. */
+        /** Qualifier kind for the @{@link Regex} annotation. */
         private final QualifierKind REGEX_KIND;
-        /** PartialRegex Qualifier Kind. */
+        /** Qualifier kind for the @{@link PartialRegex} annotation. */
         private final QualifierKind PARTIALREGEX_KIND;
         /**
          * Creates a RegexQualifierHierarchy from the given classes.

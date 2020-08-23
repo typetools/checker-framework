@@ -101,10 +101,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Qualifier hierarchy for the Formatter Checker. */
     class FormatterQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Qualifier kind for {@link Format} annotation. */
+        /** Qualifier kind for the @{@link Format} annotation. */
         private final QualifierKind FORMAT_KIND;
 
-        /** Qualifier kind for {@link InvalidFormat} annotation. */
+        /** Qualifier kind for the @{@link InvalidFormat} annotation. */
         private final QualifierKind INVALIDFORMAT_KIND;
 
         /** Creates a {@link FormatterQualifierHierarchy}. */

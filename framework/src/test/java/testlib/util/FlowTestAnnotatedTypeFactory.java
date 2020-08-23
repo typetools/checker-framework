@@ -144,7 +144,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == VALUE_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected annotations: %s %s.", a1, a2);
+            throw new BugInCF(
+                    "Unexpected annotations: leastUpperBoundWithElements(%s, %s)", a1, a2);
         }
 
         @Override
@@ -165,7 +166,8 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == VALUE_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected annotations: %s %s.", a1, a2);
+            throw new BugInCF(
+                    "Unexpected annotations: greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
     }
 }

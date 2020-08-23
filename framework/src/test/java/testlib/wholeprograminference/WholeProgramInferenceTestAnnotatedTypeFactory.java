@@ -87,6 +87,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
             extends QualifierHierarchyMostlyWithoutElements {
 
         private final QualifierKind SIBLING_WITH_FIELDS_KIND;
+
         /**
          * Creates a WholeProgramInferenceTestQualifierHierarchy from the given classes.
          *

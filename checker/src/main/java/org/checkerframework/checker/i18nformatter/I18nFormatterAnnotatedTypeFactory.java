@@ -219,11 +219,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     /** I18nFormatterQualifierHierarchy */
     class I18nFormatterQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
 
-        /** Qualifier kind for {@link I18nFormat} annotation. */
+        /** Qualifier kind for the @{@link I18nFormat} annotation. */
         private final QualifierKind I18NFORMAT_KIND;
-        /** Qualifier kind for {@link I18nFormatFor} annotation. */
+        /** Qualifier kind for the @{@link I18nFormatFor} annotation. */
         private final QualifierKind I18NFORMATFOR_KIND;
-        /** Qualifier kind for {@link I18nInvalidFormat} annotation. */
+        /** Qualifier kind for the @{@link I18nInvalidFormat} annotation. */
         private final QualifierKind I18NINVALIDFORMAT_KIND;
 
         /** Creates I18nFormatterQualifierHierarchy. */
@@ -318,7 +318,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                 + ")");
             } else if (qualifierKind1 == I18NFORMATFOR_KIND
                     && AnnotationUtils.areSame(anno1, anno2)) {
-                // All @I18nFormatFor annotations are unrelated by subtyping.
+                // @I18nFormatFor annotations are unrelated by subtyping, unless they are identical.
                 return anno1;
             }
 
@@ -373,7 +373,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                                 + ")");
             } else if (qualifierKind1 == I18NFORMATFOR_KIND
                     && AnnotationUtils.areSame(anno1, anno2)) {
-                // All @I18nFormatFor annotations are unrelated by subtyping.
+                // @I18nFormatFor annotations are unrelated by subtyping, unless they are identical.
                 return anno1;
             }
 

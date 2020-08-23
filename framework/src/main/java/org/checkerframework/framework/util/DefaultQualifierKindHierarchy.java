@@ -128,7 +128,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
      * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
      * type systems, use this constructor. Otherwise, use {@link
-     * DefaultQualifierKindHierarchy(Collection)}.
+     * #DefaultQualifierKindHierarchy(Collection)}.
      *
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      * @param bottom the bottom qualifier of this hierarchy

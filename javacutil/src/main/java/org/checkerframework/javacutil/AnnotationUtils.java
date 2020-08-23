@@ -114,11 +114,8 @@ public class AnnotationUtils {
         if (a1 == a2) {
             return true;
         }
-        if (a1 == null) {
-            throw new BugInCF("Unexpected null first argument to areSameByName");
-        }
-        if (a2 == null) {
-            throw new BugInCF("Unexpected null second argument to areSameByName");
+        if (a1 == null || a2 == null) {
+            throw new BugInCF("Unexpected null argument:  areSameByName(%s, %s)", a1, a2);
         }
 
         if (a1 instanceof CheckerFrameworkAnnotationMirror
