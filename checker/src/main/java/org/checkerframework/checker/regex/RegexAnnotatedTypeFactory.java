@@ -222,9 +222,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return Pattern.compile(regexp).matcher("").groupCount();
     }
 
+    // This method is a copy of RegexUtil.isRegex. We cannot directly use RegexUtil, because it uses
+    // type annotations which cannot be used in IDEs (yet).
     /**
-     * This method is a copy of RegexUtil.isRegex. We cannot directly use RegexUtil, because it uses
-     * type annotations which cannot be used in IDEs (yet).
+     * Returns true if the argument is a syntactically valid regular expression.
+     *
+     * @param s string to check for being a regular expression
+     * @return true iff s is a regular expression
      */
     @Pure
     private static boolean isRegex(String s) {
