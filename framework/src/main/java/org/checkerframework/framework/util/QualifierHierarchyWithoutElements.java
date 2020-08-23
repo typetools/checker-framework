@@ -90,9 +90,7 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (kind.hasElements()) {
-                throw new TypeSystemError(
-                        "QualifierHierarchyWithoutElements cannot be used with annotations that have elements. Found %s: ",
-                        kind);
+                throw new TypeSystemError(kind + "has elements");
             }
             quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
         }
@@ -137,7 +135,7 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
      * Returns the {@link QualifierKind} for the given annotation.
      *
      * @param anno an annotation that is a qualifier in this
-     * @return the {@code QualifierKind}
+     * @return the {@code QualifierKind} for the given annotation
      */
     protected QualifierKind getQualifierKind(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
@@ -173,8 +171,10 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     }
 
     @Override
-    // Every QualifierKind is a key in kindToAnnotationMirror.
-    @SuppressWarnings("nullness:return.type.incompatible")
+    @SuppressWarnings(
+            "nullness:return.type.incompatible" // every QualifierKind is a key in its corresponding
+    // kindToAnnotationMirror
+    )
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return kindToAnnotationMirror.get(kind.getTop());
@@ -186,8 +186,10 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     }
 
     @Override
-    // Every QualifierKind is a key in kindToAnnotationMirror.
-    @SuppressWarnings("nullness:return.type.incompatible")
+    @SuppressWarnings(
+            "nullness:return.type.incompatible" // every QualifierKind is a key in its corresponding
+    // kindToAnnotationMirror
+    )
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
         return kindToAnnotationMirror.get(kind.getBottom());

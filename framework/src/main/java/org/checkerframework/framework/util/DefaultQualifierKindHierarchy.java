@@ -17,7 +17,6 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -56,7 +55,10 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      */
     protected final Map<@Interned String, DefaultQualifierKind> nameToQualifierKind;
 
-    /** A list of all {@link QualifierKind}s sorted in ascending order. */
+    /**
+     * A list of all {@link QualifierKind}s for this DefaultQualifierKindHierarchy, sorted in
+     * ascending order.
+     */
     protected final List<DefaultQualifierKind> qualifierKinds;
 
     /** All the qualifier kinds that are the top qualifier in their hierarchy. */
@@ -72,7 +74,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> lubs;
 
     /**
-     * Holds the glb of qualifier kinds. {@code lubs.get(kind1).get(kind2)} returns the glb of kind1
+     * Holds the glb of qualifier kinds. {@code glbs.get(kind1).get(kind2)} returns the glb of kind1
      * and kind2.
      */
     private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> glbs;
@@ -125,7 +127,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      *
      * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
      * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
-     * type systems, use this constructor. Otherwise, use the other constructor.
+     * type systems, use this constructor. Otherwise, use {@link
+     * DefaultQualifierKindHierarchy(Collection)}.
      *
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      * @param bottom the bottom qualifier of this hierarchy
@@ -284,18 +287,18 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 nameToQualifierKind.get(QualifierKindHierarchy.annotationClassName(bottom));
         if (bottomKind == null) {
             throw new TypeSystemError(
-                    "QualifierKindHierarchy#setBottom: the given bottom class, %s, is not in the hierarchy.",
+                    "QualifierKindHierarchy#setBottom: %s is not in the hierarchy",
                     bottom.getCanonicalName());
         }
 
-        Set<DefaultQualifierKind> currentLeaves = new TreeSet<>(qualifierKinds);
-        currentLeaves.remove(bottomKind);
-        directSuperMap.forEach((sub, supers) -> currentLeaves.removeAll(supers));
+        Set<DefaultQualifierKind> leaves = new TreeSet<>(qualifierKinds);
+        leaves.remove(bottomKind);
+        directSuperMap.forEach((sub, supers) -> leaves.removeAll(supers));
         Set<DefaultQualifierKind> bottomDirectSuperQuals = directSuperMap.get(bottomKind);
         if (bottomDirectSuperQuals == null) {
-            directSuperMap.put(bottomKind, currentLeaves);
+            directSuperMap.put(bottomKind, leaves);
         } else {
-            bottomDirectSuperQuals.addAll(currentLeaves);
+            bottomDirectSuperQuals.addAll(leaves);
         }
     }
 
@@ -303,12 +306,13 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * Creates the set of top {@link QualifierKind}s by searching {@code directSuperMap} for
      * qualifier kinds without any direct super qualifier kinds.
      *
+     * <p>Subclasses should override {@link #createDirectSuperMap} to change the tops and not this
+     * method, because other methods expect the directSuperMap to be complete.
+     *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
      * @return the set of top {@link QualifierKind}s
      */
-    // Subclasses should override createDirectSuperMap to change the tops and not this method,
-    // because other methods expect the directSuperMap to be complete.
     private Set<DefaultQualifierKind> createTopsSet(
             @UnderInitialization DefaultQualifierKindHierarchy this,
             Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap) {
@@ -326,12 +330,14 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * Creates the set of bottom {@link QualifierKind}s by searching {@code directSuperMap} for
      * qualifiers that are not a direct super qualifier kind of another qualifier kind.
      *
+     * <p>Subclasses should override {@link #createDirectSuperMap} or {@link #setBottom} to change
+     * the bottoms and not this method, because other methods expect the directSuperMap to be
+     * complete.
+     *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
      * @return the set of bottom {@link QualifierKind}s
      */
-    // Subclasses should override createDirectSuperMap or specifyBottom to change the bottoms and
-    // not this method, because other methods expect the directSuperMap to be complete.
     private Set<DefaultQualifierKind> createBottomsSet(
             @UnderInitialization DefaultQualifierKindHierarchy this,
             Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap) {
@@ -345,7 +351,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     /**
      * Iterates over all the qualifier kinds and adds all polymorphic qualifier kinds to
      * polymorphicQualifiers. Also sets {@link DefaultQualifierKind#poly} and {@link
-     * DefaultQualifierKind#top} for the polymorphic qualifiers. Set {@link
+     * DefaultQualifierKind#top} for the polymorphic qualifiers, and sets {@link
      * DefaultQualifierKind#poly} for the top qualifiers.
      *
      * <p>Requires that tops has been initialized.
@@ -386,8 +392,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     /**
      * For each qualifier kind in {@code directSuperMap}, initializes {@link
      * DefaultQualifierKind#strictSuperTypes}, {@link DefaultQualifierKind#top}, {@link
-     * DefaultQualifierKind#bottom}, and {@link DefaultQualifierKind#poly}. (Requires tops, bottoms,
-     * and polymorphicQualifiers to be initialized.)
+     * DefaultQualifierKind#bottom}, and {@link DefaultQualifierKind#poly}.
+     *
+     * <p>Requires tops, bottoms, and polymorphicQualifiers to be initialized.
      *
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifier kinds; created by {@link #createDirectSuperMap()}
@@ -433,7 +440,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 }
                 if (qualifierKind.isPoly()) {
                     assert bot.strictSuperTypes != null
-                            : "@AssumeAssertion(nullness):strictSuperTypes should be nonnull.";
+                            : "@AssumeAssertion(nullness): strictSuperTypes should be nonnull.";
                     bot.strictSuperTypes.add(qualifierKind);
                 }
             }
@@ -456,6 +463,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             @UnderInitialization DefaultQualifierKindHierarchy this,
             @KeyFor("#2") QualifierKind qualifierKind,
             Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap) {
+        // Anything in the queue is a supertype that will eventually be added to allSupers.
         Queue<DefaultQualifierKind> queue = new ArrayDeque<>(directSuperMap.get(qualifierKind));
         Set<QualifierKind> allSupers = new TreeSet<>(directSuperMap.get(qualifierKind));
         Set<DefaultQualifierKind> visited = new HashSet<>();
@@ -471,15 +479,12 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             if (superQualKind.isPoly()) {
                 continue;
             }
-            if (directSuperMap.containsKey(superQualKind)) {
-                Set<DefaultQualifierKind> superSuperQuals = directSuperMap.get(superQualKind);
-                queue.addAll(superSuperQuals);
-                allSupers.addAll(superSuperQuals);
-            } else {
-                throw new TypeSystemError(
-                        "Found a super qualifier kind not a key in the directSuperMap. Found: %s",
-                        superQualKind);
+            Set<DefaultQualifierKind> superSuperQuals = directSuperMap.get(superQualKind);
+            if (superSuperQuals == null) {
+                throw new TypeSystemError(superQualKind + " is not a key in the directSuperMap");
             }
+            queue.addAll(superSuperQuals);
+            allSupers.addAll(superSuperQuals);
         }
         return allSupers;
     }
@@ -527,21 +532,17 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
         // strictSuperTypes should be nonnull by this point.
         @SuppressWarnings("nullness:argument.type.incompatible")
-        Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.getStrictSuperTypes());
-        // strictSuperTypes should be nonnull by this point.
-        @SuppressWarnings("nullness:assignment.type.incompatible")
-        @NonNull Set<? extends QualifierKind> qual2StrictSuperTypes = qual2.getStrictSuperTypes();
-        allSuperTypes.retainAll(qual2StrictSuperTypes);
+        Set<QualifierKind> allSuperTypes =
+                new TreeSet<>(qual1.getStrictSuperTypes()).retainAll(qual2.getStrictSuperTypes());
         Set<? extends QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
         if (lubs.size() != 1) {
             throw new TypeSystemError(
-                    "Not exactly 1 lub for %s and %s. Found lubs: [%s].",
+                    "lub(%s, %s) should have size 1: [%s]",
                     qual1, qual2, UtilPlume.join(", ", lubs));
         }
         QualifierKind lub = lubs.iterator().next();
         if (lub.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
-            throw new TypeSystemError(
-                    "Lub can't be poly: lub: %s, qual1: %s, qual2: %s.", lub, qual1, qual2);
+            throw new TypeSystemError("lub(%s, %s) can't be poly: %s", qual1, qual2, lub);
         }
         return lub;
     }
@@ -611,13 +612,12 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         Set<QualifierKind> glbs = findHighestQualifiers(allSubTypes);
         if (glbs.size() != 1) {
             throw new TypeSystemError(
-                    "Not exactly 1 glb for %s and %s. Found glbs: [%s].",
+                    "glb(%s, %s) should have size 1: [%s]",
                     qual1, qual2, UtilPlume.join(", ", glbs));
         }
         QualifierKind glb = glbs.iterator().next();
         if (glb.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
-            throw new TypeSystemError(
-                    "GLB can't be poly: lub: %s, qual1: %s, qual2: %s.", glb, qual1, qual2);
+            throw new TypeSystemError("glb(%s, %s) can't be poly: %s", qual1, qual2, glb);
         }
         return glb;
     }
@@ -629,29 +629,29 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @return the highest qualifiers in the passed set
      */
     protected static Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
-        Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
+        Set<QualifierKind> highestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
-            lowestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
+            highestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
         }
-        return lowestQualifiers;
+        return highestQualifiers;
     }
 
     /**
      * Add Key: qual1, Value: (Key: qual2, Value: value) to {@code map}. If already in map, throw an
      * exception if value is different.
      *
-     * @param map mapping
+     * @param map mapping to side-effect
      * @param qual1 the first qualifier kind
      * @param qual2 the second qualifier kind
      * @param value the value to add
-     * @param error "lub" or "glb"; used only for error messages
+     * @param operationName "lub" or "glb"; used only for error messages
      */
     private static void addToMapOfMap(
             Map<QualifierKind, Map<QualifierKind, QualifierKind>> map,
             QualifierKind qual1,
             QualifierKind qual2,
             QualifierKind value,
-            String error) {
+            String operationName) {
         Map<QualifierKind, QualifierKind> qual1Map =
                 map.computeIfAbsent(qual1, k -> new HashMap<>());
         QualifierKind existingValue = qual1Map.get(qual2);
@@ -660,8 +660,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         } else {
             if (existingValue != value) {
                 throw new TypeSystemError(
-                        "Multiple %s for qualifiers %s and %s. Found map %s and %s",
-                        error, qual1, qual2, value, existingValue);
+                        "Multiple %ss for qualifiers %s and %s. Found map %s and %s",
+                        operationName, qual1, qual2, value, existingValue);
             }
         }
     }
@@ -682,7 +682,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
 
-        /** Whether or not the annotation class of this has annotation elements. */
+        /** Whether or not the annotation class of this has annotation elements/arguments. */
         private final boolean hasElements;
 
         /** The top of the hierarchy to which this belongs. */
