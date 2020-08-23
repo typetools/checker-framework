@@ -226,7 +226,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * This method is a copy of RegexUtil.isRegex. We cannot directly use RegexUtil, because it uses
      * type annotations which cannot be used in IDEs (yet).
      */
-    @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
     @Pure
     private static boolean isRegex(String s) {
         try {
