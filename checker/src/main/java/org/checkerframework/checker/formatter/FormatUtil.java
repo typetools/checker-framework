@@ -68,7 +68,6 @@ public class FormatUtil {
      *     categories
      */
     // TODO introduce more such functions, see RegexUtil for examples
-    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
             throws IllegalFormatException {
@@ -92,7 +91,6 @@ public class FormatUtil {
      * @param format a format string
      * @throws IllegalFormatException if the format string is invalid
      */
-    @SuppressWarnings("nullness:argument.type.incompatible") // https://tinyurl.com/cfissue/3449
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings({
             "unused", // called for side effect, to see if it throws an exception
