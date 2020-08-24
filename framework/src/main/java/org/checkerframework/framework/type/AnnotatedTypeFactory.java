@@ -1730,48 +1730,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) != null) {
             return null;
         }
-
-        TypeElement typeElt = ElementUtils.enclosingClass(element);
-        if (typeElt == null) {
-            Element e = getEnclosingElementForArtificialTree(tree);
-            typeElt = ElementUtils.enclosingClass(e);
+        if (ElementUtils.enclosingClass(element).getKind() == ElementKind.ANNOTATION_TYPE) {
+            return null;
         }
-        ClassTree enclosingClass = getCurrentClassTree(tree);
-        if (enclosingClass != null
-                && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt)) {
-            // TODO: problem with ambiguity with implicit receivers.
-            // We need a way to find the correct class. We cannot use the
-            // element, as generics might have to be substituted in a subclass.
-            // See GenericsEnclosing test case.
-            // TODO: is this fixed?
-            return getSelfType(tree);
-        } else {
-            TreePath path = getPath(tree);
-            if (path == null) {
-                // The path is null if the field is in a compilation unit we haven't
-                // processed yet. TODO: is there a better way?
+
+        TypeElement elementOfImplicitReceiver = ElementUtils.enclosingClass(element);
+        if (tree.getKind() == Kind.NEW_CLASS) {
+            if (elementOfImplicitReceiver.getEnclosingElement() != null) {
+                elementOfImplicitReceiver =
+                        ElementUtils.enclosingClass(
+                                elementOfImplicitReceiver.getEnclosingElement());
+            } else {
+                elementOfImplicitReceiver = null;
+            }
+            if (elementOfImplicitReceiver == null) {
+                // If the typeElt does not have an enclosing class, then the NewClassTree
+                // does not have an implicit receiver.
                 return null;
             }
-            if (typeElt == null) {
-                throw new BugInCF(
-                        "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
-                                + element);
-            }
-            if (tree.getKind() == Kind.NEW_CLASS) {
-                if (typeElt.getEnclosingElement() != null) {
-                    typeElt = ElementUtils.enclosingClass(typeElt.getEnclosingElement());
-                } else {
-                    typeElt = null;
-                }
-                if (typeElt == null) {
-                    // If the typeElt does not have an enclosing class, then the NewClassTree
-                    // does not have an implicit receiver.
-                    return null;
-                }
-            }
-            // TODO: method receiver annotations on outer this
-            return getEnclosingType(typeElt, tree);
         }
+
+        TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
+        AnnotatedDeclaredType thisType = getSelfType(tree);
+
+        while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
+            thisType = thisType.getEnclosingType();
+        }
+        return thisType;
     }
 
     /**
@@ -1788,28 +1773,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isClassTree(tree)) {
             return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
         }
-        ClassTree enclosingClass = getEnclosingClassTree(tree);
-        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
 
         MethodTree enclosingMethod = getEnclosingMethodTree(tree);
-        if (enclosingClass.getSimpleName().length() != 0 && enclosingMethod != null) {
-            AnnotatedDeclaredType methodReceiver;
+        if (enclosingMethod != null) {
             if (TreeUtils.isConstructor(enclosingMethod)) {
                 // The type of `this` in a constructor is usually the constructor return type.
                 // Certain type systems, in particular the Initialization Checker, need custom
                 // logic.
-                methodReceiver =
-                        (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
+                return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
             } else {
-                methodReceiver = getAnnotatedType(enclosingMethod).getReceiverType();
-            }
-            if (methodReceiver != null) {
-                // TODO  what about all annotations on the receiver?
-                // Code is also duplicated above.
-                type.clearAnnotations();
-                type.addAnnotations(methodReceiver.getAnnotations());
+                return getAnnotatedType(enclosingMethod).getReceiverType();
             }
         }
+        ClassTree enclosingClass = getEnclosingClassTree(tree);
+        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
         return type;
     }
 
@@ -1849,36 +1826,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * return type annotations of an enclosing constructor.
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
-        Element enclosingElt = getMostInnerClassOrMethod(tree);
 
-        while (enclosingElt != null) {
-            if (enclosingElt instanceof ExecutableElement) {
-                ExecutableElement method = (ExecutableElement) enclosingElt;
-                if (method.asType() != null // XXX: hack due to a compiler bug
-                        && isSubtype((TypeElement) method.getEnclosingElement(), element)) {
-                    if (ElementUtils.isStatic(method)) {
-                        // Static methods should use type of enclosing class,
-                        // by simply taking another turn in the loop.
-                    } else if (method.getKind() == ElementKind.CONSTRUCTOR) {
-                        // return getSelfType(this.declarationFromElement(method));
-                        return (AnnotatedDeclaredType) getAnnotatedType(method).getReturnType();
-                    } else {
-                        return getAnnotatedType(method).getReceiverType();
-                    }
-                }
-            } else if (enclosingElt instanceof TypeElement) {
-                if (isSubtype((TypeElement) enclosingElt, element)) {
-                    return (AnnotatedDeclaredType) getAnnotatedType(enclosingElt);
-                }
-            }
-            enclosingElt = enclosingElt.getEnclosingElement();
+        AnnotatedDeclaredType thisType = getSelfType(tree);
+
+        while (!isSubtype(thisType.getUnderlyingType(), element.asType())) {
+            thisType = thisType.getEnclosingType();
         }
-        return null;
+        return thisType;
     }
 
-    private boolean isSubtype(TypeElement a1, TypeElement a2) {
-        return (a1.equals(a2)
-                || types.isSubtype(types.erasure(a1.asType()), types.erasure(a2.asType())));
+    private boolean isSubtype(TypeMirror a1, TypeMirror a2) {
+        return types.isSubtype(types.erasure(a1), types.erasure(a2));
     }
 
     /**
@@ -2880,32 +2838,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
         return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
-    }
-
-    private final Element getMostInnerClassOrMethod(Tree tree) {
-        if (visitorState.getMethodTree() != null) {
-            return TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
-        }
-        if (visitorState.getClassTree() != null) {
-            return TreeUtils.elementFromDeclaration(visitorState.getClassTree());
-        }
-
-        TreePath path = getPath(tree);
-        if (path == null) {
-            throw new BugInCF(
-                    "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n"
-                            + "  TreePath.getPath(root, tree)=>%s%n  for tree (%s) = %s%n  root=%s",
-                    TreePath.getPath(root, tree), tree.getClass(), tree, root);
-        }
-        for (Tree pathTree : path) {
-            if (pathTree instanceof MethodTree) {
-                return TreeUtils.elementFromDeclaration((MethodTree) pathTree);
-            } else if (pathTree instanceof ClassTree) {
-                return TreeUtils.elementFromDeclaration((ClassTree) pathTree);
-            }
-        }
-
-        throw new BugInCF("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here");
     }
 
     /**
