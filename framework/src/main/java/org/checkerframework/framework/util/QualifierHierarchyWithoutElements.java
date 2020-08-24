@@ -106,10 +106,8 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     protected Set<AnnotationMirror> createTops(
             @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
-            if (entry.getKey().isTop()) {
-                tops.add(entry.getValue());
-            }
+        for (QualifierKind top : qualifierKindHierarchy.getTops()) {
+            tops.add(kindToAnnotationMirror.get(top));
         }
         return Collections.unmodifiableSet(tops);
     }
@@ -123,10 +121,8 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     protected Set<AnnotationMirror> createBottoms(
             @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        for (Map.Entry<QualifierKind, AnnotationMirror> entry : kindToAnnotationMirror.entrySet()) {
-            if (entry.getKey().isBottom()) {
-                bottoms.add(entry.getValue());
-            }
+        for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
+            bottoms.add(kindToAnnotationMirror.get(bottom));
         }
         return Collections.unmodifiableSet(bottoms);
     }

@@ -118,7 +118,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
      */
     public DefaultQualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
-        this(qualifierClasses, null);
+        this(qualifierClasses, null, null);
     }
 
     /**
@@ -135,14 +135,32 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      */
     public DefaultQualifierKindHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses,
-            @Nullable Class<? extends Annotation> bottom) {
+            Class<? extends Annotation> bottom) {
+        this(qualifierClasses, bottom, null);
+    }
+
+    /**
+     * Private constructor that sets the bottom qualifier if {@code bottom} is nonnull.
+     *
+     * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
+     * @param bottom the bottom qualifier of this hierarchy or null if bottom can be inferred from
+     *     the meta-annotations
+     * @param voidParam void parameter to differentiate from {@link
+     *     #DefaultQualifierKindHierarchy(Collection, Class)}
+     */
+    private DefaultQualifierKindHierarchy(
+            Collection<Class<? extends Annotation>> qualifierClasses,
+            @Nullable Class<? extends Annotation> bottom,
+            Void voidParam) {
         this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
         this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
         Collections.sort(qualifierKinds);
 
         Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap =
                 createDirectSuperMap();
-        setBottom(bottom, directSuperMap);
+        if (bottom != null) {
+            setBottom(bottom, directSuperMap);
+        }
         this.tops = createTopsSet(directSuperMap);
         this.bottoms = createBottomsSet(directSuperMap);
         initializePolymorphicQualifiers();
@@ -246,6 +264,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             SubtypeOf subtypeOfMetaAnno =
                     qualifierKind.getAnnotationClass().getAnnotation(SubtypeOf.class);
             if (subtypeOfMetaAnno == null) {
+                // qualifierKind has no @SubtypeOf: it must be top or polymorphic
                 continue;
             }
             Set<DefaultQualifierKind> directSupers = new TreeSet<>();
@@ -265,24 +284,19 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     }
 
     /**
-     * If {@code bottom} is non-null, then this method sets bottom to the given class and modifies
-     * {@code directSuperMap} to add all leaves to its super qualifier kinds. Leaves are qualifier
-     * kinds that are not super qualifier kinds of another qualifier kind.
+     * This method sets bottom to the given class and modifies {@code directSuperMap} to add all
+     * leaves to its super qualifier kinds. Leaves are qualifier kinds that are not super qualifier
+     * kinds of another qualifier kind.
      *
-     * <p>If {@code bottom} is {@code null}, then this method does nothing.
-     *
-     * @param bottom the class of the bottom qualifer in the hierarchy
+     * @param bottom the class of the bottom qualifier in the hierarchy
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
      *     qualifiers; side-effected by this method
      */
     @RequiresNonNull({"this.nameToQualifierKind", "this.qualifierKinds"})
     private void setBottom(
             @UnderInitialization DefaultQualifierKindHierarchy this,
-            @Nullable Class<? extends Annotation> bottom,
+            Class<? extends Annotation> bottom,
             Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap) {
-        if (bottom == null) {
-            return;
-        }
         DefaultQualifierKind bottomKind =
                 nameToQualifierKind.get(QualifierKindHierarchy.annotationClassName(bottom));
         if (bottomKind == null) {
@@ -472,10 +486,11 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             if (superQualKind == qualifierKind) {
                 throw new TypeSystemError("Cycle in hierarchy: %s", qualifierKind);
             }
-            if (visited.contains(superQualKind)) {
+
+            if (!visited.add(superQualKind)) {
                 continue;
             }
-            visited.add(superQualKind);
+
             if (superQualKind.isPoly()) {
                 continue;
             }
