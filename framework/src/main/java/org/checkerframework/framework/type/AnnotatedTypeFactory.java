@@ -1730,9 +1730,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) != null) {
             return null;
         }
-        if (ElementUtils.enclosingClass(element).getKind() == ElementKind.ANNOTATION_TYPE) {
-            return null;
-        }
 
         TypeElement elementOfImplicitReceiver = ElementUtils.enclosingClass(element);
         if (tree.getKind() == Kind.NEW_CLASS) {

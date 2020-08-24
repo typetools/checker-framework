@@ -420,6 +420,10 @@ public class ElementUtils {
                 // does not have a receiver.
                 return !element.getSimpleName().contentEquals("this");
             }
+        } else if (element.getKind() == ElementKind.METHOD) {
+            if (ElementUtils.enclosingClass(element).getKind() == ElementKind.ANNOTATION_TYPE) {
+                return false;
+            }
         }
         return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
     }
