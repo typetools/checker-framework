@@ -1750,6 +1750,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
         AnnotatedDeclaredType thisType = getSelfType(tree);
 
+        // An implicit receiver is the first enclosing type that is a subtype of the type where
+        // element is declared.
         while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
             thisType = thisType.getEnclosingType();
         }
@@ -1818,7 +1820,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine the type of the most enclosing class of the given tree that is a subtype of the
+     * Determine the type of the most enclosing type of the given tree that is a subtype of the
      * given element. Receiver type annotations of an enclosing method are considered, similarly
      * return type annotations of an enclosing constructor.
      */
@@ -1826,7 +1828,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedDeclaredType thisType = getSelfType(tree);
 
-        while (!isSubtype(thisType.getUnderlyingType(), element.asType())) {
+        while (!isSameType(thisType.getUnderlyingType(), element.asType())) {
             thisType = thisType.getEnclosingType();
         }
         return thisType;
@@ -1834,6 +1836,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     private boolean isSubtype(TypeMirror a1, TypeMirror a2) {
         return types.isSubtype(types.erasure(a1), types.erasure(a2));
+    }
+
+    private boolean isSameType(TypeMirror a1, TypeMirror a2) {
+        return types.isSameType(types.erasure(a1), types.erasure(a2));
     }
 
     /**
