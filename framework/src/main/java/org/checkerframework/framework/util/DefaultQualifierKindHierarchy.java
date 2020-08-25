@@ -148,6 +148,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @param voidParam void parameter to differentiate from {@link
      *     #DefaultQualifierKindHierarchy(Collection, Class)}
      */
+    @SuppressWarnings("UnusedVariable") // voidParam is intentionally not used.
     private DefaultQualifierKindHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses,
             @Nullable Class<? extends Annotation> bottom,
@@ -250,9 +251,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override
      * this method to create the direct super map some other way.
      *
-     * <p>Note that this method is called from the constructor when only {@link
-     * #nameToQualifierKind} has been initialized. This method is not static, so it can be
-     * overridden by subclasses.
+     * <p>Note that this method is called from the constructor when {@link #nameToQualifierKind} and
+     * {@link #qualifierKinds} are the only fields that have nonnull values. This method is not
+     * static, so it can be overridden by subclasses.
      *
      * @return a mapping from each {@link QualifierKind} to a set of its direct super qualifiers
      */
@@ -470,7 +471,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * Returns the set of all qualifier kinds that are a strict supertype of {@code qualifierKind}.
      *
      * @param qualifierKind the qualifier kind whose super types should be returned
-     * @param directSuperMap directSuperMap
+     * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
+     *     qualifier kinds; created by {@link #createDirectSuperMap()}
      * @return the set of all qualifier kinds that are a strict supertype of {@code qualifierKind}
      */
     private Set<QualifierKind> findAllTheSupers(
@@ -683,9 +685,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     /**
      * The default implementation of {@link QualifierKind}.
      *
-     * <p>The fields in this class that refer to {@link QualifierKind}s are initialized by {@link
-     * DefaultQualifierKindHierarchy}. So the getter methods for these fields should not be called
-     * until after {@code DefaultQualifierKindHierarchy} is initialized.
+     * <p>The fields in this class that refer to {@link QualifierKind}s are set when creating the
+     * {@link DefaultQualifierKindHierarchy}. So the getter methods for these fields should not be
+     * called until after the {@code DefaultQualifierKindHierarchy} is created.
      */
     @AnnotatedFor("nullness")
     public @Interned static class DefaultQualifierKind implements QualifierKind {
