@@ -142,12 +142,6 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     }
 
     @Override
-    public @Nullable AnnotationMirror findAnnotationInHierarchy(
-            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
-        return findAnnotationInSameHierarchy(annos, top);
-    }
-
-    @Override
     public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
         QualifierKind kind = getQualifierKind(annotationMirror);
@@ -158,6 +152,12 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
             }
         }
         return null;
+    }
+
+    @Override
+    public @Nullable AnnotationMirror findAnnotationInHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
+        return findAnnotationInSameHierarchy(annos, top);
     }
 
     @Override

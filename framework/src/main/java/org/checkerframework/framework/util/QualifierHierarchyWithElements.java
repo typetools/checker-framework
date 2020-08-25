@@ -224,4 +224,23 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         QualifierKind kind = getQualifierKind(start);
         return bottomsMap.get(kind.getBottom());
     }
+
+    @Override
+    public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        QualifierKind kind = getQualifierKind(annotationMirror);
+        for (AnnotationMirror candidate : annos) {
+            QualifierKind candidateKind = getQualifierKind(candidate);
+            if (candidateKind.isInSameHierarchyAs(kind)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable AnnotationMirror findAnnotationInHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
+        return findAnnotationInSameHierarchy(annos, top);
+    }
 }
