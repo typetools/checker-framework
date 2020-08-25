@@ -71,8 +71,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -846,12 +844,10 @@ public class CFGBuilder {
      */
     @SuppressWarnings("serial")
     protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
-        /** New labels within a try block that were added by this imprementation. */
         private final Map<Name, Label> accessedNames;
 
-        /** Creat* a new TryFinallyScopeMap. */
         protected TryFinallyScopeMap() {
-            this.accessedNames = new LinkedHashMap<>();
+            this.accessedNames = new HashMap<>();
         }
 
         @Override
@@ -1304,7 +1300,7 @@ public class CFGBuilder {
 
             // missing exceptional edges
             Set<Tuple<ExceptionBlockImpl, Integer, TypeMirror>> missingExceptionalEdges =
-                    new LinkedHashSet<>();
+                    new HashSet<>();
 
             // create start block
             SpecialBlockImpl startBlock = new SpecialBlockImpl(SpecialBlockType.ENTRY);
