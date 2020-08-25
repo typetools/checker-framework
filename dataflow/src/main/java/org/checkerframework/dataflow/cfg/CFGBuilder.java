@@ -845,7 +845,7 @@ public class CFGBuilder {
      */
     @SuppressWarnings("serial")
     protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
-        /** New labels within a try block that were added by this imprementation. */
+        /** New labels within a try block that were added by this implementation. */
         private final Map<Name, Label> accessedNames;
 
         /** Create a new TryFinallyScopeMap. */
