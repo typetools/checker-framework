@@ -376,7 +376,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final TreePathCacher treePathCache;
 
     /** Mapping from CFG generated trees to their enclosing elements. */
-    private final Map<Tree, Element> artificialTreeToEnclosingElementMap;
+    protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
     /**
      * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue

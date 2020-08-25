@@ -1853,6 +1853,10 @@ public abstract class GenericAnnotatedTypeFactory<
             subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
             subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
         }
+        if (subFactory != null) {
+            subFactory.artificialTreeToEnclosingElementMap.putAll(
+                    this.artificialTreeToEnclosingElementMap);
+        }
         return subFactory;
     }
 
