@@ -287,7 +287,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     /**
      * This method sets bottom to the given class and modifies {@code directSuperMap} to add all
      * leaves to its super qualifier kinds. Leaves are qualifier kinds that are not super qualifier
-     * kinds of another qualifier kind.
+     * kinds of another qualifier kind and are not polymorphic.
      *
      * @param bottom the class of the bottom qualifier in the hierarchy
      * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
@@ -479,28 +479,27 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             @UnderInitialization DefaultQualifierKindHierarchy this,
             @KeyFor("#2") QualifierKind qualifierKind,
             Map<DefaultQualifierKind, Set<DefaultQualifierKind>> directSuperMap) {
-        // Anything in the queue is a supertype that will eventually be added to allSupers.
-        Queue<DefaultQualifierKind> queue = new ArrayDeque<>(directSuperMap.get(qualifierKind));
+
         Set<QualifierKind> allSupers = new TreeSet<>(directSuperMap.get(qualifierKind));
+
+        // Visit every super qualifier kind and add its super qualifier kinds to allSupers.
+        Queue<DefaultQualifierKind> toVisit = new ArrayDeque<>(directSuperMap.get(qualifierKind));
         Set<DefaultQualifierKind> visited = new HashSet<>();
-        while (!queue.isEmpty()) {
-            DefaultQualifierKind superQualKind = queue.remove();
+        while (!toVisit.isEmpty()) {
+            DefaultQualifierKind superQualKind = toVisit.remove();
             if (superQualKind == qualifierKind) {
                 throw new TypeSystemError("Cycle in hierarchy: %s", qualifierKind);
             }
 
-            if (!visited.add(superQualKind)) {
+            if (!visited.add(superQualKind) || superQualKind.isPoly()) {
                 continue;
             }
 
-            if (superQualKind.isPoly()) {
-                continue;
-            }
             Set<DefaultQualifierKind> superSuperQuals = directSuperMap.get(superQualKind);
             if (superSuperQuals == null) {
                 throw new TypeSystemError(superQualKind + " is not a key in the directSuperMap");
             }
-            queue.addAll(superSuperQuals);
+            toVisit.addAll(superSuperQuals);
             allSupers.addAll(superSuperQuals);
         }
         return allSupers;
