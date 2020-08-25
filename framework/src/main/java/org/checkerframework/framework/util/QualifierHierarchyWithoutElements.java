@@ -209,7 +209,7 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         QualifierKind subKind = getQualifierKind(subAnno);
         QualifierKind superKind = getQualifierKind(superAnno);
-        return subKind.isSubtype(superKind);
+        return subKind.isSubtypeOf(superKind);
     }
 
     @Override

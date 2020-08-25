@@ -247,7 +247,7 @@ public class KeyForAnnotatedTypeFactory
                 List<String> rhsValues = extractValues(subAnno);
                 return rhsValues.containsAll(lhsValues);
             }
-            return subKind.isSubtype(superKind);
+            return subKind.isSubtypeOf(superKind);
         }
 
         @Override

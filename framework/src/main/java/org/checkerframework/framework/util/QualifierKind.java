@@ -112,7 +112,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
      * @param superQualKind other qualifier kind
      * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
      */
-    boolean isSubtype(QualifierKind superQualKind);
+    boolean isSubtypeOf(QualifierKind superQualKind);
 
     @Override
     default int compareTo(QualifierKind o) {

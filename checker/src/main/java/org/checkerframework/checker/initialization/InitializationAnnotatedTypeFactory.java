@@ -794,7 +794,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
-            if (!subKind.isSubtype(superKind)) {
+            if (!subKind.isSubtypeOf(superKind)) {
                 return false;
             } else if ((subKind == UNDER_INIT && superKind == UNDER_INIT)
                     || (subKind == UNDER_INIT && superKind == UNKNOWN_INIT)

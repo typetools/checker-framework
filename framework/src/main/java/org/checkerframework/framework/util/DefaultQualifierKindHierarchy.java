@@ -424,7 +424,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
         for (DefaultQualifierKind qualifierKind : qualifierKinds) {
             for (DefaultQualifierKind top : tops) {
-                if (qualifierKind.isSubtype(top)) {
+                if (qualifierKind.isSubtypeOf(top)) {
                     if (qualifierKind.top == null) {
                         qualifierKind.top = top;
                     } else if (qualifierKind.top != top) {
@@ -540,9 +540,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             QualifierKind qual2) {
         if (qual1 == qual2) {
             return qual1;
-        } else if (qual1.isSubtype(qual2)) {
+        } else if (qual1.isSubtypeOf(qual2)) {
             return qual2;
-        } else if (qual2.isSubtype(qual1)) {
+        } else if (qual2.isSubtypeOf(qual1)) {
             return qual1;
         }
         Set<QualifierKind> allSuperTypes = new TreeSet<>(qual1.getStrictSuperTypes());
@@ -570,7 +570,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     protected static Set<QualifierKind> findLowestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> lowestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
-            lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtype(a2));
+            lowestQualifiers.removeIf(a2 -> a1 != a2 && a1.isSubtypeOf(a2));
         }
         return lowestQualifiers;
     }
@@ -612,14 +612,14 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             QualifierKind qual2) {
         if (qual1 == qual2) {
             return qual1;
-        } else if (qual1.isSubtype(qual2)) {
+        } else if (qual1.isSubtypeOf(qual2)) {
             return qual1;
-        } else if (qual2.isSubtype(qual1)) {
+        } else if (qual2.isSubtypeOf(qual1)) {
             return qual2;
         }
         Set<QualifierKind> allSubTypes = new TreeSet<>();
         for (QualifierKind qualifierKind : qualifierKinds) {
-            if (qualifierKind.isSubtype(qual1) && qualifierKind.isSubtype(qual2)) {
+            if (qualifierKind.isSubtypeOf(qual1) && qualifierKind.isSubtypeOf(qual2)) {
                 allSubTypes.add(qualifierKind);
             }
         }
@@ -645,7 +645,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     protected static Set<QualifierKind> findHighestQualifiers(Set<QualifierKind> qualifierKinds) {
         Set<QualifierKind> highestQualifiers = new TreeSet<>(qualifierKinds);
         for (QualifierKind a1 : qualifierKinds) {
-            highestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtype(a1));
+            highestQualifiers.removeIf(a2 -> a1 != a2 && a2.isSubtypeOf(a1));
         }
         return highestQualifiers;
     }
@@ -800,10 +800,10 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
 
         @Override
-        public boolean isSubtype(QualifierKind superQualKind) {
+        public boolean isSubtypeOf(QualifierKind superQualKind) {
             if (strictSuperTypes == null) {
                 throw new BugInCF(
-                        "DefaultQualifierKind#isSubtype: strictSuperTypes was null. Don't call this method during initialization of DefaultQualifierKindHierarchy.");
+                        "DefaultQualifierKind#isSubtypeOf: strictSuperTypes was null. Don't call this method during initialization of DefaultQualifierKindHierarchy.");
             }
             return this == superQualKind || strictSuperTypes.contains(superQualKind);
         }
