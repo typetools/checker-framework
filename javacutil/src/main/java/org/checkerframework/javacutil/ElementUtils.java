@@ -421,7 +421,8 @@ public class ElementUtils {
                 return !element.getSimpleName().contentEquals("this");
             }
         } else if (element.getKind() == ElementKind.METHOD) {
-            if (ElementUtils.enclosingClass(element).getKind() == ElementKind.ANNOTATION_TYPE) {
+            Element enclosingClass = ElementUtils.enclosingClass(element);
+            if (enclosingClass != null && enclosingClass.getKind() == ElementKind.ANNOTATION_TYPE) {
                 return false;
             }
         }
