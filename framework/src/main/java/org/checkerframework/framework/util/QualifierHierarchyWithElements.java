@@ -37,6 +37,9 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
     /** {@link QualifierKindHierarchy}. */
     protected final QualifierKindHierarchy qualifierKindHierarchy;
 
+    // The following fields duplicate information in qualifierKindHierarchy, but using
+    // AnnotationMirrors instead of QualifierKinds.
+
     /** A mapping from top QualifierKinds to their corresponding AnnotationMirror. */
     protected final Map<QualifierKind, AnnotationMirror> topsMap;
 
@@ -67,14 +70,10 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
         this.topsMap = Collections.unmodifiableMap(createTopsMap());
-        Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-        tops.addAll(topsMap.values());
-        this.tops = Collections.unmodifiableSet(tops);
+        this.tops = AnnotationUtils.createUnmodifiableAnnotationSet(topsMap.values());
 
         this.bottomsMap = Collections.unmodifiableMap(createBottomsMap());
-        Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
-        bottoms.addAll(bottomsMap.values());
-        this.bottoms = Collections.unmodifiableSet(bottoms);
+        this.bottoms = AnnotationUtils.createUnmodifiableAnnotationSet(bottomsMap.values());
 
         this.kindToElementlessQualifier = createElementLessQualifierMap();
     }

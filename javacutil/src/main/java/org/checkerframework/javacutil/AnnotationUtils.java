@@ -458,6 +458,40 @@ public class AnnotationUtils {
     }
 
     /**
+     * Constructs a {@link Set} for storing {@link AnnotationMirror}s contain all the annotations in
+     * {@code annos}.
+     *
+     * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
+     * the annotation element values.
+     *
+     * @param annos a Collection of AnnotationMirrors to put in the created set
+     * @return a sorted new set to store {@link AnnotationMirror} as element
+     */
+    public static NavigableSet<AnnotationMirror> createAnnotationSet(
+            Collection<AnnotationMirror> annos) {
+        TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+        set.addAll(annos);
+        return set;
+    }
+
+    /**
+     * Constructs an unmodifiable {@link Set} for storing {@link AnnotationMirror}s contain all the
+     * annotations in {@code annos}.
+     *
+     * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
+     * the annotation element values.
+     *
+     * @param annos a Collection of AnnotationMirrors to put in the created set
+     * @return a sorted, unmodifiable, new set to store {@link AnnotationMirror} as element
+     */
+    public static NavigableSet<AnnotationMirror> createUnmodifiableAnnotationSet(
+            Collection<AnnotationMirror> annos) {
+        TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+        set.addAll(annos);
+        return Collections.unmodifiableNavigableSet(set);
+    }
+
+    /**
      * Returns true if the given annotation has a @Inherited meta-annotation.
      *
      * @param anno the annotation to check for an @Inherited meta-annotation

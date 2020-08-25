@@ -192,11 +192,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
                 QualifierKind superKind) {
-            if (REGEX_KIND == subKind && REGEX_KIND == superKind) {
+            if (subKind == REGEX_KIND && superKind == REGEX_KIND) {
                 int rhsValue = getRegexValue(subAnno);
                 int lhsValue = getRegexValue(superAnno);
                 return lhsValue <= rhsValue;
-            } else if (PARTIALREGEX_KIND == subKind && PARTIALREGEX_KIND == superKind) {
+            } else if (subKind == PARTIALREGEX_KIND && superKind == PARTIALREGEX_KIND) {
                 return AnnotationUtils.areSame(subAnno, superAnno);
             }
             throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
@@ -208,7 +208,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
                 QualifierKind qualifierKind2) {
-            if (REGEX_KIND == qualifierKind1 && REGEX_KIND == qualifierKind2) {
+            if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
                 if (value1 < value2) {
@@ -216,15 +216,15 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return a2;
                 }
-            } else if (PARTIALREGEX_KIND == qualifierKind1 && PARTIALREGEX_KIND == qualifierKind2) {
+            } else if (qualifierKind1 == PARTIALREGEX_KIND && qualifierKind2 == PARTIALREGEX_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
                     return UNKNOWNREGEX;
                 }
-            } else if (PARTIALREGEX_KIND == qualifierKind1 || REGEX_KIND == qualifierKind1) {
+            } else if (qualifierKind1 == PARTIALREGEX_KIND || qualifierKind1 == REGEX_KIND) {
                 return a1;
-            } else if (PARTIALREGEX_KIND == qualifierKind2 || REGEX_KIND == qualifierKind2) {
+            } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
                 return a2;
             }
             throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
@@ -236,7 +236,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
                 QualifierKind qualifierKind2) {
-            if (REGEX_KIND == qualifierKind1 && REGEX_KIND == qualifierKind2) {
+            if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
                 if (value1 > value2) {
@@ -244,15 +244,15 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return a2;
                 }
-            } else if (PARTIALREGEX_KIND == qualifierKind1 && PARTIALREGEX_KIND == qualifierKind2) {
+            } else if (qualifierKind1 == PARTIALREGEX_KIND && qualifierKind2 == PARTIALREGEX_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
                 } else {
                     return REGEXBOTTOM;
                 }
-            } else if (PARTIALREGEX_KIND == qualifierKind1 || REGEX_KIND == qualifierKind1) {
+            } else if (qualifierKind1 == PARTIALREGEX_KIND || qualifierKind1 == REGEX_KIND) {
                 return a1;
-            } else if (PARTIALREGEX_KIND == qualifierKind2 || REGEX_KIND == qualifierKind2) {
+            } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
                 return a2;
             }
             throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);

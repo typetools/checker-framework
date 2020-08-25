@@ -56,9 +56,8 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
         this.kindToAnnotationMirror = createAnnotationMirrors(elements);
-        Set<AnnotationMirror> qualifiers = AnnotationUtils.createAnnotationSet();
-        qualifiers.addAll(kindToAnnotationMirror.values());
-        this.qualifiers = Collections.unmodifiableSet(qualifiers);
+        this.qualifiers =
+                AnnotationUtils.createUnmodifiableAnnotationSet(kindToAnnotationMirror.values());
 
         this.tops = createTops();
         this.bottoms = createBottoms();
