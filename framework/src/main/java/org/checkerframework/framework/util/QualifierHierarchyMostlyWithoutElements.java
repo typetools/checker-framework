@@ -63,7 +63,8 @@ public abstract class QualifierHierarchyMostlyWithoutElements
 
     /**
      * Returns whether or not {@code subAnno} is a subtype of {@code superAnno}. Both {@code
-     * subAnno} and {@code superAnno} are annotations with elements.
+     * subAnno} and {@code superAnno} are annotations with elements. {@code subKind} is a sub
+     * qualifier kind of {@code superKind}.
      *
      * @param subAnno possible subtype annotation; has elements
      * @param subKind QualifierKind of {@code subAnno}
