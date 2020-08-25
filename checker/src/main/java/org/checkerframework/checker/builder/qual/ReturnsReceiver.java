@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A deprecated variant of {@link org.checkerframework.common.returnsreceiver.qual.This}.
+ * A deprecated variant of {@code org.checkerframework.common.returnsreceiver.qual.This}.
  *
  * <p>Lombok outputs this annotation. It is retained only for backwards-compatibility with Lombok's
  * {@code checkerframework = true} lombok.config flag. It should not be used in new code, because it
