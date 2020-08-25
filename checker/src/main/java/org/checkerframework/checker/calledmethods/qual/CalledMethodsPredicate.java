@@ -7,8 +7,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation represents a predicate on {@code @}{@link CalledMethods} annotations. It permits
- * requiring a disjunction of method calls, among other possibly predicates. for instance, if method
+ * This annotation represents a predicate on {@code @}{@link CalledMethods} annotations. If method
  * {@code c()}'s receiver type is annotated with {@code @CalledMethodsPredicate("a || b")}, then it
  * is acceptable to call either method {@code a()} or method {@code b()} before calling method
  * {@code c()}.

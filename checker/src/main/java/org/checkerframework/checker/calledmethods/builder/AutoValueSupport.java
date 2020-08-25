@@ -43,7 +43,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     private CalledMethodsAnnotatedTypeFactory atypeFactory;
 
     /**
-     * Simple constructor.
+     * Create a new AutoValueSupport.
      *
      * @param atypeFactory the typechecker's type factory
      */
@@ -94,8 +94,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * For {@code build} methods on {@code Builder} types, the framework support should determine
-     * the required properties and add a corresponding {@link
+     * For {@code build} methods on {@code Builder} types, the builder framework support should
+     * determine the required properties and add a corresponding {@link
      * org.checkerframework.checker.calledmethods.qual.CalledMethods} annotation to the receiver.
      *
      * @param t a method that is possibly the {@code build} method for a builder. The only
@@ -162,9 +162,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Update a particular type associated with a toBuilder with the relevant CalledMethods
-     * annotation. This can be the return type of toBuilder or the corresponding generated "copy"
-     * constructor
+     * Add, to {@code type}, a CalledMethods annotation with all required methods called. The type
+     * can be the return type of toBuilder or the corresponding generated "copy" constructor.
      *
      * @param type type to update
      * @param builderType type of abstract @AutoValue.Builder class
@@ -182,12 +181,12 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * creates a @CalledMethods annotation for the given property names, converting the names to the
+     * Creates a @CalledMethods annotation for the given property names, converting the names to the
      * corresponding setter method name in the Builder.
      *
      * @param propertyNames the property names
      * @param avBuilderSetterNames names of all methods in the builder class
-     * @return the @CalledMethods annotation
+     * @return a @CalledMethods annotation that indicates all the given properties have been set
      */
     private AnnotationMirror createCalledMethodsForAutoValueProperties(
             final List<String> propertyNames, Set<String> avBuilderSetterNames) {
@@ -208,9 +207,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
      */
     private static String autoValuePropToBuilderSetterName(
             String prop, Set<String> builderSetterNames) {
-        // we have two cases, depending on whether AutoValue strips JavaBean-style prefixes 'get'
-        // and
-        // 'is'
+        // We have two cases, depending on whether AutoValue strips JavaBean-style prefixes 'get'
+        // and 'is'.
         Set<String> possiblePropNames = new LinkedHashSet<>();
         possiblePropNames.add(prop);
         if (prop.startsWith("get") && prop.length() > 3 && Character.isUpperCase(prop.charAt(3))) {
@@ -234,16 +232,14 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
         }
 
         // Could not find a corresponding setter.  This is likely because an AutoValue Extension is
-        // in
-        // use.  See https://github.com/kelloggm/object-construction-checker/issues/110
+        // in use.  See https://github.com/kelloggm/object-construction-checker/issues/110 .
         // For now we return null, but once that bug is fixed, this should be changed to an
-        // assertion
-        // failure.
+        // assertion failure.
         return null;
     }
 
     /**
-     * computes the required properties of an @AutoValue class.
+     * Computes the required properties of an @AutoValue class.
      *
      * @param autoValueClassElement the @AutoValue class
      * @param avBuilderSetterNames names of all setters in the corresponding AutoValue builder class
@@ -331,7 +327,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
             new HashSet<>(Arrays.asList(OPTIONAL_CLASS_NAMES_VALUES));
 
     /**
-     * adapted from AutoValue source code
+     * Adapted from AutoValue source code.
      *
      * @param type some type
      * @return true if type is an Optional type
@@ -347,9 +343,9 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Computes the names of setter methods for an AutoValue builder.
+     * Returns the names of setter methods for an AutoValue builder.
      *
-     * @param builderElement Element for an AutoValue builder
+     * @param builderElement the Element for an AutoValue builder
      * @return names of all methods whose return type is the builder itself or that return a Guava
      *     Immutable type
      */
@@ -361,14 +357,14 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Is member a setter for an AutoValue builder?
+     * Is method a setter for an AutoValue builder?
      *
-     * @param member member of builder or one of its supertypes
+     * @param method a method of builder or one of its supertypes
      * @param builderElement element for the AutoValue builder
      * @return {@code true} if e is a setter for the builder, {@code false} otherwise
      */
-    private boolean isAutoValueBuilderSetter(Element member, Element builderElement) {
-        TypeMirror retType = ((ExecutableElement) member).getReturnType();
+    private boolean isAutoValueBuilderSetter(ExecutableElement method, Element builderElement) {
+        TypeMirror retType = method.getReturnType();
         if (retType.getKind() == TypeKind.TYPEVAR) {
             // instantiate the type variable for the Builder class
             retType =
@@ -376,7 +372,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                                     atypeFactory.getContext().getTypeUtils(),
                                     atypeFactory,
                                     atypeFactory.getAnnotatedType(builderElement),
-                                    (ExecutableElement) member)
+                                    method)
                             .getReturnType()
                             .getUnderlyingType();
         }
@@ -387,16 +383,16 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Get all the abstract methods for a class. This should include those inherited abstract
-     * methods that are not overridden by the class or a superclass.
+     * Get all the abstract methods for a class. This includes inherited abstract methods that are
+     * not overridden by the class or a superclass.
      *
      * @param classElement the class
      * @return list of all abstract methods
      */
-    public List<Element> getAllAbstractMethods(Element classElement) {
+    public List<ExecutableElement> getAllAbstractMethods(Element classElement) {
         List<Element> supertypes = getAllSupertypes((Symbol) classElement);
-        List<Element> abstractMethods = new ArrayList<>();
-        Set<Element> overriddenMethods = new HashSet<>();
+        List<ExecutableElement> abstractMethods = new ArrayList<>();
+        Set<ExecutableElement> overriddenMethods = new HashSet<>();
         for (Element t : supertypes) {
             for (Element member : t.getEnclosedElements()) {
                 if (member.getKind() != ElementKind.METHOD) {
@@ -409,7 +405,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                 if (modifiers.contains(Modifier.ABSTRACT)) {
                     // make sure it's not overridden
                     if (!overriddenMethods.contains(member)) {
-                        abstractMethods.add(member);
+                        abstractMethods.add((ExecutableElement) member);
                     }
                 } else {
                     // exclude any methods that this overrides

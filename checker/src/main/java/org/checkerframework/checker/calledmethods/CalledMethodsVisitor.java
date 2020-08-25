@@ -27,7 +27,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
             "finalizer.invocation.invalid";
 
     /**
-     * Constructor that only calls super.
+     * Creates a new CalledMethodsVisitor.
      *
      * @param checker the type-checker associated with this visitor
      */
@@ -52,10 +52,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         return super.visitMethodInvocation(node, p);
     }
 
-    /**
-     * Adds special reporting for method.invocation.invalid errors to turn them into
-     * finalizer.invocation.invalid errors.
-     */
+    /** Turns some method.invocation.invalid errors into finalizer.invocation.invalid errors. */
     @Override
     protected void reportMethodInvocabilityError(
             MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {

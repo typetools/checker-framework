@@ -14,6 +14,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * Indicates that the method, if it terminates with the given result, invokes the given methods on
  * the given expressions.
  *
+ * @see EnsuresCalledMethods
  * @see CalledMethods
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
@@ -25,18 +26,18 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Repeatable(EnsuresCalledMethodsIf.List.class)
 public @interface EnsuresCalledMethodsIf {
     /**
-     * Returns Java expression(s) that have had the given methods called on them after the method
+     * Returns Java expressions that have had the given methods called on them after the method
      * returns {@link #result}.
      *
-     * @return an array of Java expression(s)
+     * @return an array of Java expressions
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
     /**
-     * Returns the return value of the method under which the postcondition to hold.
+     * Returns the return value of the method under which the postcondition holds.
      *
-     * @return the return value of the method under which the postcondition to hold
+     * @return the return value of the method under which the postcondition holds
      */
     boolean result();
 

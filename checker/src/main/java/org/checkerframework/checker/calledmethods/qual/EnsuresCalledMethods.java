@@ -24,11 +24,12 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface EnsuresCalledMethods {
     /**
-     * The expressions to which the qualifier applies.
+     * The Java expressions to which the qualifier applies.
      *
-     * @return the expressions to which the qualifier applies
+     * @return the Java expressions to which the qualifier applies
      * @see org.checkerframework.framework.qual.EnsuresQualifier
      */
+    // Postconditions must use "value" as the name (conditional postconditions use "expression").
     String[] value();
 
     /**

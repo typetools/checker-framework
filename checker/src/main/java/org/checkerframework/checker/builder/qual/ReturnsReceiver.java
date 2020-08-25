@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 /**
  * A deprecated variant of {@link org.checkerframework.common.returnsreceiver.qual.This}.
  *
- * <p>Lombok outputs this annotation. It is retained only for backwards-compatibility, including
- * with Lombok's checkerframework = true lombok.config flag. It should not be used in new code,
- * because it is TRUSTED, NOT CHECKED.
+ * <p>Lombok outputs this annotation. It is retained only for backwards-compatibility with Lombok's
+ * {@code checkerframework = true} lombok.config flag. It should not be used in new code, because it
+ * is TRUSTED, NOT CHECKED.
  *
  * <p>This annotation could be marked as deprecated, but that causes extra warnings when processing
  * delombok'd code.

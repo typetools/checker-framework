@@ -6,15 +6,15 @@ been called on an object. This checker is useful for checking any property
 of the form ``call method A before method B''.
 
 The Called Methods Checker provides built-in support for one such property:
-that clients of classes that use the builder pattern for object
+that clients of the builder pattern for object
 construction always provide all required arguments before calling
 \<build()>.  The builder pattern is a flexible and readable way to
-construct objects, but it is error-prone.  For example, failing to provide
+construct objects, but it is error-prone.  Failing to provide
 a required argument causes a run-time error that manifests during testing
 or in the field, instead of at compile time as for regular Java
 constructors.  The Called Methods Checker verifies at compile time that
 your code correctly uses the builder pattern, never omitting a required
-argument. The checker has built-in support for
+argument. The Called Methods Checker has built-in support for
 \href{https://projectlombok.org/}{Lombok} (see the caveats about Lombok in
 Section~\ref{called-methods-lombok}) and
 \href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
@@ -63,9 +63,9 @@ arguments do not satisfy the method's specification.
 
 If you use AutoValue or Lombok, most specifications are automatically
 inferred by the Called Methods Checker, from field annotations such as
-\<@Nullable> and field types such as \<Optional>. See the
-section on defaulting rules for Lombok and AutoValue for more details
-(Section~\ref{called-methods-framework-details}).
+\<@Nullable> and field types such as
+\<Optional>. Section~\ref{called-methods-framework-details} gives
+defaulting rules for Lombok and AutoValue.
 
 \begin{figure}
 \begin{center}
@@ -83,7 +83,8 @@ annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
   The annotated type represents values on which all the given method were definitely called.
-  (Other methods might also have been called.) \<@CalledMethods()> is the default annotation.
+  (Other methods might also have been called.) \<@CalledMethods()>, with no
+  arguments, is the default annotation.
 
   Suppose that the method \<build> is annotated as
 
@@ -182,8 +183,8 @@ the same \<@CalledMethods> annotation as the receiver of \<build()>, using the s
 \item A \<@This> annotation is placed on the return type of each setter in the builder's implementation.
 \end{itemize}
 
-You can disable the framework supports by specifying them in a comma-separated list to the
-command-line flag \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok and AutoValue supports,
+You can disable the builder framework support by specifying them in a comma-separated list to the
+command-line flag \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok and AutoValue support,
 use: \\ \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=AutoValue,Lombok>
 
 If your program directly defines any of these methods (for example, by adding your own setters to
@@ -191,7 +192,7 @@ a Lombok builder), you may need to write the annotations manually.
 
 Minor notes/caveats on these rules:
 \begin{itemize}
-\item Lombok fields annotated with \<@Singular> will be treated as defaulted (i.e. not required), because
+\item Lombok fields annotated with \<@Singular> will be treated as defaulted (i.e., not required), because
 Lombok will set them to empty collections if the corresponding setter is not called.
 \item If you manually provide defaults to a Lombok builder (for example, by defining the builder yourself
 and assigning a default value to the builder's field), the checker will treat that field as defaulted

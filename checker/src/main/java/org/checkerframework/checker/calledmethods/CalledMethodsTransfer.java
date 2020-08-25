@@ -9,14 +9,14 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
-/** A basic transfer function that accumulates the names of methods called. */
+/** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
 
     /** The type factory. */
     private final CalledMethodsAnnotatedTypeFactory atypeFactory;
 
     /**
-     * Constructor that calls super() and sets the type factory field.
+     * Create a new CalledMethodsTransfer.
      *
      * @param analysis the analysis
      */

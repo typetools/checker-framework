@@ -9,10 +9,9 @@ import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
- * The primary typechecker for the Called Methods Checker, which tracks the methods that have
- * definitely been called on an object. One common use case for the Called Methods Checker is to
- * specify safe combinations of options to builder or builder-like interfaces, preventing objects
- * from being instantiated incompletely.
+ * The Called Methods Checker tracks the methods that have definitely been called on an object. One
+ * common use case for the Called Methods Checker is to specify safe combinations of options to
+ * builder or builder-like interfaces, preventing objects from being instantiated incompletely.
  */
 @SuppressWarningsPrefix({
     // Preferred checkername.
@@ -32,14 +31,14 @@ public class CalledMethodsChecker extends BaseTypeChecker {
 
     /**
      * If this option is supplied, count the number of analyzed calls to build() in supported
-     * frameworks and print it when analysis is complete. Useful for collecting metrics.
+     * builder frameworks and print it when analysis is complete. Useful for collecting metrics.
      */
     public static final String COUNT_FRAMEWORK_BUILD_CALLS = "countFrameworkBuildCalls";
 
     /**
      * This option can be used to disable the support (and therefore the automated checking of) code
-     * that uses the given frameworks. Useful when a user **only** wants to enforce specifications
-     * on custom builder objects (such as the AWS SDK examples).
+     * that uses the given builder frameworks. Useful when a user **only** wants to enforce
+     * specifications on custom builder objects (such as the AWS SDK examples).
      */
     public static final String DISABLE_BUILDER_FRAMEWORK_SUPPORTS =
             "disableBuilderFrameworkSupports";

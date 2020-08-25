@@ -30,7 +30,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
     private CalledMethodsAnnotatedTypeFactory atypeFactory;
 
     /**
-     * Simple constructor.
+     * Create a new LombokSupport.
      *
      * @param atypeFactory the typechecker's type factory
      */
@@ -52,8 +52,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
                             "edu.umd.cs.findbugs.annotations.NonNull",
                             "javax.annotation.Nonnull",
                             // "javax.validation.constraints.NotNull", // The field might contain a
-                            // null value
-                            // until it is persisted.
+                            // null value until it is persisted.
                             "lombok.NonNull",
                             "org.checkerframework.checker.nullness.qual.NonNull",
                             "org.eclipse.jdt.annotation.NonNull",
@@ -70,8 +69,8 @@ public class LombokSupport implements BuilderFrameworkSupport {
     private final Map<Element, String> defaultedElements = new HashMap<>();
 
     /**
-     * For {@code build} methods on {@code Builder} types, the framework support should determine
-     * the required properties and add a corresponding {@link
+     * For {@code build} methods on {@code Builder} types, the builder framework support should
+     * determine the required properties and add a corresponding {@link
      * org.checkerframework.checker.calledmethods.qual.CalledMethods} annotation to the receiver.
      *
      * @param t a method that is possibly the {@code build} method for a builder. The only
@@ -112,8 +111,8 @@ public class LombokSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Update a particular type associated with a toBuilder with the relevant CalledMethods
-     * annotation. This can be the return type of toBuilder or the corresponding generated "copy"
+     * Add, to a type, a CalledMethods annotation that states that all required setters have been
+     * called. The type can be the return type of toBuilder or the corresponding generated "copy"
      * constructor.
      *
      * @param type type to update
@@ -127,7 +126,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * computes the required properties of a @lombok.Builder class, i.e., the names of the fields
+     * Computes the required properties of a @lombok.Builder class, i.e., the names of the fields
      * with @lombok.NonNull annotations.
      *
      * @param lombokClassElement the class with the @lombok.Builder annotation
@@ -149,18 +148,15 @@ public class LombokSupport implements BuilderFrameworkSupport {
                 String methodName = member.getSimpleName().toString();
                 // Handle fields with @Builder.Default annotations.
                 // If a field foo has an @Builder.Default annotation, Lombok always generates a
-                // method
-                // called $default$foo.
+                // method called $default$foo.
                 if (methodName.startsWith("$default$")) {
                     String propName = methodName.substring(9); // $default$ has 9 characters
                     defaultedPropertyNames.add(propName);
                 }
             } else if (member.getKind().isClass() && member.toString().endsWith("Builder")) {
                 // If a field bar has an @Singular annotation, Lombok always generates a method
-                // called
-                // clearBar in the builder class itself. Therefore, search the builder for such a
-                // method,
-                // and extract the appropriate property name to treat as defaulted.
+                // called clearBar in the builder class itself. Therefore, search the builder for
+                // such a method, and extract the appropriate property name to treat as defaulted.
                 for (Element builderMember : member.getEnclosedElements()) {
                     if (builderMember.getKind() == ElementKind.METHOD
                             && ElementUtils.hasAnnotation(builderMember, "lombok.Generated")) {

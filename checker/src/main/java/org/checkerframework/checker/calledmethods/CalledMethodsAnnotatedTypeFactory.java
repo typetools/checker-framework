@@ -57,7 +57,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      */
     private final boolean useValueChecker;
 
-    /** The frameworks (such as Lombok and AutoValue) supported by the Called Methods checker. */
+    /**
+     * The builder frameworks (such as Lombok and AutoValue) supported by the Called Methods
+     * checker.
+     */
     private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
     /**
@@ -75,7 +78,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             "org.checkerframework.checker.builder.qual.NotCalledMethods";
 
     /**
-     * Create a new accumulation checker's annotated type factory.
+     * Create a new CalledMethodsAnnotatedTypeFactory.
      *
      * @param checker the checker
      */
@@ -123,11 +126,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     /**
      * Enables support for the given builder-generation framework, unless it is listed in the
-     * disabled frameworks parsed from the -AdisableBuilderFrameworkSupport option's arguments.
+     * disabled builder frameworks parsed from the -AdisableBuilderFrameworkSupport option's
+     * arguments.
      *
-     * @param framework the framework to enable
-     * @param disabledFrameworks the set of disabled frameworks. This argument will be side-effect
-     *     to remove a framework if it was actually disabled.
+     * @param framework the builder framework to enable
+     * @param disabledFrameworks the set of disabled builder frameworks. This argument will be
+     *     side-effected to remove a builder framework if it was actually disabled.
      */
     private void enableFramework(String framework, Set<String> disabledFrameworks) {
         if (disabledFrameworks == null || !disabledFrameworks.contains(framework)) {
@@ -140,7 +144,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                     return;
                 default:
                     throw new BugInCF(
-                            "Called Methods Checker tried to enable an unsupported framework: "
+                            "Called Methods Checker tried to enable an unsupported builder framework: "
                                     + framework);
             }
         } else {
@@ -171,8 +175,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * compatibility.
      *
      * @param tree the method invocation whose invoked method is to be checked
-     * @return true if the declaration of the invoked method has a ReturnsReceiver declaration
-     *     annotation
+     * @return true if the declaration of the invoked method has an obsolete ReturnsReceiver
+     *     declaration annotation
      */
     private boolean hasOldReturnsReceiverAnnotation(MethodInvocationTree tree) {
         return this.getDeclAnnotation(TreeUtils.elementFromUse(tree), ReturnsReceiver.class)
@@ -207,9 +211,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
             for (Tree filterTree : tree.getArguments()) {
                 // Search the arguments to withFilters for either: (1) a constructor invocation of
-                // the Filter
-                // constructor, whose first argument is the name, or (2) a call to the withName
-                // method.
+                // the Filter constructor, whose first argument is the name, or (2) a call to the
+                // withName method.
                 //
                 // This code is searching for code such as:
                 // new Filter("owner").withValues("...")
@@ -217,8 +220,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 // new Filter().*.withName("owner").*
                 //
                 // It is attempting to recover either the argument to the constructor or the
-                // argument
-                // to the last invocation of withName ("owner" in both of the above examples).
+                // argument to the last invocation of withName ("owner" in both of the above
+                // examples).
                 String adjustedMethodName = filterTreeToMethodName(filterTree, valueATF);
                 if (adjustedMethodName != null) {
                     return adjustedMethodName;
@@ -393,9 +396,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     /**
-     * Fetch the supported frameworks that are enabled.
+     * Fetch the supported builder frameworks that are enabled.
      *
-     * @return a collection of frameworks that are enabled in this run of the checker
+     * @return a collection of builder frameworks that are enabled in this run of the checker
      */
     /* package-private */ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
         return builderFrameworkSupports;

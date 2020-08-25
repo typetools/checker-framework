@@ -4,8 +4,10 @@ import javax.lang.model.type.TypeMirror;
 
 /** A utility class of static methods used in supporting builder-generation frameworks. */
 public class BuilderFrameworkSupportUtils {
-    /** This class is non-instantiable */
-    private BuilderFrameworkSupportUtils() {}
+    /** This class is non-instantiable. */
+    private BuilderFrameworkSupportUtils() {
+        throw new Error("Do not instantiate");
+    }
 
     /**
      * Checks whether the given type is one of the immutable collections defined in
