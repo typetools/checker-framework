@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1773,8 +1774,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
         }
 
-        MethodTree enclosingMethod = getEnclosingMethodTree(tree);
-        if (enclosingMethod != null) {
+        Tree enclosingTree = getEnclosingClassOrMethod(tree);
+        if (enclosingTree == null) {
+            return null;
+        } else if (enclosingTree.getKind() == Kind.METHOD) {
+            MethodTree enclosingMethod = (MethodTree) enclosingTree;
             if (TreeUtils.isConstructor(enclosingMethod)) {
                 // The type of `this` in a constructor is usually the constructor return type.
                 // Certain type systems, in particular the Initialization Checker, need custom
@@ -1783,40 +1787,40 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else {
                 return getAnnotatedType(enclosingMethod).getReceiverType();
             }
+        } else if (TreeUtils.isClassTree(enclosingTree)) {
+            return (AnnotatedDeclaredType) getAnnotatedType(enclosingTree);
         }
-        ClassTree enclosingClass = getEnclosingClassTree(tree);
-        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
-        return type;
+        return null;
     }
 
-    ClassTree getEnclosingClassTree(Tree tree) {
+    /**
+     * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
+     * artificial, that is create by dataflow, then {@link #artificialTreeToEnclosingElementMap} is
+     * used to find the enclosing tree;
+     *
+     * @param tree tree to whose inner most enclosing method or class is returned.
+     * @return the inner most enclosing method or class tree of {@code tree}
+     */
+    private Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-        if (enclosingClass != null) {
-            return enclosingClass;
+        Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
+        classAndMethodKinds.add(Kind.METHOD);
+        Tree enclosing = TreeUtils.enclosingOfKind(path, classAndMethodKinds);
+        if (enclosing != null) {
+            return enclosing;
         }
         Element e = getEnclosingElementForArtificialTree(tree);
         if (e != null) {
-            TypeElement typeElt = ElementUtils.enclosingClass(e);
-            return (ClassTree) declarationFromElement(typeElt);
+            Element enclosingMethodOrClass = e;
+            while (enclosingMethodOrClass != null
+                    && enclosingMethodOrClass.getKind() != ElementKind.METHOD
+                    && !enclosingMethodOrClass.getKind().isClass()) {
+                @Nullable Element encl = enclosingMethodOrClass.getEnclosingElement();
+                enclosingMethodOrClass = encl;
+            }
+            return declarationFromElement(enclosingMethodOrClass);
         }
-
         return getCurrentClassTree(tree);
-    }
-
-    MethodTree getEnclosingMethodTree(Tree tree) {
-        TreePath path = getPath(tree);
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
-        if (enclosingMethod != null) {
-            return enclosingMethod;
-        }
-        Element e = getEnclosingElementForArtificialTree(tree);
-        if (e != null
-                && (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR)) {
-            return (MethodTree) declarationFromElement(e);
-        }
-
-        return null;
     }
 
     /**

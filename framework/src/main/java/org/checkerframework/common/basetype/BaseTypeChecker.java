@@ -451,7 +451,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * the method is called if subcheckers is null.
      * Assumes all checkers run on the same thread.
      */
-    private List<BaseTypeChecker> getSubcheckers() {
+    public List<BaseTypeChecker> getSubcheckers() {
         if (subcheckers == null) {
             // Instantiate the checkers this one depends on, if any.
             LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =

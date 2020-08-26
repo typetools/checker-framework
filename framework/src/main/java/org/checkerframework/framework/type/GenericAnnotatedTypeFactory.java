@@ -291,6 +291,11 @@ public abstract class GenericAnnotatedTypeFactory<
     public void preProcessClassTree(ClassTree classTree) {
         if (this.everUseFlow) {
             checkAndPerformFlowAnalysis(classTree);
+            for (BaseTypeChecker checker : checker.getSubcheckers()) {
+                AnnotatedTypeFactory subFactory = checker.getTypeFactory();
+                subFactory.artificialTreeToEnclosingElementMap.putAll(
+                        artificialTreeToEnclosingElementMap);
+            }
         }
     }
 
@@ -1852,10 +1857,6 @@ public abstract class GenericAnnotatedTypeFactory<
             subFactoryVisitorState.setClassType(visitorState.getClassType());
             subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
             subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
-        }
-        if (subFactory != null) {
-            subFactory.artificialTreeToEnclosingElementMap.putAll(
-                    this.artificialTreeToEnclosingElementMap);
         }
         return subFactory;
     }
