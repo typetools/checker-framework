@@ -14,7 +14,6 @@ public class AnonymousClasses {
 
         // :: warning: (cast.unsafe.constructor.invocation)
         new @Odd Object() {
-            // :: error: (assignment.type.incompatible)
             @Odd Object o = this;
         };
     }
