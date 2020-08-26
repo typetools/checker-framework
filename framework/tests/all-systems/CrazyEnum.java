@@ -1,3 +1,4 @@
+@SuppressWarnings("all") // Check for crashes.
 public class CrazyEnum {
     private enum MyEnum {
         ENUM_CONST1 {
