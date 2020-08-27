@@ -1924,7 +1924,7 @@ public class CFGBuilder {
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
                 Node node, Set<TypeMirror> causes) {
             addToLookupMap(node);
-            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
+            Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
             for (TypeMirror cause : causes) {
                 exceptions.put(cause, tryStack.possibleLabels(cause));
             }
@@ -1960,7 +1960,7 @@ public class CFGBuilder {
         protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
                 Node node, Set<TypeMirror> causes, Node pred) {
             addToLookupMap(node);
-            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
+            Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
             for (TypeMirror cause : causes) {
                 exceptions.put(cause, tryStack.possibleLabels(cause));
             }
