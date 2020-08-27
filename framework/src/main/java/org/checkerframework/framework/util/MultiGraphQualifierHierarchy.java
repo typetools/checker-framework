@@ -30,9 +30,10 @@ import org.checkerframework.javacutil.TypeSystemError;
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
  *
- * @deprecated Use {@link ElementQualifierHierarchy} or {@link MostlyNoElementQualifierHierarchy}
- *     instead.
- *     <p>Converting from a subclass of MultiGraphQualifierHierarchy to new implementations:
+ * @deprecated Use {@link ElementQualifierHierarchy}, {@link MostlyNoElementQualifierHierarchy}, or
+ *     {@link NoElementQualifierHierarchy} instead. This class will be removed in a future release.
+ *     <p>Below are instructions on how to converting from a subclass of
+ *     MultiGraphQualifierHierarchy to the new implementations:
  *     <p>If the subclass implements isSubtype and calls super when annotations do not have
  *     elements, then use the following instructions to convert to {@link
  *     MostlyNoElementQualifierHierarchy}.
@@ -54,6 +55,25 @@ import org.checkerframework.javacutil.TypeSystemError;
  *           #greatestLowerBound(AnnotationMirror, AnnotationMirror)} if missing. (In the past, it
  *           was very easy to forget to implement these, now they are abstract methods.)
  *     </ol>
+ *     If you wish to continue to use a subclass of {@link MultiGraphQualifierHierarchy} or {@link
+ *     GraphQualifierHierarchy}, you may do so by adding the following to AnnotatedTypeFactory.
+ *     (It's better to convert to one of the new classes because MultiGraphQualifierHierarchy and
+ *     GraphQualifierHierarchy are buggy and no longer supported.)
+ *     <pre><code>
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ *   public QualifierHierarchy createQualifierHierarchy() {
+ *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+ *              .createMultiGraphQualifierHierarchy(this);
+ *   }
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ *   public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+ *                  factory) {
+ *      return new YourSubclassQualifierHierarchy(factory);
+ * }
+ * </code></pre>
  */
 @SuppressWarnings("interning") // Class is deprecated.
 @Deprecated

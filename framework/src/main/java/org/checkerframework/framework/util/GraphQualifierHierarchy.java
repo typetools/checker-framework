@@ -14,7 +14,8 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>This class is immutable and can be only created through {@link
  * MultiGraphQualifierHierarchy.MultiGraphFactory}.
  *
- * @deprecated Use {@link NoElementQualifierHierarchy} instead.
+ * @deprecated See notes in {@link MultiGraphQualifierHierarchy} about how to convert existing
+ *     subclasses to the new classes.
  */
 @Deprecated
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
