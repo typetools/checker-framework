@@ -30,7 +30,20 @@ import org.checkerframework.javacutil.TypeSystemError;
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
  *
- * @deprecated Use {@link QualifierHierarchyWithElements} instead.
+ * @deprecated Use {@link QualifierHierarchyWithElements} or {@link
+ *     QualifierHierarchyMostlyWithoutElements} instead.
+ *     <p>Converting from a subclass of MultiGraphQualifierHierarchy to new implementations:
+ *     <p>If the subclass implements isSubtype and does not call super in that implementation, then
+ *     use the following instructions to convert to a subclass of {@link
+ *     QualifierHierarchyWithElements}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           QualifierHierarchyWithElements}
+ *       <li>Create a constructor matching super.
+ *       <li>Implement {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)} and {@link
+ *           #greatestLowerBound(AnnotationMirror, AnnotationMirror)} if missing. (In the past, it
+ *           was very easy to forget to implement these, now they are abstract methods.)
+ *     </ol>
  */
 @SuppressWarnings("interning") // Class is deprecated.
 @Deprecated
