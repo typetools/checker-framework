@@ -31,8 +31,8 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -75,7 +75,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** LessThanQualifierHierarchy */
-    class LessThanQualifierHierarchy extends QualifierHierarchyWithElements {
+    class LessThanQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
          * Creates a LessThanQualifierHierarchy from the given classes.

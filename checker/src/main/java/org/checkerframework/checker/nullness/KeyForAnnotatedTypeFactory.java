@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -206,7 +206,7 @@ public class KeyForAnnotatedTypeFactory
     }
 
     /** KeyForQualifierHierarchy */
-    private final class KeyForQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
+    private final class KeyForQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link KeyFor} annotation. */
         private final QualifierKind KEYFOR_KIND;

@@ -14,7 +14,7 @@ import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
-import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -96,7 +96,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     //    }
 
     /** FlowQualifierHierarchy: {@code @Value(a) <: @Value(b) iff a == b} */
-    class FlowQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
+    class FlowQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
         final QualifierKind VALUE_KIND;
 
         /**

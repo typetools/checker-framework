@@ -20,7 +20,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -68,7 +68,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** SearchIndexQualifierHierarchy */
-    private final class SearchIndexQualifierHierarchy extends QualifierHierarchyWithElements {
+    private final class SearchIndexQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
          * Creates a SearchIndexQualifierHierarchy from the given classes.

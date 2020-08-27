@@ -11,10 +11,10 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 /**
  * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements,
  * but most of the qualifiers do not have elements. In contrast to {@link
- * QualifierHierarchyWithElements}, this class partially implements {@link
- * #isSubtype(AnnotationMirror, AnnotationMirror)}, {@link #leastUpperBound(AnnotationMirror,
- * AnnotationMirror)}, and {@link #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls
- * *WithElements when the result cannot be computed from the meta-annotations {@link
+ * ElementQualifierHierarchy}, this class partially implements {@link #isSubtype(AnnotationMirror,
+ * AnnotationMirror)}, {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)}, and {@link
+ * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls *WithElements when the result
+ * cannot be computed from the meta-annotations {@link
  * org.checkerframework.framework.qual.SubtypeOf}.
  *
  * <p>Subclasses must implement the following methods when annotations have elements:
@@ -28,21 +28,20 @@ import org.checkerframework.framework.type.QualifierHierarchy;
  *       QualifierKind)}
  * </ul>
  *
- * <p>QualifierHierarchyMostlyWithoutElements uses a {@link QualifierKindHierarchy} to model the
+ * <p>MostlyNoElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the
  * relationships between qualifiers. Subclasses can override {@link
  * #createQualifierKindHierarchy(Collection)} to return a subclass of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public abstract class QualifierHierarchyMostlyWithoutElements
-        extends QualifierHierarchyWithElements {
+public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifierHierarchy {
 
     /**
-     * Creates a QualifierHierarchyMostlyWithoutElements from the given classes.
+     * Creates a MostlyNoElementQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
-    protected QualifierHierarchyMostlyWithoutElements(
+    protected MostlyNoElementQualifierHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         super(qualifierClasses, elements);
     }

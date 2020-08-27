@@ -15,7 +15,7 @@ import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthO
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -76,7 +76,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      * SubstringIndexBottom}, and elements of type {@link SubstringIndexFor} that follow the
      * subtyping relation of {@link UBQualifier}.
      */
-    private final class SubstringIndexQualifierHierarchy extends QualifierHierarchyWithElements {
+    private final class SubstringIndexQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
          * Creates a SubstringIndexQualifierHierarchy from the given classes.

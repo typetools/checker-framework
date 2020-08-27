@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyWithoutElements;
+import org.checkerframework.framework.util.NoElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** Annotated type factory for the Aliasing Checker. */
@@ -88,7 +88,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** AliasingQualifierHierarchy */
-    protected class AliasingQualifierHierarchy extends QualifierHierarchyWithoutElements {
+    protected class AliasingQualifierHierarchy extends NoElementQualifierHierarchy {
 
         /**
          * Create AliasingQualifierHierarchy.

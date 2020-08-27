@@ -24,12 +24,12 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>For cases where the annotations have no elements, the {@link
  * org.checkerframework.framework.qual.SubtypeOf} meta-annotation is used.
  *
- * <p>QualifierHierarchyWithElements uses a {@link QualifierKindHierarchy} to model the
- * relationships between qualifiers. Subclasses can override {@link
- * #createQualifierKindHierarchy(Collection)} to return a subclass of QualifierKindHierarchy.
+ * <p>ElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
+ * between qualifiers. Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to
+ * return a subclass of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public abstract class QualifierHierarchyWithElements implements QualifierHierarchy {
+public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
 
     /** {@link org.checkerframework.javacutil.ElementUtils}. */
     private Elements elements;
@@ -59,12 +59,12 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
     protected final Map<QualifierKind, AnnotationMirror> kindToElementlessQualifier;
 
     /**
-     * Creates a QualifierHierarchyWithElements from the given classes.
+     * Creates a ElementQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
-    protected QualifierHierarchyWithElements(
+    protected ElementQualifierHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
         this.elements = elements;
         this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
@@ -95,7 +95,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      * @return the newly created qualifier kind hierarchy
      */
     protected QualifierKindHierarchy createQualifierKindHierarchy(
-            @UnderInitialization QualifierHierarchyWithElements this,
+            @UnderInitialization ElementQualifierHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
         return new DefaultQualifierKindHierarchy(qualifierClasses);
     }
@@ -108,7 +108,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
-            @UnderInitialization QualifierHierarchyWithElements this) {
+            @UnderInitialization ElementQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (!kind.hasElements()) {
@@ -129,7 +129,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createTopsMap(
-            @UnderInitialization QualifierHierarchyWithElements this) {
+            @UnderInitialization ElementQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> topsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getTops()) {
             topsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -148,7 +148,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
     protected Map<QualifierKind, AnnotationMirror> createBottomsMap(
-            @UnderInitialization QualifierHierarchyWithElements this) {
+            @UnderInitialization ElementQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> bottomsMap = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.getBottoms()) {
             bottomsMap.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
@@ -207,7 +207,7 @@ public abstract class QualifierHierarchyWithElements implements QualifierHierarc
         AnnotationMirror poly = kindToElementlessQualifier.get(polyKind);
         if (poly == null) {
             throw new TypeSystemError(
-                    "Poly %s has an element. Override QualifierHierarchyWithElements#getPolymorphicAnnotation.",
+                    "Poly %s has an element. Override ElementQualifierHierarchy#getPolymorphicAnnotation.",
                     polyKind);
         }
         return poly;

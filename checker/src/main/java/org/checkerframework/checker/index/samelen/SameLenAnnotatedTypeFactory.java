@@ -32,9 +32,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -162,7 +162,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type -- both
      * should usually be replaced by a SameLen with the union of the lists of names.
      */
-    private final class SameLenQualifierHierarchy extends QualifierHierarchyWithElements {
+    private final class SameLenQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
          * Creates a SameLenQualifierHierarchy from the given classes.

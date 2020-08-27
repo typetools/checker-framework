@@ -25,7 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -217,7 +217,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     }
 
     /** I18nFormatterQualifierHierarchy */
-    class I18nFormatterQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
+    class I18nFormatterQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link I18nFormat} annotation. */
         private final QualifierKind I18NFORMAT_KIND;

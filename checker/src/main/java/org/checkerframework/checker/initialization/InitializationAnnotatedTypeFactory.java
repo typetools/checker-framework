@@ -50,7 +50,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -764,7 +764,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * example.
      */
     protected abstract class InitializationQualifierHierarchy
-            extends QualifierHierarchyMostlyWithoutElements {
+            extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link UnknownInitialization} annotation. */
         private final QualifierKind UNKNOWN_INIT;

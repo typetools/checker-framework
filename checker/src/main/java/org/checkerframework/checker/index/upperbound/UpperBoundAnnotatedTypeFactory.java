@@ -66,8 +66,8 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -344,7 +344,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** The qualifier hierarchy for the upperbound type system. */
-    protected final class UpperBoundQualifierHierarchy extends QualifierHierarchyWithElements {
+    protected final class UpperBoundQualifierHierarchy extends ElementQualifierHierarchy {
         /**
          * Creates an UpperBoundQualifierHierarchy from the given classes.
          *

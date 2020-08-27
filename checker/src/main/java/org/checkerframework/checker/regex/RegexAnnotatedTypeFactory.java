@@ -36,7 +36,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyMostlyWithoutElements;
+import org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -167,7 +167,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * subtype of {@code @Regex(1)}. All regex annotations are subtypes of {@code @Regex}, which has
      * a default value of 0.
      */
-    private final class RegexQualifierHierarchy extends QualifierHierarchyMostlyWithoutElements {
+    private final class RegexQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link Regex} annotation. */
         private final QualifierKind REGEX_KIND;

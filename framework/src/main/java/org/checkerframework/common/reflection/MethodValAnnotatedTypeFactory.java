@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierHierarchyWithElements;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -153,7 +153,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** MethodValQualifierHierarchy */
-    protected class MethodValQualifierHierarchy extends QualifierHierarchyWithElements {
+    protected class MethodValQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
          * Creates a MethodValQualifierHierarchy from the given classes.

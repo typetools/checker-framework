@@ -30,15 +30,25 @@ import org.checkerframework.javacutil.TypeSystemError;
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
  *
- * @deprecated Use {@link QualifierHierarchyWithElements} or {@link
- *     QualifierHierarchyMostlyWithoutElements} instead.
+ * @deprecated Use {@link ElementQualifierHierarchy} or {@link MostlyNoElementQualifierHierarchy}
+ *     instead.
  *     <p>Converting from a subclass of MultiGraphQualifierHierarchy to new implementations:
- *     <p>If the subclass implements isSubtype and does not call super in that implementation, then
- *     use the following instructions to convert to a subclass of {@link
- *     QualifierHierarchyWithElements}.
+ *     <p>If the subclass implements isSubtype and calls super when annotations do not have
+ *     elements, then use the following instructions to convert to {@link
+ *     MostlyNoElementQualifierHierarchy}.
  *     <ol>
  *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
- *           QualifierHierarchyWithElements}
+ *           MostlyNoElementQualifierHierarchy}.
+ *       <li>Create a constructor matching super.
+ *       <li>Implement isSubtypeWithElements, leastUpperBoundWithElements, and
+ *           greatestLowerBoundWithElements. You may be able to reuse parts of your current
+ *           implementation of isSubtype, leastUpperBound, and greatestLowerBound.
+ *     </ol>
+ *     <p>If the subclass implements isSubtype and does not call super in that implementation, then
+ *     use the following instructions to convert to a subclass of {@link ElementQualifierHierarchy}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           ElementQualifierHierarchy}.
  *       <li>Create a constructor matching super.
  *       <li>Implement {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)} and {@link
  *           #greatestLowerBound(AnnotationMirror, AnnotationMirror)} if missing. (In the past, it
@@ -55,8 +65,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      *
      * @param annotatedTypeFactory annotated type factory
      * @return qualifier hierarchy
-     * @deprecated Use {@link org.checkerframework.framework.util.QualifierHierarchyWithElements}
-     *     instead.
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
     @Deprecated
     public static QualifierHierarchy createMultiGraphQualifierHierarchy(
@@ -147,7 +156,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      * #addSubtype(AnnotationMirror, AnnotationMirror)}, then get the instance with calling {@link
      * #build()}
      *
-     * @deprecated Use {@link QualifierHierarchyWithElements} instead.
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
     @Deprecated
     public static class MultiGraphFactory {

@@ -89,8 +89,9 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.QualifierHierarchyWithoutElements;
+import org.checkerframework.framework.util.NoElementQualifierHierarchy;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -663,16 +664,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>The implementation builds the type qualifier hierarchy for the {@link
      * #getSupportedTypeQualifiers()} using the meta-annotations found in them. The current
-     * implementation returns an instance of {@code QualifierHierarchyWithoutElements}.
+     * implementation returns an instance of {@code NoElementQualifierHierarchy}.
      *
      * <p>Subclasses must override this method if their qualifiers have elements; the method must
      * return an implementation of {@link QualifierHierarchy}, such as {@link
-     * org.checkerframework.framework.util.QualifierHierarchyWithElements}.
+     * ElementQualifierHierarchy}.
      *
      * @return a QualifierHierarchy for this type system
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new QualifierHierarchyWithoutElements(this.getSupportedTypeQualifiers(), elements);
+        return new NoElementQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -695,10 +696,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param factory MultiGraphFactory
      * @return QualifierHierarchy
-     * @deprecated Use either {@link
-     *     org.checkerframework.framework.util.QualifierHierarchyWithElements} or {@link
-     *     QualifierHierarchyWithoutElements} instead. This method will be removed in a future
-     *     release.
+     * @deprecated Use either {@link ElementQualifierHierarchy} or {@link
+     *     NoElementQualifierHierarchy} instead. This method will be removed in a future release.
      */
     @Deprecated
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
