@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -101,12 +102,15 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
      *
      * @return the unmodifiable set of top {@link AnnotationMirror}s
      */
-    @RequiresNonNull("this.kindToAnnotationMirror")
+    @RequiresNonNull({"this.kindToAnnotationMirror", "this.qualifierKindHierarchy"})
     protected Set<AnnotationMirror> createTops(
             @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         for (QualifierKind top : qualifierKindHierarchy.getTops()) {
-            tops.add(kindToAnnotationMirror.get(top));
+            // All QualifierKinds are keys in kindToAnnotationMirror
+            @SuppressWarnings("nullness:assignment.type.incompatible")
+            @NonNull AnnotationMirror topAnno = kindToAnnotationMirror.get(top);
+            tops.add(topAnno);
         }
         return Collections.unmodifiableSet(tops);
     }
@@ -116,12 +120,15 @@ public class QualifierHierarchyWithoutElements implements QualifierHierarchy {
      *
      * @return the unmodifiable set of bottom {@link AnnotationMirror}s
      */
-    @RequiresNonNull("this.kindToAnnotationMirror")
+    @RequiresNonNull({"this.kindToAnnotationMirror", "this.qualifierKindHierarchy"})
     protected Set<AnnotationMirror> createBottoms(
             @UnderInitialization QualifierHierarchyWithoutElements this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
-            bottoms.add(kindToAnnotationMirror.get(bottom));
+            // All QualifierKinds are keys in kindToAnnotationMirror
+            @SuppressWarnings("nullness:assignment.type.incompatible")
+            @NonNull AnnotationMirror bottomAnno = kindToAnnotationMirror.get(bottom);
+            bottoms.add(bottomAnno);
         }
         return Collections.unmodifiableSet(bottoms);
     }
