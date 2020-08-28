@@ -62,20 +62,21 @@ import org.checkerframework.javacutil.TypeSystemError;
  *     GraphQualifierHierarchy}, you may do so by adding the following to AnnotatedTypeFactory.
  *     (It's better to convert to one of the new classes because MultiGraphQualifierHierarchy and
  *     GraphQualifierHierarchy are buggy and no longer supported.)
- *     <pre><code>
+ *     <pre>
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- *   public QualifierHierarchy createQualifierHierarchy() {
+ * <code> public QualifierHierarchy createQualifierHierarchy() {
  *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
  *              .createMultiGraphQualifierHierarchy(this);
  *   }
+ * </code>
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- *   public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ * <code> public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
  *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
  *                  factory) {
  *      return new YourSubclassQualifierHierarchy(factory);
- * }
+ *  }
  * </code></pre>
  */
 @SuppressWarnings("interning") // Class is deprecated.
