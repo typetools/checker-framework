@@ -25,6 +25,11 @@ else
     GREP="grep"
 fi
 
+if [ "$1" == "--debug" ] ; then
+    debug=1
+    shift
+fi
+
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 TYPESYSTEM" >&2
   exit 1
