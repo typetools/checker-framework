@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.util.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 

@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -13,7 +13,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;

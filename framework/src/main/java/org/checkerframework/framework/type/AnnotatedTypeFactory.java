@@ -89,9 +89,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.framework.util.ElementQualifierHierarchy;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.NoElementQualifierHierarchy;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -697,8 +695,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param factory MultiGraphFactory
      * @return QualifierHierarchy
      * @deprecated Use either {@link ElementQualifierHierarchy}, {@link
-     *     NoElementQualifierHierarchy}, or {@link
-     *     org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy} instead. This
+     *     NoElementQualifierHierarchy}, or {@link MostlyNoElementQualifierHierarchy} instead. This
      *     method will be removed in a future release.
      */
     @Deprecated

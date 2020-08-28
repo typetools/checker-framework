@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.NoElementQualifierHierarchy;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**

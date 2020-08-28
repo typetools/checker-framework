@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -6,13 +6,15 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 
 /**
- * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements,
- * but most of the qualifiers do not have elements. In contrast to {@link
- * ElementQualifierHierarchy}, this class partially implements {@link #isSubtype(AnnotationMirror,
- * AnnotationMirror)}, {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)}, and {@link
+ * A {@link org.checkerframework.framework.type.QualifierHierarchy} where qualifiers may be
+ * represented by annotations with elements, but most of the qualifiers do not have elements. In
+ * contrast to {@link org.checkerframework.framework.type.ElementQualifierHierarchy}, this class
+ * partially implements {@link #isSubtype(AnnotationMirror, AnnotationMirror)}, {@link
+ * #leastUpperBound(AnnotationMirror, AnnotationMirror)}, and {@link
  * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls *WithElements when the result
  * cannot be computed from the meta-annotations {@link
  * org.checkerframework.framework.qual.SubtypeOf}.
