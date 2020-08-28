@@ -7,5 +7,10 @@ public class Issue3561 {
         void innerMethod(@Untainted Issue3561.@Untainted Inner this) {
             Issue3561.this.outerMethod();
         }
+
+        void innerMethod2(@Tainted Issue3561.@Untainted Inner this) {
+            // :: error: (method.invocation.invalid)
+            Issue3561.this.outerMethod();
+        }
     }
 }
