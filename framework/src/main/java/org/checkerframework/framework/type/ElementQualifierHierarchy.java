@@ -24,12 +24,12 @@ import org.checkerframework.javacutil.TypeSystemError;
  * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
  *
  * <p>ElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
- * between qualifiers. Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to
- * return a subclass of QualifierKindHierarchy.
+ * between qualifiers. {@link MostlyNoElementQualifierHierarchy} uses the {@link
+ * QualifierKindHierarchy} to implement {@code isSubtype}, {@code leastUpperBound}, and {@code
+ * greatestLowerBound} methods for qualifiers without elements.
  *
- * <p>{@link MostlyNoElementQualifierHierarchy} uses the {@link QualifierKindHierarchy} to implement
- * {@code isSubtype}, {@code leastUpperBound}, and {@code greatestLowerBound} methods for qualifiers
- * without elements.
+ * <p>Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass
+ * of QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
 public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
