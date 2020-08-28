@@ -307,6 +307,7 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-Xmaxerrs', '10000',
                 '-Xmaxwarns', '10000',
                 '-ArequirePrefixInWarningSuppressions',
+                '-AwarnUnneededSuppressions',
         ]
         options.compilerArgs += args
 

@@ -563,7 +563,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Otherwise, it prints the message.
      */
-    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
