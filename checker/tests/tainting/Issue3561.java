@@ -1,0 +1,11 @@
+import org.checkerframework.checker.tainting.qual.*;
+
+public class Issue3561 {
+    void outerMethod(@Untainted Issue3561 this) {}
+
+    class Inner {
+        void innerMethod(@Untainted Issue3561.@Untainted Inner this) {
+            Issue3561.this.outerMethod();
+        }
+    }
+}
