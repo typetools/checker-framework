@@ -108,6 +108,7 @@ public class AnnotationStatistics extends SourceChecker {
         /** Whether only a summary should be printed. */
         private final boolean annotationsummaryonly;
 
+        /** Creat a new Visitor. */
         public Visitor(AnnotationStatistics l) {
             super(l);
 
