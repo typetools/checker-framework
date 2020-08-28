@@ -108,7 +108,11 @@ public class AnnotationStatistics extends SourceChecker {
         /** Whether only a summary should be printed. */
         private final boolean annotationsummaryonly;
 
-        /** Creat a new Visitor. */
+        /**
+         * Create a new Visitor.
+         *
+         * @param l the AnnotationStatistics object, used for obtaining command-line arguments
+         */
         public Visitor(AnnotationStatistics l) {
             super(l);
 
