@@ -43,14 +43,14 @@ import scenelib.annotations.io.IndexFileParser;
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
  * scenelib.annotations.el.AScene}, which {@code writeScenes()} can write into a file. For example,
- * a class {@code my.package.MyClass} will have its members' inferred types stored in a Scene, and
- * later written into a file named {@code my.package.MyClass.jaif} if using {@link
- * OutputFormat#JAIF}, or {@code my.package.MyClass.astub} if using {@link OutputFormat#STUB}.
+ * a class {@code my.pakkage.MyClass} will have its members' inferred types stored in a Scene, and
+ * later written into a file named {@code my.pakkage.MyClass.jaif} if using {@link
+ * OutputFormat#JAIF}, or {@code my.pakkage.MyClass.astub} if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
  * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
- * will be better. {@code writeScenes()} rewrites the initial .jaif files, and may create new ones.
+ * will be better. {@link #writeScenes} rewrites the initial .jaif files, and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage {
 
@@ -522,8 +522,7 @@ public class WholeProgramInferenceScenesStorage {
             if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
                 // firstKey works as a unique identifier for each annotation
                 // that should not be inserted in source code
-                String firstKey =
-                        typeToUpdate.description.toString() + typeToUpdate.tlAnnotationsHere;
+                String firstKey = aTypeElementToString(typeToUpdate);
                 Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
                 Set<String> annosIgnored = annosToIgnore.get(key);
                 if (annosIgnored == null) {
@@ -536,8 +535,20 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Maps the toString() representation of an ATypeElement and its TypeUseLocation to a set of
-     * names of annotations.
+     * Returns a string representation of an ATypeElement, for use as part of a key in {@link
+     * AnnotationsInContexts}.
+     *
+     * @param aType an ATypeElement to convert to a string representation
+     * @return a string representation of the argument
+     */
+    public static String aTypeElementToString(ATypeElement aType) {
+        // return aType.description.toString() + aType.tlAnnotationsHere;
+        return aType.description.toString();
+    }
+
+    /**
+     * Maps the {@link #aTypeElementToString} representation of an ATypeElement and its
+     * TypeUseLocation to a set of names of annotations.
      */
     public static class AnnotationsInContexts
             extends HashMap<Pair<String, TypeUseLocation>, Set<String>> {

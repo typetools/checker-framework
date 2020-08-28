@@ -45,6 +45,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -183,7 +185,11 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
                     "org.springframework.lang.Nullable");
 
-    /** Creates NullnessAnnotatedTypeFactory. */
+    /**
+     * Creates a NullnessAnnotatedTypeFactory.
+     *
+     * @param checker the associated {@link NullnessChecker}
+     */
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -209,7 +215,12 @@ public class NullnessAnnotatedTypeFactory
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
+        boolean permitClearProperty =
+                checker.getLintOption(
+                        NullnessChecker.LINT_PERMITCLEARPROPERTY,
+                        NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
+        systemGetPropertyHandler =
+                new SystemGetPropertyHandler(processingEnv, this, permitClearProperty);
 
         classGetCanonicalName =
                 TreeUtils.getMethod(
@@ -347,14 +358,30 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator() {
+    protected DefaultForTypeAnnotator createDefaultForTypeAnnotator() {
         DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
-        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        defaultForTypeAnnotator.addAtmClass(
-                AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedPrimitiveType.class, NONNULL);
+        return defaultForTypeAnnotator;
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultForType(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (element != null
+                && element.getKind() == ElementKind.LOCAL_VARIABLE
+                && type.getKind().isPrimitive()) {
+            // Always apply the DefaultQualifierForUse for primitives.
+            super.addAnnotationsFromDefaultForType(null, type);
+        } else {
+            super.addAnnotationsFromDefaultForType(element, type);
+        }
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }
@@ -541,7 +568,8 @@ public class NullnessAnnotatedTypeFactory
      * @return whether or not type has the invariant annotation
      */
     @Override
-    protected boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type) {
+    protected boolean hasFieldInvariantAnnotation(
+            AnnotatedTypeMirror type, VariableElement fieldElement) {
         AnnotationMirror invariant = getFieldInvariantAnnotation();
         Set<AnnotationMirror> lowerBounds =
                 AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);

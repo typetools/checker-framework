@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -110,7 +111,10 @@ public class InitializationVisitor<
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -141,7 +145,7 @@ public class InitializationVisitor<
                 }
             }
         }
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -403,14 +407,9 @@ public class InitializationVisitor<
         }
 
         if (!violatingFields.isEmpty()) {
-            StringBuilder fieldsString = new StringBuilder();
-            boolean first = true;
+            StringJoiner fieldsString = new StringJoiner(", ");
             for (VariableTree f : violatingFields) {
-                if (!first) {
-                    fieldsString.append(", ");
-                }
-                first = false;
-                fieldsString.append(f.getName());
+                fieldsString.add(f.getName());
             }
             checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
         }

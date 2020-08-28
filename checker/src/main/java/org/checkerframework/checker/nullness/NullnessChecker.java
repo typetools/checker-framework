@@ -1,8 +1,7 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.SortedSet;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -30,7 +29,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     "soundArrayCreationNullness",
     // Old name for soundArrayCreationNullness, for backward compatibility; remove in January 2021.
     "forbidnonnullarraycomponents",
-    NullnessChecker.LINT_TRUSTARRAYLENZERO
+    NullnessChecker.LINT_TRUSTARRAYLENZERO,
+    NullnessChecker.LINT_PERMITCLEARPROPERTY
 })
 public class NullnessChecker extends InitializationChecker {
 
@@ -58,6 +58,15 @@ public class NullnessChecker extends InitializationChecker {
     /** Default for {@link #LINT_TRUSTARRAYLENZERO}. */
     public static final boolean LINT_DEFAULT_TRUSTARRAYLENZERO = false;
 
+    /**
+     * If true, client code may clear system properties. If false (the default), some calls to
+     * {@code System.getProperty} are refined to return @NonNull.
+     */
+    public static final String LINT_PERMITCLEARPROPERTY = "permitClearProperty";
+
+    /** Default for {@link #LINT_PERMITCLEARPROPERTY}. */
+    public static final boolean LINT_DEFAULT_PERMITCLEARPROPERTY = false;
+
     /*
     @Override
     public void initChecker() {
@@ -74,8 +83,8 @@ public class NullnessChecker extends InitializationChecker {
     }
 
     @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
+    public SortedSet<String> getSuppressWarningsPrefixes() {
+        SortedSet<String> result = super.getSuppressWarningsPrefixes();
         result.add("nullness");
         return result;
     }

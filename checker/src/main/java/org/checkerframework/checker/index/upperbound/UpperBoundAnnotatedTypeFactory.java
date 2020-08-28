@@ -326,7 +326,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
      *
      * @param node the given node
-     * @param classOfType Positive.class, NonNegative.class, or GTENegativeOne.class
+     * @param classOfType one of Positive.class, NonNegative.class, or GTENegativeOne.class
      * @return true iff the given node has the passed Lower Bound qualifier according to the LBC
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {

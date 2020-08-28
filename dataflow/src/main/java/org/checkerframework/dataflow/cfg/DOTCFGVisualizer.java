@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg;
 
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -9,6 +10,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
@@ -16,21 +18,21 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
-@SuppressWarnings("initialization.fields.uninitialized") // uses init method
+@SuppressWarnings("nullness:initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
-                A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
-        extends AbstractCFGVisualizer<A, S, T> {
+                V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+        extends AbstractCFGVisualizer<V, S, T> {
 
     /** The output directory. */
     protected String outDir;
@@ -59,7 +61,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public @Nullable Map<String, Object> visualize(
-            ControlFlowGraph cfg, Block entry, @Nullable Analysis<A, S, T> analysis) {
+            ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
 
         String dotGraph = visualizeGraph(cfg, entry, analysis);
         String dotFileName = dotOutputFileName(cfg.underlyingAST);
@@ -79,10 +81,10 @@ public class DOTCFGVisualizer<
         return res;
     }
 
-    @SuppressWarnings("enhancedfor.type.incompatible")
+    @SuppressWarnings("keyfor:enhancedfor.type.incompatible")
     @Override
     public String visualizeNodes(
-            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<A, S, T> analysis) {
+            Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
         sbDotNodes.append(lineSeparator);
@@ -123,18 +125,25 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    protected String addEdge(long sId, long eId, String flowRule) {
-        return "    " + sId + " -> " + eId + " [label=\"" + flowRule + "\"];" + lineSeparator;
+    protected String addEdge(Object sId, Object eId, String flowRule) {
+        return "    "
+                + format(sId)
+                + " -> "
+                + format(eId)
+                + " [label=\""
+                + flowRule
+                + "\"];"
+                + lineSeparator;
     }
 
     @Override
-    public String visualizeBlock(Block bb, @Nullable Analysis<A, S, T> analysis) {
+    public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
         return super.visualizeBlockHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "");
+        return super.visualizeSpecialBlockHelper(sbb, "\\n");
     }
 
     @Override
@@ -144,8 +153,13 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
-        return super.visualizeBlockTransferInputHelper(bb, analysis, leftJustifiedTerminator);
+    public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, leftJustifiedTerminator);
+    }
+
+    @Override
+    public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
+        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, leftJustifiedTerminator);
     }
 
     /**
@@ -176,18 +190,46 @@ public class DOTCFGVisualizer<
             CFGMethod cfgMethod = (CFGMethod) ast;
             String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
+            StringJoiner params = new StringJoiner(",");
+            for (VariableTree tree : cfgMethod.getMethod().getParameters()) {
+                params.add(tree.getType().toString());
+            }
             outFile.append(clsName);
             outFile.append("-");
             outFile.append(methodName);
+            if (params.length() != 0) {
+                outFile.append("-");
+                outFile.append(params);
+            }
 
             srcLoc.append("<");
             srcLoc.append(clsName);
             srcLoc.append("::");
             srcLoc.append(methodName);
             srcLoc.append("(");
-            srcLoc.append(cfgMethod.getMethod().getParameters());
+            srcLoc.append(params);
             srcLoc.append(")::");
             srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
+            srcLoc.append(">");
+        } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
+            CFGLambda cfgLambda = (CFGLambda) ast;
+            String clsName = cfgLambda.getClassTree().getSimpleName().toString();
+            String methodName = cfgLambda.getMethod().getName().toString();
+            int hashCode = cfgLambda.getCode().hashCode();
+            outFile.append(clsName);
+            outFile.append("-");
+            outFile.append(methodName);
+            outFile.append("-");
+            outFile.append(hashCode);
+
+            srcLoc.append("<");
+            srcLoc.append(clsName);
+            srcLoc.append("::");
+            srcLoc.append(methodName);
+            srcLoc.append("(");
+            srcLoc.append(cfgLambda.getMethod().getParameters());
+            srcLoc.append(")::");
+            srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
             srcLoc.append(">");
         } else {
             throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
@@ -207,29 +249,17 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeBlockNode(Node t, @Nullable Analysis<A, S, T> analysis) {
-        StringBuilder sbBlockNode = new StringBuilder();
-        sbBlockNode
-                .append(escapeDoubleQuotes(t))
-                .append("   [ ")
-                .append(getNodeSimpleName(t))
-                .append(" ]");
-        if (analysis != null) {
-            A value = analysis.getValue(t);
-            if (value != null) {
-                sbBlockNode.append("    > ").append(escapeDoubleQuotes(value));
-            }
-        }
-        return sbBlockNode.toString();
+    protected String format(Object obj) {
+        return escapeDoubleQuotes(obj);
     }
 
     @Override
-    public String visualizeStoreThisVal(A value) {
+    public String visualizeStoreThisVal(V value) {
         return storeEntryIndent + "this > " + value + leftJustifiedTerminator;
     }
 
     @Override
-    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value) {
+    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
         return storeEntryIndent
                 + localVar
                 + " > "
@@ -238,7 +268,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value) {
+    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
         return storeEntryIndent
                 + fieldAccess
                 + " > "
@@ -247,7 +277,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value) {
+    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
         return storeEntryIndent
                 + arrayValue
                 + " > "
@@ -256,7 +286,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
+    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
         return storeEntryIndent
                 + escapeDoubleQuotes(methodCall)
                 + " > "
@@ -265,7 +295,7 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreClassVals(FlowExpressions.ClassName className, A value) {
+    public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
         return storeEntryIndent
                 + className
                 + " > "
@@ -300,12 +330,12 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + " (" + leftJustifiedTerminator;
+        return classCanonicalName + "(" + leftJustifiedTerminator;
     }
 
     @Override
     public String visualizeStoreFooter() {
-        return ")";
+        return ")" + leftJustifiedTerminator;
     }
 
     /**

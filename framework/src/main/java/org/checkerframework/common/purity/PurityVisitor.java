@@ -372,7 +372,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             // check "no" purity
             EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
             // @Deterministic makes no sense for a void method or constructor
-            boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+            boolean isDeterministic = kinds.contains(DETERMINISTIC);
             if (isDeterministic) {
                 if (TreeUtils.isConstructor(node)) {
                     checker.reportWarning(node, "purity.deterministic.constructor");
@@ -403,14 +403,14 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                 EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
                 additionalKinds.removeAll(kinds);
                 if (TreeUtils.isConstructor(node)) {
-                    additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                    additionalKinds.remove(DETERMINISTIC);
                 }
                 if (!additionalKinds.isEmpty()) {
                     if (additionalKinds.size() == 2) {
                         checker.reportWarning(node, "purity.more.pure", node.getName());
-                    } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                    } else if (additionalKinds.contains(SIDE_EFFECT_FREE)) {
                         checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
-                    } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                    } else if (additionalKinds.contains(DETERMINISTIC)) {
                         checker.reportWarning(node, "purity.more.deterministic", node.getName());
                     } else {
                         assert false : "BaseTypeVisitor reached undesirable state";

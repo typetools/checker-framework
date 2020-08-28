@@ -6,6 +6,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -17,8 +18,8 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -76,7 +77,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     protected String defaultErrorMessage(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "AnnotatedTypeMirrors aren't structurally equal.",
                 "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
                 "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
@@ -89,13 +90,16 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * Framework sometimes "infers" Typevars to be Wildcards, we allow the combination
      * Wildcard,Typevar. In this case, the two types are "equal" if their bounds are.
      *
+     * @param type1 the first AnnotatedTypeMirror to compare
+     * @param type2 the second AnnotatedTypeMirror to compare
      * @return true if type1 and type2 are equal
      */
+    @EqualsMethod
     private boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        assert currentTop != null;
         if (type1 == type2) {
             return true;
         }
+        assert currentTop != null;
         if (type1 == null || type2 == null) {
             return false;
         }
@@ -143,9 +147,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         if (types1.size() != types2.size()) {
             throw new BugInCF(
                     "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-                    SystemUtil.join("; ", types1),
+                    UtilPlume.join("; ", types1),
                     types1.size(),
-                    SystemUtil.join("; ", types2),
+                    UtilPlume.join("; ", types2),
                     types2.size());
         }
 

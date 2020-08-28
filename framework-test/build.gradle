@@ -10,6 +10,9 @@ dependencies {
     // docs/developer/release/maven-artifacts/framework-test-pom.xml must be changed, too.
     implementation  group: 'junit', name: 'junit', version: '4.13'
     implementation project(':javacutil')
+    implementation project(':checker-qual')
+
+    implementation 'org.plumelib:plume-util:1.1.5'
 
     if (Jvm.current().toolsJar) {
         tagletImplementation files(Jvm.current().toolsJar)

@@ -230,24 +230,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            @Deprecated
-            public Set<? extends AnnotationMirror> getTypeQualifiers() {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.getTypeQualifiers() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
                 throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
-            public boolean isSubtypeTypeVariable(
-                    AnnotationMirror subAnno, AnnotationMirror superAnno) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
             }
 
             // Not needed - raises error.
@@ -260,15 +244,6 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            public boolean isSubtypeTypeVariable(
-                    Collection<? extends AnnotationMirror> subAnnos,
-                    Collection<? extends AnnotationMirror> superAnnos) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.isSubtypeTypeVariable() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
                 throw new BugInCF(
                         "GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
@@ -276,25 +251,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
             // Not needed - raises error.
             @Override
-            public AnnotationMirror leastUpperBoundTypeVariable(
-                    AnnotationMirror a1, AnnotationMirror a2) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.leastUpperBoundTypeVariable() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
             public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
                 throw new BugInCF(
                         "GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
-            }
-
-            // Not needed - raises error.
-            @Override
-            public AnnotationMirror greatestLowerBoundTypeVariable(
-                    AnnotationMirror a1, AnnotationMirror a2) {
-                throw new BugInCF(
-                        "GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() shouldn't be called.");
             }
 
             @Override

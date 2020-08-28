@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -32,9 +33,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
@@ -802,7 +803,7 @@ public class BoundsInitializer {
          *
          * @param node last node in the path
          */
-        public void removePathNode(TypePathNode node) {
+        public void removePathNode(@FindDistinct TypePathNode node) {
             if (currentPath.getLeaf() != node) {
                 throw new BugInCF(
                         "Cannot remove node: %s. It is not the last node. currentPath= %s",
@@ -904,7 +905,7 @@ public class BoundsInitializer {
 
         @Override
         public String toString() {
-            return SystemUtil.join(",", this);
+            return UtilPlume.join(",", this);
         }
 
         /**
@@ -1369,7 +1370,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "replacement=" + replacement,
@@ -1387,7 +1388,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "argIndex=" + argIndex));

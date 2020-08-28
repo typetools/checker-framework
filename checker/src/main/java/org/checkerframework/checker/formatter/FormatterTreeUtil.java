@@ -351,6 +351,8 @@ public class FormatterTreeUtil {
         }
     }
 
+    // The failure() method is required so that FormatterTransfer, which has no access to the
+    // FormatterChecker, can report errors.
     /**
      * Reports an error.
      *

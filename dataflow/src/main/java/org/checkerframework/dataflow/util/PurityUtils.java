@@ -1,14 +1,12 @@
 package org.checkerframework.dataflow.util;
 
-import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
-import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
-
 import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
@@ -73,7 +71,7 @@ public class PurityUtils {
      */
     public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
-        return kinds.contains(DETERMINISTIC);
+        return kinds.contains(Kind.DETERMINISTIC);
     }
 
     /**
@@ -100,7 +98,7 @@ public class PurityUtils {
      */
     public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
-        return kinds.contains(SIDE_EFFECT_FREE);
+        return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
     /**
@@ -136,14 +134,14 @@ public class PurityUtils {
                 provider.getDeclAnnotation(methodElement, Deterministic.class);
 
         if (pureAnnotation != null) {
-            return EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE);
+            return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
         }
         EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
         if (sefAnnotation != null) {
-            result.add(SIDE_EFFECT_FREE);
+            result.add(Kind.SIDE_EFFECT_FREE);
         }
         if (detAnnotation != null) {
-            result.add(DETERMINISTIC);
+            result.add(Kind.DETERMINISTIC);
         }
         return result;
     }

@@ -236,14 +236,19 @@ public class I18nFormatterTreeUtil {
     /**
      * Represents a format method invocation in the syntax tree.
      *
-     * <p>An I18nFormatCall instance can only be instantiated by createFormatForCall method
+     * <p>An I18nFormatCall instance can only be instantiated by the createFormatForCall method.
      */
     public class I18nFormatCall {
 
-        private final ExpressionTree tree;
+        /** The AST node for the call. */
+        private final MethodInvocationTree tree;
+        /** The format string argument. */
         private ExpressionTree formatArg;
+        /** The type factory. */
         private final AnnotatedTypeFactory atypeFactory;
+        /** The arguments to the format string. */
         private List<? extends ExpressionTree> args;
+        /** Extra description for error messages. */
         private String invalidMessage;
 
         private AnnotatedTypeMirror formatAnno;
@@ -259,6 +264,15 @@ public class I18nFormatterTreeUtil {
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
             initialCheck(theargs, method, node, methodAnno);
+        }
+
+        /**
+         * Returns the AST node for the call.
+         *
+         * @return the AST node for the call
+         */
+        public MethodInvocationTree getTree() {
+            return tree;
         }
 
         @Override
@@ -420,7 +434,7 @@ public class I18nFormatterTreeUtil {
             }
 
             ExpressionTree loc;
-            loc = ((MethodInvocationTree) tree).getMethodSelect();
+            loc = tree.getMethodSelect();
             if (type != InvocationType.VARARG && !args.isEmpty()) {
                 loc = args.get(0);
             }

@@ -11,6 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
 
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
@@ -105,11 +107,12 @@ public class TestDiagnosticUtils {
         return Pair.of(false, str);
     }
 
+    @SuppressWarnings("nullness") // TODO: regular expression group access
     protected static TestDiagnostic fromPatternMatching(
             Pattern diagnosticPattern,
             Pattern warningPattern,
             String filename,
-            Long lineNumber,
+            @Nullable Long lineNumber,
             String diagnosticString) {
         final DiagnosticKind kind;
         final String message;
@@ -211,6 +214,9 @@ public class TestDiagnosticUtils {
             category = category.substring(fixable.length());
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
+        if (categoryEnum == null) {
+            throw new Error("Unparseable category: " + category);
+        }
 
         return Pair.of(categoryEnum, isFixable);
     }
@@ -245,7 +251,8 @@ public class TestDiagnosticUtils {
     }
 
     /** Return true if this line in a Java file continues an expected diagnostic. */
-    public static boolean isJavaDiagnosticLineContinuation(String originalLine) {
+    @EnsuresNonNullIf(result = true, expression = "#1")
+    public static boolean isJavaDiagnosticLineContinuation(@Nullable String originalLine) {
         if (originalLine == null) {
             return false;
         }

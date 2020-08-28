@@ -50,7 +50,7 @@ class SimpleTest {
     // can write @This on receiver
     void thisOnReceiver(@This SimpleTest this) {}
 
-    // :: error: type.invalid.this.location
+    // :: error: type.invalid.this.location :: error: invalid.polymorphic.qualifier.use
     @This Object f;
 
     interface I {

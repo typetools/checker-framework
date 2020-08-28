@@ -3,6 +3,7 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -174,7 +175,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * Returns whether or not {@code field} has the invariant annotation.
      *
      * <p>This method is a convenience method for {@link
-     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror)}.
+     * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
      *
      * <p>If the {@code field} is a type variable, this method returns true if any possible
      * instantiation of the type parameter could have the invariant annotation. See {@link
@@ -185,7 +186,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected final boolean hasFieldInvariantAnnotation(VariableTree field) {
         AnnotatedTypeMirror type = getAnnotatedType(field);
-        return hasFieldInvariantAnnotation(type);
+        VariableElement fieldElement = TreeUtils.elementFromDeclaration(field);
+        return hasFieldInvariantAnnotation(type, fieldElement);
     }
 
     /**
@@ -196,9 +198,12 @@ public abstract class InitializationAnnotatedTypeFactory<
      * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
      *
      * @param type of field that might have invariant annotation
+     * @param fieldElement the field element, which can be used to check annotations on the
+     *     declaration
      * @return whether or not the type has the invariant annotation
      */
-    protected abstract boolean hasFieldInvariantAnnotation(AnnotatedTypeMirror type);
+    protected abstract boolean hasFieldInvariantAnnotation(
+            AnnotatedTypeMirror type, VariableElement fieldElement);
 
     /**
      * Creates a {@link UnderInitialization} annotation with the given type as its type frame
@@ -423,12 +428,17 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * In the first enclosing class, find the top-level member that contains tree. TODO: should we
-     * look whether these elements are enclosed within another class that is itself under
-     * construction.
+     * In the first enclosing class, find the top-level member that contains {@code path}.
+     *
+     * <p>TODO: should we look whether these elements are enclosed within another class that is
+     * itself under construction.
      *
      * <p>Are there any other type of top level objects?
+     *
+     * @param path the path whose leaf is the target
+     * @return a top-level member containing the leaf of {@code path}
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     private Tree findTopLevelClassMemberForTree(TreePath path) {
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass != null) {
@@ -732,6 +742,15 @@ public abstract class InitializationAnnotatedTypeFactory<
                 type.addAnnotation(INITIALIZED);
             }
             return super.visitLiteral(tree, type);
+        }
+
+        @Override
+        public Void visitMemberSelect(
+                MemberSelectTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            if (TreeUtils.isArrayLengthAccess(node)) {
+                annotatedTypeMirror.replaceAnnotation(INITIALIZED);
+            }
+            return super.visitMemberSelect(node, annotatedTypeMirror);
         }
     }
 

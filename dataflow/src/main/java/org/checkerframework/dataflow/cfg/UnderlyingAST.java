@@ -4,7 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
@@ -68,18 +68,34 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGMethod(", method, ")");
+            return UtilPlume.joinLines("CFGMethod(", method, ")");
         }
     }
 
     /** If the underlying AST is a lambda. */
     public static class CFGLambda extends UnderlyingAST {
 
+        /** The lambda expression. */
         private final LambdaExpressionTree lambda;
 
-        public CFGLambda(LambdaExpressionTree lambda) {
+        /** The enclosing class of the lambda. */
+        private final ClassTree classTree;
+
+        /** The enclosing method of the lambda. */
+        private final MethodTree method;
+
+        /**
+         * Create a new CFGLambda.
+         *
+         * @param lambda the lambda expression
+         * @param classTree the enclosing class of the lambda
+         * @param method the enclosing method of the lambda
+         */
+        public CFGLambda(LambdaExpressionTree lambda, ClassTree classTree, MethodTree method) {
             super(Kind.LAMBDA);
             this.lambda = lambda;
+            this.method = method;
+            this.classTree = classTree;
         }
 
         @Override
@@ -87,13 +103,36 @@ public abstract class UnderlyingAST {
             return lambda.getBody();
         }
 
+        /**
+         * Returns the lambda expression tree.
+         *
+         * @return the lambda expression tree
+         */
         public LambdaExpressionTree getLambdaTree() {
             return lambda;
         }
 
+        /**
+         * Returns the enclosing class of the lambda.
+         *
+         * @return the enclosing class of the lambda
+         */
+        public ClassTree getClassTree() {
+            return classTree;
+        }
+
+        /**
+         * Returns the enclosing method of the lambda.
+         *
+         * @return the enclosing method of the lambda
+         */
+        public MethodTree getMethod() {
+            return method;
+        }
+
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGLambda(", lambda, ")");
+            return UtilPlume.joinLines("CFGLambda(", lambda, ")");
         }
     }
 
@@ -122,7 +161,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGStatement(", code, ")");
+            return UtilPlume.joinLines("CFGStatement(", code, ")");
         }
     }
 }

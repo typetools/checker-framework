@@ -6,6 +6,7 @@ class Issue457<T extends Number> {
     public void f(T t) {
         final T obj = t;
 
+        @SuppressWarnings("signedness:assignment.type.incompatible") // cast
         Float objFloat = (obj instanceof Float) ? (Float) obj : null;
 
         // An error will be emitted on this line before the fix for Issue457

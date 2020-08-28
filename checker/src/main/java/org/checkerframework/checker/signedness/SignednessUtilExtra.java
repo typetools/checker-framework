@@ -3,6 +3,7 @@ package org.checkerframework.checker.signedness;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import org.checkerframework.checker.signedness.qual.Unsigned;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Provides more static utility methods for unsigned values. These methods use Java packages not
@@ -10,7 +11,9 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
  *
  * @checker_framework.manual #signedness-utilities Utility routines for manipulating unsigned values
  */
+@AnnotatedFor("nullness")
 public class SignednessUtilExtra {
+    /** Do not instantiate this class. */
     private SignednessUtilExtra() {
         throw new Error("Do not instantiate");
     }

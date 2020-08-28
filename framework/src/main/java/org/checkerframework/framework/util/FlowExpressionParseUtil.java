@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static javax.tools.Diagnostic.Kind.ERROR;
-
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -54,6 +52,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -1005,24 +1004,25 @@ public class FlowExpressionParseUtil {
          * Format this object verbosely, with each line indented by 4 spaces but without a trailing
          * newline.
          *
-         * @return a verbose printed representation of this
+         * @return a verbose string representation of this
          */
-        public String debugToString() {
-            return debugToString(4);
+        public String toStringDebug() {
+            return toStringDebug(4);
         }
 
         /**
          * Format this object verbosely, with each line indented by the given number of spaces but
          * without a trailing newline.
          *
-         * @return a verbose printed representation of this
+         * @param indent the number of spaces to indent the string representation of this
+         * @return a verbose string representation of this
          */
-        public String debugToString(int indent) {
+        public String toStringDebug(int indent) {
             String indentString = String.join("", Collections.nCopies(indent, " "));
             StringJoiner sj = new StringJoiner(indentString, indentString, "");
-            sj.add(String.format("receiver=%s%n", receiver.debugToString()));
+            sj.add(String.format("receiver=%s%n", receiver.toStringDebug()));
             sj.add(String.format("arguments=%s%n", arguments));
-            sj.add(String.format("outerReceiver=%s%n", outerReceiver.debugToString()));
+            sj.add(String.format("outerReceiver=%s%n", outerReceiver.toStringDebug()));
             sj.add(String.format("checkerContext=%s%n", "..."));
             // sj.add(String.format("checkerContext=%s%n", checkerContext));
             sj.add(String.format("parsingMember=%s%n", parsingMember));
@@ -1114,7 +1114,7 @@ public class FlowExpressionParseUtil {
          * @return a DiagMessage that can be used for error reporting
          */
         public DiagMessage getDiagMessage() {
-            return new DiagMessage(ERROR, errorKey, args);
+            return new DiagMessage(Kind.ERROR, errorKey, args);
         }
 
         public boolean isFlowParseError() {

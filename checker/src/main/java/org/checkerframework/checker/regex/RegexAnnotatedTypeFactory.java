@@ -9,7 +9,6 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -20,7 +19,6 @@ import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.checker.regex.qual.UnknownRegex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -222,21 +220,6 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return Pattern.compile(regexp).matcher("").groupCount();
     }
 
-    /**
-     * This method is a copy of RegexUtil.isRegex. We cannot directly use RegexUtil, because it uses
-     * type annotations which cannot be used in IDEs (yet).
-     */
-    @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
-    @Pure
-    private static boolean isRegex(String s) {
-        try {
-            Pattern.compile(s);
-        } catch (PatternSyntaxException e) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public TreeAnnotator createTreeAnnotator() {
         // Don't call super.createTreeAnnotator because the PropagationTreeAnnotator types binary
@@ -281,7 +264,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     regex = Character.toString((Character) tree.getValue());
                 }
                 if (regex != null) {
-                    if (isRegex(regex)) {
+                    if (RegexUtil.isRegex(regex)) {
                         int groupCount = getGroupCount(regex);
                         type.addAnnotation(createRegexAnnotation(groupCount));
                     } else {
@@ -324,7 +307,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     String lRegex = getPartialRegexValue(lExpr);
                     String rRegex = getPartialRegexValue(rExpr);
                     String concat = lRegex + rRegex;
-                    if (isRegex(concat)) {
+                    if (RegexUtil.isRegex(concat)) {
                         int groupCount = getGroupCount(concat);
                         type.addAnnotation(createRegexAnnotation(groupCount));
                     } else {

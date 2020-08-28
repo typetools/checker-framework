@@ -25,6 +25,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -46,9 +47,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -185,11 +186,11 @@ public class QualifierDefaults {
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "Checked code defaults: ",
-                SystemUtil.joinLines(checkedCodeDefaults),
+                UtilPlume.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                SystemUtil.joinLines(uncheckedCodeDefaults),
+                UtilPlume.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -400,7 +401,9 @@ public class QualifierDefaults {
                 case VARIABLE:
                     VariableTree vtree = (VariableTree) t;
                     ExpressionTree vtreeInit = vtree.getInitializer();
-                    if (vtreeInit != null && prev == vtreeInit) {
+                    @SuppressWarnings("interning:not.interned") // check cached value
+                    boolean sameAsPrev = (vtreeInit != null && prev == vtreeInit);
+                    if (sameAsPrev) {
                         Element elt = TreeUtils.elementFromDeclaration((VariableTree) t);
                         AnnotationMirror d =
                                 atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
@@ -790,7 +793,7 @@ public class QualifierDefaults {
 
             return !(type == null
                     // TODO: executables themselves should not be annotated
-                    // For some reason testchecker-tests fails with this.
+                    // For some reason h1h2checker-tests fails with this.
                     // || type.getKind() == TypeKind.EXECUTABLE
                     || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD
@@ -832,7 +835,7 @@ public class QualifierDefaults {
                 extends AnnotatedTypeScanner<Void, AnnotationMirror> {
 
             @Override
-            public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
+            public Void scan(@FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual) {
                 if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
                     return super.scan(t, qual);
                 }
@@ -1165,7 +1168,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));
