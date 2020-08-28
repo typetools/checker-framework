@@ -696,8 +696,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param factory MultiGraphFactory
      * @return QualifierHierarchy
-     * @deprecated Use either {@link ElementQualifierHierarchy} or {@link
-     *     NoElementQualifierHierarchy} instead. This method will be removed in a future release.
+     * @deprecated Use either {@link ElementQualifierHierarchy}, {@link
+     *     NoElementQualifierHierarchy}, or {@link
+     *     org.checkerframework.framework.util.MostlyNoElementQualifierHierarchy} instead. This
+     *     method will be removed in a future release.
      */
     @Deprecated
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
