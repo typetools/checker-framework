@@ -308,10 +308,10 @@ public interface QualifierHierarchy {
      * Returns the annotation in {@code qualifiers} that is in the same hierarchy as {@code
      * qualifier}.
      *
-     * <p>The default implement calls {@link #getTopAnnotation(AnnotationMirror)} and then calls
-     * {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}. So, if {@code qualifier} is
-     * a top qualifier, then call {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}
-     * directly is faster.
+     * <p>The default implementation calls {@link #getTopAnnotation(AnnotationMirror)} and then
+     * calls {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}. So, if {@code
+     * qualifier} is a top qualifier, then call {@link #findAnnotationInHierarchy(Collection,
+     * AnnotationMirror)} directly is faster.
      *
      * @param qualifiers set of annotations to search
      * @param qualifier annotation that is in the same hierarchy as the returned annotation
