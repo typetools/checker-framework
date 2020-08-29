@@ -25,6 +25,11 @@ else
     GREP="grep"
 fi
 
+if [ "$1" == "--debug" ] ; then
+    debug=1
+    shift
+fi
+
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 TYPESYSTEM" >&2
   exit 1
@@ -40,7 +45,8 @@ if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
 
-echo "regex=${regex}"
+# Diagnostics
+# echo "regex=${regex}"
 
 greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 

@@ -71,6 +71,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -845,10 +846,12 @@ public class CFGBuilder {
      */
     @SuppressWarnings("serial")
     protected static class TryFinallyScopeMap extends HashMap<Name, Label> {
+        /** New labels within a try block that were added by this implementation. */
         private final Map<Name, Label> accessedNames;
 
+        /** Create a new TryFinallyScopeMap. */
         protected TryFinallyScopeMap() {
-            this.accessedNames = new HashMap<>();
+            this.accessedNames = new LinkedHashMap<>();
         }
 
         @Override
@@ -1921,7 +1924,7 @@ public class CFGBuilder {
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
                 Node node, Set<TypeMirror> causes) {
             addToLookupMap(node);
-            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
+            Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
             for (TypeMirror cause : causes) {
                 exceptions.put(cause, tryStack.possibleLabels(cause));
             }
@@ -1957,7 +1960,7 @@ public class CFGBuilder {
         protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
                 Node node, Set<TypeMirror> causes, Node pred) {
             addToLookupMap(node);
-            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
+            Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
             for (TypeMirror cause : causes) {
                 exceptions.put(cause, tryStack.possibleLabels(cause));
             }
