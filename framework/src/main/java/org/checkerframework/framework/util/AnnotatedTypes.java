@@ -397,7 +397,7 @@ public class AnnotatedTypes {
     public static AnnotatedTypeMirror asMemberOf(
             Types types,
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
+            @Nullable AnnotatedTypeMirror t,
             Element elem,
             AnnotatedTypeMirror elemType) {
         // asMemberOf is only for fields, variables, and methods!
@@ -410,11 +410,13 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return elemType;
             default:
-                AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
-                if (!ElementUtils.isStatic(elem)) {
+                if (!ElementUtils.isStatic(elem) && t != null) {
+                    AnnotatedTypeMirror res =
+                            asMemberOfImpl(types, atypeFactory, t, elem, elemType);
                     atypeFactory.postAsMemberOf(res, t, elem);
+                    return res;
                 }
-                return res;
+                return elemType;
         }
     }
 
@@ -436,10 +438,6 @@ public class AnnotatedTypes {
             final AnnotatedTypeMirror of,
             final Element member,
             final AnnotatedTypeMirror memberType) {
-        if (ElementUtils.isStatic(member)) {
-            return memberType;
-        }
-
         switch (of.getKind()) {
             case ARRAY:
                 // Method references like String[]::clone should have a return type of String[]
