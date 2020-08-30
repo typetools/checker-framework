@@ -55,12 +55,6 @@ class ValueMethodIdentifier {
         return TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv);
     }
 
-    /** Determines whether a method is the {@code String.length()} method. */
-    public boolean isStringLengthMethod(ExecutableElement method) {
-        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
-        return method.equals(lengthMethod);
-    }
-
     /**
      * Determines whether a tree is an invocation of the {@code Array.getLength()} method.
      *
@@ -70,6 +64,12 @@ class ValueMethodIdentifier {
      */
     public boolean isArrayGetLengthInvocation(Tree tree, ProcessingEnvironment processingEnv) {
         return TreeUtils.isMethodInvocation(tree, getLengthMethod, processingEnv);
+    }
+
+    /** Determines whether a method is the {@code String.length()} method. */
+    public boolean isStringLengthMethod(ExecutableElement method) {
+        // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
+        return method.equals(lengthMethod);
     }
 
     /**
