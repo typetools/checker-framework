@@ -440,14 +440,7 @@ public class ValueTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, p);
-        if (atypefactory.getMethodIdentifier().isStringLengthMethod(n.getTarget().getMethod())) {
-            refineStringAtLengthInvocation(n, result.getRegularStore());
-        } else if (atypefactory
-                .getMethodIdentifier()
-                .isArrayGetLengthMethod(n.getTarget().getMethod())) {
-            refineArrayAtGetLengthInvocation(n, result.getRegularStore());
-        }
-
+        refineAtLengthInvocation(n, result.getRegularStore());
         return result;
     }
 
@@ -464,26 +457,24 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * If Array.getLength() is encountered, transform its @IntVal annotation into an @ArrayLen
-     * annotation for array.
+     * If length method is invoked for a sequence, transform its @IntVal annotation into
+     * an @ArrayLen annotation.
      *
-     * @param arrayLengthNode the {@code Array.getLength()} method invocation node
+     * @param lengthNode the length method invocation node
      * @param store the Checker Framework store
      */
-    private void refineArrayAtGetLengthInvocation(
-            MethodInvocationNode arrayLengthNode, CFStore store) {
-        Node node = arrayLengthNode.getArguments().get(0);
-        refineAtLengthAccess(arrayLengthNode, node, store);
-    }
-
-    /**
-     * If string.length() is encountered, transform its @IntVal annotation into an @ArrayLen
-     * annotation for string.
-     */
-    private void refineStringAtLengthInvocation(
-            MethodInvocationNode stringLengthNode, CFStore store) {
-        MethodAccessNode methodAccessNode = stringLengthNode.getTarget();
-        refineAtLengthAccess(stringLengthNode, methodAccessNode.getReceiver(), store);
+    private void refineAtLengthInvocation(MethodInvocationNode lengthNode, CFStore store) {
+        if (atypefactory
+                .getMethodIdentifier()
+                .isStringLengthMethod(lengthNode.getTarget().getMethod())) {
+            MethodAccessNode methodAccessNode = lengthNode.getTarget();
+            refineAtLengthAccess(lengthNode, methodAccessNode.getReceiver(), store);
+        } else if (atypefactory
+                .getMethodIdentifier()
+                .isArrayGetLengthMethod(lengthNode.getTarget().getMethod())) {
+            Node node = lengthNode.getArguments().get(0);
+            refineAtLengthAccess(lengthNode, node, store);
+        }
     }
 
     /** Gets a value checker annotation relevant for an array or a string. */
@@ -1358,15 +1349,7 @@ public class ValueTransfer extends CFTransfer {
                 refineArrayAtLengthAccess((FieldAccessNode) internal, store);
             } else if (node instanceof MethodInvocationNode) {
                 MethodInvocationNode miNode = (MethodInvocationNode) node;
-                if (atypefactory
-                        .getMethodIdentifier()
-                        .isStringLengthMethod(miNode.getTarget().getMethod())) {
-                    refineStringAtLengthInvocation(miNode, store);
-                } else if (atypefactory
-                        .getMethodIdentifier()
-                        .isArrayGetLengthMethod(miNode.getTarget().getMethod())) {
-                    refineArrayAtGetLengthInvocation(miNode, store);
-                }
+                refineAtLengthInvocation(miNode, store);
             }
         }
     }
