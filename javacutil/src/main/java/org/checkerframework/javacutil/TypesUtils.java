@@ -727,4 +727,15 @@ public final class TypesUtils {
                 }
         }
     }
+
+    /**
+     * Returns true if {@code type} has an enclosing type.
+     *
+     * @param type type to checker
+     * @return true if {@code type} has an enclosing type
+     */
+    public static boolean hasEnclosingType(TypeMirror type) {
+        Type e = ((Type) type).getEnclosingType();
+        return e.getKind() != TypeKind.NONE;
+    }
 }
