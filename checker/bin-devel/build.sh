@@ -27,7 +27,7 @@ else
 fi
 
 # Clone the annotated JDK into ../jdk .
-"/tmp/$USER/plume-scripts/git-clone-related" typetools jdk ../jdk --depth 1
+"/tmp/$USER/plume-scripts/git-clone-related" typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
