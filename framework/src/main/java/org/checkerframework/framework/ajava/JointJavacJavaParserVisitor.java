@@ -936,6 +936,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processMemberSelect(javacTree, node);
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
+        } else if (javaParserNode instanceof SuperExpr) {
+            SuperExpr node = (SuperExpr) javaParserNode;
+            processMemberSelect(javacTree, node);
+            assert node.getTypeName().isPresent();
+            javacTree.getExpression().accept(this, node.getTypeName().get());
         } else if (javaParserNode instanceof UnknownType) {
             processMemberSelect(javacTree, (UnknownType) javaParserNode);
             // This case occurs only for lambda parameters. In this case there's nothing to match
@@ -1634,6 +1639,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode);
 
     public abstract void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode);
+
+    public abstract void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode);
 
     public abstract void processMemberSelect(
             MemberSelectTree javacTree, UnknownType javaParserNode);
