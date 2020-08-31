@@ -8,6 +8,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -243,6 +244,20 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             member.accept(this, p);
         }
 
+        return null;
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+        for (VariableTree parameter : tree.getParameters()) {
+            // Parameter types might not be specified for lambdas. When not specified, JavaParser
+            // uses UnknownType. Conservatively, don't add parameter types.
+            visit(parameter.getModifiers(), p);
+            visit(parameter.getNameExpression(), p);
+            assert parameter.getInitializer() == null;
+        }
+
+        visit(tree.getBody(), p);
         return null;
     }
 

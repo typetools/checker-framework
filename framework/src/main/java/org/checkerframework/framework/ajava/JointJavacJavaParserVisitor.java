@@ -77,6 +77,7 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
+import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -856,7 +857,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         LambdaExpr node = (LambdaExpr) javaParserNode;
         processLambdaExpression(javacTree, node);
         visitLists(javacTree.getParameters(), node.getParameters());
-        javacTree.getBody().accept(this, node.getBody());
+        switch (javacTree.getBodyKind()) {
+            case EXPRESSION:
+                assert node.getBody() instanceof ExpressionStmt;
+                ExpressionStmt body = (ExpressionStmt) node.getBody();
+                javacTree.getBody().accept(this, body.getExpression());
+                break;
+            case STATEMENT:
+                javacTree.getBody().accept(this, node.getBody());
+                break;
+        }
+
         return null;
     }
 
@@ -920,6 +931,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processMemberSelect(javacTree, node);
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
+        } else if (javaParserNode instanceof UnknownType) {
+            processMemberSelect(javacTree, (UnknownType) javaParserNode);
+            // This case occurs only for lambda parameters. In this case there's nothing to match
+            // the subexpression to.
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1056,6 +1071,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitLists(javacTree.getArguments(), node.getArguments());
+        } else {
+            throwUnexpectedNodeType(javacTree, javaParserNode);
         }
 
         return null;
@@ -1390,7 +1407,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 ArrayTypeTree arrayType = (ArrayTypeTree) javacTree.getType();
                 arrayType.getType().accept(this, node.getType());
             } else {
-                javacTree.getType().accept(this, node.getType());
+                // Types for lambda parameters without explicit types don't have JavaParser nodes,
+                // don't process them.
+                if (!node.getType().isUnknownType()) {
+                    javacTree.getType().accept(this, node.getType());
+                }
             }
 
             // The name expression can be null, even when a name exists.
@@ -1585,6 +1606,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode);
 
     public abstract void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode);
+
+    public abstract void processMemberSelect(
+            MemberSelectTree javacTree, UnknownType javaParserNode);
 
     public abstract void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode);
 
