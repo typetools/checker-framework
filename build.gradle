@@ -218,7 +218,7 @@ allprojects {
             options.encoding = 'UTF-8'
             options.fork = true
             if (isJava8) {
-                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
@@ -758,7 +758,7 @@ subprojects {
         // Configure JUnit tests
         tasks.withType(Test) {
             if (isJava8) {
-                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             } else {
                 jvmArgs += [
                         "--illegal-access=warn",
