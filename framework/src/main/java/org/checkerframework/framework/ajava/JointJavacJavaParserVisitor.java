@@ -159,15 +159,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processAnnotation(javacTree, (MarkerAnnotationExpr) javaParserNode);
         } else if (javaParserNode instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr node = (SingleMemberAnnotationExpr) javaParserNode;
-            processAnnotation(javacTree, node);
             assert javacTree.getArguments().size() == 1;
             ExpressionTree value = javacTree.getArguments().get(0);
             assert value instanceof AssignmentTree;
             AssignmentTree assignment = (AssignmentTree) value;
             assignment.getExpression().accept(this, node.getMemberValue());
+            processAnnotation(javacTree, node);
         } else if (javaParserNode instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr node = (NormalAnnotationExpr) javaParserNode;
-            processAnnotation(javacTree, node);
             assert javacTree.getArguments().size() == node.getPairs().size();
             Iterator<MemberValuePair> argIter = node.getPairs().iterator();
             for (ExpressionTree arg : javacTree.getArguments()) {
@@ -175,6 +174,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 AssignmentTree assignment = (AssignmentTree) arg;
                 assignment.getExpression().accept(this, argIter.next().getValue());
             }
+
+            processAnnotation(javacTree, node);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -193,10 +194,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             throwUnexpectedNodeType(javacTree, javaParserNode, NodeWithAnnotations.class);
         }
 
-        processAnnotatedType(javacTree, javaParserNode);
         NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getUnderlyingType().accept(this, javaParserNode);
+        processAnnotatedType(javacTree, javaParserNode);
         return null;
     }
 
@@ -207,9 +208,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ArrayAccessExpr node = (ArrayAccessExpr) javaParserNode;
-        processArrayAccess(javacTree, node);
         javacTree.getExpression().accept(this, node.getName());
         javacTree.getIndex().accept(this, node.getIndex());
+        processArrayAccess(javacTree, node);
         return null;
     }
 
@@ -220,8 +221,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ArrayType node = (ArrayType) javaParserNode;
-        processArrayType(javacTree, node);
         javacTree.getType().accept(this, node.getComponentType());
+        processArrayType(javacTree, node);
         return null;
     }
 
@@ -232,7 +233,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssertStmt node = (AssertStmt) javaParserNode;
-        processAssert(javacTree, node);
         javacTree.getCondition().accept(this, node.getCheck());
         ExpressionTree detail = javacTree.getDetail();
         assert (detail != null) == node.getMessage().isPresent();
@@ -240,6 +240,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             detail.accept(this, node.getMessage().get());
         }
 
+        processAssert(javacTree, node);
         return null;
     }
 
@@ -250,9 +251,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssignExpr node = (AssignExpr) javaParserNode;
-        processAssignment(javacTree, node);
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
+        processAssignment(javacTree, node);
         return null;
     }
 
@@ -263,9 +264,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         BinaryExpr node = (BinaryExpr) javaParserNode;
-        processBinary(javacTree, node);
         javacTree.getLeftOperand().accept(this, node.getLeft());
         javacTree.getRightOperand().accept(this, node.getRight());
+        processBinary(javacTree, node);
         return null;
     }
 
@@ -280,7 +281,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         BlockStmt node = (BlockStmt) javaParserNode;
-        processBlock(javacTree, node);
         Iterator<? extends StatementTree> javacIter = javacTree.getStatements().iterator();
         boolean hasNextJavac = javacIter.hasNext();
         StatementTree javacStatement = hasNextJavac ? javacIter.next() : null;
@@ -339,6 +339,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         assert !hasNextJavac;
         assert !hasNextJavaParser;
+
+        processBlock(javacTree, node);
         return null;
     }
 
@@ -392,7 +394,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SwitchEntry node = (SwitchEntry) javaParserNode;
-        processCase(javacTree, node);
         // The expression is null if and only if the case is the default case.
         // Java 12 introduced multiple label cases, but expressions should contain at most one
         // element for Java 11 and below.
@@ -405,6 +406,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         visitLists(javacTree.getStatements(), node.getStatements());
+        processCase(javacTree, node);
         return null;
     }
 
@@ -415,9 +417,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CatchClause node = (CatchClause) javaParserNode;
-        processCatch(javacTree, node);
         javacTree.getParameter().accept(this, node.getParameter());
         javacTree.getBlock().accept(this, node.getBody());
+        processCatch(javacTree, node);
         return null;
     }
 
@@ -425,7 +427,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof ClassOrInterfaceDeclaration) {
             ClassOrInterfaceDeclaration node = (ClassOrInterfaceDeclaration) javaParserNode;
-            processClass(javacTree, node);
             visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
             if (javacTree.getKind() == Kind.CLASS) {
                 if (javacTree.getExtendsClause() == null) {
@@ -441,16 +442,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitClassMembers(javacTree.getMembers(), node.getMembers());
+            processClass(javacTree, node);
         } else if (javaParserNode instanceof AnnotationDeclaration) {
             AnnotationDeclaration node = (AnnotationDeclaration) javaParserNode;
-            processClass(javacTree, node);
             visitClassMembers(javacTree.getMembers(), node.getMembers());
+            processClass(javacTree, node);
         } else if (javaParserNode instanceof LocalClassDeclarationStmt) {
             javacTree.accept(
                     this, ((LocalClassDeclarationStmt) javaParserNode).getClassDeclaration());
         } else if (javaParserNode instanceof EnumDeclaration) {
             EnumDeclaration node = (EnumDeclaration) javaParserNode;
-            processClass(javacTree, node);
             visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
             // In an enum declaration, the enum constants are expanded as constant variable members
             // whereas in JavaParser they're stored as one object, need to match them.
@@ -472,6 +473,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitClassMembers(javacMembers, node.getMembers());
+            processClass(javacTree, node);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -579,7 +581,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CompilationUnit node = (CompilationUnit) javaParserNode;
-        processCompilationUnit(javacTree, node);
 
         // TODO: A CompilationUnitTree could also be a package-info.java file. Currently skipping
         // descending into these specific constructs such as getPackageAnnotations, because they
@@ -591,6 +592,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         visitLists(javacTree.getImports(), node.getImports());
         visitLists(javacTree.getTypeDecls(), node.getTypes());
+        processCompilationUnit(javacTree, node);
         return null;
     }
 
@@ -601,9 +603,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssignExpr node = (AssignExpr) javaParserNode;
-        processCompoundAssignment(javacTree, node);
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
+        processCompoundAssignment(javacTree, node);
         return null;
     }
 
@@ -615,10 +617,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ConditionalExpr node = (ConditionalExpr) javaParserNode;
-        processConditionalExpression(javacTree, node);
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getTrueExpression().accept(this, node.getThenExpr());
         javacTree.getFalseExpression().accept(this, node.getElseExpr());
+        processConditionalExpression(javacTree, node);
         return null;
     }
 
@@ -639,9 +641,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         DoStmt node = (DoStmt) javaParserNode;
-        processDoWhileLoop(javacTree, node);
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
+        processDoWhileLoop(javacTree, node);
         return null;
     }
 
@@ -662,11 +664,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ForEachStmt node = (ForEachStmt) javaParserNode;
-        processEnhancedForLoop(javacTree, node);
         // TODO: Fix the fact that the variable might be a JavaParser VariableDeclarationExpr.
         javacTree.getVariable().accept(this, node.getVariableDeclarator());
         javacTree.getExpression().accept(this, node.getIterable());
         javacTree.getStatement().accept(this, node.getBody());
+        processEnhancedForLoop(javacTree, node);
         return null;
     }
 
@@ -683,9 +685,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleExportsDirective node = (ModuleExportsDirective) javaParserNode;
-        processExports(javacTree, node);
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
         javacTree.getPackageName().accept(this, node.getName());
+        processExports(javacTree, node);
         return null;
     }
 
@@ -693,8 +695,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitExpressionStatement(ExpressionStatementTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof ExpressionStmt) {
             ExpressionStmt node = (ExpressionStmt) javaParserNode;
-            processExpressionStatemen(javacTree, node);
             javacTree.getExpression().accept(this, node.getExpression());
+            processExpressionStatemen(javacTree, node);
         } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
             // In this case the expression will be a MethodTree, which would be better to match with
             // the statement than the expression statement itself.
@@ -713,7 +715,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ForStmt node = (ForStmt) javaParserNode;
-        processForLoop(javacTree, node);
         Iterator<? extends StatementTree> javacIter = javacTree.getInitializer().iterator();
         for (Expression initializer : node.getInitialization()) {
             if (initializer.isVariableDeclarationExpr()) {
@@ -743,6 +744,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         javacTree.getStatement().accept(this, node.getBody());
+        processForLoop(javacTree, node);
         return null;
     }
 
@@ -778,7 +780,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         IfStmt node = (IfStmt) javaParserNode;
-        processIf(javacTree, node);
         assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
         ParenthesizedTree condition = (ParenthesizedTree) javacTree.getCondition();
         condition.getExpression().accept(this, node.getCondition());
@@ -788,6 +789,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getElseStatement().accept(this, node.getElseStmt().get());
         }
 
+        processIf(javacTree, node);
         return null;
     }
 
@@ -798,7 +800,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ImportDeclaration node = (ImportDeclaration) javaParserNode;
-        processImport(javacTree, node);
         // In javac trees, a name like a.* is stored as a member select, but JavaParser just stores
         // a and records that the name ends in an asterisk.
         if (node.isAsterisk()) {
@@ -808,6 +809,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         } else {
             javacTree.getQualifiedIdentifier().accept(this, node.getName());
         }
+
+        processImport(javacTree, node);
         return null;
     }
 
@@ -818,9 +821,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         InstanceOfExpr node = (InstanceOfExpr) javaParserNode;
-        processInstanceOf(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         javacTree.getType().accept(this, node.getType());
+        processInstanceOf(javacTree, node);
         return null;
     }
 
@@ -831,8 +834,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         IntersectionType node = (IntersectionType) javaParserNode;
-        processIntersectionType(javacTree, node);
         visitLists(javacTree.getBounds(), node.getElements());
+        processIntersectionType(javacTree, node);
         return null;
     }
 
@@ -843,8 +846,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         LabeledStmt node = (LabeledStmt) javaParserNode;
-        processLabeledStatement(javacTree, node);
         javacTree.getStatement().accept(this, node.getStatement());
+        processLabeledStatement(javacTree, node);
         return null;
     }
 
@@ -855,7 +858,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         LambdaExpr node = (LambdaExpr) javaParserNode;
-        processLambdaExpression(javacTree, node);
         visitLists(javacTree.getParameters(), node.getParameters());
         switch (javacTree.getBodyKind()) {
             case EXPRESSION:
@@ -868,6 +870,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 break;
         }
 
+        processLambdaExpression(javacTree, node);
         return null;
     }
 
@@ -896,7 +899,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         MethodReferenceExpr node = (MethodReferenceExpr) javaParserNode;
-        processMemberReference(javacTree, node);
         if (node.getScope().isTypeExpr()) {
             javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
         } else {
@@ -908,6 +910,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
 
+        processMemberReference(javacTree, node);
         return null;
     }
 
@@ -915,32 +918,32 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitMemberSelect(MemberSelectTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof FieldAccessExpr) {
             FieldAccessExpr node = (FieldAccessExpr) javaParserNode;
-            processMemberSelect(javacTree, node);
             javacTree.getExpression().accept(this, node.getScope());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof Name) {
             Name node = (Name) javaParserNode;
-            processMemberSelect(javacTree, node);
             assert node.getQualifier().isPresent();
             javacTree.getExpression().accept(this, node.getQualifier().get());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof ClassOrInterfaceType) {
             ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
-            processMemberSelect(javacTree, node);
             assert node.getScope().isPresent();
             javacTree.getExpression().accept(this, node.getScope().get());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof ClassExpr) {
             ClassExpr node = (ClassExpr) javaParserNode;
-            processMemberSelect(javacTree, node);
             javacTree.getExpression().accept(this, node.getType());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof ThisExpr) {
             ThisExpr node = (ThisExpr) javaParserNode;
-            processMemberSelect(javacTree, node);
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof SuperExpr) {
             SuperExpr node = (SuperExpr) javaParserNode;
-            processMemberSelect(javacTree, node);
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
+            processMemberSelect(javacTree, node);
         } else if (javaParserNode instanceof UnknownType) {
             processMemberSelect(javacTree, (UnknownType) javaParserNode);
             // This case occurs only for lambda parameters. In this case there's nothing to match
@@ -974,7 +977,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     private Void visitMethodForMethodDeclaration(
             MethodTree javacTree, MethodDeclaration javaParserNode) {
-        processMethod(javacTree, javaParserNode);
         // TODO: Handle modifiers. In javac this is a ModifiersTree but in JavaParser it's a list of
         // modifiers. This is a problem because a ModifiersTree has separate accessors to
         // annotations and other modifiers, so the order doesn't match. It might be that for
@@ -998,12 +1000,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getBody().accept(this, javaParserNode.getBody().get());
         }
 
+        processMethod(javacTree, javaParserNode);
         return null;
     }
 
     private Void visitMethodForConstructorDeclaration(
             MethodTree javacTree, ConstructorDeclaration javaParserNode) {
-        processMethod(javacTree, javaParserNode);
         // TODO: Handle modifiers.
         // Unlike other constructs, the list is non-null even if no type parameters are present.
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
@@ -1018,12 +1020,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         visitLists(javacTree.getParameters(), javaParserNode.getParameters());
         visitLists(javacTree.getThrows(), javaParserNode.getThrownExceptions());
         javacTree.getBody().accept(this, javaParserNode.getBody());
+        processMethod(javacTree, javaParserNode);
         return null;
     }
 
     private Void visitMethodForAnnotationMemberDeclaration(
             MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {
-        processMethod(javacTree, javaParserNode);
         // TODO: Handle modifiers. See corresponding comment in above method.
         javacTree.getReturnType().accept(this, javaParserNode.getType());
         assert (javacTree.getDefaultValue() != null)
@@ -1032,6 +1034,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getDefaultValue().accept(this, javaParserNode.getDefaultValue().get());
         }
 
+        processMethod(javacTree, javaParserNode);
         return null;
     }
 
@@ -1039,7 +1042,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitMethodInvocation(MethodInvocationTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof MethodCallExpr) {
             MethodCallExpr node = (MethodCallExpr) javaParserNode;
-            processMethodInvocation(javacTree, node);
             // In javac, the type arguments will be empty even if no type arguments are specified,
             // but
             // in JavaParser the type arguments will have the none Optional value.
@@ -1069,10 +1071,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitLists(javacTree.getArguments(), node.getArguments());
+            processMethodInvocation(javacTree, node);
         } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
             ExplicitConstructorInvocationStmt node =
                     (ExplicitConstructorInvocationStmt) javaParserNode;
-            processMethodInvocation(javacTree, node);
             // The left side of this assert is checking if the list is empty and the right side is a
             // check on the prescence of an optional.
             assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
@@ -1081,6 +1083,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitLists(javacTree.getArguments(), node.getArguments());
+            processMethodInvocation(javacTree, node);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1102,9 +1105,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleDeclaration node = (ModuleDeclaration) javaParserNode;
-        processModule(javacTree, node);
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getName().accept(this, node.getName());
+        processModule(javacTree, node);
         return null;
     }
 
@@ -1134,7 +1137,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ObjectCreationExpr node = (ObjectCreationExpr) javaParserNode;
-        processNewClass(javacTree, node);
         assert (javacTree.getEnclosingExpression() != null) == node.getScope().isPresent();
         if (javacTree.getEnclosingExpression() != null) {
             javacTree.getEnclosingExpression().accept(this, node.getScope().get());
@@ -1154,6 +1156,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitAnonymouClassBody(javacTree.getClassBody(), node.getAnonymousClassBody().get());
         }
 
+        processNewClass(javacTree, node);
         return null;
     }
 
@@ -1164,9 +1167,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleOpensDirective node = (ModuleOpensDirective) javaParserNode;
-        processOpens(javacTree, node);
         javacTree.getPackageName().accept(this, node.getName());
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
+        processOpens(javacTree, node);
         return null;
     }
 
@@ -1183,9 +1186,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         PackageDeclaration node = (PackageDeclaration) javaParserNode;
-        processPackage(javacTree, node);
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getPackageName().accept(this, node.getName());
+        processPackage(javacTree, node);
         return null;
     }
 
@@ -1196,7 +1199,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
-        processParameterizedType(javacTree, node);
         javacTree.getType().accept(this, node);
         // TODO: In a parameterized type, will the first branch ever run?
         if (javacTree.getTypeArguments().isEmpty()) {
@@ -1205,6 +1207,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             assert node.getTypeArguments().isPresent();
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
+
+        processParameterizedType(javacTree, node);
         return null;
     }
 
@@ -1215,8 +1219,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         EnclosedExpr node = (EnclosedExpr) javaParserNode;
-        processParenthesized(javacTree, node);
         javacTree.getExpression().accept(this, node.getInner());
+        processParenthesized(javacTree, node);
         return null;
     }
 
@@ -1240,9 +1244,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleProvidesDirective node = (ModuleProvidesDirective) javaParserNode;
-        processProvides(javacTree, node);
         javacTree.getServiceName().accept(this, node.getName());
         visitLists(javacTree.getImplementationNames(), node.getWith());
+        processProvides(javacTree, node);
         return null;
     }
 
@@ -1253,8 +1257,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleRequiresDirective node = (ModuleRequiresDirective) javaParserNode;
-        processRequires(javacTree, node);
         javacTree.getModuleName().accept(this, node.getName());
+        processRequires(javacTree, node);
         return null;
     }
 
@@ -1265,12 +1269,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ReturnStmt node = (ReturnStmt) javaParserNode;
-        processReturn(javacTree, node);
         assert (javacTree.getExpression() != null) == node.getExpression().isPresent();
         if (javacTree.getExpression() != null) {
             javacTree.getExpression().accept(this, node.getExpression().get());
         }
 
+        processReturn(javacTree, node);
         return null;
     }
 
@@ -1282,9 +1286,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SwitchStmt node = (SwitchStmt) javaParserNode;
-        processSwitch(javacTree, node);
         javacTree.getExpression().accept(this, node.getSelector());
         visitLists(javacTree.getCases(), node.getEntries());
+        processSwitch(javacTree, node);
         return null;
     }
 
@@ -1295,9 +1299,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SynchronizedStmt node = (SynchronizedStmt) javaParserNode;
-        processSynchronized(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         javacTree.getBlock().accept(this, node.getBody());
+        processSynchronized(javacTree, node);
         return null;
     }
 
@@ -1308,8 +1312,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ThrowStmt node = (ThrowStmt) javaParserNode;
-        processThrow(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
+        processThrow(javacTree, node);
         return null;
     }
 
@@ -1320,7 +1324,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         TryStmt node = (TryStmt) javaParserNode;
-        processTry(javacTree, node);
         // visitLists(javacTree.getResources(), node.getResources());
         Iterator<? extends Tree> javacIter = javacTree.getResources().iterator();
         for (Expression resource : node.getResources()) {
@@ -1343,6 +1346,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getFinallyBlock().accept(this, node.getFinallyBlock().get());
         }
 
+        processTry(javacTree, node);
         return null;
     }
 
@@ -1353,9 +1357,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CastExpr node = (CastExpr) javaParserNode;
-        processTypeCast(javacTree, node);
         javacTree.getType().accept(this, node.getType());
         javacTree.getExpression().accept(this, node.getExpression());
+        processTypeCast(javacTree, node);
         return null;
     }
 
@@ -1366,9 +1370,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         TypeParameter node = (TypeParameter) javaParserNode;
-        processTypeParameter(javacTree, node);
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         visitLists(javacTree.getBounds(), node.getTypeBound());
+        processTypeParameter(javacTree, node);
         return null;
     }
 
@@ -1379,8 +1383,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         UnaryExpr node = (UnaryExpr) javaParserNode;
-        processUnary(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
+        processUnary(javacTree, node);
         return null;
     }
 
@@ -1391,8 +1395,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         UnionType node = (UnionType) javaParserNode;
-        processUnionType(javacTree, node);
         visitLists(javacTree.getTypeAlternatives(), node.getElements());
+        processUnionType(javacTree, node);
         return null;
     }
 
@@ -1403,8 +1407,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleUsesDirective node = (ModuleUsesDirective) javaParserNode;
-        processUses(javacTree, node);
         javacTree.getServiceName().accept(this, node.getName());
+        processUses(javacTree, node);
         return null;
     }
 
@@ -1412,7 +1416,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof VariableDeclarator) {
             VariableDeclarator node = (VariableDeclarator) javaParserNode;
-            processVariable(javacTree, node);
             if (!node.getType().isVarType()
                     && (!node.getType().isClassOrInterfaceType()
                             || !node.getType()
@@ -1432,9 +1435,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             if (javacTree.getInitializer() != null) {
                 javacTree.getInitializer().accept(this, node.getInitializer().get());
             }
+
+            processVariable(javacTree, node);
         } else if (javaParserNode instanceof Parameter) {
             Parameter node = (Parameter) javaParserNode;
-            processVariable(javacTree, node);
             if (node.isVarArgs()) {
                 assert javacTree.getType().getKind() == Kind.ARRAY_TYPE;
                 ArrayTypeTree arrayType = (ArrayTypeTree) javacTree.getType();
@@ -1453,9 +1457,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             assert javacTree.getInitializer() == null;
+            processVariable(javacTree, node);
         } else if (javaParserNode instanceof ReceiverParameter) {
             ReceiverParameter node = (ReceiverParameter) javaParserNode;
-            processVariable(javacTree, node);
             javacTree.getType().accept(this, node.getType());
             // The name expression can be null, even when a name exists.
             if (javacTree.getNameExpression() != null) {
@@ -1463,11 +1467,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             assert javacTree.getInitializer() == null;
+            processVariable(javacTree, node);
         } else if (javaParserNode instanceof EnumConstantDeclaration) {
             // An enum constant is expanded as a variable declaration initialized to a constuctor
             // call.
             EnumConstantDeclaration node = (EnumConstantDeclaration) javaParserNode;
-            processVariable(javacTree, node);
             if (javacTree.getNameExpression() != null) {
                 javacTree.getNameExpression().accept(this, node.getName());
             }
@@ -1480,6 +1484,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             } else {
                 assert node.getClassBody().isEmpty();
             }
+
+            processVariable(javacTree, node);
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1494,9 +1500,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         WhileStmt node = (WhileStmt) javaParserNode;
-        processWhileLoop(javacTree, node);
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
+        processWhileLoop(javacTree, node);
         return null;
     }
 
@@ -1507,7 +1513,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         WildcardType node = (WildcardType) javaParserNode;
-        processWildcard(javacTree, node);
         // In javac, whether the bound is an extends or super clause depends on the kind of the
         // tree.
         assert (javacTree.getKind() == Kind.EXTENDS_WILDCARD) == node.getExtendedType().isPresent();
@@ -1525,6 +1530,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
         }
 
+        processWildcard(javacTree, node);
         return null;
     }
 
