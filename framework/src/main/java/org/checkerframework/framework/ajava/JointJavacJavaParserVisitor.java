@@ -897,7 +897,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         MethodReferenceExpr node = (MethodReferenceExpr) javaParserNode;
         processMemberReference(javacTree, node);
-        javacTree.getQualifierExpression().accept(this, node.getScope());
+        if (node.getScope().isTypeExpr()) {
+            javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
+        } else {
+            javacTree.getQualifierExpression().accept(this, node.getScope());
+        }
+
         assert (javacTree.getTypeArguments() != null) == node.getTypeArguments().isPresent();
         if (javacTree.getTypeArguments() != null) {
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
