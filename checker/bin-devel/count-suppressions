@@ -56,7 +56,8 @@ greplines=$(mktemp /tmp/count-suppressions.XXXXXX)
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" > "${greplines}"
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring annotated-jdk.
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" | grep -v "@AnnotatedFor" | grep -v "/tests/" | grep -v "/annotated-jdk/" > "${greplines}"
 
 ## Don't output a total, to avoid people using this approximate count.
 # echo -n "Total: "
