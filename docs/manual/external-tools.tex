@@ -135,7 +135,7 @@ gradle.projectsEvaluated {
     tasks.withType(JavaCompile).all { compile ->
         if (compile.name.contains("CheckTypes")) {
             options.fork = true
-            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.errorproneJavac.asPath}"]
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.errorproneJavac.asPath}".toString()]
         }
     }
 }
