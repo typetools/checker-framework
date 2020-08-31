@@ -1311,7 +1311,21 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         TryStmt node = (TryStmt) javaParserNode;
         processTry(javacTree, node);
-        visitLists(javacTree.getResources(), node.getResources());
+        // visitLists(javacTree.getResources(), node.getResources());
+        Iterator<? extends Tree> javacIter = javacTree.getResources().iterator();
+        for (Expression resource : node.getResources()) {
+            if (resource.isVariableDeclarationExpr()) {
+                for (VariableDeclarator declarator :
+                        resource.asVariableDeclarationExpr().getVariables()) {
+                    assert javacIter.hasNext();
+                    javacIter.next().accept(this, declarator);
+                }
+            } else {
+                assert javacIter.hasNext();
+                javacIter.next().accept(this, resource);
+            }
+        }
+
         javacTree.getBlock().accept(this, node.getTryBlock());
         visitLists(javacTree.getCatches(), node.getCatchClauses());
         assert (javacTree.getFinallyBlock() != null) == node.getFinallyBlock().isPresent();
@@ -1389,7 +1403,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         if (javaParserNode instanceof VariableDeclarator) {
             VariableDeclarator node = (VariableDeclarator) javaParserNode;
             processVariable(javacTree, node);
-            javacTree.getType().accept(this, node.getType());
+            if (!node.getType().isVarType()
+                    && (!node.getType().isClassOrInterfaceType()
+                            || !node.getType()
+                                    .asClassOrInterfaceType()
+                                    .getName()
+                                    .asString()
+                                    .equals("var"))) {
+                javacTree.getType().accept(this, node.getType());
+            }
+
             // The name expression can be null, even when a name exists.
             if (javacTree.getNameExpression() != null) {
                 javacTree.getNameExpression().accept(this, node.getName());

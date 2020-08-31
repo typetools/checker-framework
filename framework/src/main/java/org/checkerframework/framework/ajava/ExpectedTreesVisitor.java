@@ -1,7 +1,12 @@
 package org.checkerframework.framework.ajava;
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.VarType;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -18,9 +23,11 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Stores each visited tree that should match with some JavaParser node if the same Java file was
@@ -40,6 +47,23 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public void defaultAction(Tree tree) {
         trees.add(tree);
+    }
+
+    @Override
+    public Void visitCompilationUnit(CompilationUnitTree tree, Void p) {
+        try {
+            java.io.InputStream in = tree.getSourceFile().openInputStream();
+            com.github.javaparser.ast.CompilationUnit compilationUnit = StaticJavaParser.parse(in);
+            HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
+            varVisitor.visit(compilationUnit, null);
+            if (!varVisitor.hasVarType) {
+                return super.visitCompilationUnit(tree, p);
+            }
+        } catch (IOException e) {
+            throw new BugInCF("Unable to read source file for compilation unit", e);
+        }
+
+        return null;
     }
 
     @Override
@@ -274,6 +298,30 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
         for (Tree tree : trees) {
             visit(tree, p);
+        }
+    }
+
+    private static class HasVarTypeVisitor extends VoidVisitorAdapter<Void> {
+        public boolean hasVarType;
+
+        public HasVarTypeVisitor() {
+            hasVarType = false;
+        }
+
+        @Override
+        public void visit(ClassOrInterfaceType node, Void p) {
+            if (node.getName().asString().equals("var")) {
+                hasVarType = true;
+            }
+
+            super.visit(node, p);
+        }
+
+        @Override
+        public void visit(VarType node, Void p) {
+            hasVarType = true;
+
+            super.visit(node, p);
         }
     }
 }
