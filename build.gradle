@@ -97,11 +97,12 @@ allprojects {
     apply plugin: 'net.ltgt.errorprone'
 
     group 'org.checkerframework'
-    // Increment the minor version rather than just the patch level if:
+    // Increment the minor version (second number) rather than just the patch
+    // level (third number) if:
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.6.1-SNAPSHOT'
+    version '3.6.1'
 
     repositories {
         mavenCentral()
