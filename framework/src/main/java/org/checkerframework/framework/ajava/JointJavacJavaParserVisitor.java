@@ -149,6 +149,19 @@ import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.javacutil.BugInCF;
 
+/**
+ * A visitor that processes javac trees and JavaParser nodes simultaneously, matching corresponding
+ * nodes.
+ *
+ * <p>By default, visits all children of a javac tree along with corresponding JavaParser nodes.
+ *
+ * <p>To perform an action on a particular tree type, override one of the methods starting with
+ * "process". For each javac tree type JavacType, and for each possible JavaParser node type
+ * JavaParserNode it may be matched to this class contains a method {@code
+ * processJavacType(JavacTypeTree javacTree, JavaParserNode javaParserNode)}. These are named after
+ * the visit methods in {@code com.sun.source.tree.TreeVisitor}, but for each javac tree type there
+ * may be multiple process methods for each possible node type it could be matched to.
+ */
 public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     @Override
     public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
@@ -344,6 +357,13 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return null;
     }
 
+    /**
+     * Returns whether statement represents a method call {@code super()}.
+     *
+     * @param statement the statement to check
+     * @return true if statement is a method invocation named "super" with no arguments, false
+     *     otherwise.
+     */
     public static boolean isDefaultSuperConstructorCall(StatementTree statement) {
         if (statement.getKind() != Kind.EXPRESSION_STATEMENT) {
             return false;
@@ -367,6 +387,13 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return invocation.getArguments().isEmpty();
     }
 
+    /**
+     * Returns whether statement represents a method call {@code super()}.
+     *
+     * @param statement the statement to check
+     * @return true if statement is an explicit super constructor invocation with no arguments,
+     *     false otherwise.
+     */
     private boolean isDefaultSuperConstructorCall(Statement statement) {
         if (!statement.isExplicitConstructorInvocationStmt()) {
             return false;
@@ -481,17 +508,23 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return null;
     }
 
+    /**
+     * Given a list of class members for javac and JavaParser, visits each javac member with its
+     * corresponding JavaParser member. Skips synthetic javac members.
+     *
+     * @param javacMembers a list of trees forming the members of a javac {@code ClassTree}
+     * @param javaParserMembers a list of nodes forming the members of a JavaParser {@code
+     *     ClassOrInterfaceDeclaration} or {@code ObjectCreationExpr} with an anonymous class body
+     *     that corresponds to {@code javacMembers}
+     */
     private void visitClassMembers(
             List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
-        // The javac members might have an artificially generated default constructor, don't process
-        // it if present.
         Iterator<? extends Tree> javacIter = javacMembers.iterator();
         boolean hasNextJavac = javacIter.hasNext();
         Tree javacMember = hasNextJavac ? javacIter.next() : null;
         Iterator<BodyDeclaration<?>> javaParserIter = javaParserMembers.iterator();
         boolean hasNextJavaParser = javaParserIter.hasNext();
         BodyDeclaration<?> javaParserMember = hasNextJavaParser ? javaParserIter.next() : null;
-
         while (hasNextJavac || hasNextJavaParser) {
             // Skip javac's synthetic no-argument constructors.
             if (hasNextJavac
@@ -503,7 +536,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             // In javac, a line like int i = 0, j = 0 is expanded as two sibling VariableTree
-            // instances. In javaParser this is one FieldDeclaration with two nested
+            // instances. In JavaParser this is one FieldDeclaration with two nested
             // VariableDeclarators. Match the declarators with the VariableTrees.
             if (hasNextJavaParser && javaParserMember.isFieldDeclaration()) {
                 for (VariableDeclarator decl :
@@ -535,14 +568,31 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         assert !hasNextJavaParser;
     }
 
+    /**
+     * Visits the the members of an anonymous class body.
+     *
+     * <p>In normal classes, javac inserts a synthetic no-argument constructor if no constructor is
+     * explicitly defined, which is skipped when visiting members. Anonymous class bodies may
+     * introduce constructors that take arguments if the constructor invocation that created them
+     * was passed arguments. For example, if {@code MyClass} has a constructor taking a single
+     * integer argument, then writing {@code new MyClass(5) { }} expands to the javac tree
+     *
+     * <pre>{@code
+     * new MyClass(5) {
+     *     (int arg) {
+     *         super(arg);
+     *     }
+     * }
+     * }</pre>
+     *
+     * <p>This method skips these synthetic constructors.
+     *
+     * @param javacBody body of an anonymous class body
+     * @param javaParserMembers list of members for the anonymous class body of an {@code
+     *     ObjectCreationExpr}
+     */
     private void visitAnonymouClassBody(
             ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
-        // Like normal class bodies, javac will insert synthetic constructors. In an anonymous
-        // class, the generated constructor will have the same parameter types as the type it
-        // extends and will pass them to the superconstructor. This means that just checking for a
-        // no-argument constructor doesn't work in this case. However, it's impossible to declare
-        // constructors in an anonymous class, so any constructor is synthetic. We skip those
-        // members before processing the rest like normal.
         List<Tree> members = new ArrayList<>(javacBody.getMembers());
         while (!members.isEmpty()) {
             Tree member = members.get(0);
@@ -560,6 +610,13 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         visitClassMembers(members, javaParserMembers);
     }
 
+    /**
+     * Returns whether {@code member} is a constructor declaration that takes no arguments.
+     *
+     * @param member the tree to check
+     * @return true if {@code member} is a method declaration with name {@code <init>} that takes no
+     *     arguments, false otherwise.
+     */
     public static boolean isNoArgumentConstructor(Tree member) {
         if (member.getKind() != Kind.METHOD) {
             return false;
@@ -569,6 +626,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return methodTree.getName().contentEquals("<init>") && methodTree.getParameters().isEmpty();
     }
 
+    /**
+     * Returns whether {@code member} is a constructor declaration that takes no arguments.
+     *
+     * @param member the body declaration to check
+     * @return true if {@code member}
+     */
     private boolean isNoArgumentConstructor(BodyDeclaration<?> member) {
         return member.isConstructorDeclaration()
                 && member.asConstructorDeclaration().getParameters().isEmpty();
@@ -958,24 +1021,34 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof MethodDeclaration) {
-            return visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
+            visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
+            return null;
         }
 
         if (javaParserNode instanceof ConstructorDeclaration) {
-            return visitMethodForConstructorDeclaration(
+            visitMethodForConstructorDeclaration(
                     javacTree, (ConstructorDeclaration) javaParserNode);
+            return null;
         }
 
         if (javaParserNode instanceof AnnotationMemberDeclaration) {
-            return visitMethodForAnnotationMemberDeclaration(
+            visitMethodForAnnotationMemberDeclaration(
                     javacTree, (AnnotationMemberDeclaration) javaParserNode);
+            return null;
         }
 
         throwUnexpectedNodeType(javacTree, javaParserNode);
         return null;
     }
 
-    private Void visitMethodForMethodDeclaration(
+    /**
+     * Visits a method declaration in the case where the matched JavaParser node was a {@code
+     * MethodDeclaration}.
+     *
+     * @param javacTree method declaration to visit
+     * @param javaParserNode corresponding JavaParser method declaration
+     */
+    private void visitMethodForMethodDeclaration(
             MethodTree javacTree, MethodDeclaration javaParserNode) {
         // TODO: Handle modifiers. In javac this is a ModifiersTree but in JavaParser it's a list of
         // modifiers. This is a problem because a ModifiersTree has separate accessors to
@@ -1001,13 +1074,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         processMethod(javacTree, javaParserNode);
-        return null;
     }
 
-    private Void visitMethodForConstructorDeclaration(
+    /**
+     * Visits a method declaration in the case where the matched JavaParser node was a {@code
+     * ConstructorDeclaration}.
+     *
+     * @param javacTree method declaration to visit
+     * @param javaParserNode corresponding JavaParser constructor declaration
+     */
+    private void visitMethodForConstructorDeclaration(
             MethodTree javacTree, ConstructorDeclaration javaParserNode) {
-        // TODO: Handle modifiers.
-        // Unlike other constructs, the list is non-null even if no type parameters are present.
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
         assert (javacTree.getReceiverParameter() != null)
                 == javaParserNode.getReceiverParameter().isPresent();
@@ -1021,12 +1098,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         visitLists(javacTree.getThrows(), javaParserNode.getThrownExceptions());
         javacTree.getBody().accept(this, javaParserNode.getBody());
         processMethod(javacTree, javaParserNode);
-        return null;
     }
 
-    private Void visitMethodForAnnotationMemberDeclaration(
+    /**
+     * Visits a method declaration in the case where the matched JavaParser node was a {@code
+     * AnnotationMemberDeclaration}.
+     *
+     * @param javacTree method declaration to visit
+     * @param javaParserNode corresponding JavaParser annotation member declaration
+     */
+    private void visitMethodForAnnotationMemberDeclaration(
             MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {
-        // TODO: Handle modifiers. See corresponding comment in above method.
         javacTree.getReturnType().accept(this, javaParserNode.getType());
         assert (javacTree.getDefaultValue() != null)
                 == javaParserNode.getDefaultValue().isPresent();
@@ -1543,7 +1625,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processAnnotation(
             AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode);
 
-    /** {@code javaParserNode} is guaranteed to implement {@code NodeWithAnnotations<?>}. */
     public abstract void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode);
 
     public abstract void processArrayAccess(
