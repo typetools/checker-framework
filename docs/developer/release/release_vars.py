@@ -131,6 +131,9 @@ CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
+# If a new Gradle wrapper was recently installed, the first ./gradlew command outputs:
+#   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
+CF_VERSION_WARMUP = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
 CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
