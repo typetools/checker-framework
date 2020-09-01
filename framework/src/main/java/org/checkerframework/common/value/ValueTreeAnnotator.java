@@ -401,18 +401,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
         if (atypeFactory
                 .getMethodIdentifier()
-                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
-            List<? extends ExpressionTree> args = tree.getArguments();
-            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
-            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
-            if (resultAnno != null) {
-                type.replaceAnnotation(resultAnno);
-            }
-            return null;
-        }
-
-        if (atypeFactory
-                .getMethodIdentifier()
                 .isArraysCopyOfInvocation(tree, atypeFactory.getProcessingEnv())) {
             List<? extends ExpressionTree> args = tree.getArguments();
             if (args.size() != 2) {
@@ -438,6 +426,18 @@ class ValueTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
             AnnotationMirror resultAnno =
                     atypeFactory.createArrayLengthResultAnnotation(receiverType);
+            if (resultAnno != null) {
+                type.replaceAnnotation(resultAnno);
+            }
+            return null;
+        }
+
+        if (atypeFactory
+                .getMethodIdentifier()
+                .isArrayGetLengthInvocation(tree, atypeFactory.getProcessingEnv())) {
+            List<? extends ExpressionTree> args = tree.getArguments();
+            AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(args.get(0));
+            AnnotationMirror resultAnno = atypeFactory.createArrayLengthResultAnnotation(argType);
             if (resultAnno != null) {
                 type.replaceAnnotation(resultAnno);
             }
