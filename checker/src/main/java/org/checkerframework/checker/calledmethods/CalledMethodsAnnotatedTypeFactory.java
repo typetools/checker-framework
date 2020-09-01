@@ -365,13 +365,17 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
             for (BuilderFrameworkSupport builderFrameworkSupport : builderFrameworkSupports) {
-                builderFrameworkSupport.handlePossibleToBuilder(t);
+                if (builderFrameworkSupport.isToBuilderMethod(element)) {
+                    builderFrameworkSupport.handleToBuilderMethod(t);
+                }
             }
 
             Element nextEnclosingElement = enclosingElement.getEnclosingElement();
             if (nextEnclosingElement.getKind().isClass()) {
                 for (BuilderFrameworkSupport builderFrameworkSupport : builderFrameworkSupports) {
-                    builderFrameworkSupport.handlePossibleBuilderBuildMethod(t);
+                    if (builderFrameworkSupport.isBuilderBuildMethod(element)) {
+                        builderFrameworkSupport.handleBuilderBuildMethod(t);
+                    }
                 }
             }
 

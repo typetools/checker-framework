@@ -68,46 +68,33 @@ public class LombokSupport implements BuilderFrameworkSupport {
      */
     private final Map<Element, String> defaultedElements = new HashMap<>();
 
-    /**
-     * For {@code build} methods on {@code Builder} types, the builder framework support should
-     * determine the required properties and add a corresponding {@link
-     * org.checkerframework.checker.calledmethods.qual.CalledMethods} annotation to the receiver.
-     *
-     * @param t a method that is possibly the {@code build} method for a builder. The only
-     *     guaranteed condition is that the enclosing class for the method is itself an inner class.
-     */
     @Override
-    public void handlePossibleBuilderBuildMethod(AnnotatedExecutableType t) {
+    public void handleBuilderBuildMethod(AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
 
-        if (isBuilderBuildMethod(element)) {
-            TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-            Element nextEnclosingElement = enclosingElement.getEnclosingElement();
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+        Element nextEnclosingElement = enclosingElement.getEnclosingElement();
 
-            List<String> requiredProperties = getLombokRequiredProperties(nextEnclosingElement);
-            AnnotationMirror newCalledMethodsAnno =
-                    atypeFactory.createAccumulatorAnnotation(requiredProperties);
-            t.getReceiverType().addAnnotation(newCalledMethodsAnno);
-        }
+        List<String> requiredProperties = getLombokRequiredProperties(nextEnclosingElement);
+        AnnotationMirror newCalledMethodsAnno =
+                atypeFactory.createAccumulatorAnnotation(requiredProperties);
+        t.getReceiverType().addAnnotation(newCalledMethodsAnno);
     }
 
     @Override
-    public void handlePossibleToBuilder(AnnotatedExecutableType t) {
-
+    public void handleToBuilderMethod(AnnotatedExecutableType t) {
         AnnotatedTypeMirror returnType = t.getReturnType();
         ExecutableElement element = t.getElement();
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+        handleToBuilderType(returnType, enclosingElement);
+    }
 
-        String methodName = element.getSimpleName().toString();
-
-        // make sure the method is toBuilder
-        if ("toBuilder".equals(methodName)) {
-            TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-
-            if (ElementUtils.hasAnnotation(element, "lombok.Generated")
-                    || ElementUtils.hasAnnotation(enclosingElement, "lombok.Generated")) {
-                handleToBuilderType(returnType, enclosingElement);
-            }
-        }
+    @Override
+    public boolean isToBuilderMethod(ExecutableElement e) {
+        String methodName = e.getSimpleName().toString();
+        return "toBuilder".equals(methodName)
+                && (ElementUtils.hasAnnotation(e, "lombok.Generated")
+                        || ElementUtils.hasAnnotation(e.getEnclosingElement(), "lombok.Generated"));
     }
 
     /**

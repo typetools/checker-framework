@@ -38,6 +38,19 @@ discover this.
 javac -processor CalledMethods MyFile.java ...
 \end{Verbatim}
 
+The Called Methods Checker supports the following optional command-line arguments:
+\begin{itemize}
+\item The \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports> option disables automatic
+ annotation inference for builder frameworks. This option
+ takes an argument, which is the name of the frameworks to disable. Permitted values:
+ \<Lombok>, \<AutoValue>. See \chapterpageref{called-methods-framework-details}. By default,
+ Lombok and AutoValue support is enabled. A user who supplies their own stub file to specify
+ a library and is uninterested in (potential) errors in the use of builders might wish to disable framework
+ support.
+\item The \<-ACalledMethodsChecker\_useValueChecker> option improves precision when analyzing
+ code that uses the AWS SDK's \<DescribeImageRequest> API. See \chapterpageref{called-methods-other}.
+ By default, this support is disabled.
+\end{itemize}
 
 \sectionAndLabel{For Lombok users}{called-methods-lombok}
 
