@@ -2044,6 +2044,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
+        if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
+            // super() calls don't have a receiver, but they should be view-point adapted as if
+            // "this" is the receiver.
+            receiverType = getSelfType(tree);
+        }
 
         ParameterizedExecutableType mType = methodFromUse(tree, methodElt, receiverType);
         if (checker.shouldResolveReflection()

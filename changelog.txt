@@ -1,4 +1,4 @@
-Version 3.6.1, September 2020
+Version 3.6.2, October 2020
 
 The Called Methods Checker tracks methods that have definitely been called on
 an object. It automatically supports detecting mis-uses of the builder pattern
@@ -8,6 +8,20 @@ Accumulation analysis is now supported via a generic Accumulation Checker.
 An accumulation analysis is a restricted form of typestate analysis that does
 not require a precise alias analysis for soundness. The Called Methods Checker
 is an accumulation analysis.
+
+---------------------------------------------------------------------------
+
+Version 3.6.1, September 1, 2020
+
+Documented that the Checker Framework can issue false positive warnings in
+dead code.
+
+Documented when the Signedness Checker permits right shift operations.
+
+Closed issues:
+#3484, #3562, #3565, #3566, #3570, #3584, #3594, #3597, #3598.
+
+---------------------------------------------------------------------------
 
 Version 3.6.0, August 3, 2020
 
@@ -38,8 +52,9 @@ Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test cla
 Use CheckerFrameworkPer(Directory/File)Test instead.
 
 Closed issues:
-1395, 2483, 3207, 3223, 3224, 3313, 3381, 3422, 3424, 3428, 3429, 3438, 3442,
-3443, 3447, 3449, 3461, 3482, 3485, 3495, 3500, 3528.
+
+#1395, #2483, #3207, #3223, #3224, #3313, #3381, #3422, #3424, #3428, #3429,
+#3438, #3442, #3443, #3447, #3449, #3461, #3482, #3485, #3495, #3500, #3528.
 
 ---------------------------------------------------------------------------
 
