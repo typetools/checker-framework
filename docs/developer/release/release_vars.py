@@ -35,13 +35,6 @@ def getAndAppend(name, append):
     else:
         return ""
 
-def append_to_PATH(paths):
-    """Retrieves the PATH environment variable, appends the given paths to it,
-    and sets the PATH environment variable to the new value."""
-    current_PATH = os.getenv('PATH')
-    new_PATH = current_PATH + ':' + ':'.join(paths)
-    os.environ['PATH'] = new_PATH
-
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
   """Execute the given command.
 If capture_output is true, then return the output (and ignore the halt_if_fail argument).
