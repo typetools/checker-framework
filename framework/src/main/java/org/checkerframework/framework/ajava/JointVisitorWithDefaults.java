@@ -69,7 +69,6 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
-import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -373,11 +372,6 @@ public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisit
 
     @Override
     public void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode) {
-        defaultAction(javacTree, javaParserNode);
-    }
-
-    @Override
-    public void processMemberSelect(MemberSelectTree javacTree, UnknownType javaParserNode) {
         defaultAction(javacTree, javaParserNode);
     }
 

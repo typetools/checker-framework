@@ -77,7 +77,6 @@ import com.github.javaparser.ast.type.IntersectionType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
-import com.github.javaparser.ast.type.UnknownType;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -198,11 +197,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {
-        // In javac, a type like @Tainted String would be an IdentifierTree for String stored in an
-        // AnnotatedTypeTree, whereas in JavaParser it would be a single ClassOrIntefaceType that
-        // stores the annotations. For types with annotations we must unwrap the inner type in
-        // javac. As a result, the JavaParserNode may be visited twice, once for the outer type and
-        // once for the inner type.
         if (!(javaParserNode instanceof NodeWithAnnotations)) {
             throwUnexpectedNodeType(javacTree, javaParserNode, NodeWithAnnotations.class);
         }
@@ -1007,10 +1001,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
             processMemberSelect(javacTree, node);
-        } else if (javaParserNode instanceof UnknownType) {
-            processMemberSelect(javacTree, (UnknownType) javaParserNode);
-            // This case occurs only for lambda parameters. In this case there's nothing to match
-            // the subexpression to.
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1117,7 +1107,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         processMethod(javacTree, javaParserNode);
-        return null;
     }
 
     @Override
@@ -1616,122 +1605,425 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return null;
     }
 
+    /**
+     * Process an {@code AnnotationTree} with multiple key-value pairs like {@code @MyAnno(a=5,
+     * b=10)}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAnnotation(
             AnnotationTree javacTree, NormalAnnotationExpr javaParserNode);
 
+    /**
+     * Process an {@code AnnotationTree} with no arguments like {@code @MyAnno}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAnnotation(
             AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode);
 
+    /**
+     * Process an {@code AnnotationTree} with a single argument like {@code MyAnno(5)}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAnnotation(
             AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode);
 
+    /**
+     * Process an {@code AnnotatedTypeTree}.
+     *
+     * <p>In javac, a type with an annotation is represented as an {@code AnnotatedTypeTree} with a
+     * nested tree for the base type whereas in JavaParser the annotations are store directly on the
+     * node for the base type. As a result, the JavaParser base type node will be processed twice,
+     * once with the {@code AnnotatedTypeTree} and once with the tree for the base type.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode);
 
+    /**
+     * Process an {@code ArrayAccessTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processArrayAccess(
             ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode);
 
+    /**
+     * Process an {@code ArrayTypeTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processArrayType(ArrayTypeTree javacTree, ArrayType javaParserNode);
 
+    /**
+     * Process an {@code AssertTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAssert(AssertTree javacTree, AssertStmt javaParserNode);
 
+    /**
+     * Process an {@code AssignmentTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processAssignment(AssignmentTree javacTree, AssignExpr javaParserNode);
 
+    /**
+     * Process a {@code BinaryTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode);
 
+    /**
+     * Process a {@code BlockTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processBlock(BlockTree javacTree, BlockStmt javaParserNode);
 
+    /**
+     * Process a {@code BreakTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processBreak(BreakTree javacTree, BreakStmt javaParserNode);
 
+    /**
+     * Process a {@code CaseTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processCase(CaseTree javacTree, SwitchEntry javaParserNode);
 
+    /**
+     * Process a {@code CatchTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processCatch(CatchTree javacTree, CatchClause javaParserNode);
 
+    /**
+     * Process a {@code ClassTree} representing an annotation declaration.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode);
 
+    /**
+     * Process a {@code ClassTree} representing an annotation declaration.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processClass(
             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode);
 
+    /**
+     * Process a {@code ClassTree} representing an enum declaration.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processClass(ClassTree javacTree, EnumDeclaration javaParserNode);
 
+    /**
+     * Process a {@code CompilationUnitTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processCompilationUnit(
             CompilationUnitTree javacTree, CompilationUnit javaParserNode);
 
+    /**
+     * Process a {@code ConditionalExpressionTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processConditionalExpression(
             ConditionalExpressionTree javacTree, ConditionalExpr javaParserNode);
 
+    /**
+     * Process a {@code ContinueTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processContinue(ContinueTree javacTree, ContinueStmt javaParserNode);
 
+    /**
+     * Process a {@code DoWhileLoopTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processDoWhileLoop(DoWhileLoopTree javacTree, DoStmt javaParserNode);
 
+    /**
+     * Process an {@code EmptyStatementTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processEmptyStatement(
             EmptyStatementTree javacTree, EmptyStmt javaParserNode);
 
+    /**
+     * Process an {@code EnhancedForLoopTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processEnhancedForLoop(
             EnhancedForLoopTree javacTree, ForEachStmt javaParserNode);
 
+    /**
+     * Process an {@code ExportsTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processExports(
             ExportsTree javacTree, ModuleExportsDirective javaParserNode);
 
+    /**
+     * Process an {@code ExpressionStatementTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processExpressionStatemen(
             ExpressionStatementTree javacTree, ExpressionStmt javaParserNode);
 
+    /**
+     * Process a {@code ForLoopTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing a class or interface type.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(
             IdentifierTree javacTree, ClassOrInterfaceType javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing a name that may contain dots.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(IdentifierTree javacTree, Name javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing an expression that evaluates to the value of a
+     * variable.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing a name without dots.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(IdentifierTree javacTree, SimpleName javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing a {@code super} expression like the {@code
+     * super} in {@code super.myMethod()} or {@code MyClass.super.myMethod()}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(IdentifierTree javacTree, SuperExpr javaParserNode);
 
+    /**
+     * Process an {@code IdentifierTree} representing a {@code this} expression like the {@code
+     * this} in {@code MyClass = this}, {@code this.myMethod()}, or {@code MyClass.this.myMethod()}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIdentifier(IdentifierTree javacTree, ThisExpr javaParserNode);
 
+    /**
+     * Process an {@code IfTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIf(IfTree javacTree, IfStmt javaParserNode);
 
-    // TODO: Document that the javaparser name may not include "*".
+    /**
+     * Process an {@code ImportTree}.
+     *
+     * <p>Wildcards are stored differently between the two. In a statement like {@code import a.*;},
+     * the name is stored as a {@code MemberSelectTree} with {@code a} and {@code *}. In JavaParser
+     * this is just stored as {@code a} but with a method that returns whether it has a wildcard.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processImport(ImportTree javacTree, ImportDeclaration javaParserNode);
 
+    /**
+     * Process an {@code InstanceOfTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processInstanceOf(InstanceOfTree javacTree, InstanceOfExpr javaParserNode);
 
+    /**
+     * Process an {@code IntersectionType}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processIntersectionType(
             IntersectionTypeTree javacTree, IntersectionType javaParserNode);
 
+    /**
+     * Process a {@code LabeledStatement}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processLabeledStatement(
             LabeledStatementTree javacTree, LabeledStmt javaParserNode);
 
+    /**
+     * Process a {@code LambdaExpressionTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processLambdaExpression(
             LambdaExpressionTree javacTree, LambdaExpr javaParserNode);
 
+    /**
+     * Process a {@code LiteralTree} for a String literal defined using concatenation.
+     *
+     * <p>For an expression like {@code "a" + "b"}, javac stores a single String literal {@code
+     * "ab"} but JavaParser stores it as an operation with two operands.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode);
 
+    /**
+     * Process a {@code LiteralTree} for a literal expression prefixed with {@code +} or {@code -}
+     * like {@code +5} or {@code -2}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode);
 
+    /**
+     * Process a {@code LiteralTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode);
 
+    /**
+     * Process a {@code MemberReferenceTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberReference(
             MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode);
 
+    /**
+     * Process a {@code MemberSelectTree} for a class expression like {@code MyClass.class}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode);
 
+    /**
+     * Process a {@code MemberSelectTree} for a type with a name containing dots, like {@code
+     * mypackage.MyClass}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(
             MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode);
-
+    /**
+     * Process a {@code MemberSelectTree} for a field access expression like {@code myObj.myField}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(
             MemberSelectTree javacTree, FieldAccessExpr javaParserNode);
 
+    /**
+     * Process a {@code MemberSelectTree} for a name that contains dots.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode);
 
+    /**
+     * Process a {@code MemberSelectTree} for a this expression with a class like {@code
+     * MyClass.this}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode);
 
+    /**
+     * Process a {@code MemberSelectTree} for a super expression with a class like {@code
+     * super.MyClass}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode);
 
-    public abstract void processMemberSelect(
-            MemberSelectTree javacTree, UnknownType javaParserNode);
-
+    /**
+     * Process a {@code CatchTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode);
 
     public abstract void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode);
