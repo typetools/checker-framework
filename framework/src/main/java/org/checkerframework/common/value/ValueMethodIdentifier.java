@@ -88,7 +88,12 @@ class ValueMethodIdentifier {
         return method.equals(getLengthMethod);
     }
 
-    /** Determines whether a method is the {@code String.startsWith(String)} method. */
+    /**
+     * Determines whether a method is the {@code String.startsWith(String)} method.
+     *
+     * @param method the element to check
+     * @return true iff the argument method is {@code String.startsWith(String)} method
+     */
     public boolean isStartsWithMethod(ExecutableElement method) {
         // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
         return method.equals(startsWithMethod);
