@@ -109,7 +109,7 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception('Non-zero return code(%s) while executing %s' % (process.returncode, cmd))
+        raise Exception('Non-zero return code (%s; see output in %s) while executing %s' % (process.returncode, output, cmd))
 
     return output
 
