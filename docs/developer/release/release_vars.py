@@ -187,10 +187,11 @@ if EDITOR is None:
     EDITOR = 'emacs'
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
-PATH = PATH + ":/usr/bin:"
+PATH = PATH + ":/usr/bin"
 PATH = PATH + ":" + PLUME_SCRIPTS
 PATH = PATH + ":" + CHECKLINK
-PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
+PATH = PATH + ":/homes/gws/mernst/.local/bin" # for html5validator
+PATH = PATH + ":."
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
