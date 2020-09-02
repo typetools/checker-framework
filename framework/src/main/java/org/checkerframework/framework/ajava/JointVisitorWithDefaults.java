@@ -129,7 +129,19 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 
+/**
+ * A {@code JointJavacJavaParserVisitor} that visits all javac trees with their corresponding
+ * JavaParser nodes and performs some default action on each pair.
+ *
+ * <p>To use this class, override {@code defaultAction}.
+ */
 public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisitor {
+    /**
+     * Action performed on each javac tree and JavaParser node pair.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void defaultAction(Tree javacTree, Node javaParserNode);
 
     @Override
