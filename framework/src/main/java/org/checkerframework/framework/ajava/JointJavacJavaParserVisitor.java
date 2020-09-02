@@ -2019,92 +2019,293 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public abstract void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode);
 
     /**
-     * Process a {@code CatchTree}.
+     * Process a {@code MethodTree} representing a regular method declaration.
      *
      * @param javacTree tree to process
      * @param javaParserNode corresponding JavaParser node
      */
     public abstract void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode);
 
+    /**
+     * Process a {@code MethodTree} representing a constructor declaration.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode);
 
+    /**
+     * Process a {@code MethodTree} representing a value field for an annotation.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMethod(
             MethodTree javacTree, AnnotationMemberDeclaration javaParserNode);
 
+    /**
+     * Process a {@code MethodInvocationTree} representing a constructor invocation.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMethodInvocation(
             MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode);
 
+    /**
+     * Process a {@code MethodInvocationTree} representing a regular method invocation.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processMethodInvocation(
             MethodInvocationTree javacTree, MethodCallExpr javaParserNode);
 
+    /**
+     * Process a {@code ModuleTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processModule(ModuleTree javacTree, ModuleDeclaration javaParserNode);
 
+    /**
+     * Process a {@code NewClassTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode);
 
+    /**
+     * Process an {@code OpensTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processOpens(OpensTree javacTree, ModuleOpensDirective javaParserNode);
 
+    /**
+     * Process a {@code Tree} that isn't an instance of any specific tree class.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processOther(Tree javacTree, Node javaParserNode);
 
+    /**
+     * Process a {@code PackageTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processPackage(PackageTree javacTree, PackageDeclaration javaParserNode);
 
-    // TODO: Document that the JavaParser node may be processed twice.
+    /**
+     * Process a {@code ParameterizedTypeTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processParameterizedType(
             ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode);
 
+    /**
+     * Process a {@code ParenthesizedTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processParenthesized(
             ParenthesizedTree javacTree, EnclosedExpr javaParserNode);
 
+    /**
+     * Process a {@code PrimitiveTypeTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processPrimitiveType(
             PrimitiveTypeTree javacTree, PrimitiveType javaParserNode);
 
+    /**
+     * Process a {@code PrimitiveTypeTree} representing a void type.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode);
 
+    /**
+     * Process a {@code ProvidesTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processProvides(
             ProvidesTree javacTree, ModuleProvidesDirective javaParserNode);
 
+    /**
+     * Process a {@code RequiresTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processRequires(
             RequiresTree javacTree, ModuleRequiresDirective javaParserNode);
 
+    /**
+     * Process a {@code RetrunTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processReturn(ReturnTree javacTree, ReturnStmt javaParserNode);
 
+    /**
+     * Process a {@code SwitchTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode);
 
+    /**
+     * Process a {@code SynchronizedTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processSynchronized(
             SynchronizedTree javacTree, SynchronizedStmt javaParserNode);
 
+    /**
+     * Process a {@code ThrowTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processThrow(ThrowTree javacTree, ThrowStmt javaParserNode);
 
+    /**
+     * Process a {@code TryTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processTry(TryTree javacTree, TryStmt javaParserNode);
 
+    /**
+     * Process a {@code TypeCastTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processTypeCast(TypeCastTree javacTree, CastExpr javaParserNode);
 
+    /**
+     * Process a {@code TypeParameterTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processTypeParameter(
             TypeParameterTree javacTree, TypeParameter javaParserNode);
 
+    /**
+     * Process a {@code UnaryTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processUnary(UnaryTree javacTree, UnaryExpr javaParserNode);
 
+    /**
+     * Process a {@code UnionTypeTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processUnionType(UnionTypeTree javacTree, UnionType javaParserNode);
 
+    /**
+     * Process a {@code UsesTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode);
 
+    /**
+     * Process a {@code VariableTree} representing an enum constant declaration. In an enum like
+     * {@code enum MyEnum { MY_CONSTANT }}, javac expands {@code MY_CONSTANT} as a constant
+     * variable.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processVariable(
             VariableTree javacTree, EnumConstantDeclaration javaParserNode);
 
+    /**
+     * Process a {@code VariableTree} representing a parameter to a method or constructor.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processVariable(VariableTree javacTree, Parameter javaParserNode);
 
+    /**
+     * Process a {@code VariableTree} representing the receiver parameter of a method.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processVariable(VariableTree javacTree, ReceiverParameter javaParserNode);
 
+    /**
+     * Process a {@code VariableTree} representing a regular variable declaration.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processVariable(VariableTree javacTree, VariableDeclarator javaParserNode);
 
+    /**
+     * Process a {@code WhileLoopTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processWhileLoop(WhileLoopTree javacTree, WhileStmt javaParserNode);
 
+    /**
+     * Process a {@code WhileLoopTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processWildcard(WildcardTree javacTree, WildcardType javaParserNode);
 
-    // TODO: Documentation on how to use getKind to determine the type of compound assignment like
-    // in the javadoc for CompoundAssignmentTree. You could also get it from the javaparser node.
+    /**
+     * Process a {@code CompoundAssignmentTree}.
+     *
+     * @param javacTree tree to process
+     * @param javaParserNode corresponding JavaParser node
+     */
     public abstract void processCompoundAssignment(
             CompoundAssignmentTree javacTree, AssignExpr javaParserNode);
 
+    /**
+     * Given a list of javac trees and a list of JavaParser nodes, where the elements of the lists
+     * correspond to each other, visit each javac tree along with its corresponding JavaParser node.
+     *
+     * <p>The two lists must be of the same length and elements at corresponding positions must
+     * match.
+     *
+     * @param javacTrees list of trees
+     * @param javaParserNodes list of corresponding JavaParser nodes
+     */
     private void visitLists(List<? extends Tree> javacTrees, List<? extends Node> javaParserNodes) {
         assert javacTrees.size() == javaParserNodes.size();
         Iterator<? extends Node> nodeIter = javaParserNodes.iterator();
@@ -2113,12 +2314,35 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
     }
 
+    /**
+     * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+     * throws an exception indicating that the visiting process failed for those nodes.
+     *
+     * @param javacTree a tree that was visited
+     * @param javaParserNode a node that was visited at the same time as {@code javacTree}, but
+     *     which was not of the correct type for that tree
+     * @throws BugInCF that indicates the javac trees and JavaParser nodes were desynced during the
+     *     visitng process at {@code javacTree} and {@code javaParserNode}
+     */
     private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode) {
         throw new BugInCF(
                 "Javac and JavaParser trees desynced while processing tree %s, unexpected node type: %s",
                 javacTree, javaParserNode.getClass());
     }
 
+    /**
+     * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+     * throws an exception indicating that the visiting process failed for those nodes because
+     * {@code javaParserNode} was expected to be of type {@code expectedType}.
+     *
+     * @param javacTree a tree that was visited
+     * @param javaParserNode a node that was visited at the same time as {@code javacTree}, but
+     *     which was not of the correct type for that tree
+     * @param expectedType the type {@code javaParserNode} was expected to be based on {@code
+     *     javacTree}
+     * @throws BugInCF that indicates the javac trees and JavaParser nodes were desynced during the
+     *     visitng process at {@code javacTree} and {@code javaParserNode}
+     */
     private void throwUnexpectedNodeType(
             Tree javacTree, Node javaParserNode, Class<?> expectedType) {
         throw new BugInCF(
