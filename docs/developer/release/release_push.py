@@ -94,7 +94,10 @@ def run_link_checker(site, output, additional_param=""):
     link checker script."""
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["sh", check_links_script, additional_param, site]
+    if additional_param == "":
+        cmd = ["sh", check_links_script, site]
+    else:
+        cmd = ["sh", check_links_script, additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
     out_file = open(output, 'w+')
