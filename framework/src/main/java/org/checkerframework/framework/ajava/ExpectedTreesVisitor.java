@@ -27,23 +27,35 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Stores each visited tree that should match with some JavaParser node if the same Java file was
- * parsed with both.
+ * Visitor that stores each visited tree that should match with some JavaParser node if the same
+ * Java file was parsed with both.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     private Set<Tree> trees;
 
+    /** Constructs a visitor with no stored trees. */
     public ExpectedTreesVisitor() {
         trees = new HashSet<>();
     }
 
+    /**
+     * Returns the visited trees that should match to some JavaParser node.
+     *
+     * @return the visited trees that should match to some JavaParser node
+     */
     public Set<Tree> getTrees() {
         return trees;
     }
 
+    /**
+     * Records that {@code tree} should have a corresponding JavaParser node.
+     *
+     * @param tree the tree to record
+     */
     @Override
     public void defaultAction(Tree tree) {
         trees.add(tree);
@@ -285,13 +297,25 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         return null;
     }
 
-    private void visit(Tree tree, Void p) {
+    /**
+     * Calls the correct visit method for {@code tree} if {@code tree} is non-null.
+     *
+     * @param tree the tree to visit
+     * @param p secondary parameter to the visitor
+     */
+    private void visit(@Nullable Tree tree, Void p) {
         if (tree != null) {
             tree.accept(this, p);
         }
     }
 
-    private void visit(List<? extends Tree> trees, Void p) {
+    /**
+     * If {@code trees} is non-null, visits each non-null tree in {@code trees} in order.
+     *
+     * @param trees the list of trees to visit
+     * @param p secondary parameter to the visitor
+     */
+    private void visit(@Nullable List<? extends @Nullable Tree> trees, Void p) {
         if (trees == null) {
             return;
         }
@@ -301,9 +325,12 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
     }
 
+    /** Visitor that records whether it has visited a "var" keyword. */
     private static class HasVarTypeVisitor extends VoidVisitorAdapter<Void> {
+        /** Whether a "var" keyword has been visited. */
         public boolean hasVarType;
 
+        /** Constructs a visitor that hasn't yet recorded visiting a "var" keyword. */
         public HasVarTypeVisitor() {
             hasVarType = false;
         }
