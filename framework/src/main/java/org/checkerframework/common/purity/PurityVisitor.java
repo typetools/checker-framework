@@ -1,8 +1,5 @@
 package org.checkerframework.common.purity;
 
-import static org.checkerframework.dataflow.qual.Pure.Kind.DETERMINISTIC;
-import static org.checkerframework.dataflow.qual.Pure.Kind.SIDE_EFFECT_FREE;
-
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
@@ -25,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -148,7 +146,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
          */
         public void addNotSEFreeReason(Tree t, String msgId) {
             notSEFreeReasons.add(Pair.of(t, msgId));
-            kinds.remove(SIDE_EFFECT_FREE);
+            kinds.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
@@ -168,7 +166,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
          */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
-            kinds.remove(DETERMINISTIC);
+            kinds.remove(Kind.DETERMINISTIC);
         }
 
         /**
@@ -188,8 +186,8 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
-            kinds.remove(DETERMINISTIC);
-            kinds.remove(SIDE_EFFECT_FREE);
+            kinds.remove(Kind.DETERMINISTIC);
+            kinds.remove(Kind.SIDE_EFFECT_FREE);
         }
     }
 
@@ -249,10 +247,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                 EnumSet<Pure.Kind> purityKinds =
                         (assumeDeterministic && assumeSideEffectFree)
                                 // Avoid computation if not necessary
-                                ? EnumSet.of(DETERMINISTIC, SIDE_EFFECT_FREE)
+                                ? EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE)
                                 : PurityUtils.getPurityKinds(annoProvider, elt);
-                boolean det = assumeDeterministic || purityKinds.contains(DETERMINISTIC);
-                boolean seFree = assumeSideEffectFree || purityKinds.contains(SIDE_EFFECT_FREE);
+                boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
+                boolean seFree =
+                        assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
                 if (!det && !seFree) {
                     purityResult.addNotBothReason(node, "call.method");
                 } else if (!det) {
@@ -372,7 +371,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             // check "no" purity
             EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
             // @Deterministic makes no sense for a void method or constructor
-            boolean isDeterministic = kinds.contains(DETERMINISTIC);
+            boolean isDeterministic = kinds.contains(Kind.DETERMINISTIC);
             if (isDeterministic) {
                 if (TreeUtils.isConstructor(node)) {
                     checker.reportWarning(node, "purity.deterministic.constructor");
@@ -403,14 +402,14 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                 EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
                 additionalKinds.removeAll(kinds);
                 if (TreeUtils.isConstructor(node)) {
-                    additionalKinds.remove(DETERMINISTIC);
+                    additionalKinds.remove(Kind.DETERMINISTIC);
                 }
                 if (!additionalKinds.isEmpty()) {
                     if (additionalKinds.size() == 2) {
                         checker.reportWarning(node, "purity.more.pure", node.getName());
-                    } else if (additionalKinds.contains(SIDE_EFFECT_FREE)) {
+                    } else if (additionalKinds.contains(Kind.SIDE_EFFECT_FREE)) {
                         checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
-                    } else if (additionalKinds.contains(DETERMINISTIC)) {
+                    } else if (additionalKinds.contains(Kind.DETERMINISTIC)) {
                         checker.reportWarning(node, "purity.more.deterministic", node.getName());
                     } else {
                         assert false : "BaseTypeVisitor reached undesirable state";
@@ -431,11 +430,11 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         assert !result.isPure(expectedKinds);
         EnumSet<Pure.Kind> violations = EnumSet.copyOf(expectedKinds);
         violations.removeAll(result.getKinds());
-        if (violations.contains(DETERMINISTIC) || violations.contains(SIDE_EFFECT_FREE)) {
+        if (violations.contains(Kind.DETERMINISTIC) || violations.contains(Kind.SIDE_EFFECT_FREE)) {
             String msgKeyPrefix;
-            if (!violations.contains(SIDE_EFFECT_FREE)) {
+            if (!violations.contains(Kind.SIDE_EFFECT_FREE)) {
                 msgKeyPrefix = "purity.not.deterministic.";
-            } else if (!violations.contains(DETERMINISTIC)) {
+            } else if (!violations.contains(Kind.DETERMINISTIC)) {
                 msgKeyPrefix = "purity.not.sideeffectfree.";
             } else {
                 msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
@@ -443,12 +442,12 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             for (Pair<Tree, String> r : result.getNotBothReasons()) {
                 reportPurityError(msgKeyPrefix, r);
             }
-            if (violations.contains(SIDE_EFFECT_FREE)) {
+            if (violations.contains(Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r : result.getNotSEFreeReasons()) {
                     reportPurityError("purity.not.sideeffectfree.", r);
                 }
             }
-            if (violations.contains(DETERMINISTIC)) {
+            if (violations.contains(Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r : result.getNotDetReasons()) {
                     reportPurityError("purity.not.deterministic.", r);
                 }
