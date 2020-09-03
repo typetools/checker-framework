@@ -136,6 +136,14 @@ import com.sun.source.tree.WildcardTree;
  * <p>To use this class, override {@code defaultAction}.
  */
 public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisitor {
+    protected JointVisitorWithDefaults(TraversalType traversalType) {
+        super(traversalType);
+    }
+
+    protected JointVisitorWithDefaults() {
+        super();
+    }
+
     /**
      * Action performed on each javac tree and JavaParser node pair.
      *

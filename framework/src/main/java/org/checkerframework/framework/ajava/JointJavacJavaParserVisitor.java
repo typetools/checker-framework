@@ -162,6 +162,21 @@ import org.checkerframework.javacutil.BugInCF;
  * may be multiple process methods for each possible node type it could be matched to.
  */
 public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
+    public enum TraversalType {
+        PRE_ORDER,
+        POST_ORDER
+    }
+
+    private TraversalType traversalType;
+
+    protected JointJavacJavaParserVisitor(TraversalType traversalType) {
+        this.traversalType = traversalType;
+    }
+
+    protected JointJavacJavaParserVisitor() {
+        this(TraversalType.POST_ORDER);
+    }
+
     @Override
     public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
         // It seems javac stores annotation arguments assignments, so @MyAnno("myArg") might be
@@ -171,14 +186,24 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processAnnotation(javacTree, (MarkerAnnotationExpr) javaParserNode);
         } else if (javaParserNode instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr node = (SingleMemberAnnotationExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processAnnotation(javacTree, node);
+            }
+
             assert javacTree.getArguments().size() == 1;
             ExpressionTree value = javacTree.getArguments().get(0);
             assert value instanceof AssignmentTree;
             AssignmentTree assignment = (AssignmentTree) value;
             assignment.getExpression().accept(this, node.getMemberValue());
-            processAnnotation(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processAnnotation(javacTree, node);
+            }
         } else if (javaParserNode instanceof NormalAnnotationExpr) {
             NormalAnnotationExpr node = (NormalAnnotationExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processAnnotation(javacTree, node);
+            }
+
             assert javacTree.getArguments().size() == node.getPairs().size();
             Iterator<MemberValuePair> argIter = node.getPairs().iterator();
             for (ExpressionTree arg : javacTree.getArguments()) {
@@ -187,7 +212,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 assignment.getExpression().accept(this, argIter.next().getValue());
             }
 
-            processAnnotation(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processAnnotation(javacTree, node);
+            }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -202,9 +229,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processAnnotatedType(javacTree, javaParserNode);
+        }
+
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getUnderlyingType().accept(this, javaParserNode);
-        processAnnotatedType(javacTree, javaParserNode);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processAnnotatedType(javacTree, javaParserNode);
+        }
+
         return null;
     }
 
@@ -215,9 +249,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ArrayAccessExpr node = (ArrayAccessExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processArrayAccess(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getName());
         javacTree.getIndex().accept(this, node.getIndex());
-        processArrayAccess(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processArrayAccess(javacTree, node);
+        }
+
         return null;
     }
 
@@ -228,8 +269,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ArrayType node = (ArrayType) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processArrayType(javacTree, node);
+        }
+
         javacTree.getType().accept(this, node.getComponentType());
-        processArrayType(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processArrayType(javacTree, node);
+        }
+
         return null;
     }
 
@@ -240,6 +288,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssertStmt node = (AssertStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processAssert(javacTree, node);
+        }
+
         javacTree.getCondition().accept(this, node.getCheck());
         ExpressionTree detail = javacTree.getDetail();
         assert (detail != null) == node.getMessage().isPresent();
@@ -247,7 +299,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             detail.accept(this, node.getMessage().get());
         }
 
-        processAssert(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processAssert(javacTree, node);
+        }
+
         return null;
     }
 
@@ -258,9 +313,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssignExpr node = (AssignExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processAssignment(javacTree, node);
+        }
+
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
-        processAssignment(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processAssignment(javacTree, node);
+        }
+
         return null;
     }
 
@@ -271,9 +333,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         BinaryExpr node = (BinaryExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processBinary(javacTree, node);
+        }
+
         javacTree.getLeftOperand().accept(this, node.getLeft());
         javacTree.getRightOperand().accept(this, node.getRight());
-        processBinary(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processBinary(javacTree, node);
+        }
+
         return null;
     }
 
@@ -288,6 +357,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         BlockStmt node = (BlockStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processBlock(javacTree, node);
+        }
+
         Iterator<? extends StatementTree> javacIter = javacTree.getStatements().iterator();
         boolean hasNextJavac = javacIter.hasNext();
         StatementTree javacStatement = hasNextJavac ? javacIter.next() : null;
@@ -346,8 +419,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         assert !hasNextJavac;
         assert !hasNextJavaParser;
+        if (traversalType == TraversalType.POST_ORDER) {
+            processBlock(javacTree, node);
+        }
 
-        processBlock(javacTree, node);
         return null;
     }
 
@@ -415,6 +490,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SwitchEntry node = (SwitchEntry) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processCase(javacTree, node);
+        }
+
         // The expression is null if and only if the case is the default case.
         // Java 12 introduced multiple label cases, but expressions should contain at most one
         // element for Java 11 and below.
@@ -427,7 +506,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         visitLists(javacTree.getStatements(), node.getStatements());
-        processCase(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processCase(javacTree, node);
+        }
+
         return null;
     }
 
@@ -438,9 +520,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CatchClause node = (CatchClause) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processCatch(javacTree, node);
+        }
+
         javacTree.getParameter().accept(this, node.getParameter());
         javacTree.getBlock().accept(this, node.getBody());
-        processCatch(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processCatch(javacTree, node);
+        }
+
         return null;
     }
 
@@ -448,6 +537,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof ClassOrInterfaceDeclaration) {
             ClassOrInterfaceDeclaration node = (ClassOrInterfaceDeclaration) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processClass(javacTree, node);
+            }
+
             visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
             if (javacTree.getKind() == Kind.CLASS) {
                 if (javacTree.getExtendsClause() == null) {
@@ -463,16 +556,28 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitClassMembers(javacTree.getMembers(), node.getMembers());
-            processClass(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processClass(javacTree, node);
+            }
         } else if (javaParserNode instanceof AnnotationDeclaration) {
             AnnotationDeclaration node = (AnnotationDeclaration) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processClass(javacTree, node);
+            }
+
             visitClassMembers(javacTree.getMembers(), node.getMembers());
-            processClass(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processClass(javacTree, node);
+            }
         } else if (javaParserNode instanceof LocalClassDeclarationStmt) {
             javacTree.accept(
                     this, ((LocalClassDeclarationStmt) javaParserNode).getClassDeclaration());
         } else if (javaParserNode instanceof EnumDeclaration) {
             EnumDeclaration node = (EnumDeclaration) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processClass(javacTree, node);
+            }
+
             visitLists(javacTree.getImplementsClause(), node.getImplementedTypes());
             // In an enum declaration, the enum constants are expanded as constant variable members
             // whereas in JavaParser they're stored as one object, need to match them.
@@ -494,7 +599,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitClassMembers(javacMembers, node.getMembers());
-            processClass(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processClass(javacTree, node);
+            }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -638,6 +745,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CompilationUnit node = (CompilationUnit) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processCompilationUnit(javacTree, node);
+        }
 
         // TODO: A CompilationUnitTree could also be a package-info.java file. Currently skipping
         // descending into these specific constructs such as getPackageAnnotations, because they
@@ -649,7 +759,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         visitLists(javacTree.getImports(), node.getImports());
         visitLists(javacTree.getTypeDecls(), node.getTypes());
-        processCompilationUnit(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processCompilationUnit(javacTree, node);
+        }
+
         return null;
     }
 
@@ -660,9 +773,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         AssignExpr node = (AssignExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processCompoundAssignment(javacTree, node);
+        }
+
         javacTree.getVariable().accept(this, node.getTarget());
         javacTree.getExpression().accept(this, node.getValue());
-        processCompoundAssignment(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processCompoundAssignment(javacTree, node);
+        }
+
         return null;
     }
 
@@ -674,10 +794,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ConditionalExpr node = (ConditionalExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processConditionalExpression(javacTree, node);
+        }
+
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getTrueExpression().accept(this, node.getThenExpr());
         javacTree.getFalseExpression().accept(this, node.getElseExpr());
-        processConditionalExpression(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processConditionalExpression(javacTree, node);
+        }
+
         return null;
     }
 
@@ -698,9 +825,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         DoStmt node = (DoStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processDoWhileLoop(javacTree, node);
+        }
+
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
-        processDoWhileLoop(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processDoWhileLoop(javacTree, node);
+        }
+
         return null;
     }
 
@@ -721,11 +855,18 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ForEachStmt node = (ForEachStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processEnhancedForLoop(javacTree, node);
+        }
+
         // TODO: Fix the fact that the variable might be a JavaParser VariableDeclarationExpr.
         javacTree.getVariable().accept(this, node.getVariableDeclarator());
         javacTree.getExpression().accept(this, node.getIterable());
         javacTree.getStatement().accept(this, node.getBody());
-        processEnhancedForLoop(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processEnhancedForLoop(javacTree, node);
+        }
+
         return null;
     }
 
@@ -742,9 +883,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleExportsDirective node = (ModuleExportsDirective) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processExports(javacTree, node);
+        }
+
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
         javacTree.getPackageName().accept(this, node.getName());
-        processExports(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processExports(javacTree, node);
+        }
+
         return null;
     }
 
@@ -752,8 +900,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitExpressionStatement(ExpressionStatementTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof ExpressionStmt) {
             ExpressionStmt node = (ExpressionStmt) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processExpressionStatemen(javacTree, node);
+            }
+
             javacTree.getExpression().accept(this, node.getExpression());
-            processExpressionStatemen(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processExpressionStatemen(javacTree, node);
+            }
         } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
             // In this case the expression will be a MethodTree, which would be better to match with
             // the statement than the expression statement itself.
@@ -772,6 +926,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ForStmt node = (ForStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processForLoop(javacTree, node);
+        }
+
         Iterator<? extends StatementTree> javacIter = javacTree.getInitializer().iterator();
         for (Expression initializer : node.getInitialization()) {
             if (initializer.isVariableDeclarationExpr()) {
@@ -801,7 +959,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         javacTree.getStatement().accept(this, node.getBody());
-        processForLoop(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processForLoop(javacTree, node);
+        }
+
         return null;
     }
 
@@ -837,6 +998,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         IfStmt node = (IfStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processIf(javacTree, node);
+        }
+
         assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
         ParenthesizedTree condition = (ParenthesizedTree) javacTree.getCondition();
         condition.getExpression().accept(this, node.getCondition());
@@ -846,7 +1011,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getElseStatement().accept(this, node.getElseStmt().get());
         }
 
-        processIf(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processIf(javacTree, node);
+        }
+
         return null;
     }
 
@@ -857,6 +1025,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ImportDeclaration node = (ImportDeclaration) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processImport(javacTree, node);
+        }
+
         // In javac trees, a name like a.* is stored as a member select, but JavaParser just stores
         // a and records that the name ends in an asterisk.
         if (node.isAsterisk()) {
@@ -867,7 +1039,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getQualifiedIdentifier().accept(this, node.getName());
         }
 
-        processImport(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processImport(javacTree, node);
+        }
+
         return null;
     }
 
@@ -878,9 +1053,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         InstanceOfExpr node = (InstanceOfExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processInstanceOf(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getExpression());
         javacTree.getType().accept(this, node.getType());
-        processInstanceOf(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processInstanceOf(javacTree, node);
+        }
+
         return null;
     }
 
@@ -891,8 +1073,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         IntersectionType node = (IntersectionType) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processIntersectionType(javacTree, node);
+        }
+
         visitLists(javacTree.getBounds(), node.getElements());
-        processIntersectionType(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processIntersectionType(javacTree, node);
+        }
+
         return null;
     }
 
@@ -903,8 +1092,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         LabeledStmt node = (LabeledStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processLabeledStatement(javacTree, node);
+        }
+
         javacTree.getStatement().accept(this, node.getStatement());
-        processLabeledStatement(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processLabeledStatement(javacTree, node);
+        }
+
         return null;
     }
 
@@ -915,6 +1111,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         LambdaExpr node = (LambdaExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processLambdaExpression(javacTree, node);
+        }
+
         visitLists(javacTree.getParameters(), node.getParameters());
         switch (javacTree.getBodyKind()) {
             case EXPRESSION:
@@ -927,7 +1127,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 break;
         }
 
-        processLambdaExpression(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processLambdaExpression(javacTree, node);
+        }
+
         return null;
     }
 
@@ -956,6 +1159,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         MethodReferenceExpr node = (MethodReferenceExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processMemberReference(javacTree, node);
+        }
+
         if (node.getScope().isTypeExpr()) {
             javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
         } else {
@@ -967,7 +1174,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
 
-        processMemberReference(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processMemberReference(javacTree, node);
+        }
+
         return null;
     }
 
@@ -975,32 +1185,68 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitMemberSelect(MemberSelectTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof FieldAccessExpr) {
             FieldAccessExpr node = (FieldAccessExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             javacTree.getExpression().accept(this, node.getScope());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else if (javaParserNode instanceof Name) {
             Name node = (Name) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             assert node.getQualifier().isPresent();
             javacTree.getExpression().accept(this, node.getQualifier().get());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else if (javaParserNode instanceof ClassOrInterfaceType) {
             ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             assert node.getScope().isPresent();
             javacTree.getExpression().accept(this, node.getScope().get());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else if (javaParserNode instanceof ClassExpr) {
             ClassExpr node = (ClassExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             javacTree.getExpression().accept(this, node.getType());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else if (javaParserNode instanceof ThisExpr) {
             ThisExpr node = (ThisExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else if (javaParserNode instanceof SuperExpr) {
             SuperExpr node = (SuperExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
+
             assert node.getTypeName().isPresent();
             javacTree.getExpression().accept(this, node.getTypeName().get());
-            processMemberSelect(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMemberSelect(javacTree, node);
+            }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1040,6 +1286,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      */
     private void visitMethodForMethodDeclaration(
             MethodTree javacTree, MethodDeclaration javaParserNode) {
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
+
         // TODO: Handle modifiers. In javac this is a ModifiersTree but in JavaParser it's a list of
         // modifiers. This is a problem because a ModifiersTree has separate accessors to
         // annotations and other modifiers, so the order doesn't match. It might be that for
@@ -1063,7 +1313,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getBody().accept(this, javaParserNode.getBody().get());
         }
 
-        processMethod(javacTree, javaParserNode);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
     }
 
     /**
@@ -1075,6 +1327,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      */
     private void visitMethodForConstructorDeclaration(
             MethodTree javacTree, ConstructorDeclaration javaParserNode) {
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
+
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
         assert (javacTree.getReceiverParameter() != null)
                 == javaParserNode.getReceiverParameter().isPresent();
@@ -1087,7 +1343,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         visitLists(javacTree.getParameters(), javaParserNode.getParameters());
         visitLists(javacTree.getThrows(), javaParserNode.getThrownExceptions());
         javacTree.getBody().accept(this, javaParserNode.getBody());
-        processMethod(javacTree, javaParserNode);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
     }
 
     /**
@@ -1099,6 +1357,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      */
     private void visitMethodForAnnotationMemberDeclaration(
             MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
+
         javacTree.getReturnType().accept(this, javaParserNode.getType());
         assert (javacTree.getDefaultValue() != null)
                 == javaParserNode.getDefaultValue().isPresent();
@@ -1106,13 +1368,19 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getDefaultValue().accept(this, javaParserNode.getDefaultValue().get());
         }
 
-        processMethod(javacTree, javaParserNode);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processMethod(javacTree, javaParserNode);
+        }
     }
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof MethodCallExpr) {
             MethodCallExpr node = (MethodCallExpr) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMethodInvocation(javacTree, node);
+            }
+
             // In javac, the type arguments will be empty even if no type arguments are specified,
             // but
             // in JavaParser the type arguments will have the none Optional value.
@@ -1142,10 +1410,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitLists(javacTree.getArguments(), node.getArguments());
-            processMethodInvocation(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMethodInvocation(javacTree, node);
+            }
         } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
             ExplicitConstructorInvocationStmt node =
                     (ExplicitConstructorInvocationStmt) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processMethodInvocation(javacTree, node);
+            }
+
             // The left side of this assert is checking if the list is empty and the right side is a
             // check on the prescence of an optional.
             assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
@@ -1154,7 +1428,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             visitLists(javacTree.getArguments(), node.getArguments());
-            processMethodInvocation(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processMethodInvocation(javacTree, node);
+            }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1176,9 +1452,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleDeclaration node = (ModuleDeclaration) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processModule(javacTree, node);
+        }
+
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getName().accept(this, node.getName());
-        processModule(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processModule(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1208,6 +1491,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ObjectCreationExpr node = (ObjectCreationExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processNewClass(javacTree, node);
+        }
+
         assert (javacTree.getEnclosingExpression() != null) == node.getScope().isPresent();
         if (javacTree.getEnclosingExpression() != null) {
             javacTree.getEnclosingExpression().accept(this, node.getScope().get());
@@ -1227,7 +1514,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitAnonymouClassBody(javacTree.getClassBody(), node.getAnonymousClassBody().get());
         }
 
-        processNewClass(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processNewClass(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1238,9 +1528,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleOpensDirective node = (ModuleOpensDirective) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processOpens(javacTree, node);
+        }
+
         javacTree.getPackageName().accept(this, node.getName());
         visitLists(javacTree.getModuleNames(), node.getModuleNames());
-        processOpens(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processOpens(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1257,9 +1554,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         PackageDeclaration node = (PackageDeclaration) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processPackage(javacTree, node);
+        }
+
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getPackageName().accept(this, node.getName());
-        processPackage(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processPackage(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1270,6 +1574,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ClassOrInterfaceType node = (ClassOrInterfaceType) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processParameterizedType(javacTree, node);
+        }
+
         javacTree.getType().accept(this, node);
         // TODO: In a parameterized type, will the first branch ever run?
         if (javacTree.getTypeArguments().isEmpty()) {
@@ -1279,7 +1587,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
 
-        processParameterizedType(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processParameterizedType(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1290,8 +1601,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         EnclosedExpr node = (EnclosedExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processParenthesized(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getInner());
-        processParenthesized(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processParenthesized(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1315,9 +1633,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleProvidesDirective node = (ModuleProvidesDirective) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processProvides(javacTree, node);
+        }
+
         javacTree.getServiceName().accept(this, node.getName());
         visitLists(javacTree.getImplementationNames(), node.getWith());
-        processProvides(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processProvides(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1328,8 +1653,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleRequiresDirective node = (ModuleRequiresDirective) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processRequires(javacTree, node);
+        }
+
         javacTree.getModuleName().accept(this, node.getName());
-        processRequires(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processRequires(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1340,12 +1672,19 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ReturnStmt node = (ReturnStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processReturn(javacTree, node);
+        }
+
         assert (javacTree.getExpression() != null) == node.getExpression().isPresent();
         if (javacTree.getExpression() != null) {
             javacTree.getExpression().accept(this, node.getExpression().get());
         }
 
-        processReturn(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processReturn(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1357,9 +1696,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SwitchStmt node = (SwitchStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processSwitch(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getSelector());
         visitLists(javacTree.getCases(), node.getEntries());
-        processSwitch(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processSwitch(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1370,9 +1716,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         SynchronizedStmt node = (SynchronizedStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processSynchronized(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getExpression());
         javacTree.getBlock().accept(this, node.getBody());
-        processSynchronized(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processSynchronized(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1383,8 +1736,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ThrowStmt node = (ThrowStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processThrow(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getExpression());
-        processThrow(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processThrow(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1395,6 +1755,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         TryStmt node = (TryStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processTry(javacTree, node);
+        }
+
         // visitLists(javacTree.getResources(), node.getResources());
         Iterator<? extends Tree> javacIter = javacTree.getResources().iterator();
         for (Expression resource : node.getResources()) {
@@ -1417,7 +1781,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getFinallyBlock().accept(this, node.getFinallyBlock().get());
         }
 
-        processTry(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processTry(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1428,9 +1795,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         CastExpr node = (CastExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processTypeCast(javacTree, node);
+        }
+
         javacTree.getType().accept(this, node.getType());
         javacTree.getExpression().accept(this, node.getExpression());
-        processTypeCast(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processTypeCast(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1441,9 +1815,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         TypeParameter node = (TypeParameter) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processTypeParameter(javacTree, node);
+        }
+
         visitLists(javacTree.getAnnotations(), node.getAnnotations());
         visitLists(javacTree.getBounds(), node.getTypeBound());
-        processTypeParameter(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processTypeParameter(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1454,8 +1835,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         UnaryExpr node = (UnaryExpr) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processUnary(javacTree, node);
+        }
+
         javacTree.getExpression().accept(this, node.getExpression());
-        processUnary(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processUnary(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1466,8 +1854,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         UnionType node = (UnionType) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processUnionType(javacTree, node);
+        }
+
         visitLists(javacTree.getTypeAlternatives(), node.getElements());
-        processUnionType(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processUnionType(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1478,8 +1873,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         ModuleUsesDirective node = (ModuleUsesDirective) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processUses(javacTree, node);
+        }
+
         javacTree.getServiceName().accept(this, node.getName());
-        processUses(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processUses(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1487,6 +1889,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof VariableDeclarator) {
             VariableDeclarator node = (VariableDeclarator) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processVariable(javacTree, node);
+            }
+
             if (!node.getType().isVarType()
                     && (!node.getType().isClassOrInterfaceType()
                             || !node.getType()
@@ -1507,9 +1913,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 javacTree.getInitializer().accept(this, node.getInitializer().get());
             }
 
-            processVariable(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processVariable(javacTree, node);
+            }
         } else if (javaParserNode instanceof Parameter) {
             Parameter node = (Parameter) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processVariable(javacTree, node);
+            }
+
             if (node.isVarArgs()) {
                 assert javacTree.getType().getKind() == Kind.ARRAY_TYPE;
                 ArrayTypeTree arrayType = (ArrayTypeTree) javacTree.getType();
@@ -1528,9 +1940,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             assert javacTree.getInitializer() == null;
-            processVariable(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processVariable(javacTree, node);
+            }
         } else if (javaParserNode instanceof ReceiverParameter) {
             ReceiverParameter node = (ReceiverParameter) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processVariable(javacTree, node);
+            }
+
             javacTree.getType().accept(this, node.getType());
             // The name expression can be null, even when a name exists.
             if (javacTree.getNameExpression() != null) {
@@ -1538,11 +1956,18 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             assert javacTree.getInitializer() == null;
-            processVariable(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processVariable(javacTree, node);
+            }
+
         } else if (javaParserNode instanceof EnumConstantDeclaration) {
             // An enum constant is expanded as a variable declaration initialized to a constuctor
             // call.
             EnumConstantDeclaration node = (EnumConstantDeclaration) javaParserNode;
+            if (traversalType == TraversalType.PRE_ORDER) {
+                processVariable(javacTree, node);
+            }
+
             if (javacTree.getNameExpression() != null) {
                 javacTree.getNameExpression().accept(this, node.getName());
             }
@@ -1556,7 +1981,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 assert node.getClassBody().isEmpty();
             }
 
-            processVariable(javacTree, node);
+            if (traversalType == TraversalType.POST_ORDER) {
+                processVariable(javacTree, node);
+            }
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
         }
@@ -1571,9 +1998,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         WhileStmt node = (WhileStmt) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processWhileLoop(javacTree, node);
+        }
+
         javacTree.getCondition().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
-        processWhileLoop(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processWhileLoop(javacTree, node);
+        }
+
         return null;
     }
 
@@ -1584,6 +2018,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         }
 
         WildcardType node = (WildcardType) javaParserNode;
+        if (traversalType == TraversalType.PRE_ORDER) {
+            processWildcard(javacTree, node);
+        }
+
         // In javac, whether the bound is an extends or super clause depends on the kind of the
         // tree.
         assert (javacTree.getKind() == Kind.EXTENDS_WILDCARD) == node.getExtendedType().isPresent();
@@ -1601,7 +2039,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
         }
 
-        processWildcard(javacTree, node);
+        if (traversalType == TraversalType.POST_ORDER) {
+            processWildcard(javacTree, node);
+        }
+
         return null;
     }
 
