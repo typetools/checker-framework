@@ -1889,6 +1889,11 @@ represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
 
+\subsubsectionAndLabel{Creating a CFG while running a type-checker}{creating-debugging-dataflow-graph-with-typechecker}
+
+To create a CFG while running a type-checker, use the following
+command-line options.
+
 \begin{itemize}
 
 \item \code{-Aflowdotdir=\emph{somedir}}:
@@ -1923,7 +1928,9 @@ The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
 \end{itemize}
 
-\noindent
+
+\subsubsectionAndLabel{Creating a CFG by running CFGVisualizeLauncher}{creating-debugging-dataflow-graph-with-cfgvisualizelauncher}
+
 You can also use \refclass{dataflow/cfg}{CFGVisualizeLauncher} to generate a DOT
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
@@ -1969,8 +1976,9 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \end{Verbatim}
 \end{smaller}
 
-For more information, run \refclass{dataflow/cfg}{CFGVisualizeLauncher} with
-no arguments to see the usage.
+For more details about invoking
+\refclass{dataflow/cfg}{CFGVisualizeLauncher}, run it with
+no arguments.
 
 
 \subsectionAndLabel{Miscellaneous debugging options}{creating-debugging-options-misc}
