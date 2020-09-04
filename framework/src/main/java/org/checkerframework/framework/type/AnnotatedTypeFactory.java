@@ -78,7 +78,7 @@ import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaults;
@@ -487,9 +487,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + System.lineSeparator()
                                     + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            boolean isNullnessChecker =
-                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
-            wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
+            // boolean isNullnessChecker =
+            // "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
+            // wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
+            wholeProgramInference = new WholeProgramInferenceJavaParser();
         } else {
             wholeProgramInference = null;
         }
