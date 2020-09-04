@@ -26,10 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -40,10 +42,14 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -83,12 +89,67 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             Tree receiverTree,
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf) {
+        System.out.println("In updateFromMethodInvocation with classes: " + classes);
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
 
-        addSourceFileForElement(methodElt);
+        String file = addSourceFileForElement(methodElt);
+        String className = getEnclosingClassName(methodElt);
+        ClassOrInterfaceWrapper clazz = classes.get(className);
+        CallableDeclarationWrapper method =
+                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+
+        List<Node> arguments = methodInvNode.getArguments();
+        updateInferredExecutableParameterTypes(methodElt, atf, file, method, arguments);
+        System.out.println("After update, new classes: " + classes);
+    }
+
+    private void updateInferredExecutableParameterTypes(
+            ExecutableElement methodElt,
+            AnnotatedTypeFactory atf,
+            String file,
+            CallableDeclarationWrapper executable,
+            List<Node> arguments) {
+        if (executable.parameterTypes == null) {
+            executable.parameterTypes = new ArrayList<>();
+            // TODO: This will cause a crash with varargs.
+            // TODO: Use parameter list length here?
+            for (int i = 0; i < arguments.size(); i++) {
+                executable.parameterTypes.add(null);
+            }
+        }
+
+        for (int i = 0; i < arguments.size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+
+            Node arg = arguments.get(i);
+            Tree treeNode = arg.getTree();
+            if (treeNode == null) {
+                // TODO: Handle variable-length list as parameter.
+                // An ArrayCreationNode with a null tree is created when the
+                // parameter is a variable-length list. We are ignoring it for now.
+                // See Issue 682
+                // https://github.com/typetools/checker-framework/issues/682
+                continue;
+            }
+            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+
+            if (executable.parameterTypes.get(i) == null) {
+                executable.parameterTypes.set(
+                        i, AnnotatedTypeMirror.createType(argATM.getUnderlyingType(), atf, false));
+            }
+
+            updateAnnotationSetInScene(
+                    executable.parameterTypes.get(i),
+                    atf,
+                    file,
+                    argATM,
+                    paramATM,
+                    TypeUseLocation.PARAMETER);
+        }
     }
 
     @Override
@@ -132,9 +193,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     @Override
     public void writeResultsToFile(OutputFormat format, BaseTypeChecker checker) {
-        System.out.println("In write results to file");
-        System.out.println("Modified files: " + modifiedFiles);
-        System.out.println("source files: " + sourceFiles);
         File outputDir = new File(AJAVA_FILES_PATH);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -166,7 +224,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 String outputPath = packageDir + File.separator + name;
                 try {
                     FileWriter writer = new FileWriter(outputPath);
-                    System.out.println("About to print root: " + root);
                     LexicalPreservingPrinter.print(root, writer);
                     writer.close();
                 } catch (IOException e) {
@@ -176,8 +233,155 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    protected void updateAnnotationSetInScene(
+            AnnotatedTypeMirror type,
+            AnnotatedTypeFactory atf,
+            String file,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeMirror lhsATM,
+            TypeUseLocation defLoc) {
+        // TODO: Ignore null types here? See corresponding place in
+        // WholeProgramInferenceScenesStorage
+        AnnotatedTypeMirror atmFromJaif =
+                AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
+        updatesATMWithLUB(atf, rhsATM, atmFromJaif);
+        if (lhsATM instanceof AnnotatedTypeVariable) {
+            Set<AnnotationMirror> upperAnnos =
+                    ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+            // If the inferred type is a subtype of the upper bounds of the
+            // current type on the source code, halt.
+            if (upperAnnos.size() == rhsATM.getAnnotations().size()
+                    && atf.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+                return;
+            }
+        }
+
+        updateTypeElementFromATM(rhsATM, lhsATM, atf, type, defLoc);
+        modifiedFiles.add(file);
+    }
+
+    private void updateTypeElementFromATM(
+            AnnotatedTypeMirror newATM,
+            AnnotatedTypeMirror curATM,
+            AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror typeToUpdate,
+            TypeUseLocation defLoc) {
+        // Clears only the annotations that are supported by atf.
+        // The others stay intact.
+        Set<AnnotationMirror> annosToRemove = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror anno : typeToUpdate.getAnnotations()) {
+            if (atf.isSupportedQualifier(anno)) {
+                annosToRemove.add(anno);
+            }
+        }
+
+        // This method may be called consecutive times for the same ATypeElement.
+        // Each time it is called, the AnnotatedTypeMirror has a better type
+        // estimate for the ATypeElement. Therefore, it is not a problem to remove
+        // all annotations before inserting the new annotations.
+        typeToUpdate.removeAnnotations(annosToRemove);
+
+        // Only update the ATypeElement if there are no explicit annotations
+        if (curATM.getExplicitAnnotations().isEmpty()) {
+            for (AnnotationMirror am : newATM.getAnnotations()) {
+                typeToUpdate.addAnnotation(am);
+            }
+        } else if (curATM.getKind() == TypeKind.TYPEVAR) {
+            // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
+            // annotated.  So instead, only insert the annotation if there is not primary annotation
+            // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
+            // vars upper bound from being inserted.
+            for (AnnotationMirror am : newATM.getAnnotations()) {
+                if (curATM.getAnnotationInHierarchy(am) != null) {
+                    // Don't insert if the type is already has a primary annotation
+                    // in the same hierarchy.
+                    break;
+                }
+
+                typeToUpdate.addAnnotation(am);
+            }
+        }
+
+        // Recursively update compound type and type variable type if they exist.
+        if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
+            AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
+            AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
+            AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
+            updateTypeElementFromATM(
+                    newAAT.getComponentType(),
+                    oldAAT.getComponentType(),
+                    atf,
+                    aatToUpdate.getComponentType(),
+                    defLoc);
+        }
+    }
+
+    /**
+     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and jaifATM, ignoring missing
+     * AnnotationMirrors from jaifATM -- it considers the LUB between an AnnotationMirror am and a
+     * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
+     *
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used
+     * @param sourceCodeATM the annotated type on the source code
+     * @param jaifATM the annotated type on the .jaif file
+     */
+    private void updatesATMWithLUB(
+            AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror sourceCodeATM,
+            AnnotatedTypeMirror jaifATM) {
+
+        switch (sourceCodeATM.getKind()) {
+            case TYPEVAR:
+                updatesATMWithLUB(
+                        atf,
+                        ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
+                        ((AnnotatedTypeVariable) jaifATM).getLowerBound());
+                updatesATMWithLUB(
+                        atf,
+                        ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
+                        ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+                break;
+                //        case WILDCARD:
+                // Because inferring type arguments is not supported, wildcards won't be encoutered
+                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                // sourceCodeATM).getExtendsBound(),
+                //                              ((AnnotatedWildcardType)
+                // jaifATM).getExtendsBound());
+                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                // sourceCodeATM).getSuperBound(),
+                //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+                //            break;
+            case ARRAY:
+                updatesATMWithLUB(
+                        atf,
+                        ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+                        ((AnnotatedArrayType) jaifATM).getComponentType());
+                break;
+                // case DECLARED:
+                // inferring annotations on type arguments is not supported, so no need to recur on
+                // generic types. If this was every implemented, this method would need VisitHistory
+                // object to prevent infinite recursion on types such as T extends List<T>.
+            default:
+                // ATM only has primary annotations
+                break;
+        }
+
+        // LUB primary annotations
+        Set<AnnotationMirror> annosToReplace = new HashSet<>();
+        for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
+            AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
+            // amJaif only contains  annotations from the jaif, so it might be missing
+            // an annotation in the hierarchy
+            if (amJaif != null) {
+                amSource = atf.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
+            }
+            annosToReplace.add(amSource);
+        }
+        sourceCodeATM.replaceAnnotations(annosToReplace);
+    }
+
     private void addSourceFile(String path) {
-        System.out.println("Adding source file: " + path);
         if (sourceFiles.containsKey(path)) {
             return;
         }
@@ -186,7 +390,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         try {
             Source source = new Source(path);
-            System.out.println("About to parse source files with javac");
             Set<CompilationUnitTree> compilationUnits = source.parse();
             for (CompilationUnitTree root : compilationUnits) {
                 CompilationUnit javaParserRoot = addCompilationUnit(root, path);
@@ -204,7 +407,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             throws IOException {
         CompilationUnit javaParserRoot =
                 StaticJavaParser.parse(root.getSourceFile().openInputStream());
-        System.out.println("Seting up root: " + javaParserRoot);
         LexicalPreservingPrinter.setup(javaParserRoot);
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
@@ -236,8 +438,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         String className = getEnclosingClassName(elt);
                         ClassOrInterfaceWrapper enclosingClass = classes.get(className);
                         String executableName = JVMNames.getJVMMethodSignature(javacTree);
-                        if (!enclosingClass.methods.containsKey(executableName)) {
-                            enclosingClass.methods.put(
+                        if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
+                            enclosingClass.callableDeclarations.put(
                                     executableName, new CallableDeclarationWrapper(javaParserNode));
                         }
                     }
@@ -262,18 +464,19 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return javaParserRoot;
     }
 
-    private void addSourceFileForElement(Element element) {
+    private String addSourceFileForElement(Element element) {
         if (!ElementUtils.isElementFromSourceCode(element)) {
             throw new BugInCF("Adding source file for non-source element: " + element);
         }
 
         if (!(element instanceof ClassSymbol)) {
-            addSourceFileForElement(element.getEnclosingElement());
-            return;
+            return addSourceFileForElement(element.getEnclosingElement());
         }
 
         ClassSymbol symbol = (ClassSymbol) element;
-        addSourceFile(symbol.sourcefile.toUri().getPath());
+        String path = symbol.sourcefile.toUri().getPath();
+        addSourceFile(path);
+        return path;
     }
 
     private @BinaryName String getClassName(Element element) {
@@ -291,12 +494,25 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     private static class ClassOrInterfaceWrapper {
         public String file;
         public ClassOrInterfaceDeclaration declaration;
-        public Map<String, CallableDeclarationWrapper> methods;
+        public Map<String, CallableDeclarationWrapper> callableDeclarations;
         public Map<String, FieldWrapper> fields;
 
         public ClassOrInterfaceWrapper(ClassOrInterfaceDeclaration declaration) {
             this.declaration = declaration;
-            methods = new HashMap<>();
+            callableDeclarations = new HashMap<>();
+        }
+
+        @Override
+        public String toString() {
+            return "ClassOrInterfaceWrapper [declaration="
+                    + declaration
+                    + ", fields="
+                    + fields
+                    + ", file="
+                    + file
+                    + ", callableDeclarations="
+                    + callableDeclarations
+                    + "]";
         }
     }
 
@@ -313,6 +529,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             this.receiverType = null;
             this.parameterTypes = new ArrayList<>();
         }
+
+        @Override
+        public String toString() {
+            return "CallableDeclarationWrapper [declaration="
+                    + declaration
+                    + ", file="
+                    + file
+                    + ", parameterTypes="
+                    + parameterTypes
+                    + ", receiverType="
+                    + receiverType
+                    + ", returnType="
+                    + returnType
+                    + "]";
+        }
     }
 
     private static class FieldWrapper {
@@ -321,6 +552,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         public FieldWrapper(VariableDeclarator declaration) {
             this.declaration = declaration;
+        }
+
+        @Override
+        public String toString() {
+            return "FieldWrapper [declaration=" + declaration + ", type=" + type + "]";
         }
     }
 }
