@@ -142,7 +142,8 @@ public class SignatureRegexes {
     private static final String IDENTIFIER_TOKEN = "[A-Za-z_][A-Za-z_0-9]*";
 
     /** A grouped regex that matches identifiers. */
-    private static final String IDENTIFIER = "(?!" + KEYWORD_OR_LITERAL + ")" + IDENTIFIER_TOKEN;
+    private static final String IDENTIFIER =
+            "(?!(?:" + KEYWORD_OR_LITERAL + ")\\b)" + IDENTIFIER_TOKEN;
 
     /** An anchored regex that matches Identifier strings. */
     public static final String IDENTIFIER_OR_PRIMITIVE_TYPE = ALTERNATE(IDENTIFIER, PRIMITIVE_TYPE);
