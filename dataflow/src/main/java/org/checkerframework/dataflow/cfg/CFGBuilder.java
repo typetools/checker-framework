@@ -379,7 +379,7 @@ public class CFGBuilder {
          *
          * @return a string representation of this
          */
-        abstract String toStringDebug();
+        public abstract String toStringDebug();
     }
 
     /** An extended node of type {@code NODE}. */

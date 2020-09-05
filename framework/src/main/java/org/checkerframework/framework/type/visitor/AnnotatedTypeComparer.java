@@ -66,7 +66,7 @@ public abstract class AnnotatedTypeComparer<R>
         throw new BugInCF(
                 "AnnotatedTypeComparer.scanAndReduce: "
                         + p
-                        + "is not Iterable<? extends AnnotatedTypeMirror>");
+                        + " is not Iterable<? extends AnnotatedTypeMirror>");
     }
 
     @Override

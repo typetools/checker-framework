@@ -94,7 +94,10 @@ def run_link_checker(site, output, additional_param=""):
     link checker script."""
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["sh", check_links_script, additional_param, site]
+    if additional_param == "":
+        cmd = ["sh", check_links_script, site]
+    else:
+        cmd = ["sh", check_links_script, additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
     out_file = open(output, 'w+')
@@ -109,7 +112,7 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception('Non-zero return code(%s) while executing %s' % (process.returncode, cmd))
+        raise Exception('Non-zero return code (%s; see output in %s) while executing %s' % (process.returncode, output, cmd))
 
     return output
 
@@ -329,14 +332,6 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
-    print
-    print "*****"
-    print "***** WARNING"
-    print "*****"
-    print "***** Temporarily skip this if /bin/java is Java 11 and CF doesn't support Java 11."
-    print "*****"
-    print "***** WARNING"
-    print "*****"
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
@@ -441,11 +436,11 @@ def main(argv):
                          "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n")
 
         print_step("Push Step 13. Prep for next Checker Framework release.") # MANUAL
-        continue_or_exit("Increment the last number of the Checker Framework version and add -SNAPSHOT")
+        continue_or_exit("Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n")
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    prompt_to_continue()
+    print "Done with release_push.py"
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

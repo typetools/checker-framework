@@ -1838,6 +1838,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (elementsSuppress.contains(elt)) {
                 continue;
             }
+            // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
             Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
