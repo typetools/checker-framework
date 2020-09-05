@@ -1,3 +1,10 @@
+Version 3.7.0, October 1, 2020
+
+The Nullness Checker supports annotations
+org.codehaus.commons.nullanalysis.NotNull,
+org.codehaus.commons.nullanalysis.Nullable, and
+org.jspecify.annotations.Nullable.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020
