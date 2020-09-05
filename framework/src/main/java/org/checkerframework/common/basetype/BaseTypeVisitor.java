@@ -1611,11 +1611,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!checkContract(expr, anno, inferredAnno, store)) {
                 String expressionString =
                         (expr == null || expr.containsUnknown()) ? expression : expr.toString();
-                String methodName = tree.getMethodSelect().toString();
                 checker.reportError(
                         tree,
                         "contracts.precondition.not.satisfied",
-                        methodName,
+                        tree.getMethodSelect().toString(),
                         contractExpressionAndType(expressionString, inferredAnno),
                         contractExpressionAndType(expressionString, anno));
             }
