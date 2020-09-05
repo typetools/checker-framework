@@ -1,8 +1,9 @@
 Version 3.7.0, October 1, 2020
 
-The Nullness Checker supports Janino annotations
-org.codehaus.commons.nullanalysis.NotNull and
-org.codehaus.commons.nullanalysis.Nullable.
+The Nullness Checker supports annotations
+org.codehaus.commons.nullanalysis.NotNull,
+org.codehaus.commons.nullanalysis.Nullable, and
+org.jspecify.annotations.Nullable.
 
 ---------------------------------------------------------------------------
 
