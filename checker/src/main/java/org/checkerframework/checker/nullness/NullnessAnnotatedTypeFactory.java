@@ -123,6 +123,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
                     "org.checkerframework.checker.nullness.compatqual.NonNullType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
+                    "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -168,6 +170,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
+                    "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
