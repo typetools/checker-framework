@@ -26,12 +26,18 @@ public class NullnessAnalysis
 
     @Override
     public NullnessStore createEmptyStore(boolean sequentialSemantics) {
-        return new NullnessStore(this, sequentialSemantics);
+        NullnessStore result = new NullnessStore(this, sequentialSemantics);
+        System.out.printf("createEmptyStore => %s%n", System.identityHashCode(result));
+        return result;
     }
 
     @Override
     public NullnessStore createCopiedStore(NullnessStore s) {
-        return new NullnessStore(s);
+        NullnessStore result = new NullnessStore(s);
+        System.out.printf(
+                "createCopiedStore(%s) => %s%n",
+                System.identityHashCode(s), System.identityHashCode(result));
+        return result;
     }
 
     @Override

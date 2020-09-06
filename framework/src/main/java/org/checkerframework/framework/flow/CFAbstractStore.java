@@ -863,6 +863,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     private S upperBound(S other, boolean shouldWiden) {
         S newStore = analysis.createEmptyStore(sequentialSemantics);
+        System.out.printf(
+                "upperBound(%s, %s) => %s%n",
+                System.identityHashCode(this),
+                System.identityHashCode(other),
+                System.identityHashCode(newStore));
 
         for (Map.Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
@@ -1024,7 +1029,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        String header = castedViz.visualizeStoreHeader(this.getClass().getSimpleName());
+        String header =
+                castedViz.visualizeStoreHeader(
+                        this.getClass().getSimpleName() + " " + System.identityHashCode(this));
         String internal = internalVisualize(castedViz);
         String footer = castedViz.visualizeStoreFooter();
         if (internal.trim().isEmpty()) {
