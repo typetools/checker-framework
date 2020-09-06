@@ -272,70 +272,27 @@ public abstract class AbstractCFGVisualizer<
         return sbBlockNode.toString();
     }
 
-    /**
-     * Visualize the transfer input before the given block.
-     *
-     * @param bb the block
-     * @param analysis the current analysis
-     * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
-     *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
-     *     StringCFGVisualizer} to simply add a new line
-     * @return the visualization of the transfer input before the given block
-     */
-    protected String visualizeBlockTransferInputBeforeHelper(
-            Block bb, Analysis<V, S, T> analysis, String escapeString) {
-        if (analysis == null) {
-            throw new BugInCF(
-                    "analysis must be non-null when visualizing the transfer input of a block.");
-        }
-
-        S regularStore;
-        S thenStore = null;
-        S elseStore = null;
-        boolean isTwoStores = false;
-
-        StringBuilder sbStore = new StringBuilder();
-        sbStore.append("Before: ");
-
-        Direction analysisDirection = analysis.getDirection();
-
-        if (analysisDirection == Direction.FORWARD) {
-            TransferInput<V, S> input = analysis.getInput(bb);
-            assert input != null : "@AssumeAssertion(nullness): invariant";
-            isTwoStores = input.containsTwoStores();
-            regularStore = input.getRegularStore();
-            thenStore = input.getThenStore();
-            elseStore = input.getElseStore();
-        } else {
-            regularStore = analysis.getResult().getStoreBefore(bb);
-        }
-
-        if (!isTwoStores) {
-            sbStore.append(visualizeStore(regularStore));
-        } else {
-            assert thenStore != null : "@AssumeAssertion(nullness): invariant";
-            assert elseStore != null : "@AssumeAssertion(nullness): invariant";
-            sbStore.append("then=");
-            sbStore.append(visualizeStore(thenStore));
-            sbStore.append(", else=");
-            sbStore.append(visualizeStore(elseStore));
-        }
-        sbStore.append("~~~~~~~~~" + escapeString);
-        return sbStore.toString();
+    /** Whether to visualize before or after a block. */
+    protected enum VisualizeWhere {
+        /** Visualize before the block. */
+        BEFORE,
+        /** Visualize after the block. */
+        AFTER
     }
 
     /**
-     * Visualize the transfer input after the given block.
+     * Visualize the transfer input before or after the given block.
      *
+     * @param where either BEFORE or AFTER
      * @param bb a block
      * @param analysis the current analysis
      * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
      *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
      *     StringCFGVisualizer} to simply add a new line
-     * @return the visualization of the transfer input after the given block
+     * @return the visualization of the transfer input before or after the given block
      */
-    protected String visualizeBlockTransferInputAfterHelper(
-            Block bb, Analysis<V, S, T> analysis, String escapeString) {
+    protected String visualizeBlockTransferInputHelper(
+            VisualizeWhere where, Block bb, Analysis<V, S, T> analysis, String escapeString) {
         if (analysis == null) {
             throw new BugInCF(
                     "analysis must be non-null when visualizing the transfer input of a block.");
@@ -347,12 +304,14 @@ public abstract class AbstractCFGVisualizer<
         boolean isTwoStores = false;
 
         StringBuilder sbStore = new StringBuilder();
-        sbStore.append("After: ");
+        sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
         Direction analysisDirection = analysis.getDirection();
 
-        if (analysisDirection == Direction.FORWARD) {
+        if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
             regularStore = analysis.getResult().getStoreAfter(bb);
+        } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
+            regularStore = analysis.getResult().getStoreBefore(bb);
         } else {
             TransferInput<V, S> input = analysis.getInput(bb);
             assert input != null : "@AssumeAssertion(nullness): invariant";
@@ -372,7 +331,11 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.insert(0, "~~~~~~~~~" + escapeString);
+        if (where == VisualizeWhere.BEFORE) {
+            sbStore.append("~~~~~~~~~" + escapeString);
+        } else {
+            sbStore.insert(0, "~~~~~~~~~" + escapeString);
+        }
         return sbStore.toString();
     }
 
