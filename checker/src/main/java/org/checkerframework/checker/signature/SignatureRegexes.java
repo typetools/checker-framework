@@ -142,7 +142,8 @@ public class SignatureRegexes {
     private static final String IDENTIFIER_TOKEN = "[A-Za-z_][A-Za-z_0-9]*";
 
     /** A grouped regex that matches identifiers. */
-    private static final String IDENTIFIER = "(?!" + KEYWORD_OR_LITERAL + ")" + IDENTIFIER_TOKEN;
+    private static final String IDENTIFIER =
+            "(?!(?:" + KEYWORD_OR_LITERAL + ")\\b)" + IDENTIFIER_TOKEN;
 
     /** An anchored regex that matches Identifier strings. */
     public static final String IDENTIFIER_OR_PRIMITIVE_TYPE = ALTERNATE(IDENTIFIER, PRIMITIVE_TYPE);
@@ -176,21 +177,21 @@ public class SignatureRegexes {
     // Regexes for literal Strings, one per annotation definitions.
 
     /** A regex that matches ArrayWithoutPackage strings. */
-    public static final String ArrayWithoutPackage =
+    public static final String ArrayWithoutPackageRegex =
             ANCHORED(GROUPED(IDENTIFIER_OR_PRIMITIVE_TYPE) + ARRAY);
 
     /** A regex that matches BinaryName strings. */
-    public static final String BinaryName = ANCHORED(BINARY_NAME);
+    public static final String BinaryNameRegex = ANCHORED(BINARY_NAME);
 
     /** A regex that matches BinaryNameWithoutPackage strings. */
-    public static final String BinaryNameWithoutPackage = ANCHORED(IDENTIFIER + NESTED);
+    public static final String BinaryNameWithoutPackageRegex = ANCHORED(IDENTIFIER + NESTED);
 
     /** A regex that matches BinaryNameOrPrimitiveType strings. */
-    public static final String BinaryNameOrPrimitiveType =
+    public static final String BinaryNameOrPrimitiveTypeRegex =
             ANCHORED(GROUPED_ALTERNATE(BINARY_NAME, PRIMITIVE_TYPE));
 
     /** A regex that matches ClassGetName strings. */
-    public static final String ClassGetName =
+    public static final String ClassGetNameRegex =
             ANCHORED(
                     GROUPED_ALTERNATE(
                             // non-array
@@ -203,7 +204,7 @@ public class SignatureRegexes {
                                             "L" + CLASS_GET_NAME_NONPRIMITIVE_NONARRAY + ";"))));
 
     /** A regex that matches ClassGetSimpleName strings. */
-    public static final String ClassGetSimpleName =
+    public static final String ClassGetSimpleNameRegex =
             ANCHORED(
                     GROUPED_ALTERNATE(
                                     "", // empty string is a ClassGetSimpleName
@@ -211,18 +212,18 @@ public class SignatureRegexes {
                             + ARRAY);
 
     /** A regex that matches DotSeparatedIdentifiers strings. */
-    public static final String DotSeparatedIdentifiers = ANCHORED(DOT_SEPARATED_IDENTIFIERS);
+    public static final String DotSeparatedIdentifiersRegex = ANCHORED(DOT_SEPARATED_IDENTIFIERS);
 
     /** A regex that matches DotSeparatedIdentifiersOrPrimitiveType strings. */
-    public static final String DotSeparatedIdentifiersOrPrimitiveType =
+    public static final String DotSeparatedIdentifiersOrPrimitiveTypeRegex =
             ANCHORED(GROUPED_ALTERNATE(DOT_SEPARATED_IDENTIFIERS, PRIMITIVE_TYPE));
 
     /** A regex that matches FieldDescriptor strings. */
-    public static final String FieldDescriptor =
+    public static final String FieldDescriptorRegex =
             ANCHORED("\\[*(" + FD_PRIMITIVE + "|L" + INTERNAL_FORM + ";)");
 
     /** A regex that matches FieldDescriptorWithoutPackage strings. */
-    public static final String FieldDescriptorWithoutPackage =
+    public static final String FieldDescriptorWithoutPackageRegex =
             ANCHORED(
                     "("
                             + FD_PRIMITIVE
@@ -234,25 +235,26 @@ public class SignatureRegexes {
                             + ";)");
 
     /** A regex that matches FieldDescriptorForPrimitive strings. */
-    public static final String FieldDescriptorForPrimitive = ANCHORED("^[BCDFIJSZ]$");
+    public static final String FieldDescriptorForPrimitiveRegex = ANCHORED("^[BCDFIJSZ]$");
 
     /** A regex that matches FqBinaryName strings. */
-    public static final String FqBinaryName =
+    public static final String FqBinaryNameRegex =
             ANCHORED("(" + PRIMITIVE_TYPE + "|" + BINARY_NAME + ")" + ARRAY);
 
     /** A regex that matches FullyQualifiedName strings. */
-    public static final String FullyQualifiedName =
+    public static final String FullyQualifiedNameRegex =
             ANCHORED("(" + PRIMITIVE_TYPE + "|" + DOT_SEPARATED_IDENTIFIERS + ")" + ARRAY);
 
     /** A regex that matches Identifier strings. */
-    public static final String Identifier = ANCHORED(IDENTIFIER);
+    public static final String IdentifierRegex = ANCHORED(IDENTIFIER);
 
     /** A regex that matches IdentifierOrPrimitiveType strings. */
-    public static final String IdentifierOrPrimitiveType = ANCHORED(IDENTIFIER_OR_PRIMITIVE_TYPE);
+    public static final String IdentifierOrPrimitiveTypeRegex =
+            ANCHORED(IDENTIFIER_OR_PRIMITIVE_TYPE);
 
     /** A regex that matches InternalForm strings. */
-    public static final String InternalForm = ANCHORED(INTERNAL_FORM);
+    public static final String InternalFormRegex = ANCHORED(INTERNAL_FORM);
 
     /** A regex that matches PrimitiveType strings. */
-    public static final String PrimitiveType = ANCHORED(PRIMITIVE_TYPE);
+    public static final String PrimitiveTypeRegex = ANCHORED(PRIMITIVE_TYPE);
 }

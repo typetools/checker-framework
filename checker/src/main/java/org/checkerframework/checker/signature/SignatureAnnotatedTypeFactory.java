@@ -111,56 +111,56 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // constants such as effectively-final fields.  So every `stringPatterns = "..."` would have
         // to be a literal string, which would be verbose ard hard to maintain.
         result.addStringPattern(
-                SignatureRegexes.ArrayWithoutPackage,
+                SignatureRegexes.ArrayWithoutPackageRegex,
                 AnnotationBuilder.fromClass(elements, ArrayWithoutPackage.class));
         result.addStringPattern(
-                SignatureRegexes.BinaryName,
+                SignatureRegexes.BinaryNameRegex,
                 AnnotationBuilder.fromClass(elements, BinaryName.class));
         result.addStringPattern(
-                SignatureRegexes.BinaryNameOrPrimitiveType,
+                SignatureRegexes.BinaryNameOrPrimitiveTypeRegex,
                 AnnotationBuilder.fromClass(elements, BinaryNameOrPrimitiveType.class));
         result.addStringPattern(
-                SignatureRegexes.BinaryNameWithoutPackage,
+                SignatureRegexes.BinaryNameWithoutPackageRegex,
                 AnnotationBuilder.fromClass(elements, BinaryNameWithoutPackage.class));
         result.addStringPattern(
-                SignatureRegexes.ClassGetName,
+                SignatureRegexes.ClassGetNameRegex,
                 AnnotationBuilder.fromClass(elements, ClassGetName.class));
         result.addStringPattern(
-                SignatureRegexes.ClassGetSimpleName,
+                SignatureRegexes.ClassGetSimpleNameRegex,
                 AnnotationBuilder.fromClass(elements, ClassGetSimpleName.class));
         result.addStringPattern(
-                SignatureRegexes.DotSeparatedIdentifiers,
+                SignatureRegexes.DotSeparatedIdentifiersRegex,
                 AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class));
         result.addStringPattern(
-                SignatureRegexes.DotSeparatedIdentifiersOrPrimitiveType,
+                SignatureRegexes.DotSeparatedIdentifiersOrPrimitiveTypeRegex,
                 AnnotationBuilder.fromClass(
                         elements, DotSeparatedIdentifiersOrPrimitiveType.class));
         result.addStringPattern(
-                SignatureRegexes.FieldDescriptor,
+                SignatureRegexes.FieldDescriptorRegex,
                 AnnotationBuilder.fromClass(elements, FieldDescriptor.class));
         result.addStringPattern(
-                SignatureRegexes.FieldDescriptorForPrimitive,
+                SignatureRegexes.FieldDescriptorForPrimitiveRegex,
                 AnnotationBuilder.fromClass(elements, FieldDescriptorForPrimitive.class));
         result.addStringPattern(
-                SignatureRegexes.FieldDescriptorWithoutPackage,
+                SignatureRegexes.FieldDescriptorWithoutPackageRegex,
                 AnnotationBuilder.fromClass(elements, FieldDescriptorWithoutPackage.class));
         result.addStringPattern(
-                SignatureRegexes.FqBinaryName,
+                SignatureRegexes.FqBinaryNameRegex,
                 AnnotationBuilder.fromClass(elements, FqBinaryName.class));
         result.addStringPattern(
-                SignatureRegexes.FullyQualifiedName,
+                SignatureRegexes.FullyQualifiedNameRegex,
                 AnnotationBuilder.fromClass(elements, FullyQualifiedName.class));
         result.addStringPattern(
-                SignatureRegexes.Identifier,
+                SignatureRegexes.IdentifierRegex,
                 AnnotationBuilder.fromClass(elements, Identifier.class));
         result.addStringPattern(
-                SignatureRegexes.IdentifierOrPrimitiveType,
+                SignatureRegexes.IdentifierOrPrimitiveTypeRegex,
                 AnnotationBuilder.fromClass(elements, IdentifierOrPrimitiveType.class));
         result.addStringPattern(
-                SignatureRegexes.InternalForm,
+                SignatureRegexes.InternalFormRegex,
                 AnnotationBuilder.fromClass(elements, InternalForm.class));
         result.addStringPattern(
-                SignatureRegexes.PrimitiveType,
+                SignatureRegexes.PrimitiveTypeRegex,
                 AnnotationBuilder.fromClass(elements, PrimitiveType.class));
         return result;
     }
