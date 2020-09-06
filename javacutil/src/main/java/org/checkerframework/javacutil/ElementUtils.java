@@ -599,4 +599,14 @@ public class ElementUtils {
         return questioned.equals(method)
                 || env.getElementUtils().overrides(questioned, method, enclosing);
     }
+
+    /**
+     * Returns the TypeElement for the given class.
+     *
+     * @param clazz a class
+     * @returns the TypeElement for the class
+     */
+    public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
+        return processingEnv.getElementUtils().getTypeElement(clazz.getCanonicalName());
+    }
 }

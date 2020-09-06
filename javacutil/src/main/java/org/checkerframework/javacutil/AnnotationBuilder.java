@@ -30,6 +30,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UtilPlume;
 
@@ -85,7 +86,7 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param name the fully-qualified name of the annotation to build
      */
-    public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
+    public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
@@ -160,7 +161,8 @@ public class AnnotationBuilder {
      * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
      *     be loaded
      */
-    public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
+    public static @Nullable AnnotationMirror fromName(
+            Elements elements, @FullyQualifiedName CharSequence name) {
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;

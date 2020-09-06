@@ -535,7 +535,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             Element e = TreeUtils.elementFromTree(tree.getExpression());
             if (e != null) {
                 @SuppressWarnings("signature") // TODO: this looks like a bug in
-                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAccess requires a @ClassGetName
                 // but this passes a @FullyQualifiedName
                 @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
                 @SuppressWarnings(

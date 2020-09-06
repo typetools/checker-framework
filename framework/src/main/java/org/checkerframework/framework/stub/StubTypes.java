@@ -26,6 +26,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -347,10 +348,10 @@ public class StubTypes {
      * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
      * null} if no such class exists for {@code e}.
      *
-     * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
-     *     null} if no such class exists for {@code e}
+     * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
+     *     no such class exists for {@code e}
      */
-    private String getOuterMostEnclosingClass(Element e) {
+    private @CanonicalName String getOuterMostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
         if (enclosingClass == null) {
             return null;

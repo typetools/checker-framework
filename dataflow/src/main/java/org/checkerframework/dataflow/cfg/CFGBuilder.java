@@ -2078,7 +2078,7 @@ public class CFGBuilder {
                                 getCurrentPath());
                 boxed.setInSource(false);
                 // Add Throwable to account for unchecked exceptions
-                TypeElement throwableElement = elements.getTypeElement("java.lang.Throwable");
+                TypeElement throwableElement = getTypeElement(Throwable.class);
                 addToConvertedLookupMap(node.getTree(), boxed);
                 insertNodeWithExceptionsAfter(
                         boxed, Collections.singleton(throwableElement.asType()), valueOfAccess);
@@ -2104,7 +2104,7 @@ public class CFGBuilder {
                 MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
                 primValueAccess.setInSource(false);
                 // Method access may throw NullPointerException
-                TypeElement npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                TypeElement npeElement = getTypeElement(NullPointerException.class);
                 insertNodeWithExceptionsAfter(
                         primValueAccess, Collections.singleton(npeElement.asType()), node);
 
@@ -2120,7 +2120,7 @@ public class CFGBuilder {
                 unboxed.setInSource(false);
 
                 // Add Throwable to account for unchecked exceptions
-                TypeElement throwableElement = elements.getTypeElement("java.lang.Throwable");
+                TypeElement throwableElement = getTypeElement(Throwable.class);
                 addToConvertedLookupMap(node.getTree(), unboxed);
                 insertNodeWithExceptionsAfter(
                         unboxed, Collections.singleton(throwableElement.asType()), primValueAccess);
@@ -2178,7 +2178,7 @@ public class CFGBuilder {
          */
         protected Node stringConversion(Node node) {
             // For string conversion, see JLS 5.1.11
-            TypeElement stringElement = elements.getTypeElement("java.lang.String");
+            TypeElement stringElement = getTypeElement(String.class);
             if (!TypesUtils.isString(node.getType())) {
                 Node converted =
                         new StringConversionNode(node.getTree(), node, stringElement.asType());
@@ -2664,7 +2664,7 @@ public class CFGBuilder {
                 // No NullPointerException can be thrown, use normal node
                 extendWithNode(target);
             } else {
-                TypeElement npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                TypeElement npeElement = getTypeElement(NullPointerException.class);
                 extendWithNodeWithException(target, npeElement.asType());
             }
 
@@ -2691,7 +2691,7 @@ public class CFGBuilder {
             List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
             thrownSet.addAll(thrownTypes);
             // Add Throwable to account for unchecked exceptions
-            TypeElement throwableElement = elements.getTypeElement("java.lang.Throwable");
+            TypeElement throwableElement = getTypeElement(Throwable.class);
             thrownSet.add(throwableElement.asType());
 
             ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
@@ -2811,7 +2811,7 @@ public class CFGBuilder {
             if (tree.getDetail() != null) {
                 detail = scan(tree.getDetail(), null);
             }
-            TypeElement assertException = elements.getTypeElement("java.lang.AssertionError");
+            TypeElement assertException = getTypeElement(AssertionError.class);
             AssertionErrorNode assertNode =
                     new AssertionErrorNode(tree, condition, detail, assertException.asType());
             extendWithNode(assertNode);
@@ -2852,8 +2852,7 @@ public class CFGBuilder {
                     // No NullPointerException can be thrown, use normal node
                     extendWithNode(target);
                 } else {
-                    TypeElement npeElement =
-                            elements.getTypeElement("java.lang.NullPointerException");
+                    TypeElement npeElement = getTypeElement(NullPointerException.class);
                     extendWithNodeWithException(target, npeElement.asType());
                 }
 
@@ -2992,7 +2991,7 @@ public class CFGBuilder {
                                 operNode = new IntegerDivisionNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
-                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                        getTypeElement(ArithmeticException.class);
                                 extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingDivisionNode(operTree, targetRHS, value);
@@ -3003,7 +3002,7 @@ public class CFGBuilder {
                                 operNode = new IntegerRemainderNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
-                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                        getTypeElement(ArithmeticException.class);
                                 extendWithNodeWithException(operNode, throwableElement.asType());
                             } else {
                                 operNode = new FloatingRemainderNode(operTree, targetRHS, value);
@@ -3213,7 +3212,7 @@ public class CFGBuilder {
                                 r = new IntegerDivisionNode(tree, left, right);
 
                                 TypeElement throwableElement =
-                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                        getTypeElement(ArithmeticException.class);
                                 extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingDivisionNode(tree, left, right);
@@ -3224,7 +3223,7 @@ public class CFGBuilder {
                                 r = new IntegerRemainderNode(tree, left, right);
 
                                 TypeElement throwableElement =
-                                        elements.getTypeElement("java.lang.ArithmeticException");
+                                        getTypeElement(ArithmeticException.class);
                                 extendWithNodeWithException(r, throwableElement.asType());
                             } else {
                                 r = new FloatingRemainderNode(tree, left, right);
@@ -3733,7 +3732,7 @@ public class CFGBuilder {
 
             // Distinguish loops over Iterables from loops over arrays.
 
-            TypeElement iterableElement = elements.getTypeElement("java.lang.Iterable");
+            TypeElement iterableElement = getTypeElement(Iterable.class);
             TypeMirror iterableType = types.erasure(iterableElement.asType());
 
             VariableTree variable = tree.getVariable();
@@ -3946,7 +3945,7 @@ public class CFGBuilder {
                 arrayAccessNode.setInSource(false);
                 extendWithNode(arrayAccessNode);
                 translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-                Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                Element npeElement = getTypeElement(NullPointerException.class);
                 extendWithNodeWithException(arrayAccessNode, npeElement.asType());
 
                 assert statement != null;
@@ -4160,10 +4159,9 @@ public class CFGBuilder {
             Node array = scan(tree.getExpression(), p);
             Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
             Node arrayAccess = extendWithNode(new ArrayAccessNode(tree, array, index));
-            Element aioobeElement =
-                    elements.getTypeElement("java.lang.ArrayIndexOutOfBoundsException");
+            Element aioobeElement = getTypeElement(ArrayIndexOutOfBoundsException.class);
             extendWithNodeWithException(arrayAccess, aioobeElement.asType());
-            Element npeElement = elements.getTypeElement("java.lang.NullPointerException");
+            Element npeElement = getTypeElement(NullPointerException.class);
             extendWithNodeWithException(arrayAccess, npeElement.asType());
             return arrayAccess;
         }
@@ -4299,7 +4297,7 @@ public class CFGBuilder {
             List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
             thrownSet.addAll(thrownTypes);
             // Add Throwable to account for unchecked exceptions
-            TypeElement throwableElement = elements.getTypeElement("java.lang.Throwable");
+            TypeElement throwableElement = getTypeElement(Throwable.class);
             thrownSet.add(throwableElement.asType());
 
             extendWithNodeWithExceptions(node, thrownSet);
@@ -4388,7 +4386,7 @@ public class CFGBuilder {
                 // No NullPointerException can be thrown, use normal node
                 extendWithNode(node);
             } else {
-                TypeElement npeElement = elements.getTypeElement("java.lang.NullPointerException");
+                TypeElement npeElement = getTypeElement(NullPointerException.class);
                 extendWithNodeWithException(node, npeElement.asType());
             }
 
@@ -4560,8 +4558,7 @@ public class CFGBuilder {
 
                     scan(finallyBlock, p);
 
-                    TypeMirror throwableType =
-                            elements.getTypeElement("java.lang.Throwable").asType();
+                    TypeMirror throwableType = getTypeElement(Throwable.class).asType();
                     NodeWithExceptionsHolder throwing =
                             extendWithNodeWithException(
                                     new MarkerNode(
@@ -4744,7 +4741,7 @@ public class CFGBuilder {
             final Node operand = scan(tree.getExpression(), p);
             final TypeMirror type = TreeUtils.typeOf(tree.getType());
             final Node node = new TypeCastNode(tree, operand, type, types);
-            final TypeElement cceElement = elements.getTypeElement("java.lang.ClassCastException");
+            final TypeElement cceElement = getTypeElement(ClassCastException.class);
 
             extendWithNodeWithException(node, cceElement.asType());
             return node;
@@ -5066,6 +5063,16 @@ public class CFGBuilder {
         @Override
         public Node visitOther(Tree tree, Void p) {
             throw new BugInCF("Unknown AST element encountered in AST to CFG translation.");
+        }
+
+        /**
+         * Returns the TypeElement for the given class.
+         *
+         * @param clazz a class
+         * @returns the TypeElement for the class
+         */
+        private TypeElement getTypeElement(Class<?> clazz) {
+            return elements.getTypeElement(clazz.getCanonicalName());
         }
     }
 

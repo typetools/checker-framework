@@ -37,6 +37,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -97,7 +98,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
-    private static final List<String> NONNULL_ALIASES =
+    private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
                     "android.annotation.NonNull",
@@ -141,7 +142,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
-    private static final List<String> NULLABLE_ALIASES =
+    private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
                     "android.annotation.Nullable",

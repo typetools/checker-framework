@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg;
 
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -65,7 +66,7 @@ public interface CFGVisualizer<
      * @param classCanonicalName the canonical name of the class
      * @return the String representation of the class name
      */
-    String visualizeStoreHeader(String classCanonicalName);
+    String visualizeStoreHeader(@CanonicalName String classCanonicalName);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize a local variable.

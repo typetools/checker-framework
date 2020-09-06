@@ -13,6 +13,7 @@ import javax.lang.model.element.Name;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.units.qual.MixedUnits;
 import org.checkerframework.checker.units.qual.Prefix;
@@ -64,9 +65,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
      * to prevent instantiating the UnitsRelations multiple times.
      */
-    private Map<String, UnitsRelations> unitsRel;
+    private Map<@CanonicalName String, UnitsRelations> unitsRel;
 
-    private static final Map<String, Class<? extends Annotation>> externalQualsMap =
+    private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
             new HashMap<>();
 
     private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
@@ -145,7 +146,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
-    protected Map<String, UnitsRelations> getUnitsRel() {
+    protected Map<@CanonicalName String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();
             // Always add the default units relations, for the standard units.
@@ -237,7 +238,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if it is an aliased annotation
         else {
             // ensure it has a base unit
-            @DotSeparatedIdentifiers Name baseUnitClass = getBaseUnitAnno(mirror);
+            @CanonicalName Name baseUnitClass = getBaseUnitAnno(mirror);
             if (baseUnitClass != null) {
                 // if the base unit isn't already added, add that first
                 @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658
@@ -284,7 +285,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param anno the annotation to examine
      * @return the annotation's name, if it is meta-annotated with UnitsMultiple; otherwise null
      */
-    private @Nullable @DotSeparatedIdentifiers Name getBaseUnitAnno(AnnotationMirror anno) {
+    private @Nullable @CanonicalName Name getBaseUnitAnno(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno :
                 anno.getAnnotationType().asElement().getAnnotationMirrors()) {

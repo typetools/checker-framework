@@ -35,6 +35,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -1042,7 +1043,7 @@ public class AnnotatedTypes {
     }
 
     /** java.lang.annotation.Annotation.class canonical name. */
-    private static String annotationClassName =
+    private static @CanonicalName String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
     /**

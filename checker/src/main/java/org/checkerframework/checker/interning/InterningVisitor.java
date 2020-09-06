@@ -37,6 +37,7 @@ import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
@@ -973,7 +974,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     /** @see #typeToCheck */
     DeclaredType typeToCheck() {
-        String className = checker.getOption("checkclass");
+        @SuppressWarnings("signature:assignment.type.incompatible") // user input
+        @CanonicalName String className = checker.getOption("checkclass");
         if (className == null) {
             return null;
         }

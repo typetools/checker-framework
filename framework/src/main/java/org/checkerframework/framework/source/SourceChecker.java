@@ -57,6 +57,8 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -1870,7 +1872,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /** The name of the @SuppressWarnings annotation. */
-    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
+    private final @CanonicalName String suppressWarningsClassName =
+            SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -2287,7 +2290,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
         TypeElement typeElement = ElementUtils.enclosingClass(element);
-        String name = typeElement.toString();
+        @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
+        // @FullyQualifiedName
+        )
+        @FullyQualifiedName String name = typeElement.toString();
         return shouldSkipUses(name);
     }
 
@@ -2303,7 +2309,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param typeName the fully-qualified name of a type
      * @return true iff the enclosing class of element should be skipped
      */
-    public boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,

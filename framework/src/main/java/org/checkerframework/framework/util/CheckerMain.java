@@ -17,6 +17,8 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -718,7 +720,7 @@ public class CheckerMain {
     // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
     protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", "/");
 
-    protected static final String FULLY_QUALIFIED_SUBTYPING_CHECKER =
+    protected static final @CanonicalName String FULLY_QUALIFIED_SUBTYPING_CHECKER =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
 
     protected static final String SUBTYPING_CHECKER_NAME =
@@ -768,7 +770,7 @@ public class CheckerMain {
      * are not included in the returned list. Note however that it is possible for a checker with
      * the name ending in "Checker" to be used as a subchecker.
      */
-    private List<String> getAllCheckerClassNames() {
+    private List<@FullyQualifiedName String> getAllCheckerClassNames() {
         ArrayList<String> checkerClassNames = new ArrayList<>();
         try {
             final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar));

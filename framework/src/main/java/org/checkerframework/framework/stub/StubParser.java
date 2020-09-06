@@ -70,6 +70,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -143,7 +144,7 @@ public class StubParser {
 
     /**
      * The set of annotations found in the stub file. Keys are both fully-qualified and simple
-     * names: there are two entries for each annotation: the annotation's simple name and its
+     * names. There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
      * @see #getAllStubAnnotations
@@ -154,7 +155,7 @@ public class StubParser {
      * A list of the fully-qualified names of enum constants and static fields with constant values
      * that have been imported.
      */
-    private final List<String> importedConstants = new ArrayList<>();
+    private final List<@FullyQualifiedName String> importedConstants = new ArrayList<>();
 
     /** A map of imported fully-qualified type names to type elements. */
     private final Map<String, TypeElement> importedTypes = new HashMap<>();
@@ -2181,7 +2182,7 @@ public class StubParser {
 
         /** Fully-qualified name of the class. */
         @Override
-        public String toString() {
+        public @FullyQualifiedName String toString() {
             if (packageName == null) {
                 return className;
             } else {
