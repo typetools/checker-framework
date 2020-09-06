@@ -367,7 +367,12 @@ public class StubTypes {
             }
             enclosingClass = t;
         }
-        return enclosingClass.getQualifiedName().toString();
+        @SuppressWarnings(
+                "signature:assignment.type.incompatible" // https://tinyurl.com/cfissue/658:
+        // Name.toString should be @PolySignature
+        )
+        @CanonicalNameOrEmpty String result = enclosingClass.getQualifiedName().toString();
+        return result;
     }
 
     /**

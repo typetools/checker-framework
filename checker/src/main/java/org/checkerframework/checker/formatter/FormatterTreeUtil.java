@@ -26,7 +26,6 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
-import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -463,9 +462,10 @@ public class FormatterTreeUtil {
                                         TypeElement e, Class<Void> v) {
                                     try {
                                         @SuppressWarnings(
-                                                "signature") // https://tinyurl.com/cfissue/658:
+                                                "signature" // https://tinyurl.com/cfissue/658:
                                         // Name.toString should be @PolySignature
-                                        @BinaryName String cname = e.getQualifiedName().toString();
+                                        )
+                                        @CanonicalNameOrEmpty String cname = e.getQualifiedName().toString();
                                         return Class.forName(cname);
                                     } catch (ClassNotFoundException e1) {
                                         return null; // the lookup should work for all

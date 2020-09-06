@@ -179,10 +179,7 @@ public class UnitsRelationsTools {
             // Optimization, though the else case would also work.
             return unitsAnnotation;
         } else {
-            @SuppressWarnings("signature:assignment.type.incompatible" // DeclaredType.toString():
-            // @FullyQualifiedName
-            )
-            @FullyQualifiedName String unitsAnnoName = unitsAnnotation.getAnnotationType().toString();
+            String unitsAnnoName = AnnotationUtils.annotationName(unitsAnnotation);
             // In the Units Checker, the only annotation value is the prefix value.  Therefore,
             // fromName (which creates an annotation with no values) is acceptable.
             // TODO: refine sensitivity of removal for extension units, in case extension

@@ -92,7 +92,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
         // Get the name of the aliased annotation
-        String aname = anno.getAnnotationType().toString();
+        String aname = AnnotationUtils.annotationName(anno);
 
         // See if we already have a map from this aliased annotation to its corresponding base unit
         // annotation

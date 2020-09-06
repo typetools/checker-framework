@@ -350,18 +350,17 @@ class SupertypeFinder {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
             Elements elements = atypeFactory.elements;
-            final AnnotatedTypeMirror objectType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
+            final AnnotatedTypeMirror objectType = atypeFactory.getAnnotatedType(Object.class);
             objectType.addAnnotations(annotations);
             superTypes.add(objectType);
 
             final AnnotatedTypeMirror cloneableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Cloneable"));
+                    atypeFactory.getAnnotatedType(Cloneable.class);
             cloneableType.addAnnotations(annotations);
             superTypes.add(cloneableType);
 
             final AnnotatedTypeMirror serializableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.io.Serializable"));
+                    atypeFactory.getAnnotatedType(Serializable.class);
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 

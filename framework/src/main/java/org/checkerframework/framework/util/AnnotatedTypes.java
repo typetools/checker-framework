@@ -1093,7 +1093,7 @@ public class AnnotatedTypes {
     public static boolean isDeclarationOfJavaLangEnum(
             final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
         if (isEnum(typeMirror)) {
-            return elements.getTypeElement("java.lang.Enum")
+            return elements.getTypeElement(Enum.class.getCanonicalName())
                     .equals(((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
         }
 

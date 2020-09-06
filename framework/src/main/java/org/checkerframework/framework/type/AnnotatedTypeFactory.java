@@ -1042,6 +1042,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
+    /**
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code clazz}.
+     *
+     * @param clazz a class
+     * @return the annotated type of {@code clazz}
+     */
+    public AnnotatedTypeMirror getAnnotatedType(Class<?> clazz) {
+        return getAnnotatedType(elements.getTypeElement(clazz.getCanonicalName()));
+    }
+
     @Override
     public @Nullable AnnotationMirror getAnnotationMirror(
             Tree tree, Class<? extends Annotation> target) {

@@ -1624,7 +1624,7 @@ public class StubParser {
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
-        String annoName = annotation.getNameAsString();
+        @FullyQualifiedName String annoName = annotation.getNameAsString();
 
         TypeElement annoTypeElm = allStubAnnotations.get(annoName);
         if (annoTypeElm == null) {
