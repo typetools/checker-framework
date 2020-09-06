@@ -691,7 +691,8 @@ subprojects {
 	    'org.checkerframework.checker.signature.SignatureChecker')
         // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
         createCheckTypeTask(project.name, 'Nullness',
-	    'org.checkerframework.checker.nullness.NullnessChecker', ['-AskipUses=com.sun.*'])
+	    'org.checkerframework.checker.nullness.NullnessChecker',
+	    ['-AskipUses=com.sun.*'])
 
 
         // Add jtregTests to framework and checker modules
