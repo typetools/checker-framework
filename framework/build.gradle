@@ -165,7 +165,8 @@ shadowJar {
     }
 }
 
-createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+createCheckTypeTask(project.name, "CompilerMessages",
+    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     options.compilerArgs += [
             '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
