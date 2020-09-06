@@ -63,15 +63,15 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
     }
 
     /**
-     * Returns whether or not {@code subAnno} is a subtype of {@code superAnno}. Both {@code
-     * subAnno} and {@code superAnno} are annotations with elements. {@code subKind} is a sub
-     * qualifier kind of {@code superKind}.
+     * Returns true if {@code subAnno} is a subtype of {@code superAnno}. Both {@code subAnno} and
+     * {@code superAnno} are annotations with elements. {@code subKind} is a sub qualifier kind of
+     * {@code superKind}.
      *
      * @param subAnno possible subtype annotation; has elements
      * @param subKind QualifierKind of {@code subAnno}
      * @param superAnno possible super annotation; has elements
      * @param superKind QualifierKind of {@code superAnno}
-     * @return whether or not {@code subAnno} is a subtype of {@code superAnno}
+     * @return true if {@code subAnno} is a subtype of {@code superAnno}
      */
     protected abstract boolean isSubtypeWithElements(
             AnnotationMirror subAnno,

@@ -11,6 +11,7 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
@@ -24,9 +25,9 @@ import org.checkerframework.javacutil.TypeSystemError;
  * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
  *
  * <p>ElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
- * between qualifiers. {@link MostlyNoElementQualifierHierarchy} uses the {@link
+ * between qualifiers. (By contrast, {@link MostlyNoElementQualifierHierarchy} uses the {@link
  * QualifierKindHierarchy} to implement {@code isSubtype}, {@code leastUpperBound}, and {@code
- * greatestLowerBound} methods for qualifiers without elements.
+ * greatestLowerBound} methods for qualifiers without elements.)
  *
  * <p>Subclasses can override {@link #createQualifierKindHierarchy(Collection)} to return a subclass
  * of QualifierKindHierarchy.
@@ -78,7 +79,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
         this.bottomsMap = Collections.unmodifiableMap(createBottomsMap());
         this.bottoms = AnnotationUtils.createUnmodifiableAnnotationSet(bottomsMap.values());
 
-        this.kindToElementlessQualifier = createElementLessQualifierMap();
+        this.kindToElementlessQualifier = createElementlessQualifierMap();
     }
 
     @Override
@@ -110,7 +111,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
      * @return the mapping
      */
     @RequiresNonNull({"this.qualifierKindHierarchy", "this.elements"})
-    protected Map<QualifierKind, AnnotationMirror> createElementLessQualifierMap(
+    protected Map<QualifierKind, AnnotationMirror> createElementlessQualifierMap(
             @UnderInitialization ElementQualifierHierarchy this) {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
@@ -176,7 +177,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
      * @param name fully qualified annotation name
      * @return the qualifier kind for the annotation named {@code name}
      */
-    protected QualifierKind getQualifierKind(String name) {
+    protected QualifierKind getQualifierKind(@FullyQualifiedName String name) {
         QualifierKind kind = qualifierKindHierarchy.getQualifierKind(name);
         if (kind == null) {
             throw new BugInCF("QualifierKind %s not in hierarchy", name);
@@ -190,10 +191,12 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
     }
 
     @Override
-    @SuppressWarnings("nullness:return.type.incompatible") // All tops are a key for topsMap.
     public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return topsMap.get(kind.getTop());
+        @SuppressWarnings(
+                "nullness:assignment.type.incompatible") // All tops are a key for topsMap.
+        AnnotationMirror result = topsMap.get(kind.getTop());
+        return result;
     }
 
     @Override
@@ -222,10 +225,12 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
     }
 
     @Override
-    @SuppressWarnings("nullness:return.type.incompatible") // All bottoms are keys for bottomsMap.
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
         QualifierKind kind = getQualifierKind(start);
-        return bottomsMap.get(kind.getBottom());
+        @SuppressWarnings(
+                "nullness:assignment.type.incompatible") // All bottoms are keys for bottomsMap.
+        AnnotationMirror result = bottomsMap.get(kind.getBottom());
+        return result;
     }
 
     @Override

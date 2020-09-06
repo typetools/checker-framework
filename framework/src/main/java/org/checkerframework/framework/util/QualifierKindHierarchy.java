@@ -23,8 +23,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  * are not subtypes, then qualifiers of those kinds are never subtypes.
  *
  * <p>This interface is used by {@link NoElementQualifierHierarchy} and {@link
- * ElementQualifierHierarchy} to implement methods that compare {@link
- * javax.lang.model.element.AnnotationMirror}s, such as {@link
+ * ElementQualifierHierarchy} (but <em>not</em> {@link MostlyNoElementQualifierHierarchy}) to
+ * implement methods that compare {@link javax.lang.model.element.AnnotationMirror}s, such as {@link
  * org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
  * AnnotationMirror)}.
  *

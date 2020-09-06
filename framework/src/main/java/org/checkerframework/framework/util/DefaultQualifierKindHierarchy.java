@@ -90,15 +90,19 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     }
 
     @Override
-    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in lubs.
     public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
-        return lubs.get(q1).get(q2);
+        @SuppressWarnings(
+                "nullness:dereference.of.nullable") // All QualifierKinds are keys in lubs.
+        QualifierKind result = lubs.get(q1).get(q2);
+        return result;
     }
 
     @Override
-    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in glbs.
     public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
-        return glbs.get(q1).get(q2);
+        @SuppressWarnings(
+                "nullness:dereference.of.nullable") // All QualifierKinds are keys in glbs.
+        QualifierKind result = glbs.get(q1).get(q2);
+        return result;
     }
 
     @Override
@@ -697,7 +701,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
 
-        /** Whether or not the annotation class of this has annotation elements/arguments. */
+        /** True if the annotation class of this has annotation elements/arguments. */
         private final boolean hasElements;
 
         /** The top of the hierarchy to which this belongs. */

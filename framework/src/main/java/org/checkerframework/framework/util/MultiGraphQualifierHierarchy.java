@@ -35,8 +35,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  *
  * @deprecated Use {@link ElementQualifierHierarchy}, {@link MostlyNoElementQualifierHierarchy}, or
  *     {@link NoElementQualifierHierarchy} instead. This class will be removed in a future release.
- *     <p>Below are instructions on how to converting from a subclass of
- *     MultiGraphQualifierHierarchy to the new implementations:
+ *     <p>Here are instructions on how to convert from a subclass of MultiGraphQualifierHierarchy to
+ *     the new implementations:
  *     <p>If the subclass implements isSubtype and calls super when annotations do not have
  *     elements, then use the following instructions to convert to {@link
  *     MostlyNoElementQualifierHierarchy}.

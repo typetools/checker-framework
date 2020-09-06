@@ -109,8 +109,10 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
             @UnderInitialization NoElementQualifierHierarchy this) {
         Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
         for (QualifierKind top : qualifierKindHierarchy.getTops()) {
-            // All QualifierKinds are keys in kindToAnnotationMirror
-            @SuppressWarnings("nullness:assignment.type.incompatible")
+            @SuppressWarnings(
+                    "nullness:assignment.type.incompatible" // All QualifierKinds are keys in
+            // kindToAnnotationMirror
+            )
             @NonNull AnnotationMirror topAnno = kindToAnnotationMirror.get(top);
             tops.add(topAnno);
         }
@@ -127,8 +129,10 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
             @UnderInitialization NoElementQualifierHierarchy this) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
-            // All QualifierKinds are keys in kindToAnnotationMirror
-            @SuppressWarnings("nullness:assignment.type.incompatible")
+            @SuppressWarnings(
+                    "nullness:assignment.type.incompatible" // All QualifierKinds are keys in
+            // kindToAnnotationMirror
+            )
             @NonNull AnnotationMirror bottomAnno = kindToAnnotationMirror.get(bottom);
             bottoms.add(bottomAnno);
         }

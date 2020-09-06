@@ -17,9 +17,9 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *
  * <p>Exactly one qualifier kind is created for each annotation class.
  *
- * <p>The set of all QualifierKinds for a checker are like an enum. One QualifierKind is like an
- * enum constant in that they are immutable after initialization and only a finite number per type
- * system exist.
+ * <p>The set of all QualifierKinds for a checker is like an enum. One QualifierKind is like an enum
+ * constant in that they are immutable after initialization and only a finite number exist per type
+ * system.
  */
 @AnnotatedFor("nullness")
 public @Interned interface QualifierKind extends Comparable<QualifierKind> {
@@ -46,7 +46,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     QualifierKind getTop();
 
     /**
-     * Returns whether or not this is the top qualifier of its hierarchy.
+     * Returns true if this is the top qualifier of its hierarchy.
      *
      * @return true if this is the top qualifier of its hierarchy
      */
@@ -60,7 +60,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     QualifierKind getBottom();
 
     /**
-     * Returns whether or not this is the bottom qualifier of its hierarchy.
+     * Returns true if this is the bottom qualifier of its hierarchy.
      *
      * @return true if this is the bottom qualifier of its hierarchy
      */
@@ -76,14 +76,14 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     @Nullable QualifierKind getPolymorphic();
 
     /**
-     * Returns whether or not this is polymorphic.
+     * Returns true if this is polymorphic.
      *
      * @return true if this is polymorphic
      */
     boolean isPoly();
 
     /**
-     * Returns whether or not the annotation class this qualifier kind represents has annotation
+     * Returns true if the annotation class this qualifier kind represents has annotation
      * elements/arguments.
      *
      * @return true if the annotation class this qualifier kind represents has elements/arguments
@@ -99,7 +99,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     Set<? extends QualifierKind> getStrictSuperTypes();
 
     /**
-     * Returns whether or not this and {@code other} are in the same hierarchy.
+     * Returns true if this and {@code other} are in the same hierarchy.
      *
      * @param other a qualifier kind
      * @return true if this and {@code other} are in the same hierarchy
@@ -107,7 +107,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
     boolean isInSameHierarchyAs(QualifierKind other);
 
     /**
-     * Returns whether or not this qualifier kind is a subtype of or equal to {@code superQualKind}.
+     * Returns true if this qualifier kind is a subtype of or equal to {@code superQualKind}.
      *
      * @param superQualKind other qualifier kind
      * @return true if this qualifier kind is a subtype of or equal to {@code superQualKind}
