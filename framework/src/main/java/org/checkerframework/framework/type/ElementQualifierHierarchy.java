@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -195,7 +196,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
         QualifierKind kind = getQualifierKind(start);
         @SuppressWarnings(
                 "nullness:assignment.type.incompatible") // All tops are a key for topsMap.
-        AnnotationMirror result = topsMap.get(kind.getTop());
+        @NonNull AnnotationMirror result = topsMap.get(kind.getTop());
         return result;
     }
 
@@ -229,7 +230,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
         QualifierKind kind = getQualifierKind(start);
         @SuppressWarnings(
                 "nullness:assignment.type.incompatible") // All bottoms are keys for bottomsMap.
-        AnnotationMirror result = bottomsMap.get(kind.getBottom());
+        @NonNull AnnotationMirror result = bottomsMap.get(kind.getBottom());
         return result;
     }
 

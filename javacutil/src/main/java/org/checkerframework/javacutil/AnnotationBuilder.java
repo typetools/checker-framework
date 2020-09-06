@@ -30,6 +30,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UtilPlume;
 
@@ -576,8 +577,9 @@ public class AnnotationBuilder {
         private final Map<ExecutableElement, AnnotationValue> elementValues;
         /** The annotation name. */
         // default visibility to allow access from within package.
-        final @Interned String annotationName;
+        final @Interned @FullyQualifiedName String annotationName;
 
+        @SuppressWarnings("signature:assignment.type.incompatible") // needs JDK annotations
         CheckerFrameworkAnnotationMirror(
                 DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
             this.annotationType = at;
