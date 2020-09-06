@@ -97,7 +97,9 @@ public class FluentAPIGenerator {
              */
             private @CanonicalName String getAutoValueBuilderCanonicalName() {
                 String com = "com";
-                return com + "." + "google.auto.value.AutoValue.Builder";
+                @SuppressWarnings("signature:return.type.incompatible") // string concatenation
+                @CanonicalName String result = com + "." + "google.auto.value.AutoValue.Builder";
+                return result;
             }
         },
         /** <a href="https://projectlombok.org/features/Builder">Project Lombok</a>. */

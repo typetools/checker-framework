@@ -836,7 +836,7 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the names of classes in {@code anno.annoElement}
      */
-    public static List<Name> getElementValueClassNames(
+    public static List<@CanonicalName Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);

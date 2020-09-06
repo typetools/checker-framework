@@ -243,7 +243,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /** Map keys are canonical names of aliased annotations. */
-    private final Map<@CanonicalName String, Alias> aliases = new HashMap<>();
+    private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
 
     /**
      * Information about one annotation alias.
@@ -1530,7 +1530,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         List<String> fields =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
-        List<Name> classes =
+        List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
@@ -2667,9 +2667,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} which prevents the possibility of a typo in the class name.
      *
-     * @param aliasName the fully-qualified name of the aliased annotation
+     * @param aliasName the canonical name of the aliased annotation
      * @param type the canonical annotation
      */
+    // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
+    // name of an external annotation is a canoncal name.
     protected void addAliasedAnnotation(
             @FullyQualifiedName String aliasName, AnnotationMirror type) {
         aliases.put(aliasName, new Alias(aliasName, type, false, null, null));
@@ -2725,13 +2727,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class, Class,
      * boolean, String[])} which prevents the possibility of a typo in the class name.
      *
-     * @param aliasName the fully-qualified name of the aliased class
+     * @param aliasName the canonical name of the aliased class
      * @param canonicalAnno the canonical annotation
      * @param copyElements a flag that indicates whether we want to copy the elements over when
      *     getting the alias from the canonical annotation
      * @param ignorableElements a list of elements that can be safely dropped when the elements are
      *     being copied over
      */
+    // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
+    // name of an external annotation is a canoncal name.
     protected void addAliasedAnnotation(
             @FullyQualifiedName String aliasName,
             Class<?> canonicalAnno,
@@ -3735,7 +3739,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
-        List<Name> qualClasses =
+        List<@CanonicalName Name> qualClasses =
                 AnnotationUtils.getElementValueClassNames(annotation, "value", true);
         for (Name qual : qualClasses) {
             AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);

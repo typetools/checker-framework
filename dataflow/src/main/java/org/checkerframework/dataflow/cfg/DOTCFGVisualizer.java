@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -330,8 +329,8 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreHeader(@CanonicalName String classCanonicalName) {
-        return classCanonicalName + "(" + leftJustifiedTerminator;
+    public String visualizeStoreHeader(String className) {
+        return className + "(" + leftJustifiedTerminator;
     }
 
     @Override

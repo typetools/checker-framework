@@ -150,7 +150,8 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
          *     otherwise, null.
          * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
          */
-        private static @Nullable Name getPolymorphicQualifierElement(AnnotationMirror qual) {
+        private static @Nullable @CanonicalName Name getPolymorphicQualifierElement(
+                AnnotationMirror qual) {
             AnnotationMirror poly = getPolymorphicQualifier(qual);
 
             // System.out.println("poly: " + poly + " pq: " +

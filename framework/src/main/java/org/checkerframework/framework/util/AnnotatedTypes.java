@@ -624,12 +624,11 @@ public class AnnotatedTypes {
             throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
-        TypeElement iterableElement =
-                processingEnv.getElementUtils().getTypeElement("java.lang.Iterable");
+        TypeElement iterableElement = ElementUtils.getTypeElement(processingEnv, Iterable.class);
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = asSuper(atypeFactory, iterableType, iterableElmType);
         if (dt.getTypeArguments().isEmpty()) {
-            TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
+            TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
             AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
