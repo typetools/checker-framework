@@ -680,19 +680,19 @@ subprojects {
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
         createCheckTypeTask(project.name, 'Interning',
-	    'org.checkerframework.checker.interning.InterningChecker',
-	    ['-Astubs=javax-lang-model-element-name.astub'])
+            'org.checkerframework.checker.interning.InterningChecker',
+            ['-Astubs=javax-lang-model-element-name.astub'])
         createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
-	    'org.checkerframework.checker.nullness.NullnessChecker',
-	    ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
-	    'org.checkerframework.framework.util.PurityChecker')
+            'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
-	    'org.checkerframework.checker.signature.SignatureChecker')
+            'org.checkerframework.checker.signature.SignatureChecker')
         // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
         createCheckTypeTask(project.name, 'Nullness',
-	    'org.checkerframework.checker.nullness.NullnessChecker',
-	    ['-AskipUses=com.sun.*'])
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*'])
 
 
         // Add jtregTests to framework and checker modules
