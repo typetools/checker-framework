@@ -298,15 +298,12 @@ public abstract class AbstractCFGVisualizer<
                     "analysis must be non-null when visualizing the transfer input of a block.");
         }
 
+        Direction analysisDirection = analysis.getDirection();
+
         S regularStore;
         S thenStore = null;
         S elseStore = null;
         boolean isTwoStores = false;
-
-        StringBuilder sbStore = new StringBuilder();
-        sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
-
-        Direction analysisDirection = analysis.getDirection();
 
         if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
             regularStore = analysis.getResult().getStoreAfter(bb);
@@ -320,6 +317,9 @@ public abstract class AbstractCFGVisualizer<
             thenStore = input.getThenStore();
             elseStore = input.getElseStore();
         }
+
+        StringBuilder sbStore = new StringBuilder();
+        sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
         if (!isTwoStores) {
             sbStore.append(visualizeStore(regularStore));
