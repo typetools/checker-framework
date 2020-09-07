@@ -195,7 +195,8 @@ public abstract class AbstractCFGVisualizer<
      * @param bb the block
      * @param analysis the current analysis
      * @param separator the line separator. Examples: "\\l" for left justification in {@link
-     *     DOTCFGVisualizer}, "\n" to add a new line in {@link StringCFGVisualizer}
+     *     DOTCFGVisualizer} (this is really a terminator, not a separator), "\n" to add a new line
+     *     in {@link StringCFGVisualizer}
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
@@ -222,11 +223,13 @@ public abstract class AbstractCFGVisualizer<
             if (verbose) {
                 Node lastNode = bb.getLastNode();
                 if (lastNode != null) {
-                    sbBlock.append(separator + visualizeBlockTransferInputAfter(bb, analysis));
+                    if (!sbBlock.toString().endsWith(separator)) {
+                        sbBlock.append(separator);
+                    }
+                    sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis) + separator);
                 }
             }
         }
-        System.out.println("visualizeBlockHelper: <<<" + sbBlock + ">>>");
         return sbBlock.toString();
     }
 
@@ -242,8 +245,7 @@ public abstract class AbstractCFGVisualizer<
             Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
 
         List<Node> contents = addBlockContent(bb);
-        StringJoiner sjBlockContents = new StringJoiner(separator, "", separator);
-        sjBlockContents.setEmptyValue("");
+        StringJoiner sjBlockContents = new StringJoiner(separator);
         for (Node t : contents) {
             sjBlockContents.add(visualizeBlockNode(t, analysis));
         }
