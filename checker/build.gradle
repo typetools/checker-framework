@@ -17,7 +17,8 @@ dependencies {
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.0'
-    implementation 'org.plumelib:plume-util:1.1.5'
+    // implementation 'org.plumelib:plume-util:1.1.5'
+    implementation files('/home/mernst/java/plume-lib/plume-util/build/libs/plume-util-1.1.5.jar')
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')

@@ -37,6 +37,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.UniqueId;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory locations such as
@@ -54,7 +55,7 @@ import org.checkerframework.javacutil.Pair;
 // TODO: this class should be split into parts that are reusable generally, and
 // parts specific to the checker framework
 public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
-        implements Store<S> {
+        implements Store<S>, UniqueId {
 
     /** The analysis class this store belongs to. */
     protected final CFAbstractAnalysis<V, S, ?> analysis;
@@ -92,6 +93,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * running at all times)?
      */
     protected final boolean sequentialSemantics;
+
+    /** The unique ID of this object. */
+    final transient long uid = UniqueId.nextUid.getAndIncrement();
+
+    @Override
+    public long getUid() {
+        return uid;
+    }
 
     /* --------------------------------------------------------- */
     /* Initialization */
@@ -848,6 +857,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SuppressWarnings("unchecked")
     @Override
     public S copy() {
+        System.out.printf("copy(%s)%n", getClassAndId());
         return analysis.createCopiedStore((S) this);
     }
 
@@ -865,9 +875,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         S newStore = analysis.createEmptyStore(sequentialSemantics);
         System.out.printf(
                 "upperBound(%s, %s) => %s%n",
-                System.identityHashCode(this),
-                System.identityHashCode(other),
-                System.identityHashCode(newStore));
+                this.getClassAndId(), other.getClassAndId(), newStore.getClassAndId());
 
         for (Map.Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
@@ -1014,7 +1022,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @Override
     public int hashCode() {
         // What is a good hash code to use?
-        return System.identityHashCode(this);
+        return 22;
     }
 
     @SideEffectFree
@@ -1029,9 +1037,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        String header =
-                castedViz.visualizeStoreHeader(
-                        this.getClass().getSimpleName() + " " + System.identityHashCode(this));
+        String header = castedViz.visualizeStoreHeader(this.getClassAndId());
         String internal = internalVisualize(castedViz);
         String footer = castedViz.visualizeStoreFooter();
         if (internal.trim().isEmpty()) {

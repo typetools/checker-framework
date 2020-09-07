@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.UniqueId;
 
 /**
  * This abstract class makes implementing a {@link CFGVisualizer} easier. Some of the methods in
@@ -131,23 +132,27 @@ public abstract class AbstractCFGVisualizer<
             ConditionalBlock ccur = ((ConditionalBlock) cur);
             Block thenSuccessor = ccur.getThenSuccessor();
             sbGraph.append(
-                    addEdge(
+                    visualizeEdge(
                             ccur.getId(),
                             thenSuccessor.getId(),
                             ccur.getThenFlowRule().toString()));
+            sbGraph.append(lineSeparator);
             addBlock(thenSuccessor, visited, workList);
             Block elseSuccessor = ccur.getElseSuccessor();
             sbGraph.append(
-                    addEdge(
+                    visualizeEdge(
                             ccur.getId(),
                             elseSuccessor.getId(),
                             ccur.getElseFlowRule().toString()));
+            sbGraph.append(lineSeparator);
             addBlock(elseSuccessor, visited, workList);
         } else {
             SingleSuccessorBlock sscur = (SingleSuccessorBlock) cur;
             Block succ = sscur.getSuccessor();
             if (succ != null) {
-                sbGraph.append(addEdge(cur.getId(), succ.getId(), sscur.getFlowRule().name()));
+                sbGraph.append(
+                        visualizeEdge(cur.getId(), succ.getId(), sscur.getFlowRule().name()));
+                sbGraph.append(lineSeparator);
                 addBlock(succ, visited, workList);
             }
         }
@@ -160,7 +165,8 @@ public abstract class AbstractCFGVisualizer<
                     exception = exception.replace("java.lang.", "");
                 }
                 for (Block b : e.getValue()) {
-                    sbGraph.append(addEdge(cur.getId(), b.getId(), exception));
+                    sbGraph.append(visualizeEdge(cur.getId(), b.getId(), exception));
+                    sbGraph.append(lineSeparator);
                     addBlock(b, visited, workList);
                 }
             }
@@ -305,12 +311,17 @@ public abstract class AbstractCFGVisualizer<
         S elseStore = null;
         boolean isTwoStores = false;
 
+        UniqueId storesFrom;
+
         if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
             regularStore = analysis.getResult().getStoreAfter(bb);
+            storesFrom = analysis.getResult();
         } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
             regularStore = analysis.getResult().getStoreBefore(bb);
+            storesFrom = analysis.getResult();
         } else {
             TransferInput<V, S> input = analysis.getInput(bb);
+            storesFrom = input;
             assert input != null : "@AssumeAssertion(nullness): invariant";
             isTwoStores = input.containsTwoStores();
             regularStore = input.getRegularStore();
@@ -319,6 +330,9 @@ public abstract class AbstractCFGVisualizer<
         }
 
         StringBuilder sbStore = new StringBuilder();
+        if (verbose) {
+            sbStore.append(storesFrom.getClassAndId() + escapeString);
+        }
         sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
         if (!isTwoStores) {
@@ -406,7 +420,7 @@ public abstract class AbstractCFGVisualizer<
      * @param flowRule the content of the edge
      * @return the String representation of the edge
      */
-    protected abstract String addEdge(Object sId, Object eId, String flowRule);
+    protected abstract String visualizeEdge(Object sId, Object eId, String flowRule);
 
     /**
      * Return the header of the generated graph.

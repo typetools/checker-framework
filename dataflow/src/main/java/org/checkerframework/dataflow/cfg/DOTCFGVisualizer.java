@@ -44,6 +44,7 @@ public class DOTCFGVisualizer<
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
+    // TODO: Maybe this is a terminator rather than a separator?
     /** Terminator for lines that are left-justified. */
     protected static final String leftJustifiedTerminator = "\\l";
 
@@ -88,7 +89,6 @@ public class DOTCFGVisualizer<
             Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
         StringBuilder sbDotNodes = new StringBuilder();
-        sbDotNodes.append(lineSeparator);
 
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
@@ -112,29 +112,22 @@ public class DOTCFGVisualizer<
             if (strBlock.length() == 0) {
                 if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                     // The footer of the conditional block.
-                    sbDotNodes.append("\"];").append(lineSeparator);
+                    sbDotNodes.append("\"];");
                 } else {
                     // The footer of the block which has no content and is not a special or
                     // conditional block.
-                    sbDotNodes.append("?? empty ??\"];").append(lineSeparator);
+                    sbDotNodes.append("?? empty ??\"];");
                 }
             } else {
-                sbDotNodes.append(strBlock).append("\"];").append(lineSeparator);
+                sbDotNodes.append(strBlock).append("\"];");
             }
         }
         return sbDotNodes.toString();
     }
 
     @Override
-    protected String addEdge(Object sId, Object eId, String flowRule) {
-        return "    "
-                + format(sId)
-                + " -> "
-                + format(eId)
-                + " [label=\""
-                + flowRule
-                + "\"];"
-                + lineSeparator;
+    protected String visualizeEdge(Object sId, Object eId, String flowRule) {
+        return "    " + format(sId) + " -> " + format(eId) + " [label=\"" + flowRule + "\"];";
     }
 
     @Override
@@ -372,6 +365,6 @@ public class DOTCFGVisualizer<
 
     @Override
     protected String visualizeGraphFooter() {
-        return "}" + lineSeparator;
+        return "}";
     }
 }

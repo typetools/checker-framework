@@ -27,6 +27,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.UtilPlume;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -122,6 +123,7 @@ public class ForwardAnalysisImpl<
                     TransferInput<V, S> inputBefore = getInputBefore(rb);
                     assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
+                    System.out.printf("currentInput = inputBefore.copy():  %s%n", currentInput);
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
                     for (Node n : rb.getNodes()) {
@@ -129,6 +131,11 @@ public class ForwardAnalysisImpl<
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
                         currentInput = new TransferInput<>(n, this, transferResult);
+                        System.out.printf(
+                                "Node = %s%n  transferresult = %s%n  currentInput = %s%n",
+                                n,
+                                UtilPlume.indentLines(4, transferResult),
+                                UtilPlume.indentLines(4, currentInput));
                         lastNode = n;
                     }
                     assert currentInput != null : "@AssumeAssertion(nullness): invariant";
@@ -391,6 +398,15 @@ public class ForwardAnalysisImpl<
             TransferInput<V, S> currentInput,
             Store.FlowRule flowRule,
             boolean addToWorklistAgain) {
+        if (succ.toString().contains("EXIT")) {
+            UtilPlume.sleep(100);
+            new Error("propagateStoresTo EXIT").printStackTrace();
+            UtilPlume.sleep(100);
+        }
+        System.out.printf(
+                "propagateStoresTo(succ=%s, node=%s,%n  currentInput=%s,%n  flowRule=%s, addToWorklistAgain=%s)%n",
+                succ, node, currentInput, flowRule, addToWorklistAgain);
+
         switch (flowRule) {
             case EACH_TO_EACH:
                 if (currentInput.containsTwoStores()) {

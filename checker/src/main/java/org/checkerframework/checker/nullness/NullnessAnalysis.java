@@ -9,6 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.UtilPlume;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the transfer function,
@@ -27,16 +28,24 @@ public class NullnessAnalysis
     @Override
     public NullnessStore createEmptyStore(boolean sequentialSemantics) {
         NullnessStore result = new NullnessStore(this, sequentialSemantics);
-        System.out.printf("createEmptyStore => %s%n", System.identityHashCode(result));
+        System.out.printf("createEmptyStore => %s%n", result.getClassAndId());
         return result;
     }
 
     @Override
     public NullnessStore createCopiedStore(NullnessStore s) {
         NullnessStore result = new NullnessStore(s);
-        System.out.printf(
-                "createCopiedStore(%s) => %s%n",
-                System.identityHashCode(s), System.identityHashCode(result));
+        String message =
+                String.format(
+                        "createCopiedStore(%s) => %s", s.getClassAndId(), result.getClassAndId());
+        boolean stacktrace = false;
+        if (stacktrace) {
+            UtilPlume.sleep(100);
+            new Error(message).printStackTrace();
+            UtilPlume.sleep(100);
+        } else {
+            System.out.println(message);
+        }
         return result;
     }
 
