@@ -26,6 +26,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.UniqueId;
+import org.plumelib.util.UtilPlume;
 
 /**
  * This abstract class makes implementing a {@link CFGVisualizer} easier. Some of the methods in
@@ -194,8 +195,7 @@ public abstract class AbstractCFGVisualizer<
      * @param bb the block
      * @param analysis the current analysis
      * @param separator the line separator. Examples: "\\l" for left justification in {@link
-     *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" to add a
-     *     new line in {@link StringCFGVisualizer}
+     *     DOTCFGVisualizer}, "\n" to add a new line in {@link StringCFGVisualizer}
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
@@ -203,8 +203,8 @@ public abstract class AbstractCFGVisualizer<
         StringBuilder sbBlock = new StringBuilder();
         String contents = loopOverBlockContents(bb, analysis, separator);
         if (!contents.isEmpty()) {
-            sbBlock.append(separator);
             sbBlock.append(contents);
+            sbBlock.append(separator);
         }
         if (sbBlock.length() == 0) {
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
@@ -218,14 +218,15 @@ public abstract class AbstractCFGVisualizer<
 
         // Visualize transfer input if necessary.
         if (analysis != null) {
-            sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
+            sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis) + separator);
             if (verbose) {
                 Node lastNode = bb.getLastNode();
                 if (lastNode != null) {
-                    sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+                    sbBlock.append(separator + visualizeBlockTransferInputAfter(bb, analysis));
                 }
             }
         }
+        System.out.println("visualizeBlockHelper: <<<" + sbBlock + ">>>");
         return sbBlock.toString();
     }
 
@@ -345,14 +346,15 @@ public abstract class AbstractCFGVisualizer<
             assert elseStore != null : "@AssumeAssertion(nullness): invariant";
             sbStore.append("then=");
             sbStore.append(visualizeStore(thenStore));
-            sbStore.append(", else=");
+            sbStore.append(",");
+            sbStore.append(separator);
+            sbStore.append("else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        String inputSeparator = "~~~~~~~~~" + separator;
         if (where == VisualizeWhere.BEFORE) {
-            sbStore.append(inputSeparator);
+            sbStore.append(separator + "~~~~~~~~~");
         } else {
-            sbStore.insert(0, inputSeparator);
+            sbStore.insert(0, "~~~~~~~~~" + separator);
         }
         return sbStore.toString();
     }
@@ -361,17 +363,16 @@ public abstract class AbstractCFGVisualizer<
      * Visualize a special block.
      *
      * @param sbb the special block
-     * @param separator the separator String to put at the end of the result
-     * @return the String representation of the special block, followed by the separator
+     * @return the String representation of the special block
      */
-    protected String visualizeSpecialBlockHelper(SpecialBlock sbb, String separator) {
+    protected String visualizeSpecialBlockHelper(SpecialBlock sbb) {
         switch (sbb.getSpecialType()) {
             case ENTRY:
-                return "<entry>" + separator;
+                return "<entry>";
             case EXIT:
-                return "<exit>" + separator;
+                return "<exit>";
             case EXCEPTIONAL_EXIT:
-                return "<exceptional-exit>" + separator;
+                return "<exceptional-exit>";
             default:
                 throw new BugInCF("Unrecognized special block type: " + sbb.getType());
         }
@@ -448,8 +449,7 @@ public abstract class AbstractCFGVisualizer<
      * @return a String representation of the given process orders
      */
     protected String getProcessOrderSimpleString(List<Integer> order) {
-        String orderString = order.toString();
-        return "Process order: " + orderString.substring(1, orderString.length() - 1);
+        return "Process order: " + UtilPlume.join(",", order);
     }
 
     /**

@@ -71,7 +71,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, lineSeparator);
+        return super.visualizeSpecialBlockHelper(sbb);
     }
 
     @Override

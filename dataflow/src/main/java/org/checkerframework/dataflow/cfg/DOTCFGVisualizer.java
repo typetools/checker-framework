@@ -143,7 +143,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeSpecialBlock(SpecialBlock sbb) {
-        return super.visualizeSpecialBlockHelper(sbb, "\\n");
+        return super.visualizeSpecialBlockHelper(sbb);
     }
 
     @Override
