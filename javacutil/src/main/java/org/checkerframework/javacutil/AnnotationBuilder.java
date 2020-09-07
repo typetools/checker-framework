@@ -582,7 +582,7 @@ public class AnnotationBuilder {
         /**
          * Create a CheckerFrameworkAnnotationMirror.
          *
-         * @param annotationName the annotation type
+         * @param annotationType the annotation type
          * @param elementValues the element values
          */
         @SuppressWarnings("signature:assignment.type.incompatible") // needs JDK annotations
