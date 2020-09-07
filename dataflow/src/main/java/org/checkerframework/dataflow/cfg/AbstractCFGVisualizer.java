@@ -193,16 +193,19 @@ public abstract class AbstractCFGVisualizer<
      *
      * @param bb the block
      * @param analysis the current analysis
-     * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
-     *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
-     *     StringCFGVisualizer} to simply add a new line
+     * @param separator the line separator. Examples: "\\l" for left justification in {@link
+     *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" to add a
+     *     new line in {@link StringCFGVisualizer}
      * @return the String representation of the block
      */
     protected String visualizeBlockHelper(
-            Block bb, @Nullable Analysis<V, S, T> analysis, String escapeString) {
+            Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
         StringBuilder sbBlock = new StringBuilder();
-        sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
-
+        String contents = loopOverBlockContents(bb, analysis, separator);
+        if (!contents.isEmpty()) {
+            sbBlock.append(separator);
+            sbBlock.append(contents);
+        }
         if (sbBlock.length() == 0) {
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
@@ -292,13 +295,13 @@ public abstract class AbstractCFGVisualizer<
      * @param where either BEFORE or AFTER
      * @param bb a block
      * @param analysis the current analysis
-     * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
-     *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
-     *     StringCFGVisualizer} to simply add a new line
+     * @param separator the line separator. Examples: "\\l" for left justification in {@link
+     *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" to add a
+     *     new line in {@link StringCFGVisualizer}
      * @return the visualization of the transfer input before or after the given block
      */
     protected String visualizeBlockTransferInputHelper(
-            VisualizeWhere where, Block bb, Analysis<V, S, T> analysis, String escapeString) {
+            VisualizeWhere where, Block bb, Analysis<V, S, T> analysis, String separator) {
         if (analysis == null) {
             throw new BugInCF(
                     "analysis must be non-null when visualizing the transfer input of a block.");
@@ -331,7 +334,7 @@ public abstract class AbstractCFGVisualizer<
 
         StringBuilder sbStore = new StringBuilder();
         if (verbose) {
-            sbStore.append(storesFrom.getClassAndId() + escapeString);
+            sbStore.append(storesFrom.getClassAndUid() + separator);
         }
         sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
@@ -345,11 +348,11 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        String separator = "~~~~~~~~~" + escapeString;
+        String inputSeparator = "~~~~~~~~~" + separator;
         if (where == VisualizeWhere.BEFORE) {
-            sbStore.append(separator);
+            sbStore.append(inputSeparator);
         } else {
-            sbStore.insert(0, separator);
+            sbStore.insert(0, inputSeparator);
         }
         return sbStore.toString();
     }

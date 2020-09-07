@@ -857,7 +857,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SuppressWarnings("unchecked")
     @Override
     public S copy() {
-        System.out.printf("copy(%s)%n", getClassAndId());
         return analysis.createCopiedStore((S) this);
     }
 
@@ -875,7 +874,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         S newStore = analysis.createEmptyStore(sequentialSemantics);
         System.out.printf(
                 "upperBound(%s, %s) => %s%n",
-                this.getClassAndId(), other.getClassAndId(), newStore.getClassAndId());
+                this.getClassAndUid(), other.getClassAndUid(), newStore.getClassAndUid());
 
         for (Map.Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
@@ -1037,14 +1036,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        String header = castedViz.visualizeStoreHeader(this.getClassAndId());
         String internal = internalVisualize(castedViz);
-        String footer = castedViz.visualizeStoreFooter();
         if (internal.trim().isEmpty()) {
-            // This removes trailing spaces from header and leading spaces from footer.
-            return header.replaceAll("\\s+$", "") + footer.replaceAll("^\\s+", "");
+            return this.getClassAndUid() + "()";
         } else {
-            return header + internal + footer;
+            return this.getClassAndUid() + "(" + viz.getSeparator() + internal + ")";
         }
     }
 
@@ -1062,7 +1058,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             res.append(viz.visualizeStoreThisVal(thisValue));
         }
         for (Map.Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            res.append(viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue()));
+            res.append(viz.visualizeStoreFieldVal(entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
             res.append(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));

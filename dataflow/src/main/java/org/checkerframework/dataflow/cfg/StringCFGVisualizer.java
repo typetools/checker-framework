@@ -24,6 +24,11 @@ public class StringCFGVisualizer<
         extends AbstractCFGVisualizer<V, S, T> {
 
     @Override
+    public String getSeparator() {
+        return "\n";
+    }
+
+    @Override
     public Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
         String stringGraph = visualizeGraph(cfg, entry, analysis);
@@ -48,7 +53,7 @@ public class StringCFGVisualizer<
             sjStringNodes.add(visualizeBlock(v, analysis));
         }
 
-        return stringNodes;
+        return sjStringNodes.toString();
     }
 
     @Override
@@ -105,7 +110,7 @@ public class StringCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, V value) {
+    public String visualizeStoreFieldVal(FlowExpressions.FieldAccess fieldAccess, V value) {
         return storeEntryIndent + fieldAccess + " > " + value;
     }
 
@@ -127,16 +132,6 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeStoreKeyVal(String keyName, Object value) {
         return storeEntryIndent + keyName + " = " + value;
-    }
-
-    @Override
-    public String visualizeStoreHeader(String classCanonicalName) {
-        return classCanonicalName + "(";
-    }
-
-    @Override
-    public String visualizeStoreFooter() {
-        return ")";
     }
 
     /**

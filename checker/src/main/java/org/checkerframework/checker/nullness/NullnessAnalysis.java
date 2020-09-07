@@ -28,7 +28,7 @@ public class NullnessAnalysis
     @Override
     public NullnessStore createEmptyStore(boolean sequentialSemantics) {
         NullnessStore result = new NullnessStore(this, sequentialSemantics);
-        System.out.printf("createEmptyStore => %s%n", result.getClassAndId());
+        System.out.printf("createEmptyStore => %s%n", result.getClassAndUid());
         return result;
     }
 
@@ -37,7 +37,7 @@ public class NullnessAnalysis
         NullnessStore result = new NullnessStore(s);
         String message =
                 String.format(
-                        "createCopiedStore(%s) => %s", s.getClassAndId(), result.getClassAndId());
+                        "createCopiedStore(%s) => %s", s.getClassAndUid(), result.getClassAndUid());
         boolean stacktrace = false;
         if (stacktrace) {
             UtilPlume.sleep(100);

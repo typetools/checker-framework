@@ -134,8 +134,8 @@ public class ForwardAnalysisImpl<
                         System.out.printf(
                                 "Node = %s%n  transferresult = %s%n  currentInput = %s%n",
                                 n,
-                                UtilPlume.indentLines(4, transferResult),
-                                UtilPlume.indentLines(4, currentInput));
+                                UtilPlume.indentLinesExceptFirst(2, transferResult),
+                                UtilPlume.indentLinesExceptFirst(2, currentInput));
                         lastNode = n;
                     }
                     assert currentInput != null : "@AssumeAssertion(nullness): invariant";
@@ -405,7 +405,11 @@ public class ForwardAnalysisImpl<
         }
         System.out.printf(
                 "propagateStoresTo(succ=%s, node=%s,%n  currentInput=%s,%n  flowRule=%s, addToWorklistAgain=%s)%n",
-                succ, node, currentInput, flowRule, addToWorklistAgain);
+                succ,
+                node,
+                UtilPlume.indentLinesExceptFirst(2, currentInput),
+                flowRule,
+                addToWorklistAgain);
 
         switch (flowRule) {
             case EACH_TO_EACH:
