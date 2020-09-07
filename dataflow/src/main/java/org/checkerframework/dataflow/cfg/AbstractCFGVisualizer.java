@@ -195,11 +195,6 @@ public abstract class AbstractCFGVisualizer<
     protected String visualizeBlockHelper(
             Block bb, @Nullable Analysis<V, S, T> analysis, String escapeString) {
         StringBuilder sbBlock = new StringBuilder();
-
-        if (analysis != null) {
-            sbBlock.append(visualizeBlockTransferInputBefore(bb, analysis));
-        }
-
         sbBlock.append(loopOverBlockContents(bb, analysis, escapeString));
 
         if (sbBlock.length() == 0) {
@@ -212,10 +207,14 @@ public abstract class AbstractCFGVisualizer<
             }
         }
 
-        if (analysis != null && verbose) {
-            Node lastNode = bb.getLastNode();
-            if (lastNode != null) {
-                sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+        // Visualize transfer input if necessary.
+        if (analysis != null) {
+            sbBlock.insert(0, visualizeBlockTransferInputBefore(bb, analysis));
+            if (verbose) {
+                Node lastNode = bb.getLastNode();
+                if (lastNode != null) {
+                    sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+                }
             }
         }
         return sbBlock.toString();
