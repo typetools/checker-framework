@@ -29,7 +29,33 @@ public class Issue3622 {
         }
     }
 
+    public class ImmutableIntList3 {
+
+        @Override
+        public boolean equals(@Nullable Object obj3) {
+            if (obj3 instanceof ImmutableIntList3) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     // These currently fail (false positive warnings)
+
+    public class ImmutableIntList4 {
+
+        @Override
+        public boolean equals(@Nullable Object obj4) {
+            boolean b;
+            if (obj4 instanceof ImmutableIntList4) {
+                b = true;
+            } else {
+                b = false;
+            }
+            return b;
+        }
+    }
 
     public class ImmutableIntList5 {
 

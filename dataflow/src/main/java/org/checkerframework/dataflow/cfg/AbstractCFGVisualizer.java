@@ -326,9 +326,8 @@ public abstract class AbstractCFGVisualizer<
             regularStore = analysis.getResult().getStoreBefore(bb);
             storesFrom = analysis.getResult();
         } else {
-            TransferInput<V, S> input = analysis.getInput(bb);
+            @NonNull TransferInput<V, S> input = analysis.getInput(bb);
             storesFrom = input;
-            assert input != null : "@AssumeAssertion(nullness): invariant";
             isTwoStores = input.containsTwoStores();
             regularStore = input.getRegularStore();
             thenStore = input.getThenStore();

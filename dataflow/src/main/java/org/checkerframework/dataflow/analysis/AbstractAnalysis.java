@@ -323,9 +323,9 @@ public abstract class AbstractAnalysis<
      * @param transferInput the transfer input
      * @return the output of the transfer function
      */
+    @RequiresNonNull("transferFunction")
     protected TransferResult<V, S> callTransferFunction(
             Node node, TransferInput<V, S> transferInput) {
-        assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         if (node.isLValue()) {
             // TODO: should the default behavior return a regular transfer result, a conditional
             //  transfer result (depending on store.containsTwoStores()), or is the following

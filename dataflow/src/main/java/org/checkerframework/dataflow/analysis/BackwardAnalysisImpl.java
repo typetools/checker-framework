@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
@@ -51,8 +52,8 @@ public class BackwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      */
     public BackwardAnalysisImpl() {
         super(Direction.BACKWARD);
@@ -98,16 +99,14 @@ public class BackwardAnalysisImpl<
             case REGULAR_BLOCK:
                 {
                     RegularBlock rb = (RegularBlock) b;
-                    TransferInput<V, S> inputAfter = getInput(rb);
-                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputAfter = getInput(rb);
                     currentInput = inputAfter.copy();
                     Node firstNode = null;
                     boolean addToWorklistAgain = false;
                     List<Node> nodeList = rb.getNodes();
                     ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                     while (reverseIter.hasPrevious()) {
-                        Node node = reverseIter.previous();
-                        assert currentInput != null : "@AssumeAssertion(nullness): invariant";
+                        @NonNull Node node = reverseIter.previous();
                         TransferResult<V, S> transferResult =
                                 callTransferFunction(node, currentInput);
                         addToWorklistAgain |= updateNodeValues(node, transferResult);
@@ -129,8 +128,7 @@ public class BackwardAnalysisImpl<
             case EXCEPTION_BLOCK:
                 {
                     ExceptionBlock eb = (ExceptionBlock) b;
-                    TransferInput<V, S> inputAfter = getInput(eb);
-                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputAfter = getInput(eb);
                     currentInput = inputAfter.copy();
                     Node node = eb.getNode();
                     TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
@@ -151,8 +149,7 @@ public class BackwardAnalysisImpl<
             case CONDITIONAL_BLOCK:
                 {
                     ConditionalBlock cb = (ConditionalBlock) b;
-                    TransferInput<V, S> inputAfter = getInput(cb);
-                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputAfter = getInput(cb);
                     TransferInput<V, S> input = inputAfter.copy();
                     for (Block pred : cb.getPredecessors()) {
                         propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
@@ -171,8 +168,7 @@ public class BackwardAnalysisImpl<
                     } else {
                         assert sType == SpecialBlockType.EXIT
                                 || sType == SpecialBlockType.EXCEPTIONAL_EXIT;
-                        TransferInput<V, S> input = getInput(sb);
-                        assert input != null : "@AssumeAssertion(nullness): invariant";
+                        @NonNull TransferInput<V, S> input = getInput(sb);
                         for (Block pred : sb.getPredecessors()) {
                             propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
                         }
@@ -317,11 +313,10 @@ public class BackwardAnalysisImpl<
     public S runAnalysisFor(
             @FindDistinct Node node,
             boolean before,
-            TransferInput<V, S> transferInput,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-        Block block = node.getBlock();
-        assert block != null : "@AssumeAssertion(nullness): invariant";
+        @NonNull Block block = node.getBlock();
         Node oldCurrentNode = currentNode;
         if (isRunning) {
             assert currentInput != null : "@AssumeAssertion(nullness): invariant";
@@ -335,7 +330,7 @@ public class BackwardAnalysisImpl<
                         RegularBlock rBlock = (RegularBlock) block;
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<V, S> store = transferInput;
+                        TransferInput<V, S> store = blockTransferInput;
                         List<Node> nodeList = rBlock.getNodes();
                         ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                         while (reverseIter.hasPrevious()) {
@@ -353,9 +348,7 @@ public class BackwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
@@ -368,13 +361,13 @@ public class BackwardAnalysisImpl<
                                             + eb.getNode());
                         }
                         if (!before) {
-                            return transferInput.getRegularStore();
+                            return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput.copy());
+                                callTransferFunction(node, blockTransferInput.copy());
                         // Merge transfer result with the exception store of this exceptional block
                         S exceptionStore = exceptionStores.get(eb);
                         return exceptionStore == null

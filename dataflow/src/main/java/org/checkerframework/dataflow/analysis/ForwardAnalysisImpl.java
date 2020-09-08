@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -67,8 +68,8 @@ public class ForwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
@@ -120,8 +121,7 @@ public class ForwardAnalysisImpl<
                 {
                     RegularBlock rb = (RegularBlock) b;
                     // Apply transfer function to contents
-                    TransferInput<V, S> inputBefore = getInputBefore(rb);
-                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(rb);
                     currentInput = inputBefore.copy();
                     System.out.printf(
                             "performAnalysisBlock: currentInput = inputBefore.copy():  %s%n",
@@ -133,7 +133,7 @@ public class ForwardAnalysisImpl<
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
                         System.out.printf(
-                                "performAnalysisBlock loop: Node = %s%n  currentInput = %s%n  transferresult = %s%n",
+                                "performAnalysisBlock loop: Node = %s%n  currentInput = %s%n  transferResult = %s%n",
                                 n,
                                 UtilPlume.indentLinesExceptFirst(2, currentInput),
                                 UtilPlume.indentLinesExceptFirst(2, transferResult));
@@ -154,8 +154,7 @@ public class ForwardAnalysisImpl<
                 {
                     ExceptionBlock eb = (ExceptionBlock) b;
                     // Apply transfer function to content
-                    TransferInput<V, S> inputBefore = getInputBefore(eb);
-                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(eb);
                     currentInput = inputBefore.copy();
                     Node node = eb.getNode();
                     TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
@@ -164,8 +163,6 @@ public class ForwardAnalysisImpl<
                     Block succ = eb.getSuccessor();
                     if (succ != null) {
                         currentInput = new TransferInput<>(node, this, transferResult);
-                        // TODO: Variable wasn't used.
-                        // Store.FlowRule storeFlow = eb.getFlowRule();
                         propagateStoresTo(
                                 succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                     }
@@ -200,8 +197,7 @@ public class ForwardAnalysisImpl<
                 {
                     ConditionalBlock cb = (ConditionalBlock) b;
                     // Get store before
-                    TransferInput<V, S> inputBefore = getInputBefore(cb);
-                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
+                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(cb);
                     TransferInput<V, S> input = inputBefore.copy();
                     // Propagate store to successor
                     Block thenSucc = cb.getThenSuccessor();
@@ -217,8 +213,7 @@ public class ForwardAnalysisImpl<
                     SpecialBlock sb = (SpecialBlock) b;
                     Block succ = sb.getSuccessor();
                     if (succ != null) {
-                        TransferInput<V, S> input = getInputBefore(b);
-                        assert input != null : "@AssumeAssertion(nullness): invariant";
+                        @NonNull TransferInput<V, S> input = getInputBefore(b);
                         propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
                     }
                     break;
@@ -249,20 +244,19 @@ public class ForwardAnalysisImpl<
     public S runAnalysisFor(
             @FindDistinct Node node,
             boolean before,
-            TransferInput<V, S> transferInput,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-        Block block = node.getBlock();
-        assert block != null : "@AssumeAssertion(nullness): invariant";
+        @NonNull Block block = node.getBlock();
         Node oldCurrentNode = currentNode;
 
         // Prepare cache
         IdentityHashMap<Node, TransferResult<V, S>> cache;
         if (analysisCaches != null) {
-            cache = analysisCaches.get(transferInput);
+            cache = analysisCaches.get(blockTransferInput);
             if (cache == null) {
                 cache = new IdentityHashMap<>();
-                analysisCaches.put(transferInput, cache);
+                analysisCaches.put(blockTransferInput, cache);
             }
         } else {
             cache = null;
@@ -281,7 +275,7 @@ public class ForwardAnalysisImpl<
                         RegularBlock rb = (RegularBlock) block;
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<V, S> store = transferInput;
+                        TransferInput<V, S> store = blockTransferInput;
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
@@ -303,9 +297,7 @@ public class ForwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
@@ -319,13 +311,13 @@ public class ForwardAnalysisImpl<
                                             + eb.getNode());
                         }
                         if (before) {
-                            return transferInput.getRegularStore();
+                            return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput.copy());
+                                callTransferFunction(node, blockTransferInput.copy());
                         return transferResult.getRegularStore();
                     }
                 default:
@@ -550,18 +542,11 @@ public class ForwardAnalysisImpl<
                         addBlockToWorklist = true;
                     }
                 } else {
-                    boolean storeChanged = false;
                     S newThenStore = mergeStores(s, thenStore, shouldWiden);
-                    if (!newThenStore.equals(thenStore)) {
-                        thenStores.put(b, newThenStore);
-                        storeChanged = true;
-                    }
                     S newElseStore = mergeStores(s, elseStore, shouldWiden);
-                    if (!newElseStore.equals(elseStore)) {
+                    if (!newThenStore.equals(thenStore) || !newElseStore.equals(elseStore)) {
+                        thenStores.put(b, newThenStore);
                         elseStores.put(b, newElseStore);
-                        storeChanged = true;
-                    }
-                    if (storeChanged) {
                         inputs.put(b, new TransferInput<>(node, this, newThenStore, newElseStore));
                         addBlockToWorklist = true;
                     }
@@ -604,7 +589,7 @@ public class ForwardAnalysisImpl<
             case ELSE:
                 return readFromStore(elseStores, b);
             default:
-                throw new BugInCF("Unexpected Store Kind: " + kind);
+                throw new BugInCF("Unexpected Store.Kind: " + kind);
         }
     }
 

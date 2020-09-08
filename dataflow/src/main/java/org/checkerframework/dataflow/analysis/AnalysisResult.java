@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -393,8 +394,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      *     running the analysis
      */
     protected @Nullable S runAnalysisFor(Node node, boolean before) {
-        Block block = node.getBlock();
-        assert block != null : "@AssumeAssertion(nullness): invariant";
+        @NonNull Block block = node.getBlock();
         TransferInput<V, S> transferInput = stores.get(block);
         if (transferInput == null) {
             return null;

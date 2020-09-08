@@ -452,8 +452,8 @@ public class FlowExpressions {
     // extensions.
     /**
      * This class represents a Java expression and its type. It does not represent all possible Java
-     * expressions (for example, it does not represent a ternary expression; use {@link
-     * FlowExpressions.Unknown} for unrepresentable expressions).
+     * expressions (for example, it does not represent a ternary conditional expression {@code ?:};
+     * use {@link FlowExpressions.Unknown} for unrepresentable expressions).
      *
      * <p>This class's representation is like an AST: subparts are also expressions. For declared
      * names (fields, local variables, and methods), it also contains an Element.

@@ -76,7 +76,9 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeConditionalBlock(ConditionalBlock cbb) {
-        return "ConditionalBlock: then: "
+        return "ConditionalBlock#"
+                + cbb.getId()
+                + ": then: "
                 + cbb.getThenSuccessor().getId()
                 + ", else: "
                 + cbb.getElseSuccessor().getId();

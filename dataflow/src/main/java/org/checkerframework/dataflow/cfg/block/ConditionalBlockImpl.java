@@ -110,6 +110,6 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 
     @Override
     public String toString() {
-        return "ConditionalBlock()";
+        return "ConditionalBlock#" + getId() + "()";
     }
 }
