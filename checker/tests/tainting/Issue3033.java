@@ -7,8 +7,8 @@ class Issue3033 {
         @Tainted String a = getTainted();
         // :: warning: (instanceof.unsafe)
         if (a instanceof @Untainted String) {
-            // Since 'a' is @Tainted and reference type is @Untainted
-            isUntainted(a); // 'a' is now refined to the reference type and hence, we get no error
+            // `a` is now refined to @Untainted String
+            isUntainted(a);
         }
     }
 

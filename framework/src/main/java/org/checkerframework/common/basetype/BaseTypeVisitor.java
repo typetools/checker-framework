@@ -2174,14 +2174,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
-        validateTypeOf(node.getType());
-        if (node.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
-            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getType());
-            AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
-            if (!type.hasAnnotation(NonNull.class)
-                    && atypeFactory.getTypeHierarchy().isSubtype(type, exp)
-                    && !type.getAnnotations().equals(exp.getAnnotations())) {
-                checker.reportWarning(node, "instanceof.unsafe", exp, type);
+        // The "reference type" is the type after "instanceof".
+        Tree refTypeTree = node.getType();
+        validateTypeOf(refTypeTree);
+        if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
+            AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(node.getExpression());
+            if (!refType.hasAnnotation(NonNull.class)
+                    && atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
+                    && !refType.getAnnotations().equals(expType.getAnnotations())) {
+                checker.reportWarning(node, "instanceof.unsafe", expType, refType);
             }
         }
         return super.visitInstanceOf(node, p);

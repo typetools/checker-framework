@@ -391,9 +391,11 @@ public class NullnessVisitor
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
-        if (node.getType().getKind() == Kind.ANNOTATED_TYPE) {
+        // The "reference type" is the type after "instanceof".
+        Tree refTypeTree = node.getType();
+        if (refTypeTree.getKind() == Kind.ANNOTATED_TYPE) {
             List<? extends AnnotationMirror> annotations =
-                    TreeUtils.annotationsFromTree((AnnotatedTypeTree) node.getType());
+                    TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
             if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
                 checker.reportError(node, "instanceof.nullable");
             }
