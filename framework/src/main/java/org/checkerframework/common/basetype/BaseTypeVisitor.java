@@ -1043,7 +1043,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
      * that returns {@code result}.
      *
-     * @param node tree of method with the postcondition
+     * @param method tree of method with the postcondition
      * @param annotation expression's type must have this annotation
      * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
      *     expression}. Used only for diagnostic messages.
@@ -1051,21 +1051,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree node,
+            MethodTree method,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation,
             Receiver expression,
             boolean result) {
         boolean booleanReturnType =
-                TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
+                TypesUtils.isBooleanType(TreeUtils.typeOf(method.getReturnType()));
         if (!booleanReturnType) {
-            checker.reportError(node, "contracts.conditional.postcondition.invalid.returntype");
+            checker.reportError(method, "contracts.conditional.postcondition.invalid.returntype");
             // No reason to go ahead with further checking. The
             // annotation is invalid.
             return;
         }
 
-        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(node)) {
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(method)) {
             ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();

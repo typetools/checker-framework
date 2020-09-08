@@ -35,13 +35,6 @@ def getAndAppend(name, append):
     else:
         return ""
 
-def append_to_PATH(paths):
-    """Retrieves the PATH environment variable, appends the given paths to it,
-    and sets the PATH environment variable to the new value."""
-    current_PATH = os.getenv('PATH')
-    new_PATH = current_PATH + ':' + ':'.join(paths)
-    os.environ['PATH'] = new_PATH
-
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
   """Execute the given command.
 If capture_output is true, then return the output (and ignore the halt_if_fail argument).
@@ -131,6 +124,9 @@ CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
+# If a new Gradle wrapper was recently installed, the first ./gradlew command outputs:
+#   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
+CF_VERSION_WARMUP = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
 CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
 CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
@@ -191,10 +187,11 @@ if EDITOR is None:
     EDITOR = 'emacs'
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
-PATH = PATH + ":/usr/bin:"
+PATH = PATH + ":/usr/bin"
 PATH = PATH + ":" + PLUME_SCRIPTS
 PATH = PATH + ":" + CHECKLINK
-PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
+PATH = PATH + ":/homes/gws/mernst/.local/bin" # for html5validator
+PATH = PATH + ":."
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
