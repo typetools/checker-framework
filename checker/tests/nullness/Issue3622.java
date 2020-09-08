@@ -12,11 +12,11 @@ public class Issue3622 {
     public class ImmutableIntList1 {
 
         @Override
-        public boolean equals(@Nullable Object obj2) {
-            if (obj2 instanceof ImmutableIntList2) {
+        public boolean equals(@Nullable Object obj1) {
+            if (obj1 instanceof ImmutableIntList1) {
                 return true;
             } else {
-                return obj2 instanceof List;
+                return obj1 instanceof List;
             }
         }
     }
@@ -24,8 +24,8 @@ public class Issue3622 {
     public class ImmutableIntList2 {
 
         @Override
-        public boolean equals(@Nullable Object obj3) {
-            return obj3 instanceof ImmutableIntList3;
+        public boolean equals(@Nullable Object obj2) {
+            return obj2 instanceof ImmutableIntList2;
         }
     }
 
