@@ -123,19 +123,21 @@ public class ForwardAnalysisImpl<
                     TransferInput<V, S> inputBefore = getInputBefore(rb);
                     assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
-                    System.out.printf("currentInput = inputBefore.copy():  %s%n", currentInput);
+                    System.out.printf(
+                            "performAnalysisBlock: currentInput = inputBefore.copy():  %s%n",
+                            currentInput);
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
                     for (Node n : rb.getNodes()) {
                         assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
-                        currentInput = new TransferInput<>(n, this, transferResult);
                         System.out.printf(
-                                "Node = %s%n  transferresult = %s%n  currentInput = %s%n",
+                                "performAnalysisBlock loop: Node = %s%n  currentInput = %s%n  transferresult = %s%n",
                                 n,
-                                UtilPlume.indentLinesExceptFirst(2, transferResult),
-                                UtilPlume.indentLinesExceptFirst(2, currentInput));
+                                UtilPlume.indentLinesExceptFirst(2, currentInput),
+                                UtilPlume.indentLinesExceptFirst(2, transferResult));
+                        currentInput = new TransferInput<>(n, this, transferResult);
                         lastNode = n;
                     }
                     assert currentInput != null : "@AssumeAssertion(nullness): invariant";
@@ -398,7 +400,8 @@ public class ForwardAnalysisImpl<
             TransferInput<V, S> currentInput,
             Store.FlowRule flowRule,
             boolean addToWorklistAgain) {
-        if (succ.toString().contains("EXIT")) {
+        boolean falseBoolean = false;
+        if (falseBoolean && succ.toString().contains("EXIT")) {
             UtilPlume.sleep(100);
             new Error("propagateStoresTo EXIT").printStackTrace();
             UtilPlume.sleep(100);
@@ -410,6 +413,11 @@ public class ForwardAnalysisImpl<
                 UtilPlume.indentLinesExceptFirst(2, currentInput),
                 flowRule,
                 addToWorklistAgain);
+
+        System.out.printf(
+                "propagateStoresTo:%n  initial thenStore=%s%n  initial elseStore=%s%n",
+                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.THEN)),
+                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.ELSE)));
 
         switch (flowRule) {
             case EACH_TO_EACH:
@@ -468,6 +476,10 @@ public class ForwardAnalysisImpl<
                         addToWorklistAgain);
                 break;
         }
+        System.out.printf(
+                "propagateStoresTo =>%n  final thenStore=%s%n  final elseStore=%s%n",
+                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.THEN)),
+                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.ELSE)));
     }
 
     /**
