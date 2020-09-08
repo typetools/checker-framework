@@ -8,8 +8,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Combines all the annotations in the parameter with the annotations from the visited type, taking
- * the greatest lower bound at each point.
+ * Changes each parameter annotation to be the GLB of the parameter annotation and visited type
+ * annotation.
  */
 public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
 
