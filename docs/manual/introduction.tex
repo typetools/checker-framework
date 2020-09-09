@@ -826,8 +826,10 @@ checker is an ``annotation processor''.
   providing multiple checkers, if one checker detects any error, subsequent
   checkers may not run.
 \item \<-processorpath> Indicates where to search for the
-  checker; should also contain any qualifiers used by the Subtyping
-  Checker; see Section~\ref{subtyping-example}
+  checker.  This should also contain any qualifiers used by type-checkers
+  such as the Subtyping Checker (see Section~\ref{subtyping-example}) and
+  the Constant Value Checker (see
+  Section~\ref{constant-value-staticallyexecutable-annotation}).
 \item \<-proc:>\{\<none>,\<only>\} Controls whether checking
   happens; \<-proc:none>
   means to skip checking; \<-proc:only> means to do only

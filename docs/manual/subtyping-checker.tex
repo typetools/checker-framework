@@ -64,12 +64,15 @@ using a colon-no-space-separated notation. For example:
 
 \end{itemize}
 
+If you use the processorpath, place the annotations on it itstead of on the
+classpath.
+
 
 \subsectionAndLabel{Compiling your qualifiers and your project}{subtyping-compiling}
 
 The annotations listed in \code{-Aquals} or \code{-AqualDirs} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
+already be compiled (and, typically, be on the javac classpath or processorpath)
 before you run the Subtyping Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
@@ -146,7 +149,7 @@ $ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
 The resulting \<.class> files should either be on your classpath, or on the
-processor path (set via the \<-processorpath> command-line option to javac).
+processor path if you use it (it is set via the \<-processorpath> command-line option to javac).
 
 \item
   Write \code{@Encrypted} annotations in your program (say, in file

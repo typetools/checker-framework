@@ -138,8 +138,8 @@ through the \code{-Aquals} option, using a comma-no-space-separated notation:
 \end{alltt}
 
 The annotations listed in \code{-Aquals} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
+the compiler during compilation in the classpath or processorpath.  In other words, they must
+already be compiled (and, typically, be on the javac classpath or processorpath)
 before you run the Fenum Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
@@ -164,6 +164,8 @@ the class file will work with the above commands:
 
 The two options can be used at the same time to provide groups of annotations
 from directories, and individually named annotations.
+
+You can use the processorpath instead of the classpath, if you prefer.
 
 \item
 If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do

@@ -200,7 +200,8 @@ not throw exceptions (e.g., \<+>, \<->, \code{<}\code{<}, \<!=>).
 
 The Constant Value Checker statically executes methods annotated with
 \refqualclass{common/value/qual}{StaticallyExecutable}, \emph{if the
-method has already been compiled and is on the classpath}.
+method has already been compiled and is on the classpath (or on the
+processorpath, if you use it)}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -226,16 +227,22 @@ be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
 
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
-the classpath for the compiler, because they are reflectively called at
-compile-time to perform the constant value analysis.
+the classpath (or the processorpath, if you use it) for the compiler.  This
+is because the Constant Value Checker reflectively calls these methods at
+compile time.
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
-classpath. For example, the command-line arguments to the Checker Framework
+classpath or processorpath. For example, the command-line arguments to the Checker Framework
 might include:
 \begin{Verbatim}
   -processor org.checkerframework.common.value.ValueChecker
   -classpath $CLASSPATH:MY_PROJECT/build/
+\end{Verbatim}
+or
+\begin{Verbatim}
+  -processor org.checkerframework.common.value.ValueChecker
+  -processorpath ${CHECKERFRAMEWORK}/checker/build/libs/checker-3.6.1-SNAPSHOT.jar:MY_PROJECT/build/
 \end{Verbatim}
 
 
@@ -254,15 +261,14 @@ Some examples of these:
 
   The checker could not find the class
   specified for resolving a \<@StaticallyExecutable> method. Typically
-  this is caused by not providing the path of a class-file needed to
-  the classpath.
+  this means that the classpath (or the processorpath, if you use it) lacks the given classfile.
 
 \item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int].}
 
   The checker could not find the method \code{foo(int)} specified for
   resolving a \<@StaticallyExecutable> method, but could find the
   class. This is usually due to providing an outdated version of the
-  class-file that does not contain the
+  classfile that does not contain the
   method that was annotated as \<@StaticallyExecutable>.
 
 \item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero.}

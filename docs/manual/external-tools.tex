@@ -562,7 +562,8 @@ must be on the compilation classpath.
 
 \item \<-processorpath \$CHECKERFRAMEWORK/checker/dist/checker.jar>:
 \<checker.jar> must be on the processor path. Using this option means that the processor path, not
-the classpath, will be searched for annotation processors.
+the classpath, will be searched for annotation processors and for classes
+that they load.
 
 \item \<-processor org.checkerframework.checker.nullness.NullnessChecker>:
 Choose which checker to run by passing its fully qualified name as a processor.
