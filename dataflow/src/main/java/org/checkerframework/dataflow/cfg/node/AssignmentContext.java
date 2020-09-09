@@ -39,8 +39,7 @@ public abstract class AssignmentContext {
             } else if (tree instanceof VariableTree) {
                 return TreeUtils.elementFromDeclaration((VariableTree) tree);
             } else {
-                assert false : "unexpected tree";
-                return null;
+                throw new Error("unexpected tree");
             }
         }
 

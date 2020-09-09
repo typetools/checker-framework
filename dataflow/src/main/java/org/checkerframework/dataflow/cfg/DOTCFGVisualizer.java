@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
@@ -154,12 +155,14 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, leftJustifiedTerminator);
+        return super.visualizeBlockTransferInputHelper(
+                VisualizeWhere.BEFORE, bb, analysis, leftJustifiedTerminator);
     }
 
     @Override
     public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, leftJustifiedTerminator);
+        return super.visualizeBlockTransferInputHelper(
+                VisualizeWhere.AFTER, bb, analysis, leftJustifiedTerminator);
     }
 
     /**
