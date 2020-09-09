@@ -51,9 +51,10 @@ public class StringCFGVisualizer<
                 sjStringNodes.add(getProcessOrderSimpleString(processOrder.get(v)));
             }
             sjStringNodes.add(visualizeBlock(v, analysis));
+            sjStringNodes.add("");
         }
 
-        return sjStringNodes.toString();
+        return sjStringNodes.toString().trim();
     }
 
     @Override
@@ -66,7 +67,7 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-        return super.visualizeBlockHelper(bb, analysis, lineSeparator);
+        return super.visualizeBlockHelper(bb, analysis, lineSeparator).trim();
     }
 
     @Override
