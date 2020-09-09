@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 /**
  * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
  * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
- * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
+ * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and performs the same function
  * regardless of the kind of type. The function returns some value with type {@code R} and takes an
  * argument of type {@code P}. If the function does not return any value, then {@code R} should be
  * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.

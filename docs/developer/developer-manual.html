@@ -30,6 +30,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
+          <li><a href="#pull-requests-branches">Branches</a></li>
           <li><a href="#pull-requests-maintainers">Pull request and commit notes for maintainers</a></li>
         </ul></li>
       <li><a href="#github-configuration">GitHub configuration</a></li>
@@ -209,22 +210,41 @@ Framework and ensure that it passes before you open a pull request.
 </p>
 
 <p>
+Also
+see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
+Ernst's advice about creating GitHub pull requests</a>.
+</p>
+
+
+<h3 id="pull-requests-branches">Branches</h3>
+
+<p>
   It is good style to create a branch (in your fork of the Checker
   Framework GitHub repository) for each independent change.  Do not make
   changes to your <code>master</code> branch.
 </p>
 
 <p>
-If you make related changes in the <code>checker-framework</code>
+If you make related changes in the <code>checker-framework</code>, <code>jdk</code>,
 and <code>checker-framework-inference</code> repositories, use the <em>same
 branch name</em> for each.  The continuous integration framework will find
 and use that branch when running tests.
+
+<p>
+Furthermore, whenever you make a pull request from
+a <code>checker-framework</code> branch A into branch B, if B has a
+corresponding <code>jdk</code> or <code>checker-framework-inference</code>
+branch,then A also needs one (even if identical to B's version).
 </p>
 
 <p>
-Also
-see <a href="https://homes.cs.washington.edu/~mernst/advice/github-pull-request.html">Michael
-Ernst's advice about creating GitHub pull requests</a>.
+Azure Pipelines has a bug:  whenever two CI jobs would run code with the same
+commit hash, it re-uses a previous execution result.  This is a bug because the
+CI job's behavior may depend on the branch name and other factors that are
+independent of the commit hash.  This means that you may see spurious successes
+or failures when your branch of (say) the <code>jdk</code> repository has the
+identical commit hash to some other branch that Azure Pipelines previous ran a
+job for.
 </p>
 
 
@@ -404,5 +424,5 @@ See a separate document about the
 
 <!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn
  -->
-<!--  LocalWords:  subproject personalblog changelog
+<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML
  -->

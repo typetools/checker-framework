@@ -21,6 +21,13 @@
             <version>4.13</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.plumelib</groupId>
+            <artifactId>plume-util</artifactId>
+            <!-- Keep version number in sync with ../../../../framework-test/build.gradle . -->
+            <version>1.1.5</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <name>Checker Framework Testing Library</name>

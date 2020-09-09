@@ -4,7 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
@@ -68,7 +68,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGMethod(", method, ")");
+            return UtilPlume.joinLines("CFGMethod(", method, ")");
         }
     }
 
@@ -132,7 +132,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGLambda(", lambda, ")");
+            return UtilPlume.joinLines("CFGLambda(", lambda, ")");
         }
     }
 
@@ -161,7 +161,7 @@ public abstract class UnderlyingAST {
 
         @Override
         public String toString() {
-            return SystemUtil.joinLines("CFGStatement(", code, ")");
+            return UtilPlume.joinLines("CFGStatement(", code, ")");
         }
     }
 }

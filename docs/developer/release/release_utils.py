@@ -824,19 +824,19 @@ def get_announcement_email(version):
     """Return the template for the e-mail announcing a new release of the
     Checker Framework."""
     return """
-    To:  checker-framework-discuss@googlegroups.com
-    Subject: Release %s of the Checker Framework
+To:  checker-framework-discuss@googlegroups.com
+Subject: Release %s of the Checker Framework
 
-    We have released a new version of the Checker Framework.
-    The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
+We have released a new version of the Checker Framework.
+The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
-    You can find documentation and download links at:
-    http://CheckerFramework.org/
+You can find documentation and download links at:
+http://CheckerFramework.org/
 
-    Changes for Checker Framework version %s:
+Changes for Checker Framework version %s:
 
-    <<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
-    """ % (version, version)
+<<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
+""" % (version, version)
 
 #=========================================================================================
 # Testing

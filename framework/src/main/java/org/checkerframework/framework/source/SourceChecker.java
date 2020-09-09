@@ -1534,35 +1534,35 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
             String[] split = key.split(OPTION_SEPARATOR);
 
+            splitlengthswitch:
             switch (split.length) {
                 case 1:
-                    // No separator, option always active
+                    // No separator, option always active.
                     activeOpts.put(key, value);
                     break;
                 case 2:
-                    // Valid class-option pair
                     Class<?> clazz = this.getClass();
 
                     do {
                         if (clazz.getCanonicalName().equals(split[0])
                                 || clazz.getSimpleName().equals(split[0])) {
+                            // Valid class-option pair.
                             activeOpts.put(split[1], value);
+                            break splitlengthswitch;
                         }
 
                         clazz = clazz.getSuperclass();
                     } while (clazz != null
                             && !clazz.getName()
                                     .equals(AbstractTypeProcessor.class.getCanonicalName()));
+                    // Didn't find a matching class. Option might be for another processor. Add
+                    // option anyways. javac will warn if no processor supports the option.
+                    activeOpts.put(key, value);
                     break;
                 default:
-                    throw new UserError(
-                            "Invalid option name: "
-                                    + key
-                                    + " At most one separator "
-                                    + OPTION_SEPARATOR
-                                    + " expected, but found "
-                                    + (split.length - 1)
-                                    + ".");
+                    // Too many separators. Option might be for another processor. Add option
+                    // anyways. javac will warn if no processor supports the option.
+                    activeOpts.put(key, value);
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -1838,6 +1838,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (elementsSuppress.contains(elt)) {
                 continue;
             }
+            // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
             Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());

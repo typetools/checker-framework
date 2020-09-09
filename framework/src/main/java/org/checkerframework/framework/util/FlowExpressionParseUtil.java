@@ -1004,24 +1004,25 @@ public class FlowExpressionParseUtil {
          * Format this object verbosely, with each line indented by 4 spaces but without a trailing
          * newline.
          *
-         * @return a verbose printed representation of this
+         * @return a verbose string representation of this
          */
-        public String debugToString() {
-            return debugToString(4);
+        public String toStringDebug() {
+            return toStringDebug(4);
         }
 
         /**
          * Format this object verbosely, with each line indented by the given number of spaces but
          * without a trailing newline.
          *
-         * @return a verbose printed representation of this
+         * @param indent the number of spaces to indent the string representation of this
+         * @return a verbose string representation of this
          */
-        public String debugToString(int indent) {
+        public String toStringDebug(int indent) {
             String indentString = String.join("", Collections.nCopies(indent, " "));
             StringJoiner sj = new StringJoiner(indentString, indentString, "");
-            sj.add(String.format("receiver=%s%n", receiver.debugToString()));
+            sj.add(String.format("receiver=%s%n", receiver.toStringDebug()));
             sj.add(String.format("arguments=%s%n", arguments));
-            sj.add(String.format("outerReceiver=%s%n", outerReceiver.debugToString()));
+            sj.add(String.format("outerReceiver=%s%n", outerReceiver.toStringDebug()));
             sj.add(String.format("checkerContext=%s%n", "..."));
             // sj.add(String.format("checkerContext=%s%n", checkerContext));
             sj.add(String.format("parsingMember=%s%n", parsingMember));

@@ -45,6 +45,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -121,6 +123,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
                     "org.checkerframework.checker.nullness.compatqual.NonNullType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
+                    "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -166,6 +170,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
+                    "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -174,6 +180,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
+                    "org.jspecify.annotations.Nullable",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -356,14 +363,30 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator() {
+    protected DefaultForTypeAnnotator createDefaultForTypeAnnotator() {
         DefaultForTypeAnnotator defaultForTypeAnnotator = new DefaultForTypeAnnotator(this);
-        defaultForTypeAnnotator.addAtmClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        defaultForTypeAnnotator.addAtmClass(
-                AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedNoType.class, NONNULL);
+        defaultForTypeAnnotator.addAtmClass(AnnotatedPrimitiveType.class, NONNULL);
+        return defaultForTypeAnnotator;
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultForType(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (element != null
+                && element.getKind() == ElementKind.LOCAL_VARIABLE
+                && type.getKind().isPrimitive()) {
+            // Always apply the DefaultQualifierForUse for primitives.
+            super.addAnnotationsFromDefaultForType(null, type);
+        } else {
+            super.addAnnotationsFromDefaultForType(element, type);
+        }
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
-                defaultForTypeAnnotator,
                 new NullnessTypeAnnotator(this),
                 new CommitmentTypeAnnotator(this));
     }

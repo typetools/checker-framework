@@ -188,7 +188,6 @@ public final class TypesUtils {
      * @param t2 the second type to test
      * @return whether the arguments are the same declared types
      */
-    @SuppressWarnings("interning:not.interned") // equality test optimization
     public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
         // Do a cheaper test first
         if (t1.tsym.name != t2.tsym.name) {
@@ -249,8 +248,24 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns true iff the argument is a boxed floating point type.
+     *
+     * @param type type to test
+     * @return whether the argument is a boxed floating point type
+     */
+    public static boolean isBoxedFloating(TypeMirror type) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+        return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
+    }
+
+    /**
      * Returns true iff the argument is a floating point type.
      *
+     * @param type type mirror
      * @return whether the argument is a floating point type
      */
     public static boolean isFloating(TypeMirror type) {
@@ -682,5 +697,45 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.isFunctionalInterface((Type) type);
+    }
+
+    /**
+     * Returns the simple type name, without annotations.
+     *
+     * @param type a type
+     * @return the simple type name, without annotations
+     */
+    public static String simpleTypeName(TypeMirror type) {
+        switch (type.getKind()) {
+            case ARRAY:
+                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+            case TYPEVAR:
+                return ((TypeVariable) type).asElement().getSimpleName().toString();
+            case DECLARED:
+                return ((DeclaredType) type).asElement().getSimpleName().toString();
+            case NULL:
+                return "<nulltype>";
+            case VOID:
+                return "void";
+            default:
+                if (type.getKind().isPrimitive()) {
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
+                } else {
+                    throw new BugInCF(
+                            "simpleTypeName: unhandled type kind: %s, type: %s",
+                            type.getKind(), type);
+                }
+        }
+    }
+
+    /**
+     * Returns true if {@code type} has an enclosing type.
+     *
+     * @param type type to checker
+     * @return true if {@code type} has an enclosing type
+     */
+    public static boolean hasEnclosingType(TypeMirror type) {
+        Type e = ((Type) type).getEnclosingType();
+        return e.getKind() != TypeKind.NONE;
     }
 }
