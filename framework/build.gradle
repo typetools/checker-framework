@@ -33,7 +33,7 @@ dependencies {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
     implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.1.5'
+    implementation 'org.plumelib:plume-util:1.1.6'
     implementation 'org.plumelib:reflection-util:1.0.0'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.

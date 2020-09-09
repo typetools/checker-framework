@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -1024,14 +1025,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
-        String header = castedViz.visualizeStoreHeader(this.getClass().getSimpleName());
         String internal = internalVisualize(castedViz);
-        String footer = castedViz.visualizeStoreFooter();
         if (internal.trim().isEmpty()) {
-            // This removes trailing spaces from header and leading spaces from footer.
-            return header.replaceAll("\\s+$", "") + footer.replaceAll("^\\s+", "");
+            return this.getClass().getSimpleName() + "()";
         } else {
-            return header + internal + footer;
+            return this.getClass().getSimpleName() + "(" + viz.getSeparator() + internal + ")";
         }
     }
 
@@ -1041,24 +1039,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return a representation of the internal information of this {@link Store}
      */
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
-        StringBuilder res = new StringBuilder();
+        StringJoiner res = new StringJoiner(viz.getSeparator());
         for (Map.Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            res.append(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
+            res.add(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
         }
         if (thisValue != null) {
-            res.append(viz.visualizeStoreThisVal(thisValue));
+            res.add(viz.visualizeStoreThisVal(thisValue));
         }
         for (Map.Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            res.append(viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue()));
+            res.add(viz.visualizeStoreFieldVal(entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            res.append(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
+            res.add(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            res.append(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
+            res.add(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
-            res.append(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
+            res.add(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
         }
         return res.toString();
     }

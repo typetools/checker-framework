@@ -6,7 +6,7 @@ dependencies {
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
     // Keep version number in sync with docs/developer/release/maven-artifacts/javacutil-pom.xml.
-    implementation 'org.plumelib:plume-util:1.1.5'
+    implementation 'org.plumelib:plume-util:1.1.6'
 
     implementation project(':checker-qual')
 }
