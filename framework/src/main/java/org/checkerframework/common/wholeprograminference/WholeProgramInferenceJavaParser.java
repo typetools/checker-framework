@@ -9,7 +9,10 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -43,6 +46,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
+import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -71,7 +76,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     private Map<@BinaryName String, ClassOrInterfaceWrapper> classes;
     private Set<String> modifiedFiles;
-    private Map<String, List<CompilationUnit>> sourceFiles;
+    private Map<String, List<CompilationUnitWrapper>> sourceFiles;
 
     public WholeProgramInferenceJavaParser() {
         classes = new HashMap<>();
@@ -379,12 +384,14 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         for (String path : modifiedFiles) {
-            for (CompilationUnit root : sourceFiles.get(path)) {
+            for (CompilationUnitWrapper root : sourceFiles.get(path)) {
+                root.transferAnnotations();
                 String packageDir = AJAVA_FILES_PATH;
-                if (root.getPackageDeclaration().isPresent()) {
+                if (root.declaration.getPackageDeclaration().isPresent()) {
                     packageDir +=
                             File.separator
-                                    + root.getPackageDeclaration()
+                                    + root.declaration
+                                            .getPackageDeclaration()
                                             .get()
                                             .getNameAsString()
                                             .replaceAll("\\.", File.separator);
@@ -404,7 +411,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 String outputPath = packageDir + File.separator + name;
                 try {
                     FileWriter writer = new FileWriter(outputPath);
-                    LexicalPreservingPrinter.print(root, writer);
+                    PrettyPrinterConfiguration configuration = new PrettyPrinterConfiguration();
+                    configuration.setIndentType(PrettyPrinterConfiguration.IndentType.SPACES);
+                    configuration.setIndentSize(4);
+                    configuration.setPrintComments(false);
+                    PrettyPrinter prettyPrinter = new PrettyPrinter(configuration);
+                    writer.write(prettyPrinter.print(root.declaration));
                     writer.close();
                 } catch (IOException e) {
                     throw new BugInCF("Error while writing ajava file", e);
@@ -566,13 +578,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        List<CompilationUnit> fileRoots = new ArrayList<>();
+        List<CompilationUnitWrapper> fileRoots = new ArrayList<>();
 
         try {
             Source source = new Source(path);
             Set<CompilationUnitTree> compilationUnits = source.parse();
             for (CompilationUnitTree root : compilationUnits) {
-                CompilationUnit javaParserRoot = addCompilationUnit(root, path);
+                CompilationUnitWrapper javaParserRoot = addCompilationUnit(root, path);
                 fileRoots.add(javaParserRoot);
             }
 
@@ -583,11 +595,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
-    private CompilationUnit addCompilationUnit(CompilationUnitTree root, String path)
+    private CompilationUnitWrapper addCompilationUnit(CompilationUnitTree root, String path)
             throws IOException {
         CompilationUnit javaParserRoot =
                 StaticJavaParser.parse(root.getSourceFile().openInputStream());
-        LexicalPreservingPrinter.setup(javaParserRoot);
+        CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
                     @Override
@@ -595,9 +607,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(javacTree);
                         String className = getClassName(classElt);
+                        ClassOrInterfaceWrapper typeWrapper =
+                                new ClassOrInterfaceWrapper(javaParserNode);
                         if (!classes.containsKey(className)) {
-                            classes.put(className, new ClassOrInterfaceWrapper(javaParserNode));
+                            classes.put(className, typeWrapper);
                         }
+
+                        wrapper.types.add(typeWrapper);
                     }
 
                     @Override
@@ -641,7 +657,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     }
                 };
         visitor.visitCompilationUnit(root, javaParserRoot);
-        return javaParserRoot;
+        return wrapper;
     }
 
     private String addSourceFileForElement(Element element) {
@@ -703,8 +719,25 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    private static class CompilationUnitWrapper {
+        public CompilationUnit declaration;
+        public List<ClassOrInterfaceWrapper> types;
+
+        public CompilationUnitWrapper(CompilationUnit declaration) {
+            this.declaration = declaration;
+            types = new ArrayList<>();
+        }
+
+        public void transferAnnotations() {
+            ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
+            declaration.accept(annotationClearer, null);
+            for (ClassOrInterfaceWrapper type : types) {
+                type.transferAnnotations();
+            }
+        }
+    }
+
     private static class ClassOrInterfaceWrapper {
-        public String file;
         public ClassOrInterfaceDeclaration declaration;
         public Map<String, CallableDeclarationWrapper> callableDeclarations;
         public Map<String, FieldWrapper> fields;
@@ -712,6 +745,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         public ClassOrInterfaceWrapper(ClassOrInterfaceDeclaration declaration) {
             this.declaration = declaration;
             callableDeclarations = new HashMap<>();
+            fields = new HashMap<>();
+        }
+
+        public void transferAnnotations() {
+            for (CallableDeclarationWrapper callable : callableDeclarations.values()) {
+                callable.transferAnnotations();
+            }
+
+            for (FieldWrapper field : fields.values()) {
+                field.transferAnnotations();
+            }
         }
 
         @Override
@@ -720,8 +764,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     + declaration
                     + ", fields="
                     + fields
-                    + ", file="
-                    + file
                     + ", callableDeclarations="
                     + callableDeclarations
                     + "]";
@@ -734,7 +776,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // TODO: Make these private?
         public @Nullable AnnotatedTypeMirror returnType;
         public @Nullable AnnotatedTypeMirror receiverType;
-        public List<@Nullable AnnotatedTypeMirror> parameterTypes;
+        public @Nullable List<@Nullable AnnotatedTypeMirror> parameterTypes;
 
         public CallableDeclarationWrapper(CallableDeclaration<?> declaration) {
             this.declaration = declaration;
@@ -779,6 +821,29 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return receiverType;
         }
 
+        public void transferAnnotations() {
+            if (returnType != null) {
+                // If a return type exists, then the declaration must be a method, not a
+                // constructor.
+                WholeProgramInferenceJavaParser.transferAnnotations(
+                        returnType, declaration.asMethodDeclaration().getType());
+            }
+
+            if (receiverType != null) {
+                WholeProgramInferenceJavaParser.transferAnnotations(
+                        receiverType, declaration.getReceiverParameter().get().getType());
+            }
+
+            if (parameterTypes == null) {
+                return;
+            }
+
+            for (int i = 0; i < parameterTypes.size(); i++) {
+                WholeProgramInferenceJavaParser.transferAnnotations(
+                        parameterTypes.get(i), declaration.getParameter(i).getType());
+            }
+        }
+
         @Override
         public String toString() {
             return "CallableDeclarationWrapper [declaration="
@@ -812,9 +877,29 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return type;
         }
 
+        public void transferAnnotations() {
+            WholeProgramInferenceJavaParser.transferAnnotations(type, declaration.getType());
+        }
+
         @Override
         public String toString() {
             return "FieldWrapper [declaration=" + declaration + ", type=" + type + "]";
         }
+    }
+
+    private static AnnotationExpr makeAnnotationExpr(AnnotationMirror annotation) {
+        // String name = AnnotationUtils.annotationName(annotation);
+        // Map<? extends ExecutableElement, ? extends AnnotationValue> values =
+        // annotation.getElementValues();
+        return null;
+    }
+
+    private static void transferAnnotations(
+            @Nullable AnnotatedTypeMirror annotatedType, Type target) {
+        if (annotatedType == null) {
+            return;
+        }
+
+        target.accept(new AnnotationTransferVisitor(), annotatedType);
     }
 }
