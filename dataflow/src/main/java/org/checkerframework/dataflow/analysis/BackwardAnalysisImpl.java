@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
@@ -99,14 +98,16 @@ public class BackwardAnalysisImpl<
             case REGULAR_BLOCK:
                 {
                     RegularBlock rb = (RegularBlock) b;
-                    @NonNull TransferInput<V, S> inputAfter = getInput(rb);
+                    TransferInput<V, S> inputAfter = getInput(rb);
+                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputAfter.copy();
                     Node firstNode = null;
                     boolean addToWorklistAgain = false;
                     List<Node> nodeList = rb.getNodes();
                     ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
                     while (reverseIter.hasPrevious()) {
-                        @NonNull Node node = reverseIter.previous();
+                        Node node = reverseIter.previous();
+                        assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         TransferResult<V, S> transferResult =
                                 callTransferFunction(node, currentInput);
                         addToWorklistAgain |= updateNodeValues(node, transferResult);
@@ -128,7 +129,8 @@ public class BackwardAnalysisImpl<
             case EXCEPTION_BLOCK:
                 {
                     ExceptionBlock eb = (ExceptionBlock) b;
-                    @NonNull TransferInput<V, S> inputAfter = getInput(eb);
+                    TransferInput<V, S> inputAfter = getInput(eb);
+                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputAfter.copy();
                     Node node = eb.getNode();
                     TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
@@ -149,7 +151,8 @@ public class BackwardAnalysisImpl<
             case CONDITIONAL_BLOCK:
                 {
                     ConditionalBlock cb = (ConditionalBlock) b;
-                    @NonNull TransferInput<V, S> inputAfter = getInput(cb);
+                    TransferInput<V, S> inputAfter = getInput(cb);
+                    assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
                     TransferInput<V, S> input = inputAfter.copy();
                     for (Block pred : cb.getPredecessors()) {
                         propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
@@ -168,7 +171,8 @@ public class BackwardAnalysisImpl<
                     } else {
                         assert sType == SpecialBlockType.EXIT
                                 || sType == SpecialBlockType.EXCEPTIONAL_EXIT;
-                        @NonNull TransferInput<V, S> input = getInput(sb);
+                        TransferInput<V, S> input = getInput(sb);
+                        assert input != null : "@AssumeAssertion(nullness): invariant";
                         for (Block pred : sb.getPredecessors()) {
                             propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
                         }
@@ -316,7 +320,8 @@ public class BackwardAnalysisImpl<
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-        @NonNull Block block = node.getBlock();
+        Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
         if (isRunning) {
             assert currentInput != null : "@AssumeAssertion(nullness): invariant";

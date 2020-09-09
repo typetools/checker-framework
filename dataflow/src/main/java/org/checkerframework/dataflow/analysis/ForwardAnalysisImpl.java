@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -120,7 +119,8 @@ public class ForwardAnalysisImpl<
                 {
                     RegularBlock rb = (RegularBlock) b;
                     // Apply transfer function to contents
-                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(rb);
+                    TransferInput<V, S> inputBefore = getInputBefore(rb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
@@ -145,7 +145,8 @@ public class ForwardAnalysisImpl<
                 {
                     ExceptionBlock eb = (ExceptionBlock) b;
                     // Apply transfer function to content
-                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(eb);
+                    TransferInput<V, S> inputBefore = getInputBefore(eb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     currentInput = inputBefore.copy();
                     Node node = eb.getNode();
                     TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
@@ -188,7 +189,8 @@ public class ForwardAnalysisImpl<
                 {
                     ConditionalBlock cb = (ConditionalBlock) b;
                     // Get store before
-                    @NonNull TransferInput<V, S> inputBefore = getInputBefore(cb);
+                    TransferInput<V, S> inputBefore = getInputBefore(cb);
+                    assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
                     TransferInput<V, S> input = inputBefore.copy();
                     // Propagate store to successor
                     Block thenSucc = cb.getThenSuccessor();
@@ -204,7 +206,8 @@ public class ForwardAnalysisImpl<
                     SpecialBlock sb = (SpecialBlock) b;
                     Block succ = sb.getSuccessor();
                     if (succ != null) {
-                        @NonNull TransferInput<V, S> input = getInputBefore(b);
+                        TransferInput<V, S> input = getInputBefore(b);
+                        assert input != null : "@AssumeAssertion(nullness): invariant";
                         propagateStoresTo(succ, null, input, sb.getFlowRule(), false);
                     }
                     break;
@@ -238,7 +241,8 @@ public class ForwardAnalysisImpl<
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-        @NonNull Block block = node.getBlock();
+        Block block = node.getBlock();
+        assert block != null : "@AssumeAssertion(nullness): invariant";
         Node oldCurrentNode = currentNode;
 
         // Prepare cache
