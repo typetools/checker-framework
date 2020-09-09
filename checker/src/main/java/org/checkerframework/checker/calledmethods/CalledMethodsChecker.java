@@ -44,18 +44,6 @@ public class CalledMethodsChecker extends BaseTypeChecker {
             "disableBuilderFrameworkSupports";
 
     /**
-     * The key for the {@link #DISABLE_BUILDER_FRAMEWORK_SUPPORTS} option to disable Lombok support.
-     * Use it via {@code -AdisableBuilderFrameworkSupports=LOMBOK}.
-     */
-    public static final String LOMBOK_SUPPORT = "LOMBOK";
-
-    /**
-     * The key for the {@link #DISABLE_BUILDER_FRAMEWORK_SUPPORTS} option to disable AutoValue
-     * support. Use it via {@code -AdisableBuilderFrameworkSupports=AUTOVALUE}.
-     */
-    public static final String AUTOVALUE_SUPPORT = "AUTOVALUE";
-
-    /**
      * If this option is supplied, use the Value Checker to reduce false positives when analyzing
      * calls to the AWS SDK.
      */

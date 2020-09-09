@@ -42,8 +42,8 @@ The Called Methods Checker supports the following optional command-line argument
 \begin{itemize}
 \item The \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports> option disables automatic
  annotation inference for builder frameworks. This option
- takes an argument, which is the name of the frameworks to disable. Permitted values:
- \<Lombok>, \<AutoValue>. See \chapterpageref{called-methods-framework-details}. By default,
+ takes an argument, which is the name of the frameworks to disable (all lowercase). Permitted values:
+ \<lombok>, \<autovalue>. See \chapterpageref{called-methods-framework-details}. By default,
  Lombok and AutoValue support is enabled. A user who supplies their own stub file to specify
  a library and is uninterested in (potential) errors in the use of builders might wish to disable framework
  support.
@@ -198,7 +198,7 @@ the same \<@CalledMethods> annotation as the receiver of \<build()>, using the s
 
 You can disable the builder framework support by specifying them in a comma-separated list to the
 command-line flag \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok and AutoValue support,
-use: \\ \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=AutoValue,Lombok>
+use: \\ \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=autovalue,lombok>
 
 If your program directly defines any of these methods (for example, by adding your own setters to
 a Lombok builder), you may need to write the annotations manually.

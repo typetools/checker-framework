@@ -5,12 +5,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -36,7 +31,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -45,10 +39,10 @@ import org.checkerframework.javacutil.UserError;
 public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
 
     /**
-     * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
-     * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
+     * The builder frameworks (such as Lombok and AutoValue) supported by the Called Methods
+     * checker.
      */
-    private final ExecutableElement collectionsSingletonList;
+    private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
     /**
      * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing
@@ -58,10 +52,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     private final boolean useValueChecker;
 
     /**
-     * The builder frameworks (such as Lombok and AutoValue) supported by the Called Methods
-     * checker.
+     * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
+     * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
      */
-    private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
+    private final ExecutableElement collectionsSingletonList;
 
     /**
      * Lombok has a flag to generate @CalledMethods annotations, but they used the old package name,
@@ -88,33 +82,16 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 CalledMethods.class,
                 CalledMethodsBottom.class,
                 CalledMethodsPredicate.class);
-        Set<String> disabledFrameworks = new HashSet<>();
+        this.builderFrameworkSupports = new ArrayList<>();
+        String[] disabledFrameworks;
         if (checker.hasOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS)) {
-            disabledFrameworks.addAll(
-                    Arrays.asList(
-                                    checker.getOption(
-                                                    CalledMethodsChecker
-                                                            .DISABLE_BUILDER_FRAMEWORK_SUPPORTS)
-                                            .split(","))
-                            .stream()
-                            .map(String::toUpperCase)
-                            .collect(Collectors.toList()));
+            disabledFrameworks =
+                    checker.getOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS)
+                            .split(",");
+        } else {
+            disabledFrameworks = new String[0];
         }
-        builderFrameworkSupports = new ArrayList<>();
-        enableFramework(CalledMethodsChecker.LOMBOK_SUPPORT, disabledFrameworks);
-        enableFramework(CalledMethodsChecker.AUTOVALUE_SUPPORT, disabledFrameworks);
-
-        if (!disabledFrameworks.isEmpty()) {
-            StringJoiner sj = new StringJoiner(", ");
-            disabledFrameworks.iterator().forEachRemaining(s -> sj.add(s));
-            String unrecognized = sj.toString();
-            throw new UserError(
-                    "The following argument(s) to the "
-                            + CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS
-                            + " command-line argument to the Called Methods Checker were unrecognized: "
-                            + unrecognized);
-        }
-
+        enableFrameworks(disabledFrameworks);
         this.useValueChecker = checker.hasOption(CalledMethodsChecker.USE_VALUE_CHECKER);
         this.collectionsSingletonList =
                 TreeUtils.getMethod(
@@ -125,30 +102,36 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     /**
-     * Enables support for the given builder-generation framework, unless it is listed in the
+     * Enables support for the default builder-generation frameworks, except those listed in the
      * disabled builder frameworks parsed from the -AdisableBuilderFrameworkSupport option's
-     * arguments.
+     * arguments. Throws a UserError if the user included an unsupported framework in the list of
+     * frameworks to be disabled.
      *
-     * @param framework the builder framework to enable
-     * @param disabledFrameworks the set of disabled builder frameworks. This argument will be
-     *     side-effected to remove a builder framework if it was actually disabled.
+     * @param disabledFrameworks the disabled builder frameworks.
      */
-    private void enableFramework(String framework, Set<String> disabledFrameworks) {
-        if (disabledFrameworks == null || !disabledFrameworks.contains(framework)) {
+    private void enableFrameworks(String[] disabledFrameworks) {
+        boolean enableAutoValueSupport = true;
+        boolean enableLombokSupport = true;
+        for (String framework : disabledFrameworks) {
             switch (framework) {
-                case CalledMethodsChecker.AUTOVALUE_SUPPORT:
-                    builderFrameworkSupports.add(new AutoValueSupport(this));
-                    return;
-                case CalledMethodsChecker.LOMBOK_SUPPORT:
-                    builderFrameworkSupports.add(new LombokSupport(this));
-                    return;
+                case "autovalue":
+                    enableAutoValueSupport = false;
+                    break;
+                case "lombok":
+                    enableLombokSupport = false;
+                    break;
                 default:
-                    throw new BugInCF(
-                            "Called Methods Checker tried to enable an unsupported builder framework: "
+                    throw new UserError(
+                            "The Called Methods Checker found an unsupported builder framework in the argument to "
+                                    + "-AdisableBuilderFrameworkSupports: "
                                     + framework);
             }
-        } else {
-            disabledFrameworks.remove(framework);
+        }
+        if (enableAutoValueSupport) {
+            builderFrameworkSupports.add(new AutoValueSupport(this));
+        }
+        if (enableLombokSupport) {
+            builderFrameworkSupports.add(new LombokSupport(this));
         }
     }
 
