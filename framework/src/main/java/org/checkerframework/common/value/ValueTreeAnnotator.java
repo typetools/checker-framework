@@ -525,7 +525,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         VariableElement elem = (VariableElement) TreeUtils.elementFromTree(tree);
         Object value = elem.getConstantValue();
         if (value != null) {
-            // The field is a compile time constant.
+            // The field is a compile-time constant.
             type.replaceAnnotation(
                     atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
             return null;
@@ -595,7 +595,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         VariableElement ele = (VariableElement) TreeUtils.elementFromTree(tree);
         Object value = ele.getConstantValue();
         if (value != null) {
-            // The field is a compile time constant.
+            // The field is a compile-time constant.
             type.replaceAnnotation(
                     atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
             return null;
