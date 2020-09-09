@@ -123,6 +123,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
                     "org.checkerframework.checker.nullness.compatqual.NonNullType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
+                    "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -168,6 +170,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
+                    "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -176,6 +180,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
+                    "org.jspecify.annotations.Nullable",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html

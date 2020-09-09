@@ -222,9 +222,19 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     @Override
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
-        return super.internalVisualize(viz)
-                + viz.visualizeStoreKeyVal("initialized fields", initializedFields)
-                + viz.visualizeStoreKeyVal("invariant fields", invariantFields);
+        String superVisualize = super.internalVisualize(viz);
+        if (superVisualize.isEmpty()) {
+            return String.join(
+                    viz.getSeparator(),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        } else {
+            return String.join(
+                    viz.getSeparator(),
+                    super.internalVisualize(viz),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        }
     }
 
     public Map<FieldAccess, V> getFieldValues() {

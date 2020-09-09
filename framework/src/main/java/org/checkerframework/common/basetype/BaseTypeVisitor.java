@@ -1032,9 +1032,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         methodTree,
                         "contracts.postcondition.not.satisfied",
-                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        expression.toString());
+                        methodTree.getName(),
+                        contractExpressionAndType(expression.toString(), inferredAnno),
+                        contractExpressionAndType(expression.toString(), annotation));
             }
+        }
+    }
+
+    /**
+     * Returns a string representation of an expression and type qualifier.
+     *
+     * @param expression a Java expression
+     * @param qualifier the expression's type, or null if no information is available
+     * @return a string representation of the expression and type qualifier
+     */
+    private String contractExpressionAndType(
+            String expression, @Nullable AnnotationMirror qualifier) {
+        if (qualifier == null) {
+            return "no information about " + expression;
+        } else {
+            return expression
+                    + " is "
+                    + atypeFactory.getAnnotationFormatter().formatAnnotationMirror(qualifier);
         }
     }
 
@@ -1042,7 +1061,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
      * that returns {@code result}.
      *
-     * @param node tree of method with the postcondition
+     * @param method tree of method with the postcondition
      * @param annotation expression's type must have this annotation
      * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
      *     expression}. Used only for diagnostic messages.
@@ -1050,21 +1069,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree node,
+            MethodTree method,
             AnnotationMirror annotation,
             AnnotationMirror contractAnnotation,
             Receiver expression,
             boolean result) {
         boolean booleanReturnType =
-                TypesUtils.isBooleanType(TreeUtils.typeOf(node.getReturnType()));
+                TypesUtils.isBooleanType(TreeUtils.typeOf(method.getReturnType()));
         if (!booleanReturnType) {
-            checker.reportError(node, "contracts.conditional.postcondition.invalid.returntype");
+            checker.reportError(method, "contracts.conditional.postcondition.invalid.returntype");
             // No reason to go ahead with further checking. The
             // annotation is invalid.
             return;
         }
 
-        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(node)) {
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(method)) {
             ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();
@@ -1101,8 +1120,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         returnStmt.getTree(),
                         "contracts.conditional.postcondition.not.satisfied",
-                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        expression.toString());
+                        method.getName(),
+                        result,
+                        contractExpressionAndType(expression.toString(), inferredAnno),
+                        contractExpressionAndType(expression.toString(), annotation));
             }
         }
     }
@@ -1594,7 +1615,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         tree,
                         "contracts.precondition.not.satisfied",
                         tree.getMethodSelect().toString(),
-                        expressionString);
+                        contractExpressionAndType(expressionString, inferredAnno),
+                        contractExpressionAndType(expressionString, anno));
             }
         }
     }

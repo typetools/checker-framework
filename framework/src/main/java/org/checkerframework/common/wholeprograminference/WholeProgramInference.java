@@ -18,7 +18,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
- * Interface for a whole-program inference implementation.
+ * Interface for recording facts at (pseudo-)assignments. It is used by the -Ainfer command-line
+ * argument. The -Ainfer command-line argument is used by the whole-program-inference loop, but this
+ * class does not implement that loop and its name {@code WholeProgramInference} is misleading.
  *
  * <p>This interface has update* methods that should be called at certain (pseudo-)assignments, and
  * they may update the type of the LHS of the (pseudo-)assignment based on the type of the RHS. In
