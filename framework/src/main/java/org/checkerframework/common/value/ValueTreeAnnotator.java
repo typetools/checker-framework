@@ -605,6 +605,31 @@ class ValueTreeAnnotator extends TreeAnnotator {
                     atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
             return null;
         }
+        if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
+            // The field is static and final, but its declaration does not initialize it to a
+            // compile-time constant.  Obtain its value reflectively.
+            Element e = ((VariableElement) TreeUtils.elementFromTree(tree)).getEnclosingElement();
+            if (e != null) {
+                @SuppressWarnings("signature" // TODO: this looks like a bug in
+                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                // but this passes a @FullyQualifiedName
+                )
+                @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
+                @SuppressWarnings(
+                        "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
+                @Identifier String fieldName = tree.toString();
+                value =
+                        atypeFactory.evaluator.evaluateStaticFieldAccess(
+                                classname, fieldName, tree);
+                if (value != null) {
+                    type.replaceAnnotation(
+                            atypeFactory.createResultingAnnotation(
+                                    type.getUnderlyingType(), value));
+                }
+                return null;
+            }
+        }
+
         return null;
     }
 }

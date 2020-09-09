@@ -1,6 +1,6 @@
 package org.checkerframework.common.value;
 
-import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.lang.reflect.Constructor;
@@ -269,11 +269,12 @@ public class ReflectiveEvaluator {
      *
      * @param classname the class containing the field
      * @param fieldName the name of the field
-     * @param tree the static field access in the program; used for diagnostics
+     * @param tree the static field access in the program; a MemberSelectTree or an IdentifierTree;
+     *     used for diagnostics
      * @return the value of the static field access, or null if it cannot be determined
      */
     public Object evaluateStaticFieldAccess(
-            @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
+            @ClassGetName String classname, String fieldName, ExpressionTree tree) {
         try {
             Class<?> recClass = Class.forName(classname);
             Field field = recClass.getField(fieldName);
