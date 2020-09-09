@@ -1885,6 +1885,9 @@ public abstract class GenericAnnotatedTypeFactory<
     protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
+            if (flowdotdir.equals("")) {
+                throw new UserError("Emtpy string provided for -Aflowdotdir command-line argument");
+            }
             boolean verbose = checker.hasOption("verbosecfg");
 
             Map<String, Object> args = new HashMap<>(2);

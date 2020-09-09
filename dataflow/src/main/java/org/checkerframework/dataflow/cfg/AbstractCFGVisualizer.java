@@ -320,14 +320,14 @@ public abstract class AbstractCFGVisualizer<
             sbStore.append(", else=");
             sbStore.append(visualizeStore(elseStore));
         }
-        sbStore.append("~~~~~~~~~").append(escapeString);
+        sbStore.append("~~~~~~~~~" + escapeString);
         return sbStore.toString();
     }
 
     /**
      * Visualize the transfer input after the given block.
      *
-     * @param bb the given block
+     * @param bb a block
      * @param analysis the current analysis
      * @param escapeString the escape String for the special need of visualization, e.g., "\\l" for
      *     {@link DOTCFGVisualizer} to keep line left-justification, "\n" for {@link
@@ -338,7 +338,7 @@ public abstract class AbstractCFGVisualizer<
             Block bb, Analysis<V, S, T> analysis, String escapeString) {
         if (analysis == null) {
             throw new BugInCF(
-                    "analysis should be non-null when visualizing the transfer input of a block.");
+                    "analysis must be non-null when visualizing the transfer input of a block.");
         }
 
         S regularStore;

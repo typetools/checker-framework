@@ -14,7 +14,7 @@ class KeyForStaticField {
 
     public KeyForStaticField() {
         map = new HashMap<>();
-        put(STATIC_KEY, 0);
+        map.put(STATIC_KEY, 0);
     }
 
     /** Returns the value for the given key, which must be present in the map. */

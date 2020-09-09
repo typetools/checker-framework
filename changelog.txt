@@ -1,3 +1,24 @@
+Version 3.7.0, October 1, 2020
+
+The Nullness Checker supports annotations
+org.codehaus.commons.nullanalysis.NotNull,
+org.codehaus.commons.nullanalysis.Nullable, and
+org.jspecify.annotations.Nullable.
+
+---------------------------------------------------------------------------
+
+Version 3.6.1, September 2, 2020
+
+Documented that the Checker Framework can issue false positive warnings in
+dead code.
+
+Documented when the Signedness Checker permits right shift operations.
+
+Closed issues:
+#3484, #3562, #3565, #3566, #3570, #3584, #3594, #3597, #3598.
+
+---------------------------------------------------------------------------
+
 Version 3.6.0, August 3, 2020
 
 The Interning Checker supports method annotations @EqualsMethod and
@@ -27,8 +48,9 @@ Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test cla
 Use CheckerFrameworkPer(Directory/File)Test instead.
 
 Closed issues:
-1395, 2483, 3207, 3223, 3224, 3313, 3381, 3422, 3424, 3428, 3429, 3438, 3442,
-3443, 3447, 3449, 3461, 3482, 3485, 3495, 3500, 3528.
+
+#1395, #2483, #3207, #3223, #3224, #3313, #3381, #3422, #3424, #3428, #3429,
+#3438, #3442, #3443, #3447, #3449, #3461, #3482, #3485, #3495, #3500, #3528.
 
 ---------------------------------------------------------------------------
 
