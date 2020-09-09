@@ -15,6 +15,7 @@ import org.checkerframework.framework.flow.CFValue;
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
+    /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
     protected boolean isPolyNullNull;
 
     public NullnessValue(
