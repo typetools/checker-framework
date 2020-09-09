@@ -1032,9 +1032,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         methodTree,
                         "contracts.postcondition.not.satisfied",
-                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        expression.toString());
+                        methodTree.getName(),
+                        contractExpressionAndType(expression.toString(), inferredAnno),
+                        contractExpressionAndType(expression.toString(), annotation));
             }
+        }
+    }
+
+    /**
+     * Returns a string representation of an expression and type qualifier.
+     *
+     * @param expression a Java expression
+     * @param qualifier the expression's type, or null if no information is available
+     * @return a string representation of the expression and type qualifier
+     */
+    private String contractExpressionAndType(
+            String expression, @Nullable AnnotationMirror qualifier) {
+        if (qualifier == null) {
+            return "no information about " + expression;
+        } else {
+            return expression
+                    + " is "
+                    + atypeFactory.getAnnotationFormatter().formatAnnotationMirror(qualifier);
         }
     }
 
@@ -1101,8 +1120,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         returnStmt.getTree(),
                         "contracts.conditional.postcondition.not.satisfied",
-                        contractAnnotation.getAnnotationType().asElement().getSimpleName(),
-                        expression.toString());
+                        method.getName(),
+                        result,
+                        contractExpressionAndType(expression.toString(), inferredAnno),
+                        contractExpressionAndType(expression.toString(), annotation));
             }
         }
     }
@@ -1594,7 +1615,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         tree,
                         "contracts.precondition.not.satisfied",
                         tree.getMethodSelect().toString(),
-                        expressionString);
+                        contractExpressionAndType(expressionString, inferredAnno),
+                        contractExpressionAndType(expressionString, anno));
             }
         }
     }
