@@ -8,8 +8,11 @@ org.jspecify.annotations.Nullable.
 Implementation details:
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
-org.checkerframework.framework.util.GraphQualifierHierarchy.  See Javadoc of
-MultiGraphQualifierHierarchy for instructions on how to use the new classes.
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
 
 ---------------------------------------------------------------------------
 
