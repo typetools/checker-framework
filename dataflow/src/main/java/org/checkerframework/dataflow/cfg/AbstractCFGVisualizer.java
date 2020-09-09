@@ -325,7 +325,8 @@ public abstract class AbstractCFGVisualizer<
         } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
             regularStore = analysis.getResult().getStoreBefore(bb);
         } else {
-            @NonNull TransferInput<V, S> input = analysis.getInput(bb);
+            TransferInput<V, S> input = analysis.getInput(bb);
+            assert input != null : "@AssumeAssertion(nullness): invariant";
             isTwoStores = input.containsTwoStores();
             regularStore = input.getRegularStore();
             thenStore = input.getThenStore();
