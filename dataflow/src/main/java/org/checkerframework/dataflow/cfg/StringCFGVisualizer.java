@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
@@ -85,12 +86,14 @@ public class StringCFGVisualizer<
 
     @Override
     public String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputBeforeHelper(bb, analysis, lineSeparator);
+        return super.visualizeBlockTransferInputHelper(
+                VisualizeWhere.BEFORE, bb, analysis, lineSeparator);
     }
 
     @Override
     public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
-        return super.visualizeBlockTransferInputAfterHelper(bb, analysis, lineSeparator);
+        return super.visualizeBlockTransferInputHelper(
+                VisualizeWhere.AFTER, bb, analysis, lineSeparator);
     }
 
     @Override
