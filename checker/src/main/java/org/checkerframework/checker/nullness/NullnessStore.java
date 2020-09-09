@@ -16,6 +16,7 @@ import org.plumelib.util.UniqueId;
 public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
         implements UniqueId {
 
+    /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
     protected boolean isPolyNullNull;
 
     /** The unique ID for the next-created object. */
@@ -32,6 +33,13 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
         return uid;
     }
 
+    /**
+     * Create a NullnessStore.
+     *
+     * @param analysis the analysis class this store belongs to
+     * @param sequentialSemantics should the analysis use sequential Java semantics (i.e., assume
+     *     that only one thread is running at all times)?
+     */
     public NullnessStore(
             CFAbstractAnalysis<NullnessValue, NullnessStore, ?> analysis,
             boolean sequentialSemantics) {
