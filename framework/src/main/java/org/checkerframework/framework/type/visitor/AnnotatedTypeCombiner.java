@@ -7,10 +7,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/**
- * Changes each parameter annotation to be the GLB of the parameter annotation and visited type
- * annotation.
- */
+/** Changes each parameter type to be the GLB of the parameter ytpe and visited type. */
 public class AnnotatedTypeCombiner extends AnnotatedTypeComparer<Void> {
 
     /**
