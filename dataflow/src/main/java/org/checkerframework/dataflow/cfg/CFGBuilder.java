@@ -97,7 +97,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Store.FlowRule;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -478,9 +478,9 @@ public class CFGBuilder {
         protected final Label falseSucc;
 
         /** The true branch flow rule. */
-        protected FlowRule trueFlowRule;
+        protected Store.FlowRule trueFlowRule;
         /** The false branch flow rule. */
-        protected FlowRule falseFlowRule;
+        protected Store.FlowRule falseFlowRule;
 
         /**
          * Construct a ConditionalJump.
@@ -504,19 +504,19 @@ public class CFGBuilder {
             return falseSucc;
         }
 
-        public FlowRule getTrueFlowRule() {
+        public Store.FlowRule getTrueFlowRule() {
             return trueFlowRule;
         }
 
-        public FlowRule getFalseFlowRule() {
+        public Store.FlowRule getFalseFlowRule() {
             return falseFlowRule;
         }
 
-        public void setTrueFlowRule(FlowRule rule) {
+        public void setTrueFlowRule(Store.FlowRule rule) {
             trueFlowRule = rule;
         }
 
-        public void setFalseFlowRule(FlowRule rule) {
+        public void setFalseFlowRule(Store.FlowRule rule) {
             falseFlowRule = rule;
         }
 
@@ -544,7 +544,7 @@ public class CFGBuilder {
         protected final Label jumpTarget;
 
         /** The flow rule for this edge. */
-        protected final FlowRule flowRule;
+        protected final Store.FlowRule flowRule;
 
         /**
          * Construct an UnconditionalJump.
@@ -552,7 +552,7 @@ public class CFGBuilder {
          * @param jumpTarget the jump target label
          */
         public UnconditionalJump(Label jumpTarget) {
-            this(jumpTarget, FlowRule.EACH_TO_EACH);
+            this(jumpTarget, Store.FlowRule.EACH_TO_EACH);
         }
 
         /**
@@ -561,7 +561,7 @@ public class CFGBuilder {
          * @param jumpTarget the jump target label
          * @param flowRule the flow rule for this edge
          */
-        public UnconditionalJump(Label jumpTarget, FlowRule flowRule) {
+        public UnconditionalJump(Label jumpTarget, Store.FlowRule flowRule) {
             super(ExtendedNodeType.UNCONDITIONAL_JUMP);
             assert jumpTarget != null;
             this.jumpTarget = jumpTarget;
@@ -578,7 +578,7 @@ public class CFGBuilder {
          *
          * @return the flow rule for this edge
          */
-        public FlowRule getFlowRule() {
+        public Store.FlowRule getFlowRule() {
             return flowRule;
         }
 
@@ -1280,7 +1280,7 @@ public class CFGBuilder {
         final @Nullable TypeMirror cause;
 
         /** The flow rule for this edge. */
-        final @Nullable FlowRule flowRule;
+        final Store.@Nullable FlowRule flowRule;
 
         /**
          * Create a new MissingEdge.
@@ -1289,7 +1289,7 @@ public class CFGBuilder {
          * @param index the index (target?) of the edge
          */
         public MissingEdge(SingleSuccessorBlockImpl source, int index) {
-            this(source, index, null, FlowRule.EACH_TO_EACH);
+            this(source, index, null, Store.FlowRule.EACH_TO_EACH);
         }
 
         /**
@@ -1299,7 +1299,7 @@ public class CFGBuilder {
          * @param index the index (target?) of the edge
          * @param flowRule the flow rule for this edge
          */
-        public MissingEdge(SingleSuccessorBlockImpl source, int index, FlowRule flowRule) {
+        public MissingEdge(SingleSuccessorBlockImpl source, int index, Store.FlowRule flowRule) {
             this(source, index, null, flowRule);
         }
 
@@ -1314,7 +1314,7 @@ public class CFGBuilder {
                 SingleSuccessorBlockImpl source,
                 @Nullable Integer index,
                 @Nullable TypeMirror cause) {
-            this(source, index, cause, FlowRule.EACH_TO_EACH);
+            this(source, index, cause, Store.FlowRule.EACH_TO_EACH);
         }
 
         /**
@@ -1329,7 +1329,7 @@ public class CFGBuilder {
                 SingleSuccessorBlockImpl source,
                 @Nullable Integer index,
                 @Nullable TypeMirror cause,
-                FlowRule flowRule) {
+                Store.FlowRule flowRule) {
             assert (index != null) || (cause != null);
             this.source = source;
             this.index = index;
@@ -3487,10 +3487,10 @@ public class CFGBuilder {
                         ConditionalJump cjump;
                         if (kind == Tree.Kind.CONDITIONAL_AND) {
                             cjump = new ConditionalJump(rightStartL, shortCircuitL);
-                            cjump.setFalseFlowRule(FlowRule.ELSE_TO_ELSE);
+                            cjump.setFalseFlowRule(Store.FlowRule.ELSE_TO_ELSE);
                         } else {
                             cjump = new ConditionalJump(shortCircuitL, rightStartL);
-                            cjump.setTrueFlowRule(FlowRule.THEN_TO_THEN);
+                            cjump.setTrueFlowRule(Store.FlowRule.THEN_TO_THEN);
                         }
                         extendWithExtendedNode(cjump);
 
@@ -3693,12 +3693,12 @@ public class CFGBuilder {
             addLabelForNextNode(trueStart);
             Node trueExpr = scan(tree.getTrueExpression(), p);
             trueExpr = conditionalExprPromotion(trueExpr, exprType);
-            extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
+            extendWithExtendedNode(new UnconditionalJump(merge, Store.FlowRule.BOTH_TO_THEN));
 
             addLabelForNextNode(falseStart);
             Node falseExpr = scan(tree.getFalseExpression(), p);
             falseExpr = conditionalExprPromotion(falseExpr, exprType);
-            extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
+            extendWithExtendedNode(new UnconditionalJump(merge, Store.FlowRule.BOTH_TO_ELSE));
 
             addLabelForNextNode(merge);
             Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);

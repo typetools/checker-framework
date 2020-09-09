@@ -873,9 +873,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     private S upperBound(S other, boolean shouldWiden) {
         S newStore = analysis.createEmptyStore(sequentialSemantics);
-        System.out.printf(
-                "upperBound(%s, %s) => %s%n",
-                this.getClassAndUid(), other.getClassAndUid(), newStore.getClassAndUid());
 
         for (Map.Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
@@ -1053,7 +1050,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
         StringJoiner res = new StringJoiner(viz.getSeparator());
         for (Map.Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            System.out.printf("Adding %s %s%n", entry.getKey(), entry.getValue());
             res.add(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
         }
         if (thisValue != null) {

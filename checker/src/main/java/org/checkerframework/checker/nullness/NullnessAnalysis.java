@@ -26,14 +26,12 @@ public class NullnessAnalysis
 
     @Override
     public NullnessStore createEmptyStore(boolean sequentialSemantics) {
-        NullnessStore result = new NullnessStore(this, sequentialSemantics);
-        return result;
+        return new NullnessStore(this, sequentialSemantics);
     }
 
     @Override
     public NullnessStore createCopiedStore(NullnessStore s) {
-        NullnessStore result = new NullnessStore(s);
-        return result;
+        return new NullnessStore(s);
     }
 
     @Override

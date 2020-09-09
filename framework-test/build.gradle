@@ -12,8 +12,7 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
 
-    // implementation 'org.plumelib:plume-util:1.1.5'
-    implementation files('/home/mernst/java/plume-lib/plume-util/build/libs/plume-util-1.1.5.jar')
+    implementation 'org.plumelib:plume-util:1.1.6'
 
     if (Jvm.current().toolsJar) {
         tagletImplementation files(Jvm.current().toolsJar)

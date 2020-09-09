@@ -28,7 +28,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.plumelib.util.UtilPlume;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -123,20 +122,12 @@ public class ForwardAnalysisImpl<
                     // Apply transfer function to contents
                     @NonNull TransferInput<V, S> inputBefore = getInputBefore(rb);
                     currentInput = inputBefore.copy();
-                    System.out.printf(
-                            "performAnalysisBlock: currentInput = inputBefore.copy():  %s%n",
-                            currentInput);
                     Node lastNode = null;
                     boolean addToWorklistAgain = false;
                     for (Node n : rb.getNodes()) {
                         assert currentInput != null : "@AssumeAssertion(nullness): invariant";
                         TransferResult<V, S> transferResult = callTransferFunction(n, currentInput);
                         addToWorklistAgain |= updateNodeValues(n, transferResult);
-                        System.out.printf(
-                                "performAnalysisBlock loop: Node = %s%n  currentInput = %s%n  transferResult = %s%n",
-                                n,
-                                UtilPlume.indentLinesExceptFirst(2, currentInput),
-                                UtilPlume.indentLinesExceptFirst(2, transferResult));
                         currentInput = new TransferInput<>(n, this, transferResult);
                         lastNode = n;
                     }
@@ -392,25 +383,6 @@ public class ForwardAnalysisImpl<
             TransferInput<V, S> currentInput,
             Store.FlowRule flowRule,
             boolean addToWorklistAgain) {
-        boolean falseBoolean = false;
-        if (falseBoolean && succ.toString().contains("EXIT")) {
-            UtilPlume.sleep(100);
-            new Error("propagateStoresTo EXIT").printStackTrace();
-            UtilPlume.sleep(100);
-        }
-        System.out.printf(
-                "propagateStoresTo(succ=%s, node=%s,%n  currentInput=%s,%n  flowRule=%s, addToWorklistAgain=%s)%n",
-                succ,
-                node,
-                UtilPlume.indentLinesExceptFirst(2, currentInput),
-                flowRule,
-                addToWorklistAgain);
-
-        System.out.printf(
-                "propagateStoresTo:%n  initial thenStore=%s%n  initial elseStore=%s%n",
-                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.THEN)),
-                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.ELSE)));
-
         switch (flowRule) {
             case EACH_TO_EACH:
                 if (currentInput.containsTwoStores()) {
@@ -484,10 +456,6 @@ public class ForwardAnalysisImpl<
                         addToWorklistAgain);
                 break;
         }
-        System.out.printf(
-                "propagateStoresTo =>%n  final thenStore=%s%n  final elseStore=%s%n",
-                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.THEN)),
-                UtilPlume.indentLinesExceptFirst(2, getStoreBefore(succ, Store.Kind.ELSE)));
     }
 
     /**

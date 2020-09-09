@@ -44,8 +44,6 @@ public class DOTCFGVisualizer<
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
-    // TODO: Since this is a terminator rather than a separator, special treatment may be needed
-    // sometimes??
     /** Terminator for lines that are left-justified. */
     protected static final String leftJustifiedTerminator = "\\l";
 
