@@ -543,15 +543,29 @@ public class CFGBuilder {
         /** The jump target label. */
         protected final Label jumpTarget;
 
+        /** The flow rule for this edge. */
+        protected final FlowRule flowRule;
+
         /**
          * Construct an UnconditionalJump.
          *
          * @param jumpTarget the jump target label
          */
         public UnconditionalJump(Label jumpTarget) {
+            this(jumpTarget, FlowRule.EACH_TO_EACH);
+        }
+
+        /**
+         * Construct an UnconditionalJump, specifying its flow rule.
+         *
+         * @param jumpTarget the jump target label
+         * @param flowRule the flow rule for this edge
+         */
+        public UnconditionalJump(Label jumpTarget, FlowRule flowRule) {
             super(ExtendedNodeType.UNCONDITIONAL_JUMP);
             assert jumpTarget != null;
             this.jumpTarget = jumpTarget;
+            this.flowRule = flowRule;
         }
 
         @Override
@@ -1221,7 +1235,6 @@ public class CFGBuilder {
                         }
                     }
                     throw new Error("Unreachable");
-                    break;
                 case REGULAR_BLOCK:
                     RegularBlockImpl r = (RegularBlockImpl) pred;
                     return singleSuccessorHolder(r, cur);
@@ -1260,14 +1273,14 @@ public class CFGBuilder {
     /** Represents a missing edge that will be added later. */
     protected static class MissingEdge {
         /** The source of the edge. */
-        SingleSuccessorBlockImpl source;
+        final SingleSuccessorBlockImpl source;
         /** The index (target?) of the edge. Null means go to exceptional exit. */
-        @Nullable Integer index;
+        final @Nullable Integer index;
         /** The cause exception type, for an exceptional edge; otherwise null. */
-        @Nullable TypeMirror cause;
+        final @Nullable TypeMirror cause;
 
-        /** The flow rule for this edge. May be null. */
-        @Nullable FlowRule flowRule = null;
+        /** The flow rule for this edge. */
+        final @Nullable FlowRule flowRule;
 
         /**
          * Create a new MissingEdge.
@@ -1276,7 +1289,18 @@ public class CFGBuilder {
          * @param index the index (target?) of the edge
          */
         public MissingEdge(SingleSuccessorBlockImpl source, int index) {
-            this(source, index, null);
+            this(source, index, null, FlowRule.EACH_TO_EACH);
+        }
+
+        /**
+         * Create a new MissingEdge.
+         *
+         * @param source the source of the edge
+         * @param index the index (target?) of the edge
+         * @param flowRule the flow rule for this edge
+         */
+        public MissingEdge(SingleSuccessorBlockImpl source, int index, FlowRule flowRule) {
+            this(source, index, null, flowRule);
         }
 
         /**
@@ -1290,10 +1314,27 @@ public class CFGBuilder {
                 SingleSuccessorBlockImpl source,
                 @Nullable Integer index,
                 @Nullable TypeMirror cause) {
+            this(source, index, cause, FlowRule.EACH_TO_EACH);
+        }
+
+        /**
+         * Create a new MissingEdge.
+         *
+         * @param source the source of the edge
+         * @param index the index (target?) of the edge; null means go to exceptional exit
+         * @param cause the cause exception type, for an exceptional edge; otherwise null
+         * @param flowRule the flow rule for this edge
+         */
+        public MissingEdge(
+                SingleSuccessorBlockImpl source,
+                @Nullable Integer index,
+                @Nullable TypeMirror cause,
+                FlowRule flowRule) {
             assert (index != null) || (cause != null);
             this.source = source;
             this.index = index;
             this.cause = cause;
+            this.flowRule = flowRule;
         }
 
         @Override
@@ -1409,6 +1450,7 @@ public class CFGBuilder {
                             break;
                         }
                     case UNCONDITIONAL_JUMP:
+                        UnconditionalJump uj = (UnconditionalJump) node;
                         if (leaders.contains(i)) {
                             RegularBlockImpl b = new RegularBlockImpl();
                             block.setSuccessor(b);
@@ -1417,12 +1459,13 @@ public class CFGBuilder {
                         node.setBlock(block);
                         if (node.getLabel() == in.regularExitLabel) {
                             block.setSuccessor(regularExitBlock);
+                            block.setFlowRule(uj.getFlowRule());
                         } else if (node.getLabel() == in.exceptionalExitLabel) {
                             block.setSuccessor(exceptionalExitBlock);
+                            block.setFlowRule(uj.getFlowRule());
                         } else {
-                            Integer target = bindings.get(node.getLabel());
-                            assert target != null;
-                            missingEdges.add(new Tuple<>(block, target));
+                            int target = bindings.get(node.getLabel());
+                            missingEdges.add(new MissingEdge(block, target, uj.getFlowRule()));
                         }
                         block = new RegularBlockImpl();
                         break;
@@ -3206,9 +3249,7 @@ public class CFGBuilder {
                     return assignNode;
                 default:
                     throw new Error("unexpected compound assignment type");
-                    break;
             }
-            throw new Error("unexpected compound assignment type");
         }
 
         @Override
@@ -3470,7 +3511,6 @@ public class CFGBuilder {
                     }
                 default:
                     throw new Error("unexpected binary tree: " + kind);
-                    break;
             }
             assert r != null : "unexpected binary tree";
             return extendWithNode(r);
@@ -3653,11 +3693,12 @@ public class CFGBuilder {
             addLabelForNextNode(trueStart);
             Node trueExpr = scan(tree.getTrueExpression(), p);
             trueExpr = conditionalExprPromotion(trueExpr, exprType);
-            extendWithExtendedNode(new UnconditionalJump(merge));
+            extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
 
             addLabelForNextNode(falseStart);
             Node falseExpr = scan(tree.getFalseExpression(), p);
             falseExpr = conditionalExprPromotion(falseExpr, exprType);
+            extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
             addLabelForNextNode(merge);
             Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
@@ -4251,7 +4292,6 @@ public class CFGBuilder {
                     break;
                 default:
                     throw new Error("unexpected literal tree");
-                    break;
             }
             assert r != null : "unexpected literal tree";
             Node result = extendWithNode(r);
