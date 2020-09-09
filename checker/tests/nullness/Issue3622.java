@@ -41,38 +41,6 @@ public class Issue3622 {
         }
     }
 
-    // These currently fail (false positive warnings)
-
-    public class ImmutableIntList4 {
-
-        @Override
-        public boolean equals(@Nullable Object obj4) {
-            boolean b;
-            if (obj4 instanceof ImmutableIntList4) {
-                b = true;
-            } else {
-                b = false;
-            }
-            return b;
-        }
-    }
-
-    public class ImmutableIntList5 {
-
-        @Override
-        public boolean equals(@Nullable Object obj5) {
-            return true ? obj5 instanceof ImmutableIntList5 : obj5 instanceof ImmutableIntList5;
-        }
-    }
-
-    public class ImmutableIntList6 {
-
-        @Override
-        public boolean equals(@Nullable Object obj6) {
-            return true ? obj6 instanceof ImmutableIntList6 : false;
-        }
-    }
-
     public class ImmutableIntList7 {
 
         @Override
@@ -96,6 +64,50 @@ public class Issue3622 {
             return obj9 instanceof ImmutableIntList9
                     ? obj9 instanceof ImmutableIntList9
                     : obj9 instanceof ImmutableIntList9;
+        }
+    }
+
+    // These currently fail (false positive warnings)
+
+    public class ImmutableIntList4 {
+
+        @Override
+        @SuppressWarnings(
+                "contracts.conditional.postcondition.not.satisfied" // TODO: `if` needs the
+        // BOTH_TO_THEN treatment that ?: gets.
+        )
+        public boolean equals(@Nullable Object obj4) {
+            boolean b;
+            if (obj4 instanceof ImmutableIntList4) {
+                b = true;
+            } else {
+                b = false;
+            }
+            return b;
+        }
+    }
+
+    public class ImmutableIntList5 {
+
+        @Override
+        @SuppressWarnings(
+                "contracts.conditional.postcondition.not.satisfied" // TODO: Need special treatment
+        // for true and false boolean  literals (cut off dead parts of graph).
+        )
+        public boolean equals(@Nullable Object obj5) {
+            return true ? obj5 instanceof ImmutableIntList5 : obj5 instanceof ImmutableIntList5;
+        }
+    }
+
+    public class ImmutableIntList6 {
+
+        @Override
+        @SuppressWarnings(
+                "contracts.conditional.postcondition.not.satisfied" // TODO: Need special treatment
+        // for true and false boolean  literals (cut off dead parts of graph).
+        )
+        public boolean equals(@Nullable Object obj6) {
+            return true ? obj6 instanceof ImmutableIntList6 : false;
         }
     }
 }
