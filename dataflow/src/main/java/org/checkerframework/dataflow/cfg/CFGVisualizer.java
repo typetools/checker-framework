@@ -30,7 +30,11 @@ public interface CFGVisualizer<
      */
     void init(Map<String, Object> args);
 
-    /** The separator for lines within a node's representation. */
+    /**
+     * Returns the separator for lines within a node's representation.
+     *
+     * @return the separator for lines within a node's representation
+     */
     public abstract String getSeparator();
 
     /**

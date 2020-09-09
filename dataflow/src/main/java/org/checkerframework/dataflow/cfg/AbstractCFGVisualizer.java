@@ -111,6 +111,7 @@ public abstract class AbstractCFGVisualizer<
             handleSuccessorsHelper(cur, visited, workList, sbGraph);
             cur = workList.poll();
         }
+        sbGraph.append(lineSeparator);
         sbGraph.append(visualizeNodes(visited, cfg, analysis));
         return sbGraph.toString();
     }
@@ -191,6 +192,9 @@ public abstract class AbstractCFGVisualizer<
     /**
      * Helper method to visualize a block.
      *
+     * <p>NOTE: The output ends with a separator, only if an "after" store is visualized. The client
+     * {@link #visualizeBlock} should correct this if needed.
+     *
      * @param bb the block
      * @param analysis the current analysis
      * @param separator the line separator. Examples: "\\l" for left justification in {@link
@@ -204,9 +208,9 @@ public abstract class AbstractCFGVisualizer<
         String contents = loopOverBlockContents(bb, analysis, separator);
         if (!contents.isEmpty()) {
             sbBlock.append(contents);
-            sbBlock.append(separator);
         }
         if (sbBlock.length() == 0) {
+            // Nothing got appended; use default text for empty block
             if (bb.getType() == Block.BlockType.SPECIAL_BLOCK) {
                 sbBlock.append(visualizeSpecialBlock((SpecialBlock) bb));
             } else if (bb.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
