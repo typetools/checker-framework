@@ -531,8 +531,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
             return null;
         }
         if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
-            // The field is static and final, but is not in code that is being type-checked.
-            // Obtain its value reflectively.
+            // The field is static and final, but its declaration does not initialize it to a
+            // compile-time constant.  Obtain its value reflectively.
             Element e = TreeUtils.elementFromTree(tree.getExpression());
             if (e != null) {
                 @SuppressWarnings("signature" // TODO: this looks like a bug in
@@ -597,8 +597,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
         if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
             return null;
         }
-        VariableElement ele = (VariableElement) TreeUtils.elementFromTree(tree);
-        Object value = ele.getConstantValue();
+        VariableElement elem = (VariableElement) TreeUtils.elementFromTree(tree);
+        Object value = elem.getConstantValue();
         if (value != null) {
             // The field is a compile-time constant.
             type.replaceAnnotation(
