@@ -467,6 +467,22 @@ public class ForwardAnalysisImpl<
                         Store.Kind.ELSE,
                         addToWorklistAgain);
                 break;
+            case BOTH_TO_THEN:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
+                        Store.Kind.THEN,
+                        addToWorklistAgain);
+                break;
+            case BOTH_TO_ELSE:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
+                        Store.Kind.ELSE,
+                        addToWorklistAgain);
+                break;
         }
         System.out.printf(
                 "propagateStoresTo =>%n  final thenStore=%s%n  final elseStore=%s%n",
