@@ -192,21 +192,19 @@ Checker attempts to execute the expression.  This is independent of any
 optimizations performed by the compiler and does not affect the code that
 is generated.
 
-The Constant Value Checker statically executes operators that do
+The Constant Value Checker statically executes (at compile time) operators that do
 not throw exceptions (e.g., \<+>, \<->, \code{<}\code{<}, \<!=>).
 
 
 \subsectionAndLabel{\<@StaticallyExecutable> methods and the classpath}{constant-value-staticallyexecutable-annotation}
 
-The Constant Value Checker statically executes methods annotated with
-\refqualclass{common/value/qual}{StaticallyExecutable}, \emph{if the
-method has already been compiled and is on the classpath (or on the
-processorpath, if you use it)}.
+The Constant Value Checker statically executes (at compile time) methods annotated with
+\refqualclass{common/value/qual}{StaticallyExecutable}..
 
 \begin{figure}
 \begin{Verbatim}
 @StaticallyExecutable @Pure
-public int myAdd(int a, int b) {
+public static int myAdd(int a, int b) {
     return a + b;
 }
 
@@ -222,14 +220,28 @@ public void bar() {
 \label{fig-staticallyexecutable}
 \end{figure}
 
-A \<@StaticallyExecutable> method must
-be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
-deterministic).
+The static execution feature has some requirements:
 
-Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
+\begin{itemize}
+\item
+  A \<@StaticallyExecutable> method must be
+  \refqualclass{dataflow/qual}{Pure} (side-effect-free and deterministic).
+
+\item
+  The Constant Value Checker must have an estimate for all the arguments at
+  a call site.
+
+  This means that \<@StaticallyExecutable> is not applicable
+  to user-written instance methods.  It is only applicable to instance
+  methods whose receiver is a compile-time constant, such as a primitive
+  wrapper or an array.
+
+\item
+  The \<@StaticallyExecutable> method and any method it calls must be on
 the classpath (or the processorpath, if you use it) for the compiler.  This
 is because the Constant Value Checker reflectively calls these methods at
 compile time.
+
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
@@ -244,6 +256,8 @@ or
   -processor org.checkerframework.common.value.ValueChecker
   -processorpath ${CHECKERFRAMEWORK}/checker/build/libs/checker-3.6.1-SNAPSHOT.jar:MY_PROJECT/build/
 \end{Verbatim}
+
+\end{itemize}
 
 
 \sectionAndLabel{Warnings}{value-checker-warnings}
@@ -273,7 +287,7 @@ Some examples of these:
 
 \item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero.}
 
-  An exception was thrown when trying to statically execute the
+  An exception was thrown when trying to statically execute (at compile time) the
   method. In this case it was a divide-by-zero exception. If the
   arguments to the method each only had one value in their annotations
   then this exception will always occur when the program is actually
