@@ -345,8 +345,7 @@ public class CFGBuilder {
          *     NODE} or {@code EXCEPTION_NODE})
          */
         public Node getNode() {
-            assert false;
-            return null;
+            throw new Error("Do not call");
         }
 
         /**
@@ -357,8 +356,7 @@ public class CFGBuilder {
          *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
          */
         public Label getLabel() {
-            assert false;
-            return null;
+            throw new Error("Do not call");
         }
 
         public BlockImpl getBlock() {
@@ -1212,8 +1210,7 @@ public class CFGBuilder {
                             }
                         }
                     }
-                    assert false;
-                    break;
+                    throw new Error("Unreachable");
                 case REGULAR_BLOCK:
                     RegularBlockImpl r = (RegularBlockImpl) pred;
                     return singleSuccessorHolder(r, cur);
@@ -2621,8 +2618,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitAnnotation(AnnotationTree tree, Void p) {
-            assert false : "AnnotationTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("AnnotationTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -3141,8 +3137,8 @@ public class CFGBuilder {
                         targetRHS = unbox(targetLHS);
                         value = unbox(value);
                     } else {
-                        assert false
-                                : "Both argument to logical operation must be numeric or boolean";
+                        throw new Error(
+                                "Both argument to logical operation must be numeric or boolean");
                     }
 
                     BinaryTree operTree =
@@ -3173,11 +3169,8 @@ public class CFGBuilder {
                     extendWithNode(assignNode);
                     return assignNode;
                 default:
-                    assert false : "unexpected compound assignment type";
-                    break;
+                    throw new Error("unexpected compound assignment type");
             }
-            assert false : "unexpected compound assignment type";
-            return null;
         }
 
         @Override
@@ -3438,8 +3431,7 @@ public class CFGBuilder {
                         return node;
                     }
                 default:
-                    assert false : "unexpected binary tree: " + kind;
-                    break;
+                    throw new Error("unexpected binary tree: " + kind);
             }
             assert r != null : "unexpected binary tree";
             return extendWithNode(r);
@@ -3697,8 +3689,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitErroneous(ErroneousTree tree, Void p) {
-            assert false : "ErroneousTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("ErroneousTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4151,8 +4142,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitImport(ImportTree tree, Void p) {
-            assert false : "ImportTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("ImportTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4221,8 +4211,7 @@ public class CFGBuilder {
                     r = new StringLiteralNode(tree);
                     break;
                 default:
-                    assert false : "unexpected literal tree";
-                    break;
+                    throw new Error("unexpected literal tree");
             }
             assert r != null : "unexpected literal tree";
             Node result = extendWithNode(r);
@@ -4231,14 +4220,12 @@ public class CFGBuilder {
 
         @Override
         public Node visitMethod(MethodTree tree, Void p) {
-            assert false : "MethodTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("MethodTree is unexpected in AST to CFG translation");
         }
 
         @Override
         public Node visitModifiers(ModifiersTree tree, Void p) {
-            assert false : "ModifiersTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("ModifiersTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4374,8 +4361,7 @@ public class CFGBuilder {
                 } else if (element.getKind() == ElementKind.PACKAGE) {
                     return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
                 } else {
-                    assert false : "Unexpected element kind: " + element.getKind();
-                    return null;
+                    throw new Error("Unexpected element kind: " + element.getKind());
                 }
             }
 
@@ -4428,8 +4414,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitCompilationUnit(CompilationUnitTree tree, Void p) {
-            assert false : "CompilationUnitTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("CompilationUnitTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4730,8 +4715,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitUnionType(UnionTypeTree tree, Void p) {
-            assert false : "UnionTypeTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("UnionTypeTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4757,8 +4741,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeParameter(TypeParameterTree tree, Void p) {
-            assert false : "TypeParameterTree is unexpected in AST to CFG translation";
-            return null;
+            throw new Error("TypeParameterTree is unexpected in AST to CFG translation");
         }
 
         @Override
@@ -4796,8 +4779,7 @@ public class CFGBuilder {
                                 result = extendWithNode(new NumericalPlusNode(tree, expr));
                                 break;
                             default:
-                                assert false;
-                                break;
+                                throw new Error("Unexpected kind");
                         }
                         break;
                     }
@@ -4874,7 +4856,7 @@ public class CFGBuilder {
                         break;
                     }
 
-                    assert false : "Unknown kind (" + kind + ") of unary expression: " + tree;
+                    throw new Error("Unknown kind (" + kind + ") of unary expression: " + tree);
             }
 
             return result;
