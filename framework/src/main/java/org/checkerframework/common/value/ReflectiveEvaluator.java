@@ -264,7 +264,8 @@ public class ReflectiveEvaluator {
     }
 
     /**
-     * Return the value of a static field access. Return null if there is trouble.
+     * Return the value of a static field access. Return null if accessing the field reflectively
+     * fails.
      *
      * @param classname the class containing the field
      * @param fieldName the name of the field

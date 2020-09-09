@@ -531,12 +531,14 @@ class ValueTreeAnnotator extends TreeAnnotator {
             return null;
         }
         if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
-            // The field is static and final.
+            // The field is static and final, but is not in code that is being type-checked.
+            // Obtain its value reflectively.
             Element e = TreeUtils.elementFromTree(tree.getExpression());
             if (e != null) {
-                @SuppressWarnings("signature") // TODO: this looks like a bug in
+                @SuppressWarnings("signature" // TODO: this looks like a bug in
                 // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
                 // but this passes a @FullyQualifiedName
+                )
                 @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
                 @SuppressWarnings(
                         "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
@@ -587,6 +589,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
         return null;
     }
 
+    // An IdentifierTree can be a local variable (including formals, exception parameters, etc.) or
+    // an implicit field access (where `this.` is omitted).
+    // A field access is always an IdentifierTree or MemberSelectTree.
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
         if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
