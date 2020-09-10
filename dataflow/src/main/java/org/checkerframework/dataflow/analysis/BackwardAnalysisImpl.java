@@ -353,9 +353,7 @@ public class BackwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
