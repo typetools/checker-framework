@@ -1,7 +1,6 @@
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-// @skip-test TODO FIX.
 public class ThisLiteral {
     public ThisLiteral() {
         new Object() {

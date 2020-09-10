@@ -415,12 +415,19 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
 
         TreePath path = getPath(tree);
-        Tree topLevelMember = findTopLevelClassMemberForTree(path);
-        if (topLevelMember != null) {
-            if (topLevelMember.getKind() != Kind.METHOD
-                    || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
-
-                setSelfTypeInInitializationCode(tree, selfType, path);
+        AnnotatedDeclaredType enclosing = selfType;
+        while (path != null && enclosing != null) {
+            TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
+            if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
+                Tree topLevelMember = topLevelMemberPath.getLeaf();
+                if (topLevelMember.getKind() != Kind.METHOD
+                        || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
+                    setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
+                }
+                path = topLevelMemberPath.getParentPath();
+                enclosing = enclosing.getEnclosingType();
+            } else {
+                break;
             }
         }
 
@@ -439,7 +446,13 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @return a top-level member containing the leaf of {@code path}
      */
     @SuppressWarnings("interning:not.interned") // AST node comparison
-    private Tree findTopLevelClassMemberForTree(TreePath path) {
+    private TreePath findTopLevelClassMemberForTree(TreePath path) {
+        if (TreeUtils.isClassTree(path.getLeaf())) {
+            path = path.getParentPath();
+            if (path == null) {
+                return null;
+            }
+        }
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass != null) {
 
@@ -449,7 +462,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                     && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
-                    return searchPath.getLeaf();
+                    return searchPath;
                 }
             }
         }

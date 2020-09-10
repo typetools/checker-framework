@@ -6,7 +6,6 @@ public class Issue689 {
         return 3;
     }
 
-    @SuppressWarnings("nullness:method.invocation.invalid")
     public Runnable trigger() {
         return new Runnable() {
             // Issue 689 triggers when examining a method invocation inside a field initializer of

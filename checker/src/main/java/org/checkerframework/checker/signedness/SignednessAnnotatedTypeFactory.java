@@ -65,6 +65,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
             AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
+    ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+
     /** Create a SignednessAnnotatedTypeFactory. */
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -125,12 +127,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
-                // getTypeFactoryOfSubchecker copies the visitor state from this to the
-                // ValueAnnotatedTypeFactory.
-                // So it must be called every time rather than being stored in a field.
-                ValueAnnotatedTypeFactory valueFactory =
-                        getTypeFactoryOfSubchecker(ValueChecker.class);
-
                 AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
                 // These annotations are trusted rather than checked.  Maybe have an option to
                 // disable using them?
