@@ -309,13 +309,18 @@ public class AnnotationBuilder {
                 ElementFilter.methodsIn(annoElt.getEnclosedElements())) {
             AnnotationValue elementValue =
                     elementNamesValues.get(annoElement.getSimpleName().toString());
-            if (elementValue == null && annoElement.getDefaultValue() == null) {
-                if (noWarn) {
-                    continue;
+            if (elementValue == null) {
+                AnnotationValue defaultValue = annoElement.getDefaultValue();
+                if (defaultValue == null) {
+                    if (noWarn) {
+                        continue;
+                    } else {
+                        throw new BugInCF(
+                                "AnnotationBuilder.fromName: no value for element %s of %s",
+                                annoElement, name);
+                    }
                 } else {
-                    throw new BugInCF(
-                            "AnnotationBuilder.fromName: no value for element %s of %s",
-                            annoElement, name);
+                    elementValue = defaultValue;
                 }
             }
             elementValues.put(annoElement, elementValue);
