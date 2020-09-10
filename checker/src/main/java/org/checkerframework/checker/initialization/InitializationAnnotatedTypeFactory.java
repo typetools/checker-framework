@@ -352,7 +352,12 @@ public abstract class InitializationAnnotatedTypeFactory<
         return anno.hasEffectiveAnnotation(Initialized.class);
     }
 
-    /** Are all fields initialized-only? */
+    /**
+     * Are all fields initialized-only?
+     *
+     * @param classTree the class to query
+     * @return true if all fields are initialized-only
+     */
     protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
             if (member.getKind() != Tree.Kind.VARIABLE) {
@@ -491,8 +496,11 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link UnderInitialization} annotation that has the superclass of {@code type} as
+     * Returns an {@link UnderInitialization} annotation that has the superclass of {@code type} as
      * type frame.
+     *
+     * @param type a type
+     * @return true an {@link UnderInitialization} for the supertype of {@code type}
      */
     protected AnnotationMirror getUnderInitializationAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
