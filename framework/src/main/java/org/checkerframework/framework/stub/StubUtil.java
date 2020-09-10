@@ -29,6 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -157,8 +158,10 @@ public class StubUtil {
         }
     }
 
-    /*package-scope*/ static Pair<String, String> partitionQualifiedName(String imported) {
-        String typeName = imported.substring(0, imported.lastIndexOf("."));
+    @SuppressWarnings("signature") // string parsing
+    /*package-scope*/ static Pair<@FullyQualifiedName String, String> partitionQualifiedName(
+            String imported) {
+        @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
         String name = imported.substring(imported.lastIndexOf(".") + 1);
         Pair<String, String> typeParts = Pair.of(typeName, name);
         return typeParts;

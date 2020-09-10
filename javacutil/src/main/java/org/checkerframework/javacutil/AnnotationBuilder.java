@@ -84,8 +84,9 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the fully-qualified name of the annotation to build
+     * @param name the canonical name of the annotation to build
      */
+    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();

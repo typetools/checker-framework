@@ -73,7 +73,7 @@ public class ElementUtils {
     /**
      * Returns the "parent" package element for the given package element. For package "A.B" it
      * gives "A". For package "A" it gives the default package. For the default package it returns
-     * null;
+     * null.
      *
      * <p>Note that packages are not enclosed within each other, we have to manually climb the
      * namespaces. Calling "enclosingPackage" on a package element returns the package element

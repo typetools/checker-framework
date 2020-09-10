@@ -10,3 +10,9 @@ class PackageDeclaration {
 interface NodeWithName {
   @FullyQualifiedName String getNameAsString();
 }
+
+package com.github.javaparser.ast.expr;
+
+class AnnotationExpr {
+  @FullyQualifiedName String getNameAsString();
+}

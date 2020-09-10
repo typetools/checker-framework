@@ -683,13 +683,13 @@ public class AnnotationClassLoader {
                                     .replace(SLASH, DOT);
                 }
                 // Simple annotation name, which is the same as the file name (without directory)
-                // but with file extension removed
+                // but with file extension removed.
                 @BinaryName String annotationName = fileName;
                 if (fileName.lastIndexOf(DOT) != -1) {
                     annotationName = fileName.substring(0, fileName.lastIndexOf(DOT));
                 }
 
-                // Fully qualified annotation class name
+                // Fully qualified annotation class name (a @BinaryName, not a @FullyQualifiedName)
                 @BinaryName String fullyQualifiedAnnoName =
                         Signatures.addPackage(
                                 packageName, Signatures.addPackage(qualPackage, annotationName));

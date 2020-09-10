@@ -19,6 +19,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -696,7 +697,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     public @Interned static class DefaultQualifierKind implements QualifierKind {
 
         /** The canonical name of the annotation class of this. */
-        private final @Interned String name;
+        private final @Interned @CanonicalName String name;
 
         /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
@@ -736,7 +737,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
 
         @Override
-        public @Interned String getName() {
+        public @Interned @CanonicalName String getName() {
             return name;
         }
 

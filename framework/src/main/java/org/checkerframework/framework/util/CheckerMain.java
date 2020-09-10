@@ -736,7 +736,8 @@ public class CheckerMain {
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names
      */
     public static boolean matchesCheckerOrSubcheckerFromList(
-            final String processorString, List<String> fullyQualifiedCheckerNames) {
+            final String processorString,
+            List<@FullyQualifiedName String> fullyQualifiedCheckerNames) {
         if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
         }
@@ -771,7 +772,7 @@ public class CheckerMain {
      * the name ending in "Checker" to be used as a subchecker.
      */
     private List<@FullyQualifiedName String> getAllCheckerClassNames() {
-        ArrayList<String> checkerClassNames = new ArrayList<>();
+        ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
         try {
             final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar));
             ZipEntry entry;
@@ -782,11 +783,13 @@ public class CheckerMain {
                 if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
                     // Forward slash is used instead of File.separator because checker.jar uses / as
                     // the separator.
-                    checkerClassNames.add(
+                    @SuppressWarnings("signature") // string manipulation
+                    @FullyQualifiedName String fqName =
                             String.join(
                                     ".",
                                     name.substring(0, name.length() - ".class".length())
-                                            .split("/")));
+                                            .split("/"));
+                    checkerClassNames.add(fqName);
                 }
             }
             checkerJarIs.close();
@@ -824,7 +827,7 @@ public class CheckerMain {
      */
     protected static String unshorthandProcessorNames(
             final String processorsString,
-            List<String> fullyQualifiedCheckerNames,
+            List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
         final String[] processors = processorsString.split(",");
         for (int i = 0; i < processors.length; i++) {
@@ -848,7 +851,7 @@ public class CheckerMain {
      */
     private static String unshorthandProcessorName(
             final String processor,
-            List<String> fullyQualifiedCheckerNames,
+            List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
         for (final String name : fullyQualifiedCheckerNames) {
             boolean tryMatch = false;
@@ -892,7 +895,7 @@ public class CheckerMain {
      */
     public static boolean matchesFullyQualifiedProcessor(
             final String processor,
-            List<String> fullyQualifiedCheckerNames,
+            List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
         return !processor.equals(
                 unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers));
