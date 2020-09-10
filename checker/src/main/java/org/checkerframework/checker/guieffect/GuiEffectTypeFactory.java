@@ -480,7 +480,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     //        checker.reportError(errorNode, "override.effect.invalid",
                     //            "non-UI instantiation of "+supdecl);
                     //        If uncommenting this, change the above line to match other calls of
-                    //            checker.report(..., "override.effect.invalid", ...)
+                    //            checker.reportError(..., "override.effect.invalid", ...)
                     //    }
                     // }
                 }

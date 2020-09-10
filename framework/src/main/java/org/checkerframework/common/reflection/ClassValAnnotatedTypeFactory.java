@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -29,11 +30,10 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -96,15 +96,22 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new ClassValQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new ClassValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
     /** The qualifier hierarchy for the ClassVal type system. */
-    protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class ClassValQualifierHierarchy extends ElementQualifierHierarchy {
 
-        public ClassValQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
+        /**
+         * Creates a ClassValQualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
+        public ClassValQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /*
@@ -166,7 +173,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /*
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are ClassVal. In this case, rhs is
-         * a subtype of lhs iff lhs contains at least every element of rhs.
+         * a subtype of lhs iff lhs contains  every element of rhs.
          */
         @Override
         public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {

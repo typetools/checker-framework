@@ -3,11 +3,13 @@ package org.checkerframework.dataflow.analysis;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.plumelib.util.UniqueId;
+import org.plumelib.util.UtilPlume;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
- * TransferFunction}. It also contains a reference to the node for which the transfer function will
- * be applied.
+ * ForwardTransferFunction} or a {@link BackwardTransferFunction}. It also contains a reference to
+ * the node for which the transfer function will be applied.
  *
  * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
  * 'then', and the other to 'else'.
@@ -15,15 +17,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
  */
-public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
+public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> implements UniqueId {
 
     /** The corresponding node. */
     // TODO: explain when the node is changed.
     protected @Nullable Node node;
 
     /**
-     * The regular result store (or {@code null} if none is present). The following invariant is
-     * maintained:
+     * The regular result store (or {@code null} if none is present, because {@link #thenStore} and
+     * {@link #elseStore} are set). The following invariant is maintained:
      *
      * <pre><code>
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
@@ -32,27 +34,27 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     protected final @Nullable S store;
 
     /**
-     * The 'then' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
-     *
-     * <pre><code>
-     * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </code></pre>
+     * The 'then' result store (or {@code null} if none is present). See invariant at {@link
+     * #store}.
      */
     protected final @Nullable S thenStore;
 
     /**
-     * The 'else' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
-     *
-     * <pre><code>
-     * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-     * </code></pre>
+     * The 'else' result store (or {@code null} if none is present). See invariant at {@link
+     * #store}.
      */
     protected final @Nullable S elseStore;
 
     /** The corresponding analysis class to get intermediate flow results. */
     protected final Analysis<V, S, ?> analysis;
+
+    /** The unique ID of this object. */
+    final transient long uid = UniqueId.nextUid.getAndIncrement();
+
+    @Override
+    public long getUid() {
+        return uid;
+    }
 
     /**
      * Create a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
@@ -221,7 +223,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
      *     potentially not equal
      */
     public boolean containsTwoStores() {
-        return (thenStore != null && elseStore != null);
+        return store == null;
     }
 
     /**
@@ -285,7 +287,13 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> {
     @Override
     public String toString() {
         if (store == null) {
-            return "[then=" + thenStore + ", else=" + elseStore + "]";
+            return "[then="
+                    + UtilPlume.indentLinesExceptFirst(2, thenStore)
+                    + ","
+                    + System.lineSeparator()
+                    + "  else="
+                    + UtilPlume.indentLinesExceptFirst(2, elseStore)
+                    + "]";
         } else {
             return "[" + store + "]";
         }

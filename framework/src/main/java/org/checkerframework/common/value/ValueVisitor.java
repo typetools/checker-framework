@@ -1,8 +1,5 @@
 package org.checkerframework.common.value;
 
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValue;
-import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -49,16 +46,18 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         replaceSpecialIntRangeAnnotations(varType);
-        super.commonAssignmentCheck(varType, valueExp, errorKey);
+        super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -66,7 +65,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         replaceSpecialIntRangeAnnotations(varType);
 
@@ -76,13 +76,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     /**
      * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to
      * be replaced with {@code @UnknownVal}. See the documentation on {@link
-     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String) commonAssignmentCheck}.
+     * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String, Object[])
+     * commonAssignmentCheck}.
      *
      * <p>A separate override is necessary because checkOverride doesn't actually use the
      * commonAssignmentCheck.
@@ -177,8 +178,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
                 // accordingly.
                 if (args.size() == 2) {
-                    long from = getElementValue(anno, "from", Long.class, true);
-                    long to = getElementValue(anno, "to", Long.class, true);
+                    long from = AnnotationUtils.getElementValue(anno, "from", Long.class, true);
+                    long to = AnnotationUtils.getElementValue(anno, "to", Long.class, true);
                     if (from > to) {
                         checker.reportError(node, "from.greater.than.to");
                         return null;
@@ -190,7 +191,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-                List<Object> values = getElementValueArray(anno, "value", Object.class, true);
+                List<Object> values =
+                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, true);
 
                 if (values.isEmpty()) {
                     checker.reportWarning(node, "no.values.given");
@@ -215,8 +217,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
                 break;
             case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-                int from = getElementValue(anno, "from", Integer.class, true);
-                int to = getElementValue(anno, "to", Integer.class, true);
+                int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+                int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
                 if (from > to) {
                     checker.reportError(node, "from.greater.than.to");
                     return null;
@@ -329,8 +331,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
         } else if (AnnotationUtils.areSameByName(
                 anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
-            int from = getElementValue(anno, "from", Integer.class, true);
-            int to = getElementValue(anno, "to", Integer.class, true);
+            int from = AnnotationUtils.getElementValue(anno, "from", Integer.class, true);
+            int to = AnnotationUtils.getElementValue(anno, "to", Integer.class, true);
             if (from > to) {
                 checker.reportError(tree, "from.greater.than.to");
                 return false;

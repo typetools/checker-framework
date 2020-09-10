@@ -189,9 +189,29 @@ annotated.
 
 Whenever you annotate any part of a file, fully annotate the file!  That
 is, write annotations for all the methods and fields, based on their
-documentation.  If you don't annotate the whole file, then users may be
-surprised that calls to some methods type-check as expected whereas other
-methods do not (because they have not been annotated).
+documentation.  Here are reasons for this rule:
+
+\begin{itemize}
+\item
+  If you annotate just part of the file, then users may be surprised that
+  calls to some methods type-check as expected whereas other methods do not
+  (because they have not been annotated).
+\item
+  Annotating one method or field at a time may lead to inconsistencies
+  between different parts of the file.  Different people may make different
+  assumptions, might write annotations in a way that is locally convenient
+  but globally inconsistent, or might not read all the documentation of the
+  class to understand how it works.
+\item
+  It is not much more effort to annotate an entire class versus one method
+  or field.  In either case it is usually necessary to understand the entire
+  class's design and implementation.  Once you have done that, you might as
+  well annotate the whole thing.
+\item
+  If you fully annotate the file, it is possible to type-check the library to
+  verify the annotations.  (Even if you do not do this right now, it eases
+  the task in the future.)
+\end{itemize}
 
 
 \subsectionAndLabel{Verify your annotations}{library-tips-verify}
@@ -321,22 +341,9 @@ This section describes how to create an annotated library.
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK\@.  You can do so either as stub files or in a copy of the
-JDK source code.  This
-section describes the latter approach.
-It assumes that you have already followed the instructions for building the
-Checker Framework from source (Section~\ref{build-source}).
-(Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
-JDK annotations for an existing type system.)
-
-Edit files in repository \url{https://github.com/typetools/jdk}.  Add
-an \<@AnnotatedFor()> annotation to each file you annotate.
-
-Whenever you add a file, fully annotate it, as described in
-Section~\ref{library-tips}.
-
-If you are only annotating fields and method signatures (but not
-ensuring that method bodies type-check), then you don't need to suppress
-warnings, because the JDK is not type-checked.
+JDK source code, as described in Section~\ref{creating-a-checker-annotated-jdk}.
+Section~\ref{reporting-bugs-annotated-libraries} tells how to improve
+JDK annotations for an existing type system.
 
 
 \sectionAndLabel{Compiling partially-annotated libraries}{compiling-libraries}
@@ -380,7 +387,7 @@ the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For classes without \<@AnnotatedFor>, the checker uses
 conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
-user-written annotation, and the checker issues no warnings.
+user-written annotation, \emph{and} the checker issues no warnings.
 \end{sloppypar}
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
@@ -566,14 +573,11 @@ following ways:
 
 \subsectionAndLabel{Creating a stub file}{stub-creating}
 
-Stub files are generally stored together with the checker implementation,
-in the same directory as the checker's \<.java> source code.
-
 
 \subsubsectionAndLabel{If you have access to the Java source code}{stub-creating-with-source}
 
 Every Java file is a stub file.  If you have access to the Java file,
-rename file \<A.java> to \<A.astub>.  You can add
+copy file \<A.java> to \<A.astub>.  You can add
 annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
@@ -638,7 +642,8 @@ and then annotate it.  The rest of this section describes this approach.
 
 \begin{Verbatim}
   cd nullness-stub
-  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+  java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
+    org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 \end{Verbatim}
 
   Supply it with the fully-qualified name of the class for which you wish to
@@ -672,6 +677,30 @@ if an entry could not be found.
   Section~\ref{stub-format}.
 
 \end{enumerate}
+
+
+\subsectionAndLabel{Distributing stub files}{stub-creating}
+
+If you are writing stub files but are not writing a checker, you can place
+the stub files anywhere that is convenient.  However, please consider
+providing your stub files to the checker author, so that other users can
+also benefit from the stub files you wrote.
+
+If you are distributing stub files with a checker implementation, the stub
+files appear in the same directory as the checker class, which is a subtype of
+\<BaseTypeChecker>.  A \refqualclass{framework/qual}{StubFiles} annotation
+on the checker class lists stub files that are always used.  For stub files
+whose use is optional (for example, because the behavior is unsound, or
+unsound except in certain circumstances), users must supply the
+\<-Astubs=...> command-line option.
+
+If a stub file contains annotations that are used by the framework rather
+than by any specific checker (such as purity annotations), and you wish to
+distribute it with the Checker Framework, put the stub file in directory
+\<checker/resources/>.  You can also do this if the stub file has
+annotations for multiple checkers.  To use a stub file in directory
+\<checker/resources/>, users must supply the
+\<-Astubs=checker.jar/stub-file-name.astub> command-line option.
 
 
 \subsectionAndLabel{Troubleshooting stub libraries}{stub-troubleshooting}

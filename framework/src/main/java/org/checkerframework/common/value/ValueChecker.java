@@ -4,7 +4,6 @@ import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -18,7 +17,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@StubFiles("statically-executable.astub")
 @SupportedOptions({
     ValueChecker.REPORT_EVAL_WARNS,
     ValueChecker.IGNORE_RANGE_OVERFLOW,

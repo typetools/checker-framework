@@ -42,6 +42,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -136,8 +137,11 @@ public class TypeArgInferenceUtil {
      * assignment context. Returns the annotated type that the method invocation at the leaf is
      * assigned to. If the result is a primitive, return the boxed version.
      *
-     * @return type that path leaf is assigned to
+     * @param atypeFactory the type factory, for looking up types
+     * @param path the path whole leaf to look up a type for
+     * @return the type of path's leaf
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparisons
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         AnnotatedTypeMirror res;
@@ -264,10 +268,14 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Returns whether argumentTree is the tree at the leaf of path. if tree is a conditional
+     * Returns whether argumentTree is the tree at the leaf of path. If tree is a conditional
      * expression, isArgument is called recursively on the true and false expressions.
+     *
+     * @param path the path whose leaf to test
+     * @param argumentTree the expression that might be path's leaf
+     * @return true if {@code argumentTree} is the leaf of {@code path}
      */
-    private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
+    private static boolean isArgument(TreePath path, @FindDistinct ExpressionTree argumentTree) {
         argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;

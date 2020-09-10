@@ -9,8 +9,6 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -47,13 +46,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
@@ -399,7 +397,7 @@ public class AnnotatedTypes {
     public static AnnotatedTypeMirror asMemberOf(
             Types types,
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
+            @Nullable AnnotatedTypeMirror t,
             Element elem,
             AnnotatedTypeMirror elemType) {
         // asMemberOf is only for fields, variables, and methods!
@@ -412,11 +410,13 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return elemType;
             default:
-                AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
-                if (!ElementUtils.isStatic(elem)) {
+                if (!ElementUtils.isStatic(elem) && t != null) {
+                    AnnotatedTypeMirror res =
+                            asMemberOfImpl(types, atypeFactory, t, elem, elemType);
                     atypeFactory.postAsMemberOf(res, t, elem);
+                    return res;
                 }
-                return res;
+                return elemType;
         }
     }
 
@@ -438,10 +438,6 @@ public class AnnotatedTypes {
             final AnnotatedTypeMirror of,
             final Element member,
             final AnnotatedTypeMirror memberType) {
-        if (ElementUtils.isStatic(member)) {
-            return memberType;
-        }
-
         switch (of.getKind()) {
             case ARRAY:
                 // Method references like String[]::clone should have a return type of String[]
@@ -530,7 +526,7 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Type arguments of a declaration should be type variables",
                                 "enclosingClassOfElem=" + enclosingClassOfElem,
                                 "enclosingType=" + enclosingType,
@@ -542,7 +538,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    SystemUtil.joinLines(
+                    UtilPlume.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
@@ -1045,38 +1041,7 @@ public class AnnotatedTypes {
         return found;
     }
 
-    /**
-     * Returns true if the given annotation mirror targets {@link ElementType#TYPE_USE}, false
-     * otherwise.
-     *
-     * @param anno the {@link AnnotationMirror}
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the anno targets both {@link ElementType#TYPE_USE} and something
-     *     besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated Use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
-        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
-        return hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
-    }
-
-    /**
-     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
-     *
-     * @param elements an array of {@link ElementType} values
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
-     *     something besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        return AnnotationUtils.hasTypeQualifierElementTypes(elements, cls);
-    }
-
+    /** java.lang.annotation.Annotation.class canonical name. */
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
@@ -1253,7 +1218,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            SystemUtil.joinLines(
+                            UtilPlume.joinLines(
                                     "Unexpected AnnotatedTypeMirror with no primary annotation.",
                                     "toSearch=" + toSearch,
                                     "top=" + top,
@@ -1443,7 +1408,7 @@ public class AnnotatedTypes {
         // Collect all polymorphic qualifiers; we should substitute them.
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : returnType.getAnnotations()) {
-            if (QualifierPolymorphism.hasPolymorphicQualifier(anno)) {
+            if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
                 polys.add(anno);
             }
         }
@@ -1476,6 +1441,27 @@ public class AnnotatedTypes {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Add all the annotations in {@code declaredType} to {@code annotatedDeclaredType}.
+     *
+     * <p>(The {@code TypeMirror} returned by {@code annotatedDeclaredType#getUnderlyingType} may
+     * have not have all the annotations on the type, so allow the user to specify a different one.)
+     *
+     * @param annotatedDeclaredType annotated type to which annotations are added
+     * @param declaredType TypeMirror that may have annotations
+     */
+    public static void applyAnnotationsFromDeclaredType(
+            AnnotatedDeclaredType annotatedDeclaredType, DeclaredType declaredType) {
+        TypeMirror underlyingTypeMirror = declaredType;
+        while (annotatedDeclaredType != null) {
+            List<? extends AnnotationMirror> annosOnTypeMirror =
+                    underlyingTypeMirror.getAnnotationMirrors();
+            annotatedDeclaredType.addAnnotations(annosOnTypeMirror);
+            annotatedDeclaredType = annotatedDeclaredType.getEnclosingType();
+            underlyingTypeMirror = ((DeclaredType) underlyingTypeMirror).getEnclosingType();
         }
     }
 }

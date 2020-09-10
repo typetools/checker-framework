@@ -6,10 +6,14 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -20,14 +24,20 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.DefaultTypeHierarchy;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The type factory for the Signedness Checker.
@@ -36,14 +46,17 @@ import org.checkerframework.javacutil.AnnotationBuilder;
  */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The @SignednessGlb annotation. */
-    private final AnnotationMirror SIGNEDNESS_GLB =
-            AnnotationBuilder.fromClass(elements, SignednessGlb.class);
-    /** The @Signed annotation. */
-    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @UnknownSignedness annotation. */
     private final AnnotationMirror UNKNOWN_SIGNEDNESS =
             AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
+    /** The @Signed annotation. */
+    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    /** The @SignednessGlb annotation. */
+    private final AnnotationMirror SIGNEDNESS_GLB =
+            AnnotationBuilder.fromClass(elements, SignednessGlb.class);
+    /** The @SignednessBottom annotation. */
+    private final AnnotationMirror SIGNEDNESS_BOTTOM =
+            AnnotationBuilder.fromClass(elements, SignednessBottom.class);
 
     /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
@@ -73,12 +86,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        // Prevent @ImplicitFor from applying to local variables of type byte, short, int, and long,
-        // but adding the top type to them, which permits flow-sensitive type refinement.
-        // (When it is possible to default types based on their TypeKinds,
-        // this whole method will no longer be needed.)
-        addUnknownSignednessToSomeLocals(tree, type);
-
         if (!computingAnnotatedTypeMirrorOfLHS) {
             addSignednessGlbAnnotation(tree, type);
         }
@@ -162,25 +169,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * If the tree is a local variable and the type is byte, short, int, or long, then add the
-     * UnknownSignedness annotation so that dataflow can refine it.
-     */
-    private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
-        switch (type.getKind()) {
-            case BYTE:
-            case SHORT:
-            case INT:
-            case LONG:
-                QualifierDefaults defaults = new QualifierDefaults(elements, this);
-                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
-                defaults.annotate(tree, type);
-                break;
-            default:
-                // Nothing for other cases.
-        }
-    }
-
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -188,10 +176,14 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * This TreeAnnotator ensures that boolean expressions are not given Unsigned or Signed
-     * annotations by {@link PropagationTreeAnnotator}, that shift results take on the type of their
-     * left operand, and that the types of identifiers are refined based on the results of the Value
-     * Checker.
+     * This TreeAnnotator ensures that:
+     *
+     * <ul>
+     *   <li>boolean expressions are not given Unsigned or Signed annotations by {@link
+     *       PropagationTreeAnnotator},
+     *   <li>shift results take on the type of their left operand,
+     *   <li>the types of identifiers are refined based on the results of the Value Checker.
+     * </ul>
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
@@ -233,6 +225,155 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBooleanAsUnknownSignedness(type);
             return null;
+        }
+    }
+
+    @Override
+    protected void addAnnotationsFromDefaultForType(
+            @Nullable Element element, AnnotatedTypeMirror type) {
+        if (TypesUtils.isFloating(type.getUnderlyingType())
+                || TypesUtils.isBoxedFloating(type.getUnderlyingType())
+                || type.getKind() == TypeKind.CHAR
+                || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
+            // Floats are always signed and chars are always unsigned.
+            super.addAnnotationsFromDefaultForType(null, type);
+        } else {
+            super.addAnnotationsFromDefaultForType(element, type);
+        }
+    }
+
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new SignednessTypeHierarchy(
+                checker,
+                getQualifierHierarchy(),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
+                checker.hasOption("invariantArrays"));
+    }
+
+    /**
+     * The type hierarchy for the signedness type system. If A is narrower (fewer bits) than B, then
+     * A with any qualifier is a subtype of @SignedPositive B.
+     */
+    protected class SignednessTypeHierarchy extends DefaultTypeHierarchy {
+
+        /**
+         * Create a new SignednessTypeHierarchy.
+         *
+         * @param checker the checker
+         * @param qualifierHierarchy the qualifier hierarchy
+         * @param ignoreRawTypes from -AignoreRawTypes
+         * @param invariantArrayComponents from -AinvariantArrays
+         */
+        public SignednessTypeHierarchy(
+                BaseTypeChecker checker,
+                QualifierHierarchy qualifierHierarchy,
+                boolean ignoreRawTypes,
+                boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
+        }
+
+        @Override
+        public Boolean visitPrimitive_Primitive(
+                AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, Void p) {
+
+            boolean superResult = super.visitPrimitive_Primitive(subtype, supertype, p);
+            if (superResult) {
+                return true;
+            }
+
+            PrimitiveType subPrimitive = subtype.getUnderlyingType();
+            PrimitiveType superPrimitive = supertype.getUnderlyingType();
+            if (isNarrowerIntegral(subPrimitive, superPrimitive)) {
+                AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
+                if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        @Override
+        public Boolean visitPrimitive_Declared(
+                AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
+            boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+            if (superBoxed) {
+                return visitPrimitive_Primitive(subtype, getUnboxedType(supertype), p);
+            }
+            return super.visitPrimitive_Declared(subtype, supertype, p);
+        }
+
+        @Override
+        public Boolean visitDeclared_Declared(
+                AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+                if (superBoxed) {
+                    return visitPrimitive_Primitive(
+                            getUnboxedType(subtype), getUnboxedType(supertype), p);
+                }
+            }
+            return super.visitDeclared_Declared(subtype, supertype, p);
+        }
+
+        @Override
+        public Boolean visitDeclared_Primitive(
+                AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Void p) {
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
+            }
+            return super.visitDeclared_Primitive(subtype, supertype, p);
+        }
+
+        /**
+         * Returns true if both types are integral and the first type is strictly narrower
+         * (represented by fewer bits) than the second type.
+         *
+         * @param a a primitive type
+         * @param b a primitive type
+         * @return true if {@code a} is represented by fewer bits than {@code b}
+         */
+        private boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
+            int aBits = numIntegralBits(a);
+            if (aBits == -1) {
+                return false;
+            }
+            int bBits = numIntegralBits(b);
+            if (bBits == -1) {
+                return false;
+            }
+            return aBits < bBits;
+        }
+
+        /**
+         * Returns the number of bits in the representation of an integral primitive type. Returns
+         * -1 if the type is not an integral primitive type.
+         *
+         * @param p a primitive type
+         * @return the number of bits in its representation, or -1 if not integral
+         */
+        private int numIntegralBits(PrimitiveType p) {
+            switch (p.getKind()) {
+                case BYTE:
+                    return 8;
+                case SHORT:
+                    return 16;
+                case CHAR:
+                    return 16;
+                case INT:
+                    return 32;
+                case LONG:
+                    return 64;
+                case BOOLEAN:
+                case DOUBLE:
+                case FLOAT:
+                    return -1;
+                default:
+                    throw new BugInCF("Unexpected primitive type " + p);
+            }
         }
     }
 }

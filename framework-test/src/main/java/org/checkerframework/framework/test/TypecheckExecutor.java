@@ -12,6 +12,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -29,7 +30,11 @@ public class TypecheckExecutor {
      * configuration, and return place the result in a CompilationResult
      */
     public CompilationResult compile(TestConfiguration configuration) {
-        TestUtilities.ensureDirectoryExists(new File(configuration.getOptions().get("-d")));
+        String dOption = configuration.getOptions().get("-d");
+        if (dOption == null) {
+            throw new Error("-d not supplied");
+        }
+        TestUtilities.ensureDirectoryExists(dOption);
 
         final StringWriter javacOutput = new StringWriter();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
@@ -78,7 +83,7 @@ public class TypecheckExecutor {
                     "javac "
                             + String.join(" ", options)
                             + " "
-                            + SystemUtil.join(" ", configuration.getTestSourceFiles()));
+                            + UtilPlume.join(" ", configuration.getTestSourceFiles()));
         }
 
         JavaCompiler.CompilationTask task =

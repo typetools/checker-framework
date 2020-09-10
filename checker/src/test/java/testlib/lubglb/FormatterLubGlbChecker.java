@@ -42,11 +42,11 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         };
     }
 
-    /** FormatterLubGlbAnnotatedTypeFactory */
+    /** FormatterLubGlbAnnotatedTypeFactory. */
     private static class FormatterLubGlbAnnotatedTypeFactory extends FormatterAnnotatedTypeFactory {
 
         /**
-         * Constructor
+         * Constructor.
          *
          * @param checker checker
          */

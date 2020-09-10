@@ -30,7 +30,8 @@ import java.lang.annotation.Target;
  * public @interface MaybeAliased {}
  * </code></pre>
  *
- * <p>Together, all the @SubtypeOf meta-annotations fully describe the type qualifier hierarchy.
+ * <p>Together, all the {@code @SubtypeOf} meta-annotations fully describe the type qualifier
+ * hierarchy.
  *
  * @checker_framework.manual #creating-declarative-hierarchy Declaratively defining the qualifier
  *     hierarchy
@@ -38,6 +39,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
+@AnnotatedFor("nullness")
 public @interface SubtypeOf {
     /** An array of the supertype qualifiers of the annotated qualifier. */
     Class<? extends Annotation>[] value();

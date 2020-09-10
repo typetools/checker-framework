@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.4.1<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.6.1<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -108,10 +108,10 @@
                     <arg>-Aquals=myPackage.qual.MyFenum,myPackage.qual.MyCustomType</arg>
                   -->
                   <arg>-Alint</arg>
-		<!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
-		<!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
-		<!-- -Awarns turns type-checking errors into warnings. -->
-		<!-- <arg>-Awarns</arg> -->
+                <!-- If using JDK 11 remove the two arguments above and uncomment the one below. -->
+                <!-- <arg>-J- -add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg> -->
+                <!-- -Awarns turns type-checking errors into warnings. -->
+                <!-- <arg>-Awarns</arg> -->
               </compilerArgs>
           </configuration>
       </plugin>

@@ -439,8 +439,9 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Determines whether this type contains the given annotation explicitly written at declaration.
-     * This method considers the annotation's values, that is, if the type is "@A("s") @B(3) Object"
-     * a call with "@A("t") or "@A" will return false, whereas a call with "@B(3)" will return true.
+     * This method considers the annotation's values, that is, if the type is {@code @A("s") @B(3)
+     * Object}, a call with {@code @A("t")} or {@code @A} will return false, whereas a call with
+     * {@code @B(3)} will return true.
      *
      * <p>In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)} this method also
      * compares annotation values.
@@ -2095,7 +2096,7 @@ public abstract class AnnotatedTypeMirror {
          * Creates a new AnnotatedUnionType.
          *
          * @param type underlying kind of this type
-         * @param atypeFactory TODO
+         * @param atypeFactory type factory
          */
         private AnnotatedUnionType(UnionType type, AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);

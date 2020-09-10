@@ -53,8 +53,8 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -752,7 +752,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = SystemUtil.joinLines(errors);
+        String error = UtilPlume.joinLines(errors);
         checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 
@@ -853,7 +853,10 @@ public class DependentTypesHelper {
         }
     }
 
-    /** Copies annotations that might have been viewpoint adapted from type to the parameter. */
+    /**
+     * Copies annotations that might have been viewpoint adapted from the visited type to the
+     * parameter.
+     */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {

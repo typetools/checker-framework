@@ -56,7 +56,6 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -561,7 +560,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                             // could be defined in the same stub file
                             return "L" + typeName + ";";
                         }
-                        return "L" + SystemUtil.join("/", name.split("\\.")) + ";";
+                        return "L" + String.join("/", name.split("\\.")) + ";";
                     }
 
                     @Override

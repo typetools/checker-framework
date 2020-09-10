@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
@@ -29,10 +30,9 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -70,14 +70,22 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new LessThanQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new LessThanQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    class LessThanQualifierHierarchy extends GraphQualifierHierarchy {
+    /** LessThanQualifierHierarchy */
+    class LessThanQualifierHierarchy extends ElementQualifierHierarchy {
 
-        public LessThanQualifierHierarchy(MultiGraphFactory f) {
-            super(f, BOTTOM);
+        /**
+         * Creates a LessThanQualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        public LessThanQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override

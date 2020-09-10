@@ -16,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage.AnnotationsInContexts;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
@@ -89,7 +90,7 @@ public class ASceneWrapper {
      */
     private void removeAnnosFromATypeElement(
             ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
-        String annosToRemoveKey = typeElt.description.toString() + typeElt.tlAnnotationsHere;
+        String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
         Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
         if (annosToRemoveForLocation != null) {
             Set<Annotation> annosToRemoveHere = new HashSet<>();
@@ -162,7 +163,7 @@ public class ASceneWrapper {
     /**
      * Updates the symbol information stored in AClass for the given class. May be called multiple
      * times (and needs to be if the second parameter was null the first time it was called; only
-     * some calls provide the symbol inforamtion).
+     * some calls provide the symbol information).
      *
      * @param aClass the class representation in which the symbol information is to be updated
      * @param classSymbol the source of the symbol information; may be null, in which case this

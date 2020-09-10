@@ -5,12 +5,13 @@ They exercise tricky Java coding patterns that should be handled
 correctly.
 
 If a new type system correctly issues an error or a warning for one of these
-tests, then suppress it using the most specific error key possible, for example
-"keyfor:return.type.incompatible".  Write the @SuppressWarnings annotation such
-that the scope is as limited as possible, but do not alter the code.  Write a
-comment on the warning suppression explaining why the error is expected. Add
-the test with the expected error to the type systems test and add the expected
-error and/or adding annotations to prevent the error to the test.
+tests, then suppress it using the most specific SuppressWarnings string
+possible, for example "keyfor:return.type.incompatible".  Write the
+@SuppressWarnings annotation such that the scope is as limited as possible, but
+do not alter the code.  Write a comment on the warning suppression explaining
+why the error is expected. Add the test with the expected error to the type
+systems test and add the expected error and/or adding annotations to prevent the
+error to the test.
 
 TODO: move interesting general purpose test cases from specific
 type systems to this directory.

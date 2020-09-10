@@ -108,8 +108,14 @@ Section~\ref{type-refinement-purity}.
 
 \subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
 
-By supplying the \<-Ainfer=\emph{outputformat}> command-line option,
-any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
+``Whole program inference'', or WPI, utilizes the \<-Ainfer=\emph{outputformat}>
+command-line option.  See Section~\ref{whole-program-inference}.
+
+\href{https://github.com/typetools/checker-framework-inference}{``Checker
+  Framework Inference''}, or CFI, is a type inference framework built on
+the Checker Framework.  You need to slightly rewrite your type system to
+work with CFI\@.  The CFI repository contains rewritten versions of some of
+the type systems that are distributed with the Checker Framework.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
 is an Eclipse plugin that implements interactive type qualifier inference.

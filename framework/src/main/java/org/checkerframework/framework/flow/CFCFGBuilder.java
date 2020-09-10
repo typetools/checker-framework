@@ -72,10 +72,10 @@ public class CFCFGBuilder extends CFGBuilder {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            Collection<String> warningKeys = checker.getSuppressWarningsKeys();
-            for (String warningKey : warningKeys) {
-                String key = "@AssumeAssertion(" + warningKey + ")";
-                if (msg.contains(key)) {
+            Collection<String> prefixes = checker.getSuppressWarningsPrefixes();
+            for (String prefix : prefixes) {
+                String assumeAssert = "@AssumeAssertion(" + prefix + ")";
+                if (msg.contains(assumeAssert)) {
                     return true;
                 }
             }

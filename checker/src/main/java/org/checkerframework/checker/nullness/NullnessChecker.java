@@ -1,8 +1,7 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.SortedSet;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -84,8 +83,8 @@ public class NullnessChecker extends InitializationChecker {
     }
 
     @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
+    public SortedSet<String> getSuppressWarningsPrefixes() {
+        SortedSet<String> result = super.getSuppressWarningsPrefixes();
         result.add("nullness");
         return result;
     }

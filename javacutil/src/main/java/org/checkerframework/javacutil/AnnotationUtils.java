@@ -32,9 +32,12 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.CompareToMethod;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -57,13 +60,14 @@ public class AnnotationUtils {
      * @param annotation the annotation whose name to return
      * @return the fully-qualified name of an annotation as a String
      */
-    public static final String annotationName(AnnotationMirror annotation) {
+    public static final @FullyQualifiedName String annotationName(AnnotationMirror annotation) {
         if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
             return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
         }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
-        String name = elm.getQualifiedName().toString();
+        @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
+        @FullyQualifiedName String name = elm.getQualifiedName().toString();
         return name;
     }
 
@@ -78,6 +82,7 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 are the same annotation
      */
+    @EqualsMethod
     public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
@@ -105,17 +110,14 @@ public class AnnotationUtils {
      * @param a2 the second AnnotationMirror to compare
      * @return true iff a1 and a2 have the same annotation name
      * @see #areSame(AnnotationMirror, AnnotationMirror)
-     * @return true iff a1 and a2 have the same annotation name
      */
+    @EqualsMethod
     public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == a2) {
             return true;
         }
-        if (a1 == null) {
-            throw new BugInCF("Unexpected null first argument to areSameByName");
-        }
-        if (a2 == null) {
-            throw new BugInCF("Unexpected null second argument to areSameByName");
+        if (a1 == null || a2 == null) {
+            throw new BugInCF("Unexpected null argument:  areSameByName(%s, %s)", a1, a2);
         }
 
         if (a1 instanceof CheckerFrameworkAnnotationMirror
@@ -358,6 +360,7 @@ public class AnnotationUtils {
      * @param av2 the second AnnotationValue to compare
      * @return 0 if if the two annotation values are the same
      */
+    @CompareToMethod
     private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
         if (av1 == av2) {
             return 0;
@@ -370,11 +373,14 @@ public class AnnotationUtils {
     }
 
     /**
-     * Return 0 if the two annotation values are the same.
+     * Compares two annotation values for order.
      *
      * @param val1 a value returned by {@code AnnotationValue.getValue()}
      * @param val2 a value returned by {@code AnnotationValue.getValue()}
+     * @return a negative integer, zero, or a positive integer as the first annotation value is less
+     *     than, equal to, or greater than the second annotation value
      */
+    @CompareToMethod
     private static int compareAnnotationValueValue(@Nullable Object val1, @Nullable Object val2) {
         if (val1 == val2) {
             return 0;
@@ -429,22 +435,6 @@ public class AnnotationUtils {
     }
 
     /**
-     * Provide ordering for {@link AnnotationMirror} based on their fully qualified name. The
-     * ordering ignores annotation values when ordering.
-     *
-     * <p>The ordering is meant to be used as {@link TreeSet} or {@link TreeMap} ordering. A {@link
-     * Set} should not contain two annotations that only differ in values.
-     *
-     * @return an ordering over AnnotationMirrors based on their name
-     * @deprecated Use the method reference {@code AnnotationUtils::compareAnnotationMirrors}
-     *     instead
-     */
-    @Deprecated
-    public static Comparator<AnnotationMirror> annotationOrdering() {
-        return AnnotationUtils::compareAnnotationMirrors;
-    }
-
-    /**
      * Create a map suitable for storing {@link AnnotationMirror} as keys.
      *
      * <p>It can store one instance of {@link AnnotationMirror} of a given declared type, regardless
@@ -467,6 +457,40 @@ public class AnnotationUtils {
      */
     public static NavigableSet<AnnotationMirror> createAnnotationSet() {
         return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+    }
+
+    /**
+     * Constructs a {@link Set} for storing {@link AnnotationMirror}s contain all the annotations in
+     * {@code annos}.
+     *
+     * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
+     * the annotation element values.
+     *
+     * @param annos a Collection of AnnotationMirrors to put in the created set
+     * @return a sorted new set to store {@link AnnotationMirror} as element
+     */
+    public static NavigableSet<AnnotationMirror> createAnnotationSet(
+            Collection<AnnotationMirror> annos) {
+        TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+        set.addAll(annos);
+        return set;
+    }
+
+    /**
+     * Constructs an unmodifiable {@link Set} for storing {@link AnnotationMirror}s contain all the
+     * annotations in {@code annos}.
+     *
+     * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
+     * the annotation element values.
+     *
+     * @param annos a Collection of AnnotationMirrors to put in the created set
+     * @return a sorted, unmodifiable, new set to store {@link AnnotationMirror} as element
+     */
+    public static NavigableSet<AnnotationMirror> createUnmodifiableAnnotationSet(
+            Collection<AnnotationMirror> annos) {
+        TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+        set.addAll(annos);
+        return Collections.unmodifiableNavigableSet(set);
     }
 
     /**
@@ -581,6 +605,7 @@ public class AnnotationUtils {
      * @param am2 the second AnnotationMirror to compare
      * @return true if if the two annotations have the same elements (fields)
      */
+    @EqualsMethod
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
         if (am1 == am2) {
             return true;
@@ -749,7 +774,8 @@ public class AnnotationUtils {
      * @param expectedType the expected type used to cast the return type
      * @param <T> the class of the expected type
      * @param useDefaults whether to apply default values to the element
-     * @return the value of the element with the given name
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
      */
     public static <T> List<T> getElementValueArray(
             AnnotationMirror anno,
@@ -821,7 +847,6 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the name of the class that is referenced by element with the given name
      */
-    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getQualifiedName
     public static @DotSeparatedIdentifiers Name getElementValueClassName(
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);

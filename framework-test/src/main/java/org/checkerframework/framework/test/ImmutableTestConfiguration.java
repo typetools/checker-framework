@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -25,7 +26,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
      * )
      * }</pre>
      */
-    private final Map<String, String> options;
+    private final Map<String, @Nullable String> options;
     /**
      * These files contain diagnostics that should be returned by Javac. If this list is empty, the
      * diagnostics are instead read from comments in the Java file itself
@@ -48,12 +49,13 @@ public class ImmutableTestConfiguration implements TestConfiguration {
             List<File> diagnosticFiles,
             List<File> testSourceFiles,
             List<String> processors,
-            Map<String, String> options,
+            Map<String, @Nullable String> options,
             boolean shouldEmitDebugInfo) {
         this.diagnosticFiles = Collections.unmodifiableList(diagnosticFiles);
         this.testSourceFiles = Collections.unmodifiableList(new ArrayList<>(testSourceFiles));
         this.processors = Collections.unmodifiableList(new ArrayList<>(processors));
-        this.options = Collections.unmodifiableMap(new LinkedHashMap<>(options));
+        this.options =
+                Collections.unmodifiableMap(new LinkedHashMap<String, @Nullable String>(options));
         this.shouldEmitDebugInfo = shouldEmitDebugInfo;
     }
 
@@ -73,7 +75,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
     }
 
     @Override
-    public Map<String, String> getOptions() {
+    public Map<String, @Nullable String> getOptions() {
         return options;
     }
 
@@ -89,11 +91,11 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     @Override
     public String toString() {
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "TestConfigurationBuilder:",
-                "testSourceFiles=" + SystemUtil.join(" ", testSourceFiles),
-                "processors=" + SystemUtil.join(", ", processors),
-                "options=" + SystemUtil.join(", ", getFlatOptions()),
+                "testSourceFiles=" + UtilPlume.join(" ", testSourceFiles),
+                "processors=" + String.join(", ", processors),
+                "options=" + String.join(", ", getFlatOptions()),
                 "shouldEmitDebugInfo=" + shouldEmitDebugInfo);
     }
 }

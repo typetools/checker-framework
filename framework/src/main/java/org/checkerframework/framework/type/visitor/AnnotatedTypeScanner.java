@@ -17,11 +17,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 
 /**
  * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
- * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
- * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
- * regardless of the kind of type. The function returns some value with type {@link R} and takes an
- * argument of type {@link P}. If the function does not return any value, then {@code R} should be
- * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.
+ * AnnotatedTypeMirror} and preforms some function depending on the kind of type. (By contrast, a
+ * {@link SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and performs the
+ * <em>same</em> function regardless of the kind of type.) The function returns some value with type
+ * {@code R} and takes an argument of type {@code P}. If the function does not return any value,
+ * then {@code R} should be {@link Void}. If the function takes no additional argument, then {@code
+ * P} should be {@link Void}.
  *
  * <p>The default implementation of the visitAnnotatedTypeMirror methods will determine a result as
  * follows:
@@ -35,8 +36,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * </ul>
  *
  * The {@link #reduce} method combines the results of visiting child types. It can be specified by
- * passing an {@link Reduce} object to one of the constructors or by overriding the method directly.
- * If it is not otherwise specified, the reduce returns the first result if it is not null;
+ * passing a {@link Reduce} object to one of the constructors or by overriding the method directly.
+ * If it is not otherwise specified, then reduce returns the first result if it is not null;
  * otherwise, the second result is returned. If the default result is nonnull and reduce never
  * returns null, then both parameters passed to reduce will be nonnull.
  *
@@ -44,8 +45,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
  * scanned.
  *
- * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or to pass {@code
- * null} as the last parameter, call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
+ * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or (to pass {@code
+ * null} as the last parameter) call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
  * #reset()}.
  *
  * <p>Here is an example of a scanner that counts the number of {@link AnnotatedTypeVariable} in an
@@ -66,11 +67,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * Below is an example of how to use {@code CountTypeVariable}
  *
- * <pre><code>
+ * <pre>{@code
  * void method(AnnotatedTypeMirror type) {
  *     int count = new CountTypeVariable().visit(type);
  * }
- * </code></pre>
+ * }</pre>
  *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
@@ -110,7 +111,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      *
      * @param reduceFunction function used to combine two results
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(@Nullable Reduce<R> reduceFunction, R defaultResult) {
         if (reduceFunction == null) {
@@ -137,7 +138,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
      * is nonnull; otherwise the second result is returned.
      *
      * @param defaultResult the result to return if a visit type method is not overridden; it should
-     *     be immutable.
+     *     be immutable
      */
     protected AnnotatedTypeScanner(R defaultResult) {
         this(null, defaultResult);

@@ -58,8 +58,9 @@ class ClassNameValidator extends BaseTypeValidator {
     }
 
     /**
-     * A string is a legal binary name if it has the following form: ((Java identifier)\.)*(Java
-     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1
+     * A string is a <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary
+     * name</a> if it has the following form: ((Java identifier)\.)*(Java identifier)([])*
      *
      * @param className string to check
      * @return true if className is a legal class name

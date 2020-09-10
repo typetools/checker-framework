@@ -1,7 +1,5 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.Collections;
@@ -46,7 +44,7 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
         List<String> customizedOptions =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
                         ANNOTATION_PROCS,

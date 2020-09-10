@@ -1,7 +1,7 @@
 %
 % A Dataflow Framework for Java
 %
-% Author: Stefan Heule, 2011 - 2012
+% Original Authors: Stefan Heule, Charlie Garrett, 2011 - 2012
 %
 \documentclass[]{article}
 
@@ -50,6 +50,7 @@
     numberstyle=\tiny,
     stepnumber=1,
     breaklines=true,
+    breakatwhitespace,
     frame=lines,
     showstringspaces=false,
     tabsize=2,
@@ -87,23 +88,26 @@
 \newtheorem{definition}{Definition}[section]
 
 % control-flow graph images and listings
-\newcommand{\flowlst}[2]{\lstinputlisting[caption=#2,label=lst:#1,float]{examples/#1.java}}
-\newcommand{\flowimg}[2]{\begin{figure}
+% Arguments 2 and 3 control how much horizontal space the code takes on the page.
+\newcommand{\flow}[4]{
+\begin{figure}
+\centering\vspace{0pt}
+\begin{minipage}[t]{#2\textwidth}
+\centering\vspace{0pt}
+\begin{minipage}[t]{#3\textwidth}
+\lstinputlisting{examples/#1.java}
+\end{minipage}%
+\end{minipage}%
+\begin{minipage}[t]{.6\textwidth}
+\centering\vspace{0pt}
 \includegraphics[scale=0.6]{examples/graphs/#1.pdf}
 \centering
-\caption{#2}
+\end{minipage}
+\caption{#4}
 \label{fig:#1}
 \end{figure}}
-\newcommand{\flow}[2]{
-    \flowlst{CFG#1}{{#2 Its CFG is depicted in \autoref{fig:CFG#1}.}}
-    \flowimg{CFG#1}{The control-flow graph for \autoref{lst:CFG#1}.}
-}
-\newcommand{\constantpropagation}[2]{
-    \flowlst{Const#1}{{#2 Its CFG and intermediate analysis results are depicted in \autoref{fig:Const#1}.}}
-    \flowimg{Const#1}{The control-flow graph (including intermediate analysis results) for \autoref{lst:Const#1}.}
-}
 
-% references to the java specification
+% references to the Java Language Specification.
 \newcommand{\jlsref}[1]{JLS~\textsection{}#1}
 
 
@@ -122,11 +126,7 @@
 \setlength{\parskip}{.5em}
 
 \title{A Dataflow Framework for Java}
-\author{
-              Stefan Heule\\\url{stefanheule@gmail.com}
-              \and
-              Charlie Garrett\\\url{charlie.garrett@gmail.com}
-}
+\author{\url{https://checkerframework.org/}}
 
 \begin{document}
 

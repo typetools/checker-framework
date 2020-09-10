@@ -302,7 +302,7 @@ public class TypesIntoElements {
     private static class TCConvert
             extends AnnotatedTypeScanner<List<Attribute.TypeCompound>, TypeAnnotationPosition> {
 
-        /** ProcessEnvironment */
+        /** ProcessingEnvironment. */
         private final ProcessingEnvironment processingEnv;
 
         /**

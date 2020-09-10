@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @see Sibling1, Sibling2, Parent
  */
-@SubtypeOf({Sibling1.class, Sibling2.class})
+@SubtypeOf({Sibling1.class, Sibling2.class, SiblingWithFields.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @IgnoreInWholeProgramInference
 @DefaultFor(types = java.lang.StringBuffer.class)

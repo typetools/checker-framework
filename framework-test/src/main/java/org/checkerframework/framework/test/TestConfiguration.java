@@ -3,6 +3,7 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A configuration for running CheckerFrameworkTests or running the TypecheckExecutor. */
 public interface TestConfiguration {
@@ -60,7 +61,7 @@ public interface TestConfiguration {
      * @return a Map representing all command-line options to Javac other than source files and
      *     processors
      */
-    Map<String, String> getOptions();
+    Map<String, @Nullable String> getOptions();
 
     /**
      * Returns the map returned by {@link #getOptions}, flattened into a list. The entries will be
