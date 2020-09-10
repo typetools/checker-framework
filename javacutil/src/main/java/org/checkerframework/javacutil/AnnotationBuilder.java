@@ -145,22 +145,7 @@ public class AnnotationBuilder {
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
-        return fromClass(elements, aClass, Collections.emptyMap(), false);
-    }
-
-    // TODO: Find and remove all uses of this method.  Then I might not need any of the
-    // `noWarn` formal parameters in this file.
-    /**
-     * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
-     * create proper {@code AnnotationMirror}s by passing in an element-to-value mapping.
-     *
-     * @param elements the element utilities to use
-     * @param aClass the annotation class
-     * @return an {@link AnnotationMirror} of the given type
-     */
-    public static AnnotationMirror fromClassNonsense(
-            Elements elements, Class<? extends Annotation> aClass) {
-        return fromClass(elements, aClass, Collections.emptyMap(), true);
+        return fromClass(elements, aClass, Collections.emptyMap());
     }
 
     /**
@@ -183,34 +168,9 @@ public class AnnotationBuilder {
             Elements elements,
             Class<? extends Annotation> aClass,
             Map<String, AnnotationValue> elementNamesValues) {
-        return fromClass(elements, aClass, elementNamesValues, false);
-    }
-
-    /**
-     * Creates an {@link AnnotationMirror} given by a particular annotation class and a
-     * name-to-value mapping for the elements/fields.
-     *
-     * <p>For other elements, getElementValues on the result returns default values. If any such
-     * element does not have a default, this method throws an exception.
-     *
-     * <p>Most clients should use {@link #fromName}, using a Name created by the compiler. This
-     * method is provided as a convenience to create an AnnotationMirror from scratch in a checker's
-     * code.
-     *
-     * @param elements the element utilities to use
-     * @param aClass the annotation class
-     * @param elementNamesValues the values for the annotation's elements/fields
-     * @param noWarn if true, don't warn when some elements/fields are missing
-     * @return an {@link AnnotationMirror} of the given type
-     */
-    private static AnnotationMirror fromClass(
-            Elements elements,
-            Class<? extends Annotation> aClass,
-            Map<String, AnnotationValue> elementNamesValues,
-            boolean noWarn) {
         String name = aClass.getCanonicalName();
         assert name != null : "@AssumeAssertion(nullness): assumption";
-        AnnotationMirror res = fromName(elements, name, elementNamesValues, noWarn);
+        AnnotationMirror res = fromName(elements, name, elementNamesValues);
         if (res == null) {
             throw new UserError(
                     "AnnotationBuilder: error: fromClass can't load Class %s%n"
@@ -236,22 +196,6 @@ public class AnnotationBuilder {
         return fromName(elements, name, new HashMap<>());
     }
 
-    // TODO: Find and remove all uses of this method.  Then I might not need any of the
-    // `noWarn` formal parameters in this file.
-    /**
-     * Creates an {@link AnnotationMirror} that lacks some elements/fields. DO NOT USE! Prefer to
-     * create proper {@code AnnotationMirror}s by passing in an element-to-value mapping.
-     *
-     * @param elements the element utilities to use
-     * @param name the name of the annotation to create
-     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
-     *     be loaded
-     */
-    public static @Nullable AnnotationMirror fromNameNonsense(
-            Elements elements, CharSequence name) {
-        return fromName(elements, name, new HashMap<>(), true);
-    }
-
     /**
      * Creates an {@link AnnotationMirror} given by a particular fully-qualified name and
      * element/field values. If any element is not specified by the {@code elementValues} argument,
@@ -268,29 +212,6 @@ public class AnnotationBuilder {
      */
     public static @Nullable AnnotationMirror fromName(
             Elements elements, CharSequence name, Map<String, AnnotationValue> elementNamesValues) {
-        return fromName(elements, name, elementNamesValues, false);
-    }
-
-    /**
-     * Creates an {@link AnnotationMirror} given by a particular fully-qualified name and
-     * element/field values. If any element is not specified by the {@code elementValues} argument,
-     * the default value is used. If any such element does not have a default, this method throws an
-     * exception.
-     *
-     * <p>This method returns null if the annotation corresponding to the name could not be loaded.
-     *
-     * @param elements the element utilities to use
-     * @param name the name of the annotation to create
-     * @param elementNamesValues the values for the annotation's elements/fields
-     * @param noWarn if true, don't warn when some elements/fields are missing
-     * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
-     *     be loaded
-     */
-    private static @Nullable AnnotationMirror fromName(
-            Elements elements,
-            CharSequence name,
-            Map<String, AnnotationValue> elementNamesValues,
-            boolean noWarn) {
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -312,13 +233,9 @@ public class AnnotationBuilder {
             if (elementValue == null) {
                 AnnotationValue defaultValue = annoElement.getDefaultValue();
                 if (defaultValue == null) {
-                    if (noWarn) {
-                        continue;
-                    } else {
-                        throw new BugInCF(
-                                "AnnotationBuilder.fromName: no value for element %s of %s",
-                                annoElement, name);
-                    }
+                    throw new BugInCF(
+                            "AnnotationBuilder.fromName: no value for element %s of %s",
+                            annoElement, name);
                 } else {
                     elementValue = defaultValue;
                 }
