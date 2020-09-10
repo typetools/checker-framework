@@ -5,6 +5,15 @@ org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
 org.jspecify.annotations.Nullable.
 
+Implementation details:
+
+Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020
