@@ -50,6 +50,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  *   <li>{@code -Aannotations}: prints information about the annotations
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
+ *   <li>{@code -Aannotationsummaryonly}: with both of the obove, only outputs a summary
  * </ul>
  *
  * @see JavaCodeStatistics
@@ -59,7 +60,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * This e.g. influences the output of "method return", which is only valid
  * for type annotations for non-void methods.
  */
-@SupportedOptions({"nolocations", "annotations"})
+@SupportedOptions({"nolocations", "annotations", "annotationsummaryonly"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {
 
@@ -104,11 +105,20 @@ public class AnnotationStatistics extends SourceChecker {
         /** Whether annotation details should be printed. */
         private final boolean annotations;
 
+        /** Whether only a summary should be printed. */
+        private final boolean annotationsummaryonly;
+
+        /**
+         * Create a new Visitor.
+         *
+         * @param l the AnnotationStatistics object, used for obtaining command-line arguments
+         */
         public Visitor(AnnotationStatistics l) {
             super(l);
 
             locations = !l.hasOption("nolocations");
             annotations = l.hasOption("annotations");
+            annotationsummaryonly = l.hasOption("annotationsummaryonly");
         }
 
         @Override
@@ -137,12 +147,14 @@ public class AnnotationStatistics extends SourceChecker {
                     prev = t;
                 }
 
-                System.out.printf(
-                        ":annotation %s %s %s %s%n",
-                        tree.getAnnotationType(),
-                        tree,
-                        root.getSourceFile().getName(),
-                        (isBodyAnnotation ? "body" : "sig"));
+                if (!annotationsummaryonly) {
+                    System.out.printf(
+                            ":annotation %s %s %s %s%n",
+                            tree.getAnnotationType(),
+                            tree,
+                            root.getSourceFile().getName(),
+                            (isBodyAnnotation ? "body" : "sig"));
+                }
             }
             return super.visitAnnotation(tree, p);
         }

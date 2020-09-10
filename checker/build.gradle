@@ -16,8 +16,8 @@ dependencies {
     // As of 2019/12/16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:0.2.2'
-    implementation 'org.plumelib:plume-util:1.1.5'
+    implementation 'org.plumelib:reflection-util:1.0.1'
+    implementation 'org.plumelib:plume-util:1.1.6'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13'
     testImplementation project(':framework-test')
@@ -105,7 +105,8 @@ clean {
 }
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+createCheckTypeTask(project.name,, "CompilerMessages",
+    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     doFirst {
         options.compilerArgs += [

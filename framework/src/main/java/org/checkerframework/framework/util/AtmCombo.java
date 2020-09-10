@@ -246,7 +246,7 @@ public enum AtmCombo {
     /**
      * Call the visit method that corresponds to the AtmCombo that represents the classes of type1
      * and type2. That is, get the combo for type1 and type 2, use it to identify the correct
-     * visitor method, and call that method with type1, type2 and initial param as arguments to the
+     * visitor method, and call that method with type1, type2, and initialParam as arguments to the
      * visit method.
      *
      * @param type1 first argument to the called visit method
