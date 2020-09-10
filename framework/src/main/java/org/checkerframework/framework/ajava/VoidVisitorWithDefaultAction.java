@@ -108,6 +108,11 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
  * performing an action on each node of an AST.
  */
 public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Void> {
+    /**
+     * Action performed on each visited node.
+     *
+     * @param node node to perform action on
+     */
     public abstract void defaultAction(Node node);
 
     @Override

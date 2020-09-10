@@ -160,19 +160,31 @@ import org.checkerframework.javacutil.BugInCF;
  * processJavacType(JavacTypeTree javacTree, JavaParserNode javaParserNode)}. These are named after
  * the visit methods in {@code com.sun.source.tree.TreeVisitor}, but for each javac tree type there
  * may be multiple process methods for each possible node type it could be matched to.
+ *
+ * <p>Allows multiple traversal types through a {@code TraversalType}. In {@code PRE_ORDER}
+ * traversal, the {@code process} method for a node is called before the {@code process} nodes for
+ * its children, and vice versa for {@code POST_ORDER}.
  */
 public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
+    /** Possible traversal orders for the visitor. */
     public enum TraversalType {
         PRE_ORDER,
         POST_ORDER
     }
 
+    /** Which traversal type to use. */
     private TraversalType traversalType;
 
+    /**
+     * Constructs a visitor that uses the given traversal type.
+     *
+     * @param traversalType traversal type to use
+     */
     protected JointJavacJavaParserVisitor(TraversalType traversalType) {
         this.traversalType = traversalType;
     }
 
+    /** Constructs a visitor that uses a post-order traversal. */
     protected JointJavacJavaParserVisitor() {
         this(TraversalType.POST_ORDER);
     }
@@ -1467,7 +1479,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
     @Override
     public Void visitNewArray(NewArrayTree javacTree, Node javaParserNode) {
-        // TODO: Implement this, it's too much work to do now.
+        // TODO: Implement this.
         //
         // Some notes:
         // - javacTree.getAnnotations() seems to always return empty, any annotations on the base

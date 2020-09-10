@@ -29,6 +29,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * A visitor that converts annotation values from an {@code AnnotationMirror} to a JavaParser node
+ * that can appear in an {@code AnnotationExpr}.
+ */
 public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<Expression, Void> {
     @Override
     public Expression visit(AnnotationValue value, Void p) {
@@ -57,6 +61,8 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
 
     @Override
     public Expression visitByte(byte value, Void p) {
+        // Annotation byte values are automatically cast to the correct type, so using an integer
+        // literal here works.
         return toIntegerLiteralExpr(value);
     }
 
@@ -105,19 +111,18 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
 
     @Override
     public Expression visitShort(short value, Void p) {
+        // Annotation short values are automatically cast to the correct type, so using an integer
+        // literal here works.
         return toIntegerLiteralExpr(value);
     }
 
     @Override
     public Expression visitString(String value, Void p) {
-        // Does this need to be escaped?
         return new StringLiteralExpr(value);
     }
 
     @Override
     public Expression visitType(TypeMirror value, Void p) {
-        // I believe according to JLS 15.8.2, a class expression can only contain a type name, so
-        // there's no need to handle more complex type (those with generics).
         // TODO: This prints the full qualified name, does that break for anonymous inner classes?
         if (value.getKind() != TypeKind.DECLARED) {
             throw new BugInCF("Unexpected type for class expression: " + value);
@@ -139,6 +144,15 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
         return null;
     }
 
+    /**
+     * Creates a JavaParser expression node representing a literal with the given value.
+     *
+     * <p>JavaParser represents a negative literal with a {@code UnaryExpr} containing a {@code
+     * IntegerLiteralExpr}, so this method won't necessarily return an {@code IntegerLiteralExpr}.
+     *
+     * @param value the value for the literal
+     * @return a JavaParser expression representing {@code value}
+     */
     private Expression toIntegerLiteralExpr(int value) {
         if (value < 0) {
             return new UnaryExpr(

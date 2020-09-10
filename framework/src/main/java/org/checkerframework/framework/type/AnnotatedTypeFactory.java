@@ -81,7 +81,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
-import org.checkerframework.framework.ajava.JointVisitorWithDefaults;
+import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -795,7 +795,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     }
                 }.visitPreOrder(u);
                 System.out.println("About to run that visitor that prints");
-                new JointVisitorWithDefaults() {
+                new JointVisitorWithDefaultAction() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
                         System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
@@ -817,7 +817,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 com.github.javaparser.ast.CompilationUnit javaParserRoot =
                         StaticJavaParser.parse(reader);
                 reader.close();
-                new JointVisitorWithDefaults() {
+                new JointVisitorWithDefaultAction() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {
                         treePairs.put(javacTree, javaParserNode);

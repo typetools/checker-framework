@@ -135,12 +135,18 @@ import com.sun.source.tree.WildcardTree;
  *
  * <p>To use this class, override {@code defaultAction}.
  */
-public abstract class JointVisitorWithDefaults extends JointJavacJavaParserVisitor {
-    protected JointVisitorWithDefaults(TraversalType traversalType) {
+public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParserVisitor {
+    /**
+     * Constructs a visitor that uses the given traversal type.
+     *
+     * @param traversalType traversal type to use
+     */
+    protected JointVisitorWithDefaultAction(TraversalType traversalType) {
         super(traversalType);
     }
 
-    protected JointVisitorWithDefaults() {
+    /** Constructs a visitor that uses a post-order traversal. */
+    protected JointVisitorWithDefaultAction() {
         super();
     }
 

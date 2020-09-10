@@ -16,6 +16,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
+/**
+ * A visitor that given a JavaParser type node and an {@code AnnotatedTypeMirror} representing the
+ * same type, adds all annotations from the {@code AnnotatedTypeMirror} to the JavaParser type,
+ * including nested types like array components.
+ *
+ * <p>The {@code AnnotatedTypeMirror} is passed as the secondary parameter to the visit methods.
+ */
 public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeMirror> {
     @Override
     public void visit(ArrayType target, AnnotatedTypeMirror type) {
@@ -45,14 +52,23 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
     public void visit(TypeParameter target, AnnotatedTypeMirror type) {
         AnnotatedTypeVariable annotatedTypeVar = (AnnotatedTypeVariable) type;
         NodeList<ClassOrInterfaceType> bounds = target.getTypeBound();
-        // TODO: If there's not explicit bound in JavaParser, insert them rather than skipping them.
+        // TODO: If there's not explicit bound in JavaParser, create the extends declaration and add
+        // the annotations.
+        // TODO: Handle multiple bounds correctly.
         if (bounds.size() == 1) {
             bounds.get(0).accept(this, annotatedTypeVar.getUpperBound());
         }
     }
 
-    // TODO: Handle wildcard type?
+    // TODO: Handle wildcard types?
 
+    /**
+     * Transfers annotations from {@code annotatedType} to {@code target}. Does nothing if {@code
+     * annotatedType} is null.
+     *
+     * @param annotatedType type with annotations to transfer
+     * @param target JavaParser node representing the type to transfer annotations to
+     */
     private void transferAnnotations(
             @Nullable AnnotatedTypeMirror annotatedType, NodeWithAnnotations<?> target) {
         if (annotatedType == null) {
@@ -60,10 +76,6 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
         }
 
         for (AnnotationMirror annotation : annotatedType.getAnnotations()) {
-            if (annotation == null) {
-                continue;
-            }
-
             AnnotationExpr convertedAnnotation =
                     AnnotationConversion.annotationMirrorToAnnotationExpr(annotation);
             target.addAnnotation(convertedAnnotation);

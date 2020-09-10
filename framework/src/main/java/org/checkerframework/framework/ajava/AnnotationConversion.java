@@ -13,7 +13,19 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/**
+ * Methods for converting a {@code AnnotationMirror} into a JavaParser {@code AnnotationExpr},
+ * namely {@code annotationMirrorToAnnotationExpr}.
+ */
 public class AnnotationConversion {
+    /**
+     * Converts {@code annotation} into an {@code AnnotationExpr}.
+     *
+     * @param annotation annotation to convert
+     * @return a JavaParser {@code AnnotationExpr} representing the same annotation with the same
+     *     element values. The converted annotation will contain the annotation's fully qualified
+     *     name.
+     */
     public static AnnotationExpr annotationMirrorToAnnotationExpr(AnnotationMirror annotation) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> values =
                 annotation.getElementValues();
@@ -30,6 +42,14 @@ public class AnnotationConversion {
         return new NormalAnnotationExpr(name, convertedValues);
     }
 
+    /**
+     * Converts a mapping of annotation elements to their values to a list of key-value pairs
+     * containing the JavaParser representations of the same values.
+     *
+     * @param values mapping of element values from an {@code AnnotationMirror}
+     * @return a list of the key-value pairs in {@code values} converted to their JavaParser
+     *     representations
+     */
     private static NodeList<MemberValuePair> convertAnnotationValues(
             Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
         NodeList<MemberValuePair> convertedValues = new NodeList<>();
@@ -44,6 +64,16 @@ public class AnnotationConversion {
         return convertedValues;
     }
 
+    // TODO: The documentation for Name mentions a method "name" that does the same thing as the
+    // method below, but I can't find it. Did find a method called "name" that creates a NameExpr.
+
+    /**
+     * Given a fully qualified name, creates a JavaParser {@code Name} structure representing the
+     * same name.
+     *
+     * @param name the fully qualified name to convert
+     * @return a JavaParser {@code Name} holding {@code name}
+     */
     private static Name createQualifiedName(String name) {
         String[] components = name.split("\\.");
         Name result = new Name(components[0]);

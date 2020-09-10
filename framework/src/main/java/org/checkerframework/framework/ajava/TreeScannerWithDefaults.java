@@ -62,8 +62,17 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreeScanner;
 
+/**
+ * A visitor that performs some default action on a tree and then all of its children. To use this
+ * class, override {@code defaultAction}.
+ */
 public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
 
+    /**
+     * Action performed on each visited tree.
+     *
+     * @param tree tree to perform action on
+     */
     public abstract void defaultAction(Tree tree);
 
     @Override
