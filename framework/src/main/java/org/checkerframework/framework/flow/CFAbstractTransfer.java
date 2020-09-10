@@ -677,19 +677,21 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
-    /** The resulting abstract value is the merge of the 'then' and 'else' branch. */
     @Override
     public TransferResult<V, S> visitTernaryExpression(
             TernaryExpressionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitTernaryExpression(n, p);
-        S store = result.getRegularStore();
+        S thenStore = result.getThenStore();
+        S elseStore = result.getElseStore();
         V thenValue = p.getValueOfSubNode(n.getThenOperand());
         V elseValue = p.getValueOfSubNode(n.getElseOperand());
         V resultValue = null;
         if (thenValue != null && elseValue != null) {
+            // The resulting abstract value is the merge of the 'then' and 'else' branch.
             resultValue = thenValue.leastUpperBound(elseValue);
         }
-        return new RegularTransferResult<>(finishValue(resultValue, store), store);
+        V finishedValue = finishValue(resultValue, thenStore, elseStore);
+        return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
     }
 
     /** Reverse the role of the 'thenStore' and 'elseStore'. */
