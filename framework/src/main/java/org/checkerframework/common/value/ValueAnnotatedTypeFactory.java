@@ -57,7 +57,6 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -223,8 +222,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new ValueQualifierHierarchy(factory, this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new ValueQualifierHierarchy(this, this.getSupportedTypeQualifiers());
     }
 
     @Override

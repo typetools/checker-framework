@@ -14,6 +14,15 @@ An accumulation analysis is a restricted form of typestate analysis that does
 not require a precise alias analysis for soundness. The Called Methods Checker
 is an accumulation analysis.
 
+Implementation details:
+
+Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020

@@ -16,20 +16,147 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
+import org.checkerframework.framework.type.NoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Represents the type qualifier hierarchy of a type system that supports multiple separate subtype
  * hierarchies.
  *
  * <p>This class is immutable and can be only created through {@link MultiGraphFactory}.
+ *
+ * @deprecated Use {@link ElementQualifierHierarchy}, {@link MostlyNoElementQualifierHierarchy}, or
+ *     {@link NoElementQualifierHierarchy} instead. This class will be removed in a future release.
+ *     <p>Here are instructions on how to convert from a subclass of MultiGraphQualifierHierarchy to
+ *     the new implementations:
+ *     <p>If the subclass implements isSubtype and calls super when annotations do not have
+ *     elements, then use the following instructions to convert to {@link
+ *     MostlyNoElementQualifierHierarchy}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           MostlyNoElementQualifierHierarchy}.
+ *       <li>Create a constructor matching super.
+ *       <li>Implement isSubtypeWithElements, leastUpperBoundWithElements, and
+ *           greatestLowerBoundWithElements. You may be able to reuse parts of your current
+ *           implementation of isSubtype, leastUpperBound, and greatestLowerBound.
+ *     </ol>
+ *     <p>If the subclass implements isSubtype and does not call super in that implementation, then
+ *     use the following instructions to convert to a subclass of {@link ElementQualifierHierarchy}.
+ *     <ol>
+ *       <li>Change {@code extends MultiGraphQualifierHierarchy} to {@code extends
+ *           ElementQualifierHierarchy}.
+ *       <li>Create a constructor matching super.
+ *       <li>Implement {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)} and {@link
+ *           #greatestLowerBound(AnnotationMirror, AnnotationMirror)} if missing. (In the past, it
+ *           was very easy to forget to implement these, now they are abstract methods.)
+ *     </ol>
+ *     If you wish to continue to use a subclass of {@link MultiGraphQualifierHierarchy} or {@link
+ *     GraphQualifierHierarchy}, you may do so by adding the following to AnnotatedTypeFactory.
+ *     (It's better to convert to one of the new classes because MultiGraphQualifierHierarchy and
+ *     GraphQualifierHierarchy are buggy and no longer supported.)
+ *     <pre>
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ * <code> public QualifierHierarchy createQualifierHierarchy() {
+ *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+ *              .createMultiGraphQualifierHierarchy(this);
+ *   }
+ * </code>
+ * {@code @Override}
+ * {@code @SuppressWarnings("deprecation")}
+ * <code> public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+ *                  factory) {
+ *      return new YourSubclassQualifierHierarchy(factory);
+ *  }
+ * </code></pre>
  */
-@SuppressWarnings("interning") // TODO after https://tinyurl.com/cfissue/3404 is merged
+@SuppressWarnings("interning") // Class is deprecated.
+@Deprecated
 public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
+
+    /**
+     * Creates the QualifierHierarchy using {@link
+     * org.checkerframework.framework.util.MultiGraphQualifierHierarchy}
+     *
+     * @param annotatedTypeFactory annotated type factory
+     * @return qualifier hierarchy
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
+     */
+    @Deprecated
+    public static QualifierHierarchy createMultiGraphQualifierHierarchy(
+            AnnotatedTypeFactory annotatedTypeFactory) {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers =
+                annotatedTypeFactory.getSupportedTypeQualifiers();
+        MultiGraphFactory factory = new MultiGraphFactory(annotatedTypeFactory);
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
+            AnnotationMirror typeQualifierAnno =
+                    AnnotationBuilder.fromClass(
+                            annotatedTypeFactory.getElementUtils(), typeQualifier);
+            factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    throw new TypeSystemError(
+                            "AnnotatedTypeFactory: "
+                                    + typeQualifier
+                                    + " is polymorphic and specifies super qualifiers. "
+                                    + "Remove the @org.checkerframework.framework.qual.SubtypeOf or @org.checkerframework.framework.qual.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
+            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
+                throw new TypeSystemError(
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
+                                + "Add an @org.checkerframework.framework.qual.SubtypeOf annotation to it,%n"
+                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.%n",
+                        typeQualifier);
+            }
+            Class<? extends Annotation>[] superQualifiers =
+                    typeQualifier.getAnnotation(SubtypeOf.class).value();
+            for (Class<? extends Annotation> superQualifier : superQualifiers) {
+                if (!supportedTypeQualifiers.contains(superQualifier)) {
+                    throw new TypeSystemError(
+                            "Found unsupported qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                if (superQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                    // This is currently not supported. No qualifier can have a polymorphic
+                    // qualifier as super qualifier.
+                    throw new TypeSystemError(
+                            "Found polymorphic qualifier in SubTypeOf: %s on qualifier: %s",
+                            superQualifier.getCanonicalName(), typeQualifier.getCanonicalName());
+                }
+                AnnotationMirror superAnno =
+                        AnnotationBuilder.fromClass(
+                                annotatedTypeFactory.getElementUtils(), superQualifier);
+                factory.addSubtype(typeQualifierAnno, superAnno);
+            }
+        }
+
+        QualifierHierarchy hierarchy = factory.build();
+
+        if (!hierarchy.isValid()) {
+            throw new TypeSystemError(
+                    "AnnotatedTypeFactory: invalid qualifier hierarchy: "
+                            + hierarchy.getClass()
+                            + " "
+                            + hierarchy);
+        }
+
+        return hierarchy;
+    }
 
     /**
      * Factory used to create an instance of {@link GraphQualifierHierarchy}. A factory can be used
@@ -52,7 +179,10 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      * <p>Clients build the hierarchy using {@link #addQualifier(AnnotationMirror)} and {@link
      * #addSubtype(AnnotationMirror, AnnotationMirror)}, then get the instance with calling {@link
      * #build()}
+     *
+     * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
+    @Deprecated
     public static class MultiGraphFactory {
         /**
          * Map from qualifiers to the direct supertypes of the qualifier. Only the subtype relations
@@ -185,8 +315,13 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
             return result;
         }
 
+        /**
+         * Create {@link QualifierHierarchy}
+         *
+         * @return QualifierHierarchy
+         */
         protected QualifierHierarchy createQualifierHierarchy() {
-            return atypeFactory.createQualifierHierarchy(this);
+            return atypeFactory.createQualifierHierarchyWithMultiGraphFactory(this);
         }
 
         /** True if the factory has already been built. */
@@ -739,13 +874,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
         outset.addAll(inset);
 
         for (AnnotationMirror a1 : inset) {
-            Iterator<AnnotationMirror> outit = outset.iterator();
-            while (outit.hasNext()) {
-                AnnotationMirror a2 = outit.next();
-                if (a1 != a2 && isSubtype(a1, a2)) {
-                    outit.remove();
-                }
-            }
+            outset.removeIf(a2 -> a1 != a2 && isSubtype(a1, a2));
         }
         return outset;
     }

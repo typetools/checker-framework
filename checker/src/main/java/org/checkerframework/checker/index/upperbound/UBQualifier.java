@@ -474,9 +474,9 @@ public abstract class UBQualifier {
         /**
          * If superType is Unknown, return true. If superType is Bottom, return false.
          *
-         * <p>Otherwise, this qualifier must contain all the sequences in superType. For each the
-         * offsets for each sequence in superType, there must be an offset in this qualifier for the
-         * sequence that is greater than or equal to the super offset.
+         * <p>Otherwise, return true if this qualifier contains all the sequences in superType, AND
+         * for each of the offsets for each sequence in superType, there is an offset in this
+         * qualifier for the sequence that is greater than or equal to the super offset.
          *
          * @param superType other qualifier
          * @return whether this qualifier is a subtype of superType
