@@ -1,12 +1,14 @@
 package testlib.flowexpression;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -29,38 +31,46 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new FlowExpressionQualifierHierarchy(factory);
+    protected FlowExpressionQualifierHierarchy createQualifierHierarchy() {
+        return new FlowExpressionQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    private class FlowExpressionQualifierHierarchy extends GraphQualifierHierarchy {
-        public FlowExpressionQualifierHierarchy(MultiGraphFactory f) {
-            super(f, BOTTOM);
+    private class FlowExpressionQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
+
+        /**
+         * Create a {@code FlowExpressionQualifierHierarchy}.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        public FlowExpressionQualifierHierarchy(
+                Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subtype, AnnotationMirror supertype) {
-            if (areSameByClass(supertype, FETop.class) || areSameByClass(subtype, FEBot.class)) {
-                return true;
-            }
-            if (areSameByClass(subtype, FETop.class) || areSameByClass(supertype, FEBot.class)) {
-                return false;
-            }
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
             List<String> subtypeExpressions =
-                    AnnotationUtils.getElementValueArray(subtype, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
             List<String> supertypeExpressions =
-                    AnnotationUtils.getElementValueArray(supertype, "value", String.class, true);
+                    AnnotationUtils.getElementValueArray(superAnno, "value", String.class, true);
             return subtypeExpressions.containsAll(supertypeExpressions)
                     && supertypeExpressions.containsAll(subtypeExpressions);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isSubtype(a1, a2)) {
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.getName() == "testlib.flowexpression.qual.FEBot") {
                 return a2;
-            }
-
-            if (isSubtype(a2, a1)) {
+            } else if (qualifierKind2.getName() == "testlib.flowexpression.qual.FEBot") {
                 return a1;
             }
             List<String> a1Expressions =
@@ -72,6 +82,28 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 return a1;
             }
             return TOP;
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (qualifierKind1.getName() == "testlib.flowexpression.qual.FETop") {
+                return a2;
+            } else if (qualifierKind2.getName() == "testlib.flowexpression.qual.FETop") {
+                return a1;
+            }
+            List<String> a1Expressions =
+                    AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+            List<String> a2Expressions =
+                    AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+            if (a1Expressions.containsAll(a2Expressions)
+                    && a2Expressions.containsAll(a1Expressions)) {
+                return a1;
+            }
+            return BOTTOM;
         }
     }
 }

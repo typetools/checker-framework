@@ -578,14 +578,22 @@ public class AnnotationBuilder {
         private final Map<ExecutableElement, AnnotationValue> elementValues;
         /** The annotation name. */
         // default visibility to allow access from within package.
-        final @Interned String annotationName;
+        final @Interned @FullyQualifiedName String annotationName;
 
+        /**
+         * Create a CheckerFrameworkAnnotationMirror.
+         *
+         * @param annotationType the annotation type
+         * @param elementValues the element values
+         */
+        @SuppressWarnings("signature:assignment.type.incompatible") // needs JDK annotations
         CheckerFrameworkAnnotationMirror(
-                DeclaredType at, Map<ExecutableElement, AnnotationValue> ev) {
-            this.annotationType = at;
-            final TypeElement elm = (TypeElement) at.asElement();
+                DeclaredType annotationType,
+                Map<ExecutableElement, AnnotationValue> elementValues) {
+            this.annotationType = annotationType;
+            final TypeElement elm = (TypeElement) annotationType.asElement();
             this.annotationName = elm.getQualifiedName().toString().intern();
-            this.elementValues = ev;
+            this.elementValues = elementValues;
         }
 
         @Override

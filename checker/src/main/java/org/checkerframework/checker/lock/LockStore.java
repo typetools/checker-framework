@@ -163,6 +163,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     @Override
     protected String internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
         return viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer)
+                + viz.getSeparator()
                 + super.internalVisualize(viz);
     }
 
