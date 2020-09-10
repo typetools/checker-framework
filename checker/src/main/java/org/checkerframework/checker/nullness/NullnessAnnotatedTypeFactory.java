@@ -58,9 +58,10 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -582,30 +583,61 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+    public QualifierHierarchy createQualifierHierarchy() {
+        return new NullnessQualifierHierarchy();
     }
 
+    /** NullnessQualifierHierarchy */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
-        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
-            super(f, arg);
+        /** Qualifier kind for the @{@link Nullable} annotation. */
+        private final QualifierKind NULLABLE;
+
+        /** Creates NullnessQualifierHierarchy. */
+        public NullnessQualifierHierarchy() {
+            super();
+            NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
-                return this.isSubtypeInitialization(subAnno, superAnno);
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (!subKind.isInSameHierarchyAs(NULLABLE)
+                    || !superKind.isInSameHierarchyAs(NULLABLE)) {
+                return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF(
+                    "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isInitializationAnnotation(a1) || isInitializationAnnotation(a2)) {
-                return this.leastUpperBoundInitialization(a1, a2);
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
             }
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return FBCBOTTOM;
+            }
+            throw new BugInCF(
+                    "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
     }
 }

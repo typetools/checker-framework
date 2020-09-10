@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -27,8 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -284,8 +284,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new AccumulationQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new AccumulationQualifierHierarchy();
     }
 
     /**
@@ -341,20 +341,42 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *       not very precise.)
      * </ul>
      */
-    protected class AccumulationQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class AccumulationQualifierHierarchy implements QualifierHierarchy {
 
-        /**
-         * Create the qualifier hierarchy.
-         *
-         * @param factory the factory
-         */
-        public AccumulationQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory);
+        /** A set that includes only the {@link #top} annotation. */
+        final Set<AnnotationMirror> tops = AnnotationMirrorSet.singleElementSet(top);
+
+        /** A set that includes only the {@link #bottom} annotation. */
+        final Set<AnnotationMirror> bottoms = AnnotationMirrorSet.singleElementSet(bottom);
+
+        @Override
+        public Set<? extends AnnotationMirror> getTopAnnotations() {
+            return tops;
         }
 
         @Override
         public AnnotationMirror getTopAnnotation(final AnnotationMirror start) {
             return top;
+        }
+
+        @Override
+        public Set<? extends AnnotationMirror> getBottomAnnotations() {
+            return bottoms;
+        }
+
+        @Override
+        public AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier) {
+            return bottom;
+        }
+
+        @Override
+        public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier) {
+            return null;
+        }
+
+        @Override
+        public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
+            return false;
         }
 
         /**

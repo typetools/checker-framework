@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -32,7 +33,9 @@ public interface QualifierHierarchy {
      *
      * @return whether this is valid
      */
-    boolean isValid();
+    default boolean isValid() {
+        return true;
+    }
 
     // **********************************************************************
     // Getter methods about this hierarchy
@@ -126,9 +129,23 @@ public interface QualifierHierarchy {
      * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
      *     qualifier in the same hierarchy in {@code superQualifiers}
      */
-    boolean isSubtype(
+    default boolean isSubtype(
             Collection<? extends AnnotationMirror> subQualifiers,
-            Collection<? extends AnnotationMirror> superQualifiers);
+            Collection<? extends AnnotationMirror> superQualifiers) {
+        assertSameSize(subQualifiers, superQualifiers);
+        for (AnnotationMirror subQual : subQualifiers) {
+            AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
+            if (superQual == null) {
+                throw new BugInCF(
+                        "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
+                        subQual, UtilPlume.join(",", superQualifiers));
+            }
+            if (!isSubtype(subQual, superQual)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
@@ -288,7 +305,13 @@ public interface QualifierHierarchy {
     }
 
     /**
-     * Returns the annotation in qualifiers that is in the same hierarchy as qualifier.
+     * Returns the annotation in {@code qualifiers} that is in the same hierarchy as {@code
+     * qualifier}.
+     *
+     * <p>The default implementation calls {@link #getTopAnnotation(AnnotationMirror)} and then
+     * calls {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}. So, if {@code
+     * qualifier} is a top qualifier, then call {@link #findAnnotationInHierarchy(Collection,
+     * AnnotationMirror)} directly is faster.
      *
      * @param qualifiers set of annotations to search
      * @param qualifier annotation that is in the same hierarchy as the returned annotation
@@ -301,8 +324,8 @@ public interface QualifierHierarchy {
     }
 
     /**
-     * Returns the annotation in qualifiers that is in the hierarchy for which annotationMirror is
-     * top.
+     * Returns the annotation in {@code qualifiers} that is in the hierarchy for which {@code top}
+     * is top.
      *
      * @param qualifiers set of annotations to search
      * @param top the top annotation in the hierarchy to which the returned annotation belongs
@@ -362,7 +385,8 @@ public interface QualifierHierarchy {
     static void assertSameSize(Collection<?> c1, Collection<?> c2) {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
-                    "inconsistent sizes (%d, %d):%n  %s%n  %s", c1.size(), c2.size(), c1, c2);
+                    "inconsistent sizes (%d, %d):%n  %s%n  %s",
+                    c1.size(), c2.size(), UtilPlume.join(",", c1), UtilPlume.join(",", c1));
         }
     }
 
@@ -375,10 +399,15 @@ public interface QualifierHierarchy {
      * @param result the result collection
      */
     static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
-        if (c1.size() != result.size()) {
+        if (c1.size() != result.size() || c2.size() != result.size()) {
             throw new BugInCF(
                     "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",
-                    c1.size(), c2.size(), result.size(), c1, c2, result);
+                    c1.size(),
+                    c2.size(),
+                    result.size(),
+                    UtilPlume.join(",", c1),
+                    UtilPlume.join(",", c2),
+                    UtilPlume.join(",", result));
         }
     }
 
