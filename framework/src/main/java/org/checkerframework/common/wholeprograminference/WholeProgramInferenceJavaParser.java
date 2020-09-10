@@ -9,13 +9,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -47,7 +48,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
-import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -605,10 +605,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     @Override
                     public void processClass(
                             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
-                        TypeElement classElt = TreeUtils.elementFromDeclaration(javacTree);
+                        addClassTree(javacTree);
+                    }
+
+                    @Override
+                    public void processNewClass(
+                            NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
+                        if (javacTree.getClassBody() != null) {
+                            addClassTree(javacTree.getClassBody());
+                        }
+                    }
+
+                    private void addClassTree(ClassTree tree) {
+                        TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
                         String className = getClassName(classElt);
-                        ClassOrInterfaceWrapper typeWrapper =
-                                new ClassOrInterfaceWrapper(javaParserNode);
+                        ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
                         if (!classes.containsKey(className)) {
                             classes.put(className, typeWrapper);
                         }
@@ -729,8 +740,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         public void transferAnnotations() {
-            ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
-            declaration.accept(annotationClearer, null);
+            // ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
+            // declaration.accept(annotationClearer, null);
             for (ClassOrInterfaceWrapper type : types) {
                 type.transferAnnotations();
             }
@@ -738,12 +749,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     private static class ClassOrInterfaceWrapper {
-        public ClassOrInterfaceDeclaration declaration;
         public Map<String, CallableDeclarationWrapper> callableDeclarations;
         public Map<String, FieldWrapper> fields;
 
-        public ClassOrInterfaceWrapper(ClassOrInterfaceDeclaration declaration) {
-            this.declaration = declaration;
+        public ClassOrInterfaceWrapper() {
             callableDeclarations = new HashMap<>();
             fields = new HashMap<>();
         }
@@ -760,12 +769,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
         @Override
         public String toString() {
-            return "ClassOrInterfaceWrapper [declaration="
-                    + declaration
+            return "ClassOrInterfaceWrapper [callableDeclarations="
+                    + callableDeclarations
                     + ", fields="
                     + fields
-                    + ", callableDeclarations="
-                    + callableDeclarations
                     + "]";
         }
     }
@@ -885,13 +892,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         public String toString() {
             return "FieldWrapper [declaration=" + declaration + ", type=" + type + "]";
         }
-    }
-
-    private static AnnotationExpr makeAnnotationExpr(AnnotationMirror annotation) {
-        // String name = AnnotationUtils.annotationName(annotation);
-        // Map<? extends ExecutableElement, ? extends AnnotationValue> values =
-        // annotation.getElementValues();
-        return null;
     }
 
     private static void transferAnnotations(
