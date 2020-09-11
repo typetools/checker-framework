@@ -604,7 +604,7 @@ public class ElementUtils {
      * Returns the TypeElement for the given class.
      *
      * @param clazz a class
-     * @returns the TypeElement for the class
+     * @return the TypeElement for the class
      */
     public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
         return processingEnv.getElementUtils().getTypeElement(clazz.getCanonicalName());

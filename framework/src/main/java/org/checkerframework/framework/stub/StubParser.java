@@ -282,6 +282,7 @@ public class StubParser {
      * Get all members of a Type that are importable in a stub file. Currently these are values of
      * enums, or compile time constants.
      *
+     * @param typeElement the type whose members to return
      * @return a list fully-qualified member names
      */
     private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
@@ -1605,8 +1606,13 @@ public class StubParser {
     }
 
     /**
-     * Get the type element for the given fully-qualified type name, or issue a warning if none is
-     * found.
+     * Get the type element for the given fully-qualified type name. If none is found, issue a
+     * warning and return null.
+     *
+     * @param typeName a type name
+     * @param msg a warning message to issue if the type element for {@code typeName} cannot be
+     *     found
+     * @return the type element for the given fully-qualified type name, or null
      */
     private TypeElement getTypeElement(@FullyQualifiedName String typeName, String... msg) {
         TypeElement classElement = elements.getTypeElement(typeName);

@@ -156,7 +156,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return super.canonicalAnnotation(anno);
     }
 
-    /** Return a map from canonical class name to the corresponding UnitsRelations instance. */
+    /**
+     * Returns a map from canonical class name to the corresponding UnitsRelations instance.
+     *
+     * @return a map from canonical class name to the corresponding UnitsRelations instance
+     */
     protected Map<@CanonicalName String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<>();

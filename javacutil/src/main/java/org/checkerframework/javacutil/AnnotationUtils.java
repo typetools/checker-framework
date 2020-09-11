@@ -853,7 +853,7 @@ public class AnnotationUtils {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
         @SuppressWarnings(
-                "signature:assignment.type.incompatible") // user specified, so name exists
+                "signature:assignment.type.incompatible") // user specified, so name is not empty
         @CanonicalName Name result = ct.asElement().getQualifiedName();
         return result;
     }

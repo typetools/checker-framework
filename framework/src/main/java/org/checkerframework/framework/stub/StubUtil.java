@@ -158,6 +158,13 @@ public class StubUtil {
         }
     }
 
+    /**
+     * Split a name (which comes from an import statement) into the part before the last period and
+     * the part after the last period.
+     *
+     * @param imported the name to split
+     * @param a pair of the type name and the field name
+     */
     @SuppressWarnings("signature") // string parsing
     /*package-scope*/ static Pair<@FullyQualifiedName String, String> partitionQualifiedName(
             String imported) {

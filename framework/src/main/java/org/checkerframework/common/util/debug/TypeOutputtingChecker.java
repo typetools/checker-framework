@@ -104,6 +104,11 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         new TypeOutputtingChecker().run(args);
     }
 
+    /**
+     * Run the test.
+     *
+     * @param args command-line arguments
+     */
     public void run(@CanonicalName String[] args) {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();

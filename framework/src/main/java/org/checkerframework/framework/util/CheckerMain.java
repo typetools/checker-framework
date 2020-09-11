@@ -717,12 +717,17 @@ public class CheckerMain {
      * shorthand.
      */
     protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
-    // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
+    /**
+     * The version of CHECKER_BASE_PACKAGE using / rather than . as the separator. Forward slash is
+     * used instead of File.separator because checker.jar uses / as the separator.
+     */
     protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", "/");
 
+    /** The canonical name of {@link SubtypingChecker}. */
     protected static final @CanonicalName String FULLY_QUALIFIED_SUBTYPING_CHECKER =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
 
+    /** The simple name of {@link SubtypingChecker}. */
     protected static final String SUBTYPING_CHECKER_NAME =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
@@ -734,6 +739,8 @@ public class CheckerMain {
      * @param processorString the name of a single processor, not a comma-separated list of
      *     processors
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names
+     * @return true if the fully-qualified version of {@code processorString} is in {@code
+     *     fullyQualifiedCheckerNames}
      */
     public static boolean matchesCheckerOrSubcheckerFromList(
             final String processorString,
@@ -770,6 +777,8 @@ public class CheckerMain {
      * only checkers with the name ending in "Checker". Checkers with a name ending in "Subchecker"
      * are not included in the returned list. Note however that it is possible for a checker with
      * the name ending in "Checker" to be used as a subchecker.
+     *
+     * @return fully qualified names of the checkers found in checker.jar
      */
     private List<@FullyQualifiedName String> getAllCheckerClassNames() {
         ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
@@ -848,9 +857,15 @@ public class CheckerMain {
     /**
      * Given a processor name, tries to expand it to a checker in the fullyQualifiedCheckerNames
      * list. Returns that expansion, or the argument itself if the expansion fails.
+     *
+     * @param processorName a processor name, possibly in shorthand
+     * @param fullyQualifiedCheckerNames all checker names
+     * @param allowSubcheckers whether to match subcheckers as well as checkers
+     * @return the fully-qualified version of {@code processorName} in {@code
+     *     fullyQualifiedCheckerNames}, or else {@code processorName} itself
      */
     private static String unshorthandProcessorName(
-            final String processor,
+            final String processorName,
             List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
         for (final String name : fullyQualifiedCheckerNames) {
@@ -873,31 +888,34 @@ public class CheckerMain {
             }
 
             if (tryMatch) {
-                if (processor.equalsIgnoreCase(checkerName)
-                        || processor.equalsIgnoreCase(checkerNameShort)) {
+                if (processorName.equalsIgnoreCase(checkerName)
+                        || processorName.equalsIgnoreCase(checkerNameShort)) {
                     return name;
                 }
             }
         }
 
-        return processor; // If not matched, return the input string.
+        return processorName; // If not matched, return the input string.
     }
 
     /**
      * Given a shorthand processor name, returns true if it can be expanded to a checker in the
      * fullyQualifiedCheckerNames list. Does not match the subtyping checker.
      *
-     * @param processor a string identifying one processor
-     * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processor
-     *     against
+     * @param processorName a string identifying one processor
+     * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match
+     *     processorName against
      * @param allowSubcheckers whether to match against fully qualified checker names ending with
      *     "Subchecker"
+     * @return true if the shorthand processor name can be expanded to a checker in {@code
+     *     fullyQualifiedCheckerNames}
      */
     public static boolean matchesFullyQualifiedProcessor(
-            final String processor,
+            final String processorName,
             List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
         return !processor.equals(
-                unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers));
+                unshorthandProcessorName(
+                        processorName, fullyQualifiedCheckerNames, allowSubcheckers));
     }
 }

@@ -275,7 +275,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
          * type systems.
          *
          * @param qual an annotation
-         * @return the name of te class specified by the {@link PolymorphicQualifier}
+         * @return the name of the class specified by the {@link PolymorphicQualifier}
          *     meta-annotation on {@code qual}, if {@code qual} is a polymorphic qualifier;
          *     otherwise, null.
          * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()

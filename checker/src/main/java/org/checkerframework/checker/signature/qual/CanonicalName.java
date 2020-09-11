@@ -30,9 +30,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * </blockquote>
  *
- * Given a character sequence that is a fully-qualified anme, there is no way to know whether or not
+ * Given a character sequence that is a fully-qualified name, there is no way to know whether or not
  * it is a canonical name, without examining the program it refers to. Therefore, to avoid excessive
- * warnings that would have to be suppressed, sometimes variables that hold a canonical name are
+ * warnings that would have to be suppressed, sometimes a variable that holds a canonical name is
  * annotated as {@code @}{@link FullyQualifiedName}.
  *
  * @see FullyQualifiedName

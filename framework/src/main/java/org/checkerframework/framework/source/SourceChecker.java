@@ -574,8 +574,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Return a list containing this checker name and all checkers it is a part of (that is,
+     * Returns a list containing this checker name and all checkers it is a part of (that is,
      * checkers that called it).
+     *
+     * @return a list containing this checker name and all checkers it is a part of (that is,
+     *     checkers that called it)
      */
     public List<@FullyQualifiedName String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {

@@ -5130,7 +5130,7 @@ public class CFGBuilder {
          * Returns the TypeElement for the given class.
          *
          * @param clazz a class
-         * @returns the TypeElement for the class
+         * @return the TypeElement for the class
          */
         private TypeElement getTypeElement(Class<?> clazz) {
             return elements.getTypeElement(clazz.getCanonicalName());
