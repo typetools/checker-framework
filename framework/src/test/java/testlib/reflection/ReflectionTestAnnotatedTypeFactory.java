@@ -9,8 +9,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import testlib.reflection.qual.ReflectBottom;
 
@@ -32,11 +30,5 @@ public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeF
         literalTreeAnnotator.addStandardLiteralQualifiers();
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        AnnotationMirror bottom = AnnotationBuilder.fromClass(elements, ReflectBottom.class);
-        return new GraphQualifierHierarchy(factory, bottom);
     }
 }

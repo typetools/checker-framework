@@ -4,6 +4,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.plumelib.util.UniqueId;
+import org.plumelib.util.UtilPlume;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
@@ -286,7 +287,13 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     @Override
     public String toString() {
         if (store == null) {
-            return "[then=" + thenStore + ", else=" + elseStore + "]";
+            return "[then="
+                    + UtilPlume.indentLinesExceptFirst(2, thenStore)
+                    + ","
+                    + System.lineSeparator()
+                    + "  else="
+                    + UtilPlume.indentLinesExceptFirst(2, elseStore)
+                    + "]";
         } else {
             return "[" + store + "]";
         }
