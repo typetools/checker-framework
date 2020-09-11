@@ -12,7 +12,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import testlib.flowexpression.qual.FEBot;
+import testlib.flowexpression.qual.FEBottom;
 import testlib.flowexpression.qual.FETop;
 
 public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -21,7 +21,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public FlowExpressionAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         TOP = AnnotationBuilder.fromClass(elements, FETop.class);
-        BOTTOM = AnnotationBuilder.fromClass(elements, FEBot.class);
+        BOTTOM = AnnotationBuilder.fromClass(elements, FEBottom.class);
         postInit();
     }
 
@@ -68,9 +68,9 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
                 QualifierKind qualifierKind2) {
-            if (qualifierKind1.getName() == "testlib.flowexpression.qual.FEBot") {
+            if (qualifierKind1.getName() == "testlib.flowexpression.qual.FEBottom") {
                 return a2;
-            } else if (qualifierKind2.getName() == "testlib.flowexpression.qual.FEBot") {
+            } else if (qualifierKind2.getName() == "testlib.flowexpression.qual.FEBottom") {
                 return a1;
             }
             List<String> a1Expressions =

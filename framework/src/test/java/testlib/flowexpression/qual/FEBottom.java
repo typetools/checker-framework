@@ -6,4 +6,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 @SubtypeOf({FlowExp.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface FEBot {}
+public @interface FEBottom {}
