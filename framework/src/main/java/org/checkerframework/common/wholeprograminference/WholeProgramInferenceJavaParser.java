@@ -48,6 +48,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
+import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -74,10 +75,28 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public static final String AJAVA_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
+    /**
+     * Mapping of binary class names to the wrapper containing those classes. Contains all classes
+     * in source files added for inference.
+     */
     private Map<@BinaryName String, ClassOrInterfaceWrapper> classes;
+
+    /**
+     * The list of paths to files containing classes for which an annotation has been inferred since
+     * the last time files were written to disk.
+     */
     private Set<String> modifiedFiles;
+
+    /**
+     * Mapping of source file paths to the collection of wrappers for compilation units parsed from
+     * that file.
+     */
     private Map<String, List<CompilationUnitWrapper>> sourceFiles;
 
+    /**
+     * Constructs a {@code WholeProgramInferenceJavaParser} which has not yet inferred any
+     * annotations.
+     */
     public WholeProgramInferenceJavaParser() {
         classes = new HashMap<>();
         modifiedFiles = new HashSet<>();
@@ -124,6 +143,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         updateInferredExecutableParameterTypes(methodElt, atf, file, method, arguments);
     }
 
+    /**
+     * Given an executable such as method or constructor invocation using the given list of
+     * arguments, updates the inferred types of each parameter.
+     *
+     * @param methodElt element for the executable that was called
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used
+     * @param file path to the source file containing the executable
+     * @param executable the wrapper containing the currently stored annotations for the executable
+     * @param arguments arguments of the invocation
+     */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf,
@@ -146,7 +176,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
 
-            updateAnnotationSetInScene(
+            updateAnnotationSetAtLocation(
                     executable.getParameterType(argATM, atf, i),
                     atf,
                     file,
@@ -178,7 +208,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
             AnnotatedTypeMirror param = method.getParameterType(argATM, atf, i);
-            updateAnnotationSetInScene(
+            updateAnnotationSetAtLocation(
                     param, atf, file, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
 
@@ -187,7 +217,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
                 AnnotatedTypeMirror receiver = method.getReceiverType(paramATM, atf);
-                updateAnnotationSetInScene(
+                updateAnnotationSetAtLocation(
                         receiver, atf, file, argADT, paramATM, TypeUseLocation.RECEIVER);
             }
         }
@@ -230,7 +260,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AnnotatedTypeMirror param = method.getParameterType(paramATM, atf, i);
-                updateAnnotationSetInScene(
+                updateAnnotationSetAtLocation(
                         param, atf, file, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
             }
@@ -291,7 +321,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
-        updateAnnotationSetInScene(field, atf, file, rhsATM, lhsATM, TypeUseLocation.FIELD);
+        updateAnnotationSetAtLocation(field, atf, file, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
 
     @Override
@@ -326,7 +356,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         AnnotatedTypeMirror returnType = method.getReturnType(lhsATM, atf);
-        updateAnnotationSetInScene(returnType, atf, file, rhsATM, lhsATM, TypeUseLocation.RETURN);
+        updateAnnotationSetAtLocation(
+                returnType, atf, file, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -343,7 +374,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedDeclaredType superclassDecl = pair.getKey();
             ExecutableElement overriddenMethodElement = pair.getValue();
 
-            // do not infer types for code that isn't presented as source
+            // Don't infer types for code that isn't presented as source.
             if (!ElementUtils.isElementFromSourceCode(overriddenMethodElement)) {
                 continue;
             }
@@ -366,7 +397,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedTypeMirror storedOverriddenMethodReturnType =
                     overriddenMethodInSuperclass.getReturnType(overriddenMethodReturnType, atf);
 
-            updateAnnotationSetInScene(
+            updateAnnotationSetAtLocation(
                     storedOverriddenMethodReturnType,
                     atf,
                     superClassFile,
@@ -423,10 +454,30 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 }
             }
         }
+
+        modifiedFiles.clear();
     }
 
-    protected void updateAnnotationSetInScene(
-            AnnotatedTypeMirror type,
+    /**
+     * Updates the set of annotations in a location in a program.
+     *
+     * <ul>
+     *   <li>If there was no previous annotation for that location, then the updated set will be the
+     *       annotations in rhsATM.
+     *   <li>If there was a previous annotation, the updated set will be the LUB between the
+     *       previous annotation and rhsATM.
+     * </ul>
+     *
+     * @param typeToUpdate the {@code AnnotatedTypeMirror} for the location which will be modified
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used
+     * @param file path to the source file containing the executable
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param defLoc the location where the annotation will be added
+     */
+    protected void updateAnnotationSetAtLocation(
+            AnnotatedTypeMirror typeToUpdate,
             AnnotatedTypeFactory atf,
             String file,
             AnnotatedTypeMirror rhsATM,
@@ -436,7 +487,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // WholeProgramInferenceScenesStorage
         AnnotatedTypeMirror atmFromJaif =
                 AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
-        updatesATMWithLUB(atf, rhsATM, atmFromJaif);
+        updateATMWithLUB(atf, rhsATM, atmFromJaif);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -448,10 +499,31 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
-        updateTypeElementFromATM(rhsATM, lhsATM, atf, type, defLoc);
+        updateTypeElementFromATM(rhsATM, lhsATM, atf, typeToUpdate, defLoc);
         modifiedFiles.add(file);
     }
 
+    /**
+     * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to have the
+     * annotations of an {@code AnnotatedTypeMirror} passed as argument. Annotations in the original
+     * set that should be ignored (see {@link #shouldIgnore}) are not added to the resulting set.
+     * This method also checks if the AnnotatedTypeMirror has explicit annotations in source code,
+     * and if that is the case no annotations are added for that location.
+     *
+     * <p>This method removes from the {@code AnnotatedTypeMirror} all annotations supported by
+     * {@code atf} before inserting new ones. It is assumed that every time this method is called,
+     * the new {@code AnnotatedTypeMirror} has a better type estimate for the given location.
+     * Therefore, it is not a problem to remove all annotations before inserting the new
+     * annotations.
+     *
+     * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
+     * @param curATM used to check if the element which will be updated has explicit annotations in
+     *     source code
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used
+     * @param typeToUpdate the {@code AnnotatedTypeMirror} which will be updated
+     * @param defLoc the location where the annotation will be added
+     */
     private void updateTypeElementFromATM(
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
@@ -518,18 +590,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param sourceCodeATM the annotated type on the source code
      * @param jaifATM the annotated type on the .jaif file
      */
-    private void updatesATMWithLUB(
+    private void updateATMWithLUB(
             AnnotatedTypeFactory atf,
             AnnotatedTypeMirror sourceCodeATM,
             AnnotatedTypeMirror jaifATM) {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
-                updatesATMWithLUB(
+                updateATMWithLUB(
                         atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                         ((AnnotatedTypeVariable) jaifATM).getLowerBound());
-                updatesATMWithLUB(
+                updateATMWithLUB(
                         atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
                         ((AnnotatedTypeVariable) jaifATM).getUpperBound());
@@ -545,7 +617,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
                 //            break;
             case ARRAY:
-                updatesATMWithLUB(
+                updateATMWithLUB(
                         atf,
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                         ((AnnotatedArrayType) jaifATM).getComponentType());
@@ -573,6 +645,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         sourceCodeATM.replaceAnnotations(annosToReplace);
     }
 
+    /**
+     * Reads the Java source file at {@code path} and stores its types and methods, making them
+     * available to add inferred annotations to.
+     *
+     * @param path path to a Java source file to add
+     */
     private void addSourceFile(String path) {
         if (sourceFiles.containsKey(path)) {
             return;
@@ -595,6 +673,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    /**
+     * Initializes storage for the types and methods in root, which must be the top-level tree
+     * created from parsing the Java source file at {@code path} with javac.
+     *
+     * <p>Parser the file at {@code path} with JavaParser. For each location for which annotations
+     * may be inferred, creates a wrapper for that location that annotations may be added to that
+     * contains the JavaParser node for that location so that annotations may be transferred onto
+     * JavaParser.
+     *
+     * @param root root of tree parsed from file at {@code path} parsed with javac
+     * @param path path to source file containing the compilation root
+     */
     private CompilationUnitWrapper addCompilationUnit(CompilationUnitTree root, String path)
             throws IOException {
         CompilationUnit javaParserRoot =
@@ -671,6 +761,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return wrapper;
     }
 
+    /**
+     * Calls {@link #addSourceFile(String)} for the file containing the given element.
+     *
+     * @param element element for the source file to add
+     */
     private String addSourceFileForElement(Element element) {
         if (!ElementUtils.isElementFromSourceCode(element)) {
             throw new BugInCF("Adding source file for non-source element: " + element);
@@ -730,33 +825,61 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    /**
+     * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes
+     * and interfaces in that compilation unit.
+     */
     private static class CompilationUnitWrapper {
+        /** Compilation unit being wrapped */
         public CompilationUnit declaration;
+        /** Wrappers for classes and interfaces in {@code declaration} */
         public List<ClassOrInterfaceWrapper> types;
 
+        /**
+         * Constructs a wrapper around the given declaration
+         *
+         * @param declaration compilation unit to wrap
+         */
         public CompilationUnitWrapper(CompilationUnit declaration) {
             this.declaration = declaration;
             types = new ArrayList<>();
         }
 
+        /**
+         * Transfers all annotations inferred by whole program inference for the wrapped compilation
+         * unit to their corresponding JavaParser locations.
+         */
         public void transferAnnotations() {
-            // ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
-            // declaration.accept(annotationClearer, null);
+            ClearAnnotationsVisitor annotationClearer = new ClearAnnotationsVisitor();
+            declaration.accept(annotationClearer, null);
             for (ClassOrInterfaceWrapper type : types) {
                 type.transferAnnotations();
             }
         }
     }
 
+    /**
+     * Stores wrappers for the locations where annotations may be inferred in a class or interface.
+     */
     private static class ClassOrInterfaceWrapper {
+        /**
+         * Mapping from JVM method signatures to the wrapper containing the corresponding
+         * executable.
+         */
         public Map<String, CallableDeclarationWrapper> callableDeclarations;
+        /** Mapping from field names to wrappers for those fields. */
         public Map<String, FieldWrapper> fields;
 
+        /** Creates an empty class or interface wrapper. */
         public ClassOrInterfaceWrapper() {
             callableDeclarations = new HashMap<>();
             fields = new HashMap<>();
         }
 
+        /**
+         * Transfers all annotations inferred by whole program inference for the methods and fields
+         * in the wrapper class or interface to their corresponding JavaParser locations.
+         */
         public void transferAnnotations() {
             for (CallableDeclarationWrapper callable : callableDeclarations.values()) {
                 callable.transferAnnotations();
@@ -777,14 +900,36 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    /**
+     * Stores the JavaParser node for a method or constructor and the annotations that have been
+     * inferred about its parameters and return type.
+     */
     private static class CallableDeclarationWrapper {
+        /** Wrapped method or constructor declaration. */
         public CallableDeclaration<?> declaration;
+        /** Path to file containing the declaration. */
         public String file;
-        // TODO: Make these private?
+        /**
+         * Inferred annotations for the return type, if the declaration represents a method.
+         * Initialized on first usage.
+         */
         public @Nullable AnnotatedTypeMirror returnType;
+        /**
+         * Inferred annotations for the receiver type, if the declaration represents a method.
+         * Initialized on first usage.
+         */
         public @Nullable AnnotatedTypeMirror receiverType;
+        /**
+         * Inferred annotations for parameter types. Initialized the first time any parameter is
+         * accessed and each parameter is initialized the first time it's accessed.
+         */
         public @Nullable List<@Nullable AnnotatedTypeMirror> parameterTypes;
 
+        /**
+         * Creates a wrapper for the given method or constructor declaration.
+         *
+         * @param declaration method or constructor declaration to wrap
+         */
         public CallableDeclarationWrapper(CallableDeclaration<?> declaration) {
             this.declaration = declaration;
             this.returnType = null;
@@ -792,6 +937,19 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             this.parameterTypes = null;
         }
 
+        /**
+         * Returns the inferred type for the parameter at the given index. If necessary, initializes
+         * the {@code AnnotatedTypeMirror} for that location using {@code type} and {@code atf} to a
+         * wrapper around the base type for the parameter.
+         *
+         * @param type type for the parameter at {@code index}, used for initializing the returned
+         *     {@code AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @param index index of the parameter to return the inferred annotations of
+         * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the
+         *     parameter at the given index
+         */
         public AnnotatedTypeMirror getParameterType(
                 AnnotatedTypeMirror type, AnnotatedTypeFactory atf, int index) {
             if (parameterTypes == null) {
@@ -810,6 +968,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return parameterTypes.get(index);
         }
 
+        /**
+         * If this wrapper holds a method, returns the inferred type of the return type. If
+         * necessary, initializes the {@code AnnotatedTypeMirror} for that location using {@code
+         * type} and {@code atf} to a wrapper around the base type for the return type.
+         *
+         * @param type base type for the return type, used for initializing the returned {@code
+         *     AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the return
+         *     type
+         */
         public AnnotatedTypeMirror getReturnType(
                 AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
             if (returnType == null) {
@@ -819,6 +989,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return returnType;
         }
 
+        /**
+         * If this wrapper holds a method, returns the inferred type of the receiver type. If
+         * necessary, initializes the {@code AnnotatedTypeMirror} for that location using {@code
+         * type} and {@code atf} to a wrapper around the base type for the receiver type.
+         *
+         * @param type base type for the receiver type, used for initializing the returned {@code
+         *     AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the
+         *     receiver type
+         */
         public AnnotatedTypeMirror getReceiverType(
                 AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
             if (receiverType == null) {
@@ -828,6 +1010,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return receiverType;
         }
 
+        /**
+         * Transfers all annotations inferred by whole program inference for the return type,
+         * receiver type, and parameter types for the wrapped declaration to their corresponding
+         * JavaParser locations.
+         */
         public void transferAnnotations() {
             if (returnType != null) {
                 // If a return type exists, then the declaration must be a method, not a
@@ -867,15 +1054,36 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    /**
+     * Stores the JavaParser node for a field and the annotations that have been inferred for it.
+     */
     private static class FieldWrapper {
+        /** Wrapped field declaration. */
         public VariableDeclarator declaration;
-        public AnnotatedTypeMirror type;
+        /** Inferred type for field, initialized the first time it's accessed. */
+        public @Nullable AnnotatedTypeMirror type;
 
+        /**
+         * Creates a wrapper for the given field declaration.
+         *
+         * @param declaration methofield declaration to wrap
+         */
         public FieldWrapper(VariableDeclarator declaration) {
             this.declaration = declaration;
             type = null;
         }
 
+        /**
+         * Returns the inferred type of the field. If necessary, initializes the {@code
+         * AnnotatedTypeMirror} for that location using {@code type} and {@code atf} to a wrapper
+         * around the base type for the field.
+         *
+         * @param type base type for the field, used for initializing the returned {@code
+         *     AnnotatedTypeMirror} the first time it's accessed
+         * @param atf the annotated type factory of a given type system, whose type hierarchy will
+         *     be used
+         * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the field
+         */
         public AnnotatedTypeMirror getType(AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
             if (type == null) {
                 type = AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
@@ -894,6 +1102,15 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    /**
+     * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
+     * which is the JavaParser node representing the same type. Does nothing if {@code
+     * annotatedType} is null.
+     *
+     * @param annotatedType type to transfer annotations from
+     * @param target type to transfer annotation to, must represent the same type as {@code
+     *     annotatedType}
+     */
     private static void transferAnnotations(
             @Nullable AnnotatedTypeMirror annotatedType, Type target) {
         if (annotatedType == null) {

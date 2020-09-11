@@ -1,24 +1,17 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
-import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import java.util.ArrayList;
 
 /** A visitor that clears all annotations from a JavaParser AST. */
-public class ClearAnnotationsVisitor extends VoidVisitorAdapter<Void> {
+public class ClearAnnotationsVisitor extends VoidVisitorWithDefaultAction {
     @Override
-    public void visit(MarkerAnnotationExpr n, Void p) {
-        n.remove();
-    }
-
-    @Override
-    public void visit(NormalAnnotationExpr n, Void p) {
-        n.remove();
-    }
-
-    @Override
-    public void visit(SingleMemberAnnotationExpr n, Void p) {
-        n.remove();
+    public void defaultAction(Node node) {
+        for (Node child : new ArrayList<>(node.getChildNodes())) {
+            if (child instanceof AnnotationExpr) {
+                node.remove(child);
+            }
+        }
     }
 }
