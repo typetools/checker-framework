@@ -13,7 +13,7 @@ public class DefaultsNullness {
         DefaultsNullness d;
         d = null; // null okay (default == @Nullable)
 
-        d = comm; // committed okay (default == @Initialized)
+        d = comm; // initialized okay (default == @Initialized)
         d.hashCode();
     }
 }

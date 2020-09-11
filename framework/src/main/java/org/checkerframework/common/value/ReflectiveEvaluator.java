@@ -1,6 +1,6 @@
 package org.checkerframework.common.value;
 
-import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.lang.reflect.Constructor;
@@ -264,15 +264,17 @@ public class ReflectiveEvaluator {
     }
 
     /**
-     * Return the value of a static field access. Return null if there is trouble.
+     * Return the value of a static field access. Return null if accessing the field reflectively
+     * fails.
      *
      * @param classname the class containing the field
      * @param fieldName the name of the field
-     * @param tree the static field access in the program; used for diagnostics
+     * @param tree the static field access in the program; a MemberSelectTree or an IdentifierTree;
+     *     used for diagnostics
      * @return the value of the static field access, or null if it cannot be determined
      */
     public Object evaluateStaticFieldAccess(
-            @ClassGetName String classname, String fieldName, MemberSelectTree tree) {
+            @ClassGetName String classname, String fieldName, ExpressionTree tree) {
         try {
             Class<?> recClass = Class.forName(classname);
             Field field = recClass.getField(fieldName);
@@ -280,13 +282,19 @@ public class ReflectiveEvaluator {
 
         } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
             if (reportWarnings) {
-                checker.reportWarning(tree, "class.find.failed", classname);
+                checker.reportWarning(
+                        tree, "class.find.failed", classname, e.getClass() + ": " + e.getMessage());
             }
             return null;
         } catch (Throwable e) {
             // Catch all exception so that the checker doesn't crash
             if (reportWarnings) {
-                checker.reportWarning(tree, "field.access.failed", fieldName, classname);
+                checker.reportWarning(
+                        tree,
+                        "field.access.failed",
+                        fieldName,
+                        classname,
+                        e.getClass() + ": " + e.getMessage());
             }
             return null;
         }

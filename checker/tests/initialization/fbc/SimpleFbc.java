@@ -31,7 +31,7 @@ public class SimpleFbc {
         @NonNull SimpleFbc a = t.f;
     }
 
-    // check committed-only semantics for fields
+    // check initialized-only semantics for fields
     void test3(@UnknownInitialization @NonNull SimpleFbc t) {
         @Initialized @Nullable SimpleFbc a = t.f;
 

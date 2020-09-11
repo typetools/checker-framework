@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
  * An implementation of the nullness type-system, parameterized by an initialization type-system for
- * safe initialization. It use freedom-before-commitment, augmented by type frames, as its
- * initialization type system.
+ * safe initialization. It uses freedom-before-commitment, augmented by type frames (which are
+ * crucial to obtain acceptable precision), as its initialization type system.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */

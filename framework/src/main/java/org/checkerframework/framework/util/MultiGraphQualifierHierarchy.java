@@ -62,6 +62,10 @@ import org.checkerframework.javacutil.TypeSystemError;
  *     GraphQualifierHierarchy}, you may do so by adding the following to AnnotatedTypeFactory.
  *     (It's better to convert to one of the new classes because MultiGraphQualifierHierarchy and
  *     GraphQualifierHierarchy are buggy and no longer supported.)
+ *     <p>If any qualifier has an annotation element without a default value, you will need to
+ *     convert to one of the new subclasses. If you do not, then MultiGraphQualifierHierarchy will
+ *     throw an exception with a message like "AnnotationBuilder.fromName: no value for element
+ *     value() of checkers.inference.qual.VarAnnot".
  *     <pre>
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
