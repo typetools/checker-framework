@@ -348,7 +348,7 @@ public class StubTypes {
      * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
      * null} if no such class exists for {@code e}.
      *
-     * @param an element whose outermost enclosing class to return
+     * @param e an element whose outermost enclosing class to return
      * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
      *     no such class exists for {@code e}
      */

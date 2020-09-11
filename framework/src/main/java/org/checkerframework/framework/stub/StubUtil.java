@@ -163,7 +163,7 @@ public class StubUtil {
      * the part after the last period.
      *
      * @param imported the name to split
-     * @param a pair of the type name and the field name
+     * @return a pair of the type name and the field name
      */
     @SuppressWarnings("signature") // string parsing
     /*package-scope*/ static Pair<@FullyQualifiedName String, String> partitionQualifiedName(
