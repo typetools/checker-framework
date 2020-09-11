@@ -562,10 +562,10 @@ public class ElementUtils {
      * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
      * only populated when annotated.
      *
-     * @param method the method Element
-     * @param methodName the name of the method
-     * @param parameters the formal parameters' Classes
-     * @return true if the method matches
+     * @param method the method Element to be tested
+     * @param methodName the goal method name
+     * @param parameters the goal formal parameter Classes
+     * @return true if the method matches the methodName and parameters
      */
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
