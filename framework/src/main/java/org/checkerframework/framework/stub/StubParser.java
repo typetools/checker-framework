@@ -71,7 +71,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -331,11 +330,9 @@ public class StubParser {
         for (ImportDeclaration importDecl : cu.getImports()) {
             try {
                 if (importDecl.isAsterisk()) {
-                    @SuppressWarnings("UnusedVariable")
-                    com.github.javaparser.ast.expr.@DotSeparatedIdentifiers Name importedName =
-                            importDecl.getName();
-                    @SuppressWarnings("UnusedVariable")
-                    @DotSeparatedIdentifiers String imported1 = importedName.toString();
+                    @SuppressWarnings("signature" // com.github.javaparser.ast.expr.Name inherits
+                    // toString, so there can be no stub file annotation for it
+                    )
                     @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
                     if (importDecl.isStatic()) {
                         // Wildcard import of members of a type (class or interface)
@@ -1659,10 +1656,8 @@ public class StubParser {
             // Not a supported annotation -> ignore
             return null;
         }
-        @SuppressWarnings("UnusedVariable")
-        javax.lang.model.element.@CanonicalNameOrEmpty Name annoNameAsName =
-                annoTypeElm.getQualifiedName();
-        @CanonicalNameOrEmpty String annoName = annoTypeElm.getQualifiedName().toString();
+        @SuppressWarnings("signature") // not anonymous, so name is not empty
+        @CanonicalName String annoName = annoTypeElm.getQualifiedName().toString();
 
         if (annotation instanceof MarkerAnnotationExpr) {
             return AnnotationBuilder.fromName(elements, annoName);
