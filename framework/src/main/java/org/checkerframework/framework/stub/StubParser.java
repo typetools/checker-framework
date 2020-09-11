@@ -331,8 +331,9 @@ public class StubParser {
         for (ImportDeclaration importDecl : cu.getImports()) {
             try {
                 if (importDecl.isAsterisk()) {
-                    @SuppressWarnings("signature" // com.github.javaparser.ast.expr.Name inherits
-                    // toString, so there can be no stub file annotation for it
+                    @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
+                    // com.github.javaparser.ast.expr.Name inherits toString,
+                    // so there can be no stub file annotation for it
                     )
                     @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
                     if (importDecl.isStatic()) {

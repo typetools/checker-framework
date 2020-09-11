@@ -464,8 +464,8 @@ public class FormatterTreeUtil {
                                     try {
                                         @SuppressWarnings(
                                                 "signature" // BUG: need to compute a @ClassGetName,
-                                        // but this code computes a @CanonicalNameOrEmpty.  It works
-                                        // for non-inner classes, but will fail for inner classes.
+                                        // but this code computes a @CanonicalNameOrEmpty.  They are
+                                        // different for inner classes.
                                         )
                                         @ClassGetName String cname = e.getQualifiedName().toString();
                                         return Class.forName(cname);
