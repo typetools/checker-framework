@@ -29,6 +29,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
@@ -608,6 +609,10 @@ public class ElementUtils {
      * @return the TypeElement for the class
      */
     public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
-        return processingEnv.getElementUtils().getTypeElement(clazz.getCanonicalName());
+        @CanonicalName String className = clazz.getCanonicalName();
+        if (className == null) {
+            throw new Error("Anonymous class " + clazz + " has no canonical name");
+        }
+        return processingEnv.getElementUtils().getTypeElement(className);
     }
 }
