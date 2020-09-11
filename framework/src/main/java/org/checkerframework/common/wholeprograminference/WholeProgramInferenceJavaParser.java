@@ -506,7 +506,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to have the
      * annotations of an {@code AnnotatedTypeMirror} passed as argument. Annotations in the original
-     * set that should be ignored (see {@link #shouldIgnore}) are not added to the resulting set.
+     * set that should be ignored (see {@code #shouldIgnore}) are not added to the resulting set.
      * This method also checks if the AnnotatedTypeMirror has explicit annotations in source code,
      * and if that is the case no annotations are added for that location.
      *
@@ -1085,11 +1085,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the field
          */
         public AnnotatedTypeMirror getType(AnnotatedTypeMirror type, AnnotatedTypeFactory atf) {
-            if (type == null) {
-                type = AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
+            if (this.type == null) {
+                this.type = AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false);
             }
 
-            return type;
+            return this.type;
         }
 
         public void transferAnnotations() {
