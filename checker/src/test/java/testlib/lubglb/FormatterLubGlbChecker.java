@@ -74,8 +74,16 @@ public class FormatterLubGlbChecker extends FormatterChecker {
 
         Elements elements = getElementUtils();
         AnnotationMirror UNKNOWNFORMAT = AnnotationBuilder.fromClass(elements, UnknownFormat.class);
-        AnnotationMirror FORMAT = AnnotationBuilder.fromClass(elements, Format.class);
-        AnnotationMirror INVALIDFORMAT = AnnotationBuilder.fromClass(elements, InvalidFormat.class);
+        AnnotationMirror FORMAT =
+                AnnotationBuilder.fromClass(
+                        elements,
+                        Format.class,
+                        AnnotationBuilder.elementNamesValues("value", new ConversionCategory[0]));
+        AnnotationMirror INVALIDFORMAT =
+                AnnotationBuilder.fromClass(
+                        elements,
+                        InvalidFormat.class,
+                        AnnotationBuilder.elementNamesValues("value", "dummy"));
         AnnotationMirror FORMATBOTTOM = AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
         AnnotationBuilder builder =
