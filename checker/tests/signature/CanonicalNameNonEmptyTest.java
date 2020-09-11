@@ -22,7 +22,7 @@ public class CanonicalNameNonEmptyTest {
         if (s.isEmpty()) {
             return null;
         } else {
-            // :: (return.type.incompatible)
+            // :: error: (return.type.incompatible)
             return s;
         }
     }
