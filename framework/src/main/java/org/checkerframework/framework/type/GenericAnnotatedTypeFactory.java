@@ -291,11 +291,6 @@ public abstract class GenericAnnotatedTypeFactory<
     public void preProcessClassTree(ClassTree classTree) {
         if (this.everUseFlow) {
             checkAndPerformFlowAnalysis(classTree);
-            for (BaseTypeChecker checker : checker.getSubcheckers()) {
-                AnnotatedTypeFactory subFactory = checker.getTypeFactory();
-                subFactory.artificialTreeToEnclosingElementMap.putAll(
-                        artificialTreeToEnclosingElementMap);
-            }
         }
     }
 

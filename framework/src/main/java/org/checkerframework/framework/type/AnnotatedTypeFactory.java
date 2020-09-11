@@ -2951,6 +2951,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final void setEnclosingElementForArtificialTree(Tree node, Element enclosing) {
         artificialTreeToEnclosingElementMap.put(node, enclosing);
+        for (BaseTypeChecker checker : checker.getSubcheckers()) {
+            AnnotatedTypeFactory subFactory = checker.getTypeFactory();
+            subFactory.artificialTreeToEnclosingElementMap.putAll(
+                    artificialTreeToEnclosingElementMap);
+        }
     }
 
     /**
