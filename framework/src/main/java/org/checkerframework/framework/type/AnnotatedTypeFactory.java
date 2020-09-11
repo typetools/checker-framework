@@ -1678,7 +1678,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 TypeElement typeElt = ElementUtils.enclosingClass(element);
                 if (typeElt == null) {
                     throw new BugInCF(
-                            "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
+                            "AnnotatedTypeFactory.getImplicitReceiverType: enclosingClass()==null for element: "
                                     + element);
                 }
                 if (tree.getKind() == Kind.NEW_CLASS) {
@@ -1714,7 +1714,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeElement typeElt = ElementUtils.enclosingClass(rcvelem);
         if (typeElt == null) {
             throw new BugInCF(
-                    "AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: "
+                    "AnnotatedTypeFactory.getImplicitReceiverType: enclosingClass()==null for element: "
                             + rcvelem);
         }
 

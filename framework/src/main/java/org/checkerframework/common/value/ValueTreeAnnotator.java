@@ -518,40 +518,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-        if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
-            return null;
-        }
-
-        VariableElement elem = (VariableElement) TreeUtils.elementFromTree(tree);
-        Object value = elem.getConstantValue();
-        if (value != null) {
-            // The field is a compile time constant.
-            type.replaceAnnotation(
-                    atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
-            return null;
-        }
-        if (ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem)) {
-            // The field is static and final.
-            Element e = TreeUtils.elementFromTree(tree.getExpression());
-            if (e != null) {
-                @SuppressWarnings("signature") // TODO: this looks like a bug in
-                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
-                // but this passes a @FullyQualifiedName
-                @BinaryName String classname = ElementUtils.getQualifiedClassName(e).toString();
-                @SuppressWarnings(
-                        "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
-                @Identifier String fieldName = tree.getIdentifier().toString();
-                value =
-                        atypeFactory.evaluator.evaluateStaticFieldAccess(
-                                classname, fieldName, tree);
-                if (value != null) {
-                    type.replaceAnnotation(
-                            atypeFactory.createResultingAnnotation(
-                                    type.getUnderlyingType(), value));
-                }
-                return null;
-            }
-        }
+        visitFieldAccess(tree, type);
 
         if (TreeUtils.isArrayLengthAccess(tree)) {
             // The field access is to the length field, as in "someArrayExpression.length"
@@ -565,6 +532,54 @@ class ValueTreeAnnotator extends TreeAnnotator {
             }
         }
         return null;
+    }
+
+    /**
+     * Visit a tree that might be a field access.
+     *
+     * @param tree a tree that might be a field access. It is either a MemberSelectTree or an
+     *     IdentifierTree (if the programmer omitted the leading `this.`).
+     * @param type its type
+     */
+    private void visitFieldAccess(ExpressionTree tree, AnnotatedTypeMirror type) {
+        if (!TreeUtils.isFieldAccess(tree) || !handledByValueChecker(type)) {
+            return;
+        }
+
+        VariableElement fieldElement = (VariableElement) TreeUtils.elementFromTree(tree);
+        Object value = fieldElement.getConstantValue();
+        if (value != null) {
+            // The field is a compile-time constant.
+            type.replaceAnnotation(
+                    atypeFactory.createResultingAnnotation(type.getUnderlyingType(), value));
+            return;
+        }
+        if (ElementUtils.isStatic(fieldElement) && ElementUtils.isFinal(fieldElement)) {
+            // The field is static and final, but its declaration does not initialize it to a
+            // compile-time constant.  Obtain its value reflectively.
+            Element classElement = fieldElement.getEnclosingElement();
+            if (classElement != null) {
+                @SuppressWarnings("signature" // TODO: this looks like a bug in
+                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
+                // but this passes a @FullyQualifiedName
+                )
+                @BinaryName String classname = ElementUtils.getQualifiedClassName(classElement).toString();
+                @SuppressWarnings(
+                        "signature") // https://tinyurl.com/cfissue/658 for Name.toString()
+                @Identifier String fieldName = fieldElement.getSimpleName().toString();
+                value =
+                        atypeFactory.evaluator.evaluateStaticFieldAccess(
+                                classname, fieldName, tree);
+                if (value != null) {
+                    type.replaceAnnotation(
+                            atypeFactory.createResultingAnnotation(
+                                    type.getUnderlyingType(), value));
+                }
+                return;
+            }
+        }
+
+        return;
     }
 
     /** Returns true iff the given type is in the domain of the Constant Value Checker. */
@@ -584,6 +599,15 @@ class ValueTreeAnnotator extends TreeAnnotator {
             ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
         // Work around for https://github.com/typetools/checker-framework/issues/602.
         annotatedTypeMirror.replaceAnnotation(atypeFactory.UNKNOWNVAL);
+        return null;
+    }
+
+    // An IdentifierTree can be a local variable (including formals, exception parameters, etc.) or
+    // an implicit field access (where `this.` is omitted).
+    // A field access is always an IdentifierTree or MemberSelectTree.
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+        visitFieldAccess(tree, type);
         return null;
     }
 }
