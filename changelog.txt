@@ -525,7 +525,7 @@ Android projects.
 
 Removed the code for the checker-compat-qual artifact.  It was only useful
 for Java 7, which the Checker Framework no longer supports.  The
-checker-campat-qual artifact remains available on Maven Central, with
+checker-compat-qual artifact remains available on Maven Central, with
 versions 2.5.5 and earlier.
 
 Closed issues:
