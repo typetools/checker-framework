@@ -199,7 +199,7 @@ not throw exceptions (e.g., \<+>, \<->, \code{<}\code{<}, \<!=>).
 \subsectionAndLabel{\<@StaticallyExecutable> methods and the classpath}{constant-value-staticallyexecutable-annotation}
 
 The Constant Value Checker statically executes (at compile time) methods annotated with
-\refqualclass{common/value/qual}{StaticallyExecutable}..
+\refqualclass{common/value/qual}{StaticallyExecutable}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -238,14 +238,15 @@ The static execution feature has some requirements:
 
 \item
   The \<@StaticallyExecutable> method and any method it calls must be on
-the classpath (or the processorpath, if you use it) for the compiler.  This
-is because the Constant Value Checker reflectively calls these methods at
-compile time.
+  the same path (the classpath or the processorpath) as the Checker
+  Framework.  This is because the Constant Value Checker reflectively calls
+  these methods at compile time.
 
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
-classpath or processorpath. For example, the command-line arguments to the Checker Framework
+classpath or processorpath, whichever is appropriate. For example, the
+command-line arguments to the Checker Framework
 might include:
 \begin{Verbatim}
   -processor org.checkerframework.common.value.ValueChecker
@@ -275,7 +276,8 @@ Some examples of these:
 
   The checker could not find the class
   specified for resolving a \<@StaticallyExecutable> method. Typically
-  this means that the classpath (or the processorpath, if you use it) lacks the given classfile.
+  this means that the path that contains the Checker Framework (the
+  classpath or the processorpath) lacks the given classfile.
 
 \item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int].}
 
@@ -372,8 +374,9 @@ concatenation are null.
 With the command-line argument, the type of ``\<x + "c">'' is
 \<@StringVal("ac", "bc") String>.
 
-%%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
+%%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange bc
 %%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
 %%  LocalWords:  classpath AreportEvalWarns ArrayLen ArrayLenRange casted
 %%  LocalWords:  qual AignoreRangeOverflow MinLen PolyValue GTENegativeOne
 %%  LocalWords:  staticallyexecutable concats AnonNullStringsConcatenation
+%%  LocalWords:  ClassVal MethodVal processorpath nullc
