@@ -89,7 +89,7 @@ public interface QualifierKindHierarchy {
      * @return the {@link QualifierKind} for the given annotation class name, or null if one does
      *     not exist
      */
-    @Nullable QualifierKind getQualifierKind(String name);
+    @Nullable QualifierKind getQualifierKind(@CanonicalName String name);
 
     /**
      * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code

@@ -9,7 +9,7 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -40,11 +40,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, FormatBottom.class);
 
     /** The fully-qualified name of the {@link Format} qualifier. */
-    protected static final @FullyQualifiedName String FORMAT_NAME =
-            "org.checkerframework.checker.formatter.qual.Format";
+    protected static final @CanonicalName String FORMAT_NAME = Format.class.getCanonicalName();
     /** The fully-qualified name of the {@link InvalidFormat} qualifier. */
-    protected static final @FullyQualifiedName String INVALIDFORMAT_NAME =
-            "org.checkerframework.checker.formatter.qual.InvalidFormat";
+    protected static final @CanonicalName String INVALIDFORMAT_NAME =
+            InvalidFormat.class.getCanonicalName();
 
     /** Syntax tree utilities. */
     protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);
