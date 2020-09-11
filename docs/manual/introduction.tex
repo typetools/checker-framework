@@ -826,8 +826,11 @@ checker is an ``annotation processor''.
   providing multiple checkers, if one checker detects any error, subsequent
   checkers may not run.
 \item \<-processorpath> Indicates where to search for the
-  checker; should also contain any qualifiers used by the Subtyping
-  Checker; see Section~\ref{subtyping-example}
+  checker.  This should also contain any classes used by type-checkers,
+  such as qualifiers used by the Subtyping Checker (see
+  Section~\ref{subtyping-example}) and classes that define
+  statically-executable methods used by the Constant Value Checker (see
+  Section~\ref{constant-value-staticallyexecutable-annotation}).
 \item \<-proc:>\{\<none>,\<only>\} Controls whether checking
   happens; \<-proc:none>
   means to skip checking; \<-proc:only> means to do only
@@ -1514,7 +1517,7 @@ same methodology in different words.
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
-% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
@@ -1528,7 +1531,7 @@ same methodology in different words.
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
 % LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
-% LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
+% LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror jaif
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
@@ -1540,4 +1543,5 @@ same methodology in different words.
 % LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent checker''
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
-% LocalWords:  AassumeDeterministic
+% LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
+%%  LocalWords:  AmergeStubsWithSource MyBatis
