@@ -1634,19 +1634,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Clients should generally call {@link #getReceiverType}.
      *
      * @param tree the expression that might have an implicit receiver
-     * @return the type of the receiver
+     * @return the type of the implicit receiver
      */
-    /*
-     * TODO: receiver annotations on outer this.
-     * TODO: Better document the difference between getImplicitReceiverType and getSelfType?
-     * TODO: this method assumes that the tree is within the current
-     * Compilation Unit. This assumption fails in testcase Bug109_A/B, where
-     * a chain of dependencies leads into a different compilation unit.
-     * I didn't find a way how to handle this better and conservatively
-     * return null. See TODO comment below.
-     *
-     */
-    protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
+    protected @Nullable AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         assert (tree.getKind() == Tree.Kind.IDENTIFIER
                         || tree.getKind() == Tree.Kind.MEMBER_SELECT
                         || tree.getKind() == Tree.Kind.METHOD_INVOCATION
@@ -1688,16 +1678,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} in the given location, which can be used if {@code this} has
-     * a special semantics (e.g. {@code this} is non-null).
+     * Returns the type of {@code this} at the location of {@code tree}. If {@code tree} is in a
+     * location where {@code this} has no meaning, such as the body of a static method, then {@code
+     * null} is returned.
      *
      * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
-     * nor implicitly. This method should be overridden for type-system specific behavior.
+     * nor implicitly. This method can be overridden for type-system specific behavior.
      *
-     * <p>TODO: in 1.8.2, handle all receiver type annotations. TODO: handle enclosing classes
-     * correctly.
+     * @param tree location used to decide the type of {@code this}
+     * @return the type of {@code this} at the location of {@code tree}
      */
-    public AnnotatedDeclaredType getSelfType(Tree tree) {
+    public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
         if (TreeUtils.isClassTree(tree)) {
             return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
         }
@@ -1708,9 +1699,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (enclosingTree.getKind() == Kind.METHOD) {
             MethodTree enclosingMethod = (MethodTree) enclosingTree;
             if (TreeUtils.isConstructor(enclosingMethod)) {
-                // The type of `this` in a constructor is usually the constructor return type.
-                // Certain type systems, in particular the Initialization Checker, need custom
-                // logic.
                 return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
             } else {
                 return getAnnotatedType(enclosingMethod).getReceiverType();
@@ -1729,7 +1717,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree tree to whose inner most enclosing method or class is returned.
      * @return the inner most enclosing method or class tree of {@code tree}
      */
-    private Tree getEnclosingClassOrMethod(Tree tree) {
+    protected Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
         Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
         classAndMethodKinds.add(Kind.METHOD);
@@ -1743,8 +1731,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             while (enclosingMethodOrClass != null
                     && enclosingMethodOrClass.getKind() != ElementKind.METHOD
                     && !enclosingMethodOrClass.getKind().isClass()) {
-                @Nullable Element encl = enclosingMethodOrClass.getEnclosingElement();
-                enclosingMethodOrClass = encl;
+                enclosingMethodOrClass = enclosingMethodOrClass.getEnclosingElement();
             }
             return declarationFromElement(enclosingMethodOrClass);
         }
@@ -1752,42 +1739,52 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine the type of the most enclosing type of the given tree that is a subtype of the
-     * given element. Receiver type annotations of an enclosing method are considered, similarly
-     * return type annotations of an enclosing constructor.
+     * Returns the {@link AnnotatedTypeMirror} of the enclosing type at the location of {@code tree}
+     * that is the same type as {@code typeElement}.
+     *
+     * @param typeElement type of the enclosing type to return
+     * @param tree location to use
+     * @return he enclosing type at the location of {@code tree} that is the same type as {@code
+     *     typeElement}
      */
-    public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
-
+    public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
         AnnotatedDeclaredType thisType = getSelfType(tree);
-
-        while (!isSameType(thisType.getUnderlyingType(), element.asType())) {
+        while (!isSameType(thisType.getUnderlyingType(), typeElement.asType())) {
             thisType = thisType.getEnclosingType();
         }
         return thisType;
     }
 
-    private boolean isSubtype(TypeMirror a1, TypeMirror a2) {
-        return types.isSubtype(types.erasure(a1), types.erasure(a2));
+    /**
+     * Returns true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}.
+     *
+     * @param type1 a type
+     * @param type2 a type
+     * @return true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}
+     */
+    private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
+        return types.isSubtype(types.erasure(type1), types.erasure(type2));
     }
 
-    private boolean isSameType(TypeMirror a1, TypeMirror a2) {
-        return types.isSameType(types.erasure(a1), types.erasure(a2));
+    /**
+     * Returns true if the erasure of {@code type1} is the same type as the erasure of {@code
+     * type2}.
+     *
+     * @param type1 a type
+     * @param type2 a type
+     * @return true if the erasure of {@code type1} is the same type as the erasure of {@code type2}
+     */
+    private boolean isSameType(TypeMirror type1, TypeMirror type2) {
+        return types.isSameType(types.erasure(type1), types.erasure(type2));
     }
 
     /**
      * Returns the receiver type of the expression tree, or null if it does not exist.
      *
-     * <p>The only trees that could potentially have a receiver are:
-     *
-     * <ul>
-     *   <li>Array Access
-     *   <li>Identifiers (whose receivers are usually self type)
-     *   <li>Method Invocation Trees
-     *   <li>Member Select Trees
-     * </ul>
+     * <p>A type is returned even if the receiver is an implicit {@code this}.
      *
      * @param expression the expression for which to determine the receiver type
-     * @return the type of the receiver of this expression
+     * @return the type of the receiver of expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
         ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
