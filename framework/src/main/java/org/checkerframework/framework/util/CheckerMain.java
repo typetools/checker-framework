@@ -914,7 +914,7 @@ public class CheckerMain {
             final String processorName,
             List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
             boolean allowSubcheckers) {
-        return !processor.equals(
+        return !processorName.equals(
                 unshorthandProcessorName(
                         processorName, fullyQualifiedCheckerNames, allowSubcheckers));
     }
