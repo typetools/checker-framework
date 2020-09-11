@@ -2872,9 +2872,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>See {@code
      * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
+     *
+     * @param tree artifical tree
+     * @param enclosing element that encloses {@code tree}
      */
-    public final void setEnclosingElementForArtificialTree(Tree node, Element enclosing) {
-        artificialTreeToEnclosingElementMap.put(node, enclosing);
+    public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
+        artificialTreeToEnclosingElementMap.put(tree, enclosing);
         for (BaseTypeChecker checker : checker.getSubcheckers()) {
             AnnotatedTypeFactory subFactory = checker.getTypeFactory();
             subFactory.artificialTreeToEnclosingElementMap.putAll(
