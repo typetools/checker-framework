@@ -78,6 +78,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private Map<@CanonicalName String, UnitsRelations> unitsRel;
 
+    /** Map from canonical name of external qualifiers, to their Class. */
     private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
             new HashMap<>();
 

@@ -603,6 +603,7 @@ public class ElementUtils {
     /**
      * Returns the TypeElement for the given class.
      *
+     * @param processingEnv the processing environment
      * @param clazz a class
      * @return the TypeElement for the class
      */

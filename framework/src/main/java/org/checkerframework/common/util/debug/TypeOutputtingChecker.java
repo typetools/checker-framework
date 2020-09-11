@@ -99,6 +99,11 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
     }
 
+    /**
+     * Main entry point.
+     *
+     * @param args command-line arguments
+     */
     @SuppressWarnings("signature:argument.type.incompatible") // user-supplied input, uncheckable
     public static void main(String[] args) {
         new TypeOutputtingChecker().run(args);

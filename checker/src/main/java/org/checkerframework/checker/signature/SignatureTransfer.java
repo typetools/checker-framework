@@ -18,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The transfer function for the Signature Checker. */
 public class SignatureTransfer extends CFTransfer {
 
     /** The annotated type factory for this transfer function. */

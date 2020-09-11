@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -725,11 +726,10 @@ public class CheckerMain {
 
     /** The canonical name of {@link SubtypingChecker}. */
     protected static final @CanonicalName String FULLY_QUALIFIED_SUBTYPING_CHECKER =
-            org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
+            SubtypingChecker.class.getCanonicalName();
 
     /** The simple name of {@link SubtypingChecker}. */
-    protected static final String SUBTYPING_CHECKER_NAME =
-            org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
+    protected static final String SUBTYPING_CHECKER_NAME = SubtypingChecker.class.getSimpleName();
 
     /**
      * Returns true if processorString, once transformed into fully-qualified form, is present in
