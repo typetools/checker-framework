@@ -69,6 +69,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -419,7 +420,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Element extendsEle = TypesUtils.getTypeElement(classElement.getSuperclass());
             if (extendsEle != null
                     && atypeFactory.hasQualifierParameterInHierarchy(extendsEle, top)) {
-                checker.reportError(classTree, "missing.has.qual.param");
+                checker.reportError(classTree, "missing.has.qual.param", top);
             } else {
                 for (TypeMirror interfaceType : classElement.getInterfaces()) {
                     Element interfaceEle = TypesUtils.getTypeElement(interfaceType);
@@ -2195,7 +2196,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
-        validateTypeOf(node.getType());
+        // The "reference type" is the type after "instanceof".
+        Tree refTypeTree = node.getType();
+        validateTypeOf(refTypeTree);
+        if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
+            AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(node.getExpression());
+            if (!refType.hasAnnotation(NonNull.class)
+                    && atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
+                    && !refType.getAnnotations().equals(expType.getAnnotations())) {
+                checker.reportWarning(node, "instanceof.unsafe", expType, refType);
+            }
+        }
         return super.visitInstanceOf(node, p);
     }
 

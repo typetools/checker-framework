@@ -1,24 +1,32 @@
 package org.checkerframework.common.value;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /** The qualifier hierarchy for the Value type system. */
-final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
+final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     /** The type factory to use. */
-    final ValueAnnotatedTypeFactory atypeFactory;
+    private final ValueAnnotatedTypeFactory atypeFactory;
 
-    /** @param factory the MultiGraphFactory to use to construct this */
-    public ValueQualifierHierarchy(
-            MultiGraphFactory factory, ValueAnnotatedTypeFactory atypeFactory) {
-        super(factory);
+    /**
+     * Creates a ValueQualifierHierarchy from the given classes.
+     *
+     * @param atypeFactory ValueAnnotatedTypeFactory
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+     */
+    ValueQualifierHierarchy(
+            ValueAnnotatedTypeFactory atypeFactory,
+            Collection<Class<? extends Annotation>> qualifierClasses) {
+        super(qualifierClasses, atypeFactory.getElementUtils());
         this.atypeFactory = atypeFactory;
     }
 

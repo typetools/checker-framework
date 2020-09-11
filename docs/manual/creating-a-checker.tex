@@ -571,20 +571,16 @@ hierarchy.
   \end{Verbatim}
 
   For a description of polymorphic qualifiers, see
-  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier needs
-  no \refqualclass{framework/qual}{SubtypeOf} meta-annotation and need not be
+  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier must not have
+  a \refqualclass{framework/qual}{SubtypeOf} meta-annotation nor be
   mentioned in any other \refqualclass{framework/qual}{SubtypeOf}
   meta-annotation.
 
 \end{itemize}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
-be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
-meta-annotation, further customizations may be
-performed procedurally (Section~\ref{creating-procedural-hierarchy})
-by overriding the \refmethodterse{framework/util}{GraphQualifierHierarchy}{isSubtype}{-java.util.Collection-java.util.Collection-} method in the checker class
-(Section~\ref{creating-compiler-interface}).
-However, the declarative mechanism is sufficient for most type systems.
+be used together. If any of the annotations representing type qualifiers have elements, then
+the relationships between those qualifiers must be defined procedurally.
 
 
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}

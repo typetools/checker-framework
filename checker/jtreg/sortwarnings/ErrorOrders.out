@@ -21,11 +21,11 @@ found   : @UpperBoundUnknown int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:23:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int
-required: @LTLengthOf(value="p2") int
+required: @LTLengthOf("p2") int
 ErrorOrders.java:24:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]
 ErrorOrders.java:24:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @LTLengthOf(value="p2") int
-required: @LTLengthOf(value="[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
+found   : @LTLengthOf("p2") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
 ErrorOrders.java:29:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of test4.
 found   : @LowerBoundUnknown int
 required: @GTENegativeOne int
@@ -71,7 +71,7 @@ required: int
 ErrorOrders.java:33:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]
 ErrorOrders.java:33:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int
-required: @LTLengthOf(value="[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
 ErrorOrders.java:36:15: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
 found   : @LowerBoundUnknown int
 required: an integer >= 0 (@NonNegative or @Positive)
@@ -81,7 +81,7 @@ required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:42:43: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]
 ErrorOrders.java:42:51: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int
-required: @LTLengthOf(value="[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
 ErrorOrders.java:45:11: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
 found   : @LowerBoundUnknown int
 required: an integer >= 0 (@NonNegative or @Positive)
@@ -90,11 +90,11 @@ found   : @UpperBoundUnknown int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:55:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
 found   : @UpperBoundUnknown int
-required: @LTLengthOf(value="p2") int
+required: @LTLengthOf("p2") int
 ErrorOrders.java:56:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]
 ErrorOrders.java:56:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @LTLengthOf(value="p2") int
-required: @LTLengthOf(value="[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
+found   : @LTLengthOf("p2") int
+required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because is an invalid expression]") int
 ErrorOrders.java:61:15: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter p1 of test4.
 found   : @LowerBoundUnknown int
 required: @GTENegativeOne int
