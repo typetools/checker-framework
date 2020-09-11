@@ -212,7 +212,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnderInitialization} annotation with the given argument
      */
-    public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
+    public AnnotationMirror createUnderInitializationAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, UnderInitialization.class);
         builder.setValue("value", typeFrame);
@@ -225,7 +225,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnderInitialization} annotation with the given argument
      */
-    public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
+    public AnnotationMirror createUnderInitializationAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, UnderInitialization.class);
         builder.setValue("value", typeFrame);
@@ -238,7 +238,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnknownInitialization} annotation with the given argument
      */
-    public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
+    public AnnotationMirror createUnknownInitializationAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, UnknownInitialization.class);
@@ -252,7 +252,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param typeFrame the type down to which some value has been initialized
      * @return an {@link UnknownInitialization} annotation with the given argument
      */
-    public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
+    public AnnotationMirror createUnknownInitializationAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, UnknownInitialization.class);
@@ -278,7 +278,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} is {@link UnderInitialization}
      */
-    public boolean isFree(AnnotationMirror anno) {
+    public boolean isUnderInitialization(AnnotationMirror anno) {
         return areSameByClass(anno, UnderInitialization.class);
     }
 
@@ -288,7 +288,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} is {@link UnknownInitialization}
      */
-    public boolean isUnclassified(AnnotationMirror anno) {
+    public boolean isUnknownInitialization(AnnotationMirror anno) {
         return areSameByClass(anno, UnknownInitialization.class);
     }
 
@@ -308,7 +308,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} is {@link Initialized}
      */
-    public boolean isCommitted(AnnotationMirror anno) {
+    public boolean isInitialized(AnnotationMirror anno) {
         return AnnotationUtils.areSame(anno, INITIALIZED);
     }
 
@@ -318,7 +318,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} has {@link UnderInitialization}
      */
-    public boolean isFree(AnnotatedTypeMirror anno) {
+    public boolean isUnderInitialization(AnnotatedTypeMirror anno) {
         return anno.hasEffectiveAnnotation(UnderInitialization.class);
     }
 
@@ -328,7 +328,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} has {@link UnknownInitialization}
      */
-    public boolean isUnclassified(AnnotatedTypeMirror anno) {
+    public boolean isUnknownInitialization(AnnotatedTypeMirror anno) {
         return anno.hasEffectiveAnnotation(UnknownInitialization.class);
     }
 
@@ -348,19 +348,24 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param anno the annotation to check
      * @return true if {@code anno} has {@link Initialized}
      */
-    public boolean isCommitted(AnnotatedTypeMirror anno) {
+    public boolean isInitialized(AnnotatedTypeMirror anno) {
         return anno.hasEffectiveAnnotation(Initialized.class);
     }
 
-    /** Are all fields committed-only? */
-    protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
+    /**
+     * Are all fields initialized-only?
+     *
+     * @param classTree the class to query
+     * @return true if all fields are initialized-only
+     */
+    protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
             if (member.getKind() != Tree.Kind.VARIABLE) {
                 continue;
             }
             VariableTree var = (VariableTree) member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
-            // var is not committed-only
+            // var is not initialized-only
             if (getDeclAnnotation(varElt, NotOnlyInitialized.class) != null) {
                 // var is not static -- need a check of initializer blocks,
                 // not of constructor which is where this is used
@@ -466,12 +471,12 @@ public abstract class InitializationAnnotatedTypeFactory<
         Type classType = ((JCTree) enclosingClass).type;
         AnnotationMirror annotation = null;
 
-        // If all fields are committed-only, and they are all initialized,
+        // If all fields are initialized-only, and they are all initialized,
         // then:
         // - if the class is final, this is @Initialized
         // - otherwise, this is @UnderInitialization(CurrentClass) as
         // there might still be subclasses that need initialization.
-        if (areAllFieldsCommittedOnly(enclosingClass)) {
+        if (areAllFieldsInitializedOnly(enclosingClass)) {
             Store store = getStoreBefore(tree);
             if (store != null
                     && getUninitializedInvariantFields(store, path, false, Collections.emptyList())
@@ -479,22 +484,25 @@ public abstract class InitializationAnnotatedTypeFactory<
                 if (classType.isFinal()) {
                     annotation = INITIALIZED;
                 } else {
-                    annotation = createFreeAnnotation(classType);
+                    annotation = createUnderInitializationAnnotation(classType);
                 }
             }
         }
 
         if (annotation == null) {
-            annotation = getFreeOrRawAnnotationOfSuperType(classType);
+            annotation = getUnderInitializationAnnotationOfSuperType(classType);
         }
         selfType.replaceAnnotation(annotation);
     }
 
     /**
-     * Returns a {@link UnderInitialization} annotation that has the superclass of {@code type} as
+     * Returns an {@link UnderInitialization} annotation that has the superclass of {@code type} as
      * type frame.
+     *
+     * @param type a type
+     * @return true an {@link UnderInitialization} for the supertype of {@code type}
      */
-    protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
+    protected AnnotationMirror getUnderInitializationAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
         AnnotationMirror annotation;
         List<? extends TypeMirror> superTypes = types.directSupertypes(type);
@@ -508,10 +516,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         // Create annotation.
         if (superClass != null) {
-            annotation = createFreeAnnotation(superClass);
+            annotation = createUnderInitializationAnnotation(superClass);
         } else {
             // Use Object as a valid super-class.
-            annotation = createFreeAnnotation(Object.class);
+            annotation = createUnderInitializationAnnotation(Object.class);
         }
         return annotation;
     }
@@ -635,7 +643,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 fieldAnnotations.getAnnotations(), UNKNOWN_INITIALIZATION)) {
             return;
         }
-        if (isUnclassified(receiverType) || isFree(receiverType)) {
+        if (isUnknownInitialization(receiverType) || isUnderInitialization(receiverType)) {
 
             TypeMirror fieldDeclarationType = element.getEnclosingElement().asType();
             boolean isInitializedForFrame =
@@ -661,7 +669,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations, NOT_ONLY_INITIALIZED)) {
                 // add root annotation for all other hierarchies, and
-                // Committed for the commitment hierarchy
+                // Initialized for the initialization hierarchy
                 type.replaceAnnotation(INITIALIZED);
             }
         }
@@ -692,7 +700,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             if (elem.getKind() == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) t.getReturnType();
                 DeclaredType underlyingType = returnType.getUnderlyingType();
-                returnType.replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
+                returnType.replaceAnnotation(
+                        getUnderInitializationAnnotationOfSuperType(underlyingType));
             }
             return result;
         }
@@ -713,7 +722,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
                 DeclaredType underlyingType =
                         (DeclaredType) exeType.getReturnType().getUnderlyingType();
-                AnnotationMirror a = getFreeOrRawAnnotationOfSuperType(underlyingType);
+                AnnotationMirror a = getUnderInitializationAnnotationOfSuperType(underlyingType);
                 exeType.getReturnType().replaceAnnotation(a);
             }
             return result;
@@ -722,14 +731,14 @@ public abstract class InitializationAnnotatedTypeFactory<
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
             super.visitNewClass(node, p);
-            boolean allCommitted = true;
+            boolean allInitialized = true;
             Type type = ((JCTree) node).type;
             for (ExpressionTree a : node.getArguments()) {
                 final AnnotatedTypeMirror t = getAnnotatedType(a);
-                allCommitted &= (isCommitted(t) || isFbcBottom(t));
+                allInitialized &= (isInitialized(t) || isFbcBottom(t));
             }
-            if (!allCommitted) {
-                p.replaceAnnotation(createFreeAnnotation(type));
+            if (!allInitialized) {
+                p.replaceAnnotation(createUnderInitializationAnnotation(type));
                 return null;
             }
             p.replaceAnnotation(INITIALIZED);
@@ -834,29 +843,29 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
                 return anno1;
             }
-            boolean unc1 = isUnclassified(anno1);
-            boolean unc2 = isUnclassified(anno2);
-            boolean free1 = isFree(anno1);
-            boolean free2 = isFree(anno2);
+            boolean unc1 = isUnknownInitialization(anno1);
+            boolean unc2 = isUnknownInitialization(anno2);
+            boolean underinit1 = isUnderInitialization(anno1);
+            boolean underinit2 = isUnderInitialization(anno2);
 
             // Handle @Initialized.
-            if (isCommitted(anno1)) {
-                assert free2;
-                return createUnclassifiedAnnotation(getTypeFrameFromAnnotation(anno2));
-            } else if (isCommitted(anno2)) {
-                assert free1;
-                return createUnclassifiedAnnotation(getTypeFrameFromAnnotation(anno1));
+            if (isInitialized(anno1)) {
+                assert underinit2;
+                return createUnknownInitializationAnnotation(getTypeFrameFromAnnotation(anno2));
+            } else if (isInitialized(anno2)) {
+                assert underinit1;
+                return createUnknownInitializationAnnotation(getTypeFrameFromAnnotation(anno1));
             }
 
-            if (free1 && free2) {
-                return createFreeAnnotation(
+            if (underinit1 && underinit2) {
+                return createUnderInitializationAnnotation(
                         lubTypeFrame(
                                 getTypeFrameFromAnnotation(anno1),
                                 getTypeFrameFromAnnotation(anno2)));
             }
 
-            assert (unc1 || free1) && (unc2 || free2);
-            return createUnclassifiedAnnotation(
+            assert (unc1 || underinit1) && (unc2 || underinit2);
+            return createUnknownInitializationAnnotation(
                     lubTypeFrame(
                             getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
         }
