@@ -450,7 +450,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * instantiated via instantiateSubcheckers the first time the method is called if subcheckers is
      * null. Assumes all checkers run on the same thread.
      *
-     * @return the list of all subchecker (if any)
+     * @return the list of all subcheckers (if any)
      */
     public List<BaseTypeChecker> getSubcheckers() {
         if (subcheckers == null) {

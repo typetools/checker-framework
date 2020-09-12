@@ -202,7 +202,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // Node is "MyClass.this", where "MyClass may be the inner most enclosing type or any
+            // Node is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
             // outer type.
             return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(node)), node);
         } else {
