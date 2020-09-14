@@ -28,6 +28,7 @@ abstract class TypeInvalid {
         // :: error: (type.invalid.conflicting.annos)
         o = (new @Tainted @Untainted Object()) instanceof Object;
         // :: error: (type.invalid.conflicting.annos)
+        // :: warning: (instanceof.unsafe)
         o = o instanceof @Tainted @Untainted TypeInvalid;
     }
 

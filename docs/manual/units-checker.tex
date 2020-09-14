@@ -261,15 +261,16 @@ notation:
 \end{alltt}
 
 The annotations listed in \code{-Aunits} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
-before you run the Units Checker with \code{javac}.  It
+the compiler during compilation.  Before you run the Units Checker with
+\code{javac}, they must be compiled and on the same path (the classpath or
+processorpath) as the Checker Framework.  It
 is not sufficient to supply their source files on the command line.
 
 \item
 You can also provide the fully-qualified paths to a set of directories
 that contain units qualifiers through the \code{-AunitsDirs} option,
-using a colon-no-space-separated notation. For example:
+using a colon-no-space-separated notation. For example,
+if the Checker Framework is on the classpath rather than the processorpath:
 
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -323,4 +324,4 @@ For examples, see class \code{UnitsTools}.
 % LocalWords:  milli RetentionPolicy SubtypeOf UnitsMultiple hz PolyUnit
 % LocalWords:  UnitsRelations Aunits MyFile mm2 m2 km2 enum ElementType
 %  LocalWords:  MixedUnits java mPERs2 api classpath bootclasspath
-%%  LocalWords:  AunitsDirs myProject myLibrary
+%%  LocalWords:  AunitsDirs myProject myLibrary Luminance processorpath

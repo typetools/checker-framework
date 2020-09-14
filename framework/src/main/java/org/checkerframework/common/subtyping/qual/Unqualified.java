@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>This annotation may not be written in source code; it is an implementation detail of the
  * checker.
  *
- * <p>Only use this qualifier when experimenting with very simple type systems. For any more
+ * <p>Use this qualifier only when experimenting with very simple type systems. For any more
  * realistic type systems, introduce a top and bottom qualifier that gets stored in bytecode.
  *
  * @checker_framework.manual #subtyping-checker Subtyping Checker

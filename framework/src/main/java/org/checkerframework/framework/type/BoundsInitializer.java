@@ -461,17 +461,17 @@ public class BoundsInitializer {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedPrimitiveType.");
+            throw new BugInCF("Unexpected AnnotatedPrimitiveType " + type);
         }
 
         @Override
         public Void visitNoType(AnnotatedNoType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedNoType.");
+            throw new BugInCF("Unexpected AnnotatedNoType " + type);
         }
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedExecutableType.");
+            throw new BugInCF("Unexpected AnnotatedExecutableType " + type);
         }
 
         /**

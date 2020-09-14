@@ -224,7 +224,8 @@ subclass to the \<-processor> command-line option:
   javac -processor \textit{mypackage.MyPropChecker} SourceFile.java
 \end{alltt}
 Note that your custom checker's
-\<.class> files must be on the Java classpath.
+\<.class> files must be on the same path (the classpath or processorpath)
+as the Checker Framework.
 Invoking a custom checker that builds on
 the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
@@ -571,20 +572,16 @@ hierarchy.
   \end{Verbatim}
 
   For a description of polymorphic qualifiers, see
-  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier needs
-  no \refqualclass{framework/qual}{SubtypeOf} meta-annotation and need not be
+  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier must not have
+  a \refqualclass{framework/qual}{SubtypeOf} meta-annotation nor be
   mentioned in any other \refqualclass{framework/qual}{SubtypeOf}
   meta-annotation.
 
 \end{itemize}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
-be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
-meta-annotation, further customizations may be
-performed procedurally (Section~\ref{creating-procedural-hierarchy})
-by overriding the \refmethodterse{framework/util}{GraphQualifierHierarchy}{isSubtype}{-java.util.Collection-java.util.Collection-} method in the checker class
-(Section~\ref{creating-compiler-interface}).
-However, the declarative mechanism is sufficient for most type systems.
+be used together. If any of the annotations representing type qualifiers have elements, then
+the relationships between those qualifiers must be defined procedurally.
 
 
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
@@ -2383,7 +2380,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -2419,7 +2416,7 @@ without warnings or errors.
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
 %%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
 %%  LocalWords:  TypeUseLocation createExpressionAnnoHelper internalReprOf
-%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer
+%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer LSP
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
 %%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis
@@ -2433,3 +2430,5 @@ without warnings or errors.
 %%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
 %%  LocalWords:  getTypeFactoryOfSubchecker someDirectory checkername
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
+%%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
+%%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk

@@ -131,11 +131,11 @@ public class InitializationVisitor<
             if (!AnnotationUtils.containsSameByName(
                     fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
-                        && !(atypeFactory.isCommitted(yType)
-                                || atypeFactory.isFree(xType)
+                        && !(atypeFactory.isInitialized(yType)
+                                || atypeFactory.isUnderInitialization(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
-                    if (atypeFactory.isCommitted(xType)) {
+                    if (atypeFactory.isInitialized(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
@@ -157,8 +157,8 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) {
-                        continue; // unclassified is allowed
+                    if (atypeFactory.isUnknownInitialization(a)) {
+                        continue; // unknown initialization is allowed
                     }
                     if (atypeFactory.areSameByClass(a, c)) {
                         checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
@@ -211,17 +211,17 @@ public class InitializationVisitor<
                 return false;
             }
 
-            boolean isRecvCommitted = false;
+            boolean isRecvInitialized = false;
             for (AnnotationMirror anno : recvAnnoSet) {
-                if (atypeFactory.isCommitted(anno)) {
-                    isRecvCommitted = true;
+                if (atypeFactory.isInitialized(anno)) {
+                    isRecvInitialized = true;
                 }
             }
 
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
             // The receiver is fully initialized and the field type
             // has the invariant type.
-            if (isRecvCommitted
+            if (isRecvInitialized
                     && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
                 return true;
             }
