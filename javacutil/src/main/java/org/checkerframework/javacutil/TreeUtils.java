@@ -72,6 +72,7 @@ import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
@@ -919,7 +920,10 @@ public final class TreeUtils {
      * String, ProcessingEnvironment, String...)}.
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
         if (methods.size() == 1) {
             return methods.get(0);
@@ -934,7 +938,10 @@ public final class TreeUtils {
      * params formal parameters.
      */
     public static List<ExecutableElement> getMethods(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         if (typeElt == null) {
@@ -954,7 +961,10 @@ public final class TreeUtils {
      * formal parameters of the given types. Errs if there is no matching method.
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, ProcessingEnvironment env, String... paramTypes) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            ProcessingEnvironment env,
+            String... paramTypes) {
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
@@ -1157,7 +1167,7 @@ public final class TreeUtils {
      * @return the VariableElement for typeName.fieldName
      */
     public static VariableElement getField(
-            String typeName, String fieldName, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName, String fieldName, ProcessingEnvironment env) {
         TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
         for (VariableElement var : ElementFilter.fieldsIn(mapElt.getEnclosedElements())) {
             if (var.getSimpleName().contentEquals(fieldName)) {

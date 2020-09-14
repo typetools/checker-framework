@@ -107,13 +107,16 @@ public class NullnessVisitor
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.collectionSize =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
+                TreeUtils.getMethod(java.util.Collection.class.getCanonicalName(), "size", 0, env);
         this.collectionToArray =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", env, "T[]");
+                TreeUtils.getMethod(
+                        java.util.Collection.class.getCanonicalName(), "toArray", env, "T[]");
         systemClearProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "clearProperty", 1, env);
+                TreeUtils.getMethod(
+                        java.lang.System.class.getCanonicalName(), "clearProperty", 1, env);
         systemSetProperties =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperties", 1, env);
+                TreeUtils.getMethod(
+                        java.lang.System.class.getCanonicalName(), "setProperties", 1, env);
 
         this.permitClearProperty =
                 checker.getLintOption(

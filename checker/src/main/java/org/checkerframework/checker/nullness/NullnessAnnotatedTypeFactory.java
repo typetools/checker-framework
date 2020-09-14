@@ -231,7 +231,10 @@ public class NullnessAnnotatedTypeFactory
 
         classGetCanonicalName =
                 TreeUtils.getMethod(
-                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
+                        java.lang.Class.class.getCanonicalName(),
+                        "getCanonicalName",
+                        0,
+                        processingEnv);
 
         postInit();
 

@@ -214,7 +214,9 @@ public class AnnotationBuilder {
      *     be loaded
      */
     public static @Nullable AnnotationMirror fromName(
-            Elements elements, CharSequence name, Map<String, AnnotationValue> elementNamesValues) {
+            Elements elements,
+            @FullyQualifiedName CharSequence name,
+            Map<String, AnnotationValue> elementNamesValues) {
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
