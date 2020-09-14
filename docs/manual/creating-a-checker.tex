@@ -224,7 +224,8 @@ subclass to the \<-processor> command-line option:
   javac -processor \textit{mypackage.MyPropChecker} SourceFile.java
 \end{alltt}
 Note that your custom checker's
-\<.class> files must be on the Java classpath.
+\<.class> files must be on the same path (the classpath or processorpath)
+as the Checker Framework.
 Invoking a custom checker that builds on
 the Subtyping Checker is slightly different (Section~\ref{subtyping-using}).
 
@@ -2375,7 +2376,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -2411,7 +2412,7 @@ without warnings or errors.
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
 %%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
 %%  LocalWords:  TypeUseLocation createExpressionAnnoHelper internalReprOf
-%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer
+%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer LSP
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
 %%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis
@@ -2425,3 +2426,5 @@ without warnings or errors.
 %%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
 %%  LocalWords:  getTypeFactoryOfSubchecker someDirectory checkername
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
+%%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
+%%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk

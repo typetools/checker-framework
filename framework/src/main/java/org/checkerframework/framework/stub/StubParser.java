@@ -381,11 +381,8 @@ public class StubParser {
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
-
-                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
-                        if (anno != null) {
-                            TypeElement annoElt =
-                                    (TypeElement) anno.getAnnotationType().asElement();
+                        TypeElement annoElt = elements.getTypeElement(imported);
+                        if (annoElt != null) {
                             putNoOverride(result, annoElt.getSimpleName().toString(), annoElt);
                             importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {

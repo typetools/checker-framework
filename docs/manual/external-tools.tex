@@ -562,7 +562,8 @@ must be on the compilation classpath.
 
 \item \<-processorpath \$CHECKERFRAMEWORK/checker/dist/checker.jar>:
 \<checker.jar> must be on the processor path. Using this option means that the processor path, not
-the classpath, will be searched for annotation processors.
+the classpath, will be searched for annotation processors
+and for classes that they load.
 
 \item \<-processor org.checkerframework.checker.nullness.NullnessChecker>:
 Choose which checker to run by passing its fully qualified name as a processor.
@@ -1267,8 +1268,9 @@ Advantages of the latter two-step approach include:
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
 % LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion lombok
 % LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
-% LocalWords:  config copyableAnnotations COPYABLE localRepository init
-% LocalWords:  compilerArguments Xmaxerrs Xmaxwarns netbeans macrodef
+% LocalWords:  config copyableAnnotations COPYABLE localRepository init FQ
+% LocalWords:  compilerArguments Xmaxerrs Xmaxwarns netbeans macrodef LSP
 % LocalWords:  annotationProcessorPaths checkTypes OracleJDK java8 java11
 % LocalWords:  bootclasspath processorpath intellij typechecking postpass
-% LocalWords:  Delombok r4173
+% LocalWords:  Delombok r4173 pathnames HandlerUtil errorProneJavac
+%%  LocalWords:  uncomment
