@@ -973,7 +973,7 @@ public final class TreeUtils {
      * @param typeName the class that contains the method
      * @param methodName the name of the method
      * @param env the processing environment
-     * @param params the method's formal parameter types
+     * @param paramTypes the method's formal parameter types
      * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
