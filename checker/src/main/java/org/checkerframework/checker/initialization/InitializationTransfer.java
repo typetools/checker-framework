@@ -75,7 +75,8 @@ public class InitializationTransfer<
         final AnnotatedDeclaredType receiverType =
                 analysis.getTypeFactory().getAnnotatedType(methodTree).getReceiverType();
         if (receiverType != null) {
-            return atypeFactory.isUnclassified(receiverType) || atypeFactory.isFree(receiverType);
+            return atypeFactory.isUnknownInitialization(receiverType)
+                    || atypeFactory.isUnderInitialization(receiverType);
         } else {
             // There is no receiver e.g. in static methods.
             return false;

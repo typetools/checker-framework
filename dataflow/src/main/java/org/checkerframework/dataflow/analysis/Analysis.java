@@ -71,7 +71,7 @@ public interface Analysis<
      * @param before the boolean value to indicate which store to return (if it is true, return the
      *     store immediately before {@code node}; otherwise, the store after {@code node} is
      *     returned)
-     * @param transferInput the transfer input of the block of this node
+     * @param blockTransferInput the transfer input of the block of this node
      * @param nodeValues abstract values of nodes
      * @param analysisCaches caches of analysis results
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
@@ -80,7 +80,7 @@ public interface Analysis<
     S runAnalysisFor(
             Node node,
             boolean before,
-            TransferInput<V, S> transferInput,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches);
 

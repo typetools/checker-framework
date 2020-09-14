@@ -5,7 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
- * Converts AnnotationMirrors to Strings For converting AnnotatedTypeMirrors.
+ * Converts AnnotationMirrors to Strings. Used when converting AnnotatedTypeMirrors to Strings.
  *
  * @see org.checkerframework.framework.type.AnnotatedTypeFormatter
  */

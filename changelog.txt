@@ -8,6 +8,15 @@ org.jspecify.annotations.Nullable.
 The Signature Checker supports annotations @CanonicalName and
 @CanonicalNameOrEmpty.
 
+Implementation details:
+
+Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020
@@ -517,9 +526,10 @@ Introduce checker-qual-android artifact that is just like the checker-qual
 artifact, but the qualifiers have classfile retention.  This is useful for
 Android projects.
 
-Remove the checker-compat-qual artifact, which was only useful for Java 7,
-which the Checker Framework no longer supports.  It remains available on
-Maven Central, with versions 2.5.5 and earlier.
+Removed the code for the checker-compat-qual artifact.  It was only useful
+for Java 7, which the Checker Framework no longer supports.  The
+checker-compat-qual artifact remains available on Maven Central, with
+versions 2.5.5 and earlier.
 
 Closed issues:
 #2135, #2157, #2158, #2164, #2171.
