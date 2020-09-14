@@ -495,7 +495,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
-    protected List<String> upstreamCheckerNames;
+    protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
@@ -574,17 +574,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Return a list containing this checker name and all checkers it is a part of (that is,
+     * Returns a list containing this checker name and all checkers it is a part of (that is,
      * checkers that called it).
+     *
+     * @return a list containing this checker name and all checkers it is a part of (that is,
+     *     checkers that called it)
      */
-    public List<String> getUpstreamCheckerNames() {
+    public List<@FullyQualifiedName String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
             upstreamCheckerNames = new ArrayList<>();
 
             SourceChecker checker = this;
 
             while (checker != null) {
-                upstreamCheckerNames.add(checker.getClass().getName());
+                upstreamCheckerNames.add(checker.getClass().getCanonicalName());
                 checker = checker.parentChecker;
             }
         }
@@ -2198,7 +2201,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         String[] userAnnotatedFors = (anno == null ? null : anno.value());
 
         if (userAnnotatedFors != null) {
-            List<String> upstreamCheckerNames = getUpstreamCheckerNames();
+            List<@FullyQualifiedName String> upstreamCheckerNames = getUpstreamCheckerNames();
 
             for (String userAnnotatedFor : userAnnotatedFors) {
                 if (CheckerMain.matchesCheckerOrSubcheckerFromList(

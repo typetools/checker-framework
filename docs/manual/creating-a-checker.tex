@@ -1569,7 +1569,7 @@ the result of \code{RegexUtils.asRegex} invocations:
       // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
-                 null, "isRegex", String.class, int.class)) {
+                 "isRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
 %BEGIN LATEX

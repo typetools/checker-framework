@@ -31,6 +31,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UtilPlume;
@@ -85,8 +86,9 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the fully-qualified name of the annotation to build
+     * @param name the canonical name of the annotation to build
      */
+    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -646,7 +648,7 @@ public class AnnotationBuilder {
         private final Map<ExecutableElement, AnnotationValue> elementValues;
         /** The annotation name. */
         // default visibility to allow access from within package.
-        final @Interned @FullyQualifiedName String annotationName;
+        final @Interned @CanonicalName String annotationName;
 
         /**
          * Create a CheckerFrameworkAnnotationMirror.

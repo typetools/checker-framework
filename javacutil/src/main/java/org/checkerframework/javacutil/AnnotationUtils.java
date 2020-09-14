@@ -37,7 +37,6 @@ import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -67,7 +66,7 @@ public class AnnotationUtils {
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
-        @FullyQualifiedName String name = elm.getQualifiedName().toString();
+        @CanonicalName String name = elm.getQualifiedName().toString();
         return name;
     }
 
@@ -852,8 +851,6 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
-        @SuppressWarnings(
-                "signature:assignment.type.incompatible") // user specified, so name exists
         @CanonicalName Name result = ct.asElement().getQualifiedName();
         return result;
     }
@@ -872,7 +869,7 @@ public class AnnotationUtils {
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        List<Name> names = new ArrayList<>();
+        List<@CanonicalName Name> names = new ArrayList<>();
         for (Type.ClassType classType : la) {
             names.add(classType.asElement().getQualifiedName());
         }

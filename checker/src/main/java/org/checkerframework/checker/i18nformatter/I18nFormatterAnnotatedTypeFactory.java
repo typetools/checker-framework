@@ -18,7 +18,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -54,14 +54,14 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
 
     /** The fully-qualified name of {@link I18nFormat}. */
-    protected static final @FullyQualifiedName String I18NFORMAT_NAME =
-            "org.checkerframework.checker.i18nformatter.qual.I18nFormat";
+    protected static final @CanonicalName String I18NFORMAT_NAME =
+            I18nFormat.class.getCanonicalName();
     /** The fully-qualified name of {@link I18nInvalidFormat}. */
-    protected static final @FullyQualifiedName String I18NINVALIDFORMAT_NAME =
-            "org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat";
+    protected static final @CanonicalName String I18NINVALIDFORMAT_NAME =
+            I18nInvalidFormat.class.getCanonicalName();
     /** The fully-qualified name of {@link I18nFormatFor}. */
-    protected static final @FullyQualifiedName String I18NFORMATFOR_NAME =
-            "org.checkerframework.checker.i18nformatter.qual.I18nFormatFor";
+    protected static final @CanonicalName String I18NFORMATFOR_NAME =
+            I18nFormatFor.class.getCanonicalName();
 
     /** Map from a translation file key to its value in the file. */
     public final Map<String, String> translations = Collections.unmodifiableMap(buildLookup());

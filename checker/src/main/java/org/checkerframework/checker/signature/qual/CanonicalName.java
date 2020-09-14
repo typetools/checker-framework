@@ -10,8 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Canonical names have the same syntactic form as {@link FullyQualifiedName fully-qualified name}s.
  * Every canonical name is a fully-qualified name, but not every fully-qualified name is a canonical
- * name. Given a character sequence that is a fully-qualified anme, there is no way to know whether
- * it is a canonical name, without examining the program it refers to.
+ * name.
  *
  * <p><a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-6.html#jls-6.7">JLS section
  * 6.7</a> gives the following example:
@@ -30,6 +29,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@code I}, but only {@code p.O1.I} is its canonical name.
  *
  * </blockquote>
+ *
+ * Given a character sequence that is a fully-qualified name, there is no way to know whether or not
+ * it is a canonical name, without examining the program it refers to. Therefore, to avoid excessive
+ * warnings that would have to be suppressed, sometimes a variable that holds a canonical name is
+ * annotated as {@code @}{@link FullyQualifiedName}.
  *
  * @see FullyQualifiedName
  * @checker_framework.manual #signature-checker Signature Checker

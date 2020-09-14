@@ -331,7 +331,7 @@ public class StubTypes {
         if (!shouldParseJdk) {
             return;
         }
-        String className = getOuterMostEnclosingClass(e);
+        String className = getOutermostEnclosingClass(e);
         if (className == null || className.isEmpty()) {
             return;
         }
@@ -348,10 +348,11 @@ public class StubTypes {
      * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
      * null} if no such class exists for {@code e}.
      *
+     * @param e an element whose outermost enclosing class to return
      * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
      *     no such class exists for {@code e}
      */
-    private @CanonicalNameOrEmpty String getOuterMostEnclosingClass(Element e) {
+    private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
         if (enclosingClass == null) {
             return null;
