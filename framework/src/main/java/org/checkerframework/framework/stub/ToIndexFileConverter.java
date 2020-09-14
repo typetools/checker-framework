@@ -238,6 +238,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (exprName.contains("+")) {
             return null;
         }
+        @SuppressWarnings("signature") // special case for annotations containing "+"
         AnnotationDef def =
                 new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
         def.setFieldTypes(Collections.emptyMap());

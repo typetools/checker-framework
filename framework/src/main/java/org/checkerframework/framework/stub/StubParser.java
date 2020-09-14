@@ -1650,6 +1650,7 @@ public class StubParser {
             // that deficiency by adding the annotation when it is encountered (i.e. here).
             // Note that this goes not call #getTypeElement to avoid a spurious diagnostic
             // if the annotation is actually unknown.
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
             TypeElement annoTypeElt = elements.getTypeElement(annotation.getNameAsString());
             if (annoTypeElt != null) {
                 putAllNew(
@@ -2016,6 +2017,7 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
             new HashMap<>();
 
+    @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
     private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
