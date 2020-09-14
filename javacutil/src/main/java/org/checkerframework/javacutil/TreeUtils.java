@@ -914,10 +914,15 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
-     * with params formal parameters. Errs if there is not exactly one matching method. If more than
-     * one method takes the same number of formal parameters, then use {@link #getMethod(String,
-     * String, ProcessingEnvironment, String...)}.
+     * Returns the ExecutableElement for a method declaration. Errs if there is not exactly one
+     * matching method. If more than one method takes the same number of formal parameters, then use
+     * {@link #getMethod(String, String, ProcessingEnvironment, String...)}.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
             @FullyQualifiedName String typeName,
@@ -936,6 +941,12 @@ public final class TreeUtils {
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElements for all matching methods
      */
     public static List<ExecutableElement> getMethods(
             @FullyQualifiedName String typeName,
@@ -957,8 +968,13 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * formal parameters of the given types. Errs if there is no matching method.
+     * Returns the ExecutableElement for a method declaration. Errs if there is no matching method.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param env the processing environment
+     * @param params the method's formal parameter types
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
             @FullyQualifiedName String typeName,

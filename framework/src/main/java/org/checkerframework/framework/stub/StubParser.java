@@ -2017,6 +2017,12 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
             new HashMap<>();
 
+    /**
+     * Returns the VariableElement for the given field access.
+     *
+     * @param faexpr a field access expression
+     * @return the VariableElement for the given field access
+     */
     @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
     private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
