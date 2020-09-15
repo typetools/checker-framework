@@ -7,9 +7,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.UtilPlume;
 
 /**
- * Implementation of a {@link TransferResult} with two non-exceptional store; one for the 'then'
- * edge and one for 'else'. The result of {@code getRegularStore} will be the least upper bound of
- * the two underlying stores.
+ * Implementation of a {@link TransferResult} with two non-exceptional stores. The 'then' store
+ * contains information valid when the previous boolean-valued expression was true, and the 'else'
+ * store contains information valid when the expression was false.
+ *
+ * <p>The result of {@code getRegularStore} will be the least upper bound of the two underlying
+ * stores.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
