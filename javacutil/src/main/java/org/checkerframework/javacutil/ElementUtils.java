@@ -29,6 +29,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
@@ -73,7 +74,7 @@ public class ElementUtils {
     /**
      * Returns the "parent" package element for the given package element. For package "A.B" it
      * gives "A". For package "A" it gives the default package. For the default package it returns
-     * null;
+     * null.
      *
      * <p>Note that packages are not enclosed within each other, we have to manually climb the
      * namespaces. Calling "enclosingPackage" on a package element returns the package element
@@ -574,10 +575,10 @@ public class ElementUtils {
      * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
      * only populated when annotated.
      *
-     * @param method the method Element
-     * @param methodName the name of the method
-     * @param parameters the formal parameters' Classes
-     * @return true if the method matches
+     * @param method the method Element to be tested
+     * @param methodName the goal method name
+     * @param parameters the goal formal parameter Classes
+     * @return true if the method matches the methodName and parameters
      */
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
@@ -610,5 +611,20 @@ public class ElementUtils {
         TypeElement enclosing = (TypeElement) questioned.getEnclosingElement();
         return questioned.equals(method)
                 || env.getElementUtils().overrides(questioned, method, enclosing);
+    }
+
+    /**
+     * Returns the TypeElement for the given class.
+     *
+     * @param processingEnv the processing environment
+     * @param clazz a class
+     * @return the TypeElement for the class
+     */
+    public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
+        @CanonicalName String className = clazz.getCanonicalName();
+        if (className == null) {
+            throw new Error("Anonymous class " + clazz + " has no canonical name");
+        }
+        return processingEnv.getElementUtils().getTypeElement(className);
     }
 }

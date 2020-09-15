@@ -25,7 +25,7 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
     /**
      * Return a list that contains the pathname to the tools.jar file, if it exists.
      *
-     * @returns a list that contains the pathname to the tools.jar file, if it exists
+     * @return a list that contains the pathname to the tools.jar file, if it exists
      */
     private static List<String> toolsJarList() {
         String toolsJar = SystemUtil.getToolsJar();

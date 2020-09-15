@@ -5,6 +5,9 @@ org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
 org.jspecify.annotations.Nullable.
 
+The Signature Checker supports annotations @CanonicalName and
+@CanonicalNameOrEmpty.
+
 Implementation details:
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and

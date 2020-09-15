@@ -57,6 +57,8 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -493,7 +495,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected SourceChecker parentChecker;
 
     /** List of upstream checker names. Includes the current checker. */
-    protected List<String> upstreamCheckerNames;
+    protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
@@ -572,17 +574,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Return a list containing this checker name and all checkers it is a part of (that is,
+     * Returns a list containing this checker name and all checkers it is a part of (that is,
      * checkers that called it).
+     *
+     * @return a list containing this checker name and all checkers it is a part of (that is,
+     *     checkers that called it)
      */
-    public List<String> getUpstreamCheckerNames() {
+    public List<@FullyQualifiedName String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
             upstreamCheckerNames = new ArrayList<>();
 
             SourceChecker checker = this;
 
             while (checker != null) {
-                upstreamCheckerNames.add(checker.getClass().getName());
+                upstreamCheckerNames.add(checker.getClass().getCanonicalName());
                 checker = checker.parentChecker;
             }
         }
@@ -1870,7 +1875,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /** The name of the @SuppressWarnings annotation. */
-    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
+    private final @CanonicalName String suppressWarningsClassName =
+            SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -2195,7 +2201,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         String[] userAnnotatedFors = (anno == null ? null : anno.value());
 
         if (userAnnotatedFors != null) {
-            List<String> upstreamCheckerNames = getUpstreamCheckerNames();
+            List<@FullyQualifiedName String> upstreamCheckerNames = getUpstreamCheckerNames();
 
             for (String userAnnotatedFor : userAnnotatedFors) {
                 if (CheckerMain.matchesCheckerOrSubcheckerFromList(
@@ -2287,7 +2293,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             return false;
         }
         TypeElement typeElement = ElementUtils.enclosingClass(element);
-        String name = typeElement.toString();
+        @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
+        // @FullyQualifiedName
+        )
+        @FullyQualifiedName String name = typeElement.toString();
         return shouldSkipUses(name);
     }
 
@@ -2303,7 +2312,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param typeName the fully-qualified name of a type
      * @return true iff the enclosing class of element should be skipped
      */
-    public boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,

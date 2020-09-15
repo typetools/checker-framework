@@ -261,7 +261,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     AnnotationBuilder builder =
                             new AnnotationBuilder(
                                     atypeFactory.getProcessingEnv(),
-                                    a1.getAnnotationType().toString());
+                                    AnnotationUtils.annotationName(a1));
                     List<Object> valuesList = new ArrayList<>(newObjectValues);
                     builder.setValue("value", valuesList);
                     return builder.build();

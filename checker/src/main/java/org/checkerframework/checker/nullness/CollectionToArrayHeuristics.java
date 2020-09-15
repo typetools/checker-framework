@@ -63,12 +63,15 @@ public class CollectionToArrayHeuristics {
 
         this.collectionToArrayE =
                 TreeUtils.getMethod(
-                        java.util.Collection.class.getName(), "toArray", processingEnv, "T[]");
+                        java.util.Collection.class.getCanonicalName(),
+                        "toArray",
+                        processingEnv,
+                        "T[]");
         this.size =
-                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, processingEnv);
+                TreeUtils.getMethod(
+                        java.util.Collection.class.getCanonicalName(), "size", 0, processingEnv);
         this.collectionType =
-                factory.fromElement(
-                        processingEnv.getElementUtils().getTypeElement("java.util.Collection"));
+                factory.fromElement(ElementUtils.getTypeElement(processingEnv, Collection.class));
 
         this.trustArrayLenZero =
                 checker.getLintOption(

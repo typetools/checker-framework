@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -227,7 +228,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
                 return;
             }
 
-            Name pqtopclass = getPolymorphicQualifierElement(qual);
+            @CanonicalName Name pqtopclass = getPolymorphicQualifierElement(qual);
             if (pqtopclass != null) {
                 AnnotationMirror pqtop;
                 if (pqtopclass.contentEquals(Annotation.class.getName())) {
@@ -278,11 +279,13 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
          * type systems.
          *
          * @param qual an annotation
-         * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
-         *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
+         * @return the name of the class specified by the {@link PolymorphicQualifier}
+         *     meta-annotation on {@code qual}, if {@code qual} is a polymorphic qualifier;
+         *     otherwise, null.
          * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
          */
-        private static Name getPolymorphicQualifierElement(AnnotationMirror qual) {
+        private static @Nullable @CanonicalName Name getPolymorphicQualifierElement(
+                AnnotationMirror qual) {
             AnnotationMirror poly = getPolymorphicQualifier(qual);
 
             // System.out.println("poly: " + poly + " pq: " +

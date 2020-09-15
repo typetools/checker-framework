@@ -8,12 +8,13 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A primitive type. One of: boolean, byte, char, double, float, int, long, short.
+ * Either a {@link CanonicalName} or the empty string.
  *
+ * @see CanonicalName
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf({IdentifierOrPrimitiveType.class, CanonicalName.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PrimitiveType {}
+@SubtypeOf(SignatureUnknown.class)
+public @interface CanonicalNameOrEmpty {}

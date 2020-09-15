@@ -92,7 +92,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The method that returns the value element of a {@code @Regex} annotation. */
     protected final ExecutableElement regexValueElement =
             TreeUtils.getMethod(
-                    org.checkerframework.checker.regex.qual.Regex.class.getName(),
+                    org.checkerframework.checker.regex.qual.Regex.class.getCanonicalName(),
                     "value",
                     0,
                     processingEnv);
@@ -104,7 +104,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ExecutableElement partialRegexValue =
             TreeUtils.getMethod(
-                    org.checkerframework.checker.regex.qual.PartialRegex.class.getName(),
+                    org.checkerframework.checker.regex.qual.PartialRegex.class.getCanonicalName(),
                     "value",
                     0,
                     processingEnv);
@@ -116,7 +116,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ExecutableElement patternCompile =
             TreeUtils.getMethod(
-                    java.util.regex.Pattern.class.getName(), "compile", 1, processingEnv);
+                    java.util.regex.Pattern.class.getCanonicalName(), "compile", 1, processingEnv);
 
     // TODO use? private TypeMirror[] legalReferenceTypes;
 

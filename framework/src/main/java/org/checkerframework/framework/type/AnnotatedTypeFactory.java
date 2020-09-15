@@ -60,6 +60,8 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
@@ -214,7 +216,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * #getSupportedTypeQualifierNames()} instead of using this field directly, as it may not have
      * been initialized.
      */
-    private final Set<String> supportedQualNames;
+    private final Set<@CanonicalName String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
     public final StubTypes stubTypes;
@@ -237,7 +239,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final BaseTypeChecker checker;
 
     /** Map keys are canonical names of aliased annotations. */
-    private final Map<String, Alias> aliases = new HashMap<>();
+    private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
 
     /**
      * Information about one annotation alias.
@@ -251,7 +253,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         /** Whether elements should be copied over when translating to the canonical annotation. */
         boolean copyElements;
         /** The canonical annotation name (or null if copyElements == false). */
-        String canonicalName;
+        @CanonicalName String canonicalName;
         /** Which elements should not be copied over (or null if copyElements == false). */
         String[] ignorableElements;
 
@@ -262,13 +264,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
          * @param canonical the canonical annotation
          * @param copyElements whether elements should be copied over when translating to the
          *     canonical annotation
+         * @param canonicalName the canonical annotation name (or null if copyElements == false)
          * @param ignorableElements elements that should not be copied over
          */
         Alias(
                 String aliasName,
                 AnnotationMirror canonical,
                 boolean copyElements,
-                String canonicalName,
+                @CanonicalName String canonicalName,
                 String[] ignorableElements) {
             this.canonical = canonical;
             this.copyElements = copyElements;
@@ -388,7 +391,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
     /** Maps classes representing AnnotationMirrors to their canonical names. */
-    private final Map<Class<? extends Annotation>, String> annotationClassNames;
+    private final Map<Class<? extends Annotation>, @CanonicalName String> annotationClassNames;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
@@ -919,7 +922,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return an immutable set of the supported type qualifiers, or an empty set if no qualifiers
      *     are supported
      */
-    public final Set<String> getSupportedTypeQualifierNames() {
+    public final Set<@CanonicalName String> getSupportedTypeQualifierNames() {
         if (this.supportedQualNames.isEmpty()) {
             for (Class<?> clazz : getSupportedTypeQualifiers()) {
                 supportedQualNames.add(clazz.getCanonicalName());
@@ -965,6 +968,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type = fromElement(elt);
         addComputedTypeAnnotations(elt, type);
         return type;
+    }
+
+    /**
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code clazz}.
+     *
+     * @param clazz a class
+     * @return the annotated type of {@code clazz}
+     */
+    public AnnotatedTypeMirror getAnnotatedType(Class<?> clazz) {
+        return getAnnotatedType(elements.getTypeElement(clazz.getCanonicalName()));
     }
 
     @Override
@@ -1455,7 +1468,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         List<String> fields =
                 AnnotationUtils.getElementValueArray(fieldInvarAnno, "field", String.class, true);
-        List<Name> classes =
+        List<@CanonicalName Name> classes =
                 AnnotationUtils.getElementValueClassNames(fieldInvarAnno, "qualifier", true);
         List<AnnotationMirror> qualifiers = new ArrayList<>();
         for (Name name : classes) {
@@ -2464,10 +2477,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class,
      * AnnotationMirror)} which prevents the possibility of a typo in the class name.
      *
-     * @param aliasName the fully-qualified name of the aliased annotation
+     * @param aliasName the canonical name of the aliased annotation
      * @param type the canonical annotation
      */
-    protected void addAliasedAnnotation(String aliasName, AnnotationMirror type) {
+    // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
+    // name of an external annotation is a canoncal name.
+    protected void addAliasedAnnotation(
+            @FullyQualifiedName String aliasName, AnnotationMirror type) {
         aliases.put(aliasName, new Alias(aliasName, type, false, null, null));
     }
 
@@ -2521,16 +2537,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Framework compile and run time. Otherwise, use {@link #addAliasedAnnotation(Class, Class,
      * boolean, String[])} which prevents the possibility of a typo in the class name.
      *
-     * @param aliasName the fully-qualified name of the aliased class
-     * @param canonicalName the canonical annotation name
+     * @param aliasName the canonical name of the aliased class
+     * @param canonicalAnno the canonical annotation
      * @param copyElements a flag that indicates whether we want to copy the elements over when
      *     getting the alias from the canonical annotation
      * @param ignorableElements a list of elements that can be safely dropped when the elements are
      *     being copied over
      */
+    // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
+    // name of an external annotation is a canoncal name.
     protected void addAliasedAnnotation(
-            String aliasName,
-            Class<?> canonicalName,
+            @FullyQualifiedName String aliasName,
+            Class<?> canonicalAnno,
             boolean copyElements,
             String... ignorableElements) {
         // The copyElements argument disambiguates overloading.
@@ -2543,7 +2561,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         aliasName,
                         null,
                         copyElements,
-                        canonicalName.getCanonicalName(),
+                        canonicalAnno.getCanonicalName(),
                         ignorableElements));
     }
 
@@ -3513,7 +3531,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         Set<AnnotationMirror> found = AnnotationUtils.createAnnotationSet();
-        List<Name> qualClasses =
+        List<@CanonicalName Name> qualClasses =
                 AnnotationUtils.getElementValueClassNames(annotation, "value", true);
         for (Name qual : qualClasses) {
             AnnotationMirror annotationMirror = AnnotationBuilder.fromName(elements, qual);
