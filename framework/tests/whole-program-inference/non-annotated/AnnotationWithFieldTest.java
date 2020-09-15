@@ -1,4 +1,4 @@
-import testlib.wholeprograminference.qual.SiblingWithFields;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.SiblingWithFields;
 
 public class AnnotationWithFieldTest {
 

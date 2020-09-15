@@ -2,8 +2,8 @@ package tests;
 
 import java.io.File;
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
+import org.checkerframework.framework.testchecker.util.EvenOddChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.util.EvenOddChecker;
 
 /** JUnit tests for the Checker Framework, using the {@link EvenOddChecker}. */
 public class FrameworkTest extends CheckerFrameworkPerFileTest {

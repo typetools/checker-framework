@@ -15,7 +15,7 @@ public class SubtypingStringPatternsPartialTest extends CheckerFrameworkPerDirec
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "stringpatterns/stringpatterns-partial",
                 "-Anomsgtext",
-                "-Aquals=testlib.util.PatternUnknown,testlib.util.PatternAB,testlib.util.PatternBC,testlib.util.PatternAC,testlib.util.PatternBottomPartial");
+                "-Aquals=org.checkerframework.framework.testchecker.util.PatternUnknown,org.checkerframework.framework.testchecker.util.PatternAB,org.checkerframework.framework.testchecker.util.PatternBC,org.checkerframework.framework.testchecker.util.PatternAC,org.checkerframework.framework.testchecker.util.PatternBottomPartial");
     }
 
     @Parameters

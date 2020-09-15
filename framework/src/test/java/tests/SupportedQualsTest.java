@@ -3,8 +3,8 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.supportedquals.SupportedQualsChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.supportedquals.SupportedQualsChecker;
 
 public class SupportedQualsTest extends CheckerFrameworkPerDirectoryTest {
 

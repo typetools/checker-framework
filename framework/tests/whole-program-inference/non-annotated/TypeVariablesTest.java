@@ -1,6 +1,6 @@
-import testlib.wholeprograminference.qual.Parent;
-import testlib.wholeprograminference.qual.Sibling1;
-import testlib.wholeprograminference.qual.Sibling2;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Parent;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling2;
 
 public class TypeVariablesTest<T1 extends @Parent Object, T2 extends @Parent Object> {
 

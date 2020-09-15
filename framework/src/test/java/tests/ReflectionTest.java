@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.reflection.ReflectionTestChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.reflection.ReflectionTestChecker;
 
 /** Tests the reflection resolution using a simple type system. */
 public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {

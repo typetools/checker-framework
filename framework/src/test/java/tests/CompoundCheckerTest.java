@@ -3,8 +3,8 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.compound.CompoundChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.compound.CompoundChecker;
 
 /** Tests for the compound checker design pattern. */
 public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {

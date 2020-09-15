@@ -3,8 +3,8 @@ package tests;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.defaulting.DefaultingUpperBoundChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.defaulting.DefaultingUpperBoundChecker;
 
 /** Created by jburke on 9/29/14. */
 public class DefaultingUpperBoundTest extends CheckerFrameworkPerDirectoryTest {

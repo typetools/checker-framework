@@ -3,9 +3,9 @@ package tests.wpirunners;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
-import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
 /**
  * Runs whole-program inference and inserts annotations into source code.

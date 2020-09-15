@@ -15,7 +15,7 @@ public class SubtypingStringPatternsFullTest extends CheckerFrameworkPerDirector
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "stringpatterns/stringpatterns-full",
                 "-Anomsgtext",
-                "-Aquals=testlib.util.PatternUnknown,testlib.util.PatternAB,testlib.util.PatternBC,testlib.util.PatternAC,testlib.util.PatternA,testlib.util.PatternB,testlib.util.PatternC,testlib.util.PatternBottomFull");
+                "-Aquals=org.checkerframework.framework.testchecker.util.PatternUnknown,org.checkerframework.framework.testchecker.util.PatternAB,org.checkerframework.framework.testchecker.util.PatternBC,org.checkerframework.framework.testchecker.util.PatternAC,org.checkerframework.framework.testchecker.util.PatternA,org.checkerframework.framework.testchecker.util.PatternB,org.checkerframework.framework.testchecker.util.PatternC,org.checkerframework.framework.testchecker.util.PatternBottomFull");
     }
 
     @Parameters
