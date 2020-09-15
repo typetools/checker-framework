@@ -420,12 +420,19 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
 
         TreePath path = getPath(tree);
-        Tree topLevelMember = findTopLevelClassMemberForTree(path);
-        if (topLevelMember != null) {
-            if (topLevelMember.getKind() != Kind.METHOD
-                    || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
-
-                setSelfTypeInInitializationCode(tree, selfType, path);
+        AnnotatedDeclaredType enclosing = selfType;
+        while (path != null && enclosing != null) {
+            TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
+            if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
+                Tree topLevelMember = topLevelMemberPath.getLeaf();
+                if (topLevelMember.getKind() != Kind.METHOD
+                        || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
+                    setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
+                }
+                path = topLevelMemberPath.getParentPath();
+                enclosing = enclosing.getEnclosingType();
+            } else {
+                break;
             }
         }
 
@@ -433,28 +440,29 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * In the first enclosing class, find the top-level member that contains {@code path}.
-     *
-     * <p>TODO: should we look whether these elements are enclosed within another class that is
-     * itself under construction.
-     *
-     * <p>Are there any other type of top level objects?
+     * In the first enclosing class, find the path to the top-level member that contains {@code
+     * path}.
      *
      * @param path the path whose leaf is the target
-     * @return a top-level member containing the leaf of {@code path}
+     * @return path to a top-level member containing the leaf of {@code path}
      */
     @SuppressWarnings("interning:not.interned") // AST node comparison
-    private Tree findTopLevelClassMemberForTree(TreePath path) {
+    private TreePath findTopLevelClassMemberForTree(TreePath path) {
+        if (TreeUtils.isClassTree(path.getLeaf())) {
+            path = path.getParentPath();
+            if (path == null) {
+                return null;
+            }
+        }
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         if (enclosingClass != null) {
-
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
             while (searchPath.getParentPath() != null
                     && searchPath.getParentPath().getLeaf() != enclosingClass) {
                 searchPath = searchPath.getParentPath();
                 if (classMembers.contains(searchPath.getLeaf())) {
-                    return searchPath.getLeaf();
+                    return searchPath;
                 }
             }
         }

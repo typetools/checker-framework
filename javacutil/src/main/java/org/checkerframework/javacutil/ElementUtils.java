@@ -412,9 +412,21 @@ public class ElementUtils {
             // A constructor can only have a receiver if the class it creates has an outer type.
             TypeMirror t = element.getEnclosingElement().asType();
             return TypesUtils.hasEnclosingType(t);
+        } else if (element.getKind().isField()) {
+            if (ElementUtils.isStatic(element)) {
+                return false;
+            } else {
+                // In constructors, the element for "this" is a non-static field, but that field
+                // does not have a receiver.
+                return !element.getSimpleName().contentEquals("this");
+            }
+        } else if (element.getKind() == ElementKind.METHOD) {
+            Element enclosingClass = ElementUtils.enclosingClass(element);
+            if (enclosingClass != null && enclosingClass.getKind() == ElementKind.ANNOTATION_TYPE) {
+                return false;
+            }
         }
-        return (element.getKind().isField() || element.getKind() == ElementKind.METHOD)
-                && !ElementUtils.isStatic(element);
+        return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
     }
 
     /**
