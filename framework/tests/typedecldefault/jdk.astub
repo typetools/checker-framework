@@ -1,5 +1,4 @@
-// import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
-import typedecldefault.quals.*;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
 
 package java.lang;
 class Object{

@@ -1,10 +1,9 @@
 package org.checkerframework.framework.test.junit;
 
-// import org.checkerframework.framework.testchecker.h1h2checker.H1H2Checker;
-import h1h2checker.H1H2Checker;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.h1h2checker.H1H2Checker;
 import org.junit.runners.Parameterized.Parameters;
 
 /** */

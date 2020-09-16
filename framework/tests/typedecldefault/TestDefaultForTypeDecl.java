@@ -1,7 +1,5 @@
 import org.checkerframework.framework.qual.NoDefaultQualifierForUse;
-import typedecldefault.quals.*;
-
-// import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
+import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
 
 // @TypeDeclDefaultBottom is the default qualifier in hierarchy.
 // @TypeDeclDefaultTop is the default for type declarations.

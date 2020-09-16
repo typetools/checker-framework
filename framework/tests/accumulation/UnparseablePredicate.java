@@ -1,5 +1,4 @@
-// import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
 class UnparseablePredicate {
 

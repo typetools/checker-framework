@@ -1,7 +1,7 @@
 // Test case for Issue 681:
 // https://github.com/typetools/checker-framework/issues/681
 
-import h1h2checker.quals.H1S2;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 
 // TODO: Issue is fixed, but test needs to be re-written in
 // a way that actually checks the behavior.

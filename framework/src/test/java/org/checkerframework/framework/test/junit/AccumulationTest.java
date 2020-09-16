@@ -3,10 +3,8 @@ package org.checkerframework.framework.test.junit;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.testaccumulation.TestAccumulationChecker;
 import org.junit.runners.Parameterized.Parameters;
-import testaccumulation.TestAccumulationChecker;
-
-// import org.checkerframework.framework.testchecker.testaccumulation.TestAccumulationChecker;
 
 /**
  * A test that the accumulation abstract checker is working correctly, using a simple accumulation

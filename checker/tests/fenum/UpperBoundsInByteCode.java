@@ -1,4 +1,3 @@
-// import org.checkerframework.checker.testchecker.UncheckedByteCode;
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.framework.testchecker.lib.UncheckedByteCode;
 

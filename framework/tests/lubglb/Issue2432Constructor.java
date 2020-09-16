@@ -1,8 +1,7 @@
 // Test case for issue 2432, constructor part:
 // https://github.com/typetools/checker-framework/issues/2432
 
-// import org.checkerframework.framework.testchecker.lubglb.quals.*;
-import lubglb.quals.*;
+import org.checkerframework.framework.testchecker.lubglb.quals.*;
 
 class Issue2432C {
 

@@ -1,6 +1,4 @@
-// import org.checkerframework.framework.testchecker.lubglb.quals.*;
-
-import lubglb.quals.*;
+import org.checkerframework.framework.testchecker.lubglb.quals.*;
 
 interface Foo {}
 
