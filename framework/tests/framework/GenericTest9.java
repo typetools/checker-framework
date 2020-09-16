@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // Test case for Issue 140:
 // https://github.com/typetools/checker-framework/issues/140

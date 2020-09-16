@@ -15,6 +15,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+// import org.checkerframework.framework.testchecker.lubglb.quals.A;
+// import org.checkerframework.framework.testchecker.lubglb.quals.B;
+// import org.checkerframework.framework.testchecker.lubglb.quals.C;
+// import org.checkerframework.framework.testchecker.lubglb.quals.D;
+// import org.checkerframework.framework.testchecker.lubglb.quals.E;
+// import org.checkerframework.framework.testchecker.lubglb.quals.F;
+// import org.checkerframework.framework.testchecker.lubglb.quals.Poly;
+
 // Type hierarchy:
 //    A       <-- @DefaultQualifierInHierarchy
 //   / \

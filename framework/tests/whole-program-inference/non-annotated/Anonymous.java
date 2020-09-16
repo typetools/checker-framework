@@ -1,8 +1,8 @@
-import testlib.wholeprograminference.qual.Parent;
-import testlib.wholeprograminference.qual.Sibling1;
-import testlib.wholeprograminference.qual.Sibling2;
-import testlib.wholeprograminference.qual.Top;
-import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Parent;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling2;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Top;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 public class Anonymous {
     public static int field1; // parent

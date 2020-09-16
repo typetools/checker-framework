@@ -3,6 +3,8 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 import testaccumulation.qual.*;
 
+// import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
+
 /* Simple inference of a fluent builder. */
 class SimpleFluent {
     SimpleFluent build(@TestAccumulation({"a", "b"}) SimpleFluent this) {

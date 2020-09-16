@@ -1,5 +1,6 @@
 // small test case for predicates, for debugging
 
+// import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 import testaccumulation.qual.*;
 
 class SmallPredicate {

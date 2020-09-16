@@ -1,6 +1,6 @@
 // import org.checkerframework.checker.testchecker.UncheckedByteCode;
 import org.checkerframework.checker.fenum.qual.Fenum;
-import testlib.lib.UncheckedByteCode;
+import org.checkerframework.framework.testchecker.lib.UncheckedByteCode;
 
 public class UpperBoundsInByteCode {
     UncheckedByteCode<@Fenum("Foo") String> foo;

@@ -12,6 +12,11 @@ import testaccumulation.qual.TestAccumulation;
 import testaccumulation.qual.TestAccumulationBottom;
 import testaccumulation.qual.TestAccumulationPredicate;
 
+// import org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation;
+// import org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulationBottom;
+// import
+// org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulationPredicate;
+
 /**
  * The annotated type factory for a test accumulation checker, which implements a basic called
  * methods checker.

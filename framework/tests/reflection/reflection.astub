@@ -1,4 +1,4 @@
-import testlib.reflection.qual.*;
+import org.checkerframework.framework.testchecker.reflection.qual.*;
 
 package java.lang.reflect;
 

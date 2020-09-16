@@ -1,5 +1,5 @@
-import testlib.wholeprograminference.qual.Sibling1;
-import testlib.wholeprograminference.qual.Sibling2;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling2;
 
 class Generic<@Sibling1 T extends @Sibling1 Object> {
     public @Sibling2 T sibling2;

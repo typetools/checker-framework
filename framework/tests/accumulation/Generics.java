@@ -3,6 +3,8 @@ import java.util.List;
 import org.checkerframework.common.returnsreceiver.qual.*;
 import testaccumulation.qual.*;
 
+// import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
+
 class Generics {
 
     static interface Symbol {
