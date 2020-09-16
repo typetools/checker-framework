@@ -1,5 +1,6 @@
 package h1h2checker;
 
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Invalid;
 import com.sun.source.tree.Tree;
 import h1h2checker.quals.H1Invalid;
 import javax.lang.model.element.AnnotationMirror;

@@ -22,6 +22,18 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Bot;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Invalid;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Poly;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Top;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Bot;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Poly;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H2S1;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H2S2;
+// import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Top;
+
 public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     AnnotationMirror H1S2;

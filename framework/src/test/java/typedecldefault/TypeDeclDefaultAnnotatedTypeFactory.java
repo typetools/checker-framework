@@ -8,6 +8,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import typedecldefault.quals.*;
 
+// import org.checkerframework.framework.testchecker.typedecldefault.quals.*;
+
 public class TypeDeclDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TypeDeclDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

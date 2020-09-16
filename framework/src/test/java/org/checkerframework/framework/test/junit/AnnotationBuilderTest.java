@@ -252,7 +252,9 @@ public class AnnotationBuilderTest {
     @Test
     public void testToString1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
-        Assert.assertEquals("@tests.AnnotationBuilderTest.Anno", builder.build().toString());
+        Assert.assertEquals(
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno",
+                builder.build().toString());
     }
 
     @Test
@@ -260,7 +262,8 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("value", "string");
         Assert.assertEquals(
-                "@tests.AnnotationBuilderTest.Anno(\"string\")", builder.build().toString());
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(\"string\")",
+                builder.build().toString());
     }
 
     @Test
@@ -268,7 +271,8 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("can", new Object[] {1});
         Assert.assertEquals(
-                "@tests.AnnotationBuilderTest.Anno(can={1})", builder.build().toString());
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(can={1})",
+                builder.build().toString());
     }
 
     @Test
@@ -277,7 +281,7 @@ public class AnnotationBuilderTest {
         builder.setValue("value", "m");
         builder.setValue("can", new Object[] {1});
         Assert.assertEquals(
-                "@tests.AnnotationBuilderTest.Anno(value=\"m\", can={1})",
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(value=\"m\", can={1})",
                 builder.build().toString());
     }
 
@@ -287,7 +291,7 @@ public class AnnotationBuilderTest {
         builder.setValue("can", new Object[] {1});
         builder.setValue("value", "m");
         Assert.assertEquals(
-                "@tests.AnnotationBuilderTest.Anno(can={1}, value=\"m\")",
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(can={1}, value=\"m\")",
                 builder.build().toString());
     }
 
@@ -303,7 +307,7 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
         Assert.assertEquals(
-                "@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)",
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.ContainingAnno(@org.checkerframework.framework.test.junit.AnnotationBuilderTest.MyAnno)",
                 builder.build().toString());
     }
 
