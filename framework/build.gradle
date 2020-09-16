@@ -9,12 +9,6 @@ sourceSets {
         }
     }
     testannotations
-    test {
-        java {
-            // Tests that fail by design.
-            exclude 'tests/SubtypingStringPatternsPartialTest.java'
-        }
-    }
 }
 
 def versions = [
