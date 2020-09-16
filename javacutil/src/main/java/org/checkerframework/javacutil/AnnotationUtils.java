@@ -36,8 +36,7 @@ import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -60,14 +59,14 @@ public class AnnotationUtils {
      * @param annotation the annotation whose name to return
      * @return the fully-qualified name of an annotation as a String
      */
-    public static final @FullyQualifiedName String annotationName(AnnotationMirror annotation) {
+    public static final @CanonicalName String annotationName(AnnotationMirror annotation) {
         if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
             return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
         }
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
-        @FullyQualifiedName String name = elm.getQualifiedName().toString();
+        @CanonicalName String name = elm.getQualifiedName().toString();
         return name;
     }
 
@@ -845,13 +844,15 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param elementName the name of the element to access
      * @param useDefaults whether to apply default values to the element
-     * @return the name of the class that is referenced by element with the given name
+     * @return the name of the class that is referenced by element with the given name; may be an
+     *     empty name, for a local or anonymous class
      */
-    public static @DotSeparatedIdentifiers Name getElementValueClassName(
+    public static @CanonicalName Name getElementValueClassName(
             AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
         Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
         // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
-        return ct.asElement().getQualifiedName();
+        @CanonicalName Name result = ct.asElement().getQualifiedName();
+        return result;
     }
 
     /**
@@ -864,11 +865,11 @@ public class AnnotationUtils {
      * @param useDefaults whether to apply default values to the element
      * @return the names of classes in {@code anno.annoElement}
      */
-    public static List<Name> getElementValueClassNames(
+    public static List<@CanonicalName Name> getElementValueClassNames(
             AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
         List<Type.ClassType> la =
                 getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-        List<Name> names = new ArrayList<>();
+        List<@CanonicalName Name> names = new ArrayList<>();
         for (Type.ClassType classType : la) {
             names.add(classType.asElement().getQualifiedName());
         }

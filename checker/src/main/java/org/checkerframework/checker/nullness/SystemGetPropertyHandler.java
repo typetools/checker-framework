@@ -93,9 +93,11 @@ public class SystemGetPropertyHandler {
         this.permitClearProperty = permitClearProperty;
 
         systemGetProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
+                TreeUtils.getMethod(
+                        java.lang.System.class.getCanonicalName(), "getProperty", 1, env);
         systemSetProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperty", 2, env);
+                TreeUtils.getMethod(
+                        java.lang.System.class.getCanonicalName(), "setProperty", 2, env);
     }
 
     /**

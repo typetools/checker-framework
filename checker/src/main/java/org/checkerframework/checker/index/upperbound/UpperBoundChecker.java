@@ -7,6 +7,7 @@ import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
@@ -33,7 +34,7 @@ public class UpperBoundChecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
         if (collectionBaseTypeNames.contains(typeName)) {
             return true;
         }

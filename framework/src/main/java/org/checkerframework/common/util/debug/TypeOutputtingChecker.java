@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -98,11 +99,22 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         }
     }
 
+    /**
+     * Main entry point.
+     *
+     * @param args command-line arguments
+     */
+    @SuppressWarnings("signature:argument.type.incompatible") // user-supplied input, uncheckable
     public static void main(String[] args) {
         new TypeOutputtingChecker().run(args);
     }
 
-    public void run(String[] args) {
+    /**
+     * Run the test.
+     *
+     * @param args command-line arguments
+     */
+    public void run(@CanonicalName String[] args) {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();
 

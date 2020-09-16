@@ -44,15 +44,20 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
         super(checker);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.matchResultEnd =
-                TreeUtils.getMethod(java.util.regex.MatchResult.class.getName(), "end", 1, env);
+                TreeUtils.getMethod(
+                        java.util.regex.MatchResult.class.getCanonicalName(), "end", 1, env);
         this.matchResultGroup =
-                TreeUtils.getMethod(java.util.regex.MatchResult.class.getName(), "group", 1, env);
+                TreeUtils.getMethod(
+                        java.util.regex.MatchResult.class.getCanonicalName(), "group", 1, env);
         this.matchResultStart =
-                TreeUtils.getMethod(java.util.regex.MatchResult.class.getName(), "start", 1, env);
+                TreeUtils.getMethod(
+                        java.util.regex.MatchResult.class.getCanonicalName(), "start", 1, env);
         this.patternCompile =
-                TreeUtils.getMethod(java.util.regex.Pattern.class.getName(), "compile", 2, env);
+                TreeUtils.getMethod(
+                        java.util.regex.Pattern.class.getCanonicalName(), "compile", 2, env);
         this.patternLiteral =
-                TreeUtils.getField(java.util.regex.Pattern.class.getName(), "LITERAL", env);
+                TreeUtils.getField(
+                        java.util.regex.Pattern.class.getCanonicalName(), "LITERAL", env);
     }
 
     /**

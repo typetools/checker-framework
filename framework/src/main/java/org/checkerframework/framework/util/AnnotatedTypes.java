@@ -35,6 +35,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -623,12 +624,11 @@ public class AnnotatedTypes {
             throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
-        TypeElement iterableElement =
-                processingEnv.getElementUtils().getTypeElement("java.lang.Iterable");
+        TypeElement iterableElement = ElementUtils.getTypeElement(processingEnv, Iterable.class);
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = asSuper(atypeFactory, iterableType, iterableElmType);
         if (dt.getTypeArguments().isEmpty()) {
-            TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
+            TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
             AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
@@ -1042,7 +1042,7 @@ public class AnnotatedTypes {
     }
 
     /** java.lang.annotation.Annotation.class canonical name. */
-    private static String annotationClassName =
+    private static @CanonicalName String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
     /**
@@ -1093,7 +1093,7 @@ public class AnnotatedTypes {
     public static boolean isDeclarationOfJavaLangEnum(
             final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
         if (isEnum(typeMirror)) {
-            return elements.getTypeElement("java.lang.Enum")
+            return elements.getTypeElement(Enum.class.getCanonicalName())
                     .equals(((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
         }
 

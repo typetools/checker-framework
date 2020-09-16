@@ -289,6 +289,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
         }
 
+        // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
+        // qualifier.
         /**
          * Return String representation of class name. This will not return the correct name for
          * anonymous classes.

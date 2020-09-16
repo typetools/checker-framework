@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
@@ -88,7 +89,7 @@ public interface QualifierKindHierarchy {
      * @return the {@link QualifierKind} for the given annotation class name, or null if one does
      *     not exist
      */
-    @Nullable QualifierKind getQualifierKind(String name);
+    @Nullable QualifierKind getQualifierKind(@CanonicalName String name);
 
     /**
      * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code
@@ -97,7 +98,7 @@ public interface QualifierKindHierarchy {
      * @param clazz annotation class
      * @return the canonical name of {@code clazz}
      */
-    static String annotationClassName(Class<? extends Annotation> clazz) {
+    static @CanonicalName String annotationClassName(Class<? extends Annotation> clazz) {
         String name = clazz.getCanonicalName();
         if (name == null) {
             throw new TypeSystemError("Qualifier classes must not be anonymous.");

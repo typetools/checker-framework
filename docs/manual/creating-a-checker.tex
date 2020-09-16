@@ -708,7 +708,8 @@ qualifier.
 \<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
-Nullness Checker does. In that case, add the meta-annotation \<@QualifierForLiterals(LiteralKind.NULL)>
+Nullness Checker does. In that case, add the meta-annotation
+\refqualclasswithparams{framework/qual}{QualifierForLiterals}{LiteralKind.NULL}
 to the correct qualifier.)
 This legal code
 will not type-check unless \<null> has the bottom type:
@@ -1569,7 +1570,7 @@ the result of \code{RegexUtils.asRegex} invocations:
       // Is this a call to static method isRegex(s, groups) in a class named RegexUtil?
       if (receiverName.equals("RegexUtil")
           && ElementUtils.matchesElement(method,
-                 null, "isRegex", String.class, int.class)) {
+                 "isRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
 %BEGIN LATEX
