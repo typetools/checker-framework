@@ -32,8 +32,15 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
+// TODO: Update documentation for these methods, change names for ajava.
+
 /** Utility class for stub files. */
 public class StubUtil {
+
+    public enum AnnotationFileType {
+        STUB,
+        AJAVA
+    }
 
     /*package-scope*/ static TypeDeclaration<?> findDeclaration(
             String className, StubUnit indexFile) {
@@ -284,11 +291,11 @@ public class StubUtil {
      * @param stub a stub file, a jarfile, or a directory. Look for it as an absolute file and
      *     relative to the current directory.
      */
-    public static List<StubResource> allStubFiles(String stub) {
+    public static List<StubResource> allStubFiles(String stub, AnnotationFileType fileType) {
         List<StubResource> resources = new ArrayList<>();
         File stubFile = new File(stub);
         if (stubFile.exists()) {
-            addStubFilesToList(stubFile, resources);
+            addAnnotationFilesToList(stubFile, resources, fileType);
         } else {
             // If the stubFile doesn't exist, maybe it is relative to the
             // current working directory, so try that.
@@ -296,18 +303,25 @@ public class StubUtil {
                     System.getProperty("user.dir") + System.getProperty("file.separator");
             stubFile = new File(workingDir + stub);
             if (stubFile.exists()) {
-                addStubFilesToList(stubFile, resources);
+                addAnnotationFilesToList(stubFile, resources, fileType);
             }
         }
         return resources;
     }
 
-    private static boolean isStub(File f) {
-        return f.isFile() && isStub(f.getName());
+    private static boolean isStub(File f, AnnotationFileType fileType) {
+        return f.isFile() && isStub(f.getName(), fileType);
     }
 
-    private static boolean isStub(String path) {
-        return path.endsWith(".astub");
+    private static boolean isStub(String path, AnnotationFileType fileType) {
+        switch (fileType) {
+            case STUB:
+                return path.endsWith(".astub");
+            case AJAVA:
+                return path.endsWith(".ajava");
+            default:
+                return false;
+        }
     }
 
     private static boolean isJar(File f) {
@@ -323,8 +337,9 @@ public class StubUtil {
      * @param resources the list to add the found stub files to
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()
-    private static void addStubFilesToList(File stub, List<StubResource> resources) {
-        if (isStub(stub)) {
+    private static void addAnnotationFilesToList(
+            File stub, List<StubResource> resources, AnnotationFileType fileType) {
+        if (isStub(stub, fileType)) {
             resources.add(new FileStubResource(stub));
         } else if (isJar(stub)) {
             JarFile file;
@@ -337,7 +352,7 @@ public class StubUtil {
             Enumeration<JarEntry> entries = file.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                if (isStub(entry.getName())) {
+                if (isStub(entry.getName(), fileType)) {
                     resources.add(new JarEntryStubResource(file, entry));
                 }
             }
@@ -352,7 +367,7 @@ public class StubUtil {
                         }
                     });
             for (File enclosed : directoryContents) {
-                addStubFilesToList(enclosed, resources);
+                addAnnotationFilesToList(enclosed, resources, fileType);
             }
         }
     }

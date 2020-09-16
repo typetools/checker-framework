@@ -237,6 +237,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Parses stub files and stores annotations from stub files. */
     public final StubTypes stubTypes;
 
+    public final StubTypes ajavaTypes;
+
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
      * calling the method {@link #getDeclAnnotations(Element)}.
@@ -434,6 +436,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.supportedQuals = new HashSet<>();
         this.supportedQualNames = new HashSet<>();
         this.stubTypes = new StubTypes(this);
+        this.ajavaTypes = new StubTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -1438,12 +1441,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
+        mergeStubsIntoType(type, elt, ajavaTypes);
         if (checker.hasOption("mergeStubsWithSource")) {
-            type = mergeStubsIntoType(type, elt);
+            type = mergeStubsIntoType(type, elt, stubTypes);
         }
         // Caching is disabled if stub files are being parsed, because calls to this
         // method before the stub files are fully read can return incorrect results.
-        if (shouldCache && !stubTypes.isParsing()) {
+        if (shouldCache && !stubTypes.isParsing() && !ajavaTypes.isParsing()) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;
@@ -1480,8 +1484,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
+        mergeStubsIntoType(result, tree, ajavaTypes);
         if (checker.hasOption("mergeStubsWithSource")) {
-            result = mergeStubsIntoType(result, tree);
+            result = mergeStubsIntoType(result, tree, stubTypes);
         }
 
         if (shouldCache) {
@@ -1499,10 +1504,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree the tree from which to read stub types
      * @return type, side-effected to add the stub types
      */
-    private AnnotatedTypeMirror mergeStubsIntoType(@Nullable AnnotatedTypeMirror type, Tree tree) {
+    private AnnotatedTypeMirror mergeStubsIntoType(
+            @Nullable AnnotatedTypeMirror type, Tree tree, StubTypes source) {
         Element elt = TreeUtils.elementFromTree(tree);
-        return mergeStubsIntoType(type, elt);
+        return mergeStubsIntoType(type, elt, source);
     }
+
+    // TODO: Update this documentation for new parameter.
 
     /**
      * Merges types from stub files for {@code elt} into {@code type} by taking the greatest lower
@@ -1513,8 +1521,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type, side-effected to add the stub types
      */
     protected AnnotatedTypeMirror mergeStubsIntoType(
-            @Nullable AnnotatedTypeMirror type, Element elt) {
-        AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
+            @Nullable AnnotatedTypeMirror type, Element elt, StubTypes source) {
+        AnnotatedTypeMirror stubType = source.getAnnotatedTypeMirror(elt);
         if (stubType != null) {
             if (type == null) {
                 type = stubType;
@@ -3363,6 +3371,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void parseStubFiles() {
         stubTypes.parseStubFiles();
+        ajavaTypes.parseAjavaFiles();
     }
 
     /**
@@ -3527,6 +3536,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         ElementUtils.getVerboseName(elt),
                         annotation);
             }
+        }
+
+        if (!ajavaTypes.isParsing()) {
+
+            // Retrieving annotations from ajava files.
+            Set<AnnotationMirror> ajavaAnnos = ajavaTypes.getDeclAnnotation(elt);
+            results.addAll(ajavaAnnos);
+
+            if (elt.getKind() == ElementKind.METHOD) {
+                // Retrieve the annotations from the overridden method's element.
+                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
+            } else if (ElementUtils.isTypeDeclaration(elt)) {
+                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
+            }
+
+            // Add the element and its annotations to the cache.
+            cacheDeclAnnos.put(elt, results);
         }
 
         // If parsing stub files, return the annotations in the element.

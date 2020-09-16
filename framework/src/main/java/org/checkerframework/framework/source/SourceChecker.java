@@ -225,6 +225,9 @@ import org.plumelib.util.UtilPlume;
     // Additional stub files to use
     // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
+    // TODO: Write more here, manual has info about what to include.
+    // Ajava files to use
+    "ajavas",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound

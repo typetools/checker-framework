@@ -193,7 +193,115 @@ public class StubTypes {
             if (base != null) {
                 stubPathFull = base + "/" + stubPath;
             }
-            List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
+            List<StubResource> stubs =
+                    StubUtil.allStubFiles(stubPathFull, StubUtil.AnnotationFileType.STUB);
+            if (stubs.isEmpty()) {
+                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // level directory of the jar that contains the checker.
+                if (stubPath.startsWith("checker.jar/")) {
+                    stubPath = stubPath.substring("checker.jar/".length());
+                }
+                InputStream in = checker.getClass().getResourceAsStream(stubPath);
+                // Didn't find the stub file.
+                if (in == null) {
+                    // When using a compound checker, the target stub file may be found by the
+                    // current checker's parent checkers. Also check this to avoid a false
+                    // warning. Currently, only the original checker will try to parse the target
+                    // stub file, the parent checkers are only used to reduce false warnings.
+                    SourceChecker currentChecker = checker;
+                    boolean findByParentCheckers = false;
+                    while (currentChecker != null) {
+                        URL topLevelResource =
+                                currentChecker.getClass().getResource("/" + stubPath);
+                        if (topLevelResource != null) {
+                            currentChecker.message(
+                                    Kind.WARNING,
+                                    stubPath
+                                            + " should be in the same directory as "
+                                            + currentChecker.getClass().getSimpleName()
+                                            + ".class, but is at the top level of a jar file: "
+                                            + topLevelResource);
+                            findByParentCheckers = true;
+                            break;
+                        } else {
+                            currentChecker = currentChecker.getParentChecker();
+                        }
+                    }
+                    // If there exists one parent checker which can find this stub file, don't
+                    // report an warning.
+                    if (!findByParentCheckers) {
+                        File stubPathParent = new File(stubPath).getParentFile();
+                        String stubPathParentDescription =
+                                (stubPathParent == null
+                                        ? "current directory"
+                                        : "directory "
+                                                + new File(stubPath)
+                                                        .getParentFile()
+                                                        .getAbsolutePath());
+                        checker.message(
+                                Kind.WARNING,
+                                "Did not find stub file "
+                                        + stubPath
+                                        + " on classpath or within "
+                                        + stubPathParentDescription
+                                        + (stubPathFull.equals(stubPath)
+                                                ? ""
+                                                : (" or at " + stubPathFull)));
+                    }
+                } else {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                }
+            }
+            for (StubResource resource : stubs) {
+                InputStream stubStream;
+                try {
+                    stubStream = resource.getInputStream();
+                } catch (IOException e) {
+                    checker.message(
+                            Kind.NOTE,
+                            "Could not read stub resource: " + resource.getDescription());
+                    continue;
+                }
+                StubParser.parse(
+                        resource.getDescription(),
+                        stubStream,
+                        factory,
+                        processingEnv,
+                        typesFromStubFiles,
+                        declAnnosFromStubFiles);
+            }
+        }
+        parsing = false;
+    }
+
+    // TODO: Factor code out with othe parse method, rename variables to reflect ajava.
+    public void parseAjavaFiles() {
+        parsing = true;
+        // TODO: Error if this is called more than once?
+        SourceChecker checker = factory.getContext().getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        List<String> allStubFiles = new ArrayList<>();
+        String ajavasOption = checker.getOption("ajavas");
+        if (ajavasOption != null) {
+            Collections.addAll(allStubFiles, ajavasOption.split(File.pathSeparator));
+        }
+
+        // Parse stub files.
+        for (String stubPath : allStubFiles) {
+            // Special case when running in jtreg.
+            String base = System.getProperty("test.src");
+            String stubPathFull = stubPath;
+            if (base != null) {
+                stubPathFull = base + "/" + stubPath;
+            }
+            List<StubResource> stubs =
+                    StubUtil.allStubFiles(stubPathFull, StubUtil.AnnotationFileType.AJAVA);
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.

@@ -11,8 +11,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.printer.PrettyPrinter;
-import com.github.javaparser.printer.PrettyPrinterConfiguration;
+import com.github.javaparser.ast.visitor.CloneVisitor;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -442,12 +442,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 String outputPath = packageDir + File.separator + name;
                 try {
                     FileWriter writer = new FileWriter(outputPath);
-                    PrettyPrinterConfiguration configuration = new PrettyPrinterConfiguration();
-                    configuration.setIndentType(PrettyPrinterConfiguration.IndentType.SPACES);
-                    configuration.setIndentSize(4);
-                    configuration.setPrintComments(false);
-                    PrettyPrinter prettyPrinter = new PrettyPrinter(configuration);
-                    writer.write(prettyPrinter.print(root.declaration));
+                    LexicalPreservingPrinter.print(root.declaration, writer);
                     writer.close();
                 } catch (IOException e) {
                     throw new BugInCF("Error while writing ajava file", e);
@@ -689,6 +684,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             throws IOException {
         CompilationUnit javaParserRoot =
                 StaticJavaParser.parse(root.getSourceFile().openInputStream());
+        LexicalPreservingPrinter.setup(javaParserRoot);
         CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
@@ -1093,7 +1089,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         public void transferAnnotations() {
-            WholeProgramInferenceJavaParser.transferAnnotations(type, declaration.getType());
+            if (type == null) {
+                return;
+            }
+
+            Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
+            WholeProgramInferenceJavaParser.transferAnnotations(type, newType);
+            declaration.setType(newType);
         }
 
         @Override
