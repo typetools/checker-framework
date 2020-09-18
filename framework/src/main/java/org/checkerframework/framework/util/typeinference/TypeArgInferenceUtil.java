@@ -367,7 +367,7 @@ public class TypeArgInferenceUtil {
      * Returns true if {@code type} contains a use of a type variable in {@code typeVariables}.
      *
      * @param type type to search
-     * @param typeVariables collection of type varibles
+     * @param typeVariables collection of type variables
      * @return true if {@code type} contains a use of a type variable in {@code typeVariables}
      */
     public static boolean containsTypeParameter(
