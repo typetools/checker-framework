@@ -2035,9 +2035,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * If the lint option "cast:unsafe" is set, this method issues a warning if the cast is unsafe.
-     * Only primary qualifiers are checked unless the command line option "checkCastElementType" is
-     * supplied.
+     * Issues a warning if the given explicitly-written typecast is unsafe. Does nothing if the lint
+     * option "cast:unsafe" is not set. Only primary qualifiers are checked unless the command line
+     * option "checkCastElementType" is supplied.
+     *
+     * @param typeCastTree an explicitly-written typecast
      */
     protected void checkTypecastSafety(TypeCastTree typeCastTree) {
         if (!checker.getLintOption("cast:unsafe", true)) {
@@ -2415,21 +2417,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
-        assert var != null : "no variable found for tree: " + varTree;
+        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
+        assert varType != null : "no variable found for tree: " + varTree;
 
-        if (!validateType(varTree, var)) {
+        if (!validateType(varTree, varType)) {
             return;
         }
 
-        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
+        commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
      * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
-     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param varType the annotated type for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
