@@ -97,6 +97,12 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
 
     @Override
     public void handleBuilderBuildMethod(AnnotatedExecutableType t) {
+
+        ExecutableElement element = t.getElement();
+        TypeElement builderElement = (TypeElement) element.getEnclosingElement();
+        TypeElement autoValueClassElement = (TypeElement) builderElement.getEnclosingElement();
+        AnnotationMirror newCalledMethodsAnno =
+                createCalledMethodsForAutoValueClass(builderElement, autoValueClassElement);
         // Only add the new @CalledMethods annotation if there is not already a @CalledMethods
         // annotation present.
         AnnotationMirror explicitCalledMethodsAnno =
@@ -105,16 +111,9 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                                 atypeFactory
                                         .getQualifierHierarchy()
                                         .getTopAnnotation(newCalledMethodsAnno));
-        if (explicitCalledMethodsAnno != null) {
-            return;
+        if (explicitCalledMethodsAnno == null) {
+            t.getReceiverType().addAnnotation(newCalledMethodsAnno);
         }
-
-        ExecutableElement element = t.getElement();
-        TypeElement builderElement = (TypeElement) element.getEnclosingElement();
-        TypeElement autoValueClassElement = (TypeElement) builderElement.getEnclosingElement();
-        AnnotationMirror newCalledMethodsAnno =
-                createCalledMethodsForAutoValueClass(builderElement, autoValueClassElement);
-        t.getReceiverType().addAnnotation(newCalledMethodsAnno);
     }
 
     @Override
@@ -319,7 +318,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Returns whether AutoValue considers a type to be "optional." Optional types do not need to be
+     * Returns whether AutoValue considers a type to be "optional". Optional types do not need to be
      * set before build is called on a builder. Adapted from AutoValue source code.
      *
      * @param type some type
@@ -341,17 +340,18 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                     "java.util.OptionalInt",
                     "java.util.OptionalLong"
                 };
-        return ArraysPlume.indexOf(optionalClassNames, typeElement.getQualifiedName().toString())
-                        != -1
-                && typeElement.getTypeParameters().size() == declaredType.getTypeArguments().size();
+        return typeElement.getTypeParameters().size() == declaredType.getTypeArguments().size()
+                && ArraysPlume.indexOf(
+                                optionalClassNames, typeElement.getQualifiedName().toString())
+                        != -1;
     }
 
     /**
-     * Returns the names of setter methods for an AutoValue builder.
+     * Returns names of all setter methods.
      *
+     * @see #isAutoValueBuilderSetter
      * @param builderElement the element representing an AutoValue builder
-     * @return names of all methods whose return type is the builder itself or that return a Guava
-     *     Immutable type, and are therefore setters
+     * @return the names of setter methods for the AutoValue builder
      */
     private Set<String> getAutoValueBuilderSetterMethodNames(TypeElement builderElement) {
         return getAllAbstractMethods(builderElement).stream()
@@ -361,11 +361,12 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     /**
-     * Is method a setter for an AutoValue builder?
+     * Return true if the given method is a setter for an AutoValue builder; that is, its return
+     * type is the builder itself or a Guava Immutable type.
      *
-     * @param method a method of builder or one of its supertypes
+     * @param method a method of a builder or one of its supertypes
      * @param builderElement element for the AutoValue builder
-     * @return {@code true} if e is a setter for the builder, {@code false} otherwise
+     * @return true if {@code method} is a setter for the builder
      */
     private boolean isAutoValueBuilderSetter(ExecutableElement method, TypeElement builderElement) {
         TypeMirror retType = method.getReturnType();
@@ -410,8 +411,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                 }
                 if (modifiers.contains(Modifier.ABSTRACT)) {
                     // Make sure it's not overridden. This only works because #getAllSupertypes
-                    // returns
-                    // results in a particular order.
+                    // returns results in a particular order.
                     if (!overriddenMethods.contains(member)) {
                         abstractMethods.add((ExecutableElement) member);
                     }
