@@ -141,23 +141,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     @Override
     public boolean returnsThis(MethodInvocationTree tree) {
-        return super.returnsThis(tree) || hasOldReturnsReceiverAnnotation(tree);
-    }
-
-    /**
-     * Continue to trust but not check the old {@link
-     * org.checkerframework.checker.builder.qual.ReturnsReceiver} annotation, for backwards
-     * compatibility.
-     *
-     * @param tree the method invocation whose invoked method is to be checked
-     * @return true if the declaration of the invoked method has an obsolete ReturnsReceiver
-     *     declaration annotation
-     */
-    private boolean hasOldReturnsReceiverAnnotation(MethodInvocationTree tree) {
-        return this.getDeclAnnotation(
-                        TreeUtils.elementFromUse(tree),
-                        org.checkerframework.checker.builder.qual.ReturnsReceiver.class)
-                != null;
+        return super.returnsThis(tree)
+                // Continue to trust but not check the old {@link
+                // org.checkerframework.checker.builder.qual.ReturnsReceiver} annotation, for
+                // backwards compatibility.
+                || this.getDeclAnnotation(
+                                TreeUtils.elementFromUse(tree),
+                                org.checkerframework.checker.builder.qual.ReturnsReceiver.class)
+                        != null;
     }
 
     /**
@@ -169,8 +160,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      *
      * @param methodName the name of the method to adjust
      * @param tree the invocation of the method
-     * @return either the first argument, or "withOwners" or "withImageIds" if the tree is an
-     *     equivalent filter addition
+     * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition.
+     *     Otherwise, return the first argument.
      */
     String adjustMethodNameUsingValueChecker(
             final String methodName, final MethodInvocationTree tree) {

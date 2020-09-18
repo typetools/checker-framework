@@ -41,15 +41,14 @@ javac -processor CalledMethods MyFile.java ...
 The Called Methods Checker supports the following optional command-line arguments:
 \begin{itemize}
 \item The \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports> option disables automatic
- annotation inference for builder frameworks. This option
- takes an argument, which is the name of the frameworks to disable (all lowercase). Permitted values:
- \<lombok>, \<autovalue>. See \chapterpageref{called-methods-framework-details}. By default,
- Lombok and AutoValue support is enabled. A user who supplies their own stub file to specify
- a library and is uninterested in (potential) errors in the use of builders might wish to disable framework
- support.
+ annotation inference for builder frameworks.
+ Section~\ref{called-methods-framework-details} describes its syntax.
+ Supply this if you are uninterested in errors in the use of builders, but
+ are using the Called Methods Checker to detect errors in other types of
+ code.
 \item The \<-ACalledMethodsChecker\_useValueChecker> option improves precision when analyzing
- code that uses the AWS SDK's \<DescribeImageRequest> API. See \chapterpageref{called-methods-other}.
- By default, this support is disabled.
+ code that uses the AWS SDK's \<DescribeImageRequest> API\@.  See
+ Section~\ref{called-methods-other}.
 \end{itemize}
 
 \sectionAndLabel{For Lombok users}{called-methods-lombok}
@@ -182,23 +181,28 @@ This section explains how the Called Methods Checker infers types for code
 that uses the Lombok and AutoValue frameworks. Most readers can skip these
 details.
 
+You can disable the builder framework support by specifying them in a
+comma-separated lowercase list to the command-line flag
+\<disableBuilderFrameworkSupports>.  For example, to disable both Lombok
+and AutoValue support, use: \\
+\<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=autovalue,lombok>
+
 The Called Methods Checker automatically assumes default annotations for code that uses builders generated
 by Lombok and AutoValue. There are three places annotations are usually assumed:
 \begin{itemize}
-\item A \<@CalledMethods> annotation is placed on the receiver of the \<build()> method, capturing the
-setter methods that must be invoked on the builder before calling \<build()>. For Lombok,
-this annotation's argument is the set of \<@lombok.NonNull> fields that do not have default values.
-For AutoValue, it is the set of fields that are not \<@Nullable>, \<Optional>, or a Guava Immutable
-Collection.
-\item The return type of a \<toBuilder()> method (for example, if the \<toBuilder = true> option is
-passed to Lombok's \<@Builder> annotation) is annotated with
-the same \<@CalledMethods> annotation as the receiver of \<build()>, using the same rules as above.
-\item A \<@This> annotation is placed on the return type of each setter in the builder's implementation.
+\item A \<@CalledMethods> annotation is placed on the receiver of the
+  \<build()> method, indicating the setter methods that must be invoked on
+  the builder before calling \<build()>. For Lombok, this annotation's
+  argument is the set of \<@lombok.NonNull> fields that do not have default
+  values.  For AutoValue, it is the set of fields that are not
+  \<@Nullable>, \<Optional>, or a Guava Immutable Collection.
+\item The return type of a \<toBuilder()> method (for example, if the
+  \<toBuilder = true> option is passed to Lombok's \<@Builder> annotation)
+  is annotated with the same \<@CalledMethods> annotation as the receiver
+  of \<build()>, using the same rules as above.
+\item A \<@This> annotation is placed on the return type of each setter in
+  the builder's implementation.
 \end{itemize}
-
-You can disable the builder framework support by specifying them in a comma-separated list to the
-command-line flag \<disableBuilderFrameworkSupports>.  For example, to disable both Lombok and AutoValue support,
-use: \\ \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=autovalue,lombok>
 
 If your program directly defines any of these methods (for example, by adding your own setters to
 a Lombok builder), you may need to write the annotations manually.
@@ -216,17 +220,25 @@ than in source code.
 
 \sectionAndLabel{Using the Called Methods Checker for properties unrelated to builders}{called-methods-other}
 
-The Called Methods Checker can be used to verify any property of the form ``always call A before B'', even
-if the property is unrelated to builders. For example, consider the AWS EC2 \<describeImages> API, which
+The Called Methods Checker can be used to verify any property of the form
+``always call A before B'', even if the property is unrelated to builders.
+
+For example, consider the AWS EC2 \<describeImages> API, which
 clients use during the process of initializing a new cloud instance.
-\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869} describes how an
-improperly-configured request to this API can make the requesting client vulnerable to a ``machine-image sniping''
-attack that would allow a malicious third-party to control the operating system image used to initialize the
-machine. To prevent this attack, clients must specify some trusted source for the image by calling the
-\<withOwners> or \<withImageIds> methods on the request prior to sending it to AWS\@. Using a stub file for the
-\<describeImages> API
+\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869}
+describes how an improperly-configured request to this API can make the
+requesting client vulnerable to a ``machine-image sniping'' attack that
+would allow a malicious third-party to control the operating system image
+used to initialize the machine. To prevent this attack, clients must
+specify some trusted source for the image by calling the \<withOwners> or
+\<withImageIds> methods on the request prior to sending it to AWS\@. Using
+a stub file for the \<describeImages> API
 (\href{https://github.com/typetools/checker-framework/blob/master/checker/src/main/java/org/checkerframework/calledmethods/DescribeImages.astub}{DescribeImages.astub}),
-the Called Methods Checker can prove that a client is not vulnerable to such an attack. To improve precision, you
-can specify the \<-ACalledMethodsChecker\_useValueChecker> command-line option, which instructs the checker to treat
-provably-safe calls to the \<withFilters> method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
+the Called Methods Checker can prove that a client is not vulnerable to
+such an attack.
+
+To improve precision, you can specify the
+\<-ACalledMethodsChecker\_useValueChecker> command-line option, which
+instructs the checker to treat provably-safe calls to the \<withFilters>
+method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
 \<withImageIds> methods.
