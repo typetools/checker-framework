@@ -187,18 +187,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
             ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
             for (Tree filterTree : tree.getArguments()) {
-                // Search the arguments to withFilters for either: (1) a constructor invocation of
-                // the Filter constructor, whose first argument is the name, or (2) a call to the
-                // withName method.
-                //
-                // This code is searching for code such as:
-                // new Filter("owner").withValues("...")
-                // or:
-                // new Filter().*.withName("owner").*
-                //
-                // It is attempting to recover either the argument to the constructor or the
-                // argument to the last invocation of withName ("owner" in both of the above
-                // examples).
                 String adjustedMethodName = filterTreeToMethodName(filterTree, valueATF);
                 if (adjustedMethodName != null) {
                     return adjustedMethodName;
@@ -211,6 +199,17 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     /**
      * Determine the name of the method in DescribeImagesRequest that is equivalent to the Filter in
      * the given tree.
+     *
+     * <p>Returns null unless the argument is one of the following:
+     *
+     * <ul>
+     *   <li>a constructor invocation of the Filter constructor whose first argument is the name,
+     *       such as {@code new Filter("owner").*}, or
+     *   <li>a call to the withName method, such as {@code new Filter().*.withName("owner").*}.
+     * </ul>
+     *
+     * In those cases, it returns either the argument to the constructor or the argument to the last
+     * invocation of withName ("owner" in both of the above examples).
      *
      * @param filterTree the tree that represents the filter (an argument to the withFilters or
      *     setFilters method)
@@ -231,11 +230,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                 return filterKindToMethodName(withNameArg);
             }
 
-            // Descend into a call to Collections.singletonList()
             if (TreeUtils.isMethodInvocation(
                     filterTree, collectionsSingletonList, getProcessingEnv())) {
+                // Descend into a call to Collections.singletonList()
                 filterTree = filterTreeAsMethodInvocation.getArguments().get(0);
             } else {
+                // Proceed leftward (to the receiver) in a fluent call sequence.
                 filterTree =
                         TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
             }
