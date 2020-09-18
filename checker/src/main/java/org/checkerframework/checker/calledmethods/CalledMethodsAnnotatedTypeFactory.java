@@ -12,7 +12,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.builder.qual.ReturnsReceiver;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
 import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.builder.LombokSupport;
@@ -35,12 +34,12 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
-/** The annotated type factory for the Called Methods checker. */
+/** The annotated type factory for the Called Methods Checker. */
 public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
 
     /**
-     * The builder frameworks (such as Lombok and AutoValue) supported by the Called Methods
-     * checker.
+     * The builder frameworks (such as Lombok and AutoValue) supported by this instance of the
+     * Called Methods Checker.
      */
     private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
@@ -56,20 +55,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
      */
     private final ExecutableElement collectionsSingletonList;
-
-    /**
-     * Lombok has a flag to generate @CalledMethods annotations, but they used the old package name,
-     * so we maintain it as an alias.
-     */
-    private static final String OLD_CALLED_METHODS =
-            "org.checkerframework.checker.builder.qual.CalledMethods";
-
-    /**
-     * Lombok also generates an @NotCalledMethods annotation, which we have no support for. We
-     * therefore treat it as top.
-     */
-    private static final String OLD_NOT_CALLED_METHODS =
-            "org.checkerframework.checker.builder.qual.NotCalledMethods";
 
     /**
      * Create a new CalledMethodsAnnotatedTypeFactory.
@@ -96,8 +81,16 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         this.collectionsSingletonList =
                 TreeUtils.getMethod(
                         "java.util.Collections", "singletonList", 1, getProcessingEnv());
-        addAliasedAnnotation(OLD_CALLED_METHODS, CalledMethods.class, true);
-        addAliasedAnnotation(OLD_NOT_CALLED_METHODS, this.top);
+        // Lombok generates @CalledMethods annotations using an old package name,
+        // so we maintain it as an alias.
+        addAliasedAnnotation(
+                "org.checkerframework.checker.builder.qual.CalledMethods",
+                CalledMethods.class,
+                true);
+        // Lombok also generates an @NotCalledMethods annotation, which we have no support for. We
+        // therefore treat it as top.
+        addAliasedAnnotation(
+                "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
         this.postInit();
     }
 
@@ -122,8 +115,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                     break;
                 default:
                     throw new UserError(
-                            "The Called Methods Checker found an unsupported builder framework in the argument to "
-                                    + "-AdisableBuilderFrameworkSupports: "
+                            "Unsupported builder framework in -AdisableBuilderFrameworkSupports: "
                                     + framework);
             }
         }
@@ -162,7 +154,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      *     declaration annotation
      */
     private boolean hasOldReturnsReceiverAnnotation(MethodInvocationTree tree) {
-        return this.getDeclAnnotation(TreeUtils.elementFromUse(tree), ReturnsReceiver.class)
+        return this.getDeclAnnotation(
+                        TreeUtils.elementFromUse(tree),
+                        org.checkerframework.checker.builder.qual.ReturnsReceiver.class)
                 != null;
     }
 
@@ -176,7 +170,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * @param methodName the name of the method to adjust
      * @param tree the invocation of the method
      * @return either the first argument, or "withOwners" or "withImageIds" if the tree is an
-     *     equivalent filter addition.
+     *     equivalent filter addition
      */
     String adjustMethodNameUsingValueChecker(
             final String methodName, final MethodInvocationTree tree) {
