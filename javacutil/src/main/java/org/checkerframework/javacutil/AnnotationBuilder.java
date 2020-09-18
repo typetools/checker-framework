@@ -417,24 +417,7 @@ public class AnnotationBuilder {
     }
 
     private TypeMirror typeFromClass(Class<?> clazz) {
-        if (clazz == void.class) {
-            return types.getNoType(TypeKind.VOID);
-        } else if (clazz.isPrimitive()) {
-            String primitiveName = clazz.getName().toUpperCase();
-            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return types.getPrimitiveType(primitiveKind);
-        } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType());
-            return types.getArrayType(componentType);
-        } else {
-            String name = clazz.getCanonicalName();
-            assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
-            if (element == null) {
-                throw new BugInCF("Unrecognized class: " + clazz);
-            }
-            return element.asType();
-        }
+        return TypesUtils.typeFromClass(clazz, elements, types);
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
