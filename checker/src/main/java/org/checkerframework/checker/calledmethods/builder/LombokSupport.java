@@ -151,7 +151,6 @@ public class LombokSupport implements BuilderFrameworkSupport {
             } else if (member.getKind() == ElementKind.METHOD
                     && ElementUtils.hasAnnotation(member, "lombok.Generated")) {
                 String methodName = member.getSimpleName().toString();
-                // Handle fields with @Builder.Default annotations.
                 // If a field foo has an @Builder.Default annotation, Lombok always generates a
                 // method called $default$foo.
                 if (methodName.startsWith("$default$")) {
