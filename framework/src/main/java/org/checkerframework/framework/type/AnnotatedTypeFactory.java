@@ -68,6 +68,7 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -387,6 +388,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The Object.getClass method. */
     protected final ExecutableElement objectGetClass;
 
+    /** The int type. */
+    final TypeMirror INT_TYPE_MIRROR;
+
+    /** The Integer type. */
+    final TypeMirror INTEGER_TYPE_MIRROR;
+
     /** Size of the annotationClassNames cache. */
     private static final int ANNOTATION_CACHE_SIZE = 500;
 
@@ -481,6 +488,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
+        INT_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        INTEGER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
     }
 
     /**
@@ -2321,7 +2330,88 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return narrowed;
     }
 
-    /** Returns the VisitorState instance used by the factory to infer types. */
+    // TODO: expand this to all widenings, including from int to long and widenings to float and
+    // double.  Knowing when to do those widenings requires context, and requires an argument
+    // indicating the target type.
+    /**
+     * If the type is byte, short, or char, return a widened (int) version of it. Otherwise return
+     * the type itself.
+     *
+     * @param type a type
+     * @return a widened version of the type, or the type itself
+     */
+    public AnnotatedTypeMirror maybeWidenToInt(AnnotatedTypeMirror type) {
+        TypeMirror typeUnderlying = type.getUnderlyingType();
+        if (TypesUtils.isPrimitive(typeUnderlying)) {
+            return getWidenedPrimitive(type, INT_TYPE_MIRROR);
+        } else if (TypesUtils.isBoxedPrimitive(typeUnderlying)) {
+            return getWidenedPrimitive(type, INTEGER_TYPE_MIRROR);
+        } else {
+            return type;
+        }
+    }
+
+    /**
+     * If both arguments are primitives or boxed primitives, return an ATM with the same type as
+     * {@code wider} but the annotations of {@code orig}, possibly adapted. Otherwise, return {@code
+     * orig}.
+     *
+     * @param orig the original type
+     * @parame wider the type it is being widened to
+     * @return {@code orig} widened to {@code wider}, if both are (possibly boxed) primitives
+     */
+    public AnnotatedTypeMirror maybeWiden(AnnotatedTypeMirror orig, AnnotatedTypeMirror wider) {
+        TypeMirror origUnderlying = orig.getUnderlyingType();
+        TypeMirror widerUnderlying = wider.getUnderlyingType();
+        TypeKind origKind = NumberUtils.unboxPrimitive(origUnderlying);
+        TypeKind widerKind = NumberUtils.unboxPrimitive(widerUnderlying);
+        if (origKind == null || widerKind == null || origKind == widerKind || !isNarrow(orig)) {
+            return orig;
+        }
+        // orig and wider are both primitives or boxed primitives
+        return getWidenedPrimitive(orig, widerUnderlying);
+    }
+
+    /**
+     * Returns true if the type is narrower than int; that is, if it is byte, short, char, Byte,
+     * Short, or Character.
+     *
+     * @param type a type
+     * @return true if the type is narrower than int
+     */
+    public boolean isNarrow(AnnotatedTypeMirror type) {
+        TypeMirror underlyingType = type.getUnderlyingType();
+        TypeMirror unboxedType =
+                TypesUtils.isBoxedPrimitive(underlyingType)
+                        ? types.unboxedType(underlyingType)
+                        : underlyingType;
+        TypeKind unboxedKind = unboxedType.getKind();
+        return unboxedKind == TypeKind.BYTE
+                || unboxedKind == TypeKind.SHORT
+                || unboxedKind == TypeKind.CHAR;
+    }
+
+    /**
+     * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeMirror} and with
+     * annotations copied or adapted from {@code type}.
+     *
+     * @param type type to widen; a primitive or boxed primitive
+     * @param widenedTypeMirror underlying type for the returned type mirror
+     * @return result of converting {@code type} to {@code widenedTypeMirror}
+     */
+    public AnnotatedTypeMirror getWidenedPrimitive(
+            AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
+        AnnotatedTypeMirror widened =
+                AnnotatedTypeMirror.createType(widenedTypeMirror, this, type.isDeclaration());
+        widened.addAnnotations(type.getAnnotations());
+        return widened;
+    }
+
+    /**
+     * Returns the VisitorState instance used by the factory to infer types.
+     *
+     * @return the VisitorState instance used by the factory to infer types
+     */
     public VisitorState getVisitorState() {
         return this.visitorState;
     }

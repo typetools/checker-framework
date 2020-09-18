@@ -2465,6 +2465,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
         commonAssignmentCheck(varType, valueType, valueExp, errorKey, extraArgs);
+
+        // TODO: Replace the last line above by the following?
+        // AnnotatedTypeMirror widenedValueType = atypeFactory.maybeWiden(valueType, varType);
+        // // TODO: Note error messages will mention the widened type rather than the type of the
+        // // expression.  commonAssignmentCheck could take an additional formal parameter to
+        // // support the difference.
+        // commonAssignmentCheck(varType, widenedValueType, valueExp, errorKey, extraArgs);
     }
 
     /**

@@ -51,6 +51,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    /** The @SignedPositive annotation. */
+    private final AnnotationMirror SIGNED_POSITIVE =
+            AnnotationBuilder.fromClass(elements, SignedPositive.class);
     /** The @SignednessGlb annotation. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
@@ -167,6 +170,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
         }
+    }
+
+    @Override
+    public AnnotatedTypeMirror getWidenedPrimitive(
+            AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
+        AnnotatedTypeMirror result = super.getWidenedPrimitive(type, widenedTypeMirror);
+        if (type.getKind() == TypeKind.CHAR) {
+            result.replaceAnnotation(SIGNED_POSITIVE);
+        }
+        return result;
     }
 
     @Override

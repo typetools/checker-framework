@@ -416,6 +416,12 @@ public class AnnotationBuilder {
         return this;
     }
 
+    /**
+     * Given a class, return the corresponding TypeMirror.
+     *
+     * @param clazz a class
+     * @return the TypeMirror corresponding to the given class
+     */
     private TypeMirror typeFromClass(Class<?> clazz) {
         return TypesUtils.typeFromClass(clazz, elements, types);
     }
