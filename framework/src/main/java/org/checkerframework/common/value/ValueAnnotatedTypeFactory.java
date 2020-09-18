@@ -363,7 +363,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unboxPrimitive(type);
-        if (NumberUtils.isPrimitiveIntegral(typeKind)) {
+        if (typeKind != null && NumberUtils.isPrimitiveIntegral(typeKind)) {
             return typeKind;
         }
         throw new BugInCF(type.toString() + " expected to be an integral type.");
