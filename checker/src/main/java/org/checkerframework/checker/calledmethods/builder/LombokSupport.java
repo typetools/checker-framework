@@ -73,6 +73,18 @@ public class LombokSupport implements BuilderFrameworkSupport {
     private final Map<Element, Name> defaultedElements = new HashMap<>();
 
     @Override
+    public boolean isBuilderBuildMethod(ExecutableElement element) {
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+
+        if ((ElementUtils.hasAnnotation(enclosingElement, "lombok.Generated")
+                        || ElementUtils.hasAnnotation(element, "lombok.Generated"))
+                && enclosingElement.getSimpleName().toString().endsWith("Builder")) {
+            return element.getSimpleName().contentEquals("build");
+        }
+        return false;
+    }
+
+    @Override
     public void handleBuilderBuildMethod(AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
 
@@ -86,18 +98,18 @@ public class LombokSupport implements BuilderFrameworkSupport {
     }
 
     @Override
+    public boolean isToBuilderMethod(ExecutableElement e) {
+        return e.getSimpleName().contentEquals("toBuilder")
+                && (ElementUtils.hasAnnotation(e, "lombok.Generated")
+                        || ElementUtils.hasAnnotation(e.getEnclosingElement(), "lombok.Generated"));
+    }
+
+    @Override
     public void handleToBuilderMethod(AnnotatedExecutableType t) {
         AnnotatedTypeMirror returnType = t.getReturnType();
         ExecutableElement element = t.getElement();
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
         handleToBuilderType(returnType, enclosingElement);
-    }
-
-    @Override
-    public boolean isToBuilderMethod(ExecutableElement e) {
-        return e.getSimpleName().contentEquals("toBuilder")
-                && (ElementUtils.hasAnnotation(e, "lombok.Generated")
-                        || ElementUtils.hasAnnotation(e.getEnclosingElement(), "lombok.Generated"));
     }
 
     /**
@@ -186,17 +198,5 @@ public class LombokSupport implements BuilderFrameworkSupport {
     @Override
     public void handleConstructor(NewClassTree tree, AnnotatedTypeMirror type) {
         return;
-    }
-
-    @Override
-    public boolean isBuilderBuildMethod(ExecutableElement element) {
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-
-        if ((ElementUtils.hasAnnotation(enclosingElement, "lombok.Generated")
-                        || ElementUtils.hasAnnotation(element, "lombok.Generated"))
-                && enclosingElement.getSimpleName().toString().endsWith("Builder")) {
-            return element.getSimpleName().contentEquals("build");
-        }
-        return false;
     }
 }

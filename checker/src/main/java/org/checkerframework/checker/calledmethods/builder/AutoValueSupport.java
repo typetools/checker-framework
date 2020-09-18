@@ -116,6 +116,22 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     @Override
+    public boolean isToBuilderMethod(ExecutableElement e) {
+        TypeElement enclosingElement = (TypeElement) e.getEnclosingElement();
+        boolean isAbstractAV =
+                isAutoValueGenerated(enclosingElement)
+                        && e.getModifiers().contains(Modifier.ABSTRACT);
+        TypeMirror superclass = enclosingElement.getSuperclass();
+        boolean superIsAV = false;
+        if (superclass.getKind() != TypeKind.NONE) {
+            superIsAV = isAutoValueGenerated(TypesUtils.getTypeElement(superclass));
+        }
+        String methodName = e.getSimpleName().toString();
+        // make sure the method is toBuilder
+        return "toBuilder".equals(methodName) && (superIsAV || isAbstractAV);
+    }
+
+    @Override
     public void handleToBuilderMethod(AnnotatedExecutableType t) {
         AnnotatedTypeMirror returnType = t.getReturnType();
         ExecutableElement e = t.getElement();
@@ -131,22 +147,6 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
             TypeElement superElement = TypesUtils.getTypeElement(enclosingElement.getSuperclass());
             handleToBuilderType(returnType, returnType.getUnderlyingType(), superElement);
         }
-    }
-
-    @Override
-    public boolean isToBuilderMethod(ExecutableElement e) {
-        TypeElement enclosingElement = (TypeElement) e.getEnclosingElement();
-        boolean isAbstractAV =
-                isAutoValueGenerated(enclosingElement)
-                        && e.getModifiers().contains(Modifier.ABSTRACT);
-        TypeMirror superclass = enclosingElement.getSuperclass();
-        boolean superIsAV = false;
-        if (superclass.getKind() != TypeKind.NONE) {
-            superIsAV = isAutoValueGenerated(TypesUtils.getTypeElement(superclass));
-        }
-        String methodName = e.getSimpleName().toString();
-        // make sure the method is toBuilder
-        return "toBuilder".equals(methodName) && (superIsAV || isAbstractAV);
     }
 
     /**
