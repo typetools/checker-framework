@@ -212,10 +212,20 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is a primitive numeric type.
      *
-     * @return whether the argument is a primitive numeric type
+     * @param type a type
+     * @return true if the argument is a primitive numeric type
      */
     public static boolean isNumeric(TypeMirror type) {
-        switch (type.getKind()) {
+        return isNumeric(type.getKind());
+    }
+
+    /**
+     * Returns true iff the argument is a primitive numeric type kind.
+     *
+     * @return true if the argument is a primitive numeric type kind
+     */
+    public static boolean isNumeric(TypeKind typeKind) {
+        switch (typeKind) {
             case BYTE:
             case CHAR:
             case DOUBLE:
@@ -288,12 +298,20 @@ public final class TypesUtils {
      *     performed
      */
     public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
-        if (!isNumeric(left) || !isNumeric(right)) {
+        return widenedNumericType(left.getKind(), right.getKind());
+    }
+
+    /**
+     * Returns the widened numeric type for an arithmetic operation performed on a value of the left
+     * type and the right type. Defined in JLS 5.6.2.
+     *
+     * @return the result of widening numeric conversion, or NONE when the conversion cannot be
+     *     performed
+     */
+    public static TypeKind widenedNumericType(TypeKind leftKind, TypeKind rightKind) {
+        if (!isNumeric(leftKind) || !isNumeric(rightKind)) {
             return TypeKind.NONE;
         }
-
-        TypeKind leftKind = left.getKind();
-        TypeKind rightKind = right.getKind();
 
         if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
             return TypeKind.DOUBLE;
@@ -308,6 +326,45 @@ public final class TypesUtils {
         }
 
         return TypeKind.INT;
+    }
+
+    /**
+     * Returns the wider of the two arguments.
+     *
+     * @return the wider of the two arguments, or or NONE if either type is non-numeric
+     */
+    public static TypeKind minimallyWidenedNumericType(TypeKind leftKind, TypeKind rightKind) {
+        if (!isNumeric(leftKind) || !isNumeric(rightKind)) {
+            return TypeKind.NONE;
+        }
+
+        if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (leftKind == TypeKind.FLOAT || rightKind == TypeKind.FLOAT) {
+            return TypeKind.FLOAT;
+        }
+
+        if (leftKind == TypeKind.LONG || rightKind == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        if (leftKind == TypeKind.INT || rightKind == TypeKind.INT) {
+            return TypeKind.INT;
+        }
+
+        if (leftKind == TypeKind.CHAR || rightKind == TypeKind.CHAR) {
+            return TypeKind.CHAR;
+        }
+
+        if (leftKind == TypeKind.SHORT || rightKind == TypeKind.SHORT) {
+            return TypeKind.SHORT;
+        }
+
+        assert leftKind == TypeKind.BYTE;
+        assert rightKind == TypeKind.BYTE;
+        return TypeKind.BYTE;
     }
 
     /**

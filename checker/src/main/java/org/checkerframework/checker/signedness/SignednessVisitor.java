@@ -16,6 +16,7 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
@@ -323,8 +324,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         AnnotatedTypeMirror widenedLeftOpType = leftOpType;
         AnnotatedTypeMirror widenedRightOpType = rightOpType;
         if (TreeUtils.isWideningBinary(node)) {
-            widenedLeftOpType = atypeFactory.maybeWidenToInt(leftOpType);
-            widenedRightOpType = atypeFactory.maybeWidenToInt(rightOpType);
+            AnnotatedTypeFactory.AtmPair widenedPair = atypeFactory.widenBinary(node);
+            widenedLeftOpType = widenedPair.a;
+            widenedRightOpType = widenedPair.b;
         }
 
         Kind kind = node.getKind();

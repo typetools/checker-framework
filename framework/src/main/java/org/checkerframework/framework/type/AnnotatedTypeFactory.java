@@ -5,6 +5,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -388,11 +389,53 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The Object.getClass method. */
     protected final ExecutableElement objectGetClass;
 
+    /** The byte type. */
+    final TypeMirror BYTE_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Byte type. */
+    final TypeMirror BYTE_TYPE_MIRROR;
+
+    /** The short type. */
+    final TypeMirror SHORT_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Short type. */
+    final TypeMirror SHORT_TYPE_MIRROR;
+
     /** The int type. */
-    final TypeMirror INT_TYPE_MIRROR;
+    final TypeMirror INT_PRIMITIVE_TYPE_MIRROR;
 
     /** The Integer type. */
     final TypeMirror INTEGER_TYPE_MIRROR;
+
+    /** The long type. */
+    final TypeMirror LONG_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Long type. */
+    final TypeMirror LONG_TYPE_MIRROR;
+
+    /** The float type. */
+    final TypeMirror FLOAT_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Float type. */
+    final TypeMirror FLOAT_TYPE_MIRROR;
+
+    /** The double type. */
+    final TypeMirror DOUBLE_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Double type. */
+    final TypeMirror DOUBLE_TYPE_MIRROR;
+
+    /** The boolean type. */
+    final TypeMirror BOOLEAN_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Boolean type. */
+    final TypeMirror BOOLEAN_TYPE_MIRROR;
+
+    /** The char type. */
+    final TypeMirror CHAR_PRIMITIVE_TYPE_MIRROR;
+
+    /** The Character type. */
+    final TypeMirror CHARACTER_TYPE_MIRROR;
 
     /** Size of the annotationClassNames cache. */
     private static final int ANNOTATION_CACHE_SIZE = 500;
@@ -488,8 +531,80 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
-        INT_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        BYTE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(byte.class, elements, types);
+        BYTE_TYPE_MIRROR = TypesUtils.typeFromClass(Byte.class, elements, types);
+        SHORT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(short.class, elements, types);
+        SHORT_TYPE_MIRROR = TypesUtils.typeFromClass(Short.class, elements, types);
+        INT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
         INTEGER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+        LONG_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(long.class, elements, types);
+        LONG_TYPE_MIRROR = TypesUtils.typeFromClass(Long.class, elements, types);
+        FLOAT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        FLOAT_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+        DOUBLE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        DOUBLE_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+        BOOLEAN_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        BOOLEAN_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+        CHAR_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
+        CHARACTER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+    }
+
+    /**
+     * Given a TypeKind, return the corresponding primitive type.
+     *
+     * @param typeKind a primitive type kind
+     * @return the primitive type corresponding to the type kind
+     */
+    protected TypeMirror typeKindToPrimitiveTypeMirror(TypeKind typeKind) {
+        switch (typeKind) {
+            case BYTE:
+                return BYTE_PRIMITIVE_TYPE_MIRROR;
+            case SHORT:
+                return SHORT_PRIMITIVE_TYPE_MIRROR;
+            case INT:
+                return INT_PRIMITIVE_TYPE_MIRROR;
+            case LONG:
+                return LONG_PRIMITIVE_TYPE_MIRROR;
+            case FLOAT:
+                return FLOAT_PRIMITIVE_TYPE_MIRROR;
+            case DOUBLE:
+                return DOUBLE_PRIMITIVE_TYPE_MIRROR;
+            case BOOLEAN:
+                return BOOLEAN_PRIMITIVE_TYPE_MIRROR;
+            case CHAR:
+                return CHAR_PRIMITIVE_TYPE_MIRROR;
+            default:
+                throw new BugInCF("Non-primitive TypeKind: " + typeKind);
+        }
+    }
+
+    /**
+     * Given a TypeKind, return the corresponding boxed primitive type.
+     *
+     * @param typeKind a primitive type kind
+     * @return the boxed primitive type corresponding to the type kind
+     */
+    protected TypeMirror typeKindToBoxedTypeMirror(TypeKind typeKind) {
+        switch (typeKind) {
+            case BYTE:
+                return BYTE_TYPE_MIRROR;
+            case SHORT:
+                return SHORT_TYPE_MIRROR;
+            case INT:
+                return INTEGER_TYPE_MIRROR;
+            case LONG:
+                return LONG_TYPE_MIRROR;
+            case FLOAT:
+                return FLOAT_TYPE_MIRROR;
+            case DOUBLE:
+                return DOUBLE_TYPE_MIRROR;
+            case BOOLEAN:
+                return BOOLEAN_TYPE_MIRROR;
+            case CHAR:
+                return CHARACTER_TYPE_MIRROR;
+            default:
+                throw new BugInCF("Non-primitive TypeKind: " + typeKind);
+        }
     }
 
     /**
@@ -2330,6 +2445,62 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return narrowed;
     }
 
+    /** A pair of two AnnotatedTypeMirrors. */
+    public static class AtmPair {
+        /** The first AnnotatedTypeMirror. */
+        public AnnotatedTypeMirror a;
+        /** The second AnnotatedTypeMirror. */
+        public AnnotatedTypeMirror b;
+        /**
+         * Create a new AtmPair.
+         *
+         * @param a the first AnnotatedTypeMirror
+         * @param b the second AnnotatedTypeMirror
+         */
+        public AtmPair(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
+            this.a = a;
+            this.b = b;
+        }
+        /**
+         * Returns a string representation of the pair.
+         *
+         * @return a string representation of the pair
+         */
+        @Override
+        public String toString() {
+            return "<" + a + ", " + b + ">";
+        }
+    }
+
+    /**
+     * Given a binary node that widens its arguments, return widened types for its two arguments.
+     *
+     * @param node a binary expression that widens its arguments
+     * @return widened types for the expression's two arguments
+     */
+    public AtmPair widenBinary(BinaryTree node) {
+        System.out.printf("widenBinary(%s)%n", node);
+        ExpressionTree leftOp = node.getLeftOperand();
+        ExpressionTree rightOp = node.getRightOperand();
+        AnnotatedTypeMirror leftOpType = getAnnotatedType(leftOp);
+        AnnotatedTypeMirror rightOpType = getAnnotatedType(rightOp);
+        TypeMirror leftUnderlying = leftOpType.getUnderlyingType();
+        TypeMirror rightUnderlying = rightOpType.getUnderlyingType();
+        TypeKind leftKind = NumberUtils.unboxPrimitive(leftUnderlying);
+        TypeKind rightKind = NumberUtils.unboxPrimitive(rightUnderlying);
+
+        TypeKind widened = TypesUtils.minimallyWidenedNumericType(leftKind, rightKind);
+        System.out.printf(
+                "widenBinary(%s): widenedNumericType(%s, %s) => %s%n",
+                node, leftKind, rightKind, widened);
+
+        AnnotatedTypeMirror widenedLeftOpType = getWidenedPrimitive(leftOpType, widened);
+        AnnotatedTypeMirror widenedRightOpType = getWidenedPrimitive(rightOpType, widened);
+        System.out.printf(
+                "widenBinary(%s) => %s, %s%n", node, widenedLeftOpType, widenedRightOpType);
+        return new AtmPair(widenedLeftOpType, widenedRightOpType);
+    }
+
     // TODO: expand this to all widenings, including from int to long and widenings to float and
     // double.  Knowing when to do those widenings requires context, and requires an argument
     // indicating the target type.
@@ -2343,7 +2514,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeMirror maybeWidenToInt(AnnotatedTypeMirror type) {
         TypeMirror typeUnderlying = type.getUnderlyingType();
         if (TypesUtils.isPrimitive(typeUnderlying)) {
-            return getWidenedPrimitive(type, INT_TYPE_MIRROR);
+            return getWidenedPrimitive(type, INT_PRIMITIVE_TYPE_MIRROR);
         } else if (TypesUtils.isBoxedPrimitive(typeUnderlying)) {
             return getWidenedPrimitive(type, INTEGER_TYPE_MIRROR);
         } else {
@@ -2392,11 +2563,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeKind} and with
+     * annotations copied or adapted from {@code type}.
+     *
+     * @param type type to widen; a primitive or boxed primitive
+     * @param widenedTypeKind primitive type kind for the returned type mirror
+     * @return result of converting {@code type} to {@code widenedTypeMirror}
+     */
+    public AnnotatedTypeMirror getWidenedPrimitive(
+            AnnotatedTypeMirror type, TypeKind widenedTypeKind) {
+        TypeMirror widenedTypeMirror =
+                TypesUtils.isPrimitive(type.getUnderlyingType())
+                        ? typeKindToPrimitiveTypeMirror(widenedTypeKind)
+                        : typeKindToBoxedTypeMirror(widenedTypeKind);
+        return getWidenedPrimitive(type, widenedTypeMirror);
+    }
+
+    /**
      * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeMirror} and with
      * annotations copied or adapted from {@code type}.
      *
      * @param type type to widen; a primitive or boxed primitive
-     * @param widenedTypeMirror underlying type for the returned type mirror
+     * @param widenedTypeMirror underlying type for the returned type mirror; a primitive or boxed
+     *     primitive (same boxing as {@code type})
      * @return result of converting {@code type} to {@code widenedTypeMirror}
      */
     public AnnotatedTypeMirror getWidenedPrimitive(

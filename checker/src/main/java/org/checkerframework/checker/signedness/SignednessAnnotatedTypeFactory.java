@@ -23,6 +23,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -176,7 +177,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
         AnnotatedTypeMirror result = super.getWidenedPrimitive(type, widenedTypeMirror);
-        if (type.getKind() == TypeKind.CHAR) {
+        if (!types.isSameType(result.getUnderlyingType(), widenedTypeMirror)
+                && NumberUtils.unboxPrimitive(type.getUnderlyingType()) == TypeKind.CHAR) {
+            // The widening changed the Java type, and the original type was char or Character.
             result.replaceAnnotation(SIGNED_POSITIVE);
         }
         return result;
@@ -218,6 +221,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        // TODO: Add behavior like PropagationTreeAnnotator that takes account of widened types.
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             switch (tree.getKind()) {
@@ -231,6 +235,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // Do nothing
             }
             annotateBooleanAsUnknownSignedness(type);
+            return null;
+        }
+
+        public Void visitBinary_from_PropagationTreeAnnotator(
+                BinaryTree node, AnnotatedTypeMirror type) {
+            System.out.printf("PTA.visitBinary#1(%s, %s)%n", node, type);
+
+            // TODO: This doesn't use the widened type as it should.
+            AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
+            AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
+            Set<? extends AnnotationMirror> lubs =
+                    qualHierarchy.leastUpperBounds(
+                            a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+            System.out.printf("PTA.visitBinary#2: a=%s, b=%s, lobs=%s%n", a, b, lubs);
+            type.addMissingAnnotations(lubs);
+            System.out.printf("PTA.visitBinary#3(%s, %s)%n", node, type);
             return null;
         }
 
