@@ -7,6 +7,8 @@ org.jspecify.annotations.Nullable.
 
 The Signature Checker supports annotations @CanonicalName and
 @CanonicalNameOrEmpty.
+The Signature Checker treats jdk.jfr.Unsigned as an alias for its own
+@Unsigned annotation.
 
 Implementation details:
 

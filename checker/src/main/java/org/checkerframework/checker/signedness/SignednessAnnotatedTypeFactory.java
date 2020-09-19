@@ -16,6 +16,7 @@ import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -51,6 +52,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    /** The @Unigned annotation. */
+    private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
     /** The @SignednessGlb annotation. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
@@ -72,6 +75,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
+
+        addAliasedAnnotation("jdk.jfr.Unsigned", UNSIGNED);
 
         postInit();
     }
