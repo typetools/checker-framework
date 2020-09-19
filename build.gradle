@@ -877,7 +877,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.run-google-java-format',
                                   'annotated',
                                   'api',
-                                  'bib',
+                                  'plume-bib',
                                   'bootstrap',
                                   'build',
                                   'jdk',
