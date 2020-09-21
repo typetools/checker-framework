@@ -1,6 +1,6 @@
 // This test checks that enums with fields and methods are handled correctly
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 @SuppressWarnings(
         "value" // Do not generate Value Checker annotations, because IndexFileParser cannot handle

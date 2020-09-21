@@ -2269,8 +2269,8 @@ public class CFGBuilder {
          * Perform unary numeric promotion on the input node.
          *
          * @param node a node producing a value of numeric primitive or boxed type
-         * @return a Node with the value promoted to the int, long float or double, which may be the
-         *     input node
+         * @return a Node with the value promoted to the int, long, float, or double; may return be
+         *     the input node
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1

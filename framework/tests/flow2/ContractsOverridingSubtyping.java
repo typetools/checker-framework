@@ -2,7 +2,7 @@ import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import testlib.util.Odd;
+import org.checkerframework.framework.testchecker.util.Odd;
 
 class ContractsOverridingSubtyping {
     static class Base {

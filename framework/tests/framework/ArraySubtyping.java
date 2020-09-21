@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // @skip-test
 class ArraySubtyping {

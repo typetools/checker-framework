@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // ::warning: (inconsistent.constructor.type) :: error: (super.invocation.invalid)
 public @Odd class ClassAnnotations {

@@ -2,7 +2,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 public class TypeInference {
 
