@@ -1,8 +1,5 @@
 package tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.util.Range;
+import org.junit.Assert;
 import org.junit.Test;
 
 /** This class tests the Range class, independent of the Value Checker. */
@@ -673,27 +671,27 @@ public class RangeTest {
 
     @Test
     public void testFactoryLongLong() {
-        assertEquals((long) 1, Range.create(1, 2).from);
-        assertEquals((long) 2, Range.create(1, 2).to);
+        Assert.assertEquals((long) 1, Range.create(1, 2).from);
+        Assert.assertEquals((long) 2, Range.create(1, 2).to);
     }
 
     @Test
     public void testFactoryList() {
-        assertEquals((long) 1, Range.create(Arrays.asList(1, 2, 3)).from);
-        assertEquals((long) 3, Range.create(Arrays.asList(1, 2, 3)).to);
-        assertEquals((long) 1, Range.create(Arrays.asList(3, 2, 1)).from);
-        assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
-        assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
-        assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
+        Assert.assertEquals((long) 1, Range.create(Arrays.asList(1, 2, 3)).from);
+        Assert.assertEquals((long) 3, Range.create(Arrays.asList(1, 2, 3)).to);
+        Assert.assertEquals((long) 1, Range.create(Arrays.asList(3, 2, 1)).from);
+        Assert.assertEquals((long) 3, Range.create(Arrays.asList(3, 2, 1)).to);
+        Assert.assertEquals(Range.NOTHING, Range.create(Collections.<Integer>emptyList()));
+        Assert.assertTrue(Range.NOTHING == Range.create(Collections.<Integer>emptyList()));
     }
 
     @Test
     public void testFactoryTypeKind() {
-        assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
-        assertEquals(Range.INT_EVERYTHING, Range.create(TypeKind.INT));
-        assertEquals(Range.SHORT_EVERYTHING, Range.create(TypeKind.SHORT));
-        assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
-        assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
+        Assert.assertEquals(Range.BYTE_EVERYTHING, Range.create(TypeKind.BYTE));
+        Assert.assertEquals(Range.INT_EVERYTHING, Range.create(TypeKind.INT));
+        Assert.assertEquals(Range.SHORT_EVERYTHING, Range.create(TypeKind.SHORT));
+        Assert.assertEquals(Range.CHAR_EVERYTHING, Range.create(TypeKind.CHAR));
+        Assert.assertEquals(Range.LONG_EVERYTHING, Range.create(TypeKind.LONG));
     }
 
     @Test(expected = IllegalArgumentException.class)

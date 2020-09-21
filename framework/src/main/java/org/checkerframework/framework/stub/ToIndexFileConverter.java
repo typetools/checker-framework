@@ -56,7 +56,6 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -177,8 +176,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * @param scene the initial scene
      * @param in stubfile contents
      * @param out JAIF representing augmented scene
-     * @throws ParseException
-     * @throws DefException
+     * @throws ParseException if the stub file cannot be parsed
+     * @throws DefException if two different definitions of the same annotation cannot be unified
+     * @throws IOException if there is trouble with file reading or writing
      */
     private static void convert(AScene scene, InputStream in, OutputStream out)
             throws IOException, DefException, ParseException {
@@ -238,6 +238,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (exprName.contains("+")) {
             return null;
         }
+        @SuppressWarnings("signature") // special case for annotations containing "+"
         AnnotationDef def =
                 new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
         def.setFieldTypes(Collections.emptyMap());
@@ -552,15 +553,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                         @SuppressWarnings(
                                 "signature") // https://tinyurl.com/cfissue/658 for getNameAsString
                         @FullyQualifiedName String typeName = type.getNameAsString();
-                        @SuppressWarnings(
-                                "signature") // TODO looks like a bug in ToIndexFileConverter:
-                        // resolve requires a @BinaryName, but this passes a @FullyQualifiedName!
+                        @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
+                        // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
+                        // They differ for inner classes.
+                        )
                         String name = resolve(typeName);
                         if (name == null) {
                             // could be defined in the same stub file
                             return "L" + typeName + ";";
                         }
-                        return "L" + SystemUtil.join("/", name.split("\\.")) + ";";
+                        return "L" + String.join("/", name.split("\\.")) + ";";
                     }
 
                     @Override
@@ -686,7 +688,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     /**
      * Finds {@link Class} corresponding to a name.
      *
-     * @param className
+     * @param className a class name
      * @return {@link Class} object corresponding to className, or null if none found
      */
     private static Class<?> loadClass(@ClassGetName String className) {

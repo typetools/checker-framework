@@ -1,5 +1,6 @@
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.StringVal;
 
 class StringLenMethods {
@@ -29,7 +30,7 @@ class StringLenMethods {
         @ArrayLenRange(from = 1, to = 20) String sls = String.valueOf(l);
     }
 
-    void toStringRadix(int i, long l, int radix) {
+    void toStringRadix(int i, long l, @IntRange(from = 2, to = 36) int radix) {
         @ArrayLenRange(from = 1) String is = Integer.toString(i, radix);
         @ArrayLenRange(from = 1) String ls = Long.toString(l, radix);
 

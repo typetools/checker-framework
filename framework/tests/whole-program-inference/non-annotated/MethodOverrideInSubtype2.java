@@ -1,4 +1,4 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Sibling2;
 
 abstract class MethodOverrideInSubtype2 extends MethodDefinedInSupertype {
 

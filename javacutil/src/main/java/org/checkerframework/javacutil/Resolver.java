@@ -187,7 +187,7 @@ public class Resolver {
      * for name resolution.
      *
      * @param name the name of the field
-     * @param type the type of the receiver (i.e., the type in which to look for the field).
+     * @param type the type of the receiver (i.e., the type in which to look for the field)
      * @param path the tree path to the local scope
      * @return the element for the field, {@code null} otherwise
      */

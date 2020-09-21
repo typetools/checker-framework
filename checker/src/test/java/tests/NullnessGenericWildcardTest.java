@@ -1,7 +1,5 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,7 +11,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker for issue #511. */
 public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NullnessGenericWildcardTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NullnessGenericWildcardTest(List<File> testFiles) {
         super(
                 testFiles,
@@ -35,7 +37,7 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
         boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
         List<String> customizedOptions1 = customizeOptions(Arrays.asList("-Anomsgtext"));
         TestConfiguration config1 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         "tests/nullness-genericwildcardlib",
                         new File("tests/nullness-genericwildcardlib", "GwiParent.java"),
                         checkerName,
@@ -47,7 +49,7 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
         List<String> customizedOptions2 =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config2 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
                         Collections.singleton(checkerName),

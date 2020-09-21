@@ -53,6 +53,8 @@ public class ValueIntegration {
         ptest = bmixed;
     }
 
+    // Character and char are always @Unsigned, never @Signed.
+    /*
     public void CharValRules(
             @IntVal({0, 127}) char c,
             @IntVal({128, 255}) char upure,
@@ -69,35 +71,36 @@ public class ValueIntegration {
         ptest = c;
 
         stest = upure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = upure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = upure;
 
         stest = umixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = umixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = umixed;
 
         stest = spure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = spure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = spure;
 
         stest = smixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = smixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = smixed;
 
         stest = bmixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = bmixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = bmixed;
     }
+    */
 
     public void ShortValRules(
             @IntVal({0, 32767}) short c,
@@ -279,6 +282,8 @@ public class ValueIntegration {
         ptest = bmixed;
     }
 
+    // Character and char are always @Unsigned, never @Signed.
+    /*
     public void CharRangeRules(
             @IntRange(from = 0, to = 127) char c,
             @NonNegative char nnc,
@@ -305,35 +310,36 @@ public class ValueIntegration {
         ptest = pc;
 
         stest = upure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = upure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = upure;
 
         stest = umixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = umixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = umixed;
 
         stest = spure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = spure;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = spure;
 
         stest = smixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = smixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = smixed;
 
         stest = bmixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         gtest = bmixed;
-        // :: error: (assignment.type.incompatible)
+        // XX error: (assignment.type.incompatible)
         ptest = bmixed;
     }
+    */
 
     public void ShortRangeRules(
             @IntRange(from = 0, to = 32767) short c,

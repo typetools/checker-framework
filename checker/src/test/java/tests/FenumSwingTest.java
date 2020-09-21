@@ -7,7 +7,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class FenumSwingTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a FenumSwingTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public FenumSwingTest(List<File> testFiles) {
         super(
                 testFiles,

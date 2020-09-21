@@ -17,8 +17,8 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Takes a single step in reducing a AFConstraint.
@@ -45,7 +45,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     public final Class<? extends AFConstraint> reducerType;
     public final AnnotatedTypeFactory typeFactory;
 
-    public AFReducingVisitor(
+    protected AFReducingVisitor(
             final Class<? extends AFConstraint> reducerType,
             final AnnotatedTypeFactory typeFactory) {
         this.reducerType = reducerType;
@@ -93,12 +93,12 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             AnnotatedTypeMirror subtype,
             AnnotatedTypeMirror supertype,
             Set<AFConstraint> constraints) {
-        return SystemUtil.joinLines(
+        return UtilPlume.joinLines(
                 "Unexpected " + reducerType.getSimpleName() + " + Combination:",
                 "subtype=" + subtype,
                 "supertype=" + supertype,
                 "constraints=[",
-                SystemUtil.join(", ", constraints),
+                UtilPlume.join(", ", constraints),
                 "]");
     }
 

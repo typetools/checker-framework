@@ -40,19 +40,29 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
     /**
+     * Returns the Java expressions for which the qualifier holds if the method terminates with
+     * return value {@link #result()}.
+     *
      * @return the Java expressions for which the qualifier holds if the method terminates with
-     *     return value {@link #result()}.
+     *     return value {@link #result()}
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
     /**
+     * Returns the qualifier that is guaranteed to hold if the method terminates with return value
+     * {@link #result()}.
+     *
      * @return the qualifier that is guaranteed to hold if the method terminates with return value
-     *     {@link #result()}.
+     *     {@link #result()}
      */
     Class<? extends Annotation> qualifier();
 
-    /** @return the return value of the method that needs to hold for the postcondition to hold */
+    /**
+     * Returns the return value of the method that needs to hold for the postcondition to hold.
+     *
+     * @return the return value of the method that needs to hold for the postcondition to hold
+     */
     boolean result();
 
     /**
@@ -66,7 +76,11 @@ public @interface EnsuresQualifierIf {
     @Target({ElementType.METHOD})
     @InheritedAnnotation
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         EnsuresQualifierIf[] value();
     }
 }

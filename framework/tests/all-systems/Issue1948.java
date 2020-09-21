@@ -102,7 +102,7 @@ class Issue1948<K, V, E extends Issue1948.MyEntry<K, V, E>, S extends Issue1948.
     }
 
     @Override
-    public Set<Entry<K, V>> entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         return null;
     }
 

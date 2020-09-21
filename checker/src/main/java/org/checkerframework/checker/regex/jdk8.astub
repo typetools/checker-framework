@@ -1,26 +1,6 @@
+// This file is for classes that appear in JDK 8 but not in JDK 11.
+
 import org.checkerframework.checker.regex.qual.*;
-
-package java.util.regex;
-
-class Pattern {
-    @Regex Pattern compile(@Regex String regex);
-    Pattern compile(@Regex String regex, int flags);
-    boolean matches(@Regex String regex, CharSequence input);
-    @PolyRegex Matcher matcher(@PolyRegex Pattern this, CharSequence input);
-    public static @Regex String quote(String s);
-}
-
-package java.lang;
-
-class String {
-    public @PolyRegex String intern(@PolyRegex String this);
-    public boolean matches(@Regex String regex);
-    public String replaceFirst(@Regex String regex, String replacement);
-    public String replaceAll(@Regex String regex, String replacement);
-    public String[] split(@Regex String regex, int limit);
-    public String[] split(@Regex String regex);
-    public @PolyRegex String toString(@PolyRegex String this);
-}
 
 package javax.swing.plaf.synth;
 

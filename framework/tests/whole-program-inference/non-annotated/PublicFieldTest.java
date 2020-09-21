@@ -1,4 +1,8 @@
-import testlib.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.Parent;
+import testlib.wholeprograminference.qual.Sibling1;
+import testlib.wholeprograminference.qual.Sibling2;
+import testlib.wholeprograminference.qual.Top;
+import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 public class PublicFieldTest {
     public static int field1; // parent

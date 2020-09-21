@@ -1,8 +1,10 @@
 package org.checkerframework.framework.util;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -12,7 +14,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.javacutil.BugInCF;
 
-/** A utility for converting AnnotationMirrors to Strings. */
+/** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
@@ -54,6 +56,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     }
 
     /**
+     * Returns the string representation of a single AnnotationMirror, without showing full package
+     * names.
+     *
      * @param anno the annotation mirror to convert
      * @return the string representation of a single AnnotationMirror, without showing full package
      *     names
@@ -70,12 +75,12 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
         sb.append("@");
         sb.append(am.getAnnotationType().asElement().getSimpleName());
-        Map<? extends ExecutableElement, ? extends AnnotationValue> args = am.getElementValues();
+        Map<ExecutableElement, AnnotationValue> args = removeDefaultValues(am.getElementValues());
         if (!args.isEmpty()) {
             sb.append("(");
             boolean oneValue = false;
             if (args.size() == 1) {
-                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> first =
+                Map.Entry<ExecutableElement, AnnotationValue> first =
                         args.entrySet().iterator().next();
                 if (first.getKey().getSimpleName().contentEquals("value")) {
                     formatAnnotationMirrorArg(first.getValue(), sb);
@@ -84,8 +89,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
             }
             if (!oneValue) {
                 boolean notfirst = false;
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg :
-                        args.entrySet()) {
+                for (Map.Entry<ExecutableElement, AnnotationValue> arg : args.entrySet()) {
                     if (!"{}".equals(arg.getValue().toString())) {
                         if (notfirst) {
                             sb.append(", ");
@@ -98,6 +102,27 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
             }
             sb.append(")");
         }
+    }
+
+    /**
+     * Returns a new map that only has the values in {@code elementValues} that are not the same as
+     * the default value.
+     *
+     * @param elementValues a mapping of annotation element to annotation value
+     * @return a new map with only the not default default values of {@code elementValues}
+     */
+    private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
+        Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+        elementValues.forEach(
+                (element, value) -> {
+                    if (element.getDefaultValue() == null
+                            || !Objects.equals(
+                                    value.getValue(), element.getDefaultValue().getValue())) {
+                        nonDefaults.put(element, value);
+                    }
+                });
+        return nonDefaults;
     }
 
     // A helper method to print AnnotationValues (annotation arguments), without showing full

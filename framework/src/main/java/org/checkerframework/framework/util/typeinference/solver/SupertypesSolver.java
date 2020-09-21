@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -38,8 +37,8 @@ public class SupertypesSolver {
      *
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraintMap the set of constraints for all targets
-     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers
-     *     concrete types and will not infer that the target is equivalent to another target
+     * @return a mapping from target to inferred type. Note this class always infers concrete types
+     *     and will not infer that the target is equivalent to another target.
      */
     public InferenceResult solveFromSupertypes(
             final Set<TypeVariable> remainingTargets,
@@ -93,7 +92,7 @@ public class SupertypesSolver {
 
         if (!equalities.types.isEmpty()) {
             // there should be only one equality type if any at this point
-            final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry =
+            final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry =
                     equalities.types.entrySet().iterator().next();
             final AnnotatedTypeMirror equalityType = eqEntry.getKey();
             final AnnotationMirrorSet equalityAnnos = eqEntry.getValue();
@@ -148,7 +147,7 @@ public class SupertypesSolver {
 
         if (!equalities.types.isEmpty()) {
             // there should be only equality type if any at this point
-            final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry =
+            final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry =
                     equalities.types.entrySet().iterator().next();
             final AnnotatedTypeMirror equalityType = eqEntry.getKey();
             final AnnotationMirrorSet equalityAnnos = eqEntry.getValue();
@@ -289,7 +288,7 @@ public class SupertypesSolver {
             Lubs solution,
             final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
 
-        for (final Entry<TypeVariable, AnnotationMirrorSet> supertypeTarget :
+        for (final Map.Entry<TypeVariable, AnnotationMirrorSet> supertypeTarget :
                 targetRecord.supertypes.targets.entrySet()) {
             final AnnotatedTypeMirror supertargetLub = solution.getType(supertypeTarget.getKey());
             if (supertargetLub != null) {
@@ -335,7 +334,7 @@ public class SupertypesSolver {
      * a given hierarchy replace it with the corresponding value in lowerBoundAnnos.
      */
     public static AnnotatedTypeMirror groundMissingHierarchies(
-            final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> typeToHierarchies,
+            final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> typeToHierarchies,
             final AnnotationMirrorMap<AnnotationMirror> lowerBoundAnnos) {
         final AnnotationMirrorSet presentHierarchies = typeToHierarchies.getValue();
         final AnnotationMirrorSet missingAnnos = new AnnotationMirrorSet();
@@ -373,7 +372,7 @@ public class SupertypesSolver {
                                 targetsDeclaredType.getLowerBound().getEffectiveAnnotations()),
                         qualifierHierarchy);
 
-        final Iterator<Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> typesIter =
+        final Iterator<Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet>> typesIter =
                 types.entrySet().iterator();
         if (!typesIter.hasNext()) {
             throw new BugInCF("Calling LUB on empty list.");
@@ -387,7 +386,7 @@ public class SupertypesSolver {
          * constraints imply the bottom annotation is the LUB). Note: Even if we choose bottom as
          * the lub here, the assignment context may raise this annotation.
          */
-        final Entry<AnnotatedTypeMirror, AnnotationMirrorSet> head = typesIter.next();
+        final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> head = typesIter.next();
 
         AnnotatedTypeMirror lubType = groundMissingHierarchies(head, lowerBoundAnnos);
         AnnotatedTypeMirror nextType = null;
@@ -410,6 +409,8 @@ public class SupertypesSolver {
     }
 
     /**
+     * Returns the lub of all the annotations in annos.
+     *
      * @param annos a set of annotations in the same annotation hierarchy
      * @param qualifierHierarchy the qualifier hierarchy that contains each annotation
      * @return the lub of all the annotations in annos

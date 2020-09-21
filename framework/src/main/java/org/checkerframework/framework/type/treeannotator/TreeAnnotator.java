@@ -22,7 +22,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
 
     protected final AnnotatedTypeFactory atypeFactory;
 
-    public TreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+    protected TreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
     }
 

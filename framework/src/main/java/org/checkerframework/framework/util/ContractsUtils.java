@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.framework.util.Contract.Kind.CONDITIONALPOSTCONDITION;
-import static org.checkerframework.framework.util.Contract.Kind.POSTCONDITION;
-import static org.checkerframework.framework.util.Contract.Kind.PRECONDITION;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -15,6 +11,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -46,7 +43,7 @@ public class ContractsUtils {
      * The currently-used ContractsUtils object. This class is NOT a singleton: this value can
      * change.
      */
-    protected static ContractsUtils instance;
+    protected static @InternedDistinct ContractsUtils instance;
 
     /** The factory that this ContractsUtils is associated with. */
     protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
@@ -56,7 +53,14 @@ public class ContractsUtils {
         this.factory = factory;
     }
 
-    /** Returns an instance of the {@link ContractsUtils} class. */
+    /**
+     * Returns an instance of the {@link ContractsUtils} class for the given factory. Also sets it
+     * as the currently-used ContractsUtils object.
+     *
+     * @param factory the factory to create a ContractsUtils for
+     * @return a ContractsUtils for the given factory
+     */
+    @SuppressWarnings("interning")
     public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);
@@ -87,7 +91,7 @@ public class ContractsUtils {
      * @return the contracts on {@code executableElement}
      */
     public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, PRECONDITION, Contract.Precondition.class);
+        return getContracts(executableElement, Kind.PRECONDITION, Contract.Precondition.class);
     }
 
     /// Postcondition methods (keep in sync with other two types)
@@ -99,7 +103,7 @@ public class ContractsUtils {
      * @return the contracts on {@code executableElement}
      */
     public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-        return getContracts(executableElement, POSTCONDITION, Contract.Postcondition.class);
+        return getContracts(executableElement, Kind.POSTCONDITION, Contract.Postcondition.class);
     }
 
     /// Conditional postcondition methods (keep in sync with other two types)
@@ -113,7 +117,9 @@ public class ContractsUtils {
     public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
         return getContracts(
-                methodElement, CONDITIONALPOSTCONDITION, Contract.ConditionalPostcondition.class);
+                methodElement,
+                Kind.CONDITIONALPOSTCONDITION,
+                Contract.ConditionalPostcondition.class);
     }
 
     /// Helper methods

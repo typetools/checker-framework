@@ -193,7 +193,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.4.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.6.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -554,16 +554,11 @@ available in \<org.checkerframework.annotatedlib>, then
 % running your code, you can use either the annotated library or the regular
 % distributed version of the library --- they behave identically.
 
-There is one special case.
-\begin{itemize}
-\item
-For the Java 8 version of the Javadoc classes in the JDK's \<com.sun.javadoc> package,
-% are not exposed by ct.sym and therefore cannot be part of an
-% annotated JDK
-use the stub file \<checker/resources/javadoc.astub> by using \<-Astubs=checker.jar/javadoc.astub>.
+There is one special case.  If an \<.astub> file is shipped with the
+Checker Framework in \<checker/resources/>, then you can
+use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
 The ``\<checker.jar>'' should be literal --- don't provide a path.
 (This special syntax only works for ``\<checker.jar>''.)
-\end{itemize}
 
 
 \subsectionAndLabel{Summary of command-line options}{checker-options}
@@ -576,14 +571,18 @@ documentation.
 
 To pass an option to only a particular checker,
 prefix the option with the canonical or simple name
-of a checker, separated by an underscore ``\<\_>''.
+of a checker, followed by an underscore ``\<\_>''.
 Such an option will apply only to a checker with that name or any subclass of that checker.
 For example, you can use
 \begin{Verbatim}
--ANullnessChecker_lint=redundantNullComparison
--Aorg.checkerframework.checker.guieffect.GuiEffectChecker_lint=debugSpew
+    -ANullnessChecker_lint=redundantNullComparison
+    -Aorg.checkerframework.checker.guieffect.GuiEffectChecker_lint=debugSpew
 \end{Verbatim}
-\noindent to pass different lint options to the Nullness and GUI Effect Checkers.
+
+\noindent
+to pass different lint options to the Nullness and GUI Effect Checkers.  A
+downside is that, in this example, each of the checkers will issue one
+``The following options were not recognized by any processor'' warning.
 
 % This list should be kept in sync with file
 % framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
@@ -640,7 +639,8 @@ More sound (strict) checking: enable errors that are disabled by default
   to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
   and Section~\ref{invariant-arrays}.
 \item \<-AuseConservativeDefaultsForUncheckedCode>
-  Enables/disables conservative defaults in unchecked code.  Takes arguments ``source,bytecode''.
+  Enables conservative defaults, and suppresses all type-checking warnings,
+  in unchecked code.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the (unsound) default setting.
   \begin{itemize}
   \item
@@ -687,23 +687,25 @@ Type-checking modes:  enable/disable functionality
   type-checking based no that information; see
   Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
-\item \<-Ainfer>
+\item \<-Ainfer=\emph{outputformat}>
   Output suggested annotations for method signatures and fields.
   These annotations may reduce the number of type-checking
   errors when running type-checking in the future; see
   Section~\ref{whole-program-inference}.
-\item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning.
+  Using \<-Ainfer=jaifs> produces \<.jaif> files.
+  Using \<-Ainfer=stubs> produces \<.astub> files.
+\item \<-AshowSuppressWarningsStrings>
+  With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> keys without a \<\emph{checkername}:> prefix
+  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
   (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
   \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
   your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
 \item \<-ArequirePrefixInWarningSuppressions>
-  Require that the key in a warning suppression annotation begin with a checker
-  warning suppression key.  Otherwise, the suppress warning annotation does not
+  Require that the string in a warning suppression annotation begin with a checker
+  name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
@@ -727,6 +729,13 @@ Partially-annotated libraries
 \item \<-AstubWarnIfRedundantWithBytecode>
   Warn if a stub file entry is redundant with bytecode information; see
   Section~\ref{stub-using}.
+\item \<-AmergeStubsWithSource>
+  If both a stub file and a source file for a class are available, trust
+  both and use the greatest lower bound of their annotations. The default
+  behavior (without this flag) is to ignore types from the stub file if
+  source is available.
+  % note to maintainers: GLB of the two types was chosen to support
+  % using this flag in combination with \<-Ainfer=stubs>.
 % This item is repeated above:
 \item \<-AuseConservativeDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
@@ -741,6 +750,7 @@ Debugging
  \<-AprintAllQualifiers>,
  \<-AprintVerboseGenerics>,
  \<-Anomsgtext>
+ \<-AdumpOnErrors>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
 \item
@@ -784,6 +794,10 @@ See Section~\ref{creating-debugging-options-output-args}.
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
 
 \item
+ \<-Aversion>
+Print the Checker Framework version.
+
+\item
  \<-AprintGitProperties>
 Print information about the git repository from which the Checker Framework
 was compiled.
@@ -812,8 +826,11 @@ checker is an ``annotation processor''.
   providing multiple checkers, if one checker detects any error, subsequent
   checkers may not run.
 \item \<-processorpath> Indicates where to search for the
-  checker; should also contain any qualifiers used by the Subtyping
-  Checker; see Section~\ref{subtyping-example}
+  checker.  This should also contain any classes used by type-checkers,
+  such as qualifiers used by the Subtyping Checker (see
+  Section~\ref{subtyping-example}) and classes that define
+  statically-executable methods used by the Constant Value Checker (see
+  Section~\ref{constant-value-staticallyexecutable-annotation}).
 \item \<-proc:>\{\<none>,\<only>\} Controls whether checking
   happens; \<-proc:none>
   means to skip checking; \<-proc:only> means to do only
@@ -1087,7 +1104,7 @@ annotated \<@Nullable>, and a parameter that is compared against \<null>
 may need to be annotated \<@Nullable>.
 
 The specification should state any facts that are relevant to callees.
-When checking a method, uses only the specification, not the
+When checking a method, use only the specification, not the
 implementation, of other methods.  (Equivalently, type-checking is
 ``modular'' or ``intraprocedural''.)
 
@@ -1210,6 +1227,7 @@ as an argument.  Examples include
 \begin{Verbatim}
   java.lang.Double.valueOf(String)
   java.lang.String.contains(CharSequence)
+  java.lang.Object.checkNotNull(Object)
   org.junit.Assert.assertNotNull(Object)
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}
@@ -1499,7 +1517,7 @@ same methodology in different words.
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
-% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
@@ -1511,9 +1529,9 @@ same methodology in different words.
 % LocalWords:  AresourceStats jls r78 JDKs i18n AignoreRangeOverflow L129
 % LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
-% LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
+% LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
 % LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
-% LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror
+% LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror jaif
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
 % LocalWords:  AconservativeUninferredTypeArguments Averbosecfg Acfgviz
@@ -1525,4 +1543,5 @@ same methodology in different words.
 % LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent checker''
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
-% LocalWords:  AassumeDeterministic
+% LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
+%%  LocalWords:  AmergeStubsWithSource MyBatis

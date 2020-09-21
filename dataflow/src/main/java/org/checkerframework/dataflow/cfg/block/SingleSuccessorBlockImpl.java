@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 
@@ -10,12 +12,12 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     protected @Nullable BlockImpl successor;
 
     /**
-     * The rule below say that EACH store at the end of a single successor block flow to the
-     * corresponding store of the successor.
+     * The initial value for the rule below says that EACH store at the end of a single successor
+     * block flows to the corresponding store of the successor.
      */
     protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
 
-    public SingleSuccessorBlockImpl(BlockType type) {
+    protected SingleSuccessorBlockImpl(BlockType type) {
         super(type);
     }
 
@@ -24,7 +26,20 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
         return successor;
     }
 
-    /** Set a basic block as the successor of this block. */
+    @Override
+    public Set<Block> getSuccessors() {
+        Set<Block> result = new LinkedHashSet<>();
+        if (successor != null) {
+            result.add(successor);
+        }
+        return result;
+    }
+
+    /**
+     * Set a basic block as the successor of this block.
+     *
+     * @param successor the block that will be the successor of this
+     */
     public void setSuccessor(BlockImpl successor) {
         this.successor = successor;
         successor.addPredecessor(this);

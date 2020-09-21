@@ -23,22 +23,38 @@ public class CompilationResult {
         this.diagnostics = Collections.unmodifiableList(diagnostics);
     }
 
-    /** @return whether or not compilation succeeded without errors or exceptions */
+    /**
+     * Returns whether or not compilation succeeded without errors or exceptions.
+     *
+     * @return whether or not compilation succeeded without errors or exceptions
+     */
     public boolean compiledWithoutError() {
         return compiledWithoutError;
     }
 
-    /** @return all of the output from the compiler */
+    /**
+     * Returns all of the output from the compiler.
+     *
+     * @return all of the output from the compiler
+     */
     public String getJavacOutput() {
         return javacOutput;
     }
 
-    /** @return the list of Java files passed to the compiler */
+    /**
+     * Returns the list of Java files passed to the compiler.
+     *
+     * @return the list of Java files passed to the compiler
+     */
     public Iterable<? extends JavaFileObject> getJavaFileObjects() {
         return javaFileObjects;
     }
 
-    /** @return the diagnostics reported by the compiler */
+    /**
+     * Returns the diagnostics reported by the compiler.
+     *
+     * @return the diagnostics reported by the compiler
+     */
     public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
         return diagnostics;
     }

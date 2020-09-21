@@ -1,5 +1,7 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by
  * the Javac compiler. See {@link JavaDiagnosticReader} and {@link TestDiagnosticLine}.
@@ -15,7 +17,7 @@ public class TestDiagnostic {
 
     /**
      * An error key or full error message that usually appears between parentheses in diagnostic
-     * messages
+     * messages.
      */
     private final String message;
 
@@ -61,6 +63,8 @@ public class TestDiagnostic {
     }
 
     /**
+     * Returns whether or not the printed representation should omit parentheses around the message.
+     *
      * @return whether or not the printed representation should omit parentheses around the message
      */
     public boolean shouldOmitParentheses() {
@@ -68,6 +72,9 @@ public class TestDiagnostic {
     }
 
     /**
+     * Returns a String representing the format of this diagnostic as if it appeared in a source
+     * file.
+     *
      * @return a String representing the format of this diagnostic as if it appeared in a source
      *     file
      */
@@ -84,7 +91,7 @@ public class TestDiagnostic {
      * @return true if this and otherObj are equal according to lineNumber, kind, and message
      */
     @Override
-    public boolean equals(Object otherObj) {
+    public boolean equals(@Nullable Object otherObj) {
         if (otherObj == null || otherObj.getClass() != TestDiagnostic.class) {
             return false;
         }
@@ -105,7 +112,11 @@ public class TestDiagnostic {
                 * filename.hashCode();
     }
 
-    /** @return a representation of this diagnostic as if it appeared in a diagnostics file */
+    /**
+     * Returns a representation of this diagnostic as if it appeared in a diagnostics file.
+     *
+     * @return a representation of this diagnostic as if it appeared in a diagnostics file
+     */
     @Override
     public String toString() {
         if (omitParentheses) {

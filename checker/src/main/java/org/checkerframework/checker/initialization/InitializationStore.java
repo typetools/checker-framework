@@ -3,7 +3,6 @@ package org.checkerframework.checker.initialization;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -210,7 +209,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         result.initializedFields.retainAll(initializedFields);
 
         // Set intersection for invariantFields.
-        for (Entry<FieldAccess, V> e : invariantFields.entrySet()) {
+        for (Map.Entry<FieldAccess, V> e : invariantFields.entrySet()) {
             if (other.invariantFields.containsKey(e.getKey())) {
                 result.invariantFields.put(e.getKey(), e.getValue());
             }
@@ -223,9 +222,19 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     @Override
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
-        return super.internalVisualize(viz)
-                + viz.visualizeStoreKeyVal("initialized fields", initializedFields)
-                + viz.visualizeStoreKeyVal("invariant fields", invariantFields);
+        String superVisualize = super.internalVisualize(viz);
+        if (superVisualize.isEmpty()) {
+            return String.join(
+                    viz.getSeparator(),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        } else {
+            return String.join(
+                    viz.getSeparator(),
+                    super.internalVisualize(viz),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        }
     }
 
     public Map<FieldAccess, V> getFieldValues() {

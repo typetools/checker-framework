@@ -10,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -38,7 +38,7 @@ public abstract class CFAbstractAnalysis<
                 V extends CFAbstractValue<V>,
                 S extends CFAbstractStore<V, S>,
                 T extends CFAbstractTransfer<V, S, T>>
-        extends Analysis<V, S, T> {
+        extends ForwardAnalysisImpl<V, S, T> {
     /** The qualifier hierarchy for which to track annotations. */
     protected final QualifierHierarchy qualifierHierarchy;
 
@@ -74,7 +74,7 @@ public abstract class CFAbstractAnalysis<
      * @param fieldValues initial abstract types for fields
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
-    public CFAbstractAnalysis(
+    protected CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues,
@@ -92,7 +92,7 @@ public abstract class CFAbstractAnalysis<
         this.fieldValues = fieldValues;
     }
 
-    public CFAbstractAnalysis(
+    protected CFAbstractAnalysis(
             BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
@@ -113,15 +113,27 @@ public abstract class CFAbstractAnalysis<
         return fieldValues;
     }
 
-    /** @return the transfer function to be used by the analysis */
+    /**
+     * Returns the transfer function to be used by the analysis.
+     *
+     * @return the transfer function to be used by the analysis
+     */
     public T createTransferFunction() {
         return atypeFactory.createFlowTransferFunction(this);
     }
 
-    /** @return an empty store of the appropriate type */
+    /**
+     * Returns an empty store of the appropriate type.
+     *
+     * @return an empty store of the appropriate type
+     */
     public abstract S createEmptyStore(boolean sequentialSemantics);
 
-    /** @return an identical copy of the store {@code s}. */
+    /**
+     * Returns an identical copy of the store {@code s}.
+     *
+     * @return an identical copy of the store {@code s}
+     */
     public abstract S createCopiedStore(S s);
 
     /**
@@ -143,8 +155,10 @@ public abstract class CFAbstractAnalysis<
     }
 
     /**
-     * @return an abstract value containing the given {@code annotations} and {@code
-     *     underlyingType}.
+     * Returns an abstract value containing the given {@code annotations} and {@code
+     * underlyingType}.
+     *
+     * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
      */
     public abstract @Nullable V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);
@@ -167,11 +181,6 @@ public abstract class CFAbstractAnalysis<
     public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
             getTypeFactory() {
         return atypeFactory;
-    }
-
-    /** Perform a visualization of the CFG and analysis info for inspection. */
-    public void visualizeCFG() {
-        atypeFactory.getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), this);
     }
 
     /**

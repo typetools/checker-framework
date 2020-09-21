@@ -1,7 +1,5 @@
 package org.checkerframework.checker.lock;
 
-import static org.checkerframework.javacutil.TreeUtils.getReceiverTree;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -119,7 +117,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * </ul>
      *
      * @param variableTree the VariableTree for the variable declaration used to determine if
-     *     multiple @GuardedBy annotations are present and to report the error via checker.report.
+     *     multiple @GuardedBy annotations are present and to report the error
      */
     private void issueErrorIfMoreThanOneGuardedByAnnotationPresent(VariableTree variableTree) {
         int guardedByAnnotationCount = 0;
@@ -222,7 +220,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * </ul>
      *
      * @param methodElement the ExecutableElement for the method call referred to by {@code node}
-     * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
+     * @param treeForErrorReporting the MethodTree used to report the error
      */
     private void issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(
             ExecutableElement methodElement, MethodTree treeForErrorReporting) {
@@ -345,7 +343,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
 
         Kind valueTreeKind = valueTree.getKind();
 
@@ -432,7 +431,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }
 
     @Override
@@ -595,7 +594,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (methodElement != null) {
             // Handle releasing of explicit locks. Verify that the lock expression is effectively
             // final.
-            ExpressionTree recvTree = getReceiverTree(node);
+            ExpressionTree recvTree = TreeUtils.getReceiverTree(node);
 
             ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, recvTree);
 
@@ -1089,15 +1088,17 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-        // If the identifier is a field accessed via an implicit this,
-        // then check the lock of this.  (All other field accessed are checked in visitMemberSelect.
+        // If the identifier is a field accessed via an implicit this, then check the lock of this.
+        // (All other field accesses are checked in visitMemberSelect.)
         if (TreeUtils.isFieldAccess(tree)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             // If the parent is not a member select, or if it is and the field is the expression,
             // then the field is accessed via an implicit this.
-            if (parent.getKind() != Kind.MEMBER_SELECT
-                    || ((MemberSelectTree) parent).getExpression() == tree) {
+            if ((parent.getKind() != Kind.MEMBER_SELECT
+                            || ((MemberSelectTree) parent).getExpression() == tree)
+                    && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
                 AnnotationMirror guardedBy =
                         atypeFactory
                                 .getSelfType(tree)

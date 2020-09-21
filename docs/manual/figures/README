@@ -2,14 +2,19 @@ This directory contains the SVG files used for the diagrams in the Checker
 Framework manual.  The HTML manual uses the SVGs directly.  The PDF manual
 uses PDF conversions of each SVG.
 
-To edit an existing image (.svg file), use one of these tools.
+To edit an existing image (.svg file), use one of these tools, which are
+listed in order of preference:
  * Inkscape
  * Visio
- * LibreOffice/OpenOffice.
+ * LibreOffice/OpenOffice
+Please don't use:
  * https://www.draw.io (no tool installation required)
     * The .svg files it exports don't convert to pdf with correct formatting
       if they have multiline text
-    * The figures might require fine tuning with Inkscape afterwards.
+    * The figures might require fine tuning with Inkscape afterwards, or
+      editing of the .svg files with a text editor.
+ * macSVG, which saves the .svg file as one line (!).
+    * Unless you manually fix the .svg file afterward.
 
 To create a new image:
 Copy an existing SVG and make modifications to it, so that its boxes and

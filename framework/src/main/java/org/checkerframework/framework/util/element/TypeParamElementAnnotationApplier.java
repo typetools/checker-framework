@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -24,7 +23,13 @@ import org.checkerframework.javacutil.BugInCF;
  */
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
-    /** @return true if element is a TYPE_PARAMETER */
+    /**
+     * Returns true if element is a TYPE_PARAMETER.
+     *
+     * @param typeMirror ignored
+     * @param element the element that might be a TYPE_PARAMETER
+     * @return true if element is a TYPE_PARAMETER
+     */
     public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER;
     }
@@ -32,10 +37,18 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     protected final AnnotatedTypeVariable typeParam;
     protected final AnnotatedTypeFactory typeFactory;
 
-    /** @return target type that represents the location of the lower bound of element */
+    /**
+     * Returns target type that represents the location of the lower bound of element.
+     *
+     * @return target type that represents the location of the lower bound of element
+     */
     protected abstract TargetType lowerBoundTarget();
 
-    /** @return target type that represents the location of the upper bound of element */
+    /**
+     * Returns target type that represents the location of the upper bound of element.
+     *
+     * @return target type that represents the location of the upper bound of element
+     */
     protected abstract TargetType upperBoundTarget();
 
     TypeParamElementAnnotationApplier(
@@ -47,13 +60,20 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         this.typeFactory = typeFactory;
     }
 
-    /** @return the lower bound and upper bound targets */
+    /**
+     * Returns the lower bound and upper bound targets.
+     *
+     * @return the lower bound and upper bound targets
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {lowerBoundTarget(), upperBoundTarget()};
     }
 
     /**
+     * Returns the parameter_index of anno's TypeAnnotationPosition which will actually point to the
+     * type parameter's index in its enclosing type parameter list.
+     *
      * @return the parameter_index of anno's TypeAnnotationPosition which will actually point to the
      *     type parameter's index in its enclosing type parameter list
      */
@@ -208,7 +228,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
             addAnnotationToMap(typeParam.getLowerBound(), anno, typeToAnnotations);
         }
 
-        for (Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
+        for (Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
                 typeToAnnotations.entrySet()) {
             ElementAnnotationUtil.annotateViaTypeAnnoPosition(
                     typeToAnno.getKey(), typeToAnno.getValue());

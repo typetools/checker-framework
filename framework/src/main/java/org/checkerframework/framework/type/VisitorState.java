@@ -58,7 +58,11 @@ public class VisitorState {
         this.path = path;
     }
 
-    /** @return the type of the enclosing class */
+    /**
+     * Returns the type of the enclosing class.
+     *
+     * @return the type of the enclosing class
+     */
     public AnnotatedDeclaredType getClassType() {
         if (act == null) {
             return null;
@@ -66,12 +70,20 @@ public class VisitorState {
         return act.deepCopy();
     }
 
-    /** @return the class tree currently visiting */
+    /**
+     * Returns the class tree currently visiting.
+     *
+     * @return the class tree currently visiting
+     */
     public ClassTree getClassTree() {
         return this.ct;
     }
 
-    /** @return the method receiver type of the enclosing method */
+    /**
+     * Returns the method receiver type of the enclosing method.
+     *
+     * @return the method receiver type of the enclosing method
+     */
     public AnnotatedDeclaredType getMethodReceiver() {
         if (mrt == null) {
             return null;
@@ -79,7 +91,11 @@ public class VisitorState {
         return mrt.deepCopy();
     }
 
-    /** @return the method tree currently visiting */
+    /**
+     * Returns the method tree currently visiting.
+     *
+     * @return the method tree currently visiting
+     */
     public MethodTree getMethodTree() {
         return this.mt;
     }
@@ -88,7 +104,11 @@ public class VisitorState {
         return assignmentcontext;
     }
 
-    /** @return the current path for the visitor */
+    /**
+     * Returns the current path for the visitor.
+     *
+     * @return the current path for the visitor
+     */
     public TreePath getPath() {
         return this.path;
     }

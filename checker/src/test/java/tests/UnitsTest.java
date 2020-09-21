@@ -7,7 +7,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class UnitsTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a UnitsTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public UnitsTest(List<File> testFiles) {
         super(
                 testFiles,

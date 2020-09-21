@@ -26,6 +26,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -93,7 +94,11 @@ public class StubTypes {
         this.parseAllJdkFiles = factory.getContext().getChecker().hasOption("parseAllJdk");
     }
 
-    /** @return true if stub files are currently being parsed; otherwise, false. */
+    /**
+     * Returns true if stub files are currently being parsed; otherwise, false.
+     *
+     * @return true if stub files are currently being parsed; otherwise, false
+     */
     public boolean isParsing() {
         return parsing;
     }
@@ -193,7 +198,9 @@ public class StubTypes {
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
-                stubPath = stubPath.replace("checker.jar/", "/");
+                if (stubPath.startsWith("checker.jar/")) {
+                    stubPath = stubPath.substring("checker.jar/".length());
+                }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 // Didn't find the stub file.
                 if (in == null) {
@@ -318,14 +325,14 @@ public class StubTypes {
      * Parses the outermost enclosing class of {@code e} if there exists a stub file for it and it
      * has not already been parsed.
      *
-     * @param e element whose outermost enclosing class will be parsed.
+     * @param e element whose outermost enclosing class will be parsed
      */
     private void parseEnclosingClass(Element e) {
         if (!shouldParseJdk) {
             return;
         }
-        String className = getOuterMostEnclosingClass(e);
-        if (className == null) {
+        String className = getOutermostEnclosingClass(e);
+        if (className == null || className.isEmpty()) {
             return;
         }
         if (jdkStubFiles.containsKey(className)) {
@@ -338,10 +345,14 @@ public class StubTypes {
     }
 
     /**
-     * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
-     *     null} if no such class exists for {@code e}.
+     * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
+     * null} if no such class exists for {@code e}.
+     *
+     * @param e an element whose outermost enclosing class to return
+     * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
+     *     no such class exists for {@code e}
      */
-    private String getOuterMostEnclosingClass(Element e) {
+    private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
         if (enclosingClass == null) {
             return null;
@@ -357,7 +368,12 @@ public class StubTypes {
             }
             enclosingClass = t;
         }
-        return enclosingClass.getQualifiedName().toString();
+        @SuppressWarnings(
+                "signature:assignment.type.incompatible" // https://tinyurl.com/cfissue/658:
+        // Name.toString should be @PolySignature
+        )
+        @CanonicalNameOrEmpty String result = enclosingClass.getQualifiedName().toString();
+        return result;
     }
 
     /**
@@ -413,7 +429,11 @@ public class StubTypes {
         }
     }
 
-    /** @return JarURLConnection to "/jdk*" */
+    /**
+     * Returns a JarURLConnection to "/jdk*".
+     *
+     * @return a JarURLConnection to "/jdk*"
+     */
     private JarURLConnection getJarURLConnectionToJdk() {
         URL resourceURL = factory.getClass().getResource("/annotated-jdk");
         JarURLConnection connection;
@@ -501,7 +521,7 @@ public class StubTypes {
                 jdkStubFiles.put(s, path);
             }
         } catch (IOException e) {
-            throw new BugInCF("File Not Found", e);
+            throw new BugInCF("prepJdkFromFile(" + resourceURL + ")", e);
         }
     }
 

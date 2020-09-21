@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
@@ -62,7 +61,8 @@ public class TypeVariableSubstitutor {
         public Visitor(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg) {
             elementToArgMap = new HashMap<>();
 
-            for (Entry<TypeVariable, AnnotatedTypeMirror> paramToArg : typeParamToArg.entrySet()) {
+            for (Map.Entry<TypeVariable, AnnotatedTypeMirror> paramToArg :
+                    typeParamToArg.entrySet()) {
                 elementToArgMap.put(
                         (TypeParameterElement) paramToArg.getKey().asElement(),
                         paramToArg.getValue());

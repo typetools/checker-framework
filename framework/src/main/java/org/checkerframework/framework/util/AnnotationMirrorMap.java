@@ -99,7 +99,7 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
 
     @Override
     public void putAll(Map<? extends AnnotationMirror, ? extends V> m) {
-        for (Entry<? extends AnnotationMirror, ? extends V> entry : m.entrySet()) {
+        for (Map.Entry<? extends AnnotationMirror, ? extends V> entry : m.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
@@ -120,7 +120,7 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     }
 
     @Override
-    public Set<Entry<AnnotationMirror, V>> entrySet() {
+    public Set<Map.Entry<AnnotationMirror, V>> entrySet() {
         return shadowMap.entrySet();
     }
 

@@ -3,7 +3,7 @@ package org.checkerframework.checker.index.inequality;
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * An internal checker that estimates which expression's values are less than other expressions'
@@ -11,7 +11,7 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "lessthan"})
+@SuppressWarningsPrefix({"index", "lessthan"})
 public class LessThanChecker extends BaseTypeChecker {
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

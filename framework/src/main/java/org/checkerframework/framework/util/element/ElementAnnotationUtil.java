@@ -32,8 +32,8 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -61,10 +61,10 @@ public class ElementAnnotationUtil {
             throw new BugInCF(
                     "Number of types and elements don't match. "
                             + "types ( "
-                            + SystemUtil.join(", ", types)
+                            + UtilPlume.join(", ", types)
                             + " ) "
                             + "element ( "
-                            + SystemUtil.join(", ", elements)
+                            + UtilPlume.join(", ", elements)
                             + " ) ");
         }
 
@@ -84,6 +84,7 @@ public class ElementAnnotationUtil {
      * @param type the type to annotate
      * @param annotations the annotations to add
      */
+    @SuppressWarnings("interning:not.interned") // AST node comparison
     static void addDeclarationAnnotationsFromElement(
             final AnnotatedTypeMirror type, final List<? extends AnnotationMirror> annotations) {
         // The code here should be similar to
@@ -446,6 +447,7 @@ public class ElementAnnotationUtil {
      *     of some array type
      * @return the type specified by location
      */
+    @SuppressWarnings("JdkObsolete") // error is issued on every operation, must suppress here
     private static AnnotatedTypeMirror getLocationTypeADT(
             AnnotatedDeclaredType type,
             List<TypeAnnotationPosition.TypePathEntry> location,
@@ -478,7 +480,7 @@ public class ElementAnnotationUtil {
         }
 
         // Create a linked list of the location, so removing the first element is easier.
-        // Also, the `tail` operation wouldn't work with a Deque.
+        // Also, the tail() operation wouldn't work with a Deque.
         @SuppressWarnings("JdkObsolete")
         LinkedList<TypePathEntry> tailOfLocations = new LinkedList<>(location);
         boolean error = false;

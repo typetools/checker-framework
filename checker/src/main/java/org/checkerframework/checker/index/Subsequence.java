@@ -115,10 +115,10 @@ public class Subsequence {
     private static String standardizeAndViewpointAdapt(
             String s, TreePath currentPath, FlowExpressionContext context) {
         try {
-            s = FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
+            return FlowExpressionParseUtil.parse(s, context, currentPath, false).toString();
         } catch (FlowExpressionParseException e) {
+            return s;
         }
-        return s;
     }
 
     /**

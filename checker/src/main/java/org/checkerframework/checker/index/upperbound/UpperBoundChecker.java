@@ -7,16 +7,17 @@ import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * A type-checker for preventing arrays from being accessed with values that are too high.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "upperbound"})
+@SuppressWarningsPrefix({"index", "upperbound"})
 public class UpperBoundChecker extends BaseTypeChecker {
 
     private HashSet<String> collectionBaseTypeNames;
@@ -33,7 +34,7 @@ public class UpperBoundChecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
         if (collectionBaseTypeNames.contains(typeName)) {
             return true;
         }

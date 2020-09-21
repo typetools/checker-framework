@@ -22,12 +22,18 @@ import java.lang.annotation.Target;
 @Repeatable(RequiresQualifier.List.class)
 public @interface RequiresQualifier {
     /**
+     * Returns the Java expressions for which the annotation need to be present.
+     *
      * @return the Java expressions for which the annotation need to be present
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** @return the qualifier that is required */
+    /**
+     * Returns the qualifier that is required.
+     *
+     * @return the qualifier that is required
+     */
     Class<? extends Annotation> qualifier();
 
     /**
@@ -40,7 +46,11 @@ public @interface RequiresQualifier {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface List {
-        /** @return the repeatable annotations */
+        /**
+         * Returns the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
         RequiresQualifier[] value();
     }
 }

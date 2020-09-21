@@ -87,9 +87,9 @@ public class JavaStubifier {
             Optional<CompilationUnit> opt = result.getResult();
             if (opt.isPresent()) {
                 CompilationUnit cu = opt.get();
-                // this somehow only removes comments except the
-                // first one, and copyright headers are kept
-                cu.getComments().forEach(Node::remove);
+                // Only remove the "contained" comments so that the copyright comment is not
+                // removed.
+                cu.getAllContainedComments().forEach(Node::remove);
                 mv.visit(cu, null);
                 if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
                         && cu.findAll(AnnotationDeclaration.class).isEmpty()
@@ -187,7 +187,7 @@ public class JavaStubifier {
         /**
          * Remove the whole node if it is private or package private.
          *
-         * @param node Node to inspect
+         * @param node a Node to inspect
          * @return true if the node was removed
          */
         private boolean removeIfPrivateOrPkgPrivate(NodeWithAccessModifiers<?> node) {
@@ -205,7 +205,7 @@ public class JavaStubifier {
         /**
          * Remove the whole node if it is private.
          *
-         * @param node Node to inspect
+         * @param node a Node to inspect
          * @return true if the node was removed
          */
         private boolean removeIfPrivate(NodeWithAccessModifiers<?> node) {

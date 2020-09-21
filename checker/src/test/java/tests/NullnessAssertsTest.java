@@ -9,7 +9,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker. */
 public class NullnessAssertsTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NullnessAssertsTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NullnessAssertsTest(List<File> testFiles) {
         // TODO: remove soundArrayCreationNullness option once it's no
         // longer needed.  See issue #986:

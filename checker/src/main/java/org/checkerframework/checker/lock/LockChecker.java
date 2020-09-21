@@ -19,5 +19,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 // is a call to .lock() in a method?
 // Or is this a common pattern to lock in one method and unlock in a different one?
 
-/** @checker_framework.manual #lock-checker Lock Checker */
+/**
+ * The Lock Checker.
+ *
+ * @checker_framework.manual #lock-checker Lock Checker
+ */
 public class LockChecker extends BaseTypeChecker {}

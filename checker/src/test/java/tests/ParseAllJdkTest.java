@@ -9,7 +9,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** Tests -AparseAllJdk option. */
 public class ParseAllJdkTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a ParseAllJdkTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public ParseAllJdkTest(List<File> testFiles) {
         super(testFiles, NullnessChecker.class, "parse-all-jdk", "-AparseAllJdk");
     }

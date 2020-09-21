@@ -43,6 +43,8 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
@@ -75,9 +77,11 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
@@ -348,7 +352,9 @@ public final class TreeUtils {
      * @param tree an expression tree
      * @return the outermost non-parenthesized tree enclosed by the given tree
      */
-    public static ExpressionTree withoutParens(final ExpressionTree tree) {
+    @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+    public static @PolyInterned ExpressionTree withoutParens(
+            final @PolyInterned ExpressionTree tree) {
         ExpressionTree t = tree;
         while (t.getKind() == Tree.Kind.PARENTHESIZED) {
             t = ((ParenthesizedTree) t).getExpression();
@@ -416,7 +422,9 @@ public final class TreeUtils {
                 return getAssignmentContext(parentPath);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
-                if (cet.getCondition() == treePath.getLeaf()) {
+                @SuppressWarnings("interning:not.interned") // AST node comparison
+                boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
+                if (conditionIsLeaf) {
                     // The assignment context for the condition is simply boolean.
                     // No point in going on.
                     return null;
@@ -644,7 +652,11 @@ public final class TreeUtils {
         }
     }
 
-    /** @return the name of the invoked method */
+    /**
+     * Returns the name of the invoked method.
+     *
+     * @return the name of the invoked method
+     */
     public static Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
         if (expr.getKind() == Tree.Kind.IDENTIFIER) {
@@ -656,6 +668,9 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the first statement in the body is a self constructor invocation within a
+     * constructor.
+     *
      * @return true if the first statement in the body is a self constructor invocation within a
      *     constructor
      */
@@ -910,7 +925,9 @@ public final class TreeUtils {
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        assert invoked != null : "@AssumeAssertion(nullness): assumption";
+        if (invoked == null) {
+            return false;
+        }
         return ElementUtils.isMethod(invoked, method, env);
     }
 
@@ -932,13 +949,21 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
-     * with params formal parameters. Errs if there is not exactly one matching method. If more than
-     * one method takes the same number of formal parameters, then use {@link #getMethod(String,
-     * String, ProcessingEnvironment, String...)}.
+     * Returns the ExecutableElement for a method declaration. Errs if there is not exactly one
+     * matching method. If more than one method takes the same number of formal parameters, then use
+     * {@link #getMethod(String, String, ProcessingEnvironment, String...)}.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
         if (methods.size() == 1) {
             return methods.get(0);
@@ -951,9 +976,18 @@ public final class TreeUtils {
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElements for all matching methods
      */
     public static List<ExecutableElement> getMethods(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         if (typeElt == null) {
@@ -969,11 +1003,19 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * formal parameters of the given types. Errs if there is no matching method.
+     * Returns the ExecutableElement for a method declaration. Errs if there is no matching method.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param env the processing environment
+     * @param paramTypes the method's formal parameter types
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, ProcessingEnvironment env, String... paramTypes) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            ProcessingEnvironment env,
+            String... paramTypes) {
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
@@ -1138,10 +1180,11 @@ public final class TreeUtils {
     }
 
     /**
-     * @return {@code true} if and only if {@code tree} can have a type annotation.
-     *     <p>TODO: is this implementation precise enough? E.g. does a .class literal work
-     *     correctly?
+     * Return {@code true} if and only if {@code tree} can have a type annotation.
+     *
+     * @return {@code true} if and only if {@code tree} can have a type annotation
      */
+    // TODO: is this implementation precise enough? E.g. does a .class literal work correctly?
     public static boolean canHaveTypeAnnotation(Tree tree) {
         return ((JCTree) tree).type != null;
     }
@@ -1175,7 +1218,7 @@ public final class TreeUtils {
      * @return the VariableElement for typeName.fieldName
      */
     public static VariableElement getField(
-            String typeName, String fieldName, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName, String fieldName, ProcessingEnvironment env) {
         TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
         for (VariableElement var : ElementFilter.fieldsIn(mapElt.getEnclosedElements())) {
             if (var.getSimpleName().contentEquals(fieldName)) {
@@ -1197,6 +1240,8 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if this is a super call to the {@link Enum} constructor.
+     *
      * @param node the method invocation to check
      * @return true if this is a super call to the {@link Enum} constructor
      */
@@ -1359,7 +1404,11 @@ public final class TreeUtils {
         return Collections.emptyList();
     }
 
-    /** @return true if the tree is the declaration or use of a local variable */
+    /**
+     * Returns true if the tree is the declaration or use of a local variable.
+     *
+     * @return true if the tree is the declaration or use of a local variable
+     */
     public static boolean isLocalVariable(Tree tree) {
         if (tree.getKind() == Kind.VARIABLE) {
             return elementFromDeclaration((VariableTree) tree).getKind()
@@ -1372,7 +1421,11 @@ public final class TreeUtils {
         return false;
     }
 
-    /** @return the type as a TypeMirror of {@code tree} */
+    /**
+     * Returns the type as a TypeMirror of {@code tree}.
+     *
+     * @return the type as a TypeMirror of {@code tree}
+     */
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree) tree).type;
     }
@@ -1406,6 +1459,67 @@ public final class TreeUtils {
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
 
+    /**
+     * Determine whether an expression {@link ExpressionTree} has the constant value true, according
+     * to the compiler logic.
+     *
+     * @param node the expression to be checked.
+     * @return true if {@code node} has the constant value true.
+     */
+    public static boolean isExprConstTrue(final ExpressionTree node) {
+        assert node instanceof JCExpression;
+        if (((JCExpression) node).type.isTrue()) {
+            return true;
+        }
+        ExpressionTree tree = TreeUtils.withoutParens(node);
+        if (tree instanceof JCTree.JCBinary) {
+            JCBinary binTree = (JCBinary) tree;
+            JCExpression ltree = binTree.lhs;
+            JCExpression rtree = binTree.rhs;
+            switch (binTree.getTag()) {
+                case AND:
+                    return isExprConstTrue(ltree) && isExprConstTrue(rtree);
+                case OR:
+                    return isExprConstTrue(ltree) || isExprConstTrue(rtree);
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return toString(), but without line separators.
+     *
+     * @param tree a tree
+     * @return a one-line string representation of the tree
+     */
+    public static String toStringOneLine(Tree tree) {
+        return tree.toString().trim().replaceAll("\\s+", " ");
+    }
+
+    /**
+     * Return either {@link #toStringOneLine} if it is no more than {@code length} characters, or
+     * {@link #toStringOneLine} quoted and truncated.
+     *
+     * @param tree a tree
+     * @param length the maximum length for the result; must be at least 6
+     * @return a one-line string representation of the tree that is no longer than {@code length}
+     *     characters long
+     */
+    public static String toStringTruncated(Tree tree, int length) {
+        if (length < 6) {
+            throw new IllegalArgumentException("bad length " + length);
+        }
+        String result = toStringOneLine(tree);
+        if (result.length() > length) {
+            // The quoting increases the likelihood that all delimiters are balanced in the result.
+            // That makes it easier to manipulate the result (such as skipping over it) in an
+            // editor.  The quoting also makes clear that the value is truncated.
+            result = "\"" + result.substring(0, length - 5) + "...\"";
+        }
+        return result;
+    }
     /**
      * Returns true if {@code tree} is an explicitly typed lambda.
      *

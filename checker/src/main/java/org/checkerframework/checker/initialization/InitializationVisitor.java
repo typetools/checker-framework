@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -110,7 +111,10 @@ public class InitializationVisitor<
 
     @Override
     protected void commonAssignmentCheck(
-            Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -127,11 +131,11 @@ public class InitializationVisitor<
             if (!AnnotationUtils.containsSameByName(
                     fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
-                        && !(atypeFactory.isCommitted(yType)
-                                || atypeFactory.isFree(xType)
+                        && !(atypeFactory.isInitialized(yType)
+                                || atypeFactory.isUnderInitialization(xType)
                                 || atypeFactory.isFbcBottom(yType))) {
                     @CompilerMessageKey String err;
-                    if (atypeFactory.isCommitted(xType)) {
+                    if (atypeFactory.isInitialized(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
@@ -141,7 +145,7 @@ public class InitializationVisitor<
                 }
             }
         }
-        super.commonAssignmentCheck(varTree, valueExp, errorKey);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
     }
 
     @Override
@@ -153,8 +157,8 @@ public class InitializationVisitor<
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (atypeFactory.isUnclassified(a)) {
-                        continue; // unclassified is allowed
+                    if (atypeFactory.isUnknownInitialization(a)) {
+                        continue; // unknown initialization is allowed
                     }
                     if (atypeFactory.areSameByClass(a, c)) {
                         checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
@@ -207,17 +211,17 @@ public class InitializationVisitor<
                 return false;
             }
 
-            boolean isRecvCommitted = false;
+            boolean isRecvInitialized = false;
             for (AnnotationMirror anno : recvAnnoSet) {
-                if (atypeFactory.isCommitted(anno)) {
-                    isRecvCommitted = true;
+                if (atypeFactory.isInitialized(anno)) {
+                    isRecvInitialized = true;
                 }
             }
 
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
             // The receiver is fully initialized and the field type
             // has the invariant type.
-            if (isRecvCommitted
+            if (isRecvInitialized
                     && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
                 return true;
             }
@@ -403,14 +407,9 @@ public class InitializationVisitor<
         }
 
         if (!violatingFields.isEmpty()) {
-            StringBuilder fieldsString = new StringBuilder();
-            boolean first = true;
+            StringJoiner fieldsString = new StringJoiner(", ");
             for (VariableTree f : violatingFields) {
-                if (!first) {
-                    fieldsString.append(", ");
-                }
-                first = false;
-                fieldsString.append(f.getName());
+                fieldsString.add(f.getName());
             }
             checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
         }

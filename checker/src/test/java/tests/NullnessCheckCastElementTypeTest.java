@@ -8,7 +8,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker when checkCastElementType is used. */
 public class NullnessCheckCastElementTypeTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NullnessCheckCastElementTypeTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NullnessCheckCastElementTypeTest(List<File> testFiles) {
         super(
                 testFiles,

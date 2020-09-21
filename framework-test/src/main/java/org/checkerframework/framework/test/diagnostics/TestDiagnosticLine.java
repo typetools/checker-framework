@@ -37,9 +37,11 @@ public class TestDiagnosticLine {
     }
 
     /**
-     * @return a String representation of how this diagnostic should appear in source. This may
-     *     differ from the original line if there was no original line, the original line had
-     *     extraneous whitespace.
+     * Return a String representation of how this diagnostic should appear in source. This may
+     * differ from the original line if there was no original line, the original line had extraneous
+     * whitespace.
+     *
+     * @return a String representation of how this diagnostic should appear in source
      */
     public String asSourceString() {
         return "// :: " + String.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));

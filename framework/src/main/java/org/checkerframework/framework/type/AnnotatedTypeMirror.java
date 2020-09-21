@@ -439,8 +439,9 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Determines whether this type contains the given annotation explicitly written at declaration.
-     * This method considers the annotation's values, that is, if the type is "@A("s") @B(3) Object"
-     * a call with "@A("t") or "@A" will return false, whereas a call with "@B(3)" will return true.
+     * This method considers the annotation's values, that is, if the type is {@code @A("s") @B(3)
+     * Object}, a call with {@code @A("t")} or {@code @A} will return false, whereas a call with
+     * {@code @B(3)} will return true.
      *
      * <p>In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)} this method also
      * compares annotation values.
@@ -754,42 +755,29 @@ public abstract class AnnotatedTypeMirror {
      * always be a call to shallowCopy(true).
      *
      * @see #shallowCopy(boolean)
-     * @return a shallow copy of this type with annotations.
+     * @return a shallow copy of this type with annotations
      */
     public abstract AnnotatedTypeMirror shallowCopy();
 
     /**
+     * Returns whether this type or any component type is a wildcard type for which Java 7 type
+     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     *
      * @return whether this type or any component type is a wildcard type for which Java 7 type
-     *     inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
         return uninferredTypeArgumentScanner.visit(this);
     }
 
-    /** The implementation of the visitor for #containsUninferredTypeArguments */
+    /** The implementation of the visitor for #containsUninferredTypeArguments. */
     private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
-            new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                @Override
-                protected Boolean defaultAction(AnnotatedTypeMirror type, Void aVoid) {
-                    if (type.getKind() == TypeKind.WILDCARD) {
-                        return ((AnnotatedWildcardType) type).isUninferredTypeArgument();
-                    }
-                    return false;
-                }
-
-                @Override
-                public Boolean reduce(Boolean r1, Boolean r2) {
-                    if (r1 == null && r2 == null) {
-                        return false;
-                    } else if (r1 == null) {
-                        return r2;
-                    } else if (r2 == null) {
-                        return r1;
-                    } else {
-                        return r1 || r2;
-                    }
-                }
-            };
+            new SimpleAnnotatedTypeScanner<>(
+                    (type, p) ->
+                            type.getKind() == TypeKind.WILDCARD
+                                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
+                    Boolean::logicalOr,
+                    false);
 
     /**
      * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
@@ -912,7 +900,11 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-        /** @return the type argument for this type */
+        /**
+         * Returns the type argument for this type.
+         *
+         * @return the type argument for this type
+         */
         public List<AnnotatedTypeMirror> getTypeArguments() {
             if (typeArgs != null) {
                 return typeArgs;
@@ -1058,7 +1050,11 @@ public abstract class AnnotatedTypeMirror {
         protected final List<AnnotatedTypeMirror> throwsTypes = new ArrayList<>();
         protected final List<AnnotatedTypeVariable> typeVarTypes = new ArrayList<>();
 
-        /** @return true if this type represents a varargs method */
+        /**
+         * Returns true if this type represents a varargs method.
+         *
+         * @return true if this type represents a varargs method
+         */
         public boolean isVarArgs() {
             return this.element.isVarArgs();
         }
@@ -1092,7 +1088,11 @@ public abstract class AnnotatedTypeMirror {
             paramTypes.addAll(params);
         }
 
-        /** @return the parameter types of this executable type */
+        /**
+         * Returns the parameter types of this executable type.
+         *
+         * @return the parameter types of this executable type
+         */
         public List<AnnotatedTypeMirror> getParameterTypes() {
             if (paramTypes.isEmpty()
                     && !((ExecutableType) actualType).getParameterTypes().isEmpty()) { // lazy init
@@ -1143,6 +1143,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
+         * Returns the receiver type of this executable type; null for static methods and
+         * constructors of top-level classes.
+         *
          * @return the receiver type of this executable type; null for static methods and
          *     constructors of top-level classes
          */
@@ -1191,7 +1194,11 @@ public abstract class AnnotatedTypeMirror {
             this.throwsTypes.addAll(thrownTypes);
         }
 
-        /** @return the thrown types of this executable type */
+        /**
+         * Returns the thrown types of this executable type.
+         *
+         * @return the thrown types of this executable type
+         */
         public List<AnnotatedTypeMirror> getThrownTypes() {
             if (throwsTypes.isEmpty()
                     && !((ExecutableType) actualType).getThrownTypes().isEmpty()) { // lazy init
@@ -1212,7 +1219,11 @@ public abstract class AnnotatedTypeMirror {
             typeVarTypes.addAll(types);
         }
 
-        /** @return the type variables of this executable type, if any */
+        /**
+         * Returns the type variables of this executable type, if any.
+         *
+         * @return the type variables of this executable type, if any
+         */
         public List<AnnotatedTypeVariable> getTypeVariables() {
             if (typeVarTypes.isEmpty()
                     && !((ExecutableType) actualType).getTypeVariables().isEmpty()) { // lazy init
@@ -1322,7 +1333,11 @@ public abstract class AnnotatedTypeMirror {
             this.componentType = type;
         }
 
-        /** @return the component type of this array */
+        /**
+         * Returns the component type of this array.
+         *
+         * @return the component type of this array
+         */
         public AnnotatedTypeMirror getComponentType() {
             if (componentType == null) { // lazy init
                 setComponentType(
@@ -1477,7 +1492,11 @@ public abstract class AnnotatedTypeMirror {
             return lowerBound;
         }
 
-        /** @return the lower bound type of this type variable */
+        /**
+         * Returns the lower bound type of this type variable.
+         *
+         * @return the lower bound type of this type variable
+         */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null) { // lazy init
                 BoundsInitializer.initializeBounds(this);
@@ -1836,8 +1855,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the lower bound of this wildcard. If no lower bound is explicitly declared,
-         *     {@code null} is returned.
+         * Returns the lower bound of this wildcard. If no lower bound is explicitly declared,
+         * returns {@code null}.
+         *
+         * @return the lower bound of this wildcard, or null if none is explicitly declared
          */
         public AnnotatedTypeMirror getSuperBound() {
             if (superBound == null) {
@@ -1863,8 +1884,11 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the upper bound of this wildcard. If no upper bound is explicitly declared, the
-         *     upper bound of the type variable to which the wildcard is bound is used.
+         * Returns the upper bound of this wildcard. If no upper bound is explicitly declared,
+         * returns the upper bound of the type variable to which the wildcard is bound.
+         *
+         * @return the upper bound of this wildcard. If no upper bound is explicitly declared,
+         *     returns the upper bound of the type variable to which the wildcard is bound.
          */
         public AnnotatedTypeMirror getExtendsBound() {
             if (extendsBound == null) {
@@ -1997,8 +2021,8 @@ public abstract class AnnotatedTypeMirror {
          * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;.
          * For example: {@code <T extends MyObject & Serializable & Comparable<MyObject>>}
          *
-         * <p>The bound {@code MyObject &amp; Serializable &amp; Comparable} is an intersection type
-         * with direct supertypes [MyObject, Serializable, Comparable]
+         * <p>The bound {@code MyObject & Serializable & Comparable} is an intersection type with
+         * direct supertypes [MyObject, Serializable, Comparable]
          *
          * @param type underlying kind of this type
          * @param atypeFactory the factory used to construct this intersection type
@@ -2076,7 +2100,7 @@ public abstract class AnnotatedTypeMirror {
          * Creates a new AnnotatedUnionType.
          *
          * @param type underlying kind of this type
-         * @param atypeFactory TODO
+         * @param atypeFactory type factory
          */
         private AnnotatedUnionType(UnionType type, AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);

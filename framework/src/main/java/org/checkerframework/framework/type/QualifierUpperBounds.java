@@ -10,6 +10,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.UpperBoundFor;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -21,8 +22,8 @@ public class QualifierUpperBounds {
 
     /** Map from {@link TypeKind} to annotations. */
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
-    /** Map from full qualified class name strings to annotations. */
-    private final Map<String, Set<AnnotationMirror>> types;
+    /** Map from canonical class name strings to annotations. */
+    private final Map<@CanonicalName String, Set<AnnotationMirror>> types;
 
     /** {@link QualifierHierarchy} */
     private final QualifierHierarchy qualHierarchy;
@@ -102,7 +103,7 @@ public class QualifierUpperBounds {
      * @param type the TypeMirror
      * @return the set of qualifiers that are the upper bounds for a use of the type
      */
-    protected Set<AnnotationMirror> getBoundQualifiers(TypeMirror type) {
+    public Set<AnnotationMirror> getBoundQualifiers(TypeMirror type) {
         AnnotationMirrorSet bounds = new AnnotationMirrorSet();
         String qname;
         if (type.getKind() == TypeKind.DECLARED) {

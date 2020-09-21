@@ -128,6 +128,32 @@ command-line option.)
   part of ordinary defensive programming.
 \end{itemize}
 
+\item
+  Options that enable checking modes:
+
+\begin{itemize}
+\item
+  If you supply the \code{-Alint=permitClearProperty} command-line option,
+  then the checker permits calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.setProperties()}
+  and calls to
+  \sunjavadoc{java.base/java/lang/System.html\#clearProperty(java.lang.String)}{System.clearProperty}
+  that might clear one of the built-in properties.
+
+  By default, the checker forbids calls to those methods, and also
+  special-cases type-checking of calls to
+  \sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String,java.lang.String)}{System.getProperty()}
+  and
+  \sunjavadoc{java.base/java/lang/System.html\#setProperties(java.util.Properties)}{System.setProperties()}.
+  A call to one of these methods
+  can return null in general, but by default the Nullness Checker treats it
+  as returning non-null if the argument is one of the literal strings
+  listed in the documentation of
+  \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
+  To make this behavior sound, the Nullness Checker forbids calls that
+  might clear any built-in property, as described above.
+\end{itemize}
+
 \end{enumerate}
 
 
@@ -167,7 +193,7 @@ The nullness hierarchy contains these qualifiers:
 \item[\refqualclass{checker/nullness/qual}{PolyNull}]
   indicates qualifier polymorphism.  For a description of
   \refqualclass{checker/nullness/qual}{PolyNull}, see
-  Section~\ref{qualifier-polymorphism}.
+  Section~\ref{method-qualifier-polymorphism}.
 
 \item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
   indicates a reference that may be \code{null}, but if it ever becomes
@@ -523,35 +549,6 @@ or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
 
 
-\subsectionAndLabel{Additional details}{nullness-additional-details}
-
-The Nullness Checker does some special checks in certain circumstances, in
-order to soundly reduce the number of warnings that it produces.
-
-For example, a call to
-\sunjavadoc{java.base/java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
-can return null in general, but it will not return null if the argument is
-one of the built-in-keys listed in the documentation of
-\sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
-The Nullness Checker is aware of this fact, so you do not have to suppress
-a warning for a call like \<System.getProperty("line.separator")>.  The
-warning is still issued for code like this:
-
-\begin{Verbatim}
-  final String s = "line.separator";
-  nonNullvar = System.getProperty(s);
-\end{Verbatim}
-
-\noindent
-though that case could be handled as well, if desired.
-(Suppression of the warning is, strictly speaking, not sound, because a
-library that your code calls, or your code itself, could perversely change
-the system properties; the Nullness Checker assumes this bizarre coding
-pattern does not happen.)
-(It is better style to use \<System.lineSeparator()> than the call to
-\<System.getProperty("line.separator")> anyway.)
-
-
 \subsectionAndLabel{Inference of \code{@NonNull} and \code{@Nullable} annotations}{nullness-inference}
 
 It can be tedious to write annotations in your code.  Tools exist that
@@ -581,8 +578,9 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   %
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
-\item
-  \href{https://juliasoft.com/solutions/}{Julia analyzer},
+% Julia is no longer publicly available.
+% \item
+%   \href{https://juliasoft.com/solutions/}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -624,7 +622,7 @@ Chapter~\ref{suppressing-warnings}).  An example use is
 %END LATEX
 
 
-The Nullness Checker supports an additional warning suppression key,
+The Nullness Checker supports an additional warning suppression string,
 \<nullness:generic.argument>.
 Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress warnings related to misuse of generic type
@@ -635,7 +633,7 @@ arguments.  One use for this key is when a class is declared to take only
 The Nullness Checker also permits you to use assertions or method calls to
 suppress warnings; see below.
 
-% TODO: check whether the SuppressWarnings keys are correct.
+% TODO: check whether the SuppressWarnings strings are correct.
 
 
 \subsectionAndLabel{Suppressing warnings with assertions and method calls}{suppressing-warnings-with-assertions}
@@ -720,7 +718,8 @@ command-line argument
 
 To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
 use the following command (where \code{javac} is the Checker Framework compiler that
-is distributed with the Checker Framework):
+is distributed with the Checker Framework, see Section~\ref{javac-wrapper}
+for details):
 
 %BEGIN LATEX
 \begin{smaller}
@@ -910,6 +909,7 @@ Section~\ref{declaration-annotations-moved}.
  ~lombok.NonNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullType~ \\ \hline
+ ~org.codehaus.commons.nullanalysis.NotNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
@@ -940,10 +940,12 @@ $\Rightarrow$
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableType~ \\ \hline
+ ~org.codehaus.commons.nullanalysis.Nullable~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
+ ~org.jspecify.annotations.Nullable~ \\ \hline
  ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
@@ -1965,7 +1967,7 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-``initialization.''~(note the trailing period) warning suppression key.  You
+``initialization.''~(note the trailing period) warning suppression string.  You
 can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
 class, or pass the command-line argument
 \<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
@@ -1980,7 +1982,7 @@ as about assignments or method overriding.
 
 It is not possible to completely disable initialization checking while
 retaining nullness checking.  The ``initialization'' warning suppression
-key (without a period) has the same effect as the ``nullness'' key:  both
+string (without a period) has the same effect as ``nullness'':  both
 of them disable all nullness and initialization checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
@@ -2041,4 +2043,5 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
 % LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
 % LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
-% LocalWords:  ConcurrentHashMap
+% LocalWords:  ConcurrentHashMap permitClearProperty setProperties
+% LocalWords:  clearProperty

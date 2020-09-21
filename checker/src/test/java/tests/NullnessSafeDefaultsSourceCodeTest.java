@@ -1,7 +1,5 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,7 +11,11 @@ import org.junit.runners.Parameterized.Parameters;
 /** JUnit tests for the Nullness checker when using safe defaults for unannotated source code. */
 public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * Create a NullnessSafeDefaultsSourceCodeTest.
+     *
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public NullnessSafeDefaultsSourceCodeTest(List<File> testFiles) {
         super(
                 testFiles,
@@ -39,7 +41,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
                                 "-AuseConservativeDefaultsForUncheckedCode=source,bytecode",
                                 "-Anomsgtext"));
         TestConfiguration config1 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         "tests/nullness-safedefaultssourcecodelib",
                         new File("tests/nullness-safedefaultssourcecodelib", "Lib.java"),
                         checkerName,
@@ -51,7 +53,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
         List<String> customizedOptions2 =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
         TestConfiguration config2 =
-                buildDefaultConfiguration(
+                TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
                         Collections.singleton(checkerName),

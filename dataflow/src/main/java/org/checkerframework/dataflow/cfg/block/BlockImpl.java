@@ -7,7 +7,7 @@ import java.util.Set;
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
 
-    /** A unique ID for this node. */
+    /** A unique ID for this block. */
     protected final long id = BlockImpl.uniqueID();
 
     /** The last ID that has already been used. */
@@ -19,12 +19,16 @@ public abstract class BlockImpl implements Block {
     /** The set of predecessors. */
     protected final Set<BlockImpl> predecessors;
 
-    /** @return a fresh identifier */
+    /**
+     * Returns a fresh identifier.
+     *
+     * @return a fresh identifier
+     */
     private static long uniqueID() {
         return lastId++;
     }
 
-    public BlockImpl(BlockType type) {
+    protected BlockImpl(BlockType type) {
         this.type = type;
         this.predecessors = new HashSet<>();
     }
@@ -39,8 +43,8 @@ public abstract class BlockImpl implements Block {
         return type;
     }
 
-    /** @return the list of predecessors of this basic block */
-    public Set<BlockImpl> getPredecessors() {
+    @Override
+    public Set<Block> getPredecessors() {
         return Collections.unmodifiableSet(predecessors);
     }
 

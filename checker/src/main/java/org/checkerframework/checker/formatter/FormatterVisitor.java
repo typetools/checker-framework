@@ -9,6 +9,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -88,9 +89,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                     default:
                                         if (!fc.isValidParameter(formatCat, paramType)) {
                                             // II.3
+                                            ExecutableElement method =
+                                                    TreeUtils.elementFromUse(node);
+                                            Name methodName = method.getSimpleName();
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",
+                                                    "", // parameter name is not useful
+                                                    methodName,
                                                     paramType,
                                                     formatCat);
                                         }
@@ -122,9 +128,13 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     /**
-     * Returns true if fc is within a method m annotated as {@code @FormatMethod}, and fc's
+     * Returns true if {@code fc} is within a method m annotated as {@code @FormatMethod}, and fc's
      * arguments are m's formal parameters. In other words, fc forwards m's arguments to another
      * format method.
+     *
+     * @param fc an invocation of a format method
+     * @return true if {@code fc} is a call to a format method that forwards its containing methods'
+     *     arguments
      */
     private boolean isWrappedFormatCall(FormatCall fc) {
 
@@ -171,8 +181,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
-            @CompilerMessageKey String errorKey) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
@@ -183,8 +194,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         // For method calls, it is issued in visitMethodInvocation.
         if (rhs != null
                 && lhs != null
-                && AnnotationUtils.areSameByName(rhs, atypeFactory.FORMAT)
-                && AnnotationUtils.areSameByName(lhs, atypeFactory.FORMAT)) {
+                && AnnotationUtils.areSameByName(rhs, FormatterAnnotatedTypeFactory.FORMAT_NAME)
+                && AnnotationUtils.areSameByName(lhs, FormatterAnnotatedTypeFactory.FORMAT_NAME)) {
             ConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             ConversionCategory[] lhsArgTypes =

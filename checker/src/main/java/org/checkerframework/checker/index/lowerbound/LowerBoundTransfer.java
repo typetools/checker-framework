@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import static org.checkerframework.common.value.ValueCheckerUtils.getExactValue;
-
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -18,6 +16,7 @@ import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -196,7 +195,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             Node mLiteral, Node otherNode, AnnotationMirror otherAnno, CFStore store) {
 
         Long integerLiteral =
-                getExactValue(mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+                ValueCheckerUtils.getExactValue(
+                        mLiteral.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
 
         if (integerLiteral == null) {
             return;
@@ -418,7 +418,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the right side's value is known at compile time.
         Long valRight =
-                getExactValue(rightExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+                ValueCheckerUtils.getExactValue(
+                        rightExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
         if (valRight != null) {
             return getAnnotationForLiteralPlus(valRight.intValue(), leftAnno);
         }
@@ -427,7 +428,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the left side's value is known at compile time.
         Long valLeft =
-                getExactValue(leftExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
+                ValueCheckerUtils.getExactValue(
+                        leftExprNode.getTree(), aTypeFactory.getValueAnnotatedTypeFactory());
         if (valLeft != null) {
             return getAnnotationForLiteralPlus(valLeft.intValue(), rightAnno);
         }
@@ -476,7 +478,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the right side's value is known at compile time.
         Long valRight =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         minusNode.getRightOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valRight != null) {
@@ -574,7 +576,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the right side's value is known at compile time.
         Long valRight =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         node.getRightOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valRight != null) {
@@ -584,7 +586,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         AnnotationMirror rightAnno = getLowerBoundAnnotation(node.getRightOperand(), p);
         // Check if the left side's value is known at compile time.
         Long valLeft =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         node.getLeftOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valLeft != null) {
@@ -662,7 +664,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the right side's value is known at compile time.
         Long valRight =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         node.getRightOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valRight != null) {
@@ -673,7 +675,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the left side's value is known at compile time.
         Long valLeft =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         node.getLeftOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valLeft != null) {
@@ -750,7 +752,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
         // Check if the right side's value is known at compile time.
         Long valRight =
-                getExactValue(
+                ValueCheckerUtils.getExactValue(
                         node.getRightOperand().getTree(),
                         aTypeFactory.getValueAnnotatedTypeFactory());
         if (valRight != null) {

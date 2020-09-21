@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -32,9 +33,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
@@ -460,21 +461,21 @@ public class BoundsInitializer {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedPrimitiveType.");
+            throw new BugInCF("Unexpected AnnotatedPrimitiveType " + type);
         }
 
         @Override
         public Void visitNoType(AnnotatedNoType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedNoType.");
+            throw new BugInCF("Unexpected AnnotatedNoType " + type);
         }
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedExecutableType.");
+            throw new BugInCF("Unexpected AnnotatedExecutableType " + type);
         }
 
         /**
-         * If the underlying type of (@code type} has been visited before, return the previous
+         * If the underlying type of {@code type} has been visited before, return the previous
          * AnnotatedTypeMirror. Otherwise, visit {@code type} and return it.
          *
          * @param type type to visit
@@ -802,7 +803,7 @@ public class BoundsInitializer {
          *
          * @param node last node in the path
          */
-        public void removePathNode(TypePathNode node) {
+        public void removePathNode(@FindDistinct TypePathNode node) {
             if (currentPath.getLeaf() != node) {
                 throw new BugInCF(
                         "Cannot remove node: %s. It is not the last node. currentPath= %s",
@@ -844,7 +845,7 @@ public class BoundsInitializer {
          * A list of all AnnotatedTypeVariables found in this type. {@link
          * #findAllReplacements(Map)} must be called first.
          *
-         * @return A list of all AnnotatedTypeVariables found in this type
+         * @return a list of all AnnotatedTypeVariables found in this type
          */
         public List<AnnotatedTypeVariable> getAnnotatedTypeVars() {
             if (annotatedTypeVariables == null) {
@@ -904,11 +905,11 @@ public class BoundsInitializer {
 
         @Override
         public String toString() {
-            return SystemUtil.join(",", this);
+            return UtilPlume.join(",", this);
         }
 
         /**
-         * Create a copy of this path
+         * Create a copy of this path.
          *
          * @return a copy of this path
          */
@@ -976,7 +977,7 @@ public class BoundsInitializer {
         }
 
         /**
-         * Copy constructor
+         * A copy constructor.
          *
          * @param template node to copy
          */
@@ -1164,7 +1165,7 @@ public class BoundsInitializer {
     /** Represents a lower bound of a type variable. */
     private static class LowerBoundNode extends TypePathNode {
 
-        /** Creates a LowerBoundNode */
+        /** Creates a LowerBoundNode. */
         LowerBoundNode() {
             super(TypeKind.TYPEVAR);
         }
@@ -1224,10 +1225,10 @@ public class BoundsInitializer {
         public final int superIndex;
 
         /**
-         * Creates an IntersectionBoundNode
+         * Creates an IntersectionBoundNode.
          *
          * @param superIndex the index of the particular bound type of an intersection type this
-         *     node represents.
+         *     node represents
          */
         IntersectionBoundNode(int superIndex) {
             super(TypeKind.INTERSECTION);
@@ -1340,7 +1341,7 @@ public class BoundsInitializer {
         /**
          * Creates a TypeArgumentNode.
          *
-         * @param argIndex index of the type argument that this node represents.
+         * @param argIndex index of the type argument that this node represents
          */
         TypeArgNode(int argIndex) {
             super(TypeKind.DECLARED);
@@ -1369,7 +1370,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "replacement=" + replacement,
@@ -1387,7 +1388,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "argIndex=" + argIndex));
