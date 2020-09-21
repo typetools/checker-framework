@@ -378,10 +378,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         node, "statically.executable.nonconstant.return.type", returnType);
             }
 
-            // Ways to determin the receiver type.
+            // Ways to determine the receiver type.
             // 1. This definition of receiverType is null when receiver is implicit and method has
             //    class com.sun.tools.javac.code.Symbol$MethodSymbol.  WHY?
             //        TypeMirror receiverType = method.getReceiverType();
+            //    The same is true of TreeUtils.elementFromDeclaration(node).getReceiverType()
+            //    which seems to conflict with ExecutableType's documentation.
             // 2. Can't use the tree, because the receiver might not be explicit.
             // 3. Check whether method is static and use the declaring class.  Doesn't handle all
             //    cases, but handles the most common ones.
