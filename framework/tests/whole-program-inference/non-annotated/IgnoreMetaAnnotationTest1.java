@@ -1,4 +1,4 @@
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 // See ExpectedErrors#IgnoreMetaAnnotationTest2
 class IgnoreMetaAnnotationTest1 {

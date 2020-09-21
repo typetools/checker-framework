@@ -1,5 +1,5 @@
 import java.util.Collection;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 public class Values {
 

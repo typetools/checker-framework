@@ -1,8 +1,9 @@
 import org.checkerframework.common.value.qual.IntVal;
-import testlib.lib.VarArgMethods;
+import org.checkerframework.framework.testchecker.lib.VarArgMethods;
 
 public class VarArgRe {
-    // VarArgMethods is declarded in framework/tests/src/testlib/lib.
+    // VarArgMethods is declarded in
+    // framework/tests/src/org/checkerframework/framework/testchecker/lib.
     // All the methods return the length of the vararg.
     public void use0() {
         @IntVal(0) int i1 = VarArgMethods.test0();

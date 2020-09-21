@@ -6,7 +6,7 @@
 // from how they're used. They also cannot be assigned to,
 // so there's no way for WPI to learn their types.
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 class EnumConstants {
     enum MyEnum {

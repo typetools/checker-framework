@@ -1,6 +1,6 @@
 // This test ensures that overloaded methods with different return types aren't confused.
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 class OverloadedMethodsTest {
 

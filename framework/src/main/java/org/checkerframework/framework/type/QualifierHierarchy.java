@@ -257,12 +257,12 @@ public interface QualifierHierarchy {
     @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
-     * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
+     * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
      * qualifier for the same hierarchy in each set.
      *
      * @param qualifiers1 set of qualifiers; exactly one per hierarchy
      * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of the two sets of qualifiers
+     * @return the greatest lower bound of the two sets of qualifiers
      */
     default Set<? extends AnnotationMirror> greatestLowerBounds(
             Collection<? extends AnnotationMirror> qualifiers1,

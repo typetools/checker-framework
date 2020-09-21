@@ -1,6 +1,6 @@
 // test case for https://github.com/typetools/checker-framework/issues/3461
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 public class LocalClassTest {
     public void method() {

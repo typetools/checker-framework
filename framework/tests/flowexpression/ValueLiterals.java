@@ -1,4 +1,4 @@
-import testlib.flowexpression.qual.FlowExp;
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class ValueLiterals {
     void test(@FlowExp("0") Object a, @FlowExp("0L") Object b) {}
