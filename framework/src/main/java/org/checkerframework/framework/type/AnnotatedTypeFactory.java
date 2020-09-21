@@ -539,14 +539,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         INTEGER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
         LONG_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(long.class, elements, types);
         LONG_TYPE_MIRROR = TypesUtils.typeFromClass(Long.class, elements, types);
-        FLOAT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
-        FLOAT_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
-        DOUBLE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
-        DOUBLE_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
-        BOOLEAN_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
-        BOOLEAN_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
-        CHAR_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
-        CHARACTER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
+        FLOAT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(float.class, elements, types);
+        FLOAT_TYPE_MIRROR = TypesUtils.typeFromClass(Float.class, elements, types);
+        DOUBLE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(double.class, elements, types);
+        DOUBLE_TYPE_MIRROR = TypesUtils.typeFromClass(Double.class, elements, types);
+        BOOLEAN_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(boolean.class, elements, types);
+        BOOLEAN_TYPE_MIRROR = TypesUtils.typeFromClass(Boolean.class, elements, types);
+        CHAR_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(char.class, elements, types);
+        CHARACTER_TYPE_MIRROR = TypesUtils.typeFromClass(Character.class, elements, types);
     }
 
     /**
@@ -2572,10 +2572,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeKind widenedTypeKind) {
+        System.out.printf("getWidenedPrimitive(%s, %s)%n", type, widenedTypeKind);
         TypeMirror widenedTypeMirror =
                 TypesUtils.isPrimitive(type.getUnderlyingType())
                         ? typeKindToPrimitiveTypeMirror(widenedTypeKind)
                         : typeKindToBoxedTypeMirror(widenedTypeKind);
+        System.out.printf(
+                "getWidenedPrimitive(%s, %s) calling getWidenedPrimitive(%s, %s)%n",
+                type, widenedTypeKind, type, widenedTypeMirror);
         return getWidenedPrimitive(type, widenedTypeMirror);
     }
 
@@ -2590,8 +2594,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
+        System.out.printf("getWidenedPrimitive(%s, %s)%n", type, widenedTypeMirror);
         AnnotatedTypeMirror widened =
                 AnnotatedTypeMirror.createType(widenedTypeMirror, this, type.isDeclaration());
+        System.out.printf(
+                "getWidenedPrimitive(%s, %s): widened = %s%n", type, widenedTypeMirror, widened);
         widened.addAnnotations(type.getAnnotations());
         return widened;
     }

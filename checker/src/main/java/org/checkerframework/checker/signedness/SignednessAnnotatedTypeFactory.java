@@ -182,6 +182,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // The widening changed the Java type, and the original type was char or Character.
             result.replaceAnnotation(SIGNED_POSITIVE);
         }
+        System.out.printf(
+                "Signed getWidenedPrimitive(%s, %s) => %s%n", type, widenedTypeMirror, result);
         return result;
     }
 
