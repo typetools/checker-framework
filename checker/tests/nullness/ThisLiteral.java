@@ -9,6 +9,7 @@ public class ThisLiteral {
                 // :: error: (assignment.type.incompatible)
                 @Initialized ThisLiteral l2 = ThisLiteral.this;
 
+                // :: error: (method.invocation.invalid)
                 ThisLiteral.this.foo();
                 // :: error: (method.invocation.invalid)
                 foo();

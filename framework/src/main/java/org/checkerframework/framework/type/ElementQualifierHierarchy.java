@@ -12,7 +12,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
@@ -173,12 +173,12 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
     }
 
     /**
-     * Returns the qualifier kind for the annotation with the fully qualified name {@code name}.
+     * Returns the qualifier kind for the annotation with the canonical name {@code name}.
      *
      * @param name fully qualified annotation name
      * @return the qualifier kind for the annotation named {@code name}
      */
-    protected QualifierKind getQualifierKind(@FullyQualifiedName String name) {
+    protected QualifierKind getQualifierKind(@CanonicalName String name) {
         QualifierKind kind = qualifierKindHierarchy.getQualifierKind(name);
         if (kind == null) {
             throw new BugInCF("QualifierKind %s not in hierarchy", name);

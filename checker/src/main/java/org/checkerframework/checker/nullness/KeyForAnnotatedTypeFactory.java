@@ -21,6 +21,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -52,7 +53,7 @@ public class KeyForAnnotatedTypeFactory
             AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
     /** The canonical name of the KeyFor class. */
-    protected final String KEYFOR_NAME = KeyFor.class.getCanonicalName();
+    protected final @CanonicalName String KEYFOR_NAME = KeyFor.class.getCanonicalName();
 
     /** The Map.containsKey method. */
     private final ExecutableElement mapContainsKey =

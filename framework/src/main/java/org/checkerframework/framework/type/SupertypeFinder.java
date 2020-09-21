@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -349,19 +349,17 @@ class SupertypeFinder {
         public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
             Set<AnnotationMirror> annotations = type.getAnnotations();
-            Elements elements = atypeFactory.elements;
-            final AnnotatedTypeMirror objectType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Object"));
+            final AnnotatedTypeMirror objectType = atypeFactory.getAnnotatedType(Object.class);
             objectType.addAnnotations(annotations);
             superTypes.add(objectType);
 
             final AnnotatedTypeMirror cloneableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.lang.Cloneable"));
+                    atypeFactory.getAnnotatedType(Cloneable.class);
             cloneableType.addAnnotations(annotations);
             superTypes.add(cloneableType);
 
             final AnnotatedTypeMirror serializableType =
-                    atypeFactory.getAnnotatedType(elements.getTypeElement("java.io.Serializable"));
+                    atypeFactory.getAnnotatedType(Serializable.class);
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 

@@ -559,9 +559,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             // compile-time constant.  Obtain its value reflectively.
             Element classElement = fieldElement.getEnclosingElement();
             if (classElement != null) {
-                @SuppressWarnings("signature" // TODO: this looks like a bug in
-                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
-                // but this passes a @FullyQualifiedName
+                @SuppressWarnings("signature" // TODO: bug in ValueAnnotatedTypeFactory.
+                // evaluateStaticFieldAccess requires a @ClassGetName but this passes a
+                // @FullyQualifiedName.  They differ for inner classes.
                 )
                 @BinaryName String classname = ElementUtils.getQualifiedClassName(classElement).toString();
                 @SuppressWarnings(

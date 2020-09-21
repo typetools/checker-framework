@@ -16,6 +16,9 @@ public class NumberUtils {
             return null;
         }
         TypeKind typeKind = unboxPrimitive(type);
+        if (typeKind == null) {
+            throw new UnsupportedOperationException(type.toString());
+        }
         switch (typeKind) {
             case BYTE:
                 List<Byte> bytes = new ArrayList<>();
@@ -60,7 +63,7 @@ public class NumberUtils {
                 }
                 return shorts;
             default:
-                throw new UnsupportedOperationException(typeKind.toString());
+                throw new UnsupportedOperationException(typeKind + ": " + type);
         }
     }
 
@@ -74,6 +77,9 @@ public class NumberUtils {
      */
     public static Range castRange(TypeMirror type, Range range) {
         TypeKind typeKind = unboxPrimitive(type);
+        if (typeKind == null) {
+            throw new UnsupportedOperationException(type.toString());
+        }
         switch (typeKind) {
             case BYTE:
                 return range.byteRange();
@@ -88,21 +94,25 @@ public class NumberUtils {
             case DOUBLE:
                 return range;
             default:
-                throw new UnsupportedOperationException(typeKind.toString());
+                throw new UnsupportedOperationException(typeKind + ": " + type);
         }
     }
 
     /**
-     * Given a primitive type, return it. Given a boxed primitive type, return the corresponding
-     * primitive type.
+     * Given a primitive type, return its kind. Given a boxed primitive type, return the
+     * corresponding primitive type kind. Otherwise, return null.
      *
      * @param type a primitive or boxed primitive type
-     * @return a primitive type
+     * @return a primitive type kind, or null
      */
     public static TypeKind unboxPrimitive(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
         if (typeKind.isPrimitive()) {
             return typeKind;
+        }
+
+        if (!(type instanceof DeclaredType)) {
+            return null;
         }
 
         final String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
@@ -142,7 +152,8 @@ public class NumberUtils {
      * @return true if type is an integral type
      */
     public static boolean isIntegral(TypeMirror type) {
-        return isPrimitiveIntegral(unboxPrimitive(type));
+        TypeKind kind = unboxPrimitive(type);
+        return kind != null && isPrimitiveIntegral(kind);
     }
 
     /**
@@ -171,7 +182,8 @@ public class NumberUtils {
      * @return true if type is a floating point type
      */
     public static boolean isFloatingPoint(TypeMirror type) {
-        return isPrimitiveFloatingPoint(unboxPrimitive(type));
+        TypeKind kind = unboxPrimitive(type);
+        return kind != null && isPrimitiveFloatingPoint(kind);
     }
 
     /**

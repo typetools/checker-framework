@@ -407,6 +407,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     @Override
+    @SuppressWarnings(
+            "signature:argument.type.incompatible") // PrimitiveType.toString(): @PrimitiveType
     public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
         if (!checkTopLevelDeclaredOrPrimitiveType
                 || checker.shouldSkipUses(type.getUnderlyingType().toString())) {

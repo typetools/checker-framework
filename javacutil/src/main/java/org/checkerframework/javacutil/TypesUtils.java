@@ -23,7 +23,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
@@ -42,7 +42,7 @@ public final class TypesUtils {
      * @param type the declared type
      * @return the name corresponding to that type
      */
-    public static @DotSeparatedIdentifiers Name getQualifiedName(DeclaredType type) {
+    public static @CanonicalNameOrEmpty Name getQualifiedName(DeclaredType type) {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }
@@ -737,5 +737,34 @@ public final class TypesUtils {
     public static boolean hasEnclosingType(TypeMirror type) {
         Type e = ((Type) type).getEnclosingType();
         return e.getKind() != TypeKind.NONE;
+    }
+
+    /**
+     * Given a class, return the corresponding TypeMirror.
+     *
+     * @param clazz a class
+     * @param elements the element utilities to use
+     * @param types the type utilities to use
+     * @return the TypeMirror corresponding to the given class
+     */
+    public static TypeMirror typeFromClass(Class<?> clazz, Elements elements, Types types) {
+        if (clazz == void.class) {
+            return types.getNoType(TypeKind.VOID);
+        } else if (clazz.isPrimitive()) {
+            String primitiveName = clazz.getName().toUpperCase();
+            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
+            return types.getPrimitiveType(primitiveKind);
+        } else if (clazz.isArray()) {
+            TypeMirror componentType = typeFromClass(clazz.getComponentType(), elements, types);
+            return types.getArrayType(componentType);
+        } else {
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
+            if (element == null) {
+                throw new BugInCF("Unrecognized class: " + clazz);
+            }
+            return element.asType();
+        }
     }
 }

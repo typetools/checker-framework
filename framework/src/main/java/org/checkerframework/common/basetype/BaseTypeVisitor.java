@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.Vector;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -228,9 +229,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
         this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
-        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        this.vectorType =
+                atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
         targetValueElement =
-                TreeUtils.getMethod(java.lang.annotation.Target.class.getName(), "value", 0, env);
+                TreeUtils.getMethod(
+                        java.lang.annotation.Target.class.getCanonicalName(), "value", 0, env);
     }
 
     /**
@@ -2032,9 +2035,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * If the lint option "cast:unsafe" is set, this method issues a warning if the cast is unsafe.
-     * Only primary qualifiers are checked unless the command line option "checkCastElementType" is
-     * supplied.
+     * Issues a warning if the given explicitly-written typecast is unsafe. Does nothing if the lint
+     * option "cast:unsafe" is not set. Only primary qualifiers are checked unless the command line
+     * option "checkCastElementType" is supplied.
+     *
+     * @param typeCastTree an explicitly-written typecast
      */
     protected void checkTypecastSafety(TypeCastTree typeCastTree) {
         if (!checker.getLintOption("cast:unsafe", true)) {
@@ -2054,7 +2059,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             calledOnce = true; // don't issue cast unsafe warning.
         }
         // We cannot do a simple test of casting, as isSubtypeOf requires
-        // the input types to be subtypes according to Java
+        // the input types to be subtypes according to Java.
         if (!calledOnce && !isTypeCastSafe(castType, exprType)) {
             checker.reportWarning(
                     typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
@@ -2412,21 +2417,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
-        assert var != null : "no variable found for tree: " + varTree;
+        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
+        assert varType != null : "no variable found for tree: " + varTree;
 
-        if (!validateType(varTree, var)) {
+        if (!validateType(varTree, varType)) {
             return;
         }
 
-        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
+        commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
      * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
-     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param varType the annotated type for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types

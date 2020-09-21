@@ -14,6 +14,7 @@ import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
 import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -57,16 +58,23 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
     protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
             AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
+    /** The {@literal @}{@link CanonicalName} annotation. */
+    protected final AnnotationMirror CANONICAL_NAME =
+            AnnotationBuilder.fromClass(elements, CanonicalName.class);
 
     /** The {@link String#replace(char, char)} method. */
     private final ExecutableElement replaceCharChar =
             TreeUtils.getMethod(
-                    java.lang.String.class.getName(), "replace", processingEnv, "char", "char");
+                    java.lang.String.class.getCanonicalName(),
+                    "replace",
+                    processingEnv,
+                    "char",
+                    "char");
 
     /** The {@link String#replace(CharSequence, CharSequence)} method. */
     private final ExecutableElement replaceCharSequenceCharSequence =
             TreeUtils.getMethod(
-                    java.lang.String.class.getName(),
+                    java.lang.String.class.getCanonicalName(),
                     "replace",
                     processingEnv,
                     "java.lang.CharSequence",

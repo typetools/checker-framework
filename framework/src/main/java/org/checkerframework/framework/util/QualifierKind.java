@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
@@ -29,7 +30,7 @@ public @Interned interface QualifierKind extends Comparable<QualifierKind> {
      *
      * @return the canonical name of the annotation class of this
      */
-    @Interned String getName();
+    @Interned @CanonicalName String getName();
 
     /**
      * Returns the annotation class for this.

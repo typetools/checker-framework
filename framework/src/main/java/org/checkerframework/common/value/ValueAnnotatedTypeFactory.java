@@ -363,7 +363,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
         TypeKind typeKind = NumberUtils.unboxPrimitive(type);
-        if (NumberUtils.isPrimitiveIntegral(typeKind)) {
+        if (typeKind != null && NumberUtils.isPrimitiveIntegral(typeKind)) {
             return typeKind;
         }
         throw new BugInCF(type.toString() + " expected to be an integral type.");
@@ -1232,7 +1232,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<? extends AnnotationMirror> annoList =
                     expressionObj.getType().getAnnotationMirrors();
             for (AnnotationMirror anno : annoList) {
-                String ANNO_NAME = anno.getAnnotationType().toString();
+                String ANNO_NAME = AnnotationUtils.annotationName(anno);
                 if (ANNO_NAME.equals(MINLEN_NAME)) {
                     return getMinLenValue(canonicalAnnotation(anno));
                 } else if (ANNO_NAME.equals(ARRAYLEN_NAME)
