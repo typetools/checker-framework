@@ -80,10 +80,10 @@ public class InferenceType extends AbstractType {
 
     /**
      * Creates abstract types for each TypeMirror. The created type is an {@link InferenceType} if
-     * {@code type} contains any type variables that are mapped to inference variables as specified
-     * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference
-     * variable, it will return that {@link Variable}. Or if {@code type} contains no type variables
-     * that are mapped in an inference variable, a {@link ProperType} is returned.
+     * it contains any type variables that are mapped to inference variables as specified by {@code
+     * map}. Or if the type is a type variable that is mapped to an inference variable, it will
+     * return that {@link Variable}. Or if the type contains no type variables that are mapped in an
+     * inference variable, a {@link ProperType} is returned.
      */
     public static List<AbstractType> create(
             List<AnnotatedTypeMirror> types,

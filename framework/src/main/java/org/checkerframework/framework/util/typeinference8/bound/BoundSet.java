@@ -14,8 +14,8 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
@@ -116,14 +116,21 @@ public class BoundSet implements ReductionResult {
         containsFalse = true;
     }
 
-    /** @return whether or not this bound set contains false. */
+    /**
+     * Return wheter or not this bound set contains false.
+     *
+     * @return whether or not this bound set contains false
+     */
     public boolean containsFalse() {
         return containsFalse;
     }
 
     /**
+     * Return whether or not unchecked conversion was necessary to reduce and incorporate this bound
+     * set
+     *
      * @return whether or not unchecked conversion was necessary to reduce and incorporate this
-     *     bound set.
+     *     bound set
      */
     public boolean isUncheckedConversion() {
         return uncheckedConversion;
@@ -342,7 +349,7 @@ public class BoundSet implements ReductionResult {
         } else if (variables.isEmpty()) {
             return "EMPTY";
         }
-        String vars = SystemUtil.join(", ", getInstantiatedVariables());
+        String vars = UtilPlume.join(", ", getInstantiatedVariables());
         if (vars.isEmpty()) {
             return "No instantiated variables";
         } else {

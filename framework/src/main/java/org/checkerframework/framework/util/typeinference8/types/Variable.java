@@ -61,7 +61,11 @@ public class Variable extends AbstractType {
         this.id = id;
     }
 
-    /** @return this variable's current bounds */
+    /**
+     * REturn this variable's current bounds.
+     *
+     * @return this variable's current bounds
+     */
     public VariableBounds getBounds() {
         return variableBounds;
     }
@@ -197,7 +201,11 @@ public class Variable extends AbstractType {
         variableBounds.restore();
     }
 
-    /** @return whether or not this variable was created for a capture bound */
+    /**
+     * Returns whether or not this variable was created for a capture bound.
+     *
+     * @return whether or not this variable was created for a capture bound
+     */
     public boolean isCaptureVariable() {
         return false;
     }

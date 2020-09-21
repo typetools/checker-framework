@@ -818,7 +818,12 @@ public final class TypesUtils {
         return (ExecutableType) javacTypes.findDescriptorType((Type) functionalInterfaceType);
     }
 
-    /** @return whether or not {@code type} is raw */
+    /**
+     * Return whether or not {@code type} is raw.
+     *
+     * @param type type to check
+     * @return whether or not {@code type} is raw
+     */
     public static boolean isRaw(TypeMirror type) {
         if (type.getKind() == TypeKind.DECLARED) {
             TypeElement typeelem = (TypeElement) ((DeclaredType) type).asElement();
@@ -847,12 +852,21 @@ public final class TypesUtils {
         }
     }
 
-    /** @return whether {@code type} is a parameterized type. */
+    /**
+     * Returns whether {@code type} is a parameterized type.
+     *
+     * @param type type to check
+     * @return whether {@code type} is a parameterized type
+     */
     public static boolean isParameterizedType(TypeMirror type) {
         return ((Type) type).isParameterized();
     }
 
     /**
+     * Return true if {@code typeMirror} is a declared type with at least one wildcard as a type
+     * argument.
+     *
+     * @param typeMirror type to check
      * @return true if {@code typeMirror} is a declared type with at least one wildcard as a type
      *     argument
      */

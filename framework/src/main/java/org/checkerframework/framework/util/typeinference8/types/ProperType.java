@@ -111,7 +111,7 @@ public class ProperType extends AbstractType {
     /**
      * Is {@code this} a subtype of {@code superType}?
      *
-     * @param superType
+     * @param superType super type
      * @return if {@code this} is a subtype of {@code superType}, then return {@link
      *     ConstraintSet#TRUE}; otherwise, a false bound is returned
      */
@@ -135,7 +135,7 @@ public class ProperType extends AbstractType {
     /**
      * Is {@code this} an unchecked subtype of {@code superType}?
      *
-     * @param superType
+     * @param superType super type
      * @return if {@code this} is an unchecked subtype of {@code superType}, then return {@link
      *     ConstraintSet#TRUE}; otherwise, a false bound is returned
      */
@@ -159,7 +159,7 @@ public class ProperType extends AbstractType {
     /**
      * Is {@code this} assignable to {@code superType}?
      *
-     * @param superType
+     * @param superType super type
      * @return if {@code this} assignable to {@code superType}, then return {@link
      *     ConstraintSet#TRUE}; otherwise, a false bound is returned
      */

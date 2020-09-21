@@ -115,12 +115,20 @@ public class CaptureBound {
         return b1;
     }
 
-    /** @return all variables on the left-hand side of this capture */
+    /**
+     * Return all variables on the left-hand side of this capture.
+     *
+     * @return all variables on the left-hand side of this capture
+     */
     public List<? extends CaptureVariable> getAllVariablesOnLHS() {
         return captureVariables;
     }
 
-    /** @return all variables on the right-hand side of this capture */
+    /**
+     * Return all variables on the right-hand side of this capture.
+     *
+     * @return all variables on the right-hand side of this capture
+     */
     public LinkedHashSet<Variable> getAllVariablesOnRHS() {
         return new LinkedHashSet<>(capturedType.getInferenceVariables());
     }

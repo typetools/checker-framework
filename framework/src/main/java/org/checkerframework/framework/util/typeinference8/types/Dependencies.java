@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * A data structure to hold the dependencies between variables. Dependencies are defined in <a
@@ -48,7 +47,7 @@ public class Dependencies {
         boolean changed = true;
         while (changed) {
             changed = false;
-            for (Entry<Variable, LinkedHashSet<Variable>> entry : map.entrySet()) {
+            for (Map.Entry<Variable, LinkedHashSet<Variable>> entry : map.entrySet()) {
                 Variable alpha = entry.getKey();
                 LinkedHashSet<Variable> gammas = entry.getValue();
                 LinkedHashSet<Variable> betas = new LinkedHashSet<>();

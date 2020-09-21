@@ -66,7 +66,11 @@ public class ConstraintSet implements ReductionResult {
         list.addAll(constraintSet);
     }
 
-    /** @return whether or not this constraint set is empty. */
+    /**
+     * Return whether or not this constraint set is empty.
+     *
+     * @return whether or not this constraint set is empty
+     */
     public boolean isEmpty() {
         return list.isEmpty();
     }
@@ -159,7 +163,11 @@ public class ConstraintSet implements ReductionResult {
         return new ConstraintSet(consideredConstraints.get(0));
     }
 
-    /** @return all variables mentioned by any constraint in this set */
+    /**
+     * Return all variables mentioned by any constraint in this set.
+     *
+     * @return all variables mentioned by any constraint in this set
+     */
     public Set<Variable> getAllInferenceVariables() {
         Set<Variable> vars = new LinkedHashSet<>();
         for (Constraint constraint : list) {
@@ -168,7 +176,11 @@ public class ConstraintSet implements ReductionResult {
         return vars;
     }
 
-    /** @return all input variables for all constraints in this set */
+    /**
+     * Return all input variables for all constraints in this set.
+     *
+     * @return all input variables for all constraints in this set
+     */
     public Set<Variable> getAllInputVariables() {
         Set<Variable> vars = new LinkedHashSet<>();
         for (Constraint constraint : list) {
@@ -202,7 +214,7 @@ public class ConstraintSet implements ReductionResult {
             if (result instanceof ReductionResultPair) {
                 boundSet.merge(((ReductionResultPair) result).boundSet);
                 if (boundSet.containsFalse()) {
-                    throw new FalseBoundException(constraint, (FalseBound) result);
+                    throw new FalseBoundException(constraint, result);
                 }
                 this.addAll(((ReductionResultPair) result).constraintSet);
             } else if (result instanceof Constraint) {
@@ -212,12 +224,12 @@ public class ConstraintSet implements ReductionResult {
             } else if (result instanceof BoundSet) {
                 boundSet.merge((BoundSet) result);
                 if (boundSet.containsFalse()) {
-                    throw new FalseBoundException(constraint, (FalseBound) result);
+                    throw new FalseBoundException(constraint, result);
                 }
             } else if (result == null
                     || result == ConstraintSet.FALSE
                     || result instanceof FalseBound) {
-                throw new FalseBoundException(constraint, (FalseBound) result);
+                throw new FalseBoundException(constraint, result);
             } else if (result == UNCHECKED_CONVERSION) {
                 boundSet.setUncheckedConversion(true);
             } else if (result == ConstraintSet.TRUE) {

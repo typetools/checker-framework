@@ -15,7 +15,11 @@ public class FalseBound implements ReductionResult {
         this.annotatedTypeFailure = annotatedTypeFailure;
     }
 
-    /** @return returns true if this false bound was caused by annotated type. */
+    /**
+     * Return true if this false bound was caused by an annotated type.
+     *
+     * @return true if this false bound was caused by annotated type.
+     */
     public boolean isAnnotatedTypeFailure() {
         return annotatedTypeFailure;
     }

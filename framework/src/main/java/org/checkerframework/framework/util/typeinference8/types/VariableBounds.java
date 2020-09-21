@@ -76,7 +76,11 @@ public class VariableBounds {
         }
     }
 
-    /** @return true if this has a throws bound */
+    /**
+     * Return true if this has a throws bound.
+     *
+     * @return true if this has a throws bound
+     */
     public boolean hasThrowsBound() {
         return hasThrowsBound;
     }
@@ -154,13 +158,14 @@ public class VariableBounds {
     /**
      * Returns the constraints between the type arguments to {@code s} and {@code t}.
      *
-     * <p>If the there exists a supertype of S of the form G<S1, ..., Sn> and a supertype of T of
-     * the form G<T1,..., Tn> (for some generic class or interface, G), then for all i (1 <= i <=
-     * n), if Si and Ti are types (not wildcards), the constraint formula <Si = Ti> is implied.
+     * <p>If the there exists a supertype of S of the form {@code G<S1, ..., Sn>} and a supertype of
+     * T of the form {@code G<T1,..., Tn>} (for some generic class or interface, G), then for all i
+     * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
+     * <Si = Ti>} is implied.
      *
-     * @param s
-     * @param t
-     * @return
+     * @param s a type argument
+     * @param t a type argument
+     * @return the constraints between the type arguments to {@code s} and {@code t}.
      */
     private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
         Pair<AbstractType, AbstractType> pair =
@@ -185,7 +190,11 @@ public class VariableBounds {
         return constraints;
     }
 
-    /** @return all lower bounds that are poper types */
+    /**
+     * Return all lower bounds that are proper types.
+     *
+     * @return all lower bounds that are proper types
+     */
     public LinkedHashSet<ProperType> findProperLowerBounds() {
         LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
@@ -196,7 +205,11 @@ public class VariableBounds {
         return set;
     }
 
-    /** @return all upper bounds that are poper types */
+    /**
+     * Returns all upper bounds that proper types.
+     *
+     * @return all upper bounds that are proper types
+     */
     public LinkedHashSet<ProperType> findProperUpperBounds() {
         LinkedHashSet<ProperType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
@@ -207,7 +220,11 @@ public class VariableBounds {
         return set;
     }
 
-    /** @return all upper bounds */
+    /**
+     * Returns all upper bounds.
+     *
+     * @return all upper bounds
+     */
     public LinkedHashSet<AbstractType> upperBounds() {
         LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
         for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
@@ -245,7 +262,11 @@ public class VariableBounds {
         return changed;
     }
 
-    /** @return all variables mentioned in a bound against this variable. */
+    /**
+     * Return all variables mentioned in a bound against this variable.
+     *
+     * @return all variables mentioned in a bound against this variable
+     */
     public Collection<? extends Variable> getVariablesMentionedInBounds() {
         List<Variable> mentioned = new ArrayList<>();
         for (Set<AbstractType> boundList : bounds.values()) {
@@ -256,17 +277,29 @@ public class VariableBounds {
         return mentioned;
     }
 
-    /** @return the instantiation of this variable */
+    /**
+     * Returns the instantiation of this variable.
+     *
+     * @return the instantiation of this variable
+     */
     public ProperType getInstantiation() {
         return instantiation;
     }
 
-    /** @return true if this has an instantiation */
+    /**
+     * Return true if this has an instantiation.
+     *
+     * @return true if this has an instantiation
+     */
     public boolean hasInstantiation() {
         return instantiation != null;
     }
 
-    /** @return true if any bound mentions a primitive wrapper type. */
+    /**
+     * Returns true if any bound mentions a primitive wrapper type.
+     *
+     * @return true if any bound mentions a primitive wrapper type
+     */
     public boolean hasPrimitiveWrapperBound() {
         for (Set<AbstractType> boundList : bounds.values()) {
             for (AbstractType bound : boundList) {
@@ -279,6 +312,9 @@ public class VariableBounds {
     }
 
     /**
+     * Returns true if any lower or equal bound is a parameterized type with at least one wildcard
+     * as a type argument.
+     *
      * @return true if any lower or equal bound is a parameterized type with at least one wildcard
      *     for a type argument
      */

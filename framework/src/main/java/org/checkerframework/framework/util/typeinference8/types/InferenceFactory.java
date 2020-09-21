@@ -321,6 +321,8 @@ public class InferenceFactory {
     }
 
     /**
+     * Return ExecutableType of the method invocation or new class tree adapted to the call site.
+     *
      * @return ExecutableType of the method invocation or new class tree adapted to the call site
      */
     public static ExecutableType getTypeOfMethodAdaptedToUse(
@@ -565,7 +567,7 @@ public class InferenceFactory {
 
     /**
      * Creates capture variables for variables introduced by a capture bounds. The new variables
-     * correspond to the type parameters of {@code captureType}.
+     * correspond to the type parameters of {@code capturedType}.
      *
      * @param tree invocation tree that created the capture bound
      * @param capturedType type that should be captured
@@ -771,7 +773,11 @@ public class InferenceFactory {
                 atm.getUpperBound(), ((TypeVariable) pEle.asType()).getUpperBound(), map, context);
     }
 
-    /** @return the proper type for object */
+    /**
+     * Return the proper type for object.
+     *
+     * @return the proper type for object
+     */
     public ProperType getObject() {
         TypeMirror objectTypeMirror =
                 TypesUtils.typeFromClass(
@@ -783,6 +789,8 @@ public class InferenceFactory {
     }
 
     /**
+     * Return the least upper bounds of {@code properTypes}.
+     *
      * @param properTypes types to lub
      * @return the least upper bounds of {@code properTypes}
      */
@@ -807,6 +815,8 @@ public class InferenceFactory {
     }
 
     /**
+     * Returns the greatest lower bound of {@code abstractTypes}.
+     *
      * @param abstractTypes types to glb
      * @return the greatest upper bounds of {@code abstractTypes}
      */
@@ -824,6 +834,8 @@ public class InferenceFactory {
     }
 
     /**
+     * Returns the greatest lower bound of {@code a} and {@code b}.
+     *
      * @param a type to glb
      * @param b type to glb
      * @return the greatest lower bound of {@code a} and {@code b}
@@ -854,7 +866,11 @@ public class InferenceFactory {
         return new ProperType(glbATM, glb, context);
     }
 
-    /** @return the proper type for RuntimeException */
+    /**
+     * Return the proper type for RuntimeException.
+     *
+     * @return the proper type for RuntimeException
+     */
     public ProperType getRuntimeException() {
         AnnotatedTypeMirror runtimeEx =
                 AnnotatedTypeMirror.createType(context.runtimeEx, typeFactory, false);
@@ -963,14 +979,6 @@ public class InferenceFactory {
         return new ProperType(wildcardAtm, wildcard, context);
     }
 
-    /**
-     * Substitute the type variables with the given type arguments in the TODO FINISH THIS SENTENCE.
-     *
-     * @param typeVar
-     * @param typeArg
-     * @param asList
-     * @return
-     */
     public List<ProperType> getSubsTypeArgs(
             List<TypeVariable> typeVar, List<ProperType> typeArg, List<Variable> asList) {
         List<TypeMirror> javaTypeArgs = new ArrayList<>();

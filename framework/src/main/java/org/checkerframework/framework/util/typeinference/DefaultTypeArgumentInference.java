@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -106,7 +105,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
     private InvocationTypeInference java8Inference = null;
-    private final Stack<InvocationTypeInference> java8InferenceStack = new Stack<>();
+    private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
 
     private final boolean showInferenceSteps;
 
@@ -139,7 +138,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
                 if (result != null) {
                     System.out.println("Inferred the following for: " + expressionTree);
-                    System.out.println("\t" + SystemUtil.join("\n\t", result));
+                    System.out.println("\t" + UtilPlume.join("\n\t", result));
                 }
             } finally {
                 java8Inference = java8InferenceStack.pop();

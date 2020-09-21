@@ -102,12 +102,20 @@ public class Java8InferenceContext {
         this.getAnnotatedTypeOfProperType = false;
     }
 
-    /** @return the next number to use as the id for a non-capture variable */
+    /**
+     * Returns the next number to use as the id for a non-capture variable.
+     *
+     * @return the next number to use as the id for a non-capture variable
+     */
     public int getNextVariableId() {
         return variableCount++;
     }
 
-    /** @return the next number to use as the id for a capture variable */
+    /**
+     * Return the next number to use as the id for a capture variable.
+     *
+     * @return the next number to use as the id for a capture variable
+     */
     public int getNextCaptureVariableId() {
         return captureVariableCount++;
     }
@@ -125,7 +133,11 @@ public class Java8InferenceContext {
         }
     }
 
-    /** @return whether or not the {@code expression} is a lambda parameter */
+    /**
+     * Return whether or not the {@code expression} is a lambda parameter.
+     *
+     * @return whether or not the {@code expression} is a lambda parameter
+     */
     public boolean isLambdaParam(ExpressionTree expression) {
         Element element = TreeUtils.elementFromUse(expression);
         if (element == null || element.getKind() != ElementKind.PARAMETER) {

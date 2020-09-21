@@ -61,58 +61,106 @@ public abstract class AbstractType {
     protected final Java8InferenceContext context;
     protected final AnnotatedTypeFactory typeFactory;
 
-    public AbstractType(Java8InferenceContext context) {
+    protected AbstractType(Java8InferenceContext context) {
         this.context = context;
         this.typeFactory = context.typeFactory;
     }
 
-    /** Returns the kind of {@link AbstractType}. */
+    /**
+     * Returns the kind of {@link AbstractType}.
+     *
+     * @return the kind of {@link AbstractType}
+     */
     public abstract Kind getKind();
 
-    /** @return true if this type is a proper type. */
+    /**
+     * Return true if this type is a proper type.
+     *
+     * @return true if this type is a proper type
+     */
     public boolean isProper() {
         return getKind() == Kind.PROPER;
     }
 
-    /** @return true if this type is an inference variable. */
+    /**
+     * Return true if this type is an inference variable.
+     *
+     * @return true if this type is an inference variable
+     */
     public boolean isVariable() {
         return getKind() == Kind.VARIABLE;
     }
 
-    /** @return true if this type contains inference variables, but is not an inference variable */
+    /**
+     * Return true if this type contains inference variables, but is not an inference variable.
+     *
+     * @return true if this type contains inference variables, but is not an inference variable
+     */
     public boolean isInferenceType() {
         return getKind() == Kind.INFERENCE_TYPE;
     }
 
-    /** @return the TypeKind of the underlying Java type */
+    /**
+     * Returns the TypeKind of the underlying Java type.
+     *
+     * @return the TypeKind of the underlying Java type
+     */
     public final TypeKind getTypeKind() {
         return getJavaType().getKind();
     }
 
+    /**
+     * Creates a type using the given types.
+     *
+     * @param atm annotated type mirror
+     * @param type type mirror
+     * @return the new type
+     */
     public abstract AbstractType create(AnnotatedTypeMirror atm, TypeMirror type);
 
-    /** @return the underlying Java type without inference variables. */
+    /**
+     * Return the underlying Java type without inference variables.
+     *
+     * @return the underlying Java type without inference variables
+     */
     public abstract TypeMirror getJavaType();
 
-    /** @return the underlying Java type without inference variables. */
+    /**
+     * Return the underlying Java type without inference variables.
+     *
+     * @return the underlying Java type without inference variables
+     */
     public abstract AnnotatedTypeMirror getAnnotatedType();
 
-    /** @return a collection of all inference variables referenced by this type. */
+    /**
+     * Return a collection of all inference variables referenced by this type.
+     *
+     * @return a collection of all inference variables referenced by this type
+     */
     public abstract Collection<Variable> getInferenceVariables();
 
     /**
+     * Return a new type that is the same as this one except the variables in {@code instantiations}
+     * have been replaced by their instantiation.
+     *
      * @return a new type that is the same as this one except the variables in {@code
-     *     instantiations} have been replaced by their instantiation.
+     *     instantiations} have been replaced by their instantiation
      */
     public abstract AbstractType applyInstantiations(List<Variable> instantiations);
 
-    /** @return true if this type is java.lang.Object. */
+    /**
+     * Return true if this type is java.lang.Object.
+     *
+     * @return true if this type is java.lang.Object
+     */
     public abstract boolean isObject();
 
     /**
      * Assuming the type is a declared type, this method returns the upper bounds of its type
      * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
      * they are proper types.)
+     *
+     * @return the upper bounds of the type parameter of this type
      */
     public List<ProperType> getTypeParameterBounds() {
         TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
@@ -130,7 +178,11 @@ public abstract class AbstractType {
         return bounds;
     }
 
-    /** @return a new type that is the capture of this type. */
+    /**
+     * Return a new type that is the capture of this type.
+     *
+     * @return a new type that is the capture of this type
+     */
     public AbstractType capture() {
         TypeMirror capture;
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
@@ -250,8 +302,8 @@ public abstract class AbstractType {
      * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS
      * section 15.27.3</a>
      *
-     * @param type
-     * @param typeFactory
+     * @param type a type to ground
+     * @param typeFactory type factory
      */
     // TODO: This method is named make ground, but is actually implements non-wildcard
     // parameterization as defined in
@@ -283,7 +335,11 @@ public abstract class AbstractType {
         type.setTypeArguments(newTypeArgs);
     }
 
-    /** @return true if the type is a raw type */
+    /**
+     * Return true if the type is a raw type.
+     *
+     * @return true if the type is a raw type
+     */
     public boolean isRaw() {
         assert TypesUtils.isRaw(getJavaType())
                 == (getAnnotatedType().getKind() == TypeKind.DECLARED
@@ -292,6 +348,9 @@ public abstract class AbstractType {
     }
 
     /**
+     * Return a new type that is the same type as this one, but whose type arguments are {@code
+     * args}.
+     *
      * @return a new type that is the same type as this one, but whose type arguments are {@code
      *     args}
      */
@@ -332,6 +391,9 @@ public abstract class AbstractType {
     }
 
     /**
+     * Return the most specific array type that is a super type of this type or null if one doesn't
+     * exist.
+     *
      * @return the most specific array type that is a super type of this type or null if one doesn't
      *     exist
      */
@@ -350,6 +412,9 @@ public abstract class AbstractType {
     }
 
     /**
+     * Return the most specific array type, that is the first super type of {@code type} that is not
+     * an array.
+     *
      * @param type annotated type mirror
      * @return the first supertype of {@code type} that is an array
      */
@@ -367,13 +432,19 @@ public abstract class AbstractType {
         }
     }
 
-    /** @return true if this type is a primitive array. */
+    /**
+     * Return true if this type is a primitive array.
+     *
+     * @return true if this type is a primitive array
+     */
     public boolean isPrimitiveArray() {
         return getJavaType().getKind() == TypeKind.ARRAY
                 && ((ArrayType) getJavaType()).getComponentType().getKind().isPrimitive();
     }
 
     /**
+     * Return assuming type is an intersection type, this method returns the bounds in this type.
+     *
      * @return assuming type is an intersection type, this method returns the bounds in this type
      */
     public List<AbstractType> getIntersectionBounds() {
@@ -388,6 +459,9 @@ public abstract class AbstractType {
     }
 
     /**
+     * Return assuming this type is a type variable, this method returns the upper bound of this
+     * type.
+     *
      * @return assuming this type is a type variable, this method returns the upper bound of this
      *     type
      */
@@ -397,6 +471,9 @@ public abstract class AbstractType {
     }
 
     /**
+     * Return assuming this type is a type variable that has a lower bound, this method returns the
+     * lower bound of this type.
+     *
      * @return assuming this type is a type variable that has a lower bound, this method returns the
      *     lower bound of this type
      */
@@ -405,12 +482,19 @@ public abstract class AbstractType {
         return create(((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(), lowerBound);
     }
 
-    /** @return true if this type is a type variable with a lower bound */
+    /**
+     * Return true if this type is a type variable with a lower bound.
+     *
+     * @return true if this type is a type variable with a lower bound
+     */
     public boolean isLowerBoundTypeVariable() {
         return ((TypeVariable) getJavaType()).getLowerBound().getKind() != TypeKind.NULL;
     }
 
     /**
+     * Return true if this type is a parameterized type whose has at least one wildcard as a type
+     * argument.
+     *
      * @return true if this type is a parameterized type whose has at least one wildcard as a type
      *     argument
      */
@@ -418,7 +502,11 @@ public abstract class AbstractType {
         return TypesUtils.isWildcardParameterized(getJavaType());
     }
 
-    /** @return this type's type arguments or null this type isn't a declared type */
+    /**
+     * Return this type's type arguments or null if this type isn't a declared type.
+     *
+     * @return this type's type arguments or null this type isn't a declared type
+     */
     public List<AbstractType> getTypeArguments() {
         if (getJavaType().getKind() != TypeKind.DECLARED) {
             return null;
@@ -436,22 +524,38 @@ public abstract class AbstractType {
         return list;
     }
 
-    /** @return true if the type is an unbound wildcard */
+    /**
+     * Return true if the type is an unbound wildcard.
+     *
+     * @return true if the type is an unbound wildcard
+     */
     public boolean isUnboundWildcard() {
         return TypesUtils.isUnboundWildcard(getJavaType());
     }
 
-    /** @return true if the type is a wildcard with an upper bound */
+    /**
+     * Return true if the type is a wildcard with an upper bound.
+     *
+     * @return true if the type is a wildcard with an upper bound
+     */
     public boolean isUpperBoundedWildcard() {
         return TypesUtils.isExtendsBoundWildcard(getJavaType());
     }
 
-    /** @return true if the type is a wildcard with a lower bound */
+    /**
+     * Return true if the type is a wilcard with a lower bound.
+     *
+     * @return true if the type is a wildcard with a lower bound
+     */
     public boolean isLowerBoundedWildcard() {
         return TypesUtils.isSuperBoundWildcard(getJavaType());
     }
 
-    /** @return if this type is a wildcard return its lower bound; otherwise, return null. */
+    /**
+     * Return if this type is a wildcard return its lower bound; otherwise, return null.
+     *
+     * @return if this type is a wildcard return its lower bound; otherwise, return null
+     */
     public AbstractType getWildcardLowerBound() {
         if (getJavaType().getKind() == TypeKind.WILDCARD) {
             WildcardType wild = (WildcardType) getJavaType();
@@ -462,7 +566,11 @@ public abstract class AbstractType {
         return null;
     }
 
-    /** @return if this type is a wildcard return its upper bound; otherwise, return null. */
+    /**
+     * Return if this type is a wildcard return its upper bound; otherwise, return null.
+     *
+     * @return if this type is a wildcard return its upper bound; otherwise, return null
+     */
     public AbstractType getWildcardUpperBound() {
         if (getJavaType().getKind() != TypeKind.WILDCARD) {
             return null;
@@ -478,13 +586,21 @@ public abstract class AbstractType {
         }
     }
 
-    /** @return a new type whose Java type is the erasure of this type */
+    /**
+     * Return new type whose Java type is the erasure of this type.
+     *
+     * @return a new type whose Java type is the erasure of this type
+     */
     public AbstractType getErased() {
         TypeMirror typeMirror = context.env.getTypeUtils().erasure(getJavaType());
         return create(getAnnotatedType().getErased(), typeMirror);
     }
 
-    /** @return the array component type of this type or null if one does not exist. */
+    /**
+     * Return the array component type fo this type or null if on does not exist.
+     *
+     * @return the array component type of this type or null if one does not exist.
+     */
     public final AbstractType getComponentType() {
         if (getJavaType().getKind() == TypeKind.ARRAY) {
             TypeMirror javaType = ((ArrayType) getJavaType()).getComponentType();

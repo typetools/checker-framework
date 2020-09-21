@@ -1652,7 +1652,7 @@ public final class TreeUtils {
      * expression refers."
      *
      * @param memberReferenceTree method reference
-     * @param targetType
+     * @param targetType target type
      * @param env processing environment
      * @return method to which the expression refers
      */

@@ -51,18 +51,26 @@ public abstract class Constraint implements ReductionResult {
         METHOD_REF_EXCEPTION,
     }
 
-    /** @return the kind of constraint */
+    /**
+     * Return the kind of constraint.
+     *
+     * @return the kind of constraint
+     */
     public abstract Kind getKind();
 
     /** T, the type on the right hand side of the constraint; may contain inference variables. */
     protected AbstractType T;
 
-    protected Constraint(AbstractType t) {
-        assert t != null : "Can't create a constraint with a null type.";
-        T = t;
+    protected Constraint(AbstractType T) {
+        assert T != null : "Can't create a constraint with a null type.";
+        this.T = T;
     }
 
-    /** @return T, that is the type on the right hand side of the constraint */
+    /**
+     * Returns T which is the type on the right hand side of the constraint.
+     *
+     * @return T, that is the type on the right hand side of the constraint
+     */
     public AbstractType getT() {
         return T;
     }
@@ -80,7 +88,11 @@ public abstract class Constraint implements ReductionResult {
      */
     public abstract ReductionResult reduce(Java8InferenceContext context);
 
-    /** @return a collection of all inference variables mentioned by this constraint. */
+    /**
+     * Returns a collection of all inference variables mentioned by this constraint.
+     *
+     * @return a collection of all inference variables mentioned by this constraint.
+     */
     public Collection<Variable> getInferenceVariables() {
         return T.getInferenceVariables();
     }
@@ -116,17 +128,17 @@ public abstract class Constraint implements ReductionResult {
      * and checked exception constraints
      * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
      */
-    protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType t) {
+    protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
 
         switch (tree.getKind()) {
             case LAMBDA_EXPRESSION:
-                if (t.isVariable()) {
-                    return Collections.singletonList((Variable) t);
+                if (T.isVariable()) {
+                    return Collections.singletonList((Variable) T);
                 } else {
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
                     List<Variable> inputs = new ArrayList<>();
                     if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
-                        List<AbstractType> params = T.getFunctionTypeParameterTypes();
+                        List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
                         if (params == null) {
                             // T is not a function type.
                             return Collections.emptyList();
@@ -135,7 +147,7 @@ public abstract class Constraint implements ReductionResult {
                             inputs.addAll(param.getInferenceVariables());
                         }
                     }
-                    AbstractType R = T.getFunctionTypeReturnType();
+                    AbstractType R = this.T.getFunctionTypeReturnType();
                     if (R == null || R.getTypeKind() == TypeKind.NONE) {
                         return inputs;
                     }
@@ -146,12 +158,12 @@ public abstract class Constraint implements ReductionResult {
                     return inputs;
                 }
             case MEMBER_REFERENCE:
-                if (t.isVariable()) {
-                    return Collections.singletonList((Variable) t);
+                if (T.isVariable()) {
+                    return Collections.singletonList((Variable) T);
                 } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
                     return Collections.emptyList();
                 } else {
-                    List<AbstractType> params = T.getFunctionTypeParameterTypes();
+                    List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
                     if (params == null) {
                         // T is not a function type.
                         return Collections.emptyList();
@@ -163,12 +175,12 @@ public abstract class Constraint implements ReductionResult {
                     return inputs;
                 }
             case PARENTHESIZED:
-                return getInputVariablesForExpression(TreeUtils.withoutParens(tree), t);
+                return getInputVariablesForExpression(TreeUtils.withoutParens(tree), T);
             case CONDITIONAL_EXPRESSION:
                 ConditionalExpressionTree conditional = (ConditionalExpressionTree) tree;
                 List<Variable> inputs = new ArrayList<>();
-                inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), t));
-                inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), t));
+                inputs.addAll(getInputVariablesForExpression(conditional.getTrueExpression(), T));
+                inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
                 return inputs;
             default:
                 return Collections.emptyList();
