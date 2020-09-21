@@ -757,7 +757,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
