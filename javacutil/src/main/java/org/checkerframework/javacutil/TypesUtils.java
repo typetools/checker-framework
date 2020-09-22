@@ -37,7 +37,9 @@ public final class TypesUtils {
 
     /// Creating types
 
-    // TODO: What order of arguments for typeFromClass is desirable?  Remove one of the overloads.
+    // TODO: What order of arguments for typeFromClass is desirable?  Current code is inconsistent,
+    // and before this refactoring TypesUtils already contained both overloads.  Remove one of the
+    // overloads.
 
     /**
      * Given a class, return the corresponding TypeMirror.

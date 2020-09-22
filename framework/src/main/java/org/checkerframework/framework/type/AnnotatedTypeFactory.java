@@ -5,7 +5,6 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -2444,61 +2443,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 narrowedTypeMirror, this, type.isDeclaration());
         narrowed.addAnnotations(type.getAnnotations());
         return narrowed;
-    }
-
-    /** A pair of two AnnotatedTypeMirrors. */
-    public static class AtmPair {
-        /** The first AnnotatedTypeMirror. */
-        public AnnotatedTypeMirror a;
-        /** The second AnnotatedTypeMirror. */
-        public AnnotatedTypeMirror b;
-        /**
-         * Create a new AtmPair.
-         *
-         * @param a the first AnnotatedTypeMirror
-         * @param b the second AnnotatedTypeMirror
-         */
-        public AtmPair(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
-            this.a = a;
-            this.b = b;
-        }
-        /**
-         * Returns a string representation of the pair.
-         *
-         * @return a string representation of the pair
-         */
-        @Override
-        public String toString() {
-            return "<" + a + ", " + b + ">";
-        }
-    }
-
-    /**
-     * Given a binary node that widens its arguments, return the type kind they are widened to.
-     *
-     * @param node a binary expression that widens its arguments
-     * @return the type kind that the argumnets are widened to
-     */
-    public AtmPair binaryTreeTypeKind(BinaryTree node) {
-
-        System.out.printf("widenBinary(%s)%n", node);
-        ExpressionTree leftOp = node.getLeftOperand();
-        ExpressionTree rightOp = node.getRightOperand();
-        AnnotatedTypeMirror leftOpType = getAnnotatedType(leftOp);
-        AnnotatedTypeMirror rightOpType = getAnnotatedType(rightOp);
-        TypeKind leftKind = leftOpType.getPrimitiveKind();
-        TypeKind rightKind = rightOpType.getPrimitiveKind();
-
-        TypeKind widened = TypeKindUtils.widenedNumericType(leftKind, rightKind);
-        System.out.printf(
-                "widenBinary(%s): widenedNumericType(%s, %s) => %s%n",
-                node, leftKind, rightKind, widened);
-
-        AnnotatedTypeMirror widenedLeftOpType = getWidenedPrimitive(leftOpType, widened);
-        AnnotatedTypeMirror widenedRightOpType = getWidenedPrimitive(rightOpType, widened);
-        System.out.printf(
-                "widenBinary(%s) => %s, %s%n", node, widenedLeftOpType, widenedRightOpType);
-        return new AtmPair(widenedLeftOpType, widenedRightOpType);
     }
 
     /**
