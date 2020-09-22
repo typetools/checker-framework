@@ -199,7 +199,8 @@ public abstract class AnnotatedTypeMirror {
      * Given a primitive type, return its kind. Given a boxed primitive type, return the
      * corresponding primitive type kind. Otherwise, return null.
      *
-     * @return a primitive type kind, or null
+     * @return a primitive type kind if this is a primitive type or boxed primitive type; otherwise
+     *     null
      */
     public TypeKind getPrimitiveKind() {
         return TypeKindUtils.primitiveOrBoxedToTypeKind(getUnderlyingType());
@@ -296,7 +297,8 @@ public abstract class AnnotatedTypeMirror {
      * arguments, array components, etc).
      *
      * <p>To get the single annotation in a particular hierarchy, use {@link
-     * #getAnnotationInHierarchy}. If there is only one hierarchy, use {@link #getAnnotation}.
+     * #getAnnotationInHierarchy}. If there is only one hierarchy, you can use {@link
+     * #getAnnotation}.
      *
      * @return a unmodifiable set of the annotations on this
      */

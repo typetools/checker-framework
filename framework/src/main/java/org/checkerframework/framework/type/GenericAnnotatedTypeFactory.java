@@ -1569,9 +1569,6 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        @SuppressWarnings("UnusedVariable") // for diagnostic output
-        String thisFactory = this.getClass().getSimpleName();
-
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.

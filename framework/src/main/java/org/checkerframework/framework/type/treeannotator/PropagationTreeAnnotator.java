@@ -137,14 +137,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             return null;
         }
 
-        AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(node.getRightOperand());
-        AnnotatedTypeMirror leftWidened = atypeFactory.getWidenedPrimitive(left, type);
-        AnnotatedTypeMirror rightWidened = atypeFactory.getWidenedPrimitive(right, type);
+        AnnotatedTypeMirror leftUnwidened = atypeFactory.getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror rightUnwidened = atypeFactory.getAnnotatedType(node.getRightOperand());
+        AnnotatedTypeMirror a = atypeFactory.getWidenedPrimitive(leftUnwidened, type);
+        AnnotatedTypeMirror b = atypeFactory.getWidenedPrimitive(rightUnwidened, type);
         Set<? extends AnnotationMirror> lubs =
                 qualHierarchy.leastUpperBounds(
-                        leftWidened.getEffectiveAnnotations(),
-                        rightWidened.getEffectiveAnnotations());
+                        a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
         return null;
     }
@@ -167,9 +166,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, AnnotatedTypeMirror type) {
         if (!type.isAnnotated()) {
-            AnnotatedTypeMirror left = typeFactory.getAnnotatedType(node.getTrueExpression());
-            AnnotatedTypeMirror right = typeFactory.getAnnotatedType(node.getFalseExpression());
-            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(left.getEffectiveAnnotations(), right.getEffectiveAnnotations());
+            AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getTrueExpression());
+            AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getFalseExpression());
+            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
             type.replaceAnnotations(lubs);
         }
         return super.visitConditionalExpression(node, type);

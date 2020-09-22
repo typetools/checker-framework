@@ -2445,25 +2445,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * If both arguments are primitives or boxed primitives, return an ATM with the same type as
-     * {@code wider} but the annotations of {@code orig}, possibly adapted. Otherwise, return {@code
-     * orig}.
-     *
-     * @param orig the original type
-     * @parame wider the type it is being widened to
-     * @return {@code orig} widened to {@code wider}, if both are (possibly boxed) primitives
-     */
-    public AnnotatedTypeMirror maybeWiden(AnnotatedTypeMirror orig, AnnotatedTypeMirror wider) {
-        TypeKind origKind = orig.getPrimitiveKind();
-        TypeKind widerKind = wider.getPrimitiveKind();
-        if (origKind == null || widerKind == null || origKind == widerKind || !isNarrow(orig)) {
-            return orig;
-        }
-        // orig and wider are both primitives or boxed primitives
-        return getWidenedPrimitive(orig, wider);
-    }
-
-    /**
      * Returns true if the type is narrower than int; that is, if it is byte, short, char, Byte,
      * Short, or Character.
      *
