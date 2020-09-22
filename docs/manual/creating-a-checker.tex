@@ -1182,29 +1182,71 @@ meta-annotation.
 \subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
 
 If the meta-annotations are not sufficiently expressive, then you
-can write your own type introduction rules.  To do so, create a subclass of
-\refclass{framework/type}{AnnotatedTypeFactory} and override its
-two \<addComputedTypeAnnotations> methods.
+can write your own type introduction rules.  There are three ways to do so.
 
-\<AnnotatedTypeFactory>, when given a program
-expression, returns the expression's type.  This should include not only
-the qualifiers that the programmer explicitly wrote in the source code, but
-also default annotations and type
-refinement (see Section~\ref{effective-qualifier} for explanations of these
-concepts).
+\begin{enumerate}
+\item
+  Define a subclass of
+  \refclass{org/checkerframework/framework/type/treeannotator}{TreeAnnotator},
+  typically as a private inner class of your \<AnnotatedTypeFactory>.  In
+  your subclass of \<AnnotatedTypeFactory>, override \<createTreeAnnotator>
+  to return a \<ListTreeAnnotator> containing that annotator, as in
 
-To add type introduction rules, you should override
-\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
-(or
-\refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
-if extending \code{GenericAnnotatedTypeFactory})
-and
-\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
-The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
-which is the Checker Framework's representation of an annotated type.
-The methods can make arbitrary changes to the annotations on a type.
+\begin{Verbatim}
+  @Override
+  protected TreeAnnotator createTreeAnnotator() {
+      return new ListTreeAnnotator(super.createTreeAnnotator(), new MyTreeAnnotator(this));
+  }
+\end{Verbatim}
 
-%TODO: document tree and type annotators here, which should be used instead of override addComputedTypeAnnotations if possible.
+  \noindent
+  (or put your TreeAnnotator first).
+
+\item
+  Define a subclass of a
+  \refclass{org/checkerframework/framework/type/treeannotator}{TypeAnnotator},
+  typically as a private inner class of your \<AnnotatedTypeFactory>.  In
+  your subclass of \<AnnotatedTypeFactory>, override \<createTypeAnnotator>
+  to return a \<ListTypeAnnotator> containing that annotator, as in
+
+\begin{Verbatim}
+  @Override
+  protected TypeAnnotator createTypeAnnotator() {
+      return new ListTypeAnnotator(new MyTypeAnnotator(this), super.createTypeAnnotator());
+  }
+\end{Verbatim}
+
+  \noindent
+  (or put your TypeAnnotator last).
+
+\item
+  Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
+  override its two \<addComputedTypeAnnotations> methods.  This is a last
+  resort, if your logic cannot be implemented using a TreeAnnotator or a
+  TypeAnnotator.  The implementation of \<addComputedTypeAnnotations> in
+  \<GenericAnnotatedTypeFactory> calls the tree annotator and the type
+  annotator (in that order), but by overriding the method you can cause
+  your logic to be run even earlier or even later.
+
+  \<AnnotatedTypeFactory>, when given a program
+  expression, returns the expression's type.  This should include not only
+  the qualifiers that the programmer explicitly wrote in the source code, but
+  also default annotations and type
+  refinement (see Section~\ref{effective-qualifier} for explanations of these
+  concepts).
+
+  To add type introduction rules, you should override
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
+  (or
+  \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
+  if extending \code{GenericAnnotatedTypeFactory})
+  and
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
+  The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
+  which is the Checker Framework's representation of an annotated type.
+  The methods can make arbitrary changes to the annotations on a type.
+
+\end{enumerate}
 
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
@@ -1960,7 +2002,7 @@ java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
 \end{itemize}
 
 \noindent
-The above command will generate the corresponding dot and pdf files for the
+The above command will generate the corresponding \<.dot> and \<.pdf> files for the
 method \code{test} in the class \code{MyClass} in the project directory.
 To generate a string representation of the graph to standard output,
 remove \<--pdf> but add \<--string>. For example (with JDK 8):
@@ -2429,3 +2471,5 @@ without warnings or errors.
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
+% LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator
+% LocalWords:  createTypeAnnotator ListTypeAnnotator CFGVisualizeLauncher
