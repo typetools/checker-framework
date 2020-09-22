@@ -186,18 +186,39 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        System.out.printf("getWidenedAnnotations(%s, %s, %s)%n", annos, typeKind, widenedTypeKind);
+
         if (isNarrowerIntegral(typeKind, widenedTypeKind)) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
             assert annos.size() == 1;
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            if (widenedTypeKind == TypeKind.CHAR) {
+                throw new BugInCF(
+                        "Not a widening: getWidenedAnnotations(%s, %s, %s)",
+                        annos, typeKind, widenedTypeKind);
+            }
+            if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
+                throw new BugInCF(
+                        "Not an integral widening: getWidenedAnnotations(%s, %s, %s)",
+                        annos, typeKind, widenedTypeKind);
+            }
             if (AnnotationUtils.areSameByName(annos.iterator().next(), UNSIGNED)) {
                 // TODO: Maybe this clause is appropriate for all subtypes of Unsigned as well.
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
+                System.out.printf(
+                        "getWidenedAnnotations(%s, %s, %s) => %s%n",
+                        annos, typeKind, widenedTypeKind, result);
                 return result;
             } else {
                 result.add(SIGNED_POSITIVE);
+                System.out.printf(
+                        "getWidenedAnnotations(%s, %s, %s) => %s%n",
+                        annos, typeKind, widenedTypeKind, result);
                 return result;
             }
         }
+        System.out.printf(
+                "getWidenedAnnotations(%s, %s, %s) => default return %s%n",
+                annos, typeKind, widenedTypeKind, annos);
         return annos;
     }
 

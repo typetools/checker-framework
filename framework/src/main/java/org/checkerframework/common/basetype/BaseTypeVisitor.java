@@ -2047,6 +2047,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
+        System.out.printf("checkTypecastSafety(%s) %s %s%n", typeCastTree, castType, exprType);
         boolean calledOnce = false;
         for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
             if (!isInvariantTypeCastSafe(castType, exprType, top)) {
@@ -2156,6 +2157,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
         } else {
             // checkCastElementType option wasn't specified, so only check effective annotations.
+            System.out.printf(
+                    "calling isSubtype(%s, %s)%n",
+                    atypeFactory.getWidenedPrimitive(exprType, castType).getEffectiveAnnotations(),
+                    castType.getEffectiveAnnotations());
             return qualifierHierarchy.isSubtype(
                     // TODO: the "then" clause also needsto call getWidenedPrimitive, but I'm not
                     // sure where.
