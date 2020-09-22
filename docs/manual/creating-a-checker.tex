@@ -1188,9 +1188,11 @@ can write your own type introduction rules.  There are three ways to do so.
 \item
   Define a subclass of
   \refclass{org/checkerframework/framework/type/treeannotator}{TreeAnnotator},
-  typically as a private inner class of your \<AnnotatedTypeFactory>.  In
-  your subclass of \<AnnotatedTypeFactory>, override \<createTreeAnnotator>
-  to return a \<ListTreeAnnotator> containing that annotator, as in
+  typically as a private inner class of your \<AnnotatedTypeFactory>.
+  There is a method of \<TreeAnnotator> for every AST node, and the visitor
+  has access to both the tree (the AST node) and its type.  In your
+  subclass of \<AnnotatedTypeFactory>, override \<createTreeAnnotator> to
+  return a \<ListTreeAnnotator> containing that annotator, as in
 
 \begin{Verbatim}
   @Override
@@ -1205,9 +1207,11 @@ can write your own type introduction rules.  There are three ways to do so.
 \item
   Define a subclass of a
   \refclass{org/checkerframework/framework/type/treeannotator}{TypeAnnotator},
-  typically as a private inner class of your \<AnnotatedTypeFactory>.  In
-  your subclass of \<AnnotatedTypeFactory>, override \<createTypeAnnotator>
-  to return a \<ListTypeAnnotator> containing that annotator, as in
+  typically as a private inner class of your \<AnnotatedTypeFactory>.
+  There is a method of \<TypeAnnotator> for every kind of type, and the
+  visitor has access to only the type.  In your subclass of
+  \<AnnotatedTypeFactory>, override \<createTypeAnnotator> to return a
+  \<ListTypeAnnotator> containing that annotator, as in
 
 \begin{Verbatim}
   @Override
