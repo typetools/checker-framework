@@ -380,7 +380,7 @@ public class ValueTransfer extends CFTransfer {
      */
     private boolean isIntegralUnknownVal(Node node, AnnotationMirror anno) {
         return AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)
-                && TypesUtils.isIntegral(node.getType());
+                && TypesUtils.isIntegralPrimitive(node.getType());
     }
 
     /**
@@ -762,8 +762,8 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
-        if (TypesUtils.isIntegral(leftNode.getType())
-                && TypesUtils.isIntegral(rightNode.getType())) {
+        if (TypesUtils.isIntegralPrimitive(leftNode.getType())
+                && TypesUtils.isIntegralPrimitive(rightNode.getType())) {
             Range leftRange = getIntRange(leftNode, p);
             Range rightRange = getIntRange(rightNode, p);
             Range resultRange;
@@ -1046,7 +1046,7 @@ public class ValueTransfer extends CFTransfer {
     /** Calculate the result range after a unary operation of a numerical type node. */
     private Range calculateRangeUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
-        if (TypesUtils.isIntegral(operand.getType())) {
+        if (TypesUtils.isIntegralPrimitive(operand.getType())) {
             Range range = getIntRange(operand, p);
             Range resultRange;
             switch (op) {
