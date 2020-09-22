@@ -2156,6 +2156,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
         } else {
+            // checkCastElementType option wasn't specified, so only check effective annotations.
+
+            // TODO: This "else" clause calls getWidenedPrimitive.  The "then" clause should too,
+            // but I'm not sure exactly where.  Can common parts of the two branches be merged?
+
             AnnotatedTypeMirror exprTypeWidened = exprType;
             TypeKind exprTypePrimitiveKind =
                     TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
@@ -2168,10 +2173,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 exprTypeWidened = atypeFactory.getWidenedPrimitive(exprType, castType);
             }
 
-            // checkCastElementType option wasn't specified, so only check effective annotations.
             return qualifierHierarchy.isSubtype(
-                    // TODO: the "then" clause also needs to call getWidenedPrimitive as this "else"
-                    // clause does, but I'm not sure exactly where.
                     exprTypeWidened.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
     }

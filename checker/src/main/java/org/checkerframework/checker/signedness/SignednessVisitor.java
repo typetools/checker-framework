@@ -41,7 +41,6 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return kind == Kind.AND || kind == Kind.OR;
     }
 
-    // TODO Is this needed, given the override of isTypeCastSafe?
     /**
      * @return type of an explicitly annotated primitive cast. Return null if not an explicitly
      *     annotated cast to a primitive.

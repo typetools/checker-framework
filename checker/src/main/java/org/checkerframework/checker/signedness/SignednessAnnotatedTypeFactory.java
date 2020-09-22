@@ -39,7 +39,6 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -191,17 +190,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
             Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            if (widenedTypeKind == TypeKind.CHAR) {
-                throw new BugInCF(
-                        "Not a widening: getWidenedAnnotations(%s, %s, %s)",
-                        annos, typeKind, widenedTypeKind);
-            }
-            if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
-                throw new BugInCF(
-                        "Not an integral widening: getWidenedAnnotations(%s, %s, %s)",
-                        annos, typeKind, widenedTypeKind);
-            }
-            if (AnnotationUtils.areSameByName(annos.iterator().next(), UNSIGNED)) {
+            if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
                 // TODO: Maybe this clause is appropriate for all subtypes of Unsigned as well.
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
                 return result;
@@ -248,7 +237,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
-        // TODO: This seems more appropriate in TypeAnnotator (though it does work here).
         /**
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
