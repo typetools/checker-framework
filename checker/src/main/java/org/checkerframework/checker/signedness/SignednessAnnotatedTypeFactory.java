@@ -286,8 +286,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        // TODO: Add behavior like PropagationTreeAnnotator that takes account of widened types.
-        // See copied code below.
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             switch (tree.getKind()) {
