@@ -126,7 +126,6 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -2047,20 +2046,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!checker.getLintOption("cast:unsafe", true)) {
             return;
         }
-        if (false) {
-            UtilPlume.sleep(100);
-            System.out.printf(
-                    "%nIn checkTypecastSafety, about to call getAnnotatedType(%s)%n", typeCastTree);
-        }
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-        if (false) {
-            System.out.printf("getAnnotatedType(%s) => %s%n", typeCastTree, castType);
-            UtilPlume.sleep(100);
-        }
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-        if (false) {
-            System.out.printf("checkTypecastSafety(%s) %s %s%n", typeCastTree, castType, exprType);
-        }
         boolean calledOnce = false;
         for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
             if (!isInvariantTypeCastSafe(castType, exprType, top)) {
@@ -2182,18 +2169,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             // checkCastElementType option wasn't specified, so only check effective annotations.
-            if (false) {
-                UtilPlume.sleep(100);
-                System.out.printf(
-                        "calling isSubtype(%s [originally %s], %s)%n",
-                        exprTypeWidened.getEffectiveAnnotations(),
-                        exprType.getEffectiveAnnotations(),
-                        castType.getEffectiveAnnotations());
-                UtilPlume.sleep(100);
-            }
             return qualifierHierarchy.isSubtype(
-                    // TODO: the "then" clause also needsto call getWidenedPrimitive, but I'm not
-                    // sure where.
+                    // TODO: the "then" clause also needs to call getWidenedPrimitive as this "else"
+                    // clause does, but I'm not sure exactly where.
                     exprTypeWidened.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
     }

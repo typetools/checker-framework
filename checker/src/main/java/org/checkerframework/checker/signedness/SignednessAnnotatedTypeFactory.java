@@ -42,7 +42,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * The type factory for the Signedness Checker.
@@ -189,13 +188,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
         assert annos.size() == 1;
-        if (false) {
-            UtilPlume.sleep(100);
-            System.out.printf(
-                    "getWidenedAnnotations(%s, %s, %s)%n", annos, typeKind, widenedTypeKind);
-            new Error("here").printStackTrace();
-            UtilPlume.sleep(100);
-        }
 
         if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
             Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
@@ -212,19 +204,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByName(annos.iterator().next(), UNSIGNED)) {
                 // TODO: Maybe this clause is appropriate for all subtypes of Unsigned as well.
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
-                if (false) {
-                    System.out.printf(
-                            "getWidenedAnnotations(%s, %s, %s) => %s%n",
-                            annos, typeKind, widenedTypeKind, result);
-                }
                 return result;
             } else {
                 result.add(SIGNED_POSITIVE);
-                if (false) {
-                    System.out.printf(
-                            "getWidenedAnnotations(%s, %s, %s) => %s%n",
-                            annos, typeKind, widenedTypeKind, result);
-                }
                 return result;
             }
         }
@@ -240,11 +222,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return result;
         }
 
-        if (false) {
-            System.out.printf(
-                    "getWidenedAnnotations(%s, %s, %s) => default return %s%n",
-                    annos, typeKind, widenedTypeKind, annos);
-        }
         return annos;
     }
 

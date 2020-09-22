@@ -1571,34 +1571,20 @@ public abstract class GenericAnnotatedTypeFactory<
 
         @SuppressWarnings("UnusedVariable") // for diagnostic output
         String thisFactory = this.getClass().getSimpleName();
-        // System.out.printf("addComputedTypeAnnotations#1(%s, %s) in %s%n", tree, type,
-        // thisFactory);
 
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
         }
-        // System.out.printf("addComputedTypeAnnotations#2(%s, %s) in %s%n", tree, type,
-        // thisFactory);
         applyQualifierParameterDefaults(tree, type);
-        // System.out.printf("addComputedTypeAnnotations#3(%s, %s) in %s%n", tree, type,
-        // thisFactory);
         treeAnnotator.visit(tree, type);
-        // System.out.printf("addComputedTypeAnnotations#4(%s, %s) in %s%n", tree, type,
-        // thisFactory);
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
         }
-        // System.out.printf("addComputedTypeAnnotations#5(%s, %s) in %s%n", tree, type,
-        // thisFactory);
         typeAnnotator.visit(type, null);
-        // System.out.printf("addComputedTypeAnnotations#6(%s, %s) in %s%n", tree, type,
-        // thisFactory);
         defaults.annotate(tree, type);
-        // System.out.printf("addComputedTypeAnnotations#7(%s, %s) in %s%n", tree, type,
-        // thisFactory);
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
@@ -1607,8 +1593,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 applyInferredAnnotations(type, as);
             }
         }
-        // System.out.printf("addComputedTypeAnnotations#8(%s, %s) in %s%n", tree, type,
-        // thisFactory);
     }
 
     /**
