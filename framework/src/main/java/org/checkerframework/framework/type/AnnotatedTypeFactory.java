@@ -2500,27 +2500,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return new AtmPair(widenedLeftOpType, widenedRightOpType);
     }
 
-    // TODO: expand this to all widenings, including from int to long and widenings to float and
-    // double.  Knowing when to do those widenings requires context, and requires an argument
-    // indicating the target type.
-    /**
-     * If the type is byte, short, or char, return a widened (int) version of it. Otherwise return
-     * the type itself.
-     *
-     * @param type a type
-     * @return a widened version of the type, or the type itself
-     */
-    public AnnotatedTypeMirror maybeWidenToInt(AnnotatedTypeMirror type) {
-        TypeMirror typeUnderlying = type.getUnderlyingType();
-        if (TypesUtils.isPrimitive(typeUnderlying)) {
-            return getWidenedPrimitive(type, INT_PRIMITIVE_TYPE_MIRROR);
-        } else if (TypesUtils.isBoxedPrimitive(typeUnderlying)) {
-            return getWidenedPrimitive(type, INTEGER_TYPE_MIRROR);
-        } else {
-            return type;
-        }
-    }
-
     /**
      * If both arguments are primitives or boxed primitives, return an ATM with the same type as
      * {@code wider} but the annotations of {@code orig}, possibly adapted. Otherwise, return {@code
