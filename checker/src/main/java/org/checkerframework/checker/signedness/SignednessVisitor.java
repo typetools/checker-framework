@@ -16,7 +16,6 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
@@ -322,30 +321,23 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         ExpressionTree rightOp = node.getRightOperand();
         AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
         AnnotatedTypeMirror rightOpType = atypeFactory.getAnnotatedType(rightOp);
-        AnnotatedTypeMirror widenedLeftOpType = leftOpType;
-        AnnotatedTypeMirror widenedRightOpType = rightOpType;
-        if (TreeUtils.isWideningBinary(node)) {
-            AnnotatedTypeFactory.AtmPair widenedPair = atypeFactory.widenBinary(node);
-            widenedLeftOpType = widenedPair.a;
-            widenedRightOpType = widenedPair.b;
-        }
 
         Kind kind = node.getKind();
 
         switch (kind) {
             case DIVIDE:
             case REMAINDER:
-                if (hasUnsignedAnnotation(widenedLeftOpType)) {
+                if (hasUnsignedAnnotation(leftOpType)) {
                     checker.reportError(
                             leftOp, "operation.unsignedlhs", kind, leftOpType, rightOpType);
-                } else if (hasUnsignedAnnotation(widenedRightOpType)) {
+                } else if (hasUnsignedAnnotation(rightOpType)) {
                     checker.reportError(
                             rightOp, "operation.unsignedrhs", kind, leftOpType, rightOpType);
                 }
                 break;
 
             case RIGHT_SHIFT:
-                if (hasUnsignedAnnotation(widenedLeftOpType)
+                if (hasUnsignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
                     checker.reportError(leftOp, "shift.signed", kind, leftOpType, rightOpType);
@@ -353,7 +345,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
-                if (hasSignedAnnotation(widenedLeftOpType)
+                if (hasSignedAnnotation(leftOpType)
                         && !isMaskedShiftEitherSignedness(node)
                         && !isCastedShiftEitherSignedness(node)) {
                     checker.reportError(leftOp, "shift.unsigned", kind, leftOpType, rightOpType);
@@ -367,33 +359,33 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case GREATER_THAN_EQUAL:
             case LESS_THAN:
             case LESS_THAN_EQUAL:
-                if (hasUnsignedAnnotation(widenedLeftOpType)) {
+                if (hasUnsignedAnnotation(leftOpType)) {
                     checker.reportError(leftOp, "comparison.unsignedlhs", leftOpType, rightOpType);
-                } else if (hasUnsignedAnnotation(widenedRightOpType)) {
+                } else if (hasUnsignedAnnotation(rightOpType)) {
                     checker.reportError(rightOp, "comparison.unsignedrhs", leftOpType, rightOpType);
                 }
                 break;
 
             case EQUAL_TO:
             case NOT_EQUAL_TO:
-                if (widenedLeftOpType.hasAnnotation(Unsigned.class)
-                        && widenedRightOpType.hasAnnotation(Signed.class)) {
+                if (leftOpType.hasAnnotation(Unsigned.class)
+                        && rightOpType.hasAnnotation(Signed.class)) {
                     checker.reportError(
                             node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
-                } else if (widenedLeftOpType.hasAnnotation(Signed.class)
-                        && widenedRightOpType.hasAnnotation(Unsigned.class)) {
+                } else if (leftOpType.hasAnnotation(Signed.class)
+                        && rightOpType.hasAnnotation(Unsigned.class)) {
                     checker.reportError(
                             node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
                 }
                 break;
 
             default:
-                if (widenedLeftOpType.hasAnnotation(Unsigned.class)
-                        && widenedRightOpType.hasAnnotation(Signed.class)) {
+                if (leftOpType.hasAnnotation(Unsigned.class)
+                        && rightOpType.hasAnnotation(Signed.class)) {
                     checker.reportError(
                             node, "operation.mixed.unsignedlhs", kind, leftOpType, rightOpType);
-                } else if (widenedLeftOpType.hasAnnotation(Signed.class)
-                        && widenedRightOpType.hasAnnotation(Unsigned.class)) {
+                } else if (leftOpType.hasAnnotation(Signed.class)
+                        && rightOpType.hasAnnotation(Unsigned.class)) {
                     checker.reportError(
                             node, "operation.mixed.unsignedrhs", kind, leftOpType, rightOpType);
                 }

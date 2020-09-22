@@ -541,46 +541,6 @@ public final class TypesUtils {
         return TypeKind.INT;
     }
 
-    // TODO: I probably won't need this.
-    /**
-     * Returns the wider of the two arguments.
-     *
-     * @return the wider of the two arguments, or or NONE if either type is non-numeric
-     */
-    public static TypeKind minimallyWidenedNumericType(TypeKind leftKind, TypeKind rightKind) {
-        if (!TypeKindUtils.isNumeric(leftKind) || !TypeKindUtils.isNumeric(rightKind)) {
-            return TypeKind.NONE;
-        }
-
-        if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
-            return TypeKind.DOUBLE;
-        }
-
-        if (leftKind == TypeKind.FLOAT || rightKind == TypeKind.FLOAT) {
-            return TypeKind.FLOAT;
-        }
-
-        if (leftKind == TypeKind.LONG || rightKind == TypeKind.LONG) {
-            return TypeKind.LONG;
-        }
-
-        if (leftKind == TypeKind.INT || rightKind == TypeKind.INT) {
-            return TypeKind.INT;
-        }
-
-        if (leftKind == TypeKind.CHAR || rightKind == TypeKind.CHAR) {
-            return TypeKind.CHAR;
-        }
-
-        if (leftKind == TypeKind.SHORT || rightKind == TypeKind.SHORT) {
-            return TypeKind.SHORT;
-        }
-
-        assert leftKind == TypeKind.BYTE;
-        assert rightKind == TypeKind.BYTE;
-        return TypeKind.BYTE;
-    }
-
     /// Type variables and wildcards
 
     /**
