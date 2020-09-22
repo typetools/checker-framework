@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class that helps with {@link TypeKind}s. */
 public final class TypeKindUtils {
@@ -77,7 +78,7 @@ public final class TypeKindUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type kind, or null
      */
-    public static TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
+    public static @Nullable TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
         if (typeKind.isPrimitive()) {
             return typeKind;
