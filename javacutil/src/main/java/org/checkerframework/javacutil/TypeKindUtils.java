@@ -158,71 +158,50 @@ public final class TypeKindUtils {
         return TypeKind.INT;
     }
 
-    // TODO: I don't want this.  Just have this structure in the implementation of
-    // SignatureAnnotatedTreeFactory's getWidenedAnnotations.
-    public static boolean isNarrower(TypeKind tk1, TypeKind tk2) {
-        switch (tk1) {
+    /**
+     * Returns true if both types are integral and the first type is strictly narrower (represented
+     * by fewer bits) than the second type.
+     *
+     * @param a a primitive type
+     * @param b a primitive type
+     * @return true if {@code a} is represented by fewer bits than {@code b}
+     */
+    public static boolean isNarrowerIntegral(TypeKind a, TypeKind b) {
+        int aBits = numIntegralBits(a);
+        if (aBits == -1) {
+            return false;
+        }
+        int bBits = numIntegralBits(b);
+        if (bBits == -1) {
+            return false;
+        }
+        return aBits < bBits;
+    }
+
+    /**
+     * Returns the number of bits in the representation of an integral primitive type. Returns -1 if
+     * the type is not an integral primitive type.
+     *
+     * @param tk a primitive type kind
+     * @return the number of bits in its representation, or -1 if not integral
+     */
+    private static int numIntegralBits(TypeKind tk) {
+        switch (tk) {
             case BYTE:
-                switch (tk2) {
-                    case BYTE:
-                        return false;
-                    case SHORT:
-                    case CHAR:
-                    case INT:
-                    case LONG:
-                        return true;
-                    default:
-                        throw new Error("Non-primitive typekind " + tk2);
-                }
+                return 8;
             case SHORT:
-                switch (tk2) {
-                    case BYTE:
-                    case SHORT:
-                    case CHAR:
-                        return false;
-                    case INT:
-                    case LONG:
-                        return true;
-                    default:
-                        throw new Error("Non-primitive typekind " + tk2);
-                }
+                return 16;
             case CHAR:
-                switch (tk2) {
-                    case BYTE:
-                    case SHORT:
-                    case CHAR:
-                        return false;
-                    case INT:
-                    case LONG:
-                        return true;
-                    default:
-                        throw new Error("Non-primitive typekind " + tk2);
-                }
+                return 16;
             case INT:
-                switch (tk2) {
-                    case BYTE:
-                    case SHORT:
-                    case CHAR:
-                    case INT:
-                        return false;
-                    case LONG:
-                        return true;
-                    default:
-                        throw new Error("Non-primitive typekind " + tk2);
-                }
+                return 32;
             case LONG:
-                switch (tk2) {
-                    case BYTE:
-                    case SHORT:
-                    case CHAR:
-                    case INT:
-                    case LONG:
-                        return false;
-                    default:
-                        throw new Error("Non-primitive typekind " + tk2);
-                }
+                return 64;
+            case BOOLEAN:
+            case DOUBLE:
+            case FLOAT:
             default:
-                throw new Error("Non-primitive typekind " + tk1);
+                return -1;
         }
     }
 }

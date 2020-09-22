@@ -16,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -794,5 +795,17 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.asSuper((Type) type, ((Type) superType).tsym);
+    }
+
+    /**
+     * Returns true if both types are integral and the first type is strictly narrower (represented
+     * by fewer bits) than the second type.
+     *
+     * @param a a primitive type
+     * @param b a primitive type
+     * @return true if {@code a} is represented by fewer bits than {@code b}
+     */
+    public static boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
+        return TypeKindUtils.isNarrowerIntegral(a.getKind(), b.getKind());
     }
 }

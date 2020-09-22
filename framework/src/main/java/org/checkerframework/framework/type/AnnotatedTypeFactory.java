@@ -110,6 +110,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+import org.plumelib.util.UtilPlume;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -2625,6 +2626,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        if (false) {
+            UtilPlume.sleep(100);
+            new Error(
+                            String.format(
+                                    "getWidenedAnnotations(%s, %s, %s) for ATF=%s [%s]",
+                                    annos,
+                                    typeKind,
+                                    widenedTypeKind,
+                                    this,
+                                    this.getClass().getSimpleName()))
+                    .printStackTrace();
+            UtilPlume.sleep(100);
+        }
         return annos;
     }
 

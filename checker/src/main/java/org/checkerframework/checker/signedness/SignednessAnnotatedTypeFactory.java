@@ -40,7 +40,9 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * The type factory for the Signedness Checker.
@@ -186,10 +188,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
-        System.out.printf("getWidenedAnnotations(%s, %s, %s)%n", annos, typeKind, widenedTypeKind);
+        assert annos.size() == 1;
+        if (false) {
+            UtilPlume.sleep(100);
+            System.out.printf(
+                    "getWidenedAnnotations(%s, %s, %s)%n", annos, typeKind, widenedTypeKind);
+            new Error("here").printStackTrace();
+            UtilPlume.sleep(100);
+        }
 
-        if (isNarrowerIntegral(typeKind, widenedTypeKind)) {
-            assert annos.size() == 1;
+        if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
             Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
             if (widenedTypeKind == TypeKind.CHAR) {
                 throw new BugInCF(
@@ -204,21 +212,39 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByName(annos.iterator().next(), UNSIGNED)) {
                 // TODO: Maybe this clause is appropriate for all subtypes of Unsigned as well.
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
-                System.out.printf(
-                        "getWidenedAnnotations(%s, %s, %s) => %s%n",
-                        annos, typeKind, widenedTypeKind, result);
+                if (false) {
+                    System.out.printf(
+                            "getWidenedAnnotations(%s, %s, %s) => %s%n",
+                            annos, typeKind, widenedTypeKind, result);
+                }
                 return result;
             } else {
                 result.add(SIGNED_POSITIVE);
-                System.out.printf(
-                        "getWidenedAnnotations(%s, %s, %s) => %s%n",
-                        annos, typeKind, widenedTypeKind, result);
+                if (false) {
+                    System.out.printf(
+                            "getWidenedAnnotations(%s, %s, %s) => %s%n",
+                            annos, typeKind, widenedTypeKind, result);
+                }
                 return result;
             }
         }
-        System.out.printf(
-                "getWidenedAnnotations(%s, %s, %s) => default return %s%n",
-                annos, typeKind, widenedTypeKind, annos);
+        if (widenedTypeKind == TypeKind.CHAR) {
+            // It's a non-widening cast to char.  Make it @Unsigned.
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(UNSIGNED);
+            return result;
+        }
+        if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(SIGNED);
+            return result;
+        }
+
+        if (false) {
+            System.out.printf(
+                    "getWidenedAnnotations(%s, %s, %s) => default return %s%n",
+                    annos, typeKind, widenedTypeKind, annos);
+        }
         return annos;
     }
 
@@ -355,7 +381,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             PrimitiveType subPrimitive = subtype.getUnderlyingType();
             PrimitiveType superPrimitive = supertype.getUnderlyingType();
-            if (isNarrowerIntegral(subPrimitive, superPrimitive)) {
+            if (TypesUtils.isNarrowerIntegral(subPrimitive, superPrimitive)) {
                 AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
                 if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
                     return true;
@@ -397,66 +423,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
             }
             return super.visitDeclared_Primitive(subtype, supertype, p);
-        }
-    }
-
-    /**
-     * Returns true if both types are integral and the first type is strictly narrower (represented
-     * by fewer bits) than the second type.
-     *
-     * @param a a primitive type
-     * @param b a primitive type
-     * @return true if {@code a} is represented by fewer bits than {@code b}
-     */
-    private static boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
-        return isNarrowerIntegral(a.getKind(), b.getKind());
-    }
-
-    /**
-     * Returns true if both types are integral and the first type is strictly narrower (represented
-     * by fewer bits) than the second type.
-     *
-     * @param a a primitive type
-     * @param b a primitive type
-     * @return true if {@code a} is represented by fewer bits than {@code b}
-     */
-    private static boolean isNarrowerIntegral(TypeKind a, TypeKind b) {
-        int aBits = numIntegralBits(a);
-        if (aBits == -1) {
-            return false;
-        }
-        int bBits = numIntegralBits(b);
-        if (bBits == -1) {
-            return false;
-        }
-        return aBits < bBits;
-    }
-
-    /**
-     * Returns the number of bits in the representation of an integral primitive type. Returns -1 if
-     * the type is not an integral primitive type.
-     *
-     * @param tk a primitive type kind
-     * @return the number of bits in its representation, or -1 if not integral
-     */
-    private static int numIntegralBits(TypeKind tk) {
-        switch (tk) {
-            case BYTE:
-                return 8;
-            case SHORT:
-                return 16;
-            case CHAR:
-                return 16;
-            case INT:
-                return 32;
-            case LONG:
-                return 64;
-            case BOOLEAN:
-            case DOUBLE:
-            case FLOAT:
-                return -1;
-            default:
-                throw new BugInCF("Unexpected primitive type " + tk);
         }
     }
 }
