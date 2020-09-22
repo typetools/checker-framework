@@ -71,6 +71,7 @@ public class WideningConversion3 {
 
         char c;
         c = (char) (c1 + c2);
+        // :: error: (assignment.type.incompatible)
         c = (char) (c1 + i2);
     }
 }

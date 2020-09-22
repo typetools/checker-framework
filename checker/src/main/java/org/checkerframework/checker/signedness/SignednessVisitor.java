@@ -322,14 +322,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         ExpressionTree rightOp = node.getRightOperand();
         AnnotatedTypeMirror unwidenedLeftOpType = atypeFactory.getAnnotatedType(leftOp);
         AnnotatedTypeMirror unwidenedRightOpType = atypeFactory.getAnnotatedType(rightOp);
+        AnnotatedTypeMirror leftOpType = unwidenedLeftOpType;
+        AnnotatedTypeMirror rightOpType = unwidenedRightOpType;
         TypeKind resultTypeKind =
                 TypeKindUtils.widenedNumericType(
                         unwidenedLeftOpType.getUnderlyingType(),
                         unwidenedRightOpType.getUnderlyingType());
-        AnnotatedTypeMirror leftOpType =
-                atypeFactory.getWidenedPrimitive(unwidenedLeftOpType, resultTypeKind);
-        AnnotatedTypeMirror rightOpType =
-                atypeFactory.getWidenedPrimitive(unwidenedRightOpType, resultTypeKind);
+        if (TypeKindUtils.isNumeric(resultTypeKind)) {
+            leftOpType = atypeFactory.getWidenedPrimitive(unwidenedLeftOpType, resultTypeKind);
+            rightOpType = atypeFactory.getWidenedPrimitive(unwidenedRightOpType, resultTypeKind);
+        }
 
         Kind kind = node.getKind();
 
