@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class that helps with {@link TypeKind}s. */
 public final class TypeKindUtils {
@@ -50,6 +51,7 @@ public final class TypeKindUtils {
     /**
      * Returns true iff the argument is a primitive numeric type kind.
      *
+     * @param typeKind a type kind
      * @return true if the argument is a primitive numeric type kind
      */
     public static boolean isNumeric(TypeKind typeKind) {
@@ -76,7 +78,7 @@ public final class TypeKindUtils {
      * @param type a primitive or boxed primitive type
      * @return a primitive type kind, or null
      */
-    public static TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
+    public static @Nullable TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
         final TypeKind typeKind = type.getKind();
         if (typeKind.isPrimitive()) {
             return typeKind;
@@ -120,9 +122,11 @@ public final class TypeKindUtils {
     /**
      * Returns the widened numeric type for an arithmetic operation performed on a value of the left
      * type and the right type. Defined in JLS 5.6.2. We return a {@link TypeKind} because creating
-     * a {@link TypeMirror} requires a {@link Types} object from the {@link
+     * a {@link TypeMirror} requires a {@link javax.lang.model.util.Types} object from the {@link
      * javax.annotation.processing.ProcessingEnvironment}.
      *
+     * @param left a type mirror
+     * @param right a type mirror
      * @return the result of widening numeric conversion, or NONE when the conversion cannot be
      *     performed
      */

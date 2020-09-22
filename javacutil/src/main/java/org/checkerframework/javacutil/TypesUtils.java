@@ -70,7 +70,14 @@ public final class TypesUtils {
         }
     }
 
-    /** Returns the {@link TypeMirror} for a given {@link Class}. */
+    /**
+     * Returns the {@link TypeMirror} for a given {@link Class}.
+     *
+     * @param clazz a class
+     * @param types the type utilities
+     * @param elements the element utiliites
+     * @return the TypeMirror for {@code clazz}
+     */
     public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
         if (clazz == void.class) {
             return types.getNoType(TypeKind.VOID);
@@ -92,7 +99,13 @@ public final class TypesUtils {
         }
     }
 
-    /** Returns an {@link ArrayType} with elements of type {@code componentType}. */
+    /**
+     * Returns an {@link ArrayType} with elements of type {@code componentType}.
+     *
+     * @param componentType the component type of the created array type
+     * @param types the type utilities
+     * @return an {@link ArrayType} whose elements have type {@code componentType}
+     */
     public static ArrayType createArrayType(TypeMirror componentType, Types types) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
@@ -180,9 +193,11 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the arguments are both the same primitive types.
+     * Returns true iff the arguments are both the same primitive type.
      *
-     * @return whether the arguments are the same primitive types
+     * @param left a type
+     * @param right a type
+     * @return whether the arguments are the same primitive type
      */
     public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
         if (!isPrimitive(left) || !isPrimitive(right)) {
@@ -329,6 +344,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is a primitive type or a boxed primitive type
      *
+     * @param type a type
      * @return true if the argument is a primitive type or a boxed primitive type
      */
     public static boolean isPrimitiveOrBoxed(TypeMirror type) {
@@ -372,6 +388,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is an integral primitive type.
      *
+     * @param type a type
      * @return whether the argument is an integral primitive type
      */
     public static boolean isIntegralPrimitive(TypeMirror type) {
@@ -401,6 +418,10 @@ public final class TypesUtils {
     /**
      * Returns true if declaredType is a Class that is used to box primitive type (e.g.
      * declaredType=java.lang.Double and primitiveType=22.5d )
+     *
+     * @param declaredType a type that might be a boxed type
+     * @param primitiveType a type that might be a primitive type
+     * @return true if {@code declaredType} is a box of {@code primitiveType}
      */
     public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
         if (declaredType.getKind() != TypeKind.DECLARED) {
@@ -473,7 +494,12 @@ public final class TypesUtils {
         return kind != null && TypeKindUtils.isFloatingPoint(kind);
     }
 
-    /** Returns whether a TypeMirror represents a class type. */
+    /**
+     * Returns whether a TypeMirror represents a class type.
+     *
+     * @param type a type that might be a class type
+     * @return true if {@code} is a class type
+     */
     public static boolean isClassType(TypeMirror type) {
         return (type instanceof Type.ClassType);
     }
@@ -773,7 +799,14 @@ public final class TypesUtils {
 
     /// Substitutions
 
-    /** Returns the return type of a method, given the receiver of the method call. */
+    /**
+     * Returns the return type of a method, given the receiver of the method call.
+     *
+     * @param methodElement a method
+     * @param substitutedReceiverType the receiver type, after substitution
+     * @param env the environment
+     * @return the return type of the mehtod
+     */
     public static TypeMirror substituteMethodReturnType(
             Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
 
