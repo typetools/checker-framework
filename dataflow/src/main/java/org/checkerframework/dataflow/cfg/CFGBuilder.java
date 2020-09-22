@@ -189,6 +189,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
@@ -2322,7 +2323,7 @@ public class CFGBuilder {
             if (TypesUtils.isBoxedPrimitive(right)) {
                 right = types.unboxedType(right);
             }
-            TypeKind promotedTypeKind = TypesUtils.widenedNumericType(left, right);
+            TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
             return types.getPrimitiveType(promotedTypeKind);
         }
 

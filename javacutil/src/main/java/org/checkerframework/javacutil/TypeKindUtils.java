@@ -116,6 +116,48 @@ public final class TypeKindUtils {
         }
     }
 
+    // No overload that takes AnnotatedTypeMirror becasue javacutil cannot depend on framework.
+    /**
+     * Returns the widened numeric type for an arithmetic operation performed on a value of the left
+     * type and the right type. Defined in JLS 5.6.2. We return a {@link TypeKind} because creating
+     * a {@link TypeMirror} requires a {@link Types} object from the {@link
+     * javax.annotation.processing.ProcessingEnvironment}.
+     *
+     * @return the result of widening numeric conversion, or NONE when the conversion cannot be
+     *     performed
+     */
+    public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
+        return TypeKindUtils.widenedNumericType(left.getKind(), right.getKind());
+    }
+
+    /**
+     * Given two type kinds, return the type kind they are widened to, when an arithmetic operation
+     * is performed on them. Defined in JLS 5.6.2.
+     *
+     * @param a a type kind
+     * @param b a type kind
+     * @return the type kind to which they are widened, when an operation is performed on them
+     */
+    public static TypeKind widenedNumericType(TypeKind a, TypeKind b) {
+        if (!isNumeric(a) || !isNumeric(b)) {
+            return TypeKind.NONE;
+        }
+
+        if (a == TypeKind.DOUBLE || b == TypeKind.DOUBLE) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (a == TypeKind.FLOAT || b == TypeKind.FLOAT) {
+            return TypeKind.FLOAT;
+        }
+
+        if (a == TypeKind.LONG || b == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
+
     // TODO: I don't want this.  Just have this structure in the implementation of
     // SignatureAnnotatedTreeFactory's getWidenedAnnotations.
     public static boolean isNarrower(TypeKind tk1, TypeKind tk2) {

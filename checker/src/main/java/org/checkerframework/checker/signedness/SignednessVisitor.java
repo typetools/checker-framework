@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -319,8 +320,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
-        AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
-        AnnotatedTypeMirror rightOpType = atypeFactory.getAnnotatedType(rightOp);
+        AnnotatedTypeMirror unwidenedLeftOpType = atypeFactory.getAnnotatedType(leftOp);
+        AnnotatedTypeMirror unwidenedRightOpType = atypeFactory.getAnnotatedType(rightOp);
+        TypeKind resultTypeKind =
+                TypeKindUtils.widenedNumericType(
+                        unwidenedLeftOpType.getUnderlyingType(),
+                        unwidenedRightOpType.getUnderlyingType());
+        AnnotatedTypeMirror leftOpType =
+                atypeFactory.getWidenedPrimitive(unwidenedLeftOpType, resultTypeKind);
+        AnnotatedTypeMirror rightOpType =
+                atypeFactory.getWidenedPrimitive(unwidenedRightOpType, resultTypeKind);
 
         Kind kind = node.getKind();
 

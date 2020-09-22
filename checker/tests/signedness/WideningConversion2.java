@@ -13,6 +13,11 @@ public class WideningConversion2 {
     @Signed int si2;
     @SignedPositive int pi2;
 
+    void compare() {
+        boolean b;
+        b = c1 > c2;
+    }
+
     void plus() {
         @Signed int si;
         @SignedPositive int pi;

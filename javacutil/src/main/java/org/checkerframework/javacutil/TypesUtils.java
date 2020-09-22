@@ -499,48 +499,6 @@ public final class TypesUtils {
         return javacTypes.isFunctionalInterface((Type) type);
     }
 
-    /// Widening
-
-    /**
-     * Returns the widened numeric type for an arithmetic operation performed on a value of the left
-     * type and the right type. Defined in JLS 5.6.2. We return a {@link TypeKind} because creating
-     * a {@link TypeMirror} requires a {@link Types} object from the {@link
-     * javax.annotation.processing.ProcessingEnvironment}.
-     *
-     * @return the result of widening numeric conversion, or NONE when the conversion cannot be
-     *     performed
-     */
-    public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
-        return widenedNumericType(left.getKind(), right.getKind());
-    }
-
-    /**
-     * Returns the widened numeric type for an arithmetic operation performed on a value of the left
-     * type and the right type. Defined in JLS 5.6.2.
-     *
-     * @return the result of widening numeric conversion, or NONE when the conversion cannot be
-     *     performed
-     */
-    public static TypeKind widenedNumericType(TypeKind leftKind, TypeKind rightKind) {
-        if (!TypeKindUtils.isNumeric(leftKind) || !TypeKindUtils.isNumeric(rightKind)) {
-            return TypeKind.NONE;
-        }
-
-        if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
-            return TypeKind.DOUBLE;
-        }
-
-        if (leftKind == TypeKind.FLOAT || rightKind == TypeKind.FLOAT) {
-            return TypeKind.FLOAT;
-        }
-
-        if (leftKind == TypeKind.LONG || rightKind == TypeKind.LONG) {
-            return TypeKind.LONG;
-        }
-
-        return TypeKind.INT;
-    }
-
     /// Type variables and wildcards
 
     /**
