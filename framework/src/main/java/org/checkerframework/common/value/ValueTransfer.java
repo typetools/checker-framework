@@ -1043,7 +1043,14 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Calculate the result range after a unary operation of a numerical type node. */
+    /**
+     * Calculate the result range after a unary operation of a numerical type node.
+     *
+     * @param operand the node that represents the operand
+     * @param op the operator type
+     * @param p the transfer input
+     * @return the result annotation mirror
+     */
     private Range calculateRangeUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
         if (TypesUtils.isIntegralPrimitive(operand.getType())) {

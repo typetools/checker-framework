@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.TypeKindUtils;
 
+/** Utility routines for manipulating numbers. */
 public class NumberUtils {
 
     /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
