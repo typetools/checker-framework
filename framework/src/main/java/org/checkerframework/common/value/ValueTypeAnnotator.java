@@ -86,8 +86,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
             TypeMirror underlyingType = atm.getUnderlyingType();
             // If the underlying type is neither a primitive integral type nor boxed integral type,
             // return without making changes. TypesUtils.isIntegralPrimitiveOrBoxed fails if passed
-            // a non-primitive
-            // type that is not a declared type, so it cannot be called directly.
+            // a non-primitive type that is not a declared type, so it cannot be called directly.
             if (!TypeKindUtils.isIntegral(underlyingType.getKind())
                     && (underlyingType.getKind() != TypeKind.DECLARED
                             || !TypesUtils.isIntegralPrimitiveOrBoxed(underlyingType))) {
