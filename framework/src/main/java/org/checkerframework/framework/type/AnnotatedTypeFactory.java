@@ -69,7 +69,6 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -106,6 +105,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -2486,9 +2486,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror rightOpType = getAnnotatedType(rightOp);
         TypeMirror leftUnderlying = leftOpType.getUnderlyingType();
         TypeMirror rightUnderlying = rightOpType.getUnderlyingType();
-        TypeKind leftKind = NumberUtils.unboxPrimitive(leftUnderlying);
-        TypeKind rightKind = NumberUtils.unboxPrimitive(rightUnderlying);
+        TypeKind leftKind = TypeKindUtils.primitiveOrBoxedToTypeKind(leftUnderlying);
+        TypeKind rightKind = TypeKindUtils.primitiveOrBoxedToTypeKind(rightUnderlying);
 
+        // TODO: I think I don't need this, just the new type SignedPositiveFromUnsigned.
+        // I can use maybeWidenToInt.
         TypeKind widened = TypesUtils.minimallyWidenedNumericType(leftKind, rightKind);
         System.out.printf(
                 "widenBinary(%s): widenedNumericType(%s, %s) => %s%n",
@@ -2534,8 +2536,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeMirror maybeWiden(AnnotatedTypeMirror orig, AnnotatedTypeMirror wider) {
         TypeMirror origUnderlying = orig.getUnderlyingType();
         TypeMirror widerUnderlying = wider.getUnderlyingType();
-        TypeKind origKind = NumberUtils.unboxPrimitive(origUnderlying);
-        TypeKind widerKind = NumberUtils.unboxPrimitive(widerUnderlying);
+        TypeKind origKind = TypeKindUtils.primitiveOrBoxedToTypeKind(origUnderlying);
+        TypeKind widerKind = TypeKindUtils.primitiveOrBoxedToTypeKind(widerUnderlying);
         if (origKind == null || widerKind == null || origKind == widerKind || !isNarrow(orig)) {
             return orig;
         }
@@ -2599,8 +2601,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror.createType(widenedTypeMirror, this, type.isDeclaration());
         System.out.printf(
                 "getWidenedPrimitive(%s, %s): widened = %s%n", type, widenedTypeMirror, widened);
-        widened.addAnnotations(type.getAnnotations());
+        widened.addAnnotations(
+                getWidenedAnnotations(
+                        type.getAnnotations(), type.getUnderlyingType(), widenedTypeMirror));
         return widened;
+    }
+
+    // TODO: I don't need to expose this or other new methods.
+    /**
+     * Returns annotations applicable to type {@code widenedTypeMirror}, that are copied or adapted
+     * from {@code annos}.
+     *
+     * @param annos annotations to widen, from a primitive or boxed primitive
+     * @param type type to widen; a primitive or boxed primitive
+     * @param widenedType underlying type for the returned annotations; a primitive or boxed
+     *     primitive
+     * @return result of converting {@code annos}, when widening {@code type} to {@code widenedType}
+     */
+    // TODO: Is all the work with boxed primitives necessary?  (Probably; add tests.)
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeMirror type, TypeMirror widenedType) {
+        TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        TypeKind widenedTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(widenedType);
+        return getWidenedAnnotations(annos, typeKind, widenedTypeKind);
+    }
+
+    /**
+     * Returns annotations applicable to type {@code widenedTypeMirror}, that are copied or adapted
+     * from {@code annos}.
+     *
+     * @param annos annotations to widen, from a primitive or boxed primitive
+     * @param typeKind primitive type to widen
+     * @param widenedTypeKind primitive type for the returned annotations
+     * @return result of converting {@code annos} to {@code widenedTypeMirror}
+     */
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        return annos;
     }
 
     /**

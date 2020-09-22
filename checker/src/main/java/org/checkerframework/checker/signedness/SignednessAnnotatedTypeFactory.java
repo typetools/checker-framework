@@ -3,6 +3,7 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -24,7 +25,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -39,6 +39,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -178,18 +179,26 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    // TODO: This is not needed, use getWidenedAnnotations override instead.
     @Override
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
         AnnotatedTypeMirror result = super.getWidenedPrimitive(type, widenedTypeMirror);
         if (!types.isSameType(result.getUnderlyingType(), widenedTypeMirror)
-                && NumberUtils.unboxPrimitive(type.getUnderlyingType()) == TypeKind.CHAR) {
+                && TypeKindUtils.primitiveOrBoxedToTypeKind(type.getUnderlyingType())
+                        == TypeKind.CHAR) {
             // The widening changed the Java type, and the original type was char or Character.
             result.replaceAnnotation(SIGNED_POSITIVE);
         }
         System.out.printf(
                 "Signed getWidenedPrimitive(%s, %s) => %s%n", type, widenedTypeMirror, result);
         return result;
+    }
+
+    @Override
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        throw new Error("to be implemented");
     }
 
     @Override
@@ -206,6 +215,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *       PropagationTreeAnnotator},
      *   <li>shift results take on the type of their left operand,
      *   <li>the types of identifiers are refined based on the results of the Value Checker.
+     *   <li>casts take types related to widening
      * </ul>
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
@@ -214,6 +224,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(atypeFactory);
         }
 
+        // TODO: This seems more appropriate in TypeAnnotator (though it does work here).
         /**
          * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
          * PropagationTreeAnnotator} does not change the type of them.
@@ -229,6 +240,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // TODO: Add behavior like PropagationTreeAnnotator that takes account of widened types.
+        // See copied code below.
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             switch (tree.getKind()) {
@@ -245,6 +257,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
+        // TODO: use this.
         public Void visitBinary_from_PropagationTreeAnnotator(
                 BinaryTree node, AnnotatedTypeMirror type) {
             System.out.printf("PTA.visitBinary#1(%s, %s)%n", node, type);
@@ -266,12 +279,24 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             annotateBooleanAsUnknownSignedness(type);
             return null;
         }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+            // TODO: Better to call primitiveOrBoxedToTypeKind, probably.
+            if (TypesUtils.isPrimitiveOrBoxed(type.getUnderlyingType())) {
+                AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
+                if (TypesUtils.isPrimitiveOrBoxed(exprType.getUnderlyingType())) {
+                    // type.replaceAnnotations(getWidenedAnnotations(...
+                }
+            }
+            return null;
+        }
     }
 
     @Override
     protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
-        if (TypesUtils.isFloating(type.getUnderlyingType())
+        if (TypesUtils.isFloatingPrimitive(type.getUnderlyingType())
                 || TypesUtils.isBoxedFloating(type.getUnderlyingType())
                 || type.getKind() == TypeKind.CHAR
                 || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {

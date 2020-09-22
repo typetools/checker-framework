@@ -27,13 +27,75 @@ import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.plumelib.util.ImmutableTypes;
 
 /** A utility class that helps with {@link TypeMirror}s. */
-// TODO: This class needs significant restructuring
 public final class TypesUtils {
 
-    // Class cannot be instantiated
+    /** Class cannot be instantiated */
     private TypesUtils() {
         throw new AssertionError("Class TypesUtils cannot be instantiated.");
     }
+
+    /// Creating types
+
+    // TODO: What order of arguments for typeFromClass is desirable?  Remove one of the overloads.
+
+    /**
+     * Given a class, return the corresponding TypeMirror.
+     *
+     * @param clazz a class
+     * @param elements the element utilities to use
+     * @param types the type utilities to use
+     * @return the TypeMirror corresponding to the given class
+     */
+    public static TypeMirror typeFromClass(Class<?> clazz, Elements elements, Types types) {
+        if (clazz == void.class) {
+            return types.getNoType(TypeKind.VOID);
+        } else if (clazz.isPrimitive()) {
+            String primitiveName = clazz.getName().toUpperCase();
+            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
+            return types.getPrimitiveType(primitiveKind);
+        } else if (clazz.isArray()) {
+            TypeMirror componentType = typeFromClass(clazz.getComponentType(), elements, types);
+            return types.getArrayType(componentType);
+        } else {
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
+            if (element == null) {
+                throw new BugInCF("Unrecognized class: " + clazz);
+            }
+            return element.asType();
+        }
+    }
+
+    /** Returns the {@link TypeMirror} for a given {@link Class}. */
+    public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
+        if (clazz == void.class) {
+            return types.getNoType(TypeKind.VOID);
+        } else if (clazz.isPrimitive()) {
+            String primitiveName = clazz.getName().toUpperCase();
+            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
+            return types.getPrimitiveType(primitiveKind);
+        } else if (clazz.isArray()) {
+            TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elements);
+            return types.getArrayType(componentType);
+        } else {
+            String name = clazz.getCanonicalName();
+            assert name != null : "@AssumeAssertion(nullness): assumption";
+            TypeElement element = elements.getTypeElement(name);
+            if (element == null) {
+                throw new BugInCF("Unrecognized class: " + clazz);
+            }
+            return element.asType();
+        }
+    }
+
+    /** Returns an {@link ArrayType} with elements of type {@code componentType}. */
+    public static ArrayType createArrayType(TypeMirror componentType, Types types) {
+        JavacTypes t = (JavacTypes) types;
+        return t.getArrayType(componentType);
+    }
+
+    /// Getters
 
     /**
      * Gets the fully qualified name for a provided type. It returns an empty name if type is an
@@ -46,6 +108,88 @@ public final class TypesUtils {
         TypeElement element = (TypeElement) type.asElement();
         return element.getQualifiedName();
     }
+
+    /**
+     * Returns the simple type name, without annotations.
+     *
+     * @param type a type
+     * @return the simple type name, without annotations
+     */
+    public static String simpleTypeName(TypeMirror type) {
+        switch (type.getKind()) {
+            case ARRAY:
+                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+            case TYPEVAR:
+                return ((TypeVariable) type).asElement().getSimpleName().toString();
+            case DECLARED:
+                return ((DeclaredType) type).asElement().getSimpleName().toString();
+            case NULL:
+                return "<nulltype>";
+            case VOID:
+                return "void";
+            default:
+                if (type.getKind().isPrimitive()) {
+                    return TypeAnnotationUtils.unannotatedType(type).toString();
+                } else {
+                    throw new BugInCF(
+                            "simpleTypeName: unhandled type kind: %s, type: %s",
+                            type.getKind(), type);
+                }
+        }
+    }
+
+    /**
+     * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
+     * type, or enum. Otherwise, returns null.
+     *
+     * @param type whose element is returned
+     * @return the type element for {@code type} if {@code type} is a class, interface, annotation
+     *     type, or enum; otherwise, returns {@code null}
+     */
+    public static @Nullable TypeElement getTypeElement(TypeMirror type) {
+        Element element = ((Type) type).asElement();
+        if (element == null) {
+            return null;
+        }
+        if (ElementUtils.isClassElement(element)) {
+            return (TypeElement) element;
+        }
+        return null;
+    }
+
+    /// Equality
+
+    /**
+     * Returns true iff the arguments are both the same declared types.
+     *
+     * <p>This is needed because class {@code Type.ClassType} does not override equals.
+     *
+     * @param t1 the first type to test
+     * @param t2 the second type to test
+     * @return whether the arguments are the same declared types
+     */
+    public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
+        // Do a cheaper test first
+        if (t1.tsym.name != t2.tsym.name) {
+            return false;
+        }
+        return t1.toString().equals(t1.toString());
+    }
+
+    /**
+     * Returns true iff the arguments are both the same primitive types.
+     *
+     * @return whether the arguments are the same primitive types
+     */
+    public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
+        if (!isPrimitive(left) || !isPrimitive(right)) {
+            return false;
+        }
+
+        return (left.getKind() == right.getKind());
+    }
+
+    /// Predicates
 
     /**
      * Checks if the type represents a java.lang.Object declared type.
@@ -180,33 +324,36 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the arguments are both the same declared types.
+     * Returns true iff the argument is a primitive type or a boxed primitive type
      *
-     * <p>This is needed because class {@code Type.ClassType} does not override equals.
-     *
-     * @param t1 the first type to test
-     * @param t2 the second type to test
-     * @return whether the arguments are the same declared types
+     * @return true if the argument is a primitive type or a boxed primitive type
      */
-    public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
-        // Do a cheaper test first
-        if (t1.tsym.name != t2.tsym.name) {
-            return false;
-        }
-        return t1.toString().equals(t1.toString());
-    }
+    public static boolean isPrimitiveOrBoxed(TypeMirror type) {
+        switch (type.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                return true;
 
-    /**
-     * Returns true iff the arguments are both the same primitive types.
-     *
-     * @return whether the arguments are the same primitive types
-     */
-    public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
-        if (!isPrimitive(left) || !isPrimitive(right)) {
-            return false;
-        }
+            case DECLARED:
+                String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+                return (qualifiedName.equals("java.lang.Boolean")
+                        || qualifiedName.equals("java.lang.Byte")
+                        || qualifiedName.equals("java.lang.Character")
+                        || qualifiedName.equals("java.lang.Short")
+                        || qualifiedName.equals("java.lang.Integer")
+                        || qualifiedName.equals("java.lang.Long")
+                        || qualifiedName.equals("java.lang.Double")
+                        || qualifiedName.equals("java.lang.Float"));
 
-        return (left.getKind() == right.getKind());
+            default:
+                return false;
+        }
     }
 
     /**
@@ -216,20 +363,18 @@ public final class TypesUtils {
      * @return true if the argument is a primitive numeric type
      */
     public static boolean isNumeric(TypeMirror type) {
-        return isNumeric(type.getKind());
+        return TypeKindUtils.isNumeric(type.getKind());
     }
 
     /**
-     * Returns true iff the argument is a primitive numeric type kind.
+     * Returns true iff the argument is an integral primitive type.
      *
-     * @return true if the argument is a primitive numeric type kind
+     * @return whether the argument is an integral primitive type
      */
-    public static boolean isNumeric(TypeKind typeKind) {
-        switch (typeKind) {
+    public static boolean isIntegralPrimitive(TypeMirror type) {
+        switch (type.getKind()) {
             case BYTE:
             case CHAR:
-            case DOUBLE:
-            case FLOAT:
             case INT:
             case LONG:
             case SHORT:
@@ -240,18 +385,44 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the argument is an integral type.
+     * Return true if the argument TypeMirror is a (possibly boxed) integral type.
      *
-     * @return whether the argument is an integral type
+     * @param type the type to inspect
+     * @return true if type is an integral type
      */
-    public static boolean isIntegral(TypeMirror type) {
-        switch (type.getKind()) {
+    public static boolean isIntegralPrimitiveOrBoxed(TypeMirror type) {
+        TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        return kind != null && TypeKindUtils.isIntegral(kind);
+    }
+
+    /**
+     * Returns true if declaredType is a Class that is used to box primitive type (e.g.
+     * declaredType=java.lang.Double and primitiveType=22.5d )
+     */
+    public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
+        if (declaredType.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+        switch (primitiveType.getKind()) {
+            case BOOLEAN:
+                return qualifiedName.equals("java.lang.Boolean");
             case BYTE:
+                return qualifiedName.equals("java.lang.Byte");
             case CHAR:
+                return qualifiedName.equals("java.lang.Character");
+            case DOUBLE:
+                return qualifiedName.equals("java.lang.Double");
+            case FLOAT:
+                return qualifiedName.equals("java.lang.Float");
             case INT:
+                return qualifiedName.equals("java.lang.Integer");
             case LONG:
+                return qualifiedName.equals("java.lang.Long");
             case SHORT:
-                return true;
+                return qualifiedName.equals("java.lang.Short");
+
             default:
                 return false;
         }
@@ -273,12 +444,12 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the argument is a floating point type.
+     * Returns true iff the argument is a primitive floating point type.
      *
      * @param type type mirror
-     * @return whether the argument is a floating point type
+     * @return whether the argument is a primitive floating point type
      */
-    public static boolean isFloating(TypeMirror type) {
+    public static boolean isFloatingPrimitive(TypeMirror type) {
         switch (type.getKind()) {
             case DOUBLE:
             case FLOAT:
@@ -287,6 +458,48 @@ public final class TypesUtils {
                 return false;
         }
     }
+
+    /**
+     * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+     *
+     * @param type the type to inspect
+     * @return true if type is a floating point type
+     */
+    public static boolean isFloatingPoint(TypeMirror type) {
+        TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        return kind != null && TypeKindUtils.isFloatingPoint(kind);
+    }
+
+    /** Returns whether a TypeMirror represents a class type. */
+    public static boolean isClassType(TypeMirror type) {
+        return (type instanceof Type.ClassType);
+    }
+
+    /**
+     * Returns true if {@code type} has an enclosing type.
+     *
+     * @param type type to checker
+     * @return true if {@code type} has an enclosing type
+     */
+    public static boolean hasEnclosingType(TypeMirror type) {
+        Type e = ((Type) type).getEnclosingType();
+        return e.getKind() != TypeKind.NONE;
+    }
+
+    /**
+     * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+     *
+     * @param type possible functional interface type
+     * @param env ProcessingEnvironment
+     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+     */
+    public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.isFunctionalInterface((Type) type);
+    }
+
+    /// Widening
 
     /**
      * Returns the widened numeric type for an arithmetic operation performed on a value of the left
@@ -309,7 +522,7 @@ public final class TypesUtils {
      *     performed
      */
     public static TypeKind widenedNumericType(TypeKind leftKind, TypeKind rightKind) {
-        if (!isNumeric(leftKind) || !isNumeric(rightKind)) {
+        if (!TypeKindUtils.isNumeric(leftKind) || !TypeKindUtils.isNumeric(rightKind)) {
             return TypeKind.NONE;
         }
 
@@ -328,13 +541,14 @@ public final class TypesUtils {
         return TypeKind.INT;
     }
 
+    // TODO: I probably won't need this.
     /**
      * Returns the wider of the two arguments.
      *
      * @return the wider of the two arguments, or or NONE if either type is non-numeric
      */
     public static TypeKind minimallyWidenedNumericType(TypeKind leftKind, TypeKind rightKind) {
-        if (!isNumeric(leftKind) || !isNumeric(rightKind)) {
+        if (!TypeKindUtils.isNumeric(leftKind) || !TypeKindUtils.isNumeric(rightKind)) {
             return TypeKind.NONE;
         }
 
@@ -366,6 +580,8 @@ public final class TypesUtils {
         assert rightKind == TypeKind.BYTE;
         return TypeKind.BYTE;
     }
+
+    /// Type variables and wildcards
 
     /**
      * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
@@ -455,67 +671,6 @@ public final class TypesUtils {
         }
     }
 
-    /** Returns the {@link TypeMirror} for a given {@link Class}. */
-    public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
-        if (clazz == void.class) {
-            return types.getNoType(TypeKind.VOID);
-        } else if (clazz.isPrimitive()) {
-            String primitiveName = clazz.getName().toUpperCase();
-            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return types.getPrimitiveType(primitiveKind);
-        } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType(), types, elements);
-            return types.getArrayType(componentType);
-        } else {
-            String name = clazz.getCanonicalName();
-            assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
-            if (element == null) {
-                throw new BugInCF("Unrecognized class: " + clazz);
-            }
-            return element.asType();
-        }
-    }
-
-    /** Returns an {@link ArrayType} with elements of type {@code componentType}. */
-    public static ArrayType createArrayType(TypeMirror componentType, Types types) {
-        JavacTypes t = (JavacTypes) types;
-        return t.getArrayType(componentType);
-    }
-
-    /**
-     * Returns true if declaredType is a Class that is used to box primitive type (e.g.
-     * declaredType=java.lang.Double and primitiveType=22.5d )
-     */
-    public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
-        if (declaredType.getKind() != TypeKind.DECLARED) {
-            return false;
-        }
-
-        final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
-        switch (primitiveType.getKind()) {
-            case BOOLEAN:
-                return qualifiedName.equals("java.lang.Boolean");
-            case BYTE:
-                return qualifiedName.equals("java.lang.Byte");
-            case CHAR:
-                return qualifiedName.equals("java.lang.Character");
-            case DOUBLE:
-                return qualifiedName.equals("java.lang.Double");
-            case FLOAT:
-                return qualifiedName.equals("java.lang.Float");
-            case INT:
-                return qualifiedName.equals("java.lang.Integer");
-            case LONG:
-                return qualifiedName.equals("java.lang.Long");
-            case SHORT:
-                return qualifiedName.equals("java.lang.Short");
-
-            default:
-                return false;
-        }
-    }
-
     /**
      * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound. If the
      * bounded type extends other bounded types, this method will iterate through their bounds until
@@ -576,10 +731,7 @@ public final class TypesUtils {
         return null;
     }
 
-    /** Returns whether a TypeMirror represents a class type. */
-    public static boolean isClassType(TypeMirror type) {
-        return (type instanceof Type.ClassType);
-    }
+    /// Least upper bound and greatest lower bound
 
     /**
      * Returns the least upper bound of two {@link TypeMirror}s, ignoring any annotations on the
@@ -698,6 +850,8 @@ public final class TypesUtils {
         return types.glb(t1, t2);
     }
 
+    /// Substitutions
+
     /** Returns the return type of a method, given the receiver of the method call. */
     public static TypeMirror substituteMethodReturnType(
             Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
@@ -708,25 +862,6 @@ public final class TypesUtils {
         Type substitutedMethodType =
                 types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
         return substitutedMethodType.getReturnType();
-    }
-
-    /**
-     * Returns the type element for {@code type} if {@code type} is a class, interface, annotation
-     * type, or enum. Otherwise, returns null.
-     *
-     * @param type whose element is returned
-     * @return the type element for {@code type} if {@code type} is a class, interface, annotation
-     *     type, or enum; otherwise, returns {@code null}
-     */
-    public static @Nullable TypeElement getTypeElement(TypeMirror type) {
-        Element element = ((Type) type).asElement();
-        if (element == null) {
-            return null;
-        }
-        if (ElementUtils.isClassElement(element)) {
-            return (TypeElement) element;
-        }
-        return null;
     }
 
     /**
@@ -741,87 +876,5 @@ public final class TypesUtils {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.asSuper((Type) type, ((Type) superType).tsym);
-    }
-
-    /**
-     * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
-     *
-     * @param type possible functional interface type
-     * @param env ProcessingEnvironment
-     * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
-     */
-    public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
-        Context ctx = ((JavacProcessingEnvironment) env).getContext();
-        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-        return javacTypes.isFunctionalInterface((Type) type);
-    }
-
-    /**
-     * Returns the simple type name, without annotations.
-     *
-     * @param type a type
-     * @return the simple type name, without annotations
-     */
-    public static String simpleTypeName(TypeMirror type) {
-        switch (type.getKind()) {
-            case ARRAY:
-                return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
-            case TYPEVAR:
-                return ((TypeVariable) type).asElement().getSimpleName().toString();
-            case DECLARED:
-                return ((DeclaredType) type).asElement().getSimpleName().toString();
-            case NULL:
-                return "<nulltype>";
-            case VOID:
-                return "void";
-            default:
-                if (type.getKind().isPrimitive()) {
-                    return TypeAnnotationUtils.unannotatedType(type).toString();
-                } else {
-                    throw new BugInCF(
-                            "simpleTypeName: unhandled type kind: %s, type: %s",
-                            type.getKind(), type);
-                }
-        }
-    }
-
-    /**
-     * Returns true if {@code type} has an enclosing type.
-     *
-     * @param type type to checker
-     * @return true if {@code type} has an enclosing type
-     */
-    public static boolean hasEnclosingType(TypeMirror type) {
-        Type e = ((Type) type).getEnclosingType();
-        return e.getKind() != TypeKind.NONE;
-    }
-
-    /**
-     * Given a class, return the corresponding TypeMirror.
-     *
-     * @param clazz a class
-     * @param elements the element utilities to use
-     * @param types the type utilities to use
-     * @return the TypeMirror corresponding to the given class
-     */
-    public static TypeMirror typeFromClass(Class<?> clazz, Elements elements, Types types) {
-        if (clazz == void.class) {
-            return types.getNoType(TypeKind.VOID);
-        } else if (clazz.isPrimitive()) {
-            String primitiveName = clazz.getName().toUpperCase();
-            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return types.getPrimitiveType(primitiveKind);
-        } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType(), elements, types);
-            return types.getArrayType(componentType);
-        } else {
-            String name = clazz.getCanonicalName();
-            assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
-            if (element == null) {
-                throw new BugInCF("Unrecognized class: " + clazz);
-            }
-            return element.asType();
-        }
     }
 }
