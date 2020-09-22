@@ -2484,10 +2484,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ExpressionTree rightOp = node.getRightOperand();
         AnnotatedTypeMirror leftOpType = getAnnotatedType(leftOp);
         AnnotatedTypeMirror rightOpType = getAnnotatedType(rightOp);
-        TypeMirror leftUnderlying = leftOpType.getUnderlyingType();
-        TypeMirror rightUnderlying = rightOpType.getUnderlyingType();
-        TypeKind leftKind = TypeKindUtils.primitiveOrBoxedToTypeKind(leftUnderlying);
-        TypeKind rightKind = TypeKindUtils.primitiveOrBoxedToTypeKind(rightUnderlying);
+        TypeKind leftKind = leftOpType.getPrimitiveKind();
+        TypeKind rightKind = rightOpType.getPrimitiveKind();
 
         // TODO: I think I don't need this, just the new type SignedPositiveFromUnsigned.
         // I can use maybeWidenToInt.
@@ -2534,15 +2532,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return {@code orig} widened to {@code wider}, if both are (possibly boxed) primitives
      */
     public AnnotatedTypeMirror maybeWiden(AnnotatedTypeMirror orig, AnnotatedTypeMirror wider) {
-        TypeMirror origUnderlying = orig.getUnderlyingType();
-        TypeMirror widerUnderlying = wider.getUnderlyingType();
-        TypeKind origKind = TypeKindUtils.primitiveOrBoxedToTypeKind(origUnderlying);
-        TypeKind widerKind = TypeKindUtils.primitiveOrBoxedToTypeKind(widerUnderlying);
+        TypeKind origKind = orig.getPrimitiveKind();
+        TypeKind widerKind = wider.getPrimitiveKind();
         if (origKind == null || widerKind == null || origKind == widerKind || !isNarrow(orig)) {
             return orig;
         }
         // orig and wider are both primitives or boxed primitives
-        return getWidenedPrimitive(orig, widerUnderlying);
+        return getWidenedPrimitive(orig, wider);
     }
 
     /**
@@ -2565,23 +2561,39 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeKind} and with
-     * annotations copied or adapted from {@code type}.
+     * Returns an AnnotatedPrimitiveType with underlying type from {@code widenedType} and with
+     * annotations copied or adapted from {@code type}. Accounts for widening if applicable.
+     *
+     * <p>TODO: clients should usually override TODO.
      *
      * @param type type to widen; a primitive or boxed primitive
+     * @param widenedType type whose underlying type to use for the returned type mirror; a
+     *     primitive or boxed primitive (same boxing as {@code type}); its annotations are ignored
+     * @return result of converting {@code type} to the underlying type of {@code widenedType}
+     */
+    public AnnotatedTypeMirror getWidenedPrimitive(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror widenedType) {
+        return getWidenedPrimitive(type, widenedType.getUnderlyingType());
+    }
+
+    // TODO: Should this be called only when widening definitely occurs,
+    // or when widening might or might not occur?
+    /**
+     * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeKind} and with
+     * annotations copied or adapted from {@code type}. Accounts for widening if applicable.
+     *
+     * <p>TODO: clients should usually override TODO.
+     *
+     * @param type type to possibly widen; a primitive or boxed primitive
      * @param widenedTypeKind primitive type kind for the returned type mirror
      * @return result of converting {@code type} to {@code widenedTypeMirror}
      */
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeKind widenedTypeKind) {
-        System.out.printf("getWidenedPrimitive(%s, %s)%n", type, widenedTypeKind);
         TypeMirror widenedTypeMirror =
                 TypesUtils.isPrimitive(type.getUnderlyingType())
                         ? typeKindToPrimitiveTypeMirror(widenedTypeKind)
                         : typeKindToBoxedTypeMirror(widenedTypeKind);
-        System.out.printf(
-                "getWidenedPrimitive(%s, %s) calling getWidenedPrimitive(%s, %s)%n",
-                type, widenedTypeKind, type, widenedTypeMirror);
         return getWidenedPrimitive(type, widenedTypeMirror);
     }
 
@@ -2596,18 +2608,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getWidenedPrimitive(
             AnnotatedTypeMirror type, TypeMirror widenedTypeMirror) {
-        System.out.printf("getWidenedPrimitive(%s, %s)%n", type, widenedTypeMirror);
         AnnotatedTypeMirror widened =
                 AnnotatedTypeMirror.createType(widenedTypeMirror, this, type.isDeclaration());
-        System.out.printf(
-                "getWidenedPrimitive(%s, %s): widened = %s%n", type, widenedTypeMirror, widened);
         widened.addAnnotations(
                 getWidenedAnnotations(
                         type.getAnnotations(), type.getUnderlyingType(), widenedTypeMirror));
         return widened;
     }
 
-    // TODO: I don't need to expose this or other new methods.
+    // TODO: I don't need to expose this or other new methods.  The override of
+    // getWidenedAnnotations is enough.
     /**
      * Returns annotations applicable to type {@code widenedTypeMirror}, that are copied or adapted
      * from {@code annos}.
@@ -2627,13 +2637,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns annotations applicable to type {@code widenedTypeMirror}, that are copied or adapted
+     * Returns annotations applicable to type {@code widenedTypeKind}, that are copied or adapted
      * from {@code annos}.
      *
      * @param annos annotations to widen, from a primitive or boxed primitive
      * @param typeKind primitive type to widen
-     * @param widenedTypeKind primitive type for the returned annotations
-     * @return result of converting {@code annos} to {@code widenedTypeMirror}
+     * @param widenedTypeKind target for the returned annotations; a primitive type
+     * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
      */
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {

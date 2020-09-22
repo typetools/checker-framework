@@ -37,6 +37,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -195,6 +196,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Given a primitive type, return its kind. Given a boxed primitive type, return the
+     * corresponding primitive type kind. Otherwise, return null.
+     *
+     * @return a primitive type kind, or null
+     */
+    public TypeKind getPrimitiveKind() {
+        return TypeKindUtils.primitiveOrBoxedToTypeKind(getUnderlyingType());
+    }
+
+    /**
      * Returns the underlying unannotated Java type, which this wraps.
      *
      * @return the underlying type
@@ -285,12 +296,27 @@ public abstract class AnnotatedTypeMirror {
      * arguments, array components, etc).
      *
      * <p>To get the single annotation in a particular hierarchy, use {@link
-     * #getAnnotationInHierarchy}.
+     * #getAnnotationInHierarchy}. If there is only one hierarchy, use {@link #getAnnotation}.
      *
      * @return a unmodifiable set of the annotations on this
      */
     public final Set<AnnotationMirror> getAnnotations() {
         return Collections.unmodifiableSet(annotations);
+    }
+
+    /**
+     * Returns the single annotation on this type. It does not include annotations in deep types
+     * (type arguments, array components, etc).
+     *
+     * <p>This method requires that there is only a single hierarchy.
+     *
+     * @return a unmodifiable set of the annotations on this
+     */
+    public final AnnotationMirror getAnnotation() {
+        if (annotations.size() != 1) {
+            throw new BugInCF("Bad annotation size for getAnnotation(): " + annotations);
+        }
+        return annotations.iterator().next();
     }
 
     /**

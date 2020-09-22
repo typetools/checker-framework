@@ -2077,7 +2077,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type cast is safe, false otherwise
      */
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         final TypeKind castTypeKind = castType.getKind();
         if (castTypeKind == TypeKind.DECLARED) {
@@ -2091,6 +2090,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return true;
             }
         }
+
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         if (checker.hasOption("checkCastElementType")) {
             AnnotatedTypeMirror newCastType;
@@ -2156,7 +2157,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         } else {
             // checkCastElementType option wasn't specified, so only check effective annotations.
             return qualifierHierarchy.isSubtype(
-                    exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
+                    // TODO: the "then" clause also needsto call getWidenedPrimitive, but I'm not
+                    // sure where.
+                    atypeFactory.getWidenedPrimitive(exprType, castType).getEffectiveAnnotations(),
+                    castType.getEffectiveAnnotations());
         }
     }
 
