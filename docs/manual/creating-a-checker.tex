@@ -1202,7 +1202,9 @@ can write your own type introduction rules.  There are three ways to do so.
 \end{Verbatim}
 
   \noindent
-  (or put your TreeAnnotator first).
+  (or put your TreeAnnotator first; note that \<PropagationTreeAnnotator>,
+  which is run by default, adds annotations to unannotated trees, but has
+  no effect on trees that have an annotation).
 
 \item
   Define a subclass of a

@@ -2472,6 +2472,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
+    // TODO: This whole method is silly.  Remove it.
     /**
      * Given a binary node that widens its arguments, return widened types for its two arguments.
      *

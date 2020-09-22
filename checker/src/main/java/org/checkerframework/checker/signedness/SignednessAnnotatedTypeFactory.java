@@ -266,6 +266,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 default:
                     // Do nothing
             }
+
             annotateBooleanAsUnknownSignedness(type);
             return null;
         }

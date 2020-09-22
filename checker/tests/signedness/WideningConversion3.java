@@ -7,10 +7,12 @@ public class WideningConversion3 {
 
     void plus() {
         @Signed int si;
-        si = c1;
-        si = (int) c1;
+
+        si = c1 + c2;
 
         si = (int) (c1 + c2);
-        si = c1 + c2;
+
+        si = c1;
+        si = (int) c1;
     }
 }

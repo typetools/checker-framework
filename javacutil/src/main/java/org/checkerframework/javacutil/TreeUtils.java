@@ -1492,8 +1492,10 @@ public final class TreeUtils {
         return result;
     }
 
+    // TODO: Should this be about widening or about numeric promotion?
+    // TODO: Add JLS reference: https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html
     /**
-     * Returns true if the binary operator does numeric promotion on its arguments.
+     * Returns true if the binary operator may do a widening primitive conversion.
      *
      * @param node a binary tree
      * @return true if the tree's operator does numeric promotion on its arguments
