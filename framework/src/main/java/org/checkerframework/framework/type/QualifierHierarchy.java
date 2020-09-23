@@ -385,8 +385,8 @@ public interface QualifierHierarchy {
     static void assertSameSize(Collection<?> c1, Collection<?> c2) {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
-                    "inconsistent sizes (%d, %d):%n  %s%n  %s",
-                    c1.size(), c2.size(), UtilPlume.join(",", c1), UtilPlume.join(",", c1));
+                    "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
+                    c1.size(), c2.size(), UtilPlume.join(",", c1), UtilPlume.join(",", c2));
         }
     }
 
