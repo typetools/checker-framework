@@ -2521,7 +2521,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the types of the two arguments to the BinaryTree, accounting for widening.
      *
      * @param node a binary tree
-     * @returns the types of the two arguments
+     * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
         AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
