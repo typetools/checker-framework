@@ -5,7 +5,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ReductionRe
 public class FalseBound implements ReductionResult {
 
     /** Was this false bound created because an annotated type constraint could not be satisfied? */
-    private boolean annotatedTypeFailure;
+    private final boolean annotatedTypeFailure;
 
     /**
      * @param annotatedTypeFailure true if this false bound was caused by an annotated type

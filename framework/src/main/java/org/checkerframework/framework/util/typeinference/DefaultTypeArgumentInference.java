@@ -132,7 +132,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 // Currently inferring, dont infer again.
                 return Collections.emptyMap();
             }
-            java8InferenceStack.push(java8Inference);
+            if (java8Inference != null) {
+                java8InferenceStack.push(java8Inference);
+            }
             try {
                 java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
@@ -141,7 +143,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     System.out.println("\t" + UtilPlume.join("\n\t", result));
                 }
             } finally {
-                java8Inference = java8InferenceStack.pop();
+                if (!java8InferenceStack.isEmpty()) {
+                    java8Inference = java8InferenceStack.pop();
+                } else {
+                    java8Inference = null;
+                }
             }
         }
         if (methodType == null) {

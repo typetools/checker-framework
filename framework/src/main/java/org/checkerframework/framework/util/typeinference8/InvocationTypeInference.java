@@ -157,7 +157,7 @@ public class InvocationTypeInference {
                 // In other words, the invocation does not type check with respect to qualifiers.
 
                 // TODO: Add more detail to the error message to indicate which bounds/constraints
-                // could not be stisfied so that the user can figure out how to correct their code.
+                // could not be satisfied so that the user can figure out how to correct their code.
                 checker.reportError(invocation, "type.inference.failed");
             } else {
                 logException(invocation, ex);
