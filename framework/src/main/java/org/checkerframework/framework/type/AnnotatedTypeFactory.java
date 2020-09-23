@@ -531,22 +531,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
-        BYTE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(byte.class, elements, types);
-        BYTE_TYPE_MIRROR = TypesUtils.typeFromClass(Byte.class, elements, types);
-        SHORT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(short.class, elements, types);
-        SHORT_TYPE_MIRROR = TypesUtils.typeFromClass(Short.class, elements, types);
-        INT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, elements, types);
-        INTEGER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, elements, types);
-        LONG_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(long.class, elements, types);
-        LONG_TYPE_MIRROR = TypesUtils.typeFromClass(Long.class, elements, types);
-        FLOAT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(float.class, elements, types);
-        FLOAT_TYPE_MIRROR = TypesUtils.typeFromClass(Float.class, elements, types);
-        DOUBLE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(double.class, elements, types);
-        DOUBLE_TYPE_MIRROR = TypesUtils.typeFromClass(Double.class, elements, types);
-        BOOLEAN_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(boolean.class, elements, types);
-        BOOLEAN_TYPE_MIRROR = TypesUtils.typeFromClass(Boolean.class, elements, types);
-        CHAR_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(char.class, elements, types);
-        CHARACTER_TYPE_MIRROR = TypesUtils.typeFromClass(Character.class, elements, types);
+        BYTE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(byte.class, types, elements);
+        BYTE_TYPE_MIRROR = TypesUtils.typeFromClass(Byte.class, types, elements);
+        SHORT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(short.class, types, elements);
+        SHORT_TYPE_MIRROR = TypesUtils.typeFromClass(Short.class, types, elements);
+        INT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(int.class, types, elements);
+        INTEGER_TYPE_MIRROR = TypesUtils.typeFromClass(Integer.class, types, elements);
+        LONG_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(long.class, types, elements);
+        LONG_TYPE_MIRROR = TypesUtils.typeFromClass(Long.class, types, elements);
+        FLOAT_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(float.class, types, elements);
+        FLOAT_TYPE_MIRROR = TypesUtils.typeFromClass(Float.class, types, elements);
+        DOUBLE_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(double.class, types, elements);
+        DOUBLE_TYPE_MIRROR = TypesUtils.typeFromClass(Double.class, types, elements);
+        BOOLEAN_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(boolean.class, types, elements);
+        BOOLEAN_TYPE_MIRROR = TypesUtils.typeFromClass(Boolean.class, types, elements);
+        CHAR_PRIMITIVE_TYPE_MIRROR = TypesUtils.typeFromClass(char.class, types, elements);
+        CHARACTER_TYPE_MIRROR = TypesUtils.typeFromClass(Character.class, types, elements);
     }
 
     /**
