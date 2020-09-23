@@ -137,14 +137,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             return null;
         }
 
-        AnnotatedTypeMirror leftUnwidened = atypeFactory.getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror rightUnwidened = atypeFactory.getAnnotatedType(node.getRightOperand());
-        AnnotatedTypeMirror a = atypeFactory.getWidenedPrimitive(leftUnwidened, type);
-        AnnotatedTypeMirror b = atypeFactory.getWidenedPrimitive(rightUnwidened, type);
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+                atypeFactory.binaryTreeArgTypes(node);
         Set<? extends AnnotationMirror> lubs =
                 qualHierarchy.leastUpperBounds(
-                        a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+                        argTypes.first.getEffectiveAnnotations(),
+                        argTypes.second.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
+
         return null;
     }
 

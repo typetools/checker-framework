@@ -20,7 +20,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -316,21 +315,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-
+        // Used in diagnostic messages.
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
-        AnnotatedTypeMirror unwidenedLeftOpType = atypeFactory.getAnnotatedType(leftOp);
-        AnnotatedTypeMirror unwidenedRightOpType = atypeFactory.getAnnotatedType(rightOp);
-        AnnotatedTypeMirror leftOpType = unwidenedLeftOpType;
-        AnnotatedTypeMirror rightOpType = unwidenedRightOpType;
-        TypeKind resultTypeKind =
-                TypeKindUtils.widenedNumericType(
-                        unwidenedLeftOpType.getUnderlyingType(),
-                        unwidenedRightOpType.getUnderlyingType());
-        if (TypeKindUtils.isNumeric(resultTypeKind)) {
-            leftOpType = atypeFactory.getWidenedPrimitive(unwidenedLeftOpType, resultTypeKind);
-            rightOpType = atypeFactory.getWidenedPrimitive(unwidenedRightOpType, resultTypeKind);
-        }
+
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+                atypeFactory.binaryTreeArgTypes(node);
+        AnnotatedTypeMirror leftOpType = argTypes.first;
+        AnnotatedTypeMirror rightOpType = argTypes.second;
 
         Kind kind = node.getKind();
 

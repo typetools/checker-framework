@@ -5,6 +5,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -2514,6 +2515,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
         return annos;
+    }
+
+    /**
+     * Returns the types of the two arguments to the BinaryTree, accounting for widening.
+     *
+     * @param node a binary tree
+     * @returns the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
+        AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror rightUnwidened = getAnnotatedType(node.getRightOperand());
+        TypeKind resultTypeKind =
+                TypeKindUtils.widenedNumericType(
+                        leftUnwidened.getUnderlyingType(), rightUnwidened.getUnderlyingType());
+        if (TypeKindUtils.isNumeric(resultTypeKind)) {
+            return Pair.of(
+                    getWidenedPrimitive(leftUnwidened, resultTypeKind),
+                    getWidenedPrimitive(rightUnwidened, resultTypeKind));
+        } else {
+            return Pair.of(leftUnwidened, rightUnwidened);
+        }
     }
 
     /**
