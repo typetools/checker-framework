@@ -216,6 +216,17 @@ Signedness Checker permits both \verb|((myInt >> 8) & 0xFF)| and
 \verb|((myInt >>> 8) & 0xFF)|, regardless of the qualifier on the type of
 \<myInt>.
 
+Likewise, right shift by 8 then cast to byte evaluates to the
+same value whether the argument is interpreted as signed or unsigned, so
+the Signedness Checker permits both \verb|(byte) (myInt >> 8)| and
+\verb|(byte) (myInt >>> 8)|, regardless of the type of \<myInt>.
+
+%% TODO: This is not yet implemented.  Should it be?
+% These masked/casted shift expressions have type
+% \refqualclass{checker/signedness/qual}{SignednessGlb}.  They are bit
+% patterns that can be interpreted as either signed or unsigned values.
+
+
 % There are two distinct reasons to use \verb|>>>|, the unsigned right shift operator:
 % \begin{itemize}
 % \item

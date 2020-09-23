@@ -319,7 +319,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
 
         if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
-            if (NumberUtils.isIntegral(type.getUnderlyingType())) {
+            if (TypesUtils.isIntegralPrimitiveOrBoxed(type.getUnderlyingType())) {
                 long from = atypeFactory.getFromValueFromIntRange(type);
                 long to = atypeFactory.getToValueFromIntRange(type);
                 if (from > to) {
@@ -330,7 +330,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 TypeMirror utype = type.getUnderlyingType();
                 if (!TypesUtils.isObject(utype)
                         && !TypesUtils.isDeclaredOfName(utype, "java.lang.Number")
-                        && !NumberUtils.isFloatingPoint(utype)) {
+                        && !TypesUtils.isFloatingPoint(utype)) {
                     checker.reportError(tree, "annotation.intrange.on.noninteger");
                     return false;
                 }
