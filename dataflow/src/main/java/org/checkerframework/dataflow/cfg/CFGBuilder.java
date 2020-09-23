@@ -1006,7 +1006,7 @@ public class CFGBuilder {
                     RegularBlockImpl b = (RegularBlockImpl) cur;
                     if (b.isEmpty()) {
                         Set<RegularBlockImpl> emptyBlocks = new HashSet<>();
-                        Set<PredecessorHolder> predecessors = new HashSet<>();
+                        Set<PredecessorHolder> predecessors = new LinkedHashSet<>();
                         BlockImpl succ =
                                 computeNeighborhoodOfEmptyBlock(b, emptyBlocks, predecessors);
                         for (RegularBlockImpl e : emptyBlocks) {
