@@ -34,22 +34,25 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 
-/** Holds information about types parsed from stub files. */
-public class StubTypes {
-    /** Types read from stub files (but not those from the annotated JDK jar file). */
-    private final Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
+/**
+ * Holds information about types parsed from annotations files in the stub file format, which may
+ * include ajava files.
+ */
+public class AnnotationFileElementTypes {
+    /** Types read from annotation files (but not those from the annotated JDK jar file). */
+    private final Map<Element, AnnotatedTypeMirror> typesFromAnnotationFiles;
 
     /**
-     * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
-     * Map keys cannot be Element, because a different Element appears in the stub files than in the
-     * real files. So, map keys are the verbose element name, as returned by
+     * Declaration annotations read from annotation files (but not those from the annotated JDK jar
+     * file). Map keys cannot be Element, because a different Element appears in the stub files than
+     * in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getVerboseName.
      */
-    private final Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
+    private final Map<String, Set<AnnotationMirror>> declAnnosFromAnnotationFiles;
 
     /**
-     * Whether or not a stub file is currently being parsed. (If one is being parsed, don't try to
-     * parse another.)
+     * Whether or not a file is currently being parsed. (If one is being parsed, don't try to parse
+     * another.)
      */
     private boolean parsing;
 
@@ -76,14 +79,14 @@ public class StubTypes {
     private final boolean parseAllJdkFiles;
 
     /**
-     * Creates a stub type.
+     * Creates an empty annotation source.
      *
      * @param factory AnnotatedTypeFactory
      */
-    public StubTypes(AnnotatedTypeFactory factory) {
+    public AnnotationFileElementTypes(AnnotatedTypeFactory factory) {
         this.factory = factory;
-        this.typesFromStubFiles = new HashMap<>();
-        this.declAnnosFromStubFiles = new HashMap<>();
+        this.typesFromAnnotationFiles = new HashMap<>();
+        this.declAnnosFromAnnotationFiles = new HashMap<>();
         this.parsing = false;
         String release = SystemUtil.getReleaseValue(factory.getProcessingEnv());
         this.annotatedJdkVersion =
@@ -94,9 +97,9 @@ public class StubTypes {
     }
 
     /**
-     * Returns true if stub files are currently being parsed; otherwise, false.
+     * Returns true if files are currently being parsed; otherwise, false.
      *
-     * @return true if stub files are currently being parsed; otherwise, false
+     * @return true if files are currently being parsed; otherwise, false
      */
     public boolean isParsing() {
         return parsing;
@@ -137,8 +140,8 @@ public class StubTypes {
                         jdkStubIn,
                         factory,
                         processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
+                        typesFromAnnotationFiles,
+                        declAnnosFromAnnotationFiles);
             }
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
@@ -148,8 +151,8 @@ public class StubTypes {
                         jdkVersionStubIn,
                         factory,
                         processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
+                        typesFromAnnotationFiles,
+                        declAnnosFromAnnotationFiles);
             }
             prepJdkStubs();
             // prepping the Jdk will parse all package-info.java files.  This sets parsing to false,
@@ -185,123 +188,45 @@ public class StubTypes {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
-        // Parse stub files.
-        for (String stubPath : allStubFiles) {
-            // Special case when running in jtreg.
-            String base = System.getProperty("test.src");
-            String stubPathFull = stubPath;
-            if (base != null) {
-                stubPathFull = base + "/" + stubPath;
-            }
-            List<StubResource> stubs =
-                    StubUtil.allStubFiles(stubPathFull, StubUtil.AnnotationFileType.STUB);
-            if (stubs.isEmpty()) {
-                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
-                // level directory of the jar that contains the checker.
-                if (stubPath.startsWith("checker.jar/")) {
-                    stubPath = stubPath.substring("checker.jar/".length());
-                }
-                InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                // Didn't find the stub file.
-                if (in == null) {
-                    // When using a compound checker, the target stub file may be found by the
-                    // current checker's parent checkers. Also check this to avoid a false
-                    // warning. Currently, only the original checker will try to parse the target
-                    // stub file, the parent checkers are only used to reduce false warnings.
-                    SourceChecker currentChecker = checker;
-                    boolean findByParentCheckers = false;
-                    while (currentChecker != null) {
-                        URL topLevelResource =
-                                currentChecker.getClass().getResource("/" + stubPath);
-                        if (topLevelResource != null) {
-                            currentChecker.message(
-                                    Kind.WARNING,
-                                    stubPath
-                                            + " should be in the same directory as "
-                                            + currentChecker.getClass().getSimpleName()
-                                            + ".class, but is at the top level of a jar file: "
-                                            + topLevelResource);
-                            findByParentCheckers = true;
-                            break;
-                        } else {
-                            currentChecker = currentChecker.getParentChecker();
-                        }
-                    }
-                    // If there exists one parent checker which can find this stub file, don't
-                    // report an warning.
-                    if (!findByParentCheckers) {
-                        File stubPathParent = new File(stubPath).getParentFile();
-                        String stubPathParentDescription =
-                                (stubPathParent == null
-                                        ? "current directory"
-                                        : "directory "
-                                                + new File(stubPath)
-                                                        .getParentFile()
-                                                        .getAbsolutePath());
-                        checker.message(
-                                Kind.WARNING,
-                                "Did not find stub file "
-                                        + stubPath
-                                        + " on classpath or within "
-                                        + stubPathParentDescription
-                                        + (stubPathFull.equals(stubPath)
-                                                ? ""
-                                                : (" or at " + stubPathFull)));
-                    }
-                } else {
-                    StubParser.parse(
-                            stubPath,
-                            in,
-                            factory,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
-                }
-            }
-            for (StubResource resource : stubs) {
-                InputStream stubStream;
-                try {
-                    stubStream = resource.getInputStream();
-                } catch (IOException e) {
-                    checker.message(
-                            Kind.NOTE,
-                            "Could not read stub resource: " + resource.getDescription());
-                    continue;
-                }
-                StubParser.parse(
-                        resource.getDescription(),
-                        stubStream,
-                        factory,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
-            }
-        }
+        parseAnnotationFiles(allStubFiles, StubUtil.AnnotationFileType.STUB);
         parsing = false;
     }
 
-    // TODO: Factor code out with othe parse method, rename variables to reflect ajava.
+    /** Parser the ajava files passed through the -Aajavas option. */
     public void parseAjavaFiles() {
         parsing = true;
         // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
-        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        List<String> allStubFiles = new ArrayList<>();
+        List<String> ajavaFiles = new ArrayList<>();
         String ajavasOption = checker.getOption("ajavas");
         if (ajavasOption != null) {
-            Collections.addAll(allStubFiles, ajavasOption.split(File.pathSeparator));
+            Collections.addAll(ajavaFiles, ajavasOption.split(File.pathSeparator));
         }
 
-        // Parse stub files.
-        for (String stubPath : allStubFiles) {
+        parseAnnotationFiles(ajavaFiles, StubUtil.AnnotationFileType.AJAVA);
+        parsing = false;
+    }
+
+    /**
+     * Parses the files in {@code annotationFiles} of the given file type. This includes files
+     * listed directly in {@code annotationFiles} and for each listed directory, also includes all
+     * files located in that directory (recursively).
+     *
+     * @param annotationFiles list of files and directories to parse
+     * @param fileType the file type of files to parse
+     */
+    private void parseAnnotationFiles(
+            List<String> annotationFiles, StubUtil.AnnotationFileType fileType) {
+        SourceChecker checker = factory.getContext().getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        for (String stubPath : annotationFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
             if (base != null) {
                 stubPathFull = base + "/" + stubPath;
             }
-            List<StubResource> stubs =
-                    StubUtil.allStubFiles(stubPathFull, StubUtil.AnnotationFileType.AJAVA);
+            List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull, fileType);
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
@@ -361,8 +286,8 @@ public class StubTypes {
                             in,
                             factory,
                             processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
+                            typesFromAnnotationFiles,
+                            declAnnosFromAnnotationFiles);
                 }
             }
             for (StubResource resource : stubs) {
@@ -380,40 +305,39 @@ public class StubTypes {
                         stubStream,
                         factory,
                         processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
+                        typesFromAnnotationFiles,
+                        declAnnosFromAnnotationFiles);
             }
         }
-        parsing = false;
     }
 
     /**
-     * Returns the annotated type for {@code e} containing only annotations explicitly written in a
-     * stub file or {@code null} if {@code e} does not appear in a stub file.
+     * Returns the annotated type for {@code e} containing only annotations explicitly written in an
+     * annotation file or {@code null} if {@code e} does not appear in a file.
      *
      * @param e an Element whose type is returned
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
-     *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
-     *     appear in a stub file.
+     *     in the annotation file and in the element. {@code null} is returned if {@code element}
+     *     does not appear in an annotation file.
      */
     public AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
         if (parsing) {
             return null;
         }
         parseEnclosingClass(e);
-        AnnotatedTypeMirror type = typesFromStubFiles.get(e);
+        AnnotatedTypeMirror type = typesFromAnnotationFiles.get(e);
         return type == null ? null : type.deepCopy();
     }
 
     /**
      * Returns the set of declaration annotations for {@code e} containing only annotations
-     * explicitly written in a stub file or the empty set if {@code e} does not appear in a stub
-     * file.
+     * explicitly written in an annotation file or the empty set if {@code e} does not appear in an
+     * annotation file.
      *
      * @param elt element for which annotations are returned
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
-     *     in the stubfile and in the element. {@code null} is returned if {@code element} does not
-     *     appear in a stub file.
+     *     in the annotation file and in the element. {@code null} is returned if {@code element}
+     *     does not appear in an annotation file.
      */
     public Set<AnnotationMirror> getDeclAnnotation(Element elt) {
         if (parsing) {
@@ -422,8 +346,8 @@ public class StubTypes {
 
         parseEnclosingClass(elt);
         String eltName = ElementUtils.getVerboseName(elt);
-        if (declAnnosFromStubFiles.containsKey(eltName)) {
-            return declAnnosFromStubFiles.get(eltName);
+        if (declAnnosFromAnnotationFiles.containsKey(eltName)) {
+            return declAnnosFromAnnotationFiles.get(eltName);
         }
         return Collections.emptySet();
     }
@@ -490,8 +414,8 @@ public class StubTypes {
                     jdkStub,
                     factory,
                     factory.getProcessingEnv(),
-                    typesFromStubFiles,
-                    declAnnosFromStubFiles);
+                    typesFromAnnotationFiles,
+                    declAnnosFromAnnotationFiles);
         } catch (IOException e) {
             throw new BugInCF("cannot open the jdk stub file " + path, e);
         } finally {
@@ -519,8 +443,8 @@ public class StubTypes {
                     jdkStub,
                     factory,
                     factory.getProcessingEnv(),
-                    typesFromStubFiles,
-                    declAnnosFromStubFiles);
+                    typesFromAnnotationFiles,
+                    declAnnosFromAnnotationFiles);
         } catch (IOException e) {
             throw new BugInCF("cannot open the Jar file " + connection.getEntryName(), e);
         } catch (BugInCF e) {
