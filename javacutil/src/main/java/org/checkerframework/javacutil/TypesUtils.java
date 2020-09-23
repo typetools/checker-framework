@@ -37,39 +37,6 @@ public final class TypesUtils {
 
     /// Creating types
 
-    // TODO: What order of arguments for typeFromClass is desirable?  Current code is inconsistent,
-    // and before this refactoring TypesUtils already contained both overloads.  Remove one of the
-    // overloads.
-
-    /**
-     * Given a class, return the corresponding TypeMirror.
-     *
-     * @param clazz a class
-     * @param elements the element utilities to use
-     * @param types the type utilities to use
-     * @return the TypeMirror corresponding to the given class
-     */
-    public static TypeMirror typeFromClass(Class<?> clazz, Elements elements, Types types) {
-        if (clazz == void.class) {
-            return types.getNoType(TypeKind.VOID);
-        } else if (clazz.isPrimitive()) {
-            String primitiveName = clazz.getName().toUpperCase();
-            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return types.getPrimitiveType(primitiveKind);
-        } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType(), elements, types);
-            return types.getArrayType(componentType);
-        } else {
-            String name = clazz.getCanonicalName();
-            assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
-            if (element == null) {
-                throw new BugInCF("Unrecognized class: " + clazz);
-            }
-            return element.asType();
-        }
-    }
-
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.
      *
