@@ -1183,6 +1183,9 @@ meta-annotation.
 
 If the meta-annotations are not sufficiently expressive, then you
 can write your own type introduction rules.  There are three ways to do so.
+Each makes changes to an \refclass{framework/type}{AnnotatedTypeMirror},
+which is the Checker Framework's representation of an annotated type.
+
 
 \begin{enumerate}
 \item
@@ -1228,22 +1231,13 @@ can write your own type introduction rules.  There are three ways to do so.
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
-  override its two \<addComputedTypeAnnotations> methods.  This is a last
-  resort, if your logic cannot be implemented using a TreeAnnotator or a
-  TypeAnnotator.  The implementation of \<addComputedTypeAnnotations> in
-  \<GenericAnnotatedTypeFactory> calls the tree annotator and the type
-  annotator (in that order), but by overriding the method you can cause
-  your logic to be run even earlier or even later.
-
-  To add type introduction rules, you should override
+  override two \<addComputedTypeAnnotations> methods:
   \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
   (or
   \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
   if extending \code{GenericAnnotatedTypeFactory})
   and
   \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
-  The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
-  which is the Checker Framework's representation of an annotated type.
   The methods can make arbitrary changes to the annotations on a type.
 
   Recall that \<AnnotatedTypeFactory>, when given a program
@@ -1252,6 +1246,13 @@ can write your own type introduction rules.  There are three ways to do so.
   also default annotations and type
   refinement (see Section~\ref{effective-qualifier} for explanations of these
   concepts).
+
+  The approach of overriding \<addComputedTypeAnnotations> is a last
+  resort, if your logic cannot be implemented using a TreeAnnotator or a
+  TypeAnnotator.  The implementation of \<addComputedTypeAnnotations> in
+  \<GenericAnnotatedTypeFactory> calls the tree annotator and the type
+  annotator (in that order), but by overriding the method you can cause
+  your logic to be run even earlier or even later.
 
 \end{enumerate}
 
@@ -2469,7 +2470,7 @@ without warnings or errors.
 %%  LocalWords:  VizClassName CFGVisualizer MyProp MyPropChecker mypackage
 %  LocalWords:  SourceFile NonNegative JavaExpression DependentTypesHelper
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
-%  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics
+%  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics pdf
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
 %%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
@@ -2480,3 +2481,4 @@ without warnings or errors.
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
 % LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator
 % LocalWords:  createTypeAnnotator ListTypeAnnotator CFGVisualizeLauncher
+% LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
