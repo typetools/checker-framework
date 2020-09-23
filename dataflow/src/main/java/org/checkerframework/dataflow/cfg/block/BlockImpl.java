@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -50,7 +49,9 @@ public abstract class BlockImpl implements Block {
 
     @Override
     public Set<Block> getPredecessors() {
-        return Collections.unmodifiableSet(predecessors);
+        // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
+        // order.
+        return new LinkedHashSet<>(predecessors);
     }
 
     public void addPredecessor(BlockImpl pred) {
