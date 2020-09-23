@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The expression is {@code @}{@link SignedPositive}, and its value came from widening an unsigned
- * value.
+ * The expression is {@code @}{@link SignedPositive}, and its value came from widening a value that
+ * is allowed to be interpreted as unsigned.
  *
- * <p>Programmers should rarely write {@code @SignedPositiveFromUnsigned}.
+ * <p>Programmers should rarely write this annotation.
  *
  * @see SignednessGlb
  * @checker_framework.manual #signedness-checker Signedness Checker
