@@ -1202,9 +1202,10 @@ can write your own type introduction rules.  There are three ways to do so.
 \end{Verbatim}
 
   \noindent
-  (or put your TreeAnnotator first; note that \<PropagationTreeAnnotator>,
-  which is run by default, adds annotations to unannotated trees, but has
-  no effect on trees that have an annotation).
+  (or put your TreeAnnotator first; several tree annotators are run by
+  default, and among them, \<PropagationTreeAnnotator>
+  adds annotations to \<AnnotatedTypeMirror>s that do not have an annotation,
+  but has no effect on those that have an annotation).
 
 \item
   Define a subclass of a
@@ -1234,13 +1235,6 @@ can write your own type introduction rules.  There are three ways to do so.
   annotator (in that order), but by overriding the method you can cause
   your logic to be run even earlier or even later.
 
-  \<AnnotatedTypeFactory>, when given a program
-  expression, returns the expression's type.  This should include not only
-  the qualifiers that the programmer explicitly wrote in the source code, but
-  also default annotations and type
-  refinement (see Section~\ref{effective-qualifier} for explanations of these
-  concepts).
-
   To add type introduction rules, you should override
   \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
   (or
@@ -1251,6 +1245,13 @@ can write your own type introduction rules.  There are three ways to do so.
   The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
   which is the Checker Framework's representation of an annotated type.
   The methods can make arbitrary changes to the annotations on a type.
+
+  Recall that \<AnnotatedTypeFactory>, when given a program
+  expression, returns the expression's type.  This should include not only
+  the qualifiers that the programmer explicitly wrote in the source code, but
+  also default annotations and type
+  refinement (see Section~\ref{effective-qualifier} for explanations of these
+  concepts).
 
 \end{enumerate}
 
