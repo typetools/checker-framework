@@ -4,6 +4,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VarType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -23,6 +24,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -210,6 +212,14 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             if (last.getType().getKind() == Kind.ARRAY_TYPE) {
                 trees.remove(last.getType());
             }
+
+            if (last.getType().getKind() == Kind.ANNOTATED_TYPE) {
+                AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
+                if (annotatedType.getUnderlyingType().getKind() == Kind.ARRAY_TYPE) {
+                    trees.remove(annotatedType);
+                    trees.remove(annotatedType.getUnderlyingType());
+                }
+            }
         }
 
         return result;
@@ -294,6 +304,15 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
 
         visit(tree.getBody(), p);
+        return null;
+    }
+
+    @Override
+    public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+        super.visitWhileLoop(tree, p);
+        // For some reason, javac surrounds while loop conditions in a ParenthesizedTree but
+        // JavaParser does not, so don't check the condition tree.
+        trees.remove(tree.getCondition());
         return null;
     }
 

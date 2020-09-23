@@ -1712,7 +1712,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processSwitch(javacTree, node);
         }
 
-        javacTree.getExpression().accept(this, node.getSelector());
+        // Switch expressions are always parenthesized in javac but never in JavaParser.
+        ParenthesizedTree expression = (ParenthesizedTree) javacTree.getExpression();
+        expression.getExpression().accept(this, node.getSelector());
         visitLists(javacTree.getCases(), node.getEntries());
         if (traversalType == TraversalType.POST_ORDER) {
             processSwitch(javacTree, node);
@@ -1935,8 +1937,19 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             }
 
             if (node.isVarArgs()) {
-                assert javacTree.getType().getKind() == Kind.ARRAY_TYPE;
-                ArrayTypeTree arrayType = (ArrayTypeTree) javacTree.getType();
+                // System.out.println("From var args, expected array types but got " + javacTree + "
+                // with kind " + javacTree.getType().getKind());
+                // assert javacTree.getType().getKind() == Kind.ARRAY_TYPE;
+                ArrayTypeTree arrayType;
+                // A varargs parameter's type will either be an ArrayTypeTree or an
+                // AnnotatedType depending on if it has an annotation.
+                if (javacTree.getType().getKind() == Kind.ARRAY_TYPE) {
+                    arrayType = (ArrayTypeTree) javacTree.getType();
+                } else {
+                    AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) javacTree.getType();
+                    arrayType = (ArrayTypeTree) annotatedType.getUnderlyingType();
+                }
+
                 arrayType.getType().accept(this, node.getType());
             } else {
                 // Types for lambda parameters without explicit types don't have JavaParser nodes,
@@ -2014,7 +2027,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processWhileLoop(javacTree, node);
         }
 
-        javacTree.getCondition().accept(this, node.getCondition());
+        // For some reason, while loop conditions are always parenthesized in javac but never in
+        // JavaParser, but this doesn't hold for if statement conditions.
+        assert javacTree.getCondition().getKind() == Kind.PARENTHESIZED;
+        ParenthesizedTree condition = (ParenthesizedTree) javacTree.getCondition();
+        condition.getExpression().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
         if (traversalType == TraversalType.POST_ORDER) {
             processWhileLoop(javacTree, node);
