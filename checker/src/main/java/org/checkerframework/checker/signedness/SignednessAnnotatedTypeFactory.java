@@ -191,7 +191,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
             Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
             if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
-                // TODO: Maybe this clause is appropriate for all subtypes of Unsigned as well.
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
                 return result;
             } else {

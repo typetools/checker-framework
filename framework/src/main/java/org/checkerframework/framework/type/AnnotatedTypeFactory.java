@@ -2461,8 +2461,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getWidenedPrimitive(type, widenedType.getUnderlyingType());
     }
 
-    // TODO: Should this be called only when widening definitely occurs,
-    // or when widening might or might not occur?
     /**
      * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeKind} and with
      * annotations copied or adapted from {@code type}. Accounts for widening if applicable.
