@@ -37,7 +37,6 @@ import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -62,6 +61,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -362,8 +362,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return one of INT, SHORT, BYTE, CHAR, or LONG
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
-        TypeKind typeKind = NumberUtils.unboxPrimitive(type);
-        if (typeKind != null && NumberUtils.isPrimitiveIntegral(typeKind)) {
+        TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
             return typeKind;
         }
         throw new BugInCF(type.toString() + " expected to be an integral type.");

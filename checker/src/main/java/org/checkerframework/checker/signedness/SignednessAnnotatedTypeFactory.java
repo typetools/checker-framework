@@ -37,7 +37,6 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -236,7 +235,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
-        if (TypesUtils.isFloating(type.getUnderlyingType())
+        if (TypesUtils.isFloatingPrimitive(type.getUnderlyingType())
                 || TypesUtils.isBoxedFloating(type.getUnderlyingType())
                 || type.getKind() == TypeKind.CHAR
                 || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
@@ -289,7 +288,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             PrimitiveType subPrimitive = subtype.getUnderlyingType();
             PrimitiveType superPrimitive = supertype.getUnderlyingType();
-            if (isNarrowerIntegral(subPrimitive, superPrimitive)) {
+            if (TypesUtils.isNarrowerIntegral(subPrimitive, superPrimitive)) {
                 AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
                 if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
                     return true;
@@ -331,54 +330,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
             }
             return super.visitDeclared_Primitive(subtype, supertype, p);
-        }
-
-        /**
-         * Returns true if both types are integral and the first type is strictly narrower
-         * (represented by fewer bits) than the second type.
-         *
-         * @param a a primitive type
-         * @param b a primitive type
-         * @return true if {@code a} is represented by fewer bits than {@code b}
-         */
-        private boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
-            int aBits = numIntegralBits(a);
-            if (aBits == -1) {
-                return false;
-            }
-            int bBits = numIntegralBits(b);
-            if (bBits == -1) {
-                return false;
-            }
-            return aBits < bBits;
-        }
-
-        /**
-         * Returns the number of bits in the representation of an integral primitive type. Returns
-         * -1 if the type is not an integral primitive type.
-         *
-         * @param p a primitive type
-         * @return the number of bits in its representation, or -1 if not integral
-         */
-        private int numIntegralBits(PrimitiveType p) {
-            switch (p.getKind()) {
-                case BYTE:
-                    return 8;
-                case SHORT:
-                    return 16;
-                case CHAR:
-                    return 16;
-                case INT:
-                    return 32;
-                case LONG:
-                    return 64;
-                case BOOLEAN:
-                case DOUBLE:
-                case FLOAT:
-                    return -1;
-                default:
-                    throw new BugInCF("Unexpected primitive type " + p);
-            }
         }
     }
 }

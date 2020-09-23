@@ -423,7 +423,7 @@ public class AnnotationBuilder {
      * @return the TypeMirror corresponding to the given class
      */
     private TypeMirror typeFromClass(Class<?> clazz) {
-        return TypesUtils.typeFromClass(clazz, elements, types);
+        return TypesUtils.typeFromClass(clazz, types, elements);
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
