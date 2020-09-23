@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /** Base class of the {@link Block} implementation hierarchy. */
@@ -30,7 +30,7 @@ public abstract class BlockImpl implements Block {
 
     protected BlockImpl(BlockType type) {
         this.type = type;
-        this.predecessors = new HashSet<>();
+        this.predecessors = new LinkedHashSet<>();
     }
 
     @Override
