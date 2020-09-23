@@ -28,6 +28,11 @@ public abstract class BlockImpl implements Block {
         return lastId++;
     }
 
+    /**
+     * Create a new BlockImpl.
+     *
+     * @param type the type of this basic block
+     */
     protected BlockImpl(BlockType type) {
         this.type = type;
         this.predecessors = new LinkedHashSet<>();
