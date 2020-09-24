@@ -1392,7 +1392,8 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the type as a TypeMirror of {@code tree}.
+     * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s
+     * AnnotatedTypeMirror, call {@code AnnotatedTypeFactory.getAnnotatedType()}.
      *
      * @return the type as a TypeMirror of {@code tree}
      */
