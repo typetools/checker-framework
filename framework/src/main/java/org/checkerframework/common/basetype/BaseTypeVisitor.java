@@ -2092,7 +2092,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        if (checker.hasOption("checkCastElementType")) {
+        Set<AnnotationMirror> castAnnos;
+        if (!checker.hasOption("checkCastElementType")) {
+            // checkCastElementType option wasn't specified, so only check effective annotations.
+            castAnnos = castType.getEffectiveAnnotations();
+        } else {
             AnnotatedTypeMirror newCastType;
             if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
@@ -2141,7 +2145,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 exprType.getEffectiveAnnotations(),
                                 castType.getEffectiveAnnotations());
             }
-            Set<AnnotationMirror> castAnnos;
             if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
@@ -2151,13 +2154,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } else {
                 castAnnos = castType.getAnnotations();
             }
-
-            return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
-        } else {
-            // checkCastElementType option wasn't specified, so only check effective annotations.
-            return qualifierHierarchy.isSubtype(
-                    exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
+        return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
     }
 
     /**
