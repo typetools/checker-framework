@@ -2077,7 +2077,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if the type cast is safe, false otherwise
      */
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         final TypeKind castTypeKind = castType.getKind();
         if (castTypeKind == TypeKind.DECLARED) {
@@ -2091,6 +2090,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return true;
             }
         }
+
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
         Set<AnnotationMirror> castAnnos;
         if (!checker.hasOption("checkCastElementType")) {
@@ -2155,7 +2156,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 castAnnos = castType.getAnnotations();
             }
         }
-        return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
+
+        AnnotatedTypeMirror exprTypeWidened = atypeFactory.applyWidening(exprType, castType);
+        return qualifierHierarchy.isSubtype(exprTypeWidened.getEffectiveAnnotations(), castAnnos);
     }
 
     /**
@@ -2484,7 +2487,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
-        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
+        AnnotatedTypeMirror widenedValueType = atypeFactory.applyWidening(valueType, varType);
+        boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
         // TODO: integrate with subtype test.
         if (success) {
