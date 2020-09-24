@@ -2263,7 +2263,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return a primitive type: either the argument, or the result of unboxing it.
+     * Return a primitive type: either the argument, or the result of unboxing it (which might
+     * affect its annotations).
      *
      * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
      *
@@ -2349,8 +2350,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
      *
      * @param exprType type to possibly widen
-     * @param widenedType type to possibly widen to primitive or boxed primitive (same boxing as
-     *     {@code type}); its annotations are ignored
+     * @param widenedType type to possibly widen to; its annotations are ignored
      * @return if widening is applicable, the result of converting {@code type} to the underlying
      *     type of {@code widenedType}; otherwise {@code type}
      */
@@ -2360,7 +2360,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeKind widenedKind = widenedType.getKind();
 
         if (!TypeKindUtils.isNumeric(widenedKind)) {
-            // The target type is not a numeric primitive, so widening is not applicable.
+            // The target type is not a numeric primitive, so primitive widening is not applicable.
             return exprType;
         }
 
