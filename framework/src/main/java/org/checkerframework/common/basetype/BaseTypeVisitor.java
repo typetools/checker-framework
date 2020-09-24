@@ -2468,6 +2468,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+     * emits an error message (through the compiler's messaging interface) if it is not valid.
+     *
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
+     */
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
+
+        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
+
+        // TODO: integrate with subtype test.
+        if (success) {
+            for (Class<? extends Annotation> mono :
+                    atypeFactory.getSupportedMonotonicTypeQualifiers()) {
+                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
+                    checker.reportError(
+                            valueTree,
+                            "monotonic.type.incompatible",
+                            mono.getSimpleName(),
+                            mono.getSimpleName(),
+                            valueType.toString());
+                    return;
+                }
+            }
+        }
+
+        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
+
+        // Use an error key only if it's overridden by a checker.
+        if (!success) {
+            FoundRequired pair = FoundRequired.of(valueType, varType);
+            String valueTypeString = pair.found;
+            String varTypeString = pair.required;
+            checker.reportError(
+                    valueTree,
+                    errorKey,
+                    SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
+        }
+    }
+
+    /**
      * Prints a diagnostic about entering commonAssignmentCheck, if the showchecks option was set.
      *
      * @param varType the annotated type of the variable
@@ -2548,57 +2599,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     valueType.toString(),
                     varType.getKind(),
                     varType.toString());
-        }
-    }
-
-    /**
-     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
-     * emits an error message (through the compiler's messaging interface) if it is not valid.
-     *
-     * @param varType the annotated type of the variable
-     * @param valueType the annotated type of the value
-     * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, before "found" and "expected" types
-     */
-    protected void commonAssignmentCheck(
-            AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType,
-            Tree valueTree,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
-
-        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
-
-        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
-
-        // TODO: integrate with subtype test.
-        if (success) {
-            for (Class<? extends Annotation> mono :
-                    atypeFactory.getSupportedMonotonicTypeQualifiers()) {
-                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
-                    checker.reportError(
-                            valueTree,
-                            "monotonic.type.incompatible",
-                            mono.getSimpleName(),
-                            mono.getSimpleName(),
-                            valueType.toString());
-                    return;
-                }
-            }
-        }
-
-        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
-
-        // Use an error key only if it's overridden by a checker.
-        if (!success) {
-            FoundRequired pair = FoundRequired.of(valueType, varType);
-            String valueTypeString = pair.found;
-            String varTypeString = pair.required;
-            checker.reportError(
-                    valueTree,
-                    errorKey,
-                    SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
         }
     }
 
