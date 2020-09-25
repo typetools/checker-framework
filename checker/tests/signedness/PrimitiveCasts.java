@@ -29,4 +29,16 @@ public class PrimitiveCasts {
         // :: error: (return.type.incompatible)
         return ui;
     }
+
+    void shortToDouble1(@Unsigned short ui) {
+        double d = (double) ui;
+    }
+
+    void shortToDouble2(@Unsigned short ui) {
+        double d = ui;
+    }
+
+    double shortToDouble3(@Unsigned short ui) {
+        return ui;
+    }
 }
