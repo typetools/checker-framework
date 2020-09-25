@@ -1,8 +1,7 @@
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 
-public class WideningUnboxing {
+public class WideningFloat {
 
-    /*
     void floatArg(float x) {}
 
     void m(Object arg) {
@@ -12,9 +11,12 @@ public class WideningUnboxing {
     void m2(@UnknownSignedness Byte arg) {
         floatArg(arg);
     }
-    */
 
     void m3(@UnknownSignedness Byte arg) {
+        float f = arg;
+    }
+
+    void m3(@UnknownSignedness byte arg) {
         float f = arg;
     }
 }
