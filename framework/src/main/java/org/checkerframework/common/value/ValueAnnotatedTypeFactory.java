@@ -1084,6 +1084,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return a list of possible boolean values
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
