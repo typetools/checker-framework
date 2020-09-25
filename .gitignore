@@ -51,7 +51,7 @@ checker/src/main/resources/git.properties
 checker/tests/calledmethods-delomboked
 
 # manual files
-bib
+plume-bib
 *.synctex.gz
 manual.aux
 manual.blg

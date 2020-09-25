@@ -1,4 +1,4 @@
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
 class Xor {
 

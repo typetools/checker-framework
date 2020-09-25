@@ -14,8 +14,8 @@ org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
 org.jspecify.annotations.Nullable.
 
-The Signature Checker supports annotations @CanonicalName and
-@CanonicalNameOrEmpty.
+The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
+The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
 
 Implementation details:
 
@@ -25,6 +25,17 @@ AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
 AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
 MultiGraphQualifierHierarchy for instructions on how to use the new classes and
 methods.
+
+Renamed methods:
+  NumberUtils.isFloatingPoint => TypesUtils.isFloatingPoint
+  NumberUtils.isIntegral => TypesUtils.isIntegralPrimitiveOrBoxed
+  NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
+  NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
+  NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
+  TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+  TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
+  TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
+  TypesUtils.typeFromClass => TypesUtils.typeFromClass (swap order of last two arguments)
 
 ---------------------------------------------------------------------------
 

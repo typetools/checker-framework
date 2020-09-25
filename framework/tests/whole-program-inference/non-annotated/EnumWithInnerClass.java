@@ -3,7 +3,7 @@
 // which was a problem with an earlier version of stub-based
 // WPI.
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 enum EnumWithInnerClass {
     CONSTANT;

@@ -174,15 +174,14 @@ $\Rightarrow$
 \label{fig-constant-value-refactoring}
 \end{figure}
 
-\ifonbuffalo{\relax}\else{
-  The Constant Value Checker trusts the
-  \refqualclass{checker/index/qual}{Positive},
-  \refqualclass{checker/index/qual}{NonNegative},
-  and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
-  contains any of these annotations, then
-  in order to guarantee soundness, you must run the Index Checker whenever
-  you run the Constant Value Checker.
-}\fi
+The Constant Value Checker trusts the
+\refqualclass{checker/index/qual}{Positive},
+\refqualclass{checker/index/qual}{NonNegative},
+and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
+contains any of these annotations, then
+in order to guarantee soundness, you must run the Index Checker whenever
+you run the Constant Value Checker.
+
 
 \subsectionAndLabel{Compile-time execution of expressions}{constant-value-compile-time-execution}
 

@@ -1,4 +1,4 @@
-import testlib.util.Odd;
+import org.checkerframework.framework.testchecker.util.Odd;
 
 public class Constructors {
     public Constructors(Constructors con) {}
