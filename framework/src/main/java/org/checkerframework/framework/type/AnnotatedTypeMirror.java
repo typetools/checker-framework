@@ -309,7 +309,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public final @Nullable AnnotationMirror getAnnotation() {
         if (annotations.isEmpty()) {
-            // This AnnotatedTypeMirror must be a type variable.
+            // This AnnotatedTypeMirror must be a type variable or wildcard.
             return null;
         }
         if (annotations.size() != 1) {
