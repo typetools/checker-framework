@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.javacutil.TreeUtils;
@@ -18,10 +18,12 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class UnaryOperationNode extends Node {
 
-    protected final UnaryTree tree;
+    // The tree might not be a unary tree, if this is a ConditionalNot created from an occurrence of
+    // "... != true" in the source code.
+    protected final Tree tree;
     protected final Node operand;
 
-    protected UnaryOperationNode(UnaryTree tree, Node operand) {
+    protected UnaryOperationNode(Tree tree, Node operand) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         this.operand = operand;
@@ -32,7 +34,7 @@ public abstract class UnaryOperationNode extends Node {
     }
 
     @Override
-    public UnaryTree getTree() {
+    public Tree getTree() {
         return tree;
     }
 

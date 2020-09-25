@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -17,12 +16,13 @@ public class ConditionalNotNode extends UnaryOperationNode {
     /**
      * Create a new ConditionalNotNode.
      *
-     * @param tree the logical-complement tree for this node
+     * @param tree the logical-complement tree for this node, or another tree with the same
+     *     semantics, such as from "... != true" in the source code
      * @param operand the boolean expression being negated
      */
-    public ConditionalNotNode(UnaryTree tree, Node operand) {
+    public ConditionalNotNode(Tree tree, Node operand) {
         super(tree, operand);
-        assert tree.getKind() == Kind.LOGICAL_COMPLEMENT;
+        // assert tree.getKind() == Kind.LOGICAL_COMPLEMENT;
     }
 
     @Override

@@ -3420,12 +3420,41 @@ public class CFGBuilder {
 
                         Node node;
                         if (kind == Tree.Kind.EQUAL_TO) {
-                            node = new EqualToNode(tree, left, right);
+                            if (isConstantBoolean(right, true)) {
+                                return left;
+                            } else if (isConstantBoolean(right, false)) {
+                                Node result = new ConditionalNotNode(tree, unbox(left));
+                                extendWithNode(result);
+                                return result;
+                            } else if (isConstantBoolean(left, true)) {
+                                return right;
+                            } else if (isConstantBoolean(left, false)) {
+                                Node result = new ConditionalNotNode(tree, unbox(right));
+                                extendWithNode(result);
+                                return result;
+                            } else {
+                                node = new EqualToNode(tree, left, right);
+                                extendWithNode(node);
+                            }
                         } else {
                             assert kind == Kind.NOT_EQUAL_TO;
-                            node = new NotEqualNode(tree, left, right);
+                            if (isConstantBoolean(right, false)) {
+                                return left;
+                            } else if (isConstantBoolean(right, true)) {
+                                Node result = new ConditionalNotNode(tree, unbox(left));
+                                extendWithNode(result);
+                                return result;
+                            } else if (isConstantBoolean(left, false)) {
+                                return right;
+                            } else if (isConstantBoolean(left, true)) {
+                                Node result = new ConditionalNotNode(tree, unbox(right));
+                                extendWithNode(result);
+                                return result;
+                            } else {
+                                node = new NotEqualNode(tree, left, right);
+                                extendWithNode(node);
+                            }
                         }
-                        extendWithNode(node);
 
                         return node;
                     }
@@ -5135,6 +5164,23 @@ public class CFGBuilder {
          */
         private TypeElement getTypeElement(Class<?> clazz) {
             return elements.getTypeElement(clazz.getCanonicalName());
+        }
+
+        /**
+         * Returns true if the given node statically evaluates to {@code value} and has no side
+         * effects.
+         *
+         * @param n a node
+         * @return true if the node is equivalent to a literal with value {@code value}
+         */
+        private static boolean isConstantBoolean(Node n, boolean value) {
+            if (n instanceof BooleanLiteralNode) {
+                return ((BooleanLiteralNode) n).getValue() == value;
+            } else if (n instanceof ConditionalNotNode) {
+                return isConstantBoolean(((ConditionalNotNode) n).getOperand(), !value);
+            } else {
+                return false;
+            }
         }
     }
 
