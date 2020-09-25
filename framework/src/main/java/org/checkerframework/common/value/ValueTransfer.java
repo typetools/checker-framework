@@ -250,8 +250,8 @@ public class ValueTransfer extends CFTransfer {
      */
     private CFValue createBooleanCFValue(boolean value) {
         return analysis.createSingleAnnotationValue(
-                value ? atypefactory.BOOLEAN_TRUE : atypefactory.BOOLEAN_FALSE,
-                atypefactory.types.getPrimitiveType(TypeKind.BOOLEAN));
+                value ? atypeFactory.BOOLEAN_TRUE : atypeFactory.BOOLEAN_FALSE,
+                atypeFactory.types.getPrimitiveType(TypeKind.BOOLEAN));
     }
 
     /**
