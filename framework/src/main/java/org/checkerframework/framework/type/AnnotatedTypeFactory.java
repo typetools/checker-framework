@@ -490,7 +490,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     break;
                 case "ajavas":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
-                    wholeProgramInference = new WholeProgramInferenceJavaParser(this);
+                    wholeProgramInference =
+                            new WholeProgramInferenceJavaParser(this, !isNullnessChecker);
                     break;
                 default:
                     throw new UserError(

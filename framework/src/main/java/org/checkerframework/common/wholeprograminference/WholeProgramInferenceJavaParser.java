@@ -7,6 +7,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.Type;
@@ -59,6 +60,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -97,15 +99,20 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /** For calling declarationFromElement. */
     private AnnotatedTypeFactory atypeFactory;
 
+    /** Indicates whether assignments where the rhs is null should be ignored. */
+    private final boolean ignoreNullAssignments;
+
     /**
      * Constructs a {@code WholeProgramInferenceJavaParser} which has not yet inferred any
      * annotations.
      */
-    public WholeProgramInferenceJavaParser(AnnotatedTypeFactory atypeFactory) {
+    public WholeProgramInferenceJavaParser(
+            AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
         this.atypeFactory = atypeFactory;
         classes = new HashMap<>();
         modifiedFiles = new HashSet<>();
         sourceFiles = new HashMap<>();
+        this.ignoreNullAssignments = ignoreNullAssignments;
     }
 
     @Override
@@ -143,6 +150,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper method =
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        // TODO: Fix this, find a more precise way to test.
+        if (method == null && methodElt.getSimpleName().contentEquals("valueOf")) {
+            return;
+        }
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, file, method, arguments);
@@ -180,7 +191,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-
             updateAnnotationSetAtLocation(
                     executable.getParameterType(argATM, atf, i),
                     atf,
@@ -488,8 +498,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
             TypeUseLocation defLoc) {
-        // TODO: Ignore null types here? See corresponding place in
-        // WholeProgramInferenceScenesStorage
+        if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
+            return;
+        }
         AnnotatedTypeMirror atmFromJaif =
                 AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
         updateATMWithLUB(atf, rhsATM, atmFromJaif);
@@ -661,7 +672,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         String path = getSourceFilePath(mostEnclosing);
         addSourceFile(path);
         CompilationUnitWrapper wrapper = sourceFiles.get(path);
-        ClassOrInterfaceDeclaration javaParserNode =
+        TypeDeclaration<?> javaParserNode =
                 wrapper.getClassOrInterfaceDeclarationByName(
                         mostEnclosing.getSimpleName().toString());
         // ClassTree mostEnclosingTree = (ClassTree)
@@ -686,7 +697,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     private void createWrappersForClass(
             ClassTree javacClass,
-            ClassOrInterfaceDeclaration javaParserClass,
+            TypeDeclaration<?> javaParserClass,
             CompilationUnitWrapper wrapper) {
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
@@ -711,7 +722,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
                     private void addClass(ClassTree tree) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-                        System.out.println("In addClass for: " + classElt);
                         String className = getClassName(classElt);
                         ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
                         if (!classes.containsKey(className)) {
@@ -748,6 +758,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     @Override
                     public void processVariable(
                             VariableTree javacTree, VariableDeclarator javaParserNode) {
+                        // This seems to occur when javacTree is a local variable in the second
+                        // class located in a source file. If this check return false, then the
+                        // below call to TreeUtils.elementFromDeclaration causes a crash.
+                        if (TreeUtils.elementFromTree(javacTree) == null) {
+                            return;
+                        }
+
                         VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
                         if (!elt.getKind().isField()) {
                             return;
@@ -756,11 +773,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         String className = getEnclosingClassName(elt);
                         ClassOrInterfaceWrapper enclosingClass = classes.get(className);
                         String fieldName = javacTree.getName().toString();
-                        if (enclosingClass == null) {
-                            System.out.println("Enclosing class for: " + javacTree + " was null");
-                            System.out.println("The class name: " + className);
-                        }
-
                         if (!enclosingClass.fields.containsKey(fieldName)) {
                             enclosingClass.fields.put(fieldName, new FieldWrapper(javaParserNode));
                         }
@@ -768,144 +780,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 };
         visitor.visitClass(javacClass, javaParserClass);
     }
-
-    /**
-     * Reads the Java source file at {@code path} and stores its types and methods, making them
-     * available to add inferred annotations to.
-     *
-     * @param path path to a Java source file to add
-     */
-    // private void addSourceFile(String path) {
-    // if (sourceFiles.containsKey(path)) {
-    // return;
-    // }
-    //
-    // List<CompilationUnitWrapper> fileRoots = new ArrayList<>();
-    //
-    // try {
-    // Source source = new Source(path);
-    // Set<CompilationUnitTree> compilationUnits = source.parse();
-    // for (CompilationUnitTree root : compilationUnits) {
-    // root.accept(
-    // new TreeScannerWithDefaults() {
-    // @Override
-    // public void defaultAction(Tree tree) {
-    // JCTree jctree = (JCTree) tree;
-    // if (tree.getKind() == Tree.Kind.CLASS
-    // || tree.getKind() == Tree.Kind.VARIABLE
-    // || tree.getKind() == Tree.Kind.METHOD) {
-    // if (TreeInfo.symbolFor((JCTree) tree) == null) {
-    // System.out.println("Tree with no element: " + jctree);
-    // }
-    // }
-    // }
-    // },
-    // null);
-    // CompilationUnitWrapper javaParserRoot = addCompilationUnit(root, path);
-    // fileRoots.add(javaParserRoot);
-    // }
-    //
-    // sourceFiles.put(path, fileRoots);
-    // modifiedFiles.add(path);
-    // } catch (CompilerException | IOException e) {
-    // throw new BugInCF("Failed to read java file: " + path, e);
-    // }
-    // }
-    //
-    /**
-     * Initializes storage for the types and methods in root, which must be the top-level tree
-     * created from parsing the Java source file at {@code path} with javac.
-     *
-     * <p>Parser the file at {@code path} with JavaParser. For each location for which annotations
-     * may be inferred, creates a wrapper for that location that annotations may be added to that
-     * contains the JavaParser node for that location so that annotations may be transferred onto
-     * JavaParser.
-     *
-     * @param root root of tree parsed from file at {@code path} parsed with javac
-     * @param path path to source file containing the compilation root
-     */
-    // private CompilationUnitWrapper addCompilationUnit(CompilationUnitTree root, String path)
-    // throws IOException {
-    // CompilationUnit javaParserRoot =
-    // StaticJavaParser.parse(root.getSourceFile().openInputStream());
-    // // LexicalPreservingPrinter.setup(javaParserRoot);
-    // CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
-    // JointJavacJavaParserVisitor visitor =
-    // new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
-    // @Override
-    // public void processClass(
-    // ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
-    // addClassTree(javacTree);
-    // }
-    //
-    // @Override
-    // public void processNewClass(
-    // NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
-    // if (javacTree.getClassBody() != null) {
-    // addClassTree(javacTree.getClassBody());
-    // }
-    // }
-    //
-    // private void addClassTree(ClassTree tree) {
-    // System.out.println("In addClassTree for tree: " + tree.getSimpleName());
-    // System.out.println(
-    // "The symbol for this is: " + TreeInfo.symbolFor((JCTree) tree));
-    // System.out.println(
-    // "Internally, got: "
-    // + (TypeElement) TreeUtils.elementFromTree(tree));
-    // TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-    // String className = getClassName(classElt);
-    // ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
-    // if (!classes.containsKey(className)) {
-    // classes.put(className, typeWrapper);
-    // }
-    //
-    // wrapper.types.add(typeWrapper);
-    // }
-    //
-    // @Override
-    // public void processMethod(
-    // MethodTree javacTree, MethodDeclaration javaParserNode) {
-    // addCallableDeclaration(javacTree, javaParserNode);
-    // }
-    //
-    // @Override
-    // public void processMethod(
-    // MethodTree javacTree, ConstructorDeclaration javaParserNode) {
-    // addCallableDeclaration(javacTree, javaParserNode);
-    // }
-    //
-    // private void addCallableDeclaration(
-    // MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-    // ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
-    // String className = getEnclosingClassName(elt);
-    // ClassOrInterfaceWrapper enclosingClass = classes.get(className);
-    // String executableName = JVMNames.getJVMMethodSignature(javacTree);
-    // if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
-    // enclosingClass.callableDeclarations.put(
-    // executableName, new CallableDeclarationWrapper(javaParserNode));
-    // }
-    // }
-    //
-    // @Override
-    // public void processVariable(
-    // VariableTree javacTree, VariableDeclarator javaParserNode) {
-    // VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
-    // if (!elt.getKind().isField()) {
-    // return;
-    // }
-    //
-    // String className = getEnclosingClassName(elt);
-    // ClassOrInterfaceWrapper enclosingClass = classes.get(className);
-    // String fieldName = javacTree.getName().toString();
-    // if (!enclosingClass.fields.containsKey(fieldName)) {
-    // enclosingClass.fields.put(fieldName, new FieldWrapper(javaParserNode));
-    // }
-    // }
-    // };
-    // visitor.visitCompilationUnit(root, javaParserRoot);
-    // return wrapper;
-    // }
 
     /**
      * Calls {@link #addSourceFile(String)} for the file containing the given element.
@@ -927,7 +801,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         CompilationUnitWrapper wrapper = sourceFiles.get(path);
         ClassTree mostEnclosingTree =
                 (ClassTree) atypeFactory.declarationFromElement(mostEnclosing);
-        ClassOrInterfaceDeclaration javaParserNode =
+        TypeDeclaration<?> javaParserNode =
                 wrapper.getClassOrInterfaceDeclarationByName(
                         mostEnclosing.getSimpleName().toString());
         createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
@@ -1028,7 +902,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
-        public ClassOrInterfaceDeclaration getClassOrInterfaceDeclarationByName(String name) {
+        public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
             Optional<ClassOrInterfaceDeclaration> classDecl = declaration.getClassByName(name);
             if (classDecl.isPresent()) {
                 return classDecl.get();
@@ -1038,6 +912,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     declaration.getInterfaceByName(name);
             if (interfaceDecl.isPresent()) {
                 return interfaceDecl.get();
+            }
+
+            Optional<EnumDeclaration> enumDecl = declaration.getEnumByName(name);
+            if (enumDecl.isPresent()) {
+                return enumDecl.get();
             }
 
             throw new BugInCF("Requesting declaration for type that doesn't exist: " + name);
@@ -1210,8 +1089,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
 
             if (receiverType != null) {
-                WholeProgramInferenceJavaParser.transferAnnotations(
-                        receiverType, declaration.getReceiverParameter().get().getType());
+                // TODO: Remove this check and add a receiver parameter instead.
+                if (declaration.getReceiverParameter().isPresent()) {
+                    WholeProgramInferenceJavaParser.transferAnnotations(
+                            receiverType, declaration.getReceiverParameter().get().getType());
+                }
             }
 
             if (parameterTypes == null) {

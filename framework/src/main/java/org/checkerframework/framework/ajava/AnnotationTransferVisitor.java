@@ -10,6 +10,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -32,11 +33,13 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
 
     @Override
     public void visit(ClassOrInterfaceType target, AnnotatedTypeMirror type) {
-        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
-        if (target.getTypeArguments().isPresent()) {
-            NodeList<Type> types = target.getTypeArguments().get();
-            for (int i = 0; i < types.size(); i++) {
-                types.get(i).accept(this, declaredType.getTypeArguments().get(i));
+        if (type.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+            if (target.getTypeArguments().isPresent()) {
+                NodeList<Type> types = target.getTypeArguments().get();
+                for (int i = 0; i < types.size(); i++) {
+                    types.get(i).accept(this, declaredType.getTypeArguments().get(i));
+                }
             }
         }
 
