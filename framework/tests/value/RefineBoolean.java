@@ -2,51 +2,67 @@ import org.checkerframework.common.value.qual.BoolVal;
 
 public class RefineBoolean {
 
+    @BoolVal(true) boolean fTrue = true;
+
+    @BoolVal(false) boolean fFalse = false;
+
     void test1(boolean x) {
         if (x == false) {
-            @BoolVal(false) boolean y = x;
+            fFalse = x;
         }
     }
 
     void test2(boolean x) {
         if (false == x) {
-            @BoolVal(false) boolean y = x;
+            fFalse = x;
         }
     }
 
     void test3(boolean x) {
         if (x != true) {
-            @BoolVal(false) boolean y = x;
+            fFalse = x;
         }
     }
 
     void test4(boolean x) {
         if (true != x) {
-            @BoolVal(false) boolean y = x;
+            fFalse = x;
         }
     }
 
     void test5(boolean x) {
-        if (x == true) {
-            @BoolVal(true) boolean y = x;
+        if (!x) {
+            fFalse = x;
         }
     }
 
     void test6(boolean x) {
-        if (true == x) {
-            @BoolVal(true) boolean y = x;
+        if (x == true) {
+            fTrue = x;
         }
     }
 
     void test7(boolean x) {
-        if (false != x) {
-            @BoolVal(true) boolean y = x;
+        if (true == x) {
+            fTrue = x;
         }
     }
 
     void test8(boolean x) {
+        if (false != x) {
+            fTrue = x;
+        }
+    }
+
+    void test9(boolean x) {
         if (x != false) {
-            @BoolVal(true) boolean y = x;
+            fTrue = x;
+        }
+    }
+
+    void test10(boolean x) {
+        if (x) {
+            fTrue = x;
         }
     }
 }
