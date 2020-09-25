@@ -42,6 +42,10 @@ public class RefineUnknownToIntRange {
             @BoolVal(false) boolean y = x;
         }
 
+        if (!x) {
+            @BoolVal(false) boolean y = x;
+        }
+
         Object o = new Object();
         Object o2 = new Object();
         if (o == o2) {}
