@@ -305,7 +305,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @see #getAnnotations
      * @return the annotation on this, or null if none (which can only happen if {@code this} is a
-     *     type variable)
+     *     type variable or wildcard)
      */
     public final @Nullable AnnotationMirror getAnnotation() {
         if (annotations.isEmpty()) {
