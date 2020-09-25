@@ -67,54 +67,64 @@ public class LombokSupport implements BuilderFrameworkSupport {
      * A map from elements that have a lombok.Builder.Default annotation to the simple property name
      * that should be treated as defaulted.
      *
-     * <p>This cache is kept so that when declarationFromElement doesn't work, defaults are still
-     * handled correctly.
+     * <p>This cache is kept because the usual method for checking that an element has been
+     * defaulted (calling declarationFromElement and examining the resulting VariableTree) only
+     * works if a corresponding Tree is available (for code that is only available as bytecode, no
+     * such Tree is available and that method returns null). See the code in {@link
+     * #getLombokRequiredProperties(Element)} that handles fields.
      */
     private final Map<Element, Name> defaultedElements = new HashMap<>();
 
     @Override
-    public boolean isBuilderBuildMethod(ExecutableElement element) {
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+    public boolean isBuilderBuildMethod(ExecutableElement candidateBuildElement) {
+        TypeElement candidateGeneratedBuilderElement =
+                (TypeElement) candidateBuildElement.getEnclosingElement();
 
-        if ((ElementUtils.hasAnnotation(enclosingElement, "lombok.Generated")
-                        || ElementUtils.hasAnnotation(element, "lombok.Generated"))
-                && enclosingElement.getSimpleName().toString().endsWith("Builder")) {
-            return element.getSimpleName().contentEquals("build");
+        if ((ElementUtils.hasAnnotation(candidateGeneratedBuilderElement, "lombok.Generated")
+                        || ElementUtils.hasAnnotation(candidateBuildElement, "lombok.Generated"))
+                && candidateGeneratedBuilderElement
+                        .getSimpleName()
+                        .toString()
+                        .endsWith("Builder")) {
+            return candidateBuildElement.getSimpleName().contentEquals("build");
         }
         return false;
     }
 
     @Override
-    public void handleBuilderBuildMethod(AnnotatedExecutableType t) {
-        ExecutableElement element = t.getElement();
+    public void handleBuilderBuildMethod(AnnotatedExecutableType builderBuildType) {
+        ExecutableElement buildElement = builderBuildType.getElement();
 
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-        Element nextEnclosingElement = enclosingElement.getEnclosingElement();
+        TypeElement generatedBuilderElement = (TypeElement) buildElement.getEnclosingElement();
+        // The class with the @lombok.Builder annotation...
+        Element annotatedWithBuilderElement = generatedBuilderElement.getEnclosingElement();
 
-        List<String> requiredProperties = getLombokRequiredProperties(nextEnclosingElement);
+        List<String> requiredProperties = getLombokRequiredProperties(annotatedWithBuilderElement);
         AnnotationMirror newCalledMethodsAnno =
                 atypeFactory.createAccumulatorAnnotation(requiredProperties);
-        t.getReceiverType().addAnnotation(newCalledMethodsAnno);
+        builderBuildType.getReceiverType().addAnnotation(newCalledMethodsAnno);
     }
 
     @Override
-    public boolean isToBuilderMethod(ExecutableElement e) {
-        return e.getSimpleName().contentEquals("toBuilder")
-                && (ElementUtils.hasAnnotation(e, "lombok.Generated")
-                        || ElementUtils.hasAnnotation(e.getEnclosingElement(), "lombok.Generated"));
+    public boolean isToBuilderMethod(ExecutableElement candidateToBuilderElement) {
+        return candidateToBuilderElement.getSimpleName().contentEquals("toBuilder")
+                && (ElementUtils.hasAnnotation(candidateToBuilderElement, "lombok.Generated")
+                        || ElementUtils.hasAnnotation(
+                                candidateToBuilderElement.getEnclosingElement(),
+                                "lombok.Generated"));
     }
 
     @Override
-    public void handleToBuilderMethod(AnnotatedExecutableType t) {
-        AnnotatedTypeMirror returnType = t.getReturnType();
-        ExecutableElement element = t.getElement();
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-        handleToBuilderType(returnType, enclosingElement);
+    public void handleToBuilderMethod(AnnotatedExecutableType toBuilderType) {
+        AnnotatedTypeMirror returnType = toBuilderType.getReturnType();
+        ExecutableElement buildElement = toBuilderType.getElement();
+        TypeElement generatedBuilderElement = (TypeElement) buildElement.getEnclosingElement();
+        handleToBuilderType(returnType, generatedBuilderElement);
     }
 
     /**
      * Add, to a type, a CalledMethods annotation that states that all required setters have been
-     * called. The type can be the return type of toBuilder or the corresponding generated "copy"
+     * called. The type can be the return type of toBuilder or of the corresponding generated "copy"
      * constructor.
      *
      * @param type type to update
@@ -141,7 +151,8 @@ public class LombokSupport implements BuilderFrameworkSupport {
             if (member.getKind() == ElementKind.FIELD) {
                 // Lombok never generates non-null fields with initializers in builders, unless
                 // the field is annotated with @Default or @Singular, which are handled elsewhere.
-                // So, this code doesn't need to consider fields with initializers.
+                // So, this code doesn't need to consider whether the field has or does not have
+                // initializers.
                 for (AnnotationMirror anm :
                         atypeFactory.getElementUtils().getAllAnnotationMirrors(member)) {
                     if (NONNULL_ANNOTATIONS.contains(AnnotationUtils.annotationName(anm))) {

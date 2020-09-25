@@ -27,6 +27,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -76,18 +77,20 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     @Override
-    public boolean isBuilderBuildMethod(ExecutableElement element) {
-        TypeElement builderElement = (TypeElement) element.getEnclosingElement();
+    public boolean isBuilderBuildMethod(ExecutableElement candidateBuildElement) {
+        TypeElement builderElement = (TypeElement) candidateBuildElement.getEnclosingElement();
         if (ElementUtils.hasAnnotation(
                 builderElement, getAutoValuePackageName() + ".AutoValue.Builder")) {
             Element classContainingBuilderElement = builderElement.getEnclosingElement();
-            assert ElementUtils.hasAnnotation(
-                            classContainingBuilderElement, getAutoValuePackageName() + ".AutoValue")
-                    : "class "
-                            + classContainingBuilderElement.getSimpleName()
-                            + " is missing @AutoValue annotation";
+            if (!ElementUtils.hasAnnotation(
+                    classContainingBuilderElement, getAutoValuePackageName() + ".AutoValue")) {
+                throw new BugInCF(
+                        "class "
+                                + classContainingBuilderElement.getSimpleName()
+                                + " is missing @AutoValue annotation");
+            }
             // it is a build method if it returns the type with the @AutoValue annotation
-            if (TypesUtils.getTypeElement(element.getReturnType())
+            if (TypesUtils.getTypeElement(candidateBuildElement.getReturnType())
                     .equals(classContainingBuilderElement)) {
                 return true;
             }
@@ -96,9 +99,9 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     }
 
     @Override
-    public void handleBuilderBuildMethod(AnnotatedExecutableType t) {
+    public void handleBuilderBuildMethod(AnnotatedExecutableType builderBuildType) {
 
-        ExecutableElement element = t.getElement();
+        ExecutableElement element = builderBuildType.getElement();
         TypeElement builderElement = (TypeElement) element.getEnclosingElement();
         TypeElement autoValueClassElement = (TypeElement) builderElement.getEnclosingElement();
         AnnotationMirror newCalledMethodsAnno =
@@ -106,47 +109,54 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
         // Only add the new @CalledMethods annotation if there is not already a @CalledMethods
         // annotation present.
         AnnotationMirror explicitCalledMethodsAnno =
-                t.getReceiverType()
+                builderBuildType
+                        .getReceiverType()
                         .getAnnotationInHierarchy(
                                 atypeFactory
                                         .getQualifierHierarchy()
                                         .getTopAnnotation(newCalledMethodsAnno));
         if (explicitCalledMethodsAnno == null) {
-            t.getReceiverType().addAnnotation(newCalledMethodsAnno);
+            builderBuildType.getReceiverType().addAnnotation(newCalledMethodsAnno);
         }
     }
 
     @Override
-    public boolean isToBuilderMethod(ExecutableElement e) {
-        if (!"toBuilder".equals(e.getSimpleName().toString())) {
+    public boolean isToBuilderMethod(ExecutableElement candidateToBuilderElement) {
+        if (!"toBuilder".equals(candidateToBuilderElement.getSimpleName().toString())) {
             return false;
         }
 
-        TypeElement enclosingElement = (TypeElement) e.getEnclosingElement();
+        TypeElement candidateClassContainingToBuilder =
+                (TypeElement) candidateToBuilderElement.getEnclosingElement();
         boolean isAbstractAV =
-                isAutoValueGenerated(enclosingElement)
-                        && e.getModifiers().contains(Modifier.ABSTRACT);
-        TypeMirror superclass = enclosingElement.getSuperclass();
+                isAutoValueGenerated(candidateClassContainingToBuilder)
+                        && candidateToBuilderElement.getModifiers().contains(Modifier.ABSTRACT);
+        TypeMirror superclassOfClassContainingToBuilder =
+                candidateClassContainingToBuilder.getSuperclass();
         boolean superIsAV = false;
-        if (superclass.getKind() != TypeKind.NONE) {
-            superIsAV = isAutoValueGenerated(TypesUtils.getTypeElement(superclass));
+        if (superclassOfClassContainingToBuilder.getKind() != TypeKind.NONE) {
+            superIsAV =
+                    isAutoValueGenerated(
+                            TypesUtils.getTypeElement(superclassOfClassContainingToBuilder));
         }
         return superIsAV || isAbstractAV;
     }
 
     @Override
-    public void handleToBuilderMethod(AnnotatedExecutableType t) {
-        AnnotatedTypeMirror returnType = t.getReturnType();
-        ExecutableElement e = t.getElement();
-        TypeElement enclosingElement = (TypeElement) e.getEnclosingElement();
+    public void handleToBuilderMethod(AnnotatedExecutableType toBuilderType) {
+        AnnotatedTypeMirror returnType = toBuilderType.getReturnType();
+        ExecutableElement toBuilderElement = toBuilderType.getElement();
+        TypeElement classContainingToBuilder = (TypeElement) toBuilderElement.getEnclosingElement();
         // Because of the way that the check in #isToBuilderMethod works, if the code reaches this
         // point and this condition is false, the other condition MUST be true (otherwise,
         // isToBuilderMethod would have returned false).
-        if (isAutoValueGenerated(enclosingElement)
-                && e.getModifiers().contains(Modifier.ABSTRACT)) {
-            handleToBuilderType(returnType, returnType.getUnderlyingType(), enclosingElement);
+        if (isAutoValueGenerated(classContainingToBuilder)
+                && toBuilderElement.getModifiers().contains(Modifier.ABSTRACT)) {
+            handleToBuilderType(
+                    returnType, returnType.getUnderlyingType(), classContainingToBuilder);
         } else {
-            TypeElement superElement = TypesUtils.getTypeElement(enclosingElement.getSuperclass());
+            TypeElement superElement =
+                    TypesUtils.getTypeElement(classContainingToBuilder.getSuperclass());
             handleToBuilderType(returnType, returnType.getUnderlyingType(), superElement);
         }
     }
@@ -163,11 +173,11 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
 
     /**
      * Add, to {@code type}, a CalledMethods annotation with all required methods called. The type
-     * can be the return type of toBuilder or the corresponding generated "copy" constructor.
+     * can be the return type of toBuilder or of the corresponding generated "copy" constructor.
      *
      * @param type type to update
      * @param builderType type of abstract @AutoValue.Builder class
-     * @param classElement corresponding AutoValue class
+     * @param classElement AutoValue class corresponding to {@code type}
      */
     private void handleToBuilderType(
             AnnotatedTypeMirror type, TypeMirror builderType, TypeElement classElement) {
@@ -445,8 +455,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
      * Get all the supertypes of a given class, including that class.
      *
      * @param symbol symbol for a class
-     * @return list including the class and all its supertypes, with a guarantee that direct
-     *     subtypes (i.e. those that appear in extends clauses) appear before supertypes
+     * @return list including the class and all its supertypes, with a guarantee that supertypes
+     *     (i.e. those that appear in extends clauses) appear before indirect supertypes
      */
     private List<Element> getAllSupertypes(Symbol symbol) {
         Types types =

@@ -178,6 +178,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
             ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
             for (Tree filterTree : tree.getArguments()) {
+                if (TreeUtils.isMethodInvocation(
+                        filterTree, collectionsSingletonList, getProcessingEnv())) {
+                    // Descend into a call to Collections.singletonList()
+                    filterTree = ((MethodInvocationTree) filterTree).getArguments().get(0);
+                }
                 String adjustedMethodName = filterTreeToMethodName(filterTree, valueATF);
                 if (adjustedMethodName != null) {
                     return adjustedMethodName;
@@ -220,16 +225,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                         ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
                 return filterKindToMethodName(withNameArg);
             }
-
-            if (TreeUtils.isMethodInvocation(
-                    filterTree, collectionsSingletonList, getProcessingEnv())) {
-                // Descend into a call to Collections.singletonList()
-                filterTree = filterTreeAsMethodInvocation.getArguments().get(0);
-            } else {
-                // Proceed leftward (to the receiver) in a fluent call sequence.
-                filterTree =
-                        TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
-            }
+            // Proceed leftward (to the receiver) in a fluent call sequence.
+            filterTree = TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
         }
         // The loop has reached the beginning of a fluent sequence of method calls.
         // If the ultimate receiver at the beginning of that fluent sequence is a
