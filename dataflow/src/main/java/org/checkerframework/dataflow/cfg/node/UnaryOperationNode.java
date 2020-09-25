@@ -18,11 +18,22 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public abstract class UnaryOperationNode extends Node {
 
-    // The tree might not be a unary tree, if this is a ConditionalNot created from an occurrence of
-    // "... != true" in the source code.
+    /**
+     * The tree for this unary operation.
+     *
+     * <p>The tree might not be a unary tree, if this is a ConditionalNot created from an occurrence
+     * of "... != true" in the source code.
+     */
     protected final Tree tree;
+    /** The operand of the unary operation. */
     protected final Node operand;
 
+    /**
+     * Create a new UnaryOperationNode.
+     *
+     * @param tree the tree for this unary operation
+     * @param operand the operand of the unary operation
+     */
     protected UnaryOperationNode(Tree tree, Node operand) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;

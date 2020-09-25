@@ -5171,6 +5171,7 @@ public class CFGBuilder {
          * effects.
          *
          * @param n a node
+         * @param value the boolean value that the node is tested against
          * @return true if the node is equivalent to a literal with value {@code value}
          */
         private static boolean isConstantBoolean(Node n, boolean value) {
