@@ -322,7 +322,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
 
         // Don't use atypeFactory.getPath, b/c that depends on the visitorState path.
         visitorState.setPath(TreePath.getPath(root, classTree));
@@ -342,7 +342,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setClassTree(preCT);
             visitorState.setMethodReceiver(preAMT);
             visitorState.setMethodTree(preMT);
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
         return null;
     }
@@ -1156,7 +1156,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitVariable(VariableTree node, Void p) {
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         AnnotatedTypeMirror variableType;
         if (getCurrentPath().getParentPath() != null
                 && getCurrentPath().getParentPath().getLeaf().getKind()
@@ -1185,7 +1185,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             return super.visitVariable(node, p);
         } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
     }
 
@@ -1320,7 +1320,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         visitorState.setAssignmentContext(
                 Pair.of(
                         (Tree) node.getVariable(),
@@ -1330,7 +1330,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     node.getVariable(), node.getExpression(), "assignment.type.incompatible");
             return super.visitAssignment(node, p);
         } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
     }
 
@@ -1809,7 +1809,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return super.visitReturn(node, p);
         }
 
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         try {
 
             Tree enclosing =
@@ -1839,7 +1839,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             return super.visitReturn(node, p);
         } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
     }
 
@@ -1901,7 +1901,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             AnnotatedTypeMirror expected = annoTypes.get(at.getVariable().toString());
-            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+            Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
+                    visitorState.getAssignmentContext();
 
             {
                 // Determine and set the new assignment context.
@@ -1940,7 +1941,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     }
                 }
             } finally {
-                visitorState.setAssignmentContext(preAssCtxt);
+                visitorState.setAssignmentContext(preAssignmentContext);
             }
         }
         return null;
@@ -2220,13 +2221,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         try {
             visitorState.setAssignmentContext(null);
             scan(node.getExpression(), p);
             scan(node.getIndex(), p);
         } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
         return null;
     }
@@ -3020,7 +3021,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         executableName,
                         listToString(paramNames));
 
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         try {
             for (int i = 0; i < size; ++i) {
                 visitorState.setAssignmentContext(
@@ -3037,7 +3038,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 scan(passedArgs.get(i), null);
             }
         } finally {
-            visitorState.setAssignmentContext(preAssCtxt);
+            visitorState.setAssignmentContext(preAssignmentContext);
         }
     }
 

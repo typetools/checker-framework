@@ -941,7 +941,7 @@ public class AnnotatedTypes {
                         + " Arguments: "
                         + trees;
         List<AnnotatedTypeMirror> types = new ArrayList<>();
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
@@ -952,7 +952,7 @@ public class AnnotatedTypes {
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
         } finally {
-            atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
+            atypeFactory.getVisitorState().setAssignmentContext(preAssignmentContext);
         }
         return types;
     }
