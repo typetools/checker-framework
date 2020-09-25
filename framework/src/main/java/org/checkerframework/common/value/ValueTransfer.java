@@ -30,6 +30,7 @@ import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
 import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
@@ -43,6 +44,7 @@ import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
@@ -236,7 +238,40 @@ public class ValueTransfer extends CFTransfer {
         return stringValues.isEmpty() ? Collections.singletonList("null") : stringValues;
     }
 
-    /** Get possible boolean values from @BoolVal. */
+    /**
+     * Create a @BoolVal CFValue for the given boolean value.
+     *
+     * @param value the value for the @BoolVal annotation
+     * @return a @BoolVal CFValue for the given boolean value
+     */
+    private CFValue createBooleanCFValue(boolean value) {
+        return analysis.createSingleAnnotationValue(
+                value ? atypefactory.BOOLEAN_TRUE : atypefactory.BOOLEAN_FALSE,
+                atypefactory.types.getPrimitiveType(TypeKind.BOOLEAN));
+    }
+
+    /**
+     * Get the unique possible boolean value from @BoolVal. Returns null if not (including if the
+     * CFValue is not @BoolVal).
+     *
+     * @param value a CFValue
+     * @return the a boolean if {@code value} represents a single boolean value; otherwise null
+     */
+    private Boolean getBooleanValue(CFValue value) {
+        AnnotationMirror boolAnno =
+                AnnotationUtils.getAnnotationByName(
+                        value.getAnnotations(), ValueAnnotatedTypeFactory.BOOLVAL_NAME);
+        return ValueAnnotatedTypeFactory.getBooleanValue(boolAnno);
+    }
+
+    /**
+     * Get possible boolean values for a node. Returns null if there is no estimate, because the
+     * node's value is not @BoolVal.
+     *
+     * @param subNode the node whose value to obtain
+     * @param p the transfer input in which to look up values
+     * @return the possible boolean values for the node
+     */
     private List<Boolean> getBooleanValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno =
@@ -1543,6 +1578,68 @@ public class ValueTransfer extends CFTransfer {
                 return resultValues;
         }
         throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitEqualTo(
+            EqualToNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> res = super.visitEqualTo(n, p);
+
+        Node leftN = n.getLeftOperand();
+        Node rightN = n.getRightOperand();
+        CFValue leftV = p.getValueOfSubNode(leftN);
+        CFValue rightV = p.getValueOfSubNode(rightN);
+
+        // if annotations differ, use the one that is more precise for both
+        // sides (and add it to the store if possible)
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, false);
+
+        Boolean leftBoolean = getBooleanValue(leftV);
+        if (leftBoolean != null) {
+            CFValue notLeftV = createBooleanCFValue(!leftBoolean);
+            res = strengthenAnnotationOfEqualTo(res, leftN, rightN, notLeftV, rightV, true);
+            res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, notLeftV, true);
+        }
+        Boolean rightBoolean = getBooleanValue(rightV);
+        if (rightBoolean != null) {
+            CFValue notRightV = createBooleanCFValue(!rightBoolean);
+            res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, notRightV, true);
+            res = strengthenAnnotationOfEqualTo(res, rightN, leftN, notRightV, leftV, true);
+        }
+
+        return res;
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitNotEqual(
+            NotEqualNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> res = super.visitNotEqual(n, p);
+
+        Node leftN = n.getLeftOperand();
+        Node rightN = n.getRightOperand();
+        CFValue leftV = p.getValueOfSubNode(leftN);
+        CFValue rightV = p.getValueOfSubNode(rightN);
+
+        // if annotations differ, use the one that is more precise for both
+        // sides (and add it to the store if possible)
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, true);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, true);
+
+        Boolean leftBoolean = getBooleanValue(leftV);
+        if (leftBoolean != null) {
+            CFValue notLeftV = createBooleanCFValue(!leftBoolean);
+            res = strengthenAnnotationOfEqualTo(res, leftN, rightN, notLeftV, rightV, false);
+            res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, notLeftV, false);
+        }
+        Boolean rightBoolean = getBooleanValue(rightV);
+        if (rightBoolean != null) {
+            CFValue notRightV = createBooleanCFValue(!rightBoolean);
+            res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, notRightV, false);
+            res = strengthenAnnotationOfEqualTo(res, rightN, leftN, notRightV, leftV, false);
+        }
+
+        return res;
     }
 
     @Override

@@ -114,6 +114,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link PolyValue} annotation. */
     public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
+    /** The canonical @{@link PolyValue} annotation. */
+    public final AnnotationMirror BOOLEAN_TRUE =
+            createBooleanAnnotation(Collections.singletonList(true));
+
+    /** The canonical @{@link PolyValue} annotation. */
+    public final AnnotationMirror BOOLEAN_FALSE =
+            createBooleanAnnotation(Collections.singletonList(false));
+
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
 
@@ -743,6 +751,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
+            // TODO: This seems wasteful.  Why not create the 3 interesting AnnotationMirrors (with
+            // arguments {true}, {false}, and {true, false}, respectively) in advance and return one
+            // of them?  (Maybe an advantage of this implementation is that it is identical to
+            // some other implementations and therefore might be less error-prone.)
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
             builder.setValue("value", values);
             return builder.build();
@@ -1045,10 +1057,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
-     * empty list if no values are possible (for dead code). Returns null if any value is possible
-     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
-     * annotation so the argument is null.
+     * Returns the single possible boolean value, or null if there is not exactly one possible
+     * value.
+     *
+     * @see getBooleanValues
+     * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return the single possible boolean value, on null if that is not the case
+     */
+    public static Boolean getBooleanValue(AnnotationMirror boolAnno) {
+        if (boolAnno == null) {
+            return null;
+        }
+        List<Boolean> boolValues =
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+        Set<Boolean> boolSet = new TreeSet<>(boolValues);
+        if (boolSet.size() == 1) {
+            return boolSet.iterator().next();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the set of possible boolean values as a sorted list with no duplicate values. Returns
+     * the empty list if no values are possible (for dead code). Returns null if any value is
+     * possible -- that is, if no estimate can be made -- and this includes when there is no
+     * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
      */
