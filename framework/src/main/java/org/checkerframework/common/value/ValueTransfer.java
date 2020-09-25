@@ -74,7 +74,11 @@ public class ValueTransfer extends CFTransfer {
     /** The Value qualifier hierarchy. */
     protected final QualifierHierarchy hierarchy;
 
-    /** Create a new ValueTransfer. */
+    /**
+     * Create a new ValueTransfer.
+     *
+     * @param analysis the corresponding analysis
+     */
     public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypeFactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -469,7 +473,12 @@ public class ValueTransfer extends CFTransfer {
         }
     }
 
-    /** Gets a value checker annotation relevant for an array or a string. */
+    /**
+     * Gets a value checker annotation relevant for an array or a string.
+     *
+     * @param arrayOrStringNode the node whose annotation to return
+     * @return the value checker annotation for the array or a string
+     */
     private AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
         AnnotationMirror arrayOrStringAnno =
                 atypeFactory.getAnnotationMirror(arrayOrStringNode.getTree(), StringVal.class);
@@ -1307,6 +1316,10 @@ public class ValueTransfer extends CFTransfer {
      * Takes a list of result values (i.e. the values possible after the comparison) and creates the
      * appropriate annotation from them, then combines that annotation with the existing annotation
      * on the node. The resulting annotation is inserted into the store.
+     *
+     * @param store the store
+     * @param results the result values
+     * @param node the node whose existing annotation to refine
      */
     private void createAnnotationFromResultsAndAddToStore(
             CFStore store, List<?> results, Node node) {
@@ -1318,6 +1331,10 @@ public class ValueTransfer extends CFTransfer {
      * Takes a range and creates the appropriate annotation from it, then combines that annotation
      * with the existing annotation on the node. The resulting annotation is inserted into the
      * store.
+     *
+     * @param store the store
+     * @param range the range to create an annotation for
+     * @param node the node whose existing annotation to refine
      */
     private void createAnnotationFromRangeAndAddToStore(CFStore store, Range range, Node node) {
         AnnotationMirror anno = atypeFactory.createIntRangeAnnotation(range);

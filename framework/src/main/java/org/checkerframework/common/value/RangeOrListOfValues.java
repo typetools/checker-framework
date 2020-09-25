@@ -72,6 +72,9 @@ class RangeOrListOfValues {
     /**
      * Produces the most precise annotation that captures the information stored in this
      * RangeOrListofValues. The result is either a {@link ArrayLen} or a {@link ArrayLenRange}.
+     *
+     * @param atypeFactory the type factory
+     * @return an annotation correspending to this RangeOrListofValues
      */
     public AnnotationMirror createAnnotation(ValueAnnotatedTypeFactory atypeFactory) {
         if (isRange) {
