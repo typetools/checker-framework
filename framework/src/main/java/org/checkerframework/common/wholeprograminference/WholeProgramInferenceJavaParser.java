@@ -12,7 +12,8 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
+import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -22,6 +23,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,6 +54,7 @@ import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
+import org.checkerframework.framework.ajava.TreeScannerWithDefaults;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -409,6 +413,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     @Override
     public void writeResultsToFile(OutputFormat format, BaseTypeChecker checker) {
+        if (format != OutputFormat.AJAVA) {
+            throw new BugInCF("WholeProgramInferenceJavaParser used with non-ajava format");
+        }
+
         File outputDir = new File(AJAVA_FILES_PATH);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -442,7 +450,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 String outputPath = packageDir + File.separator + name;
                 try {
                     FileWriter writer = new FileWriter(outputPath);
-                    LexicalPreservingPrinter.print(root.declaration, writer);
+                    // LexicalPreservingPrinter.print(root.declaration, writer);
+                    PrettyPrinter prettyPrinter =
+                            new PrettyPrinter(new PrettyPrinterConfiguration());
+                    writer.write(prettyPrinter.print(root.declaration));
                     writer.close();
                 } catch (IOException e) {
                     throw new BugInCF("Error while writing ajava file", e);
@@ -657,6 +668,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             Source source = new Source(path);
             Set<CompilationUnitTree> compilationUnits = source.parse();
             for (CompilationUnitTree root : compilationUnits) {
+                root.accept(
+                        new TreeScannerWithDefaults() {
+                            @Override
+                            public void defaultAction(Tree tree) {
+                                JCTree jctree = (JCTree) tree;
+                                if (tree.getKind() == Tree.Kind.CLASS
+                                        || tree.getKind() == Tree.Kind.VARIABLE
+                                        || tree.getKind() == Tree.Kind.METHOD) {
+                                    if (TreeInfo.symbolFor((JCTree) tree) == null) {
+                                        System.out.println("Tree with no element: " + jctree);
+                                    }
+                                }
+                            }
+                        },
+                        null);
                 CompilationUnitWrapper javaParserRoot = addCompilationUnit(root, path);
                 fileRoots.add(javaParserRoot);
             }
@@ -667,6 +693,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             throw new BugInCF("Failed to read java file: " + path, e);
         }
     }
+
+    public void addClassTree(ClassTree tree) {}
 
     /**
      * Initializes storage for the types and methods in root, which must be the top-level tree
@@ -684,7 +712,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             throws IOException {
         CompilationUnit javaParserRoot =
                 StaticJavaParser.parse(root.getSourceFile().openInputStream());
-        LexicalPreservingPrinter.setup(javaParserRoot);
+        // LexicalPreservingPrinter.setup(javaParserRoot);
         CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
@@ -703,6 +731,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     }
 
                     private void addClassTree(ClassTree tree) {
+                        System.out.println("In addClassTree for tree: " + tree.getSimpleName());
+                        System.out.println(
+                                "The symbol for this is: " + TreeInfo.symbolFor((JCTree) tree));
+                        System.out.println(
+                                "Internally, got: "
+                                        + (TypeElement) TreeUtils.elementFromTree(tree));
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
                         String className = getClassName(classElt);
                         ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();

@@ -79,6 +79,7 @@ import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
@@ -476,12 +477,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (inferArg == null) {
                 inferArg = "jaifs";
             }
+            boolean isNullnessChecker =
+                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
             switch (inferArg) {
                 case "stubs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
+                    wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
                     break;
                 case "jaifs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
+                    wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
+                    break;
+                case "ajavas":
+                    wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
+                    wholeProgramInference = new WholeProgramInferenceJavaParser();
                     break;
                 default:
                     throw new UserError(
@@ -490,10 +499,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + System.lineSeparator()
                                     + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            // boolean isNullnessChecker =
-            // "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
-            // wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
-            wholeProgramInference = new WholeProgramInferenceJavaParser();
         } else {
             wholeProgramInference = null;
         }
@@ -1314,7 +1319,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param classTree ClassTree on which to perform preprocessing
      */
-    public void preProcessClassTree(ClassTree classTree) {}
+    public void preProcessClassTree(ClassTree classTree) {
+        if (!(wholeProgramInference instanceof WholeProgramInferenceJavaParser)) {
+            return;
+        }
+
+        WholeProgramInferenceJavaParser wpiJavaParser =
+                (WholeProgramInferenceJavaParser) wholeProgramInference;
+        wpiJavaParser.addClassTree(classTree);
+    }
 
     /**
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been
