@@ -251,11 +251,11 @@ public class ValueTransfer extends CFTransfer {
     }
 
     /**
-     * Get the unique possible boolean value from @BoolVal. Returns null if not (including if the
-     * CFValue is not @BoolVal).
+     * Get the unique possible boolean value from @BoolVal. Returns null if that is not the case
+     * (including if the CFValue is not @BoolVal).
      *
      * @param value a CFValue
-     * @return the a boolean if {@code value} represents a single boolean value; otherwise null
+     * @return theboolean if {@code value} represents a single boolean value; otherwise null
      */
     private Boolean getBooleanValue(CFValue value) {
         AnnotationMirror boolAnno =

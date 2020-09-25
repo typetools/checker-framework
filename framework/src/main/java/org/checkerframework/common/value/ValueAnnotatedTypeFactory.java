@@ -114,11 +114,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link PolyValue} annotation. */
     public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
-    /** The canonical @{@link PolyValue} annotation. */
+    /** The canonical @{@link BoolVal}(true) annotation. */
     public final AnnotationMirror BOOLEAN_TRUE =
             createBooleanAnnotation(Collections.singletonList(true));
 
-    /** The canonical @{@link PolyValue} annotation. */
+    /** The canonical @{@link BoolVal}(false) annotation. */
     public final AnnotationMirror BOOLEAN_FALSE =
             createBooleanAnnotation(Collections.singletonList(false));
 
