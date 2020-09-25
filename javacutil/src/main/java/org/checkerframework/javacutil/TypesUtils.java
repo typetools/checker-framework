@@ -833,6 +833,7 @@ public final class TypesUtils {
      *   <li>the first type is is integral and the second type is floating-point, or
      *   <li>both types are integral or both types are floating-point, and the first type is
      *       strictly narrower (represented by fewer bits) than the second type.
+     * </ul>
      *
      * @param a a primitive type
      * @param b a primitive type
