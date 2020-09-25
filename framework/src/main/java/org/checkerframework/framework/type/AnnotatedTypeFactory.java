@@ -490,7 +490,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     break;
                 case "ajavas":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
-                    wholeProgramInference = new WholeProgramInferenceJavaParser();
+                    wholeProgramInference = new WholeProgramInferenceJavaParser(this);
                     break;
                 default:
                     throw new UserError(
@@ -655,6 +655,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
     public void setRoot(@Nullable CompilationUnitTree root) {
+        if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
+            for (Tree typeDecl : root.getTypeDecls()) {
+                if (typeDecl.getKind() != Kind.CLASS) {
+                    continue;
+                }
+
+                ClassTree classTree = (ClassTree) typeDecl;
+                WholeProgramInferenceJavaParser wpiJavaParser =
+                        (WholeProgramInferenceJavaParser) wholeProgramInference;
+                wpiJavaParser.addClassTree(classTree);
+            }
+        }
+
         boolean shouldPrint = false;
         if (root != null && shouldPrint) {
             new TreePathScanner<Void, Void>() {
@@ -1319,15 +1332,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param classTree ClassTree on which to perform preprocessing
      */
-    public void preProcessClassTree(ClassTree classTree) {
-        if (!(wholeProgramInference instanceof WholeProgramInferenceJavaParser)) {
-            return;
-        }
-
-        WholeProgramInferenceJavaParser wpiJavaParser =
-                (WholeProgramInferenceJavaParser) wholeProgramInference;
-        wpiJavaParser.addClassTree(classTree);
-    }
+    public void preProcessClassTree(ClassTree classTree) {}
 
     /**
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been

@@ -1,12 +1,11 @@
 package org.checkerframework.common.wholeprograminference;
 
-import annotator.Source;
-import annotator.Source.CompilerException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -15,7 +14,6 @@ import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -23,9 +21,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -54,7 +52,6 @@ import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
-import org.checkerframework.framework.ajava.TreeScannerWithDefaults;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -95,13 +92,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * Mapping of source file paths to the collection of wrappers for compilation units parsed from
      * that file.
      */
-    private Map<String, List<CompilationUnitWrapper>> sourceFiles;
+    private Map<String, CompilationUnitWrapper> sourceFiles;
+
+    /** For calling declarationFromElement. */
+    private AnnotatedTypeFactory atypeFactory;
 
     /**
      * Constructs a {@code WholeProgramInferenceJavaParser} which has not yet inferred any
      * annotations.
      */
-    public WholeProgramInferenceJavaParser() {
+    public WholeProgramInferenceJavaParser(AnnotatedTypeFactory atypeFactory) {
+        this.atypeFactory = atypeFactory;
         classes = new HashMap<>();
         modifiedFiles = new HashSet<>();
         sourceFiles = new HashMap<>();
@@ -117,7 +118,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        String file = addSourceFileForElement(constructorElt);
+        String file = addClassesForElement(constructorElt);
         String className = getEnclosingClassName(constructorElt);
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper constructor =
@@ -137,7 +138,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        String file = addSourceFileForElement(methodElt);
+        String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(methodElt);
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper method =
@@ -201,7 +202,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        String file = addSourceFileForElement(methodElt);
+        String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(methodElt);
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper method =
@@ -240,7 +241,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
-        String file = addSourceFileForElement(methodElt);
+        String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(lhs);
         ClassOrInterfaceWrapper clazz = classes.get(className);
         // TODO: Could this be a constructor?
@@ -315,7 +316,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        String file = addSourceFileForElement(element);
+        String file = addClassesForElement(element);
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
         ClassOrInterfaceWrapper clazz = classes.get(className);
@@ -349,7 +350,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(methodTree);
-        String file = addSourceFileForElement(methodElt);
+        String file = addClassesForElement(methodElt);
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = classSymbol.flatname.toString();
         ClassOrInterfaceWrapper clazz = classes.get(className);
@@ -391,7 +392,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             overriddenMethodElement);
 
             // TODO: is it superClass or superclass?
-            String superClassFile = addSourceFileForElement(overriddenMethodElement);
+            String superClassFile = addClassesForElement(overriddenMethodElement);
             String superClassName = getEnclosingClassName(overriddenMethodElement);
             ClassOrInterfaceWrapper superClazz = classes.get(superClassName);
             CallableDeclarationWrapper overriddenMethodInSuperclass =
@@ -423,41 +424,39 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         for (String path : modifiedFiles) {
-            for (CompilationUnitWrapper root : sourceFiles.get(path)) {
-                root.transferAnnotations();
-                String packageDir = AJAVA_FILES_PATH;
-                if (root.declaration.getPackageDeclaration().isPresent()) {
-                    packageDir +=
-                            File.separator
-                                    + root.declaration
-                                            .getPackageDeclaration()
-                                            .get()
-                                            .getNameAsString()
-                                            .replaceAll("\\.", File.separator);
-                }
+            CompilationUnitWrapper root = sourceFiles.get(path);
+            root.transferAnnotations();
+            String packageDir = AJAVA_FILES_PATH;
+            if (root.declaration.getPackageDeclaration().isPresent()) {
+                packageDir +=
+                        File.separator
+                                + root.declaration
+                                        .getPackageDeclaration()
+                                        .get()
+                                        .getNameAsString()
+                                        .replaceAll("\\.", File.separator);
+            }
 
-                File packageDirFile = new File(packageDir);
-                if (!packageDirFile.exists()) {
-                    packageDirFile.mkdirs();
-                }
+            File packageDirFile = new File(packageDir);
+            if (!packageDirFile.exists()) {
+                packageDirFile.mkdirs();
+            }
 
-                String name = new File(path).getName();
-                if (name.endsWith(".java")) {
-                    name = name.substring(0, name.length() - ".java".length());
-                }
+            String name = new File(path).getName();
+            if (name.endsWith(".java")) {
+                name = name.substring(0, name.length() - ".java".length());
+            }
 
-                name += ".ajava";
-                String outputPath = packageDir + File.separator + name;
-                try {
-                    FileWriter writer = new FileWriter(outputPath);
-                    // LexicalPreservingPrinter.print(root.declaration, writer);
-                    PrettyPrinter prettyPrinter =
-                            new PrettyPrinter(new PrettyPrinterConfiguration());
-                    writer.write(prettyPrinter.print(root.declaration));
-                    writer.close();
-                } catch (IOException e) {
-                    throw new BugInCF("Error while writing ajava file", e);
-                }
+            name += ".ajava";
+            String outputPath = packageDir + File.separator + name;
+            try {
+                FileWriter writer = new FileWriter(outputPath);
+                // LexicalPreservingPrinter.print(root.declaration, writer);
+                PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
+                writer.write(prettyPrinter.print(root.declaration));
+                writer.close();
+            } catch (IOException e) {
+                throw new BugInCF("Error while writing ajava file", e);
             }
         }
 
@@ -651,93 +650,68 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         sourceCodeATM.replaceAnnotations(annosToReplace);
     }
 
-    /**
-     * Reads the Java source file at {@code path} and stores its types and methods, making them
-     * available to add inferred annotations to.
-     *
-     * @param path path to a Java source file to add
-     */
+    public void addClassTree(ClassTree tree) {
+        TypeElement element = TreeUtils.elementFromDeclaration(tree);
+        String className = getClassName(element);
+        if (classes.containsKey(className)) {
+            return;
+        }
+
+        TypeElement mostEnclosing = mostEnclosingClass(element);
+        String path = getSourceFilePath(mostEnclosing);
+        addSourceFile(path);
+        CompilationUnitWrapper wrapper = sourceFiles.get(path);
+        ClassOrInterfaceDeclaration javaParserNode =
+                wrapper.getClassOrInterfaceDeclarationByName(
+                        mostEnclosing.getSimpleName().toString());
+        // ClassTree mostEnclosingTree = (ClassTree)
+        // atypeFactory.declarationFromElement(mostEnclosing);
+        ClassTree mostEnclosingTree = atypeFactory.getTreeUtils().getTree(mostEnclosing);
+        createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
+    }
+
     private void addSourceFile(String path) {
         if (sourceFiles.containsKey(path)) {
             return;
         }
 
-        List<CompilationUnitWrapper> fileRoots = new ArrayList<>();
-
         try {
-            Source source = new Source(path);
-            Set<CompilationUnitTree> compilationUnits = source.parse();
-            for (CompilationUnitTree root : compilationUnits) {
-                root.accept(
-                        new TreeScannerWithDefaults() {
-                            @Override
-                            public void defaultAction(Tree tree) {
-                                JCTree jctree = (JCTree) tree;
-                                if (tree.getKind() == Tree.Kind.CLASS
-                                        || tree.getKind() == Tree.Kind.VARIABLE
-                                        || tree.getKind() == Tree.Kind.METHOD) {
-                                    if (TreeInfo.symbolFor((JCTree) tree) == null) {
-                                        System.out.println("Tree with no element: " + jctree);
-                                    }
-                                }
-                            }
-                        },
-                        null);
-                CompilationUnitWrapper javaParserRoot = addCompilationUnit(root, path);
-                fileRoots.add(javaParserRoot);
-            }
-
-            sourceFiles.put(path, fileRoots);
-            modifiedFiles.add(path);
-        } catch (CompilerException | IOException e) {
+            CompilationUnit root = StaticJavaParser.parse(new File(path));
+            CompilationUnitWrapper wrapper = new CompilationUnitWrapper(root);
+            sourceFiles.put(path, wrapper);
+        } catch (FileNotFoundException e) {
             throw new BugInCF("Failed to read java file: " + path, e);
         }
     }
 
-    public void addClassTree(ClassTree tree) {}
-
-    /**
-     * Initializes storage for the types and methods in root, which must be the top-level tree
-     * created from parsing the Java source file at {@code path} with javac.
-     *
-     * <p>Parser the file at {@code path} with JavaParser. For each location for which annotations
-     * may be inferred, creates a wrapper for that location that annotations may be added to that
-     * contains the JavaParser node for that location so that annotations may be transferred onto
-     * JavaParser.
-     *
-     * @param root root of tree parsed from file at {@code path} parsed with javac
-     * @param path path to source file containing the compilation root
-     */
-    private CompilationUnitWrapper addCompilationUnit(CompilationUnitTree root, String path)
-            throws IOException {
-        CompilationUnit javaParserRoot =
-                StaticJavaParser.parse(root.getSourceFile().openInputStream());
-        // LexicalPreservingPrinter.setup(javaParserRoot);
-        CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
+    private void createWrappersForClass(
+            ClassTree javacClass,
+            ClassOrInterfaceDeclaration javaParserClass,
+            CompilationUnitWrapper wrapper) {
         JointJavacJavaParserVisitor visitor =
                 new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
                     @Override
                     public void processClass(
                             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
-                        addClassTree(javacTree);
+                        addClass(javacTree);
+                    }
+
+                    @Override
+                    public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {
+                        addClass(javacTree);
                     }
 
                     @Override
                     public void processNewClass(
                             NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
                         if (javacTree.getClassBody() != null) {
-                            addClassTree(javacTree.getClassBody());
+                            addClass(javacTree.getClassBody());
                         }
                     }
 
-                    private void addClassTree(ClassTree tree) {
-                        System.out.println("In addClassTree for tree: " + tree.getSimpleName());
-                        System.out.println(
-                                "The symbol for this is: " + TreeInfo.symbolFor((JCTree) tree));
-                        System.out.println(
-                                "Internally, got: "
-                                        + (TypeElement) TreeUtils.elementFromTree(tree));
+                    private void addClass(ClassTree tree) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
+                        System.out.println("In addClass for: " + classElt);
                         String className = getClassName(classElt);
                         ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
                         if (!classes.containsKey(className)) {
@@ -782,37 +756,204 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         String className = getEnclosingClassName(elt);
                         ClassOrInterfaceWrapper enclosingClass = classes.get(className);
                         String fieldName = javacTree.getName().toString();
+                        if (enclosingClass == null) {
+                            System.out.println("Enclosing class for: " + javacTree + " was null");
+                            System.out.println("The class name: " + className);
+                        }
+
                         if (!enclosingClass.fields.containsKey(fieldName)) {
                             enclosingClass.fields.put(fieldName, new FieldWrapper(javaParserNode));
                         }
                     }
                 };
-        visitor.visitCompilationUnit(root, javaParserRoot);
-        return wrapper;
+        visitor.visitClass(javacClass, javaParserClass);
     }
+
+    /**
+     * Reads the Java source file at {@code path} and stores its types and methods, making them
+     * available to add inferred annotations to.
+     *
+     * @param path path to a Java source file to add
+     */
+    // private void addSourceFile(String path) {
+    // if (sourceFiles.containsKey(path)) {
+    // return;
+    // }
+    //
+    // List<CompilationUnitWrapper> fileRoots = new ArrayList<>();
+    //
+    // try {
+    // Source source = new Source(path);
+    // Set<CompilationUnitTree> compilationUnits = source.parse();
+    // for (CompilationUnitTree root : compilationUnits) {
+    // root.accept(
+    // new TreeScannerWithDefaults() {
+    // @Override
+    // public void defaultAction(Tree tree) {
+    // JCTree jctree = (JCTree) tree;
+    // if (tree.getKind() == Tree.Kind.CLASS
+    // || tree.getKind() == Tree.Kind.VARIABLE
+    // || tree.getKind() == Tree.Kind.METHOD) {
+    // if (TreeInfo.symbolFor((JCTree) tree) == null) {
+    // System.out.println("Tree with no element: " + jctree);
+    // }
+    // }
+    // }
+    // },
+    // null);
+    // CompilationUnitWrapper javaParserRoot = addCompilationUnit(root, path);
+    // fileRoots.add(javaParserRoot);
+    // }
+    //
+    // sourceFiles.put(path, fileRoots);
+    // modifiedFiles.add(path);
+    // } catch (CompilerException | IOException e) {
+    // throw new BugInCF("Failed to read java file: " + path, e);
+    // }
+    // }
+    //
+    /**
+     * Initializes storage for the types and methods in root, which must be the top-level tree
+     * created from parsing the Java source file at {@code path} with javac.
+     *
+     * <p>Parser the file at {@code path} with JavaParser. For each location for which annotations
+     * may be inferred, creates a wrapper for that location that annotations may be added to that
+     * contains the JavaParser node for that location so that annotations may be transferred onto
+     * JavaParser.
+     *
+     * @param root root of tree parsed from file at {@code path} parsed with javac
+     * @param path path to source file containing the compilation root
+     */
+    // private CompilationUnitWrapper addCompilationUnit(CompilationUnitTree root, String path)
+    // throws IOException {
+    // CompilationUnit javaParserRoot =
+    // StaticJavaParser.parse(root.getSourceFile().openInputStream());
+    // // LexicalPreservingPrinter.setup(javaParserRoot);
+    // CompilationUnitWrapper wrapper = new CompilationUnitWrapper(javaParserRoot);
+    // JointJavacJavaParserVisitor visitor =
+    // new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
+    // @Override
+    // public void processClass(
+    // ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
+    // addClassTree(javacTree);
+    // }
+    //
+    // @Override
+    // public void processNewClass(
+    // NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
+    // if (javacTree.getClassBody() != null) {
+    // addClassTree(javacTree.getClassBody());
+    // }
+    // }
+    //
+    // private void addClassTree(ClassTree tree) {
+    // System.out.println("In addClassTree for tree: " + tree.getSimpleName());
+    // System.out.println(
+    // "The symbol for this is: " + TreeInfo.symbolFor((JCTree) tree));
+    // System.out.println(
+    // "Internally, got: "
+    // + (TypeElement) TreeUtils.elementFromTree(tree));
+    // TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
+    // String className = getClassName(classElt);
+    // ClassOrInterfaceWrapper typeWrapper = new ClassOrInterfaceWrapper();
+    // if (!classes.containsKey(className)) {
+    // classes.put(className, typeWrapper);
+    // }
+    //
+    // wrapper.types.add(typeWrapper);
+    // }
+    //
+    // @Override
+    // public void processMethod(
+    // MethodTree javacTree, MethodDeclaration javaParserNode) {
+    // addCallableDeclaration(javacTree, javaParserNode);
+    // }
+    //
+    // @Override
+    // public void processMethod(
+    // MethodTree javacTree, ConstructorDeclaration javaParserNode) {
+    // addCallableDeclaration(javacTree, javaParserNode);
+    // }
+    //
+    // private void addCallableDeclaration(
+    // MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
+    // ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+    // String className = getEnclosingClassName(elt);
+    // ClassOrInterfaceWrapper enclosingClass = classes.get(className);
+    // String executableName = JVMNames.getJVMMethodSignature(javacTree);
+    // if (!enclosingClass.callableDeclarations.containsKey(executableName)) {
+    // enclosingClass.callableDeclarations.put(
+    // executableName, new CallableDeclarationWrapper(javaParserNode));
+    // }
+    // }
+    //
+    // @Override
+    // public void processVariable(
+    // VariableTree javacTree, VariableDeclarator javaParserNode) {
+    // VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+    // if (!elt.getKind().isField()) {
+    // return;
+    // }
+    //
+    // String className = getEnclosingClassName(elt);
+    // ClassOrInterfaceWrapper enclosingClass = classes.get(className);
+    // String fieldName = javacTree.getName().toString();
+    // if (!enclosingClass.fields.containsKey(fieldName)) {
+    // enclosingClass.fields.put(fieldName, new FieldWrapper(javaParserNode));
+    // }
+    // }
+    // };
+    // visitor.visitCompilationUnit(root, javaParserRoot);
+    // return wrapper;
+    // }
 
     /**
      * Calls {@link #addSourceFile(String)} for the file containing the given element.
      *
      * @param element element for the source file to add
      */
-    private String addSourceFileForElement(Element element) {
+    private String addClassesForElement(Element element) {
         if (!ElementUtils.isElementFromSourceCode(element)) {
             throw new BugInCF("Adding source file for non-source element: " + element);
         }
 
-        if (!(element instanceof ClassSymbol)) {
-            return addSourceFileForElement(element.getEnclosingElement());
+        TypeElement mostEnclosing = mostEnclosingClass(element);
+        String path = getSourceFilePath(mostEnclosing);
+        if (classes.containsKey(getClassName(mostEnclosing))) {
+            return path;
         }
 
-        ClassSymbol symbol = (ClassSymbol) element;
-        String path = symbol.sourcefile.toUri().getPath();
         addSourceFile(path);
+        CompilationUnitWrapper wrapper = sourceFiles.get(path);
+        ClassTree mostEnclosingTree =
+                (ClassTree) atypeFactory.declarationFromElement(mostEnclosing);
+        ClassOrInterfaceDeclaration javaParserNode =
+                wrapper.getClassOrInterfaceDeclarationByName(
+                        mostEnclosing.getSimpleName().toString());
+        createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
         return path;
+    }
+
+    private String getSourceFilePath(Element element) {
+        return ((ClassSymbol) element).sourcefile.toUri().getPath();
     }
 
     private @BinaryName String getClassName(Element element) {
         return ((ClassSymbol) element).flatName().toString();
+    }
+
+    private TypeElement mostEnclosingClass(Element element) {
+        if (ElementUtils.enclosingClass(element) == null) {
+            return (TypeElement) element;
+        }
+
+        TypeElement mostEnclosing = ElementUtils.enclosingClass(element);
+        while (ElementUtils.enclosingClass(mostEnclosing) != null
+                && !ElementUtils.enclosingClass(mostEnclosing).equals(mostEnclosing)) {
+            mostEnclosing = ElementUtils.enclosingClass(mostEnclosing);
+        }
+
+        return mostEnclosing;
     }
 
     /**
@@ -885,6 +1026,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             for (ClassOrInterfaceWrapper type : types) {
                 type.transferAnnotations();
             }
+        }
+
+        public ClassOrInterfaceDeclaration getClassOrInterfaceDeclarationByName(String name) {
+            Optional<ClassOrInterfaceDeclaration> classDecl = declaration.getClassByName(name);
+            if (classDecl.isPresent()) {
+                return classDecl.get();
+            }
+
+            Optional<ClassOrInterfaceDeclaration> interfaceDecl =
+                    declaration.getInterfaceByName(name);
+            if (interfaceDecl.isPresent()) {
+                return interfaceDecl.get();
+            }
+
+            throw new BugInCF("Requesting declaration for type that doesn't exist: " + name);
         }
     }
 
