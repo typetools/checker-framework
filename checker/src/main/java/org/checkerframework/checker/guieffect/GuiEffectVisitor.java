@@ -528,7 +528,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     }
 
                     if (ret != null) {
-                        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+                        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                                 visitorState.getAssignmentContext();
                         try {
                             visitorState.setAssignmentContext(Pair.of((Tree) returnTree, ret));
@@ -538,7 +538,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                                     returnTree.getExpression(),
                                     "return.type.incompatible");
                         } finally {
-                            visitorState.setAssignmentContext(preAssCtxt);
+                            visitorState.setAssignmentContext(preAssignmentContext);
                         }
                     }
                 }
