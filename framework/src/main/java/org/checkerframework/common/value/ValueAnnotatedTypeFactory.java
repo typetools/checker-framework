@@ -250,15 +250,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     protected boolean arePrimeAnnosEqual(
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
                         type1.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type1.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type1.getAnnotationInHierarchy(UNKNOWNVAL))));
                         type2.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type2.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type1.replaceAnnotation(
-                                convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type2.replaceAnnotation(
-                                convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type2.getAnnotationInHierarchy(UNKNOWNVAL))));
 
                         return super.arePrimeAnnosEqual(type1, type2);
                     }
@@ -1084,6 +1082,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return a list of possible boolean values
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {
