@@ -317,7 +317,6 @@ public class CFGBuilder {
          */
         protected ExtendedNode(ExtendedNodeType type) {
             this.type = type;
-            System.out.println("new ExtendedNode: " + this);
         }
 
         /** Extended node types (description see above). */
@@ -4193,12 +4192,8 @@ public class CFGBuilder {
             Label elseEntry = new Label();
             Label endIf = new Label();
 
-            System.out.printf("About to scan the condition%n");
-            System.out.printf("nodeList=%s%n", nodeList);
             // basic block for the condition
             unbox(scan(tree.getCondition(), p));
-            System.out.printf("Scanned the condition%n");
-            System.out.printf("nodeList=%s%n", nodeList);
 
             ConditionalJump cjump = new ConditionalJump(thenEntry, elseEntry);
             extendWithExtendedNode(cjump);
