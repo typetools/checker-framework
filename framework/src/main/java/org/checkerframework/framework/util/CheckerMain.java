@@ -795,7 +795,6 @@ public class CheckerMain {
                     "Could not read %s. Shorthand processor names will not work.%n", checkerJar);
         }
 
-        System.out.println(checkerClassNames);
         return checkerClassNames;
     }
 
