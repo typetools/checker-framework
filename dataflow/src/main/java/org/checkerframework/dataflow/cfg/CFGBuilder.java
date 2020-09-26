@@ -3418,40 +3418,48 @@ public class CFGBuilder {
 
                         Node node;
                         if (kind == Tree.Kind.EQUAL_TO) {
-                            if (isConstantBoolean(right, true)) {
-                                return left;
-                            } else if (isConstantBoolean(right, false)) {
-                                Node result = new ConditionalNotNode(tree, unbox(left));
-                                extendWithNode(result);
-                                return result;
-                            } else if (isConstantBoolean(left, true)) {
-                                return right;
-                            } else if (isConstantBoolean(left, false)) {
-                                Node result = new ConditionalNotNode(tree, unbox(right));
-                                extendWithNode(result);
-                                return result;
-                            } else {
-                                node = new EqualToNode(tree, left, right);
-                                extendWithNode(node);
+                            if (!canBeValue(left)) {
+                                if (isConstantBoolean(right, true)) {
+                                    return left;
+                                } else if (isConstantBoolean(right, false)) {
+                                    Node result = new ConditionalNotNode(tree, unbox(left));
+                                    extendWithNode(result);
+                                    return result;
+                                }
                             }
+                            if (!canBeValue(right)) {
+                                if (isConstantBoolean(left, true)) {
+                                    return right;
+                                } else if (isConstantBoolean(left, false)) {
+                                    Node result = new ConditionalNotNode(tree, unbox(right));
+                                    extendWithNode(result);
+                                    return result;
+                                }
+                            }
+                            node = new EqualToNode(tree, left, right);
+                            extendWithNode(node);
                         } else {
                             assert kind == Kind.NOT_EQUAL_TO;
-                            if (isConstantBoolean(right, false)) {
-                                return left;
-                            } else if (isConstantBoolean(right, true)) {
-                                Node result = new ConditionalNotNode(tree, unbox(left));
-                                extendWithNode(result);
-                                return result;
-                            } else if (isConstantBoolean(left, false)) {
-                                return right;
-                            } else if (isConstantBoolean(left, true)) {
-                                Node result = new ConditionalNotNode(tree, unbox(right));
-                                extendWithNode(result);
-                                return result;
-                            } else {
-                                node = new NotEqualNode(tree, left, right);
-                                extendWithNode(node);
+                            if (!canBeValue(left)) {
+                                if (isConstantBoolean(right, false)) {
+                                    return left;
+                                } else if (isConstantBoolean(right, true)) {
+                                    Node result = new ConditionalNotNode(tree, unbox(left));
+                                    extendWithNode(result);
+                                    return result;
+                                }
                             }
+                            if (!canBeValue(right)) {
+                                if (isConstantBoolean(left, false)) {
+                                    return right;
+                                } else if (isConstantBoolean(left, true)) {
+                                    Node result = new ConditionalNotNode(tree, unbox(right));
+                                    extendWithNode(result);
+                                    return result;
+                                }
+                            }
+                            node = new NotEqualNode(tree, left, right);
+                            extendWithNode(node);
                         }
 
                         return node;
@@ -3541,6 +3549,25 @@ public class CFGBuilder {
             assert r != null : "unexpected binary tree";
             extendWithNode(r);
             return r;
+        }
+
+        /**
+         * Return true if the Node can be represented by an abstract value in the store.
+         *
+         * This is used to determine whether to simplify {@code expr == true} to {@code expr).
+         *
+         * <p>We want to simplify {@code if (expr == true)} to {@code if (expr)} only if there is no abstract
+         * value representing {@code expr}. The reason is that the {@code visitEqualTo} transfer method handles
+         * {@code ff (myVar == true)} but there is no handling of {@code if (myVar)}, so don't simplify to that.
+         *
+         * @returns true if the Node can be represented by an abstract value in the store
+         */
+        private boolean canBeValue(Node node) {
+            return (node instanceof ArrayAccessNode)
+                    || (node instanceof ExplicitThisLiteralNode)
+                    || (node instanceof FieldAccessNode)
+                    || (node instanceof LocalVariableNode)
+                    || (node instanceof MethodInvocationNode);
         }
 
         @Override
