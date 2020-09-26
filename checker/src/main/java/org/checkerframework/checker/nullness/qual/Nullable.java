@@ -15,9 +15,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * (see {@link NonNull}). Only if an expression has a {@link Nullable} type may it be assigned
  * {@code null}.
  *
- * <p>This annotation is associated with the {@link
- * org.checkerframework.checker.nullness.NullnessChecker}.
- *
  * @see NonNull
  * @see MonotonicNonNull
  * @see org.checkerframework.checker.nullness.NullnessChecker
