@@ -237,6 +237,8 @@ public abstract class AnnotatedTypeMirror {
      *
      * <p>It doesn't account for annotations in deep types (type arguments, array components, etc).
      *
+     * <p>If there is only one hierarchy, you can use {@link #getAnnotation()} instead.
+     *
      * @param p the qualifier hierarchy to check for
      * @return an annotation from the same hierarchy as p if present
      */
@@ -285,12 +287,35 @@ public abstract class AnnotatedTypeMirror {
      * arguments, array components, etc).
      *
      * <p>To get the single annotation in a particular hierarchy, use {@link
-     * #getAnnotationInHierarchy}.
+     * #getAnnotationInHierarchy}. If there is only one hierarchy, you can use {@link
+     * #getAnnotation}.
      *
      * @return a unmodifiable set of the annotations on this
      */
     public final Set<AnnotationMirror> getAnnotations() {
         return Collections.unmodifiableSet(annotations);
+    }
+
+    /**
+     * Returns the single annotation on this type. It does not include annotations in deep types
+     * (type arguments, array components, etc).
+     *
+     * <p>This method requires that there is only a single hierarchy. In that case, it is equivalent
+     * to {@link #getAnnotationInHierarchy}.
+     *
+     * @see #getAnnotations
+     * @return the annotation on this, or null if none (which can only happen if {@code this} is a
+     *     type variable or wildcard)
+     */
+    public final @Nullable AnnotationMirror getAnnotation() {
+        if (annotations.isEmpty()) {
+            // This AnnotatedTypeMirror must be a type variable or wildcard.
+            return null;
+        }
+        if (annotations.size() != 1) {
+            throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
+        }
+        return annotations.iterator().next();
     }
 
     /**
