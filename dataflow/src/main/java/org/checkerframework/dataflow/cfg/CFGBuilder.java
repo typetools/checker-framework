@@ -3554,13 +3554,15 @@ public class CFGBuilder {
         /**
          * Return true if the Node can be represented by an abstract value in the store.
          *
-         * This is used to determine whether to simplify {@code expr == true} to {@code expr).
+         * <p>This is used to determine whether to simplify {@code expr == true} to {@code expr}.
          *
-         * <p>We want to simplify {@code if (expr == true)} to {@code if (expr)} only if there is no abstract
-         * value representing {@code expr}. The reason is that the {@code visitEqualTo} transfer method handles
-         * {@code ff (myVar == true)} but there is no handling of {@code if (myVar)}, so don't simplify to that.
+         * <p>We want to simplify {@code if (expr == true)} to {@code if (expr)} only if there is no
+         * abstract value representing {@code expr}. The reason is that the {@code visitEqualTo}
+         * transfer method handles {@code ff (myVar == true)} but there is no handling of {@code if
+         * (myVar)}, so don't simplify to that.
          *
-         * @returns true if the Node can be represented by an abstract value in the store
+         * @param node the node to test
+         * @return true if the Node can be represented by an abstract value in the store
          */
         private boolean canBeValue(Node node) {
             return (node instanceof ArrayAccessNode)
