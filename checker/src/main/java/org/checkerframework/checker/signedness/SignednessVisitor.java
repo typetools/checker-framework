@@ -95,20 +95,25 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      * @param maskKind the kind of mask (AND or OR)
      * @param shiftAmountLit the LiteralTree whose value is shiftAmount
      * @param maskLit the LiteralTree whose value is mask
+     * @param shiftedTypeKind the type of shift operation; int or long
      * @return true iff the shiftAmount most significant bits of mask are 0 for AND, and 1 for OR
      */
-    private boolean maskIgnoresMSB(Kind maskKind, LiteralTree shiftAmountLit, LiteralTree maskLit) {
+    private boolean maskIgnoresMSB(
+            Kind maskKind,
+            LiteralTree shiftAmountLit,
+            LiteralTree maskLit,
+            TypeKind shiftedTypeKind) {
         long shiftAmount = getLong(shiftAmountLit.getValue());
-        long mask = getLong(maskLit.getValue());
 
         // Shift of zero is a nop
         if (shiftAmount == 0) {
             return true;
         }
 
+        long mask = getLong(maskLit.getValue());
         // Shift the shiftAmount most significant bits to become the shiftAmount least significant
         // bits, zeroing out the rest.
-        if (maskLit.getKind() != Kind.LONG_LITERAL) {
+        if (shiftedTypeKind == TypeKind.INT) {
             mask <<= 32;
         }
         mask >>>= (64 - shiftAmount);
@@ -241,7 +246,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         LiteralTree shiftLit = (LiteralTree) shiftAmountExpr;
         LiteralTree maskLit = (LiteralTree) mask;
 
-        return maskIgnoresMSB(maskExpr.getKind(), shiftLit, maskLit);
+        return maskIgnoresMSB(
+                maskExpr.getKind(), shiftLit, maskLit, TreeUtils.typeOf(shiftExpr).getKind());
     }
 
     /**
