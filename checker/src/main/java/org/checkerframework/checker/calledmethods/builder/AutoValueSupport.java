@@ -245,9 +245,11 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
 
         for (String propName : possiblePropNames) {
             // The setter may be the property name itself, or prefixed by 'set'.
-            if (builderSetterNames.contains(propName)
-                    || builderSetterNames.contains(
-                            "set" + BuilderFrameworkSupportUtils.capitalize(propName))) {
+            if (builderSetterNames.contains(propName)) {
+                return propName;
+            }
+            String setterName = "set" + BuilderFrameworkSupportUtils.capitalize(propName);
+            if (builderSetterNames.contains(setterName)) {
                 return setterName;
             }
         }
