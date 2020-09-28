@@ -2718,9 +2718,6 @@ public class CFGBuilder {
                 return null;
             }
 
-            // TODO? Variable wasn't used.
-            // boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
-
             ExpressionTree methodSelect = tree.getMethodSelect();
             assert TreeUtils.isMethodAccess(methodSelect)
                     : "Expected a method access, but got: " + methodSelect;
