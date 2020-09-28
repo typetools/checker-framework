@@ -76,7 +76,7 @@ public abstract class AnnotatedTypeMirror {
                 break;
             case ERROR:
                 throw new BugInCF(
-                        "AnnotatedTypeMirror.createType: input should type-check already. Found error type: "
+                        "AnnotatedTypeMirror.createType: input is not compilable. Found error type: "
                                 + type);
 
             case EXECUTABLE:
@@ -1148,10 +1148,23 @@ public abstract class AnnotatedTypeMirror {
                     && element != null
                     && ((ExecutableType) actualType).getReturnType() != null) { // lazy init
                 TypeMirror aret = ((ExecutableType) actualType).getReturnType();
+                if (aret.getKind() == TypeKind.ERROR) {
+                    throw new BugInCF(
+                            "Input is not compilable; problem with return type of %s: %s",
+                            element, aret);
+                }
                 if (((MethodSymbol) element).isConstructor()) {
                     // For constructors, the underlying return type is void.
                     // Take the type of the enclosing class instead.
                     aret = element.getEnclosingElement().asType();
+                    if (aret.getKind() == TypeKind.ERROR) {
+                        throw new BugInCF(
+                                "Input is not compilable; problem with constructor %s return type: %s (enclosing element = %s [%s])",
+                                element,
+                                aret,
+                                element.getEnclosingElement(),
+                                element.getEnclosingElement().getClass());
+                    }
                 }
                 returnType = createType(aret, atypeFactory, false);
             }
