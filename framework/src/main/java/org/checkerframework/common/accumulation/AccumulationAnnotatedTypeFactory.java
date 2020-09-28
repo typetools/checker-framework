@@ -97,7 +97,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (!accValue.getReturnType().isInstance(new String[0])) {
             rejectMalformedAccumulator("have an element of type String[]");
         }
-        if (((String[]) accValue.getDefaultValue()).length != 0) {
+        if (accValue.getDefaultValue() == null
+                || ((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
 
