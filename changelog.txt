@@ -17,6 +17,9 @@ org.jspecify.annotations.Nullable.
 The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
 The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
 
+The shorthand syntax for the -processor command-line argument applies to
+utility checkers, such as the Constant Value Checker.
+
 Implementation details:
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
