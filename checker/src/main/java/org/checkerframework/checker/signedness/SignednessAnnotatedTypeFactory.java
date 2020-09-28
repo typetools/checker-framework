@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -53,7 +54,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @Unigned annotation. */
     private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
-    /** The @SignednessGlb annotation. */
+    /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
     /** The @SignednessBottom annotation. */
@@ -174,6 +175,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        assert annos.size() == 1;
+
+        if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(SIGNEDNESS_GLB);
+            return result;
+        }
+        if (widenedTypeKind == TypeKind.CHAR) {
+            // It's a non-widening cast to char.  Make it @Unsigned.
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(UNSIGNED);
+            return result;
+        }
+        if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(SIGNED);
+            return result;
+        }
+
+        return annos;
+    }
+
+    @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 new SignednessTreeAnnotator(this), super.createTreeAnnotator());
@@ -187,6 +213,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *       PropagationTreeAnnotator},
      *   <li>shift results take on the type of their left operand,
      *   <li>the types of identifiers are refined based on the results of the Value Checker.
+     *   <li>casts take types related to widening
      * </ul>
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
