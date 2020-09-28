@@ -1,0 +1,15 @@
+// Support for EC2 classes automatically supported by the Called Methods Checker.
+
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+package com.amazonaws.services.kms.model;
+
+class GenerateDataKeyRequest {
+    @This GenerateDataKeyRequest withEncryptionContext(Map<String,String> encryptionContext);
+    @This GenerateDataKeyRequest withGrantTokens(Collection<String> grantTokens);
+    @This GenerateDataKeyRequest withGrantTokens(String... grantTokens);
+    @This GenerateDataKeyRequest withKeyId(String keyId);
+    @This GenerateDataKeyRequest withKeySpec(DataKeySpec keySpec);
+    @This GenerateDataKeyRequest withKeySpec(String keySpec);
+    @This GenerateDataKeyRequest withNumberOfBytes(Integer numberOfBytes);
+}
