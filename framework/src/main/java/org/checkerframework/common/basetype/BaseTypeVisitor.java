@@ -2035,9 +2035,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * If the lint option "cast:unsafe" is set, this method issues a warning if the cast is unsafe.
-     * Only primary qualifiers are checked unless the command line option "checkCastElementType" is
-     * supplied.
+     * Issues a warning if the given explicitly-written typecast is unsafe. Does nothing if the lint
+     * option "cast:unsafe" is not set. Only primary qualifiers are checked unless the command line
+     * option "checkCastElementType" is supplied.
+     *
+     * @param typeCastTree an explicitly-written typecast
      */
     protected void checkTypecastSafety(TypeCastTree typeCastTree) {
         if (!checker.getLintOption("cast:unsafe", true)) {
@@ -2057,7 +2059,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             calledOnce = true; // don't issue cast unsafe warning.
         }
         // We cannot do a simple test of casting, as isSubtypeOf requires
-        // the input types to be subtypes according to Java
+        // the input types to be subtypes according to Java.
         if (!calledOnce && !isTypeCastSafe(castType, exprType)) {
             checker.reportWarning(
                     typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
@@ -2090,7 +2092,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        if (checker.hasOption("checkCastElementType")) {
+        Set<AnnotationMirror> castAnnos;
+        if (!checker.hasOption("checkCastElementType")) {
+            // checkCastElementType option wasn't specified, so only check effective annotations.
+            castAnnos = castType.getEffectiveAnnotations();
+        } else {
             AnnotatedTypeMirror newCastType;
             if (castTypeKind == TypeKind.TYPEVAR) {
                 newCastType = ((AnnotatedTypeVariable) castType).getUpperBound();
@@ -2139,7 +2145,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 exprType.getEffectiveAnnotations(),
                                 castType.getEffectiveAnnotations());
             }
-            Set<AnnotationMirror> castAnnos;
             if (castTypeKind == TypeKind.TYPEVAR) {
                 // If the cast type is a type var, but the expression is not, then check that the
                 // type of the expression is a subtype of the lower bound.
@@ -2149,13 +2154,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } else {
                 castAnnos = castType.getAnnotations();
             }
-
-            return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
-        } else {
-            // checkCastElementType option wasn't specified, so only check effective annotations.
-            return qualifierHierarchy.isSubtype(
-                    exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
+        return qualifierHierarchy.isSubtype(exprType.getEffectiveAnnotations(), castAnnos);
     }
 
     /**
@@ -2415,21 +2415,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
-        assert var != null : "no variable found for tree: " + varTree;
+        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
+        assert varType != null : "no variable found for tree: " + varTree;
 
-        if (!validateType(varTree, var)) {
+        if (!validateType(varTree, varType)) {
             return;
         }
 
-        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
+        commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
     }
 
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
      * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
-     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param varType the annotated type for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message key to use if the check fails
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
@@ -2463,6 +2463,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
         commonAssignmentCheck(varType, valueType, valueExp, errorKey, extraArgs);
+    }
+
+    /**
+     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+     * emits an error message (through the compiler's messaging interface) if it is not valid.
+     *
+     * @param varType the annotated type of the variable
+     * @param valueType the annotated type of the value
+     * @param valueTree the location to use when reporting the error message
+     * @param errorKey the error message key to use if the check fails
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
+     */
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
+
+        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
+
+        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
+
+        // TODO: integrate with subtype test.
+        if (success) {
+            for (Class<? extends Annotation> mono :
+                    atypeFactory.getSupportedMonotonicTypeQualifiers()) {
+                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
+                    checker.reportError(
+                            valueTree,
+                            "monotonic.type.incompatible",
+                            mono.getSimpleName(),
+                            mono.getSimpleName(),
+                            valueType.toString());
+                    return;
+                }
+            }
+        }
+
+        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
+
+        // Use an error key only if it's overridden by a checker.
+        if (!success) {
+            FoundRequired pair = FoundRequired.of(valueType, varType);
+            String valueTypeString = pair.found;
+            String varTypeString = pair.required;
+            checker.reportError(
+                    valueTree,
+                    errorKey,
+                    SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
+        }
     }
 
     /**
@@ -2546,57 +2597,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     valueType.toString(),
                     varType.getKind(),
                     varType.toString());
-        }
-    }
-
-    /**
-     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
-     * emits an error message (through the compiler's messaging interface) if it is not valid.
-     *
-     * @param varType the annotated type of the variable
-     * @param valueType the annotated type of the value
-     * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message key to use if the check fails
-     * @param extraArgs arguments to the error message key, before "found" and "expected" types
-     */
-    protected void commonAssignmentCheck(
-            AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType,
-            Tree valueTree,
-            @CompilerMessageKey String errorKey,
-            Object... extraArgs) {
-
-        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
-
-        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
-
-        // TODO: integrate with subtype test.
-        if (success) {
-            for (Class<? extends Annotation> mono :
-                    atypeFactory.getSupportedMonotonicTypeQualifiers()) {
-                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
-                    checker.reportError(
-                            valueTree,
-                            "monotonic.type.incompatible",
-                            mono.getSimpleName(),
-                            mono.getSimpleName(),
-                            valueType.toString());
-                    return;
-                }
-            }
-        }
-
-        commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueTree);
-
-        // Use an error key only if it's overridden by a checker.
-        if (!success) {
-            FoundRequired pair = FoundRequired.of(valueType, varType);
-            String valueTypeString = pair.found;
-            String varTypeString = pair.required;
-            checker.reportError(
-                    valueTree,
-                    errorKey,
-                    SystemUtil.concatenate(extraArgs, valueTypeString, varTypeString));
         }
     }
 

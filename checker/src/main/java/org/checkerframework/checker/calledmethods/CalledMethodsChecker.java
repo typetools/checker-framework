@@ -36,9 +36,9 @@ public class CalledMethodsChecker extends BaseTypeChecker {
     public static final String COUNT_FRAMEWORK_BUILD_CALLS = "countFrameworkBuildCalls";
 
     /**
-     * This option can be used to disable the support (and therefore the automated checking of) code
-     * that uses the given builder frameworks. Useful when a user **only** wants to enforce
-     * specifications on custom builder objects (such as the AWS SDK examples).
+     * This option disables the support for (and therefore the automated checking of) code that uses
+     * the given builder frameworks. Useful when a user **only** wants to enforce specifications on
+     * custom builder objects (such as the AWS SDK examples).
      */
     public static final String DISABLE_BUILDER_FRAMEWORK_SUPPORTS =
             "disableBuilderFrameworkSupports";
@@ -50,8 +50,8 @@ public class CalledMethodsChecker extends BaseTypeChecker {
     public static final String USE_VALUE_CHECKER = "useValueChecker";
 
     /**
-     * The number of calls to build frameworks supported by this invocation, if the {@link
-     * #COUNT_FRAMEWORK_BUILD_CALLS} option was supplied.
+     * The number of calls to build frameworks supported by this invocation. Incremented only if the
+     * {@link #COUNT_FRAMEWORK_BUILD_CALLS} option was supplied.
      */
     int numBuildCalls = 0;
 

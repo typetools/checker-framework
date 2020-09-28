@@ -2300,8 +2300,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and
-     * annotations copied from {@code type}.
+     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and with
+     * annotations copied or adapted from {@code type}.
      *
      * <p>Currently this method is called only for primitives that are narrowed at assignments from
      * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at

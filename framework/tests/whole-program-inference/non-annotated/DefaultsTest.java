@@ -1,5 +1,5 @@
-import testlib.wholeprograminference.qual.DefaultType;
-import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.DefaultType;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 // The @DefaultType annotation, which is the default for every location, is forbidden
 // to be written anywhere. This class attempts to infer @DefaultType in several

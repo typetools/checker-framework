@@ -10,11 +10,11 @@ public class BuilderFrameworkSupportUtils {
     }
 
     /**
-     * Checks whether the given type is one of the immutable collections defined in
+     * Returns true if the given type is one of the immutable collections defined in
      * com.google.common.collect.
      *
      * @param type a type
-     * @return whether the type is a Guava immutable collection
+     * @return true if the type is a Guava immutable collection
      */
     public static boolean isGuavaImmutableType(TypeMirror type) {
         return type.toString().startsWith("com.google.common.collect.Immutable");

@@ -1,6 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 class InvariantArrays {
     Object[] oa;

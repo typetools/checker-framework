@@ -1,5 +1,5 @@
-import testlib.wholeprograminference.qual.Sibling1;
-import testlib.wholeprograminference.qual.Sibling2;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling2;
 
 class OverriddenMethodsTestParent {
     public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}

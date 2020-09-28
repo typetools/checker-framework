@@ -9,6 +9,9 @@ import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -17,12 +20,15 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -313,7 +319,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
 
         if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
-            if (NumberUtils.isIntegral(type.getUnderlyingType())) {
+            if (TypesUtils.isIntegralPrimitiveOrBoxed(type.getUnderlyingType())) {
                 long from = atypeFactory.getFromValueFromIntRange(type);
                 long to = atypeFactory.getToValueFromIntRange(type);
                 if (from > to) {
@@ -324,7 +330,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 TypeMirror utype = type.getUnderlyingType();
                 if (!TypesUtils.isObject(utype)
                         && !TypesUtils.isDeclaredOfName(utype, "java.lang.Number")
-                        && !NumberUtils.isFloatingPoint(utype)) {
+                        && !TypesUtils.isFloatingPoint(utype)) {
                     checker.reportError(tree, "annotation.intrange.on.noninteger");
                     return false;
                 }
@@ -340,5 +346,74 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if an expression of the given type can be a compile-time constant value.
+     *
+     * @param tm a type
+     * @return true if an expression of the given type can be a compile-time constant value
+     */
+    private boolean canBeConstant(TypeMirror tm) {
+        return TypesUtils.isPrimitive(tm)
+                || TypesUtils.isBoxedPrimitive(tm)
+                || TypesUtils.isString(tm)
+                || (tm.getKind() == TypeKind.ARRAY
+                        && canBeConstant(((ArrayType) tm).getComponentType()));
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        super.visitMethod(node, p);
+
+        ExecutableElement method = TreeUtils.elementFromDeclaration(node);
+        if (atypeFactory.getDeclAnnotation(method, StaticallyExecutable.class) != null) {
+            // The method is annotated as @StaticallyExecutable.
+            if (atypeFactory.getDeclAnnotation(method, Pure.class) == null) {
+                checker.reportWarning(node, "statically.executable.not.pure");
+            }
+            TypeMirror returnType = method.getReturnType();
+            if (returnType.getKind() != TypeKind.VOID && !canBeConstant(returnType)) {
+                checker.reportError(
+                        node, "statically.executable.nonconstant.return.type", returnType);
+            }
+
+            // Ways to determine the receiver type.
+            // 1. This definition of receiverType is null when receiver is implicit and method has
+            //    class com.sun.tools.javac.code.Symbol$MethodSymbol.  WHY?
+            //        TypeMirror receiverType = method.getReceiverType();
+            //    The same is true of TreeUtils.elementFromDeclaration(node).getReceiverType()
+            //    which seems to conflict with ExecutableType's documentation.
+            // 2. Can't use the tree, because the receiver might not be explicit.
+            // 3. Check whether method is static and use the declaring class.  Doesn't handle all
+            //    cases, but handles the most common ones.
+            TypeMirror receiverType = method.getReceiverType();
+            // If the method is static, issue no warning.  This is incorrect in the case of a
+            // constructor or a static method in an inner class.
+            if (!ElementUtils.isStatic(method)) {
+                receiverType = ElementUtils.getType(ElementUtils.enclosingClass(method));
+            }
+            if (receiverType != null
+                    && receiverType.getKind() != TypeKind.NONE
+                    && !canBeConstant(receiverType)) {
+                checker.reportError(
+                        node,
+                        "statically.executable.nonconstant.parameter.type",
+                        "this (the receiver)",
+                        returnType);
+            }
+
+            for (VariableElement param : method.getParameters()) {
+                TypeMirror paramType = param.asType();
+                if (paramType.getKind() != TypeKind.NONE && !canBeConstant(paramType)) {
+                    checker.reportError(
+                            node,
+                            "statically.executable.nonconstant.parameter.type",
+                            param.getSimpleName().toString(),
+                            returnType);
+                }
+            }
+        }
+        return null;
     }
 }

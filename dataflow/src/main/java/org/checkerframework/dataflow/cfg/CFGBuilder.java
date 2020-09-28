@@ -189,6 +189,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
@@ -1006,7 +1007,7 @@ public class CFGBuilder {
                     RegularBlockImpl b = (RegularBlockImpl) cur;
                     if (b.isEmpty()) {
                         Set<RegularBlockImpl> emptyBlocks = new HashSet<>();
-                        Set<PredecessorHolder> predecessors = new HashSet<>();
+                        Set<PredecessorHolder> predecessors = new LinkedHashSet<>();
                         BlockImpl succ =
                                 computeNeighborhoodOfEmptyBlock(b, emptyBlocks, predecessors);
                         for (RegularBlockImpl e : emptyBlocks) {
@@ -2269,8 +2270,8 @@ public class CFGBuilder {
          * Perform unary numeric promotion on the input node.
          *
          * @param node a node producing a value of numeric primitive or boxed type
-         * @return a Node with the value promoted to the int, long float or double, which may be the
-         *     input node
+         * @return a Node with the value promoted to the int, long, float, or double; may return be
+         *     the input node
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1
@@ -2322,7 +2323,7 @@ public class CFGBuilder {
             if (TypesUtils.isBoxedPrimitive(right)) {
                 right = types.unboxedType(right);
             }
-            TypeKind promotedTypeKind = TypesUtils.widenedNumericType(left, right);
+            TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
             return types.getPrimitiveType(promotedTypeKind);
         }
 
@@ -3061,7 +3062,7 @@ public class CFGBuilder {
                         if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
                             operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
                         } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 operNode = new IntegerDivisionNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
@@ -3072,7 +3073,7 @@ public class CFGBuilder {
                             }
                         } else {
                             assert kind == Kind.REMAINDER_ASSIGNMENT;
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 operNode = new IntegerRemainderNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
@@ -3279,7 +3280,7 @@ public class CFGBuilder {
                         if (kind == Tree.Kind.MULTIPLY) {
                             r = new NumericalMultiplicationNode(tree, left, right);
                         } else if (kind == Tree.Kind.DIVIDE) {
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 r = new IntegerDivisionNode(tree, left, right);
 
                                 TypeElement throwableElement =
@@ -3290,7 +3291,7 @@ public class CFGBuilder {
                             }
                         } else {
                             assert kind == Kind.REMAINDER;
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 r = new IntegerRemainderNode(tree, left, right);
 
                                 TypeElement throwableElement =
