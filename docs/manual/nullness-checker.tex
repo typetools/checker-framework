@@ -3,8 +3,8 @@
 
 If the Nullness Checker issues no warnings for a given program, then
 running that program will never throw a null pointer exception.  This
-guarantee enables a programmer to prevent errors from occurring when a
-program is run.  See Section~\ref{nullness-checks} for more details about
+guarantee enables a programmer to prevent run-time errors.
+See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
 The most important annotations supported by the Nullness Checker are
@@ -174,9 +174,12 @@ The nullness hierarchy contains these qualifiers:
 \begin{description}
 
 \item[\refqualclass{checker/nullness/qual}{Nullable}]
-  indicates a type that includes the null value.  For example, the type \code{Boolean}
+  indicates a type that includes the null value.  For example, the Java
+  type \code{Boolean}
   is nullable:  a variable of type \code{Boolean} always has one of the
   values \code{TRUE}, \code{FALSE}, or \code{null}.
+  (Since \<@NonNull> is the default type annotation, you would actually
+  write this type as \<@Nullable Boolean>.)
 
 \item[\refqualclass{checker/nullness/qual}{NonNull}]
   indicates a type that does not include the null value.  The type
