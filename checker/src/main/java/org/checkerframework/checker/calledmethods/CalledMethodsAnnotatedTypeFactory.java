@@ -158,7 +158,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      *
      * <p>Package-private to permit calls from {@link CalledMethodsTransfer}.
      *
-     * @param methodName the name of the method to adjust
+     * @param methodName the name of the method being explicitly called
      * @param tree the invocation of the method
      * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition.
      *     Otherwise, return the first argument.
@@ -225,7 +225,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
                         ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
                 return filterKindToMethodName(withNameArg);
             }
-            // Proceed leftward (to the receiver) in a fluent call sequence.
+            // Proceed leftward (toward the receiver) in a fluent call sequence.
             filterTree = TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
         }
         // The loop has reached the beginning of a fluent sequence of method calls.
@@ -236,7 +236,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             return null;
         }
         if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
-
             ExpressionTree constructorArg = ((NewClassTree) filterTree).getArguments().get(0);
             String filterKindName = ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
             if (filterKindName != null) {
@@ -251,8 +250,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * DescribeImagesRequest object.
      *
      * @param filterKind the kind of filter
-     * @return withOwners if filterKind is "owner", "owner-alias", or "owner-id"; "withImageIds" if
-     *     filterKind is "image-id"; null otherwise
+     * @return "withOwners" if filterKind is "owner", "owner-alias", or "owner-id"; "withImageIds"
+     *     if filterKind is "image-id"; null otherwise
      */
     private static @Nullable String filterKindToMethodName(String filterKind) {
         switch (filterKind) {
