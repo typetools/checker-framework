@@ -22,6 +22,9 @@ utility checkers, such as the Constant Value Checker.
 
 Implementation details:
 
+A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+to provide special behavior for primitive widening conversions.
+
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
 org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
 AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
@@ -38,7 +41,6 @@ Renamed methods:
   TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
   TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
   TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
-  TypesUtils.typeFromClass => TypesUtils.typeFromClass (swap order of last two arguments)
 
 ---------------------------------------------------------------------------
 
