@@ -40,6 +40,8 @@ Renamed methods:
   TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
   TypesUtils.typeFromClass => TypesUtils.typeFromClass (swap order of last two arguments)
 
+The CFStore copy constructor now takes only one argument.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020
