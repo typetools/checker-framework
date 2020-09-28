@@ -5,6 +5,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -104,6 +105,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -2261,10 +2263,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Return a primitive type: either the argument, or the result of unboxing it (which might
+     * affect its annotations).
+     *
+     * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
+     *
+     * @param type a type: a primitive or boxed primitive
+     * @return the unboxed variant of the type
+     */
+    public final AnnotatedPrimitiveType applyUnboxing(AnnotatedTypeMirror type) {
+        TypeMirror underlying = type.getUnderlyingType();
+        if (TypesUtils.isPrimitive(underlying)) {
+            return (AnnotatedPrimitiveType) type;
+        } else if (TypesUtils.isBoxedPrimitive(underlying)) {
+            return getUnboxedType((AnnotatedDeclaredType) type);
+        } else {
+            throw new BugInCF("Bad argument to applyUnboxing: " + type);
+        }
+    }
+
+    /**
      * Returns the annotated primitive type of the given declared type if it is a boxed declared
      * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * <p>The returned type has the same primary annotations as the given type.
+     * <p>In the {@code AnnotatedTypeFactory} implementation, the returned type has the same primary
+     * annotations as the given type. Subclasses may override this behavior.
      *
      * @param type the declared type
      * @return the unboxed primitive type
@@ -2321,7 +2344,104 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return narrowed;
     }
 
-    /** Returns the VisitorState instance used by the factory to infer types. */
+    /**
+     * Applies widening if applicable, otherwise returns its first argument.
+     *
+     * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
+     *
+     * @param exprType type to possibly widen
+     * @param widenedType type to possibly widen to; its annotations are ignored
+     * @return if widening is applicable, the result of converting {@code type} to the underlying
+     *     type of {@code widenedType}; otherwise {@code type}
+     */
+    public final AnnotatedTypeMirror applyWidening(
+            AnnotatedTypeMirror exprType, AnnotatedTypeMirror widenedType) {
+        TypeKind exprKind = exprType.getKind();
+        TypeKind widenedKind = widenedType.getKind();
+
+        if (!TypeKindUtils.isNumeric(widenedKind)) {
+            // The target type is not a numeric primitive, so primitive widening is not applicable.
+            return exprType;
+        }
+
+        AnnotatedPrimitiveType exprPrimitiveType;
+        if (TypeKindUtils.isNumeric(exprKind)) {
+            exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
+        } else if (TypesUtils.isNumericBoxed(exprType.getUnderlyingType())) {
+            exprPrimitiveType = getUnboxedType((AnnotatedDeclaredType) exprType);
+        } else {
+            return exprType;
+        }
+
+        if (TypeKindUtils.isNarrowerIntegral(exprPrimitiveType.getKind(), widenedType.getKind())) {
+            return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+        }
+
+        return exprType;
+    }
+
+    /**
+     * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeMirror} and with
+     * annotations copied or adapted from {@code type}.
+     *
+     * @param type type to widen; a primitive or boxed primitive
+     * @param widenedTypeMirror underlying type for the returned type mirror; a primitive or boxed
+     *     primitive (same boxing as {@code type})
+     * @return result of converting {@code type} to {@code widenedTypeMirror}
+     */
+    private AnnotatedPrimitiveType getWidenedPrimitive(
+            AnnotatedPrimitiveType type, TypeMirror widenedTypeMirror) {
+        AnnotatedPrimitiveType result =
+                (AnnotatedPrimitiveType)
+                        AnnotatedTypeMirror.createType(
+                                widenedTypeMirror, this, type.isDeclaration());
+        result.addAnnotations(
+                getWidenedAnnotations(type.getAnnotations(), type.getKind(), result.getKind()));
+        return result;
+    }
+
+    /**
+     * Returns annotations applicable to type {@code widenedTypeKind}, that are copied or adapted
+     * from {@code annos}.
+     *
+     * @param annos annotations to widen, from a primitive or boxed primitive
+     * @param typeKind primitive type to widen
+     * @param widenedTypeKind target for the returned annotations; a primitive type
+     * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
+     */
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        return annos;
+    }
+
+    /**
+     * Returns the types of the two arguments to the BinaryTree, accounting for widening if
+     * applicable.
+     *
+     * @param node a binary tree
+     * @return the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
+        AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror rightUnwidened = getAnnotatedType(node.getRightOperand());
+        TypeKind resultTypeKind =
+                TypeKindUtils.widenedNumericType(
+                        leftUnwidened.getUnderlyingType(), rightUnwidened.getUnderlyingType());
+        if (TypeKindUtils.isNumeric(resultTypeKind)) {
+            TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
+            return Pair.of(
+                    getWidenedPrimitive(applyUnboxing(leftUnwidened), resultTypeMirror),
+                    getWidenedPrimitive(applyUnboxing(rightUnwidened), resultTypeMirror));
+        } else {
+            return Pair.of(leftUnwidened, rightUnwidened);
+        }
+    }
+
+    /**
+     * Returns the VisitorState instance used by the factory to infer types.
+     *
+     * @return the VisitorState instance used by the factory to infer types
+     */
     public VisitorState getVisitorState() {
         return this.visitorState;
     }

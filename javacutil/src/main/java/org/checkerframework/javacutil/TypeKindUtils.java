@@ -69,8 +69,8 @@ public final class TypeKindUtils {
         }
     }
 
-    // Cannot create an overload that takes an AnnotatedTypeMirror.java because javacutil
-    // must not depend on the framework package.
+    // Cannot create an overload that takes an AnnotatedTypeMirror.java because the javacutil
+    // package must not depend on the framework package.
     /**
      * Given a primitive type, return its kind. Given a boxed primitive type, return the
      * corresponding primitive type kind. Otherwise, return null.
@@ -131,7 +131,7 @@ public final class TypeKindUtils {
      *     performed
      */
     public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
-        return TypeKindUtils.widenedNumericType(left.getKind(), right.getKind());
+        return widenedNumericType(left.getKind(), right.getKind());
     }
 
     /**

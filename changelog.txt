@@ -8,6 +8,8 @@ org.jspecify.annotations.Nullable.
 The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
 The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
 
+The Signedness Checker supports annotation @SignedPositiveFromUnsigned.
+
 Implementation details:
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
@@ -26,7 +28,6 @@ Renamed methods:
   TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
   TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
   TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
-  TypesUtils.typeFromClass => TypesUtils.typeFromClass (swap order of last two arguments)
 
 ---------------------------------------------------------------------------
 
