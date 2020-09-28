@@ -179,7 +179,8 @@ public abstract class CFAbstractTransfer<
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
                 analysis.atypeFactory;
         Tree preTree = analysis.getCurrentTree();
-        Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preContext =
+                factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -187,31 +188,34 @@ public abstract class CFAbstractTransfer<
             // assignment context tree's type in the factory while flow is
             // disabled.
             Tree contextTree = node.getAssignmentContext().getContextTree();
-            AnnotatedTypeMirror assCtxt = null;
+            AnnotatedTypeMirror assignmentContext = null;
             if (contextTree != null) {
-                assCtxt = factory.getAnnotatedTypeLhs(contextTree);
+                assignmentContext = factory.getAnnotatedTypeLhs(contextTree);
             } else {
-                Element assCtxtElement = node.getAssignmentContext().getElementForType();
-                if (assCtxtElement != null) {
+                Element assignmentContextElement = node.getAssignmentContext().getElementForType();
+                if (assignmentContextElement != null) {
                     // if contextTree is null, use the element to get the type
-                    assCtxt = factory.getAnnotatedType(assCtxtElement);
+                    assignmentContext = factory.getAnnotatedType(assignmentContextElement);
                 }
             }
 
-            if (assCtxt != null) {
-                if (assCtxt instanceof AnnotatedExecutableType) {
+            if (assignmentContext != null) {
+                if (assignmentContext instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
-                    assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+                    assignmentContext =
+                            ((AnnotatedExecutableType) assignmentContext).getReturnType();
                 }
                 factory.getVisitorState()
                         .setAssignmentContext(
-                                Pair.of(node.getAssignmentContext().getContextTree(), assCtxt));
+                                Pair.of(
+                                        node.getAssignmentContext().getContextTree(),
+                                        assignmentContext));
             }
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
-        factory.getVisitorState().setAssignmentContext(preCtxt);
+        factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);
     }
 

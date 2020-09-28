@@ -76,7 +76,7 @@ public abstract class AnnotatedTypeMirror {
                 break;
             case ERROR:
                 throw new BugInCF(
-                        "AnnotatedTypeMirror.createType: input should type-check already. Found error type: "
+                        "AnnotatedTypeMirror.createType: input is not compilable. Found error type: "
                                 + type);
 
             case EXECUTABLE:
@@ -237,6 +237,8 @@ public abstract class AnnotatedTypeMirror {
      *
      * <p>It doesn't account for annotations in deep types (type arguments, array components, etc).
      *
+     * <p>If there is only one hierarchy, you can use {@link #getAnnotation()} instead.
+     *
      * @param p the qualifier hierarchy to check for
      * @return an annotation from the same hierarchy as p if present
      */
@@ -285,12 +287,35 @@ public abstract class AnnotatedTypeMirror {
      * arguments, array components, etc).
      *
      * <p>To get the single annotation in a particular hierarchy, use {@link
-     * #getAnnotationInHierarchy}.
+     * #getAnnotationInHierarchy}. If there is only one hierarchy, you can use {@link
+     * #getAnnotation}.
      *
      * @return a unmodifiable set of the annotations on this
      */
     public final Set<AnnotationMirror> getAnnotations() {
         return Collections.unmodifiableSet(annotations);
+    }
+
+    /**
+     * Returns the single annotation on this type. It does not include annotations in deep types
+     * (type arguments, array components, etc).
+     *
+     * <p>This method requires that there is only a single hierarchy. In that case, it is equivalent
+     * to {@link #getAnnotationInHierarchy}.
+     *
+     * @see #getAnnotations
+     * @return the annotation on this, or null if none (which can only happen if {@code this} is a
+     *     type variable or wildcard)
+     */
+    public final @Nullable AnnotationMirror getAnnotation() {
+        if (annotations.isEmpty()) {
+            // This AnnotatedTypeMirror must be a type variable or wildcard.
+            return null;
+        }
+        if (annotations.size() != 1) {
+            throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
+        }
+        return annotations.iterator().next();
     }
 
     /**
@@ -1123,10 +1148,23 @@ public abstract class AnnotatedTypeMirror {
                     && element != null
                     && ((ExecutableType) actualType).getReturnType() != null) { // lazy init
                 TypeMirror aret = ((ExecutableType) actualType).getReturnType();
+                if (aret.getKind() == TypeKind.ERROR) {
+                    throw new BugInCF(
+                            "Input is not compilable; problem with return type of %s: %s",
+                            element, aret);
+                }
                 if (((MethodSymbol) element).isConstructor()) {
                     // For constructors, the underlying return type is void.
                     // Take the type of the enclosing class instead.
                     aret = element.getEnclosingElement().asType();
+                    if (aret.getKind() == TypeKind.ERROR) {
+                        throw new BugInCF(
+                                "Input is not compilable; problem with constructor %s return type: %s (enclosing element = %s [%s])",
+                                element,
+                                aret,
+                                element.getEnclosingElement(),
+                                element.getEnclosingElement().getClass());
+                    }
                 }
                 returnType = createType(aret, atypeFactory, false);
             }
