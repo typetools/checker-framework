@@ -1,8 +1,8 @@
 Version 3.7.0, October 1, 2020
 
-The Called Methods Checker tracks methods that have definitely been called on
-an object. It automatically supports detecting mis-uses of the builder pattern
-in code that uses Lombok or AutoValue.
+The new Called Methods Checker tracks methods that have definitely been
+called on an object. It automatically supports detecting mis-uses of the
+builder pattern in code that uses Lombok or AutoValue.
 
 Accumulation analysis is now supported via a generic Accumulation Checker.
 An accumulation analysis is a restricted form of typestate analysis that does
