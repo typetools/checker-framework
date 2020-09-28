@@ -1,5 +1,14 @@
 Version 3.7.0, October 1, 2020
 
+The new Called Methods Checker tracks methods that have definitely been
+called on an object. It automatically supports detecting mis-uses of the
+builder pattern in code that uses Lombok or AutoValue.
+
+Accumulation analysis is now supported via a generic Accumulation Checker.
+An accumulation analysis is a restricted form of typestate analysis that does
+not require a precise alias analysis for soundness. The Called Methods Checker
+is an accumulation analysis.
+
 The Nullness Checker supports annotations
 org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
