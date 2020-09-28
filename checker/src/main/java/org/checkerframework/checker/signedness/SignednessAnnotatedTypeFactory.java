@@ -3,17 +3,17 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
-import org.checkerframework.checker.signedness.qual.SignedPositiveFromUnsigned;
+import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -27,12 +27,16 @@ import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.DefaultTypeHierarchy;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -49,15 +53,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @Unigned annotation. */
     private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
-    /** The @SignedPositive annotation. */
-    private final AnnotationMirror SIGNED_POSITIVE =
-            AnnotationBuilder.fromClass(elements, SignedPositive.class);
     /** The @SignednessGlb annotation. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
-    /** The @SignedPositiveFromUnsigned annotation. */
-    protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
-            AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+    /** The @SignednessBottom annotation. */
+    private final AnnotationMirror SIGNEDNESS_BOTTOM =
+            AnnotationBuilder.fromClass(elements, SignednessBottom.class);
 
     /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
@@ -173,36 +174,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Set<AnnotationMirror> getWidenedAnnotations(
-            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
-        assert annos.size() == 1;
-
-        if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
-                result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
-                return result;
-            } else {
-                result.add(SIGNED_POSITIVE);
-                return result;
-            }
-        }
-        if (widenedTypeKind == TypeKind.CHAR) {
-            // It's a non-widening cast to char.  Make it @Unsigned.
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            result.add(UNSIGNED);
-            return result;
-        }
-        if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            result.add(SIGNED);
-            return result;
-        }
-
-        return annos;
-    }
-
-    @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 new SignednessTreeAnnotator(this), super.createTreeAnnotator());
@@ -216,7 +187,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *       PropagationTreeAnnotator},
      *   <li>shift results take on the type of their left operand,
      *   <li>the types of identifiers are refined based on the results of the Value Checker.
-     *   <li>casts take types related to widening
      * </ul>
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
@@ -260,24 +230,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             annotateBooleanAsUnknownSignedness(type);
             return null;
         }
-
-        // This cannot appear in PropagationTreeAnnotator because it sets the annotations of a
-        // subexpression type (which PropagationTreeAnnotator would have already set earlier), not
-        // the argument.  The actual work is done by SignednessVisitor.visitBinary which calls
-        // isCastedShiftEitherSignedness.
-        @Override
-        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            TypeKind castKind = type.getPrimitiveKind();
-            if (castKind != null) {
-                AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
-                TypeKind exprKind = exprType.getPrimitiveKind();
-                if (exprKind != null) {
-                    type.replaceAnnotations(
-                            getWidenedAnnotations(exprType.getAnnotations(), exprKind, castKind));
-                }
-            }
-            return null;
-        }
     }
 
     @Override
@@ -291,6 +243,93 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super.addAnnotationsFromDefaultForType(null, type);
         } else {
             super.addAnnotationsFromDefaultForType(element, type);
+        }
+    }
+
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new SignednessTypeHierarchy(
+                checker,
+                getQualifierHierarchy(),
+                checker.getBooleanOption("ignoreRawTypeArguments", true),
+                checker.hasOption("invariantArrays"));
+    }
+
+    /**
+     * The type hierarchy for the signedness type system. If A is narrower (fewer bits) than B, then
+     * A with any qualifier is a subtype of @SignedPositive B.
+     */
+    protected class SignednessTypeHierarchy extends DefaultTypeHierarchy {
+
+        /**
+         * Create a new SignednessTypeHierarchy.
+         *
+         * @param checker the checker
+         * @param qualifierHierarchy the qualifier hierarchy
+         * @param ignoreRawTypes from -AignoreRawTypes
+         * @param invariantArrayComponents from -AinvariantArrays
+         */
+        public SignednessTypeHierarchy(
+                BaseTypeChecker checker,
+                QualifierHierarchy qualifierHierarchy,
+                boolean ignoreRawTypes,
+                boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
+        }
+
+        @Override
+        public Boolean visitPrimitive_Primitive(
+                AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, Void p) {
+
+            boolean superResult = super.visitPrimitive_Primitive(subtype, supertype, p);
+            if (superResult) {
+                return true;
+            }
+
+            PrimitiveType subPrimitive = subtype.getUnderlyingType();
+            PrimitiveType superPrimitive = supertype.getUnderlyingType();
+            if (TypesUtils.isNarrowerIntegral(subPrimitive, superPrimitive)) {
+                AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
+                if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        @Override
+        public Boolean visitPrimitive_Declared(
+                AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
+            boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+            if (superBoxed) {
+                return visitPrimitive_Primitive(subtype, getUnboxedType(supertype), p);
+            }
+            return super.visitPrimitive_Declared(subtype, supertype, p);
+        }
+
+        @Override
+        public Boolean visitDeclared_Declared(
+                AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Void p) {
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                boolean superBoxed = TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType());
+                if (superBoxed) {
+                    return visitPrimitive_Primitive(
+                            getUnboxedType(subtype), getUnboxedType(supertype), p);
+                }
+            }
+            return super.visitDeclared_Declared(subtype, supertype, p);
+        }
+
+        @Override
+        public Boolean visitDeclared_Primitive(
+                AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Void p) {
+            boolean subBoxed = TypesUtils.isBoxedPrimitive(subtype.getUnderlyingType());
+            if (subBoxed) {
+                return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
+            }
+            return super.visitDeclared_Primitive(subtype, supertype, p);
         }
     }
 }

@@ -323,14 +323,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
      */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-        // Used in diagnostic messages.
+
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
-
-        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-                atypeFactory.binaryTreeArgTypes(node);
-        AnnotatedTypeMirror leftOpType = argTypes.first;
-        AnnotatedTypeMirror rightOpType = argTypes.second;
+        AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
+        AnnotatedTypeMirror rightOpType = atypeFactory.getAnnotatedType(rightOp);
 
         Kind kind = node.getKind();
 

@@ -8,9 +8,10 @@ org.jspecify.annotations.Nullable.
 The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
 The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
 
-The Signedness Checker supports annotation @SignedPositiveFromUnsigned.
-
 Implementation details:
+
+A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+to provide special behavior for primitive widening conversions.
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
 org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
