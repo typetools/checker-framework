@@ -3,7 +3,6 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -255,24 +254,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             annotateBooleanAsUnknownSignedness(type);
-            return null;
-        }
-
-        // This cannot appear in PropagationTreeAnnotator because it sets the annotations of a
-        // subexpression type (which PropagationTreeAnnotator would have already set earlier), not
-        // the argument.  The actual work is done by SignednessVisitor.visitBinary which calls
-        // isCastedShiftEitherSignedness.
-        @Override
-        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            TypeKind castKind = type.getPrimitiveKind();
-            if (castKind != null) {
-                AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
-                TypeKind exprKind = exprType.getPrimitiveKind();
-                if (exprKind != null) {
-                    type.replaceAnnotations(
-                            getWidenedAnnotations(exprType.getAnnotations(), exprKind, castKind));
-                }
-            }
             return null;
         }
     }
