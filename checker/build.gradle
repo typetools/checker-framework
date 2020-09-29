@@ -4,7 +4,7 @@ plugins {
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-gradle.html,
     // because the build fails with the Gradle 5+ way, saying that it can't find ec2.
     // I believe that this is because the CF only needs the AWS SDK during testing, not during the build.
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
 }
 
 sourceSets {
