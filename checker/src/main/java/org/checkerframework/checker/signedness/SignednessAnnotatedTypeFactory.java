@@ -293,7 +293,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // The remainder of this file contains code to special-case shifts whose result does not depend
     // on the MSB of the first argument, due to subsequent masking or casts.
 
-    /** @return true iff node is a mask operation (&amp; or |) */
+    /**
+     * Returns true iff the given tree node is a mask operation (&amp; or |).
+     *
+     * @param node a tree to test
+     * @return true iff node is a mask operation (&amp; or |)
+     */
     private boolean isMask(Tree node) {
         Kind kind = node.getKind();
 
@@ -329,7 +334,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return (PrimitiveTypeTree) underlyingType;
     }
 
-    /** @return true iff expr is a literal */
+    /**
+     * Returns true iff the given tree is a literal
+     *
+     * @param expr a tree to test
+     * @return true iff expr is a literal
+     */
     private boolean isLiteral(ExpressionTree expr) {
         return expr instanceof LiteralTree;
     }
@@ -474,6 +484,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>{@code (b >> 4) | 0xF0 == (b >>> 4) | 0xF0;}
      *
      * @param shiftExpr a right shift expression: {@code expr1 >> expr2} or {@code expr1 >>> expr2}
+     * @param path the path to {@code shiftExpr}
      * @return true iff the right shift is masked such that a signed or unsigned right shift has the
      *     same effect
      */
@@ -521,6 +532,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <p>{@code (byte)(s >> 8) == (byte)(b >>> 8);}
      *
      * @param shiftExpr a right shift expression: {@code expr1 >> expr2} or {@code expr1 >>> expr2}
+     * @param path the path to {@code shiftExpr}
      * @return true iff the right shift is type casted such that a signed or unsigned right shift
      *     has the same effect
      */
