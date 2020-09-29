@@ -25,6 +25,7 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -215,9 +216,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
-        AnnotatedTypeMirror methodAtm = rrATF.getAnnotatedType(methodEle);
-        AnnotatedTypeMirror rrType =
-                ((AnnotatedTypeMirror.AnnotatedExecutableType) methodAtm).getReturnType();
+        AnnotatedExecutableType methodAtm = rrATF.getAnnotatedType(methodEle);
+        AnnotatedTypeMirror rrType = methodAtm.getReturnType();
         return rrType != null && rrType.hasAnnotation(This.class);
     }
 
