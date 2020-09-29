@@ -303,7 +303,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public List<String> getAccumulatedValues(AnnotationMirror anno) {
         if (!isAccumulatorAnnotation(anno)) {
-            throw new BugInCF(anno + "isn't an accumulator annotation");
+            throw new BugInCF(anno + " isn't an accumulator annotation");
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
