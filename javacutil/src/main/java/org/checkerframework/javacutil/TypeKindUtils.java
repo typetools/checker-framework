@@ -69,7 +69,7 @@ public final class TypeKindUtils {
         }
     }
 
-    // Cannot create an overload that takes an AnnotatedTypeMirror.java because the javacutil
+    // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
     // package must not depend on the framework package.
     /**
      * Given a primitive type, return its kind. Given a boxed primitive type, return the

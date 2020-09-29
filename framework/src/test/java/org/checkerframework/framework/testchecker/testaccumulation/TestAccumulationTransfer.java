@@ -25,9 +25,9 @@ public class TestAccumulationTransfer extends AccumulationTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
-        String methodName = node.getTarget().getMethod().getSimpleName().toString();
         Node receiver = node.getTarget().getReceiver();
-        if (!"<init>".equals(methodName) && receiver != null) {
+        if (receiver != null) {
+            String methodName = node.getTarget().getMethod().getSimpleName().toString();
             accumulate(receiver, result, methodName);
         }
         return result;

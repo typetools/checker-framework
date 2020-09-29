@@ -49,10 +49,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @Unigned annotation. */
     private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
-    /** The @SignedPositive annotation. */
-    private final AnnotationMirror SIGNED_POSITIVE =
-            AnnotationBuilder.fromClass(elements, SignedPositive.class);
-    /** The @SignednessGlb annotation. */
+    /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
     /** The @SignedPositiveFromUnsigned annotation. */
@@ -183,7 +180,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
                 return result;
             } else {
-                result.add(SIGNED_POSITIVE);
+                result.add(SIGNEDNESS_GLB);
                 return result;
             }
         }

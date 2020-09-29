@@ -7,9 +7,12 @@ public class CFStore extends CFAbstractStore<CFValue, CFStore> {
         super(analysis, sequentialSemantics);
     }
 
-    public CFStore(
-            CFAbstractAnalysis<CFValue, CFStore, ?> analysis,
-            CFAbstractStore<CFValue, CFStore> other) {
+    /**
+     * Copy constructor.
+     *
+     * @param other the CFStore to copy
+     */
+    public CFStore(CFAbstractStore<CFValue, CFStore> other) {
         super(other);
     }
 }
