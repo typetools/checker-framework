@@ -17,9 +17,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -712,24 +710,10 @@ public class CheckerMain {
     /// Shorthand checker names
     ///
 
-    /**
-     * All "built-in" Checker Framework checkers, except SubtypingChecker, start with this package
-     * file path. Framework Checkers, except for SubtypingChecker, are excluded from processor
-     * shorthand.
-     */
-    protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
-    /**
-     * The version of CHECKER_BASE_PACKAGE using / rather than . as the separator. Forward slash is
-     * used instead of File.separator because checker.jar uses / as the separator.
-     */
-    protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", "/");
-
-    /** The canonical name of {@link SubtypingChecker}. */
-    protected static final @CanonicalName String FULLY_QUALIFIED_SUBTYPING_CHECKER =
-            SubtypingChecker.class.getCanonicalName();
-
-    /** The simple name of {@link SubtypingChecker}. */
-    protected static final String SUBTYPING_CHECKER_NAME = SubtypingChecker.class.getSimpleName();
+    /** Processor shorthand is enabled for processors in this directory in checker.jar. */
+    protected static final String CHECKER_BASE_DIR_NAME = "org/checkerframework/checker/";
+    /** Processor shorthand is enabled for processors in this directory in checker.jar. */
+    protected static final String COMMON_BASE_DIR_NAME = "org/checkerframework/common/";
 
     /**
      * Returns true if processorString, once transformed into fully-qualified form, is present in
@@ -789,7 +773,9 @@ public class CheckerMain {
                 final String name = entry.getName();
                 // Checkers ending in "Subchecker" are not included in this list used by
                 // CheckerMain.
-                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
+                if ((name.startsWith(CHECKER_BASE_DIR_NAME)
+                                || name.startsWith(COMMON_BASE_DIR_NAME))
+                        && name.endsWith("Checker.class")) {
                     // Forward slash is used instead of File.separator because checker.jar uses / as
                     // the separator.
                     @SuppressWarnings("signature") // string manipulation
@@ -840,14 +826,10 @@ public class CheckerMain {
             boolean allowSubcheckers) {
         final String[] processors = processorsString.split(",");
         for (int i = 0; i < processors.length; i++) {
-            if (processors[i].equals(SUBTYPING_CHECKER_NAME)) { // Allow "subtyping" as well.
-                processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
-            } else {
-                if (!processors[i].contains(".")) { // Not already fully qualified
-                    processors[i] =
-                            unshorthandProcessorName(
-                                    processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
-                }
+            if (!processors[i].contains(".")) { // Not already fully qualified
+                processors[i] =
+                        unshorthandProcessorName(
+                                processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
             }
         }
 
@@ -900,7 +882,7 @@ public class CheckerMain {
 
     /**
      * Given a shorthand processor name, returns true if it can be expanded to a checker in the
-     * fullyQualifiedCheckerNames list. Does not match the subtyping checker.
+     * fullyQualifiedCheckerNames list.
      *
      * @param processorName a string identifying one processor
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match

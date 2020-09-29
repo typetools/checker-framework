@@ -37,6 +37,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -192,6 +193,17 @@ public abstract class AnnotatedTypeMirror {
      */
     public TypeKind getKind() {
         return actualType.getKind();
+    }
+
+    /**
+     * Given a primitive type, return its kind. Given a boxed primitive type, return the
+     * corresponding primitive type kind. Otherwise, return null.
+     *
+     * @return a primitive type kind if this is a primitive type or boxed primitive type; otherwise
+     *     null
+     */
+    public TypeKind getPrimitiveKind() {
+        return TypeKindUtils.primitiveOrBoxedToTypeKind(getUnderlyingType());
     }
 
     /**

@@ -614,6 +614,18 @@ public class ElementUtils {
     }
 
     /**
+     * Given an annotation name, return true if the element has the annotation of that name.
+     *
+     * @param element the element
+     * @param annotName name of the annotation
+     * @return true if the element has the annotation of that name
+     */
+    public static boolean hasAnnotation(Element element, String annotName) {
+        return element.getAnnotationMirrors().stream()
+                .anyMatch(anm -> AnnotationUtils.areSameByName(anm, annotName));
+    }
+
+    /**
      * Returns the TypeElement for the given class.
      *
      * @param processingEnv the processing environment

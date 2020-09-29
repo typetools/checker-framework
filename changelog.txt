@@ -1,5 +1,14 @@
 Version 3.7.0, October 1, 2020
 
+The new Called Methods Checker tracks methods that have definitely been
+called on an object. It automatically supports detecting mis-uses of the
+builder pattern in code that uses Lombok or AutoValue.
+
+Accumulation analysis is now supported via a generic Accumulation Checker.
+An accumulation analysis is a restricted form of typestate analysis that does
+not require a precise alias analysis for soundness. The Called Methods Checker
+is an accumulation analysis.
+
 The Nullness Checker supports annotations
 org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
@@ -8,7 +17,13 @@ org.jspecify.annotations.Nullable.
 The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
 The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
 
+The shorthand syntax for the -processor command-line argument applies to
+utility checkers, such as the Constant Value Checker.
+
 Implementation details:
+
+A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+to provide special behavior for primitive widening conversions.
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
 org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
@@ -26,7 +41,8 @@ Renamed methods:
   TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
   TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
   TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
-  TypesUtils.typeFromClass => TypesUtils.typeFromClass (swap order of last two arguments)
+
+The CFStore copy constructor now takes only one argument.
 
 ---------------------------------------------------------------------------
 
