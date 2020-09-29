@@ -42,6 +42,8 @@ Renamed methods:
   TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
   TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
 
+The CFStore copy constructor now takes only one argument.
+
 ---------------------------------------------------------------------------
 
 Version 3.6.1, September 2, 2020
