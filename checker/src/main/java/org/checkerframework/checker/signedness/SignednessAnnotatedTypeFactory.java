@@ -290,7 +290,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // Special case for shifts whose relust does not depend on the MSB of the first argument.
+    // The remainder of this file contains code to special-case shifts whose result does not depend
+    // on the MSB of the first argument, due to subsequent masking or casts.
 
     /** @return true iff node is a mask operation (&amp; or |) */
     private boolean isMask(Tree node) {
@@ -546,4 +547,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         boolean result = castIgnoresMSB(shiftTypeKind, castTypeKind, shiftLit);
         return result;
     }
+
+    // End of special-case code for shifts that do not depend on the MSB of the first argument.
+
 }
