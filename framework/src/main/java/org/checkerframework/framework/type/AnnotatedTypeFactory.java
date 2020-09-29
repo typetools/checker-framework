@@ -2930,6 +2930,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
+        if (artificialTreeToEnclosingElementMap.containsKey(node)) {
+            return null;
+        }
+
         if (treePathCache.isCached(node)) {
             return treePathCache.getPath(root, node);
         }
