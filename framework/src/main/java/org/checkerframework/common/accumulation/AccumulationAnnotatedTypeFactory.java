@@ -10,12 +10,13 @@ import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -25,10 +26,11 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -215,9 +217,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
-        AnnotatedTypeMirror methodAtm = rrATF.getAnnotatedType(methodEle);
-        AnnotatedTypeMirror rrType =
-                ((AnnotatedTypeMirror.AnnotatedExecutableType) methodAtm).getReturnType();
+        AnnotatedExecutableType methodAtm = rrATF.getAnnotatedType(methodEle);
+        AnnotatedTypeMirror rrType = methodAtm.getReturnType();
         return rrType != null && rrType.hasAnnotation(This.class);
     }
 
@@ -290,7 +291,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new AccumulationQualifierHierarchy();
+        return new AccumulationQualifierHierarchy(this.getSupportedTypeQualifiers(), this.elements);
     }
 
     /**
@@ -346,42 +347,17 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *       not very precise.)
      * </ul>
      */
-    protected class AccumulationQualifierHierarchy implements QualifierHierarchy {
+    protected class AccumulationQualifierHierarchy extends ElementQualifierHierarchy {
 
-        /** A set that includes only the {@link #top} annotation. */
-        final Set<AnnotationMirror> tops = AnnotationMirrorSet.singleElementSet(top);
-
-        /** A set that includes only the {@link #bottom} annotation. */
-        final Set<AnnotationMirror> bottoms = AnnotationMirrorSet.singleElementSet(bottom);
-
-        @Override
-        public Set<? extends AnnotationMirror> getTopAnnotations() {
-            return tops;
-        }
-
-        @Override
-        public AnnotationMirror getTopAnnotation(final AnnotationMirror start) {
-            return top;
-        }
-
-        @Override
-        public Set<? extends AnnotationMirror> getBottomAnnotations() {
-            return bottoms;
-        }
-
-        @Override
-        public AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier) {
-            return bottom;
-        }
-
-        @Override
-        public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier) {
-            return null;
-        }
-
-        @Override
-        public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
-            return false;
+        /**
+         * Creates a ElementQualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
+        protected AccumulationQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /**
@@ -392,6 +368,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         public AnnotationMirror greatestLowerBound(
                 final AnnotationMirror a1, final AnnotationMirror a2) {
             if (AnnotationUtils.areSame(a1, bottom) || AnnotationUtils.areSame(a2, bottom)) {
+                return bottom;
+            }
+
+            if (isPolymorphicQualifier(a1) && isPolymorphicQualifier(a2)) {
+                return a1;
+            } else if (isPolymorphicQualifier(a1) || isPolymorphicQualifier(a2)) {
                 return bottom;
             }
 
@@ -435,6 +417,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 return a1;
             }
 
+            if (isPolymorphicQualifier(a1) && isPolymorphicQualifier(a2)) {
+                return a1;
+            } else if (isPolymorphicQualifier(a1) || isPolymorphicQualifier(a2)) {
+                return top;
+            }
+
             // If either is a predicate, then both should be converted to predicates and or-ed.
             if (isPredicate(a1) || isPredicate(a2)) {
                 String a1Pred = convertToPredicate(a1);
@@ -469,6 +457,17 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 return true;
             } else if (AnnotationUtils.areSame(superAnno, bottom)) {
                 return false;
+            }
+
+            if (isPolymorphicQualifier(subAnno)) {
+                if (isPolymorphicQualifier(superAnno)) {
+                    return true;
+                } else {
+                    // Use this slightly more expensive conversion here because
+                    // this is a rare code path and it's simpler to read than
+                    // checking for both predicate and non-predicate forms of top.
+                    return "".equals(convertToPredicate(superAnno));
+                }
             }
 
             if (isPredicate(subAnno)) {
