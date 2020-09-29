@@ -360,7 +360,7 @@ task delombok {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
-        def collection = files(configurations.testCompileClasspath)
+        def collection = files(configurations.testImplementationClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
                 classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
