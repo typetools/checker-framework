@@ -14,7 +14,7 @@ apply plugin: 'org.checkerframework'
 def cfHome = "${projectDir}/../../.."
 dependencies {
     compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
-    testImplementationOnly files(cfHome + "/checker/dist/checker-qual.jar")
+    testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
     checkerFramework files(cfHome + "/checker/dist/checker.jar")
 }
 
