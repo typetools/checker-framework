@@ -1460,7 +1460,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + elt);
         }
 
-        mergeStubsIntoType(type, elt, ajavaTypes);
+        type = mergeStubsIntoType(type, elt, ajavaTypes);
         if (checker.hasOption("mergeStubsWithSource")) {
             type = mergeStubsIntoType(type, elt, stubTypes);
         }
@@ -1503,7 +1503,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
-        mergeStubsIntoType(result, tree, ajavaTypes);
+        result = mergeStubsIntoType(result, tree, ajavaTypes);
         if (checker.hasOption("mergeStubsWithSource")) {
             result = mergeStubsIntoType(result, tree, stubTypes);
         }
