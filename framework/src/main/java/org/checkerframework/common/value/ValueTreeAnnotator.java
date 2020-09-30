@@ -4,6 +4,8 @@ import com.sun.source.tree.*;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -519,6 +521,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
         visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
 
         if (TreeUtils.isArrayLengthAccess(tree)) {
             // The field access is to the length field, as in "someArrayExpression.length"
@@ -608,6 +611,35 @@ class ValueTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
         visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
         return null;
+    }
+
+    /**
+     * Default the value of an enum constant E.V to {@code StringVal("V")}.
+     *
+     * @param tree an Identifier or MemberSelect tree that might be an enum
+     * @param type the type of that tree
+     */
+    private void visitEnumConstant(ExpressionTree tree, AnnotatedTypeMirror type) {
+        Element decl = TreeUtils.elementFromTree(tree);
+        if (decl.getKind() != ElementKind.ENUM_CONSTANT) {
+            return;
+        }
+
+        Name id;
+        switch (tree.getKind()) {
+            case MEMBER_SELECT:
+                id = ((MemberSelectTree) tree).getIdentifier();
+                break;
+            case IDENTIFIER:
+                id = ((IdentifierTree) tree).getName();
+                break;
+            default:
+                throw new BugInCF("unexpected kind of enum constant use tree: " + tree.getKind());
+        }
+        AnnotationMirror stringVal =
+                atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
+        type.replaceAnnotation(stringVal);
     }
 }
