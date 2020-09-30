@@ -2,15 +2,19 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;
@@ -870,6 +874,46 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    private static void addExplicitReceiver(MethodDeclaration methodDeclaration) {
+        System.out.println("Adding exlplicit receiver");
+        if (methodDeclaration.getReceiverParameter().isPresent()) {
+            System.out.println("receiver parameter was already present");
+            return;
+        }
+
+        if (methodDeclaration.getParentNode().isEmpty()) {
+            System.out.println("parent node was empty");
+            return;
+        }
+
+        com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
+        if (!(parent instanceof TypeDeclaration)) {
+            System.out.println("parent wasn't a type declaration, it was: " + parent);
+            return;
+        }
+
+        TypeDeclaration<?> parentDecl = (TypeDeclaration<?>) parent;
+        ClassOrInterfaceType receiver = new ClassOrInterfaceType();
+        receiver.setName(parentDecl.getName());
+        if (parentDecl.isClassOrInterfaceDeclaration()) {
+            ClassOrInterfaceDeclaration parentClassDecl =
+                    parentDecl.asClassOrInterfaceDeclaration();
+            if (!parentClassDecl.getTypeParameters().isEmpty()) {
+                NodeList<Type> typeArgs = new NodeList<>();
+                for (TypeParameter typeParam : parentClassDecl.getTypeParameters()) {
+                    // TODO: Should this be a ClassOrInterfaceType?
+                    ClassOrInterfaceType typeArg = new ClassOrInterfaceType();
+                    typeArg.setName(typeParam.getNameAsString());
+                    typeArgs.add(typeArg);
+                }
+
+                receiver.setTypeArguments(typeArgs);
+            }
+        }
+
+        methodDeclaration.setReceiverParameter(new ReceiverParameter(receiver, "this"));
+    }
+
     /**
      * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes
      * and interfaces in that compilation unit.
@@ -1089,7 +1133,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
 
             if (receiverType != null) {
-                // TODO: Remove this check and add a receiver parameter instead.
+                addExplicitReceiver(declaration.asMethodDeclaration());
+                // The receiver won't be present for an anonymous class.
                 if (declaration.getReceiverParameter().isPresent()) {
                     WholeProgramInferenceJavaParser.transferAnnotations(
                             receiverType, declaration.getReceiverParameter().get().getType());
