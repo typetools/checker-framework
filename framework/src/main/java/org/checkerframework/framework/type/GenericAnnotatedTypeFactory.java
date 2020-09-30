@@ -103,6 +103,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -1569,27 +1570,37 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
+        String treeString = debug ? TreeUtils.toStringTruncated(tree, 60) : null;
+        log("GATF.addComputedTypeAnnotations(%s, %s, %s)%n", treeString, type, iUseFlow);
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+            log("GATF.addComputedTypeAnnotations#2(%s, %s)%n", treeString, type);
         }
         applyQualifierParameterDefaults(tree, type);
+        log("GATF.addComputedTypeAnnotations#3(%s, %s)%n", treeString, type);
         treeAnnotator.visit(tree, type);
+        log("GATF.addComputedTypeAnnotations#4(%s, %s)%n", treeString, type);
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+            log("GATF.addComputedTypeAnnotations#5(%s, %s)%n", treeString, type);
         }
         typeAnnotator.visit(type, null);
+        log("GATF.addComputedTypeAnnotations#6(%s, %s)%n", treeString, type);
         defaults.annotate(tree, type);
+        log("GATF.addComputedTypeAnnotations#7(%s, %s)%n", treeString, type);
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
 
             if (as != null) {
                 applyInferredAnnotations(type, as);
+                log("GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n", treeString, type, as);
             }
         }
+        log("GATF.addComputedTypeAnnotations(%s, %s, %s) done%n", treeString, type, iUseFlow);
     }
 
     /**
@@ -2009,6 +2020,23 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             defaultQualifierForUseTypeAnnotator.visit(type);
             defaultForTypeAnnotator.visit(type);
+        }
+    }
+
+    // You can change this temporarily to produce verbose logs.
+    /** Whether to output verbose, low-level debugging messages. */
+    private static final boolean debug = false;
+
+    /**
+     * Output a message, if logging is on.
+     *
+     * @param format a format string
+     * @param args arguments to the format string
+     */
+    private static void log(String format, Object... args) {
+        if (debug) {
+            UtilPlume.sleep(1); // logging can interleave with typechecker output
+            System.out.printf(format, args);
         }
     }
 }
