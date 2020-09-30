@@ -233,6 +233,7 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
+    /** The fixed initial store. */
     private S fixedInitialStore = null;
 
     /** Set a fixed initial Store. */
