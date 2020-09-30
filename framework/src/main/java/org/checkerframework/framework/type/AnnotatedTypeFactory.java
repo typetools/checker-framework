@@ -2345,7 +2345,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Applies widening if applicable, otherwise returns its first argument.
+     * Returns a widened type if applicable, otherwise returns its first argument.
      *
      * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
      *
@@ -2354,7 +2354,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return if widening is applicable, the result of converting {@code type} to the underlying
      *     type of {@code widenedType}; otherwise {@code type}
      */
-    public final AnnotatedTypeMirror applyWidening(
+    public final AnnotatedTypeMirror getWidenedType(
             AnnotatedTypeMirror exprType, AnnotatedTypeMirror widenedType) {
         TypeKind exprKind = exprType.getKind();
         TypeKind widenedKind = widenedType.getKind();
