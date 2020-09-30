@@ -468,6 +468,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                     // checking for both predicate and non-predicate forms of top.
                     return "".equals(convertToPredicate(superAnno));
                 }
+            } else if (isPolymorphicQualifier(superAnno)) {
+                // Polymorphic annotations are only a supertype of other polymorphic annotations and
+                // the bottom type, both of which have already been checked above.
+                return false;
             }
 
             if (isPredicate(subAnno)) {
