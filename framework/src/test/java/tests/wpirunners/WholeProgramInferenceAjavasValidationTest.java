@@ -22,7 +22,7 @@ public class WholeProgramInferenceAjavasValidationTest extends CheckerFrameworkP
                 WholeProgramInferenceTestChecker.class,
                 "whole-program-inference/annotated",
                 "-Anomsgtext",
-                "-Ajavas=build/whole-program-inference");
+                "-Aajavas=build/whole-program-inference");
     }
 
     @Override
