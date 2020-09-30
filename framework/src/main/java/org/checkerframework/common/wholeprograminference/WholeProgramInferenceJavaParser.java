@@ -461,7 +461,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 name = name.substring(0, name.length() - ".java".length());
             }
 
-            name += ".ajava";
+            name += "-" + checker.getClass().getCanonicalName() + ".ajava";
             String outputPath = packageDir + File.separator + name;
             try {
                 FileWriter writer = new FileWriter(outputPath);
