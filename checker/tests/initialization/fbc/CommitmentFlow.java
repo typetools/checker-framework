@@ -20,6 +20,6 @@ public class CommitmentFlow {
         local.hashCode();
 
         local = triedAndTrue;
-        local.hashCode(); // should determine that it is Committed based on flow
+        local.hashCode(); // should determine that it is Initialized based on flow
     }
 }

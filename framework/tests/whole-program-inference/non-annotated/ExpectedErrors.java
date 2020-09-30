@@ -1,11 +1,11 @@
 import java.lang.reflect.Field;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
-import testlib.wholeprograminference.qual.Parent;
-import testlib.wholeprograminference.qual.Sibling1;
-import testlib.wholeprograminference.qual.Sibling2;
-import testlib.wholeprograminference.qual.ToIgnore;
-import testlib.wholeprograminference.qual.Top;
-import testlib.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Parent;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling2;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.ToIgnore;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Top;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 /**
  * This file contains expected errors that should exist even after the jaif type inference occurs.

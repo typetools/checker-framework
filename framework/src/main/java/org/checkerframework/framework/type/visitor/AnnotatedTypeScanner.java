@@ -17,11 +17,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 
 /**
  * An {@code AnnotatedTypeScanner} visits an {@link AnnotatedTypeMirror} and all of its child {@link
- * AnnotatedTypeMirror} and preforms some function depending on the kind of type. A {@link
- * SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and preforms the same function
- * regardless of the kind of type. The function returns some value with type {@code R} and takes an
- * argument of type {@code P}. If the function does not return any value, then {@code R} should be
- * {@link Void}. If the function takes not arguments, then {@code P} should be {@link Void}.
+ * AnnotatedTypeMirror} and preforms some function depending on the kind of type. (By contrast, a
+ * {@link SimpleAnnotatedTypeScanner} scans an {@link AnnotatedTypeMirror} and performs the
+ * <em>same</em> function regardless of the kind of type.) The function returns some value with type
+ * {@code R} and takes an argument of type {@code P}. If the function does not return any value,
+ * then {@code R} should be {@link Void}. If the function takes no additional argument, then {@code
+ * P} should be {@link Void}.
  *
  * <p>The default implementation of the visitAnnotatedTypeMirror methods will determine a result as
  * follows:
@@ -35,8 +36,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * </ul>
  *
  * The {@link #reduce} method combines the results of visiting child types. It can be specified by
- * passing an {@link Reduce} object to one of the constructors or by overriding the method directly.
- * If it is not otherwise specified, the reduce returns the first result if it is not null;
+ * passing a {@link Reduce} object to one of the constructors or by overriding the method directly.
+ * If it is not otherwise specified, then reduce returns the first result if it is not null;
  * otherwise, the second result is returned. If the default result is nonnull and reduce never
  * returns null, then both parameters passed to reduce will be nonnull.
  *
@@ -44,8 +45,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
  * scanned.
  *
- * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or to pass {@code
- * null} as the last parameter, call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
+ * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or (to pass {@code
+ * null} as the last parameter) call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
  * #reset()}.
  *
  * <p>Here is an example of a scanner that counts the number of {@link AnnotatedTypeVariable} in an

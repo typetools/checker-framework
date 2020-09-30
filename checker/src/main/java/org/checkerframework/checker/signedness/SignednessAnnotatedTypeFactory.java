@@ -16,6 +16,7 @@ import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -36,7 +37,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -51,7 +52,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
     /** The @Signed annotation. */
     private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
-    /** The @SignednessGlb annotation. */
+    /** The @Unigned annotation. */
+    private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+    /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
     private final AnnotationMirror SIGNEDNESS_GLB =
             AnnotationBuilder.fromClass(elements, SignednessGlb.class);
     /** The @SignednessBottom annotation. */
@@ -72,6 +75,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
+
+        addAliasedAnnotation("jdk.jfr.Unsigned", UNSIGNED);
 
         postInit();
     }
@@ -170,6 +175,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        assert annos.size() == 1;
+
+        if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(SIGNEDNESS_GLB);
+            return result;
+        }
+        if (widenedTypeKind == TypeKind.CHAR) {
+            // It's a non-widening cast to char.  Make it @Unsigned.
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(UNSIGNED);
+            return result;
+        }
+        if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
+            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            result.add(SIGNED);
+            return result;
+        }
+
+        return annos;
+    }
+
+    @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 new SignednessTreeAnnotator(this), super.createTreeAnnotator());
@@ -183,6 +213,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *       PropagationTreeAnnotator},
      *   <li>shift results take on the type of their left operand,
      *   <li>the types of identifiers are refined based on the results of the Value Checker.
+     *   <li>casts take types related to widening
      * </ul>
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
@@ -231,7 +262,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void addAnnotationsFromDefaultForType(
             @Nullable Element element, AnnotatedTypeMirror type) {
-        if (TypesUtils.isFloating(type.getUnderlyingType())
+        if (TypesUtils.isFloatingPrimitive(type.getUnderlyingType())
                 || TypesUtils.isBoxedFloating(type.getUnderlyingType())
                 || type.getKind() == TypeKind.CHAR
                 || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
@@ -284,7 +315,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             PrimitiveType subPrimitive = subtype.getUnderlyingType();
             PrimitiveType superPrimitive = supertype.getUnderlyingType();
-            if (isNarrowerIntegral(subPrimitive, superPrimitive)) {
+            if (TypesUtils.isNarrowerIntegral(subPrimitive, superPrimitive)) {
                 AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(UNKNOWN_SIGNEDNESS);
                 if (!AnnotationUtils.areSameByName(superAnno, SIGNEDNESS_BOTTOM)) {
                     return true;
@@ -326,54 +357,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return visitPrimitive_Primitive(getUnboxedType(subtype), supertype, p);
             }
             return super.visitDeclared_Primitive(subtype, supertype, p);
-        }
-
-        /**
-         * Returns true if both types are integral and the first type is strictly narrower
-         * (represented by fewer bits) than the second type.
-         *
-         * @param a a primitive type
-         * @param b a primitive type
-         * @return true if {@code a} is represented by fewer bits than {@code b}
-         */
-        private boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
-            int aBits = numIntegralBits(a);
-            if (aBits == -1) {
-                return false;
-            }
-            int bBits = numIntegralBits(b);
-            if (bBits == -1) {
-                return false;
-            }
-            return aBits < bBits;
-        }
-
-        /**
-         * Returns the number of bits in the representation of an integral primitive type. Returns
-         * -1 if the type is not an integral primitive type.
-         *
-         * @param p a primitive type
-         * @return the number of bits in its representation, or -1 if not integral
-         */
-        private int numIntegralBits(PrimitiveType p) {
-            switch (p.getKind()) {
-                case BYTE:
-                    return 8;
-                case SHORT:
-                    return 16;
-                case CHAR:
-                    return 16;
-                case INT:
-                    return 32;
-                case LONG:
-                    return 64;
-                case BOOLEAN:
-                case DOUBLE:
-                case FLOAT:
-                    return -1;
-                default:
-                    throw new BugInCF("Unexpected primitive type " + p);
-            }
         }
     }
 }

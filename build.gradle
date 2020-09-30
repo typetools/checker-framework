@@ -9,7 +9,7 @@ plugins {
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "1.2.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.0.2' apply false
+    id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
     id "com.gorylenko.gradle-git-properties" version "2.2.3"
 }
@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.6.1'
+    version '3.7.0-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -284,15 +284,16 @@ task version() {
 
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
- * "check${shortName}", for example "checkPurity" or "checkNullness".
+ * "check${taskName}", for example "checkPurity" or "checkNullness".
+ *
  * @param projectName name of the project
- * @param checker full qualified name of the checker to run
- * @param shortName shorter version of the checker to use to name the task.
+ * @param taskName short name (often the checker name) to use as part of the task name
+ * @param checker fully qualified name of the checker to run
  * @param args list of arguments to pass to the checker
  */
-def createCheckTypeTask(projectName, checker, shortName, args = []) {
-    project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
-        description "Run the ${shortName} Checker on the main sources."
+def createCheckTypeTask(projectName, taskName, checker, args = []) {
+    project("${projectName}").tasks.create(name: "check${taskName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
+        description "Run the ${taskName} Checker on the main sources."
         group 'Verification'
         // Always run the task.
         outputs.upToDateWhen { false }
@@ -426,7 +427,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:0.3.1"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.0"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
@@ -678,12 +679,20 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-Astubs=javax-lang-model-element-name.astub'])
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'NullnessOnlyAnnotatedFor', ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
-        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
+        createCheckTypeTask(project.name, 'Interning',
+            'org.checkerframework.checker.interning.InterningChecker',
+            ['-Astubs=javax-lang-model-element-name.astub'])
+        createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+        createCheckTypeTask(project.name, 'Purity',
+            'org.checkerframework.framework.util.PurityChecker')
+        createCheckTypeTask(project.name, 'Signature',
+            'org.checkerframework.checker.signature.SignatureChecker')
         // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness', ['-AskipUses=com.sun.*'])
+        createCheckTypeTask(project.name, 'Nullness',
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*'])
 
 
         // Add jtregTests to framework and checker modules
@@ -748,7 +757,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
@@ -868,7 +877,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.run-google-java-format',
                                   'annotated',
                                   'api',
-                                  'bib',
+                                  'plume-bib',
                                   'bootstrap',
                                   'build',
                                   'jdk',

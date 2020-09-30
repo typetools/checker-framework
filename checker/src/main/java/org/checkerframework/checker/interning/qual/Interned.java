@@ -24,9 +24,6 @@ import org.checkerframework.framework.qual.TypeKind;
  * This is equivalent to annotating every use of MyInternedClass, in a declaration or elsewhere. For
  * example, enum classes are implicitly so annotated.
  *
- * <p>This annotation is associated with the {@link
- * org.checkerframework.checker.interning.InterningChecker}.
- *
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */

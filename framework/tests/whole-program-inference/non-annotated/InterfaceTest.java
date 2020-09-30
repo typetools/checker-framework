@@ -1,6 +1,6 @@
 // checks that types can be inferred for constants defined in interfaces
 
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 @SuppressWarnings("cast.unsafe")
 interface InterfaceTest {

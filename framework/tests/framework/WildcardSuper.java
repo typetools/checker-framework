@@ -1,5 +1,5 @@
 import java.util.List;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 class WildcardSuper {
     void test(List<? super @Odd String> list) {

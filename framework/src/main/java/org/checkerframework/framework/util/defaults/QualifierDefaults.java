@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -86,7 +87,7 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory atypeFactory;
 
     /** List of the upstream checker binary names. */
-    private final List<String> upstreamCheckerNames;
+    private final List<@FullyQualifiedName String> upstreamCheckerNames;
 
     /** Defaults for checked code. */
     private final DefaultSet checkedCodeDefaults = new DefaultSet();

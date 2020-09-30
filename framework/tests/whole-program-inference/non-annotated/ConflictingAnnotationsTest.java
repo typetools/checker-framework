@@ -23,9 +23,10 @@ public class ConflictingAnnotationsTest {
         expectsSibling1(getWPINamespaceSibling1());
     }
 
-    @testlib.wholeprograminference.qual.Sibling1 int getSibling1() {
+    @org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1 int getSibling1() {
         return 1;
     }
 
-    void expectsSibling1(@testlib.wholeprograminference.qual.Sibling1 int i) {}
+    void expectsSibling1(
+                    @org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1 int i) {}
 }

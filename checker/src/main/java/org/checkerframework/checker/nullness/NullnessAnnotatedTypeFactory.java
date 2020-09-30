@@ -37,6 +37,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -58,9 +59,10 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -97,7 +99,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nonnull}. */
-    private static final List<String> NONNULL_ALIASES =
+    private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
                     "android.annotation.NonNull",
@@ -123,6 +125,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
                     "org.checkerframework.checker.nullness.compatqual.NonNullType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
+                    "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
                     "org.eclipse.jdt.annotation.NonNull",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
@@ -139,7 +143,7 @@ public class NullnessAnnotatedTypeFactory
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
     /** Aliases for {@code @Nullable}. */
-    private static final List<String> NULLABLE_ALIASES =
+    private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
                     "android.annotation.Nullable",
@@ -168,6 +172,8 @@ public class NullnessAnnotatedTypeFactory
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
+                    // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
+                    "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
                     "org.eclipse.jdt.annotation.Nullable",
                     // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
@@ -176,6 +182,7 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
+                    "org.jspecify.annotations.Nullable",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -224,7 +231,10 @@ public class NullnessAnnotatedTypeFactory
 
         classGetCanonicalName =
                 TreeUtils.getMethod(
-                        java.lang.Class.class.getName(), "getCanonicalName", 0, processingEnv);
+                        java.lang.Class.class.getCanonicalName(),
+                        "getCanonicalName",
+                        0,
+                        processingEnv);
 
         postInit();
 
@@ -577,30 +587,61 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+    public QualifierHierarchy createQualifierHierarchy() {
+        return new NullnessQualifierHierarchy();
     }
 
+    /** NullnessQualifierHierarchy */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
-        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
-            super(f, arg);
+        /** Qualifier kind for the @{@link Nullable} annotation. */
+        private final QualifierKind NULLABLE;
+
+        /** Creates NullnessQualifierHierarchy. */
+        public NullnessQualifierHierarchy() {
+            super();
+            NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-            if (isInitializationAnnotation(subAnno) || isInitializationAnnotation(superAnno)) {
-                return this.isSubtypeInitialization(subAnno, superAnno);
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind) {
+            if (!subKind.isInSameHierarchyAs(NULLABLE)
+                    || !superKind.isInSameHierarchyAs(NULLABLE)) {
+                return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
             }
-            return super.isSubtype(subAnno, superAnno);
+            throw new BugInCF(
+                    "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isInitializationAnnotation(a1) || isInitializationAnnotation(a2)) {
-                return this.leastUpperBoundInitialization(a1, a2);
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
             }
-            return super.leastUpperBound(a1, a2);
+            throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2) {
+            if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
+                    || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
+                return FBCBOTTOM;
+            }
+            throw new BugInCF(
+                    "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
     }
 }

@@ -17,6 +17,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
@@ -38,6 +39,7 @@ public class AnnotationConverter {
      * @return the Annotation
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
+        @SuppressWarnings("signature:argument.type.incompatible") // TODO: bug for inner classes
         AnnotationDef def =
                 new AnnotationDef(
                         AnnotationUtils.annotationName(am),
@@ -89,7 +91,9 @@ public class AnnotationConverter {
      */
     protected static AnnotationMirror annotationToAnnotationMirror(
             Annotation anno, ProcessingEnvironment processingEnv) {
-        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, anno.def().name);
+        final AnnotationBuilder builder =
+                new AnnotationBuilder(
+                        processingEnv, Signatures.binaryNameToFullyQualified(anno.def().name));
         for (String fieldKey : anno.fieldValues.keySet()) {
             addFieldToAnnotationBuilder(fieldKey, anno.fieldValues.get(fieldKey), builder);
         }

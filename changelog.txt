@@ -1,6 +1,52 @@
+Version 3.7.0, October 1, 2020
+
+The new Called Methods Checker tracks methods that have definitely been
+called on an object. It automatically supports detecting mis-uses of the
+builder pattern in code that uses Lombok or AutoValue.
+
+Accumulation analysis is now supported via a generic Accumulation Checker.
+An accumulation analysis is a restricted form of typestate analysis that does
+not require a precise alias analysis for soundness. The Called Methods Checker
+is an accumulation analysis.
+
+The Nullness Checker supports annotations
+org.codehaus.commons.nullanalysis.NotNull,
+org.codehaus.commons.nullanalysis.Nullable, and
+org.jspecify.annotations.Nullable.
+
+The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
+The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
+
+The shorthand syntax for the -processor command-line argument applies to
+utility checkers, such as the Constant Value Checker.
+
+Implementation details:
+
+A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+to provide special behavior for primitive widening conversions.
+
+Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
+org.checkerframework.framework.util.GraphQualifierHierarchy.  Removed
+AnnotatedTypeFactory#createQualifierHierarchy(MultiGraphFactory) and
+AnnotatedTypeFactory#createQualifierHierarchyFactory.  See Javadoc of
+MultiGraphQualifierHierarchy for instructions on how to use the new classes and
+methods.
+
+Renamed methods:
+  NumberUtils.isFloatingPoint => TypesUtils.isFloatingPoint
+  NumberUtils.isIntegral => TypesUtils.isIntegralPrimitiveOrBoxed
+  NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
+  NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
+  NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
+  TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+  TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
+  TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
+
+The CFStore copy constructor now takes only one argument.
+
 ---------------------------------------------------------------------------
 
-Version 3.6.1, September 1, 2020
+Version 3.6.1, September 2, 2020
 
 Documented that the Checker Framework can issue false positive warnings in
 dead code.
@@ -507,9 +553,10 @@ Introduce checker-qual-android artifact that is just like the checker-qual
 artifact, but the qualifiers have classfile retention.  This is useful for
 Android projects.
 
-Remove the checker-compat-qual artifact, which was only useful for Java 7,
-which the Checker Framework no longer supports.  It remains available on
-Maven Central, with versions 2.5.5 and earlier.
+Removed the code for the checker-compat-qual artifact.  It was only useful
+for Java 7, which the Checker Framework no longer supports.  The
+checker-compat-qual artifact remains available on Maven Central, with
+versions 2.5.5 and earlier.
 
 Closed issues:
 #2135, #2157, #2158, #2164, #2171.

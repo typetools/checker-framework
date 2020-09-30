@@ -340,9 +340,9 @@ public class DependentTypesHelper {
             return;
         }
         FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
-        FlowExpressionContext classContext =
+        FlowExpressionContext classignmentContext =
                 new FlowExpressionContext(receiverF, null, factory.getContext());
-        standardizeDoNotUseLocals(classContext, path, type);
+        standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
     /**
@@ -853,7 +853,10 @@ public class DependentTypesHelper {
         }
     }
 
-    /** Copies annotations that might have been viewpoint adapted from type to the parameter. */
+    /**
+     * Copies annotations that might have been viewpoint adapted from the visited type to the
+     * parameter.
+     */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {

@@ -240,7 +240,7 @@ public class ForwardAnalysisImpl<
     public S runAnalysisFor(
             @FindDistinct Node node,
             boolean before,
-            TransferInput<V, S> transferInput,
+            TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         Block block = node.getBlock();
@@ -250,10 +250,10 @@ public class ForwardAnalysisImpl<
         // Prepare cache
         IdentityHashMap<Node, TransferResult<V, S>> cache;
         if (analysisCaches != null) {
-            cache = analysisCaches.get(transferInput);
+            cache = analysisCaches.get(blockTransferInput);
             if (cache == null) {
                 cache = new IdentityHashMap<>();
-                analysisCaches.put(transferInput, cache);
+                analysisCaches.put(blockTransferInput, cache);
             }
         } else {
             cache = null;
@@ -272,7 +272,7 @@ public class ForwardAnalysisImpl<
                         RegularBlock rb = (RegularBlock) block;
                         // Apply transfer function to contents until we found the node we are
                         // looking for.
-                        TransferInput<V, S> store = transferInput;
+                        TransferInput<V, S> store = blockTransferInput;
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
@@ -294,9 +294,7 @@ public class ForwardAnalysisImpl<
                             }
                             store = new TransferInput<>(n, this, transferResult);
                         }
-                        // This point should never be reached. If the block of 'node' is
-                        // 'block', then 'node' must be part of the contents of 'block'.
-                        throw new BugInCF("This point should never be reached.");
+                        throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
                     }
                 case EXCEPTION_BLOCK:
                     {
@@ -310,13 +308,13 @@ public class ForwardAnalysisImpl<
                                             + eb.getNode());
                         }
                         if (before) {
-                            return transferInput.getRegularStore();
+                            return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
                         TransferResult<V, S> transferResult =
-                                callTransferFunction(node, transferInput.copy());
+                                callTransferFunction(node, blockTransferInput.copy());
                         return transferResult.getRegularStore();
                     }
                 default:
@@ -447,6 +445,22 @@ public class ForwardAnalysisImpl<
                         Store.Kind.ELSE,
                         addToWorklistAgain);
                 break;
+            case BOTH_TO_THEN:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
+                        Store.Kind.THEN,
+                        addToWorklistAgain);
+                break;
+            case BOTH_TO_ELSE:
+                addStoreBefore(
+                        succ,
+                        node,
+                        currentInput.getRegularStore(),
+                        Store.Kind.ELSE,
+                        addToWorklistAgain);
+                break;
         }
     }
 
@@ -572,7 +586,7 @@ public class ForwardAnalysisImpl<
             case ELSE:
                 return readFromStore(elseStores, b);
             default:
-                throw new BugInCF("Unexpected Store Kind: " + kind);
+                throw new BugInCF("Unexpected Store.Kind: " + kind);
         }
     }
 
