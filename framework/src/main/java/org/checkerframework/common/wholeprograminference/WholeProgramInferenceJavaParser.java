@@ -875,20 +875,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     private static void addExplicitReceiver(MethodDeclaration methodDeclaration) {
-        System.out.println("Adding exlplicit receiver");
         if (methodDeclaration.getReceiverParameter().isPresent()) {
-            System.out.println("receiver parameter was already present");
             return;
         }
 
         if (methodDeclaration.getParentNode().isEmpty()) {
-            System.out.println("parent node was empty");
             return;
         }
 
         com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
         if (!(parent instanceof TypeDeclaration)) {
-            System.out.println("parent wasn't a type declaration, it was: " + parent);
             return;
         }
 
