@@ -12,4 +12,10 @@ class SimplePolymorphic {
     Object usePoly(@TestAccumulation("foo") Object obj) {
         return id(obj);
     }
+
+    // Check that polymorphic supertype with accumulator type doesn't cause a crash.
+    void noCrashOnPolySuper(@TestAccumulation("foo") Object obj) {
+        // :: error: assignment.type.incompatible
+        @PolyTestAccumulation Object obj2 = obj;
+    }
 }
