@@ -216,7 +216,7 @@ task testWPIStubsValidate(type: Test) {
 
     dependsOn(testWPIStubs)
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceAjavasValidationTest.class'
+    include '**/WholeProgramInferenceStubsValidationTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
