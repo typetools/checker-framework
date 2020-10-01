@@ -10,48 +10,36 @@ class Enums {
     }
 
     static void subtyping1(@EnumVal("VALUE") MyEnum value) {
-        @EnumVal("VALUE")
-        MyEnum value2 = value;
+        @EnumVal("VALUE") MyEnum value2 = value;
         // :: error: assignment.type.incompatible
-        @EnumVal("OTHER_VALUE")
-        MyEnum value3 = value;
+        @EnumVal("OTHER_VALUE") MyEnum value3 = value;
         @UnknownVal MyEnum value4 = value;
-        @EnumVal({"VALUE", "OTHER_VALUE"})
-        MyEnum value5 = value;
+        @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value5 = value;
     }
 
     static void subtyping2(@EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value) {
         // :: error: assignment.type.incompatible
-        @EnumVal("VALUE")
-        MyEnum value2 = value;
+        @EnumVal("VALUE") MyEnum value2 = value;
         // :: error: assignment.type.incompatible
-        @EnumVal("OTHER_VALUE")
-        MyEnum value3 = value;
+        @EnumVal("OTHER_VALUE") MyEnum value3 = value;
         @UnknownVal MyEnum value4 = value;
-        @EnumVal({"VALUE", "OTHER_VALUE"})
-        MyEnum value5 = value;
-        @EnumVal({"VALUE", "OTHER_VALUE", "THIRD_VALUE"})
-        MyEnum value6 = value;
+        @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value5 = value;
+        @EnumVal({"VALUE", "OTHER_VALUE", "THIRD_VALUE"}) MyEnum value6 = value;
     }
 
     static void enumConstants() {
-        @EnumVal("VALUE")
-        MyEnum v1 = MyEnum.VALUE;
-        @EnumVal({"VALUE", "OTHER_VALUE"})
-        MyEnum v2 = MyEnum.VALUE;
+        @EnumVal("VALUE") MyEnum v1 = MyEnum.VALUE;
+        @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum v2 = MyEnum.VALUE;
         // :: error: assignment.type.incompatible
-        @EnumVal("OTHER_VALUE")
-        MyEnum v3 = MyEnum.VALUE;
+        @EnumVal("OTHER_VALUE") MyEnum v3 = MyEnum.VALUE;
     }
 
     // These are just paranoia based on the implementation strategy for enum constant defaulting.
     static void nonConstantEnum(MyEnum m) {
         // :: error: assignment.type.incompatible
-        @EnumVal("m")
-        MyEnum m2 = m;
+        @EnumVal("m") MyEnum m2 = m;
         // :: error: assignment.type.incompatible
-        @EnumVal("m3")
-        MyEnum m3 = m;
+        @EnumVal("m3") MyEnum m3 = m;
     }
 
     static void enums(@EnumVal("VALUE") MyEnum... enums) {}
