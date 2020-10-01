@@ -1,49 +1,38 @@
 public class CharCast {
-    int i;
-
-    void clientReturnedCastedShort1(int x) {
-        // :: warning: (cast.unsafe)
-        char c = (char) x;
-    }
-
-    void clientReturnedCastedShort2(int x) {
-        // :: warning: (cast.unsafe)
-        String str = Character.toString((char) x);
-    }
 
     void clientReturnedCastedShort(short s) {
         int x = s;
         // :: warning: (cast.unsafe)
-        String str = Character.toString((char) x);
+        char c = (char) x;
     }
 
-    void clientCastShort() {
+    void clientCastShort(int i) {
         int x = (short) i;
         // :: warning: (cast.unsafe)
-        String str = Character.toString((char) x);
+        char c = (char) x;
     }
 
     void clientReturnedCastedShortLiteral(short s) {
         int x = s;
         // :: warning: (cast.unsafe)
-        String str = Character.toString((char) x);
+        char c = (char) x;
     }
 
     void clientCastShortLiteral() {
         int x = (short) 1;
-        String str = Character.toString((char) x);
+        char c = (char) x;
     }
 
     void clientShortUpcast() {
         short x = 1;
         int y = x;
-        String str = Character.toString((char) y);
+        char c = (char) y;
     }
 
     void clientReturnedShortUpcast(short s) {
         int y = s;
         // :: warning: (cast.unsafe)
-        String str = Character.toString((char) y);
+        char c = (char) y;
     }
 
     short returnShort() {
@@ -51,7 +40,7 @@ public class CharCast {
         return x;
     }
 
-    short returnCastedShort() {
+    short returnCastedShort(int i) {
         return (short) i;
     }
 
