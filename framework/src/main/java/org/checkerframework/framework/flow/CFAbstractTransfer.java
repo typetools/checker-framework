@@ -60,6 +60,7 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -717,6 +718,14 @@ public abstract class CFAbstractTransfer<
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
 
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, false)
+                        || NodeUtils.isConstantBoolean(rightN, false))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
+
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
         res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
@@ -732,6 +741,14 @@ public abstract class CFAbstractTransfer<
         Node rightN = n.getRightOperand();
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
+
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, true)
+                        || NodeUtils.isConstantBoolean(rightN, true))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
