@@ -1571,7 +1571,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         + this.getClass();
 
         String treeString = debug ? TreeUtils.toStringTruncated(tree, 60) : null;
-        log("GATF.addComputedTypeAnnotations(%s, %s, %s)%n", treeString, type, iUseFlow);
+        log("GATF.addComputedTypeAnnotations#1(%s, %s, %s)%n", treeString, type, iUseFlow);
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
@@ -1600,7 +1600,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 log("GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n", treeString, type, as);
             }
         }
-        log("GATF.addComputedTypeAnnotations(%s, %s, %s) done%n", treeString, type, iUseFlow);
+        log("GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n", treeString, type, iUseFlow);
     }
 
     /**
