@@ -182,7 +182,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Set<AnnotationMirror> getNarrowedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        assert annos.size() == 1;
+
         // TODO: implement
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+
+        if (widenedTypeKind == TypeKind.CHAR) {
+            result.add(SIGNED);
+            return result;
+        }
+
         return annos;
     }
 
@@ -191,33 +200,26 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
         assert annos.size() == 1;
 
-        if (TypeKindUtils.isNarrower(typeKind, widenedTypeKind)) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            if (TypeKindUtils.isFloatingPoint(widenedTypeKind)) {
-                result.add(SIGNED);
-                return result;
-            }
-            if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
-                result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
-                return result;
-            } else {
-                result.add(SIGNEDNESS_GLB);
-                return result;
-            }
-        }
-        if (widenedTypeKind == TypeKind.CHAR) {
-            // It's a non-widening cast to char.  Make it @Unsigned.
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-            result.add(UNSIGNED);
-            return result;
-        }
-        if (widenedTypeKind == TypeKind.FLOAT || widenedTypeKind == TypeKind.DOUBLE) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        if (TypeKindUtils.isFloatingPoint(widenedTypeKind)) {
             result.add(SIGNED);
             return result;
         }
-
-        return annos;
+        if (widenedTypeKind == TypeKind.CHAR) {
+            result.add(UNSIGNED);
+            return result;
+        }
+        if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
+            // TODO: A future enhancement will make the widened type indicate the unsigned basetype
+            // from which it was widened.
+            result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
+            return result;
+        } else {
+            // TODO: A future enhancement will make the widened type indicate the signed basetype
+            // from which it was widened.
+            result.add(SIGNEDNESS_GLB);
+            return result;
+        }
     }
 
     @Override

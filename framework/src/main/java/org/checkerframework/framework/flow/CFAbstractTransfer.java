@@ -1245,7 +1245,7 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns an abstract value with the given {@code type} and the annotations from {@code
-     * annotatedValue}, possibly adapted for narrowing.
+     * annotatedValue}, adapted for narrowing. This is only called at a narrowing conversion.
      *
      * @param type the type to narrow to
      * @param annotatedValue the type to narrow from
@@ -1267,7 +1267,7 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns an abstract value with the given {@code type} and the annotations from {@code
-     * annotatedValue}, possibly adapted for widening.
+     * annotatedValue}, adapted for widening. This is only called at a widening conversion.
      *
      * @param type the type to widen to
      * @param annotatedValue the type to widen from

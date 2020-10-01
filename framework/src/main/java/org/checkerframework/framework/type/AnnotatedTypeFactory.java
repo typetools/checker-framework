@@ -2373,11 +2373,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return exprType;
         }
 
-        if (TypeKindUtils.isNarrower(exprPrimitiveType.getKind(), widenedType.getKind())) {
-            return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+        switch (TypeKindUtils.getPrimitiveConversionKind(
+                exprPrimitiveType.getKind(), widenedType.getKind())) {
+            case WIDENING:
+                return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case NARROWING:
+                return getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case SAME:
+                return exprType;
+            default:
+                throw new Error("unhandled PrimitiveConversionKind");
         }
-
-        return exprType;
     }
 
     /**
@@ -2426,7 +2432,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param annos annotations to narrow, from a primitive or boxed primitive
      * @param typeKind primitive type to narrow
-     * @param narrowedTypeKind target for the returned annotations; a primitive type
+     * @param narrowedTypeKind target for the returned annotations; a primitive type that is
+     *     narrower than {@code typeKind}
      * @return result of converting {@code annos} from {@code typeKind} to {@code narrowedTypeKind}
      */
     public Set<AnnotationMirror> getNarrowedAnnotations(
@@ -2440,7 +2447,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param annos annotations to widen, from a primitive or boxed primitive
      * @param typeKind primitive type to widen
-     * @param widenedTypeKind target for the returned annotations; a primitive type
+     * @param widenedTypeKind target for the returned annotations; a primitive type that is wider
+     *     than {@code typeKind}
      * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
      */
     public Set<AnnotationMirror> getWidenedAnnotations(

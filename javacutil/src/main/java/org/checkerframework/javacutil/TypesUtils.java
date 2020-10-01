@@ -827,19 +827,14 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true if a widening conversion happens between the types. This is true if
+     * Returns the type of primitive conversion from {@code from} to {@code to}.
      *
-     * <ul>
-     *   <li>the first type is is integral and the second type is floating-point, or
-     *   <li>both types are integral or both types are floating-point, and the first type is
-     *       strictly narrower (represented by fewer bits) than the second type.
-     * </ul>
-     *
-     * @param a a primitive type
-     * @param b a primitive type
-     * @return true if {@code a} is represented by fewer bits than {@code b}
+     * @param from a primitive type
+     * @param to a primitive type
+     * @return the type of primitive conversion from {@code from} to {@code to}
      */
-    public static boolean isNarrower(PrimitiveType a, PrimitiveType b) {
-        return TypeKindUtils.isNarrower(a.getKind(), b.getKind());
+    public static TypeKindUtils.PrimitiveConversionKind getPrimitiveConversionKind(
+            PrimitiveType from, PrimitiveType to) {
+        return TypeKindUtils.getPrimitiveConversionKind(from.getKind(), to.getKind());
     }
 }
