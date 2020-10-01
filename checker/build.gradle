@@ -47,7 +47,7 @@ dependencies {
 // The AWS SDK is used for testing the Called Methods Checker.
 dependencyManagement {
     imports {
-        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.872"
+        mavenBom "com.amazonaws:aws-java-sdk-bom:1.11.873"
     }
 }
 
