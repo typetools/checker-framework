@@ -1,7 +1,7 @@
 Version 3.8.0, November 2, 2020
 
 Renamed CFAbstractTransfer.getValueWithSameAnnotations() to two methods
-getNarrowedValue() and getWidenedValue().
+getWidenedValue() and getNarrowedValue().
 
 ---------------------------------------------------------------------------
 
