@@ -1570,37 +1570,52 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        String treeString = debug ? TreeUtils.toStringTruncated(tree, 60) : null;
-        log("GATF.addComputedTypeAnnotations#1(%s, %s, %s)%n", treeString, type, iUseFlow);
+        String thisClass = null;
+        String treeString = null;
+        if (debug) {
+            thisClass = this.getClass().getSimpleName();
+            if (thisClass.endsWith("AnnotatedTypeFactory")) {
+                thisClass =
+                        thisClass.substring(thisClass.length() - "AnnotatedTypeFactory".length());
+            }
+            treeString = TreeUtils.toStringTruncated(tree, 60);
+        }
+        log(
+                "%s GATF.addComputedTypeAnnotations#1(%s, %s, %s)%n",
+                thisClass, treeString, type, iUseFlow);
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
-            log("GATF.addComputedTypeAnnotations#2(%s, %s)%n", treeString, type);
+            log("%s GATF.addComputedTypeAnnotations#2(%s, %s)%n", thisClass, treeString, type);
         }
         applyQualifierParameterDefaults(tree, type);
-        log("GATF.addComputedTypeAnnotations#3(%s, %s)%n", treeString, type);
+        log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
         treeAnnotator.visit(tree, type);
-        log("GATF.addComputedTypeAnnotations#4(%s, %s)%n", treeString, type);
+        log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
-            log("GATF.addComputedTypeAnnotations#5(%s, %s)%n", treeString, type);
+            log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", treeString, type);
         }
         typeAnnotator.visit(type, null);
-        log("GATF.addComputedTypeAnnotations#6(%s, %s)%n", treeString, type);
+        log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
         defaults.annotate(tree, type);
-        log("GATF.addComputedTypeAnnotations#7(%s, %s)%n", treeString, type);
+        log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
 
             if (as != null) {
                 applyInferredAnnotations(type, as);
-                log("GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n", treeString, type, as);
+                log(
+                        "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
+                        thisClass, treeString, type, as);
             }
         }
-        log("GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n", treeString, type, iUseFlow);
+        log(
+                "%s GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n",
+                thisClass, treeString, type, iUseFlow);
     }
 
     /**
