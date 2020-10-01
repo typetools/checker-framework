@@ -1576,7 +1576,8 @@ public abstract class GenericAnnotatedTypeFactory<
             thisClass = this.getClass().getSimpleName();
             if (thisClass.endsWith("AnnotatedTypeFactory")) {
                 thisClass =
-                        thisClass.substring(thisClass.length() - "AnnotatedTypeFactory".length());
+                        thisClass.substring(
+                                0, thisClass.length() - "AnnotatedTypeFactory".length());
             }
             treeString = TreeUtils.toStringTruncated(tree, 60);
         }
