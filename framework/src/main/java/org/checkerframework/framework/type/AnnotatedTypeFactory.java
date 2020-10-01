@@ -2373,7 +2373,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return exprType;
         }
 
-        if (TypeKindUtils.isNarrowerIntegral(exprPrimitiveType.getKind(), widenedType.getKind())) {
+        if (TypeKindUtils.isNarrower(exprPrimitiveType.getKind(), widenedType.getKind())) {
             return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
         }
 

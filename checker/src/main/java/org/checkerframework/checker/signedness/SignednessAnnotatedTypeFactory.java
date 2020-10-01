@@ -184,8 +184,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
         assert annos.size() == 1;
 
-        if (TypeKindUtils.isNarrowerIntegral(typeKind, widenedTypeKind)) {
+        if (TypeKindUtils.isNarrower(typeKind, widenedTypeKind)) {
             Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            if (TypeKindUtils.isFloatingPoint(widenedTypeKind)) {
+                result.add(SIGNED);
+                return result;
+            }
             if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
                 result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
                 return result;

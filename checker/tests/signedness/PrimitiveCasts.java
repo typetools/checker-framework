@@ -16,17 +16,26 @@ public class PrimitiveCasts {
     // }
 
     void intToDouble1(@Unsigned int ui) {
-        // :: warning: (cast.unsafe)
         double d = (double) ui;
     }
 
     void intToDouble2(@Unsigned int ui) {
-        // :: error: (assignment.type.incompatible)
         double d = ui;
     }
 
     double intToDouble3(@Unsigned int ui) {
-        // :: error: (return.type.incompatible)
+        return ui;
+    }
+
+    void shortToDouble1(@Unsigned short ui) {
+        double d = (double) ui;
+    }
+
+    void shortToDouble2(@Unsigned short ui) {
+        double d = ui;
+    }
+
+    double shortToDouble3(@Unsigned short ui) {
         return ui;
     }
 }
