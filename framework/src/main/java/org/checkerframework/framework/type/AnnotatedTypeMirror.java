@@ -59,7 +59,7 @@ public abstract class AnnotatedTypeMirror {
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
      *
      * @param type the underlying type for the resulting AnnotatedTypeMirror
-     * @param atypeFactory the type factory tha will build the result
+     * @param atypeFactory the type factory that will build the result
      * @param isDeclaration true if the result should represent a declaration, rather than a use, of
      *     a type
      * @return an AnnotatedTypeMirror whose underlying type is {@code type}
