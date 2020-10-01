@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: "java:gradle"
+    directory: "/"
+    ignore:
+      - dependency-name: "com.amazonaws:aws-java-sdk-*"
