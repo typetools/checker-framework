@@ -181,6 +181,10 @@ public final class TypeKindUtils {
      * @return the type of primitive conversion between {@code from} and {@code to}.
      */
     public static PrimitiveConversionKind getPrimitiveConversionKind(TypeKind from, TypeKind to) {
+        if (from == TypeKind.BOOLEAN && to == TypeKind.BOOLEAN) {
+            return PrimitiveConversionKind.SAME;
+        }
+
         assert (isIntegral(from) || isFloatingPoint(from))
                         && (isIntegral(to) || isFloatingPoint(to))
                 : "getPrimitiveConversionKind " + from + " " + to;

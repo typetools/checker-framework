@@ -2457,25 +2457,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the types of the two arguments to the BinaryTree, accounting for widening if
-     * applicable.
+     * Returns the types of the two arguments to the BinaryTree, accounting for widening and
+     * unboxing if applicable.
      *
      * @param node a binary tree
      * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
-        AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror rightUnwidened = getAnnotatedType(node.getRightOperand());
+        AnnotatedTypeMirror leftOrig = getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror rightOrig = getAnnotatedType(node.getRightOperand());
         TypeKind resultTypeKind =
                 TypeKindUtils.widenedNumericType(
-                        leftUnwidened.getUnderlyingType(), rightUnwidened.getUnderlyingType());
+                        leftOrig.getUnderlyingType(), rightOrig.getUnderlyingType());
         if (TypeKindUtils.isNumeric(resultTypeKind)) {
             TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
-            return Pair.of(
-                    getWidenedPrimitive(applyUnboxing(leftUnwidened), resultTypeMirror),
-                    getWidenedPrimitive(applyUnboxing(rightUnwidened), resultTypeMirror));
+            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(leftOrig);
+            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(rightOrig);
+            AnnotatedPrimitiveType leftWidened =
+                    (leftUnboxed.getKind() == resultTypeKind
+                            ? leftUnboxed
+                            : getWidenedPrimitive(leftUnboxed, resultTypeMirror));
+            AnnotatedPrimitiveType rightWidened =
+                    (rightUnboxed.getKind() == resultTypeKind
+                            ? rightUnboxed
+                            : getWidenedPrimitive(rightUnboxed, resultTypeMirror));
+            return Pair.of(leftWidened, rightWidened);
         } else {
-            return Pair.of(leftUnwidened, rightUnwidened);
+            return Pair.of(leftOrig, rightOrig);
         }
     }
 

@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignedPositiveFromUnsigned;
@@ -65,6 +66,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @SignedPositiveFromUnsigned annotation. */
     protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
             AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+    /** The @PolySigned annotation. */
+    protected final AnnotationMirror POLY_SIGNED =
+            AnnotationBuilder.fromClass(elements, PolySigned.class);
 
     /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
     private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
@@ -209,7 +213,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             result.add(UNSIGNED);
             return result;
         }
-        if (getQualifierHierarchy().isSubtype(annos.iterator().next(), UNSIGNED)) {
+        AnnotationMirror anno = annos.iterator().next();
+        if (AnnotationUtils.areSame(anno, POLY_SIGNED)) {
+            return annos;
+        } else if (getQualifierHierarchy().isSubtype(anno, UNSIGNED)) {
             // TODO: A future enhancement will make the widened type indicate the unsigned basetype
             // from which it was widened.
             result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
