@@ -1596,7 +1596,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
-            log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", treeString, type);
+            log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
         }
         typeAnnotator.visit(type, null);
         log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
