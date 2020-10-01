@@ -2433,7 +2433,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param annos annotations to narrow, from a primitive or boxed primitive
      * @param typeKind primitive type to narrow
      * @param narrowedTypeKind target for the returned annotations; a primitive type that is
-     *     narrower than {@code typeKind}
+     *     narrower than {@code typeKind} (in the sense of JLS 5.1.3).
      * @return result of converting {@code annos} from {@code typeKind} to {@code narrowedTypeKind}
      */
     public Set<AnnotationMirror> getNarrowedAnnotations(
@@ -2448,7 +2448,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param annos annotations to widen, from a primitive or boxed primitive
      * @param typeKind primitive type to widen
      * @param widenedTypeKind target for the returned annotations; a primitive type that is wider
-     *     than {@code typeKind}
+     *     than {@code typeKind} (in the sense of JLS 5.1.2)
      * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
      */
     public Set<AnnotationMirror> getWidenedAnnotations(
