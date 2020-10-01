@@ -163,33 +163,40 @@ public final class TypeKindUtils {
     }
 
     /**
-     * Returns true if both types are integral and the first type is strictly narrower (represented
-     * by fewer bits) than the second type.
+     * Returns true if a widening conversion happens between the types. This is true if
+     *
+     * <ul>
+     *   <li>the first type is is integral and the second type is floating-point, or
+     *   <li>both types are integral or both types are floating-point, and the first type is
+     *       strictly narrower (represented by fewer bits) than the second type.
+     * </ul>
      *
      * @param a a primitive type
      * @param b a primitive type
      * @return true if {@code a} is represented by fewer bits than {@code b}
      */
-    public static boolean isNarrowerIntegral(TypeKind a, TypeKind b) {
-        int aBits = numIntegralBits(a);
-        if (aBits == -1) {
+    public static boolean isNarrower(TypeKind a, TypeKind b) {
+        boolean aIsIntegral = isIntegral(a);
+        boolean bIsFloatingPoint = isFloatingPoint(b);
+        if (aIsIntegral && bIsFloatingPoint) {
+            return true;
+        }
+
+        if ((aIsIntegral && isIntegral(b)) || (isFloatingPoint(a) && bIsFloatingPoint)) {
+            return numBits(a) < numBits(b);
+        } else {
             return false;
         }
-        int bBits = numIntegralBits(b);
-        if (bBits == -1) {
-            return false;
-        }
-        return aBits < bBits;
     }
 
     /**
-     * Returns the number of bits in the representation of an integral primitive type. Returns -1 if
-     * the type is not an integral primitive type.
+     * Returns the number of bits in the representation of a primitive type. Returns -1 if the type
+     * is not a primitive type.
      *
      * @param tk a primitive type kind
      * @return the number of bits in its representation, or -1 if not integral
      */
-    private static int numIntegralBits(TypeKind tk) {
+    private static int numBits(TypeKind tk) {
         switch (tk) {
             case BYTE:
                 return 8;
@@ -201,9 +208,11 @@ public final class TypeKindUtils {
                 return 32;
             case LONG:
                 return 64;
-            case BOOLEAN:
-            case DOUBLE:
             case FLOAT:
+                return 32;
+            case DOUBLE:
+                return 64;
+            case BOOLEAN:
             default:
                 return -1;
         }

@@ -2158,7 +2158,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        AnnotatedTypeMirror exprTypeWidened = atypeFactory.applyWidening(exprType, castType);
+        AnnotatedTypeMirror exprTypeWidened = atypeFactory.getWidenedType(exprType, castType);
         return qualifierHierarchy.isSubtype(exprTypeWidened.getEffectiveAnnotations(), castAnnos);
     }
 
@@ -2488,7 +2488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
-        AnnotatedTypeMirror widenedValueType = atypeFactory.applyWidening(valueType, varType);
+        AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
         // TODO: integrate with subtype test.

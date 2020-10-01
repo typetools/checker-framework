@@ -15,8 +15,6 @@ public class UnsignedRightShiftTest {
     void unsignedRightShiftWithParameter(int length) {
         byte b1 = (byte) (length >>> 24);
         byte b2 = (@Signed byte) (length >>> 24);
-        // TODO: make this legal
-        // :: warning: (cast.unsafe)
         byte b3 = (@Unsigned byte) (length >>> 24);
     }
 
