@@ -220,20 +220,6 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(at);
     }
 
-    /**
-     * Returns an abstract value with the given {@code type} and the annotations from {@code
-     * annotatedValue}.
-     *
-     * @return an abstract value with the given {@code type} and the annotations from {@code
-     *     annotatedValue}
-     */
-    protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
-        if (annotatedValue == null) {
-            return null;
-        }
-        return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
-    }
-
     /** The fixed initial store. */
     private S fixedInitialStore = null;
 
@@ -1241,7 +1227,7 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
         // Combine annotations from the operand with the narrow type
         V operandValue = p.getValueOfSubNode(n.getOperand());
-        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        V narrowedValue = getNarrowedValue(n.getType(), operandValue);
         result.setResultValue(narrowedValue);
         return result;
     }
@@ -1252,9 +1238,53 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
         // Combine annotations from the operand with the wide type
         V operandValue = p.getValueOfSubNode(n.getOperand());
-        V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        V widenedValue = getWidenedValue(n.getType(), operandValue);
         result.setResultValue(widenedValue);
         return result;
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, possibly adapted for narrowing.
+     *
+     * @param type the type to narrow to
+     * @param annotatedValue the type to narrow from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> narrowedAnnos =
+                analysis.atypeFactory.getNarrowedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(narrowedAnnos, type);
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, possibly adapted for widening.
+     *
+     * @param type the type to widen to
+     * @param annotatedValue the type to widen from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> widenedAnnos =
+                analysis.atypeFactory.getWidenedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(widenedAnnos, type);
     }
 
     @Override

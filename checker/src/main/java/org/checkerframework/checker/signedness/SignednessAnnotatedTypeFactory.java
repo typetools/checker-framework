@@ -180,6 +180,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public Set<AnnotationMirror> getNarrowedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        // TODO: implement
+        return annos;
+    }
+
+    @Override
     public Set<AnnotationMirror> getWidenedAnnotations(
             Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
         assert annos.size() == 1;
