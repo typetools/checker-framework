@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.UtilPlume;
 
 /**
- * Implementation of a {@link TransferResult} with two non-exceptional store; one for the 'then'
+ * Implementation of a {@link TransferResult} with two non-exceptional stores: one for the 'then'
  * edge and one for 'else'. The result of {@code getRegularStore} will be the least upper bound of
  * the two underlying stores.
  *

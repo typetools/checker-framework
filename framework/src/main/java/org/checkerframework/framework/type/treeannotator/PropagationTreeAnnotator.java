@@ -193,6 +193,16 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // Use effective annotations from the expression, to get upper bound
             // of type variables.
             Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
+
+            TypeKind castKind = type.getPrimitiveKind();
+            if (castKind != null) {
+                TypeKind exprKind = exprType.getPrimitiveKind();
+                if (exprKind != null) {
+                    expressionAnnos =
+                            atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
+                }
+            }
+
             // If the qualifier on the expression type is a supertype of the qualifier upper bound
             // of the cast type, then apply the bound as the default qualifier rather than the
             // expression qualifier.
