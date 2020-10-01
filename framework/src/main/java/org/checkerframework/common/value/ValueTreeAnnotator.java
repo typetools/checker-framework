@@ -616,7 +616,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Default the value of an enum constant E.V to {@code StringVal("V")}.
+     * Default the type of an enum constant {@code E.V} to {@code @StringVal("V")}. Does nothing if
+     * the argument is not an enum constant.
      *
      * @param tree an Identifier or MemberSelect tree that might be an enum
      * @param type the type of that tree

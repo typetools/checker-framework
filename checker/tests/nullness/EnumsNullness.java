@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-public class Enums {
+public class EnumsNullness {
 
     enum MyEnum {
         A,
