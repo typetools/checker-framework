@@ -1,7 +1,10 @@
 version: 2
+
+# The com.amazonaws:aws-java-sdk-* dependencies are updated every day.
+# That is too many pull requests.
+
 updates:
   - package-ecosystem: "java:gradle"
     directory: "/"
     ignore:
-      # This dependency is updated every day.  That is too many pull requests.
       - dependency-name: "com.amazonaws:aws-java-sdk-*"
