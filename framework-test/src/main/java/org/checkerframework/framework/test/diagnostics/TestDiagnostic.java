@@ -1,5 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -88,7 +89,8 @@ public class TestDiagnostic {
     /**
      * Equality is compared without isFixable/omitParentheses.
      *
-     * @return true if this and otherObj are equal according to lineNumber, kind, and message
+     * @return true if this and otherObj are equal according to filename, lineNumber, kind, and
+     *     message
      */
     @Override
     public boolean equals(@Nullable Object otherObj) {
@@ -105,11 +107,7 @@ public class TestDiagnostic {
 
     @Override
     public int hashCode() {
-        return 331
-                * ((int) lineNumber)
-                * kind.hashCode()
-                * message.hashCode()
-                * filename.hashCode();
+        return Objects.hash(filename, lineNumber, kind, message);
     }
 
     /**

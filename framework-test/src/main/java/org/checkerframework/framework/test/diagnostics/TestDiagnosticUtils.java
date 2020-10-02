@@ -312,7 +312,8 @@ public class TestDiagnosticUtils {
         } else {
             // It's a bit gross to create empty diagnostics (returning null might be more
             // efficient), but they will be filtered out later.
-            return new TestDiagnosticLine(filename, errorLine, originalLine, EMPTY);
+            return new TestDiagnosticLine(
+                    filename, errorLine, originalLine, Collections.emptyList());
         }
     }
 
@@ -320,7 +321,7 @@ public class TestDiagnosticUtils {
     public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
         final String trimmedLine = diagnosticLine.trim();
         if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {
-            return new TestDiagnosticLine("", -1, diagnosticLine, EMPTY);
+            return new TestDiagnosticLine("", -1, diagnosticLine, Collections.emptyList());
         }
 
         TestDiagnostic diagnostic = fromDiagnosticFileString(diagnosticLine);
@@ -363,9 +364,6 @@ public class TestDiagnosticUtils {
         }
         return strings;
     }
-
-    private static final List<TestDiagnostic> EMPTY =
-            Collections.unmodifiableList(new ArrayList<TestDiagnostic>());
 
     public static void removeDiagnosticsOfKind(
             DiagnosticKind kind, List<TestDiagnostic> expectedDiagnostics) {

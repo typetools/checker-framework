@@ -17,24 +17,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
- * A file can indicate expected javac diagnostics. There are two types of such files: Java source
- * files, and Diagnostic files.
- *
- * <p>This class contains a static method to read each type of file. The output of each is a list of
- * TestDiagnostic.
+ * This class reads expected javac diagnostics from a single file. Its implementation is as an
+ * iterator over {@link TestDiagnosticLine}. However, clients should call the static methods: {@link
+ * #readJavaSourceFiles} reads diagnostics from multiple Java source files, and {@link
+ * #readDiagnosticFiles} reads diagnostics from multiple "diagnostic files".
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
-    // This class begins with the most common static helper methods that are used to read
-    // diagnostics
+    ///
+    /// This class begins with the publc static methods that clients use to read diagnostics.
+    ///
 
     /**
-     * Returns all the diagnostics in any of the files.
+     * Returns all the diagnostics in any of the Java source files.
      *
      * @param files the Java files to read; each is a File or a JavaFileObject
-     * @return the List of TestDiagnostics from the input file
+     * @return the TestDiagnostics from the input file
      */
-    // The argument is has type Iterable<? extends Object> because Java cannot resolve the overload
+    // The argument has type Iterable<? extends Object> because Java cannot resolve the overload
     // of two versions that take Iterable<? extends File> and Iterable<? extends JavaFileObject>.
     public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
@@ -58,10 +58,10 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     /**
-     * Reads diagnostics line-by-line from the input Diagnostic files.
+     * Reads diagnostics line-by-line from the input diagnostic files.
      *
-     * @param files a set of Diagnostic Files
-     * @return the List of TestDiagnosticLines from the input files
+     * @param files a set of diagnostic files
+     * @return the TestDiagnosticLines from the input files
      */
     public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
         List<JavaDiagnosticReader> readers = new ArrayList<>();
@@ -76,7 +76,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     ///
-    /// end of public static methods, start of private static methods
+    /// End of public static methods, start of private static methods.
     ///
 
     /**
@@ -86,7 +86,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * @return the List of TestDiagnosticLines from the input file
      */
     private static List<TestDiagnostic> readDiagnostics(Iterable<JavaDiagnosticReader> readers) {
-        return getDiagnostics(readDiagnosticLines(readers));
+        return diagnosticLinesToDiagnostics(readDiagnosticLines(readers));
     }
 
     /**
@@ -126,7 +126,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
-    private static List<TestDiagnostic> getDiagnostics(List<TestDiagnosticLine> lines) {
+    private static List<TestDiagnostic> diagnosticLinesToDiagnostics(
+            List<TestDiagnosticLine> lines) {
         List<TestDiagnostic> result = new ArrayList<>((int) (lines.size() * 1.1));
         for (TestDiagnosticLine line : lines) {
             result.addAll(line.getDiagnostics());
@@ -137,6 +138,9 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     /**
      * DiagnosticCodec converts a line of a file into a TestDiagnosticLine. There are currently two
      * possible formats: one for Java source code, and one for Diagnostic files.
+     *
+     * <p>No classes implement this interface. The methods TestDiagnosticUtils.fromJavaSourceLine
+     * and TestDiagnosticUtils.fromDiagnosticFileLine instantiate the method.
      */
     private interface DiagnosticCodec {
 
@@ -152,7 +156,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
 
     ///
-    /// End of static methods, start of per-instance state
+    /// End of static methods, start of per-instance state.
     ///
 
     // Exactly one of toRead and toReadFileObject is non-null
