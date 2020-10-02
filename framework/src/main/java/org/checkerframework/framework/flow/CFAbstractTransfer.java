@@ -60,6 +60,7 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -179,7 +180,8 @@ public abstract class CFAbstractTransfer<
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
                 analysis.atypeFactory;
         Tree preTree = analysis.getCurrentTree();
-        Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preContext =
+                factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -187,31 +189,34 @@ public abstract class CFAbstractTransfer<
             // assignment context tree's type in the factory while flow is
             // disabled.
             Tree contextTree = node.getAssignmentContext().getContextTree();
-            AnnotatedTypeMirror assCtxt = null;
+            AnnotatedTypeMirror assignmentContext = null;
             if (contextTree != null) {
-                assCtxt = factory.getAnnotatedTypeLhs(contextTree);
+                assignmentContext = factory.getAnnotatedTypeLhs(contextTree);
             } else {
-                Element assCtxtElement = node.getAssignmentContext().getElementForType();
-                if (assCtxtElement != null) {
+                Element assignmentContextElement = node.getAssignmentContext().getElementForType();
+                if (assignmentContextElement != null) {
                     // if contextTree is null, use the element to get the type
-                    assCtxt = factory.getAnnotatedType(assCtxtElement);
+                    assignmentContext = factory.getAnnotatedType(assignmentContextElement);
                 }
             }
 
-            if (assCtxt != null) {
-                if (assCtxt instanceof AnnotatedExecutableType) {
+            if (assignmentContext != null) {
+                if (assignmentContext instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
-                    assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+                    assignmentContext =
+                            ((AnnotatedExecutableType) assignmentContext).getReturnType();
                 }
                 factory.getVisitorState()
                         .setAssignmentContext(
-                                Pair.of(node.getAssignmentContext().getContextTree(), assCtxt));
+                                Pair.of(
+                                        node.getAssignmentContext().getContextTree(),
+                                        assignmentContext));
             }
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
-        factory.getVisitorState().setAssignmentContext(preCtxt);
+        factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);
     }
 
@@ -229,6 +234,7 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
+    /** The fixed initial store. */
     private S fixedInitialStore = null;
 
     /** Set a fixed initial Store. */
@@ -713,6 +719,14 @@ public abstract class CFAbstractTransfer<
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
 
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, false)
+                        || NodeUtils.isConstantBoolean(rightN, false))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
+
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
         res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
@@ -728,6 +742,14 @@ public abstract class CFAbstractTransfer<
         Node rightN = n.getRightOperand();
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
+
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, true)
+                        || NodeUtils.isConstantBoolean(rightN, true))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
@@ -1214,17 +1236,6 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitNarrowingConversion(
-            NarrowingConversionNode n, TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
-        // Combine annotations from the operand with the narrow type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(narrowedValue);
-        return result;
-    }
-
-    @Override
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
@@ -1232,6 +1243,17 @@ public abstract class CFAbstractTransfer<
         V operandValue = p.getValueOfSubNode(n.getOperand());
         V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
         result.setResultValue(widenedValue);
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitNarrowingConversion(
+            NarrowingConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
+        // Combine annotations from the operand with the narrow type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        result.setResultValue(narrowedValue);
         return result;
     }
 

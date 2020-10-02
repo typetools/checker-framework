@@ -1,6 +1,6 @@
 package java.lang;
 
-import h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 public final class Object {
     public Class<@H1S1 ? extends @H1S1 Object> getClass();

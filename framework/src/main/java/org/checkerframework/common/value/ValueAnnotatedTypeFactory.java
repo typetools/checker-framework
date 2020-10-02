@@ -37,7 +37,6 @@ import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -62,6 +61,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -113,6 +113,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical @{@link PolyValue} annotation. */
     public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
+
+    /** The canonical @{@link BoolVal}(true) annotation. */
+    public final AnnotationMirror BOOLEAN_TRUE =
+            createBooleanAnnotation(Collections.singletonList(true));
+
+    /** The canonical @{@link BoolVal}(false) annotation. */
+    public final AnnotationMirror BOOLEAN_FALSE =
+            createBooleanAnnotation(Collections.singletonList(false));
 
     /** Should this type factory report warnings? */
     private final boolean reportEvalWarnings;
@@ -242,15 +250,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     protected boolean arePrimeAnnosEqual(
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
                         type1.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type1.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type1.getAnnotationInHierarchy(UNKNOWNVAL))));
                         type2.replaceAnnotation(
-                                convertSpecialIntRangeToStandardIntRange(
-                                        type2.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type1.replaceAnnotation(
-                                convertToUnknown(type1.getAnnotationInHierarchy(UNKNOWNVAL)));
-                        type2.replaceAnnotation(
-                                convertToUnknown(type2.getAnnotationInHierarchy(UNKNOWNVAL)));
+                                convertToUnknown(
+                                        convertSpecialIntRangeToStandardIntRange(
+                                                type2.getAnnotationInHierarchy(UNKNOWNVAL))));
 
                         return super.arePrimeAnnosEqual(type1, type2);
                     }
@@ -362,8 +368,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return one of INT, SHORT, BYTE, CHAR, or LONG
      */
     private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
-        TypeKind typeKind = NumberUtils.unboxPrimitive(type);
-        if (NumberUtils.isPrimitiveIntegral(typeKind)) {
+        TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+        if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
             return typeKind;
         }
         throw new BugInCF(type.toString() + " expected to be an integral type.");
@@ -743,6 +749,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
         } else {
+            // TODO: This seems wasteful.  Why not create the 3 interesting AnnotationMirrors (with
+            // arguments {true}, {false}, and {true, false}, respectively) in advance and return one
+            // of them?  (Maybe an advantage of this implementation is that it is identical to
+            // some other implementations and therefore might be less error-prone.)
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
             builder.setValue("value", values);
             return builder.build();
@@ -1045,12 +1055,34 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the set of possible values as a sorted list with no duplicate values. Returns the
-     * empty list if no values are possible (for dead code). Returns null if any value is possible
-     * -- that is, if no estimate can be made -- and this includes when there is no constant-value
-     * annotation so the argument is null.
+     * Returns the single possible boolean value, or null if there is not exactly one possible
+     * value.
+     *
+     * @see getBooleanValues
+     * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return the single possible boolean value, on null if that is not the case
+     */
+    public static Boolean getBooleanValue(AnnotationMirror boolAnno) {
+        if (boolAnno == null) {
+            return null;
+        }
+        List<Boolean> boolValues =
+                AnnotationUtils.getElementValueArray(boolAnno, "value", Boolean.class, true);
+        Set<Boolean> boolSet = new TreeSet<>(boolValues);
+        if (boolSet.size() == 1) {
+            return boolSet.iterator().next();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the set of possible boolean values as a sorted list with no duplicate values. Returns
+     * the empty list if no values are possible (for dead code). Returns null if any value is
+     * possible -- that is, if no estimate can be made -- and this includes when there is no
+     * constant-value annotation so the argument is null.
      *
      * @param boolAnno a {@code @BoolVal} annotation, or null
+     * @return a list of possible boolean values
      */
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno == null) {

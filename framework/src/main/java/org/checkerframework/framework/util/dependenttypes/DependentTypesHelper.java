@@ -340,9 +340,9 @@ public class DependentTypesHelper {
             return;
         }
         FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
-        FlowExpressionContext classContext =
+        FlowExpressionContext classignmentContext =
                 new FlowExpressionContext(receiverF, null, factory.getContext());
-        standardizeDoNotUseLocals(classContext, path, type);
+        standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
     /**

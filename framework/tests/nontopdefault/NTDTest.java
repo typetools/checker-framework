@@ -1,5 +1,5 @@
-import testlib.nontopdefault.qual.NTDMiddle;
-import testlib.nontopdefault.qual.NTDTop;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDMiddle;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDTop;
 
 // Testcase for Issue 948:
 // https://github.com/typetools/checker-framework/issues/948

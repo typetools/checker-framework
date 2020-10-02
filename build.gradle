@@ -9,7 +9,7 @@ plugins {
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "1.2.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.0.2' apply false
+    id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
     id "com.gorylenko.gradle-git-properties" version "2.2.3"
 }
@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.7.0-SNAPSHOT'
+    version '3.7.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -757,7 +757,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
@@ -877,7 +877,7 @@ task checkBasicStyle(group: 'Format') {
                                   '.run-google-java-format',
                                   'annotated',
                                   'api',
-                                  'bib',
+                                  'plume-bib',
                                   'bootstrap',
                                   'build',
                                   'jdk',

@@ -50,7 +50,7 @@ all: manual.pdf manual.html
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: ${TEX_FILES} bib-update figures-all check-labels
+manual.pdf: ${TEX_FILES} plume-bib-update figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
@@ -93,15 +93,15 @@ favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 check-labels:
 	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
-export BIBINPUTS = $BIBINPUTS:.:bib
-bib:
-	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib || git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib)
-.PHONY: bib-update
-bib-update: bib
+export BIBINPUTS = $BIBINPUTS:.:plume-bib
+plume-bib:
+	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git || git clone --depth 1 -q https://github.com/mernst/plume-bib.git)
+.PHONY: plume-bib-update
+plume-bib-update: plume-bib
 # Even if this command fails, it does not terminate the make job.
 # However, to skip it, invoke make as:  make NOGIT=1 ...
 ifndef NOGIT
-	-(cd bib && git pull && make)
+	-(cd plume-bib && git pull && make)
 endif
 
 # Leaves manual.html, and .svg files that it references.

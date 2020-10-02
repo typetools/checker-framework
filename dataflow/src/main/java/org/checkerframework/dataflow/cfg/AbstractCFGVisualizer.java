@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.UniqueId;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -320,13 +321,18 @@ public abstract class AbstractCFGVisualizer<
         S elseStore = null;
         boolean isTwoStores = false;
 
+        UniqueId storesFrom;
+
         if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
             regularStore = analysis.getResult().getStoreAfter(bb);
+            storesFrom = analysis.getResult();
         } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
             regularStore = analysis.getResult().getStoreBefore(bb);
+            storesFrom = analysis.getResult();
         } else {
             TransferInput<V, S> input = analysis.getInput(bb);
             assert input != null : "@AssumeAssertion(nullness): invariant";
+            storesFrom = input;
             isTwoStores = input.containsTwoStores();
             regularStore = input.getRegularStore();
             thenStore = input.getThenStore();
@@ -334,6 +340,9 @@ public abstract class AbstractCFGVisualizer<
         }
 
         StringBuilder sbStore = new StringBuilder();
+        if (verbose) {
+            sbStore.append(storesFrom.getClassAndUid() + separator);
+        }
         sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
         if (!isTwoStores) {

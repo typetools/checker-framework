@@ -189,6 +189,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
@@ -1006,7 +1007,7 @@ public class CFGBuilder {
                     RegularBlockImpl b = (RegularBlockImpl) cur;
                     if (b.isEmpty()) {
                         Set<RegularBlockImpl> emptyBlocks = new HashSet<>();
-                        Set<PredecessorHolder> predecessors = new HashSet<>();
+                        Set<PredecessorHolder> predecessors = new LinkedHashSet<>();
                         BlockImpl succ =
                                 computeNeighborhoodOfEmptyBlock(b, emptyBlocks, predecessors);
                         for (RegularBlockImpl e : emptyBlocks) {
@@ -1966,12 +1967,10 @@ public class CFGBuilder {
          * Extend the list of extended nodes with a node.
          *
          * @param node the node to add
-         * @return the same node (for convenience)
          */
-        protected <T extends Node> T extendWithNode(T node) {
+        protected void extendWithNode(Node node) {
             addToLookupMap(node);
             extendWithExtendedNode(new NodeHolder(node));
-            return node;
         }
 
         /**
@@ -2269,8 +2268,8 @@ public class CFGBuilder {
          * Perform unary numeric promotion on the input node.
          *
          * @param node a node producing a value of numeric primitive or boxed type
-         * @return a Node with the value promoted to the int, long float or double, which may be the
-         *     input node
+         * @return a Node with the value promoted to the int, long, float, or double; may return be
+         *     the input node
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1
@@ -2322,7 +2321,7 @@ public class CFGBuilder {
             if (TypesUtils.isBoxedPrimitive(right)) {
                 right = types.unboxedType(right);
             }
-            TypeKind promotedTypeKind = TypesUtils.widenedNumericType(left, right);
+            TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
             return types.getPrimitiveType(promotedTypeKind);
         }
 
@@ -2719,9 +2718,6 @@ public class CFGBuilder {
                 return null;
             }
 
-            // TODO? Variable wasn't used.
-            // boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
-
             ExpressionTree methodSelect = tree.getMethodSelect();
             assert TreeUtils.isMethodAccess(methodSelect)
                     : "Expected a method access, but got: " + methodSelect;
@@ -3061,7 +3057,7 @@ public class CFGBuilder {
                         if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
                             operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
                         } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 operNode = new IntegerDivisionNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
@@ -3072,7 +3068,7 @@ public class CFGBuilder {
                             }
                         } else {
                             assert kind == Kind.REMAINDER_ASSIGNMENT;
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 operNode = new IntegerRemainderNode(operTree, targetRHS, value);
 
                                 TypeElement throwableElement =
@@ -3279,7 +3275,7 @@ public class CFGBuilder {
                         if (kind == Tree.Kind.MULTIPLY) {
                             r = new NumericalMultiplicationNode(tree, left, right);
                         } else if (kind == Tree.Kind.DIVIDE) {
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 r = new IntegerDivisionNode(tree, left, right);
 
                                 TypeElement throwableElement =
@@ -3290,7 +3286,7 @@ public class CFGBuilder {
                             }
                         } else {
                             assert kind == Kind.REMAINDER;
-                            if (TypesUtils.isIntegral(exprType)) {
+                            if (TypesUtils.isIntegralPrimitive(exprType)) {
                                 r = new IntegerRemainderNode(tree, left, right);
 
                                 TypeElement throwableElement =
@@ -3511,7 +3507,8 @@ public class CFGBuilder {
                     throw new Error("unexpected binary tree: " + kind);
             }
             assert r != null : "unexpected binary tree";
-            return extendWithNode(r);
+            extendWithNode(r);
+            return r;
         }
 
         @Override
@@ -3961,7 +3958,8 @@ public class CFGBuilder {
                         new VariableDeclarationNode(indexVariable);
                 indexVariableNode.setInSource(false);
                 extendWithNode(indexVariableNode);
-                IntegerLiteralNode zeroNode = extendWithNode(new IntegerLiteralNode(zero));
+                IntegerLiteralNode zeroNode = new IntegerLiteralNode(zero);
+                extendWithNode(zeroNode);
 
                 translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
@@ -3975,7 +3973,8 @@ public class CFGBuilder {
 
                 IdentifierTree arrayUse1 = treeBuilder.buildVariableUse(arrayVariable);
                 handleArtificialTree(arrayUse1);
-                LocalVariableNode arrayNode1 = extendWithNode(new LocalVariableNode(arrayUse1));
+                LocalVariableNode arrayNode1 = new LocalVariableNode(arrayUse1);
+                extendWithNode(arrayNode1);
 
                 MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse1);
                 handleArtificialTree(lengthSelect);
@@ -4227,7 +4226,8 @@ public class CFGBuilder {
         public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
             Node array = scan(tree.getExpression(), p);
             Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
-            Node arrayAccess = extendWithNode(new ArrayAccessNode(tree, array, index));
+            Node arrayAccess = new ArrayAccessNode(tree, array, index);
+            extendWithNode(arrayAccess);
             Element aioobeElement = getTypeElement(ArrayIndexOutOfBoundsException.class);
             extendWithNodeWithException(arrayAccess, aioobeElement.asType());
             Element npeElement = getTypeElement(NullPointerException.class);
@@ -4291,8 +4291,8 @@ public class CFGBuilder {
                     throw new Error("unexpected literal tree");
             }
             assert r != null : "unexpected literal tree";
-            Node result = extendWithNode(r);
-            return result;
+            extendWithNode(r);
+            return r;
         }
 
         @Override
@@ -4329,7 +4329,8 @@ public class CFGBuilder {
             }
 
             Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
-            return extendWithNode(node);
+            extendWithNode(node);
+            return node;
         }
 
         @Override
@@ -4434,9 +4435,13 @@ public class CFGBuilder {
                 // Could be a selector of a class or package
                 Element element = TreeUtils.elementFromUse(tree);
                 if (ElementUtils.isClassElement(element)) {
-                    return extendWithNode(new ClassNameNode(tree, expr));
+                    Node result = new ClassNameNode(tree, expr);
+                    extendWithNode(result);
+                    return result;
                 } else if (element.getKind() == ElementKind.PACKAGE) {
-                    return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                    Node result = new PackageNameNode(tree, (PackageNameNode) expr);
+                    extendWithNode(result);
+                    return result;
                 } else {
                     throw new Error("Unexpected element kind: " + element.getKind());
                 }
@@ -4786,7 +4791,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitParameterizedType(ParameterizedTypeTree tree, Void p) {
-            return extendWithNode(new ParameterizedTypeNode(tree));
+            Node result = new ParameterizedTypeNode(tree);
+            extendWithNode(result);
+            return result;
         }
 
         @Override
@@ -4796,7 +4803,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitArrayType(ArrayTypeTree tree, Void p) {
-            return extendWithNode(new ArrayTypeNode(tree, types));
+            Node result = new ArrayTypeNode(tree, types);
+            extendWithNode(new ArrayTypeNode(tree, types));
+            return result;
         }
 
         @Override
@@ -4812,7 +4821,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
-            return extendWithNode(new PrimitiveTypeNode(tree, types));
+            Node result = new PrimitiveTypeNode(tree, types);
+            extendWithNode(result);
+            return result;
         }
 
         @Override
@@ -4846,17 +4857,18 @@ public class CFGBuilder {
 
                         switch (kind) {
                             case BITWISE_COMPLEMENT:
-                                result = extendWithNode(new BitwiseComplementNode(tree, expr));
+                                result = new BitwiseComplementNode(tree, expr);
                                 break;
                             case UNARY_MINUS:
-                                result = extendWithNode(new NumericalMinusNode(tree, expr));
+                                result = new NumericalMinusNode(tree, expr);
                                 break;
                             case UNARY_PLUS:
-                                result = extendWithNode(new NumericalPlusNode(tree, expr));
+                                result = new NumericalPlusNode(tree, expr);
                                 break;
                             default:
                                 throw new Error("Unexpected kind");
                         }
+                        extendWithNode(result);
                         break;
                     }
 
@@ -4864,7 +4876,8 @@ public class CFGBuilder {
                     {
                         // see JLS 15.15.6
                         Node expr = scan(tree.getExpression(), p);
-                        result = extendWithNode(new ConditionalNotNode(tree, unbox(expr)));
+                        result = new ConditionalNotNode(tree, unbox(expr));
+                        extendWithNode(result);
                         break;
                     }
 
@@ -4928,7 +4941,8 @@ public class CFGBuilder {
                     // special node NLLCHK
                     if (tree.toString().startsWith("<*nullchk*>")) {
                         Node expr = scan(tree.getExpression(), p);
-                        result = extendWithNode(new NullChkNode(tree, expr));
+                        result = new NullChkNode(tree, expr);
+                        extendWithNode(result);
                         break;
                     }
 
@@ -4989,7 +5003,8 @@ public class CFGBuilder {
 
             AssignmentNode assignNode = new AssignmentNode(target, expr, narrowed);
             assignNode.setInSource(false);
-            return extendWithNode(assignNode);
+            extendWithNode(assignNode);
+            return assignNode;
         }
 
         @Override

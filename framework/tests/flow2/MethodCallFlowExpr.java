@@ -1,6 +1,6 @@
 import org.checkerframework.dataflow.qual.*;
 import org.checkerframework.framework.qual.EnsuresQualifier;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 class MethodCallFlowExpr {
 
