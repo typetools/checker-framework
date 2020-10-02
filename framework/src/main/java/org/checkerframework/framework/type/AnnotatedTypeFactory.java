@@ -2323,28 +2323,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and with
-     * annotations copied or adapted from {@code type}.
-     *
-     * <p>Currently this method is called only for primitives that are narrowed at assignments from
-     * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
-     * typecasts.
-     *
-     * @param type type to narrow
-     * @param narrowedTypeMirror underlying type for the returned type mirror
-     * @return result of converting {@code type} to {@code narrowedTypeMirror}
-     */
-    public AnnotatedPrimitiveType getNarrowedPrimitive(
-            AnnotatedPrimitiveType type, TypeMirror narrowedTypeMirror) {
-        AnnotatedPrimitiveType narrowed =
-                (AnnotatedPrimitiveType)
-                        AnnotatedTypeMirror.createType(
-                                narrowedTypeMirror, this, type.isDeclaration());
-        narrowed.addAnnotations(type.getAnnotations());
-        return narrowed;
-    }
-
-    /**
      * Returns a widened type if applicable, otherwise returns its first argument.
      *
      * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
@@ -2435,6 +2413,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
             return Pair.of(leftUnwidened, rightUnwidened);
         }
+    }
+
+    /**
+     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and with
+     * annotations copied or adapted from {@code type}.
+     *
+     * <p>Currently this method is called only for primitives that are narrowed at assignments from
+     * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
+     * typecasts.
+     *
+     * @param type type to narrow
+     * @param narrowedTypeMirror underlying type for the returned type mirror
+     * @return result of converting {@code type} to {@code narrowedTypeMirror}
+     */
+    public AnnotatedPrimitiveType getNarrowedPrimitive(
+            AnnotatedPrimitiveType type, TypeMirror narrowedTypeMirror) {
+        AnnotatedPrimitiveType narrowed =
+                (AnnotatedPrimitiveType)
+                        AnnotatedTypeMirror.createType(
+                                narrowedTypeMirror, this, type.isDeclaration());
+        narrowed.addAnnotations(type.getAnnotations());
+        return narrowed;
     }
 
     /**
