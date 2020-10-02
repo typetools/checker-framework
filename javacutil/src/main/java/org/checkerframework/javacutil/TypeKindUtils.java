@@ -108,13 +108,7 @@ public final class TypeKindUtils {
             case "java.lang.Short":
                 return TypeKind.SHORT;
             default:
-                // TODO: this method should only be called for primitive or boxed primitive types.
-                // However, it is also used to implement other methods where this condition might
-                // not be met.
-                // Think of a nicer way to structure all these methods.
-                // throw new BugInCF("Expected primitive wrapper, got " + type + " kind: " +
-                // typeKind);
-                return typeKind;
+                return null;
         }
     }
 
@@ -162,30 +156,60 @@ public final class TypeKindUtils {
         return TypeKind.INT;
     }
 
+    /** The type of primitive conversion: narrowing, widening, or same. */
+    public enum PrimitiveConversionKind {
+        /** The two primitive kinds are the same. */
+        SAME,
+        /**
+         * The conversion is a widening primitive conversion.
+         *
+         * <p>This includes byte to char, even though that is strictly a "widening and narrowing
+         * primitive conversion", according to JLS 5.1.4.
+         */
+        WIDENING,
+        /** The conversion is a narrowing primitive conversion. */
+        NARROWING
+    }
+
     /**
-     * Returns true if a widening conversion happens between the types. This is true if
+     * Return the type of primitive conversion between {@code from} and {@code to}.
      *
-     * <ul>
-     *   <li>the first type is is integral and the second type is floating-point, or
-     *   <li>both types are integral or both types are floating-point, and the first type is
-     *       strictly narrower (represented by fewer bits) than the second type.
-     * </ul>
+     * <p>The narrowing conversions include both short to char and char to short.
      *
-     * @param a a primitive type
-     * @param b a primitive type
-     * @return true if {@code a} is represented by fewer bits than {@code b}
+     * @param from a primitive type
+     * @param to a primitive type
+     * @return the type of primitive conversion between {@code from} and {@code to}.
      */
-    public static boolean isNarrower(TypeKind a, TypeKind b) {
-        boolean aIsIntegral = isIntegral(a);
-        boolean bIsFloatingPoint = isFloatingPoint(b);
-        if (aIsIntegral && bIsFloatingPoint) {
-            return true;
+    public static PrimitiveConversionKind getPrimitiveConversionKind(TypeKind from, TypeKind to) {
+        if (from == TypeKind.BOOLEAN && to == TypeKind.BOOLEAN) {
+            return PrimitiveConversionKind.SAME;
         }
 
-        if ((aIsIntegral && isIntegral(b)) || (isFloatingPoint(a) && bIsFloatingPoint)) {
-            return numBits(a) < numBits(b);
+        assert (isIntegral(from) || isFloatingPoint(from))
+                        && (isIntegral(to) || isFloatingPoint(to))
+                : "getPrimitiveConversionKind " + from + " " + to;
+
+        if (from == to) {
+            return PrimitiveConversionKind.SAME;
+        }
+
+        boolean fromIntegral = isIntegral(from);
+        boolean toFloatingPoint = isFloatingPoint(to);
+        if (fromIntegral && toFloatingPoint) {
+            return PrimitiveConversionKind.WIDENING;
+        }
+
+        boolean toIntegral = isIntegral(to);
+        boolean fromFloatingPoint = isFloatingPoint(from);
+        if (fromFloatingPoint && toIntegral) {
+            return PrimitiveConversionKind.NARROWING;
+        }
+
+        if (numBits(from) < numBits(to)) {
+            return PrimitiveConversionKind.WIDENING;
         } else {
-            return false;
+            // If same number of bits (char to short or short to char), it is a narrowing.
+            return PrimitiveConversionKind.NARROWING;
         }
     }
 

@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
@@ -198,8 +199,20 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             if (castKind != null) {
                 TypeKind exprKind = exprType.getPrimitiveKind();
                 if (exprKind != null) {
-                    expressionAnnos =
-                            atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
+                    switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
+                        case WIDENING:
+                            expressionAnnos =
+                                    atypeFactory.getWidenedAnnotations(
+                                            expressionAnnos, exprKind, castKind);
+                            break;
+                        case NARROWING:
+                            atypeFactory.getNarrowedAnnotations(
+                                    expressionAnnos, exprKind, castKind);
+                            break;
+                        case SAME:
+                            // Nothing to do
+                            break;
+                    }
                 }
             }
 
