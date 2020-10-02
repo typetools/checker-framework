@@ -224,6 +224,8 @@ public abstract class CFAbstractTransfer<
      * Returns an abstract value with the given {@code type} and the annotations from {@code
      * annotatedValue}.
      *
+     * @param type the type to return
+     * @param annotatedValue the annotations to return
      * @return an abstract value with the given {@code type} and the annotations from {@code
      *     annotatedValue}
      * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
