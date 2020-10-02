@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import org.checkerframework.common.value.qual.*;
-import org.checkerframework.common.value.qual.StringVal;
 
 class EnumConstants {
     enum MyEnum {
@@ -65,7 +64,6 @@ class EnumConstants {
         enums(MyEnum.OTHER_VALUE);
     }
 
-    // This test is based on a false positive in plume-lib.
     static void testEnumArraysInConditional(boolean append, String filename) throws IOException {
         Files.newBufferedWriter(
                 Paths.get(filename),
