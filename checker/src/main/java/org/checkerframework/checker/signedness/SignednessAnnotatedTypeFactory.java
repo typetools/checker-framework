@@ -215,12 +215,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Set<AnnotationMirror> getNarrowedAnnotations(
-            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind narrowedTypeKind) {
         assert annos.size() == 1;
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
 
-        if (widenedTypeKind == TypeKind.CHAR) {
+        if (narrowedTypeKind == TypeKind.CHAR) {
             result.add(SIGNED);
             return result;
         }
