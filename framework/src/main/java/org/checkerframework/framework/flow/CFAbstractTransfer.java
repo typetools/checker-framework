@@ -220,6 +220,22 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(at);
     }
 
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}.
+     *
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}
+     * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
+     */
+    @Deprecated // use getWidenedValue() or getNarrowedValue()
+    protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
+    }
+
     /** The fixed initial store. */
     private S fixedInitialStore = null;
 
