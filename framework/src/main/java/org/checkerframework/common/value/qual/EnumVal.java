@@ -21,9 +21,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface EnumVal {
     /**
-     * The names of the possible enum values the annotated type might contain.
+     * The simple names of the possible enum values for an expression with the annotated type.
      *
-     * @return the names
+     * @return The simple names of the possible enum values for an expression with the annotated
+     *     type
      */
     String[] value() default {};
 }
