@@ -170,8 +170,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
-        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
+
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+                atypeFactory.compoundAssignmentTreeArgTypes(node);
+        AnnotatedTypeMirror varType = argTypes.first;
+        AnnotatedTypeMirror exprType = argTypes.second;
 
         Kind kind = node.getKind();
 
