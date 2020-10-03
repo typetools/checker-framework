@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
@@ -160,7 +159,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     private final String filename;
 
-    private @MonotonicNonNull LineNumberReader reader = null;
+    private LineNumberReader reader;
 
     private @Nullable String nextLine = null;
     private @GTENegativeOne int nextLineNumber = -1;
@@ -231,8 +230,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         return codec.createTestDiagnosticLine(filename, currentLine, currentLineNumber);
     }
 
-    @RequiresNonNull("reader")
-    protected void advance() throws IOException {
+    protected void advance(@UnknownInitialization JavaDiagnosticReader this) throws IOException {
         nextLine = reader.readLine();
         nextLineNumber = reader.getLineNumber();
         if (nextLine == null) {
