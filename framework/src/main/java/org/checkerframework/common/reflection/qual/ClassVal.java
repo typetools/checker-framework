@@ -24,6 +24,8 @@ public @interface ClassVal {
      * name": a primitive or <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary
      * name</a>, possibly followed by some number of array brackets.
+     *
+     * @return the name of the type that this Class object represents
      */
     String[] value();
 }
