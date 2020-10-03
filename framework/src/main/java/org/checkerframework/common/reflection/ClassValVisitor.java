@@ -38,8 +38,8 @@ class ClassNameValidator extends BaseTypeValidator {
     }
 
     /**
-     * Reports an "illegal.classname" error if the type contains a classVal annotation with
-     * classNames that cannot possibly be valid class annotations.
+     * This implementation reports an "illegal.classname" error if the type contains a @ClassVal
+     * annotation with a string that is not a valid class name.
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
@@ -50,7 +50,7 @@ class ClassNameValidator extends BaseTypeValidator {
                     ((ClassValAnnotatedTypeFactory) atypeFactory)
                             .getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
-                if (!Signatures.isBinaryName(className)) {
+                if (!Signatures.isFqBinaryName(className)) {
                     checker.reportError(tree, "illegal.classname", className, type);
                 }
             }
