@@ -59,6 +59,6 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertResultsAreValid(testResult);
+        TestUtilities.assertTestDidNotFail(testResult);
     }
 }

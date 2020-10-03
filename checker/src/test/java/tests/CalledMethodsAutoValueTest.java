@@ -53,6 +53,6 @@ public class CalledMethodsAutoValueTest extends CheckerFrameworkPerDirectoryTest
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertResultsAreValid(testResult);
+        TestUtilities.assertTestDidNotFail(testResult);
     }
 }
