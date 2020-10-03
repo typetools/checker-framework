@@ -1,3 +1,10 @@
+Version 3.7.1, November 2, 2020
+
+Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
+longer used.  Added new methods getWidenedValue() and getNarrowedValue().
+
+---------------------------------------------------------------------------
+
 Version 3.7.0, October 1, 2020
 
 The new Called Methods Checker tracks methods that have definitely been
