@@ -348,7 +348,7 @@ public class TestDiagnosticUtils {
 
     /**
      * Converts the given diagnostics to strings (as they would appear in a source file
-     * individually)
+     * individually).
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
         final List<String> strings = new ArrayList<>(diagnostics.size());
