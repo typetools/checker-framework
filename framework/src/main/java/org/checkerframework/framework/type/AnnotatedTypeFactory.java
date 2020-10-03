@@ -8,6 +8,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -2442,15 +2443,40 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
-        AnnotatedTypeMirror leftOrig = getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror rightOrig = getAnnotatedType(node.getRightOperand());
+        return binaryTreeArgTypes(
+                getAnnotatedType(node.getLeftOperand()), getAnnotatedType(node.getRightOperand()));
+    }
+
+    /**
+     * Returns the types of the two arguments to the CompoundAssignmentTree, accounting for widening
+     * and unboxing if applicable.
+     *
+     * @param node a compound assignment tree
+     * @return the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> compoundAssignmentTreeArgTypes(
+            CompoundAssignmentTree node) {
+        return binaryTreeArgTypes(
+                getAnnotatedType(node.getVariable()), getAnnotatedType(node.getExpression()));
+    }
+
+    /**
+     * Returns the types of the two arguments to a binarya operation, accounting for widening and
+     * unboxing if applicable.
+     *
+     * @param left the type of the left argument of a binary operation
+     * @param right the type of the right argument of a binary operation
+     * @return the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(
+            AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         TypeKind resultTypeKind =
                 TypeKindUtils.widenedNumericType(
-                        leftOrig.getUnderlyingType(), rightOrig.getUnderlyingType());
+                        left.getUnderlyingType(), right.getUnderlyingType());
         if (TypeKindUtils.isNumeric(resultTypeKind)) {
             TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
-            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(leftOrig);
-            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(rightOrig);
+            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
+            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);
             AnnotatedPrimitiveType leftWidened =
                     (leftUnboxed.getKind() == resultTypeKind
                             ? leftUnboxed
@@ -2461,7 +2487,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             : getWidenedPrimitive(rightUnboxed, resultTypeMirror));
             return Pair.of(leftWidened, rightWidened);
         } else {
-            return Pair.of(leftOrig, rightOrig);
+            return Pair.of(left, right);
         }
     }
 
