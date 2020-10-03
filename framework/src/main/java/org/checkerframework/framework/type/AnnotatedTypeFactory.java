@@ -2351,11 +2351,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return exprType;
         }
 
-        if (TypeKindUtils.isNarrower(exprPrimitiveType.getKind(), widenedType.getKind())) {
-            return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+        switch (TypeKindUtils.getPrimitiveConversionKind(
+                exprPrimitiveType.getKind(), widenedType.getKind())) {
+            case WIDENING:
+                return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case NARROWING:
+                return getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case SAME:
+                return exprType;
+            default:
+                throw new Error("unhandled PrimitiveConversionKind");
         }
+    }
 
-        return exprType;
+    /**
+     * Applies widening if applicable, otherwise returns its first argument.
+     *
+     * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
+     *
+     * @param exprAnnos annotations to possibly widen
+     * @param exprTypeMirror type to possibly widen
+     * @param widenedType type to possibly widen to; its annotations are ignored
+     * @return if widening is applicable, the result of converting {@code type} to the underlying
+     *     type of {@code widenedType}; otherwise {@code type}
+     */
+    public final AnnotatedTypeMirror getWidenedType(
+            Set<AnnotationMirror> exprAnnos,
+            TypeMirror exprTypeMirror,
+            AnnotatedTypeMirror widenedType) {
+        AnnotatedTypeMirror exprType = toAnnotatedType(exprTypeMirror, false);
+        exprType.replaceAnnotations(exprAnnos);
+        return getWidenedType(exprType, widenedType);
     }
 
     /**
@@ -2379,12 +2405,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns annotations applicable to type {@code narrowedTypeKind}, that are copied or adapted
+     * from {@code annos}.
+     *
+     * @param annos annotations to narrow, from a primitive or boxed primitive
+     * @param typeKind primitive type to narrow
+     * @param narrowedTypeKind target for the returned annotations; a primitive type that is
+     *     narrower than {@code typeKind} (in the sense of JLS 5.1.3).
+     * @return result of converting {@code annos} from {@code typeKind} to {@code narrowedTypeKind}
+     */
+    public Set<AnnotationMirror> getNarrowedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind narrowedTypeKind) {
+        return annos;
+    }
+
+    /**
      * Returns annotations applicable to type {@code widenedTypeKind}, that are copied or adapted
      * from {@code annos}.
      *
      * @param annos annotations to widen, from a primitive or boxed primitive
      * @param typeKind primitive type to widen
-     * @param widenedTypeKind target for the returned annotations; a primitive type
+     * @param widenedTypeKind target for the returned annotations; a primitive type that is wider
+     *     than {@code typeKind} (in the sense of JLS 5.1.2)
      * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
      */
     public Set<AnnotationMirror> getWidenedAnnotations(
@@ -2393,25 +2435,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the types of the two arguments to the BinaryTree, accounting for widening if
-     * applicable.
+     * Returns the types of the two arguments to the BinaryTree, accounting for widening and
+     * unboxing if applicable.
      *
      * @param node a binary tree
      * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
-        AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror rightUnwidened = getAnnotatedType(node.getRightOperand());
+        AnnotatedTypeMirror leftOrig = getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror rightOrig = getAnnotatedType(node.getRightOperand());
         TypeKind resultTypeKind =
                 TypeKindUtils.widenedNumericType(
-                        leftUnwidened.getUnderlyingType(), rightUnwidened.getUnderlyingType());
+                        leftOrig.getUnderlyingType(), rightOrig.getUnderlyingType());
         if (TypeKindUtils.isNumeric(resultTypeKind)) {
             TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
-            return Pair.of(
-                    getWidenedPrimitive(applyUnboxing(leftUnwidened), resultTypeMirror),
-                    getWidenedPrimitive(applyUnboxing(rightUnwidened), resultTypeMirror));
+            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(leftOrig);
+            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(rightOrig);
+            AnnotatedPrimitiveType leftWidened =
+                    (leftUnboxed.getKind() == resultTypeKind
+                            ? leftUnboxed
+                            : getWidenedPrimitive(leftUnboxed, resultTypeMirror));
+            AnnotatedPrimitiveType rightWidened =
+                    (rightUnboxed.getKind() == resultTypeKind
+                            ? rightUnboxed
+                            : getWidenedPrimitive(rightUnboxed, resultTypeMirror));
+            return Pair.of(leftWidened, rightWidened);
         } else {
-            return Pair.of(leftUnwidened, rightUnwidened);
+            return Pair.of(leftOrig, rightOrig);
         }
     }
 
