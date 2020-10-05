@@ -90,7 +90,7 @@ public abstract class CheckerFrameworkPerFileTest {
                 TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir, testFile, checkerName, customizedOptions, shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertResultsAreValid(testResult);
+        TestUtilities.assertTestDidNotFail(testResult);
     }
 
     /**

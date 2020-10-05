@@ -44,7 +44,7 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
                         customizedOptions1,
                         shouldEmitDebugInfo);
         TypecheckResult testResult1 = new TypecheckExecutor().runTest(config1);
-        TestUtilities.assertResultsAreValid(testResult1);
+        TestUtilities.assertTestDidNotFail(testResult1);
 
         List<String> customizedOptions2 =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
@@ -56,6 +56,6 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
                         customizedOptions2,
                         shouldEmitDebugInfo);
         TypecheckResult testResult2 = new TypecheckExecutor().runTest(config2);
-        TestUtilities.assertResultsAreValid(testResult2);
+        TestUtilities.assertTestDidNotFail(testResult2);
     }
 }

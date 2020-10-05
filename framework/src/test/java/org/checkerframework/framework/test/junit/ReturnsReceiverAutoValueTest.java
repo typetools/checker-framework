@@ -51,6 +51,6 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertResultsAreValid(testResult);
+        TestUtilities.assertTestDidNotFail(testResult);
     }
 }
