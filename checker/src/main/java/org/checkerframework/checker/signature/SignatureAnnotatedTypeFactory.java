@@ -39,6 +39,7 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.reflection.SignatureRegexes;
 
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
