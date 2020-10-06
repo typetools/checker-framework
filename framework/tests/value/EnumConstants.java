@@ -44,7 +44,8 @@ class EnumConstants {
 
     static void enumToString() {
         @EnumVal("VALUE") MyEnum v1 = MyEnum.VALUE;
-        @StringVal("VALUE") String s1 = v1.toString();
+        // NOT toString(), because programmers can override that. .name() is final.
+        @StringVal("VALUE") String s1 = v1.name();
     }
 
     // These are just paranoia based on the implementation strategy for enum constant defaulting.
