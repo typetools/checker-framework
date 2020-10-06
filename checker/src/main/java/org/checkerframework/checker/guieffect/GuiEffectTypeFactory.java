@@ -409,6 +409,58 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         return findInheritedEffectRange(declaringType, overridingMethod, false, null);
     }
 
+    /* Find the maximum and minimum effect of any shadowed definition of the overriding method. As a side effect, report errors if the overriding method has a greater effect that something it overrides.
+    This method traverses only interfaces; it is called once for each direct or transitive super-class by findInheritedEffectRange.
+    */
+    protected void checkTransitiveInheritedEffects(
+            AnnotatedTypeMirror.AnnotatedDeclaredType declaringType,
+            ExecutableElement overridingMethod,
+            AnnotatedTypeMirror.AnnotatedDeclaredType parentType,
+            Tree errorNode,
+            boolean isExplicitUI,
+            boolean isExplicitPoly) {
+
+        ExecutableElement parentImpl = findJavaOverride(overridingMethod, parentType.getUnderlyingType());
+
+        if (parentImpl != null) {
+            Effect baseEffect = getDeclaredEffect(parentImpl);
+            
+            // Override errors only occur when the override has non-bottom effect and the parent method has non-top effect
+            if ((isExplicitPoly || isExplicitUI) && !baseEffect.isUI()) {
+                if (baseEffect.isSafe()) {
+                    // A @PolyUIEffect or @UIEffect override of a @SafeEffect method
+                    checker.reportError(errorNode, isExplicitPoly ? "override.effect.invalid.polymorphic" : "override.effect.invalid", overridingMethod, declaringType, parentImpl, parentType);
+                } else if (baseEffect.isPoly() && isExplicitUI) {
+                    // @UIEffect override of @PolyUIEffect method
+                    //TODO: ensure this is in an @UI instantiation of a @PolyUI type... but the instantiation may be between the override declaration and the type we're looking at now
+                    //AnnotatedTypeMirror.AnnotatedDeclaredType supdecl = ty;
+                        // Need to special case an anonymous class with @UI on
+                        // the decl, because "new @UI Runnable {...}" parses as
+                        // @UI on an anon class decl extending Runnable
+                        boolean isAnonInstantiation =
+                                isAnonymousType((TypeElement)declaringType.getUnderlyingType().asElement())
+                                        && (declaringType.hasAnnotation(UI.class)
+                                                || uiAnonClasses.contains(declaringType));
+                        if (!isAnonInstantiation && !parentType.hasAnnotation(UI.class)) {
+                            checker.reportError(
+                                    errorNode,
+                                    "override.effect.invalid.nonui",
+                                    overridingMethod,
+                                    declaringType,
+                                    parentImpl,
+                                    parentType);
+                        }
+                }
+            }
+        } else {
+            // Recursively traverse upwards in the inheritance heirarchy from here --- but only if there wasn't a local def in this parentType; we don't need to report transitive versions of override warnings
+            for (AnnotatedTypeMirror.AnnotatedDeclaredType ty : parentType.directSuperTypes()) {
+                System.err.println("Moving from "+parentType.toString()+" to "+ty.toString());
+                checkTransitiveInheritedEffects(declaringType, overridingMethod, ty, errorNode, isExplicitUI, isExplicitPoly);
+            }
+        }
+    }
+
     public Effect.EffectRange findInheritedEffectRange(
             TypeElement declaringType,
             ExecutableElement overridingMethod,
@@ -434,6 +486,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         while (superclass != null && superclass.getKind() != TypeKind.NONE) {
             ExecutableElement overrides = findJavaOverride(overridingMethod, superclass);
             if (overrides != null) {
+                System.err.println(
+                        "Found override of "
+                                + overridingMethod
+                                + " in transitive search of "
+                                + superclass);
                 Effect eff = getDeclaredEffect(overrides);
                 assert (eff != null);
                 if (eff.isSafe()) {
@@ -485,15 +542,25 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // }
                 }
             }
+
             DeclaredType decl = (DeclaredType) superclass;
+            
+            checkTransitiveInheritedEffects(fromElement(declaringType), overridingMethod, fromElement((TypeElement)decl.asElement()), errorNode, isUI, isPolyUI);
+
             superclass = ((TypeElement) decl.asElement()).getSuperclass();
         }
-
+/*
         AnnotatedTypeMirror.AnnotatedDeclaredType annoDecl = fromElement(declaringType);
         for (AnnotatedTypeMirror.AnnotatedDeclaredType ty : annoDecl.directSuperTypes()) {
+            System.err.println(
+                    "Looking for Java override source for method "
+                            + overridingMethod
+                            + " in type "
+                            + ty.toString());
             ExecutableElement overrides =
                     findJavaOverride(overridingMethod, ty.getUnderlyingType());
             if (overrides != null) {
+                System.err.println("Found override " + overrides);
                 Effect eff = getDeclaredEffect(overrides);
                 if (eff.isSafe()) {
                     // found a safe override
@@ -542,9 +609,17 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                 }
+            } else {
+                System.err.println(
+                        "Found no Java override source for method "
+                                + overridingMethod
+                                + " in type "
+                                + ty.toString());
             }
         }
+        */
 
+        // TODO: should probably just drop the issueConflictWarning flag
         // We don't need to issue warnings for inheriting from poly and a concrete effect.
         if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
