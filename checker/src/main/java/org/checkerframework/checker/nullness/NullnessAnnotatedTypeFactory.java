@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -643,5 +644,63 @@ public class NullnessAnnotatedTypeFactory
             throw new BugInCF(
                     "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
+    }
+
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * @param annos a list of annotations
+     * @returns true if some given annotation is a nullness annotation
+     */
+    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annos) {
+        for (AnnotationTree annoTree : annos) {
+            AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
+            if (isNullnessAnnotation(am)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the given annotation is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * @param am an annotation
+     * @returns true if the given annotation is a nullness annotation
+     */
+    protected boolean isNullnessAnnotation(AnnotationMirror am) {
+        return isNonNullOrAlias(am)
+                || isNullableOrAlias(am)
+                || AnnotationUtils.areSameByName(am, MONOTONIC_NONNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @NonNull or an alias for it.
+     *
+     * @param am an annotation
+     * @returns true if the given annotation is @NonNull or an alias for it
+     */
+    protected boolean isNonNullOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NONNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @Nullable or an alias for it.
+     *
+     * @param am an annotation
+     * @returns true if the given annotation is @Nullable or an alias for it
+     */
+    protected boolean isNullableOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NULLABLE);
     }
 }
