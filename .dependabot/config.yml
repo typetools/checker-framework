@@ -1,8 +1,5 @@
 version: 1
 
-# The com.amazonaws:aws-java-sdk-* dependencies are updated every day.
-# That is too many pull requests.
-
 updates:
   - package-manager: "java:gradle"
     directory: "/"
