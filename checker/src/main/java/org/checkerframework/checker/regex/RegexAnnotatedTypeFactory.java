@@ -118,18 +118,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TreeUtils.getMethod(
                     java.util.regex.Pattern.class.getCanonicalName(), "compile", 1, processingEnv);
 
-    // TODO use? private TypeMirror[] legalReferenceTypes;
-
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        /*
-        legalReferenceTypes = new TypeMirror[] {
-            getTypeMirror("java.lang.CharSequence"),
-            getTypeMirror("java.lang.Character"),
-            getTypeMirror("java.util.regex.Pattern"),
-            getTypeMirror("java.util.regex.MatchResult") };
-         */
 
         this.postInit();
     }
