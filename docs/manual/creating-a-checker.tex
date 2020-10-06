@@ -2039,6 +2039,16 @@ no arguments.
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.
 
+\item \<-AatfDoNotCache>:
+  If provided, the Checker Framework will not cache results but will
+  recompute them.  This makes the Checker Framework run slower.  If the
+  Checker Framework behaves differently with and without this flag, then
+  there is a bug in its caching code.  Please report that bug.
+
+\item \<-AatfCacheSize>:
+  The size of the Checker Framework's internal caches.  Most users have no
+  need to set this.
+
 \end{itemize}
 
 
