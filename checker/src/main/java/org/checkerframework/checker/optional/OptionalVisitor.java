@@ -25,7 +25,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -288,14 +288,12 @@ public class OptionalVisitor
             super(checker, visitor, atypeFactory);
         }
 
-        // TODO: Why is "isValid" called twice on the right-hand-side of a variable initializer?
-        // It leads to the error being issued twice.
         /**
          * Rules 6 (partial) and 7: Don't permit {@code Collection<Optional<...>>} or {@code
          * Optional<Collection<...>>}.
          */
         @Override
-        public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
             TypeMirror tm = type.getUnderlyingType();
             if (isCollectionType(tm)) {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
@@ -314,7 +312,7 @@ public class OptionalVisitor
                     checker.reportError(tree, "optional.collection");
                 }
             }
-            return super.isValid(type, tree);
+            return super.visitDeclared(type, tree);
         }
     }
 

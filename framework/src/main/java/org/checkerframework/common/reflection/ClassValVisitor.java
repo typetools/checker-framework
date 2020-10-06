@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.plumelib.reflection.Signatures;
 
 /** A visitor to verify validity of {@code @}{@link ClassVal} annotations. */
@@ -48,7 +48,7 @@ class ClassNameValidator extends BaseTypeValidator {
      * annotation with a string that is not a valid class name.
      */
     @Override
-    public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+    public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
         AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
         classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
@@ -61,6 +61,6 @@ class ClassNameValidator extends BaseTypeValidator {
                 }
             }
         }
-        return super.isValid(type, tree);
+        return super.visitDeclared(type, tree);
     }
 }
