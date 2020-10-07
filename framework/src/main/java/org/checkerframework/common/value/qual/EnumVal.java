@@ -23,7 +23,7 @@ public @interface EnumVal {
     /**
      * The simple names of the possible enum values for an expression with the annotated type.
      *
-     * @return The simple names of the possible enum values for an expression with the annotated
+     * @return the simple names of the possible enum values for an expression with the annotated
      *     type
      */
     String[] value() default {};
