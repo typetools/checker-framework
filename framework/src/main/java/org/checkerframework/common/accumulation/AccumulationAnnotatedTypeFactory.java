@@ -19,6 +19,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationChecker.AliasAnalysis;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
@@ -45,6 +46,12 @@ import org.checkerframework.javacutil.UserError;
  * #postInit()}.
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /**
+     * The typechecker associated with this factory. All AccumulationAnnotatedTypeFactory objects
+     * should use an accumulation checker rather than a standard base type checker.
+     */
+    public final AccumulationChecker accumulationChecker;
 
     /**
      * The canonical top annotation for this accumulation checker: an instance of the accumulator
@@ -84,6 +91,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             Class<? extends Annotation> bottom,
             @Nullable Class<? extends Annotation> predicate) {
         super(checker);
+        if (!(checker instanceof AccumulationChecker)) {
+            throw new BugInCF(
+                    "AccumulationAnnotatedTypeFactory cannot be used with a checker "
+                            + "class that is not a subtype of AccumulationChecker. Found class: "
+                            + checker.getClass());
+        }
+        this.accumulationChecker = (AccumulationChecker) checker;
 
         this.accumulator = accumulator;
         // Check that the requirements of the accumulator are met.
@@ -213,6 +227,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
+        if (!accumulationChecker.isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
+            return false;
+        }
         // Must call `getTypeFactoryOfSubchecker` each time, not store and reuse.
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
