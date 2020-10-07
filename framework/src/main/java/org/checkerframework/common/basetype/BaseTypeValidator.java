@@ -38,11 +38,12 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
 /**
  * A visitor to validate the types in a tree.
  *
- * <p>A TypeValidator cannot tell whether an annotation was written by a programmer or
- * defaulted/inferred/computed by the Checker Framework, because the AnnotatedTypeMirror does not
- * make distinctions about which annotations in an AnnotatedTypeMirror were explicitly written and
- * which were added by a checker. To issue a warning/error only when a programmer writes an
- * annotation, override a {@code visit*} method in {@link BaseTypeVisitor}.
+ * <p>Note: A TypeValidator (this class and its subclasses) cannot tell whether an annotation was
+ * written by a programmer or defaulted/inferred/computed by the Checker Framework, because the
+ * AnnotatedTypeMirror does not make distinctions about which annotations in an AnnotatedTypeMirror
+ * were explicitly written and which were added by a checker. To issue a warning/error only when a
+ * programmer writes an annotation, override {@link BaseTypeVisitor#visitAnnotatedType} and {@link
+ * BaseTypeVisitor#visitVariable}.
  */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
     /** Is the type valid? */
