@@ -1193,7 +1193,7 @@ which is the Checker Framework's representation of an annotated type.
 \begin{enumerate}
 \item
   Define a subclass of
-  \refclass{org/checkerframework/framework/type/treeannotator}{TreeAnnotator},
+  \refclass{framework/type/treeannotator}{TreeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TreeAnnotator> for every AST node, and the visitor
   has access to both the tree (the AST node) and its type.  In your
@@ -1215,7 +1215,7 @@ which is the Checker Framework's representation of an annotated type.
 
 \item
   Define a subclass of a
-  \refclass{org/checkerframework/framework/type/treeannotator}{TypeAnnotator},
+  \refclass{framework/type/typeannotator}{TypeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TypeAnnotator> for every kind of type, and the
   visitor has access to only the type.  In your subclass of
@@ -2038,6 +2038,16 @@ no arguments.
 
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.
+
+\item \<-AatfDoNotCache>:
+  If provided, the Checker Framework will not cache results but will
+  recompute them.  This makes the Checker Framework run slower.  If the
+  Checker Framework behaves differently with and without this flag, then
+  there is a bug in its caching code.  Please report that bug.
+
+\item \<-AatfCacheSize>:
+  The size of the Checker Framework's internal caches.  Most users have no
+  need to set this.
 
 \end{itemize}
 

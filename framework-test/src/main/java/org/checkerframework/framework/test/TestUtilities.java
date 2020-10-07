@@ -34,15 +34,13 @@ import org.plumelib.util.UtilPlume;
 /** Utilities for testing. */
 public class TestUtilities {
 
-    public static final boolean IS_AT_LEAST_9_JVM;
-    public static final boolean IS_AT_LEAST_11_JVM;
+    public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
+    public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
-        IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -412,7 +410,7 @@ public class TestUtilities {
      *
      * @param testResult the result of type-checking
      */
-    public static void assertResultsAreValid(TypecheckResult testResult) {
+    public static void assertTestDidNotFail(TypecheckResult testResult) {
         if (testResult.didTestFail()) {
             if (getShouldEmitDebugInfo()) {
                 System.out.println("---------------- start of javac ouput ----------------");

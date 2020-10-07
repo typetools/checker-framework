@@ -502,6 +502,15 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 \end{Verbatim}
 \end{smaller}
 
+\item
+  If the Checker Framework issues an error or warning that you cannot
+  reproduce using a smaller test case, then try running the Checker
+  Framework with the \<-AatfDoNotCache> command-line argument.  If the
+  Checker Framework behaves differently with and without that command-line
+  argument, then there is a bug related to its internal caches.  Please
+  report that bug at
+  \url{https://github.com/typetools/checker-framework/issues}.
+
 \end{itemize}
 
 

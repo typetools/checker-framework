@@ -192,10 +192,11 @@ def build_checker_framework_release(version, old_cf_version, afu_version, afu_re
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # Check that updating versions didn't overlook anything.
-    print "Here are occurrences of the old version number, " + old_cf_version
     old_cf_version_regex = old_cf_version.replace('.', '\.')
     find_cmd = 'find . -type d \( -path \*/build -o -path \*/.git \) -prune  -o \! -type d \( -name \*\~ -o -name \*.bin \) -prune -o  -type f -exec grep -i -n -e \'\b%s\b\' {} +' % old_cf_version_regex
-    execute(find_cmd, False, True, CHECKER_FRAMEWORK)
+    old_version_occurrences = execute(find_cmd, True, False, CHECKER_FRAMEWORK)
+    print "Here are occurrences of the old version number, " + old_cf_version
+    print old_version_occurrences
     continue_or_exit("If any occurrence is not acceptable, then stop the release, update target \"update-checker-framework-versions\" in file release.xml, and start over.")
 
     if not manual_only:

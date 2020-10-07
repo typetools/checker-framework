@@ -224,9 +224,13 @@ public abstract class CFAbstractTransfer<
      * Returns an abstract value with the given {@code type} and the annotations from {@code
      * annotatedValue}.
      *
+     * @param type the type to return
+     * @param annotatedValue the annotations to return
      * @return an abstract value with the given {@code type} and the annotations from {@code
      *     annotatedValue}
+     * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
      */
+    @Deprecated // use getWidenedValue() or getNarrowedValue()
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) {
             return null;
@@ -1236,24 +1240,68 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitNarrowingConversion(
-            NarrowingConversionNode n, TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
-        // Combine annotations from the operand with the narrow type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(narrowedValue);
-        return result;
-    }
-
-    @Override
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
         // Combine annotations from the operand with the wide type
         V operandValue = p.getValueOfSubNode(n.getOperand());
-        V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        V widenedValue = getWidenedValue(n.getType(), operandValue);
         result.setResultValue(widenedValue);
+        return result;
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for narrowing. This is only called at a narrowing conversion.
+     *
+     * @param type the type to narrow to
+     * @param annotatedValue the type to narrow from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> narrowedAnnos =
+                analysis.atypeFactory.getNarrowedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(narrowedAnnos, type);
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for widening. This is only called at a widening conversion.
+     *
+     * @param type the type to widen to
+     * @param annotatedValue the type to widen from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> widenedAnnos =
+                analysis.atypeFactory.getWidenedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(widenedAnnos, type);
+    }
+
+    @Override
+    public TransferResult<V, S> visitNarrowingConversion(
+            NarrowingConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
+        // Combine annotations from the operand with the narrow type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V narrowedValue = getNarrowedValue(n.getType(), operandValue);
+        result.setResultValue(narrowedValue);
         return result;
     }
 

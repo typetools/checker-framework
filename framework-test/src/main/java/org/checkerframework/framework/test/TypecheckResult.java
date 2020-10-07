@@ -12,7 +12,7 @@ import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
 import org.plumelib.util.UtilPlume;
 
 /**
- * Represents the test results from typechecking one or more java files using the given
+ * Represents the test results from typechecking one or more Java files using the given
  * TestConfiguration.
  */
 public class TypecheckResult {
@@ -88,8 +88,8 @@ public class TypecheckResult {
                 errorHeaders.add(
                         numFound
                                 + " out of "
-                                + numExpected
-                                + " expected diagnostics "
+                                + UtilPlume.nplural(numExpected, "expected diagnostic")
+                                + " "
                                 + (numFound == 1 ? "was" : "were")
                                 + " found.");
             }
@@ -104,42 +104,42 @@ public class TypecheckResult {
      * @return summary of failures
      */
     public String summarize() {
-        if (testFailed) {
-            StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-            summaryBuilder.add(UtilPlume.joinLines(getErrorHeaders()));
+        if (!testFailed) {
+            return "";
+        }
+        StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
+        summaryBuilder.add(UtilPlume.joinLines(getErrorHeaders()));
 
-            if (!unexpectedDiagnostics.isEmpty()) {
-                summaryBuilder.add(
-                        unexpectedDiagnostics.size() == 1
-                                ? "1 unexpected diagnostic was found:"
-                                : unexpectedDiagnostics.size()
-                                        + " unexpected diagnostics were found:");
-
-                for (TestDiagnostic unexpected : unexpectedDiagnostics) {
-                    summaryBuilder.add(unexpected.toString());
-                }
-            }
-
-            if (!missingDiagnostics.isEmpty()) {
-                summaryBuilder.add(
-                        missingDiagnostics.size() == 1
-                                ? "1 expected diagnostic was not found:"
-                                : missingDiagnostics.size()
-                                        + " expected diagnostics were not found:");
-
-                for (TestDiagnostic missing : missingDiagnostics) {
-                    summaryBuilder.add(missing.toString());
-                }
-            }
-
+        if (!unexpectedDiagnostics.isEmpty()) {
+            int numUnexpected = unexpectedDiagnostics.size();
             summaryBuilder.add(
-                    "While type-checking "
-                            + TestUtilities.summarizeSourceFiles(
-                                    configuration.getTestSourceFiles()));
-            return summaryBuilder.toString();
+                    UtilPlume.nplural(numUnexpected, "unexpected diagnostic")
+                            + " "
+                            + (numUnexpected == 1 ? "was" : "were")
+                            + " found:");
+
+            for (TestDiagnostic unexpected : unexpectedDiagnostics) {
+                summaryBuilder.add(unexpected.toString());
+            }
         }
 
-        return "";
+        if (!missingDiagnostics.isEmpty()) {
+            int numMissing = missingDiagnostics.size();
+            summaryBuilder.add(
+                    UtilPlume.nplural(numMissing, "expected diagnostic")
+                            + " "
+                            + (numMissing == 1 ? "was" : "were")
+                            + " not found:");
+
+            for (TestDiagnostic missing : missingDiagnostics) {
+                summaryBuilder.add(missing.toString());
+            }
+        }
+
+        summaryBuilder.add(
+                "While type-checking "
+                        + TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
+        return summaryBuilder.toString();
     }
 
     public static TypecheckResult fromCompilationResults(
