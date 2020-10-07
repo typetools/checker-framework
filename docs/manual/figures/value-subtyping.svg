@@ -156,6 +156,10 @@
       <rect x="755" y="380" width="220" height="40" />
       <text x="865" y="404.10753822px">@StringVal({"a","aa","b"})</text>
     </g>
+    <g id="matches-regex-a-plus">
+      <rect x="650" y="320" width="180" height="40" />
+      <text x="740" y="344.10753822px">@MatchesRegex("a+")</text>
+    </g>
 
     <g id="arraylen-1">
       <rect x="1040" y="380" width="130" height="40" />
@@ -178,6 +182,7 @@
     <polyline points="1075,420 1015,450" />
     <polyline points="955,490 895,520" />
     <polyline points="775,490 835,520" />
+    <polyline points="720,360 720,450" />
 
   </g>
 </svg>
