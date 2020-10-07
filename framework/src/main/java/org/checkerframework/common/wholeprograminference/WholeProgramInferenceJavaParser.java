@@ -505,9 +505,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
-        AnnotatedTypeMirror atmFromJaif =
-                AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
-        updateATMWithLUB(atf, rhsATM, atmFromJaif);
+
+        updateATMWithLUB(atf, rhsATM, typeToUpdate);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
