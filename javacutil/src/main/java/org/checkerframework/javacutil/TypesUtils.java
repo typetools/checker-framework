@@ -837,15 +837,4 @@ public final class TypesUtils {
     public static boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
         return TypeKindUtils.isNarrowerIntegral(a.getKind(), b.getKind());
     }
-
-    /**
-     * Returns true if {@code type} has an enclosing type.
-     *
-     * @param type type to checker
-     * @return true if {@code type} has an enclosing type
-     */
-    public static boolean hasEnclosingType(TypeMirror type) {
-        Type e = ((Type) type).getEnclosingType();
-        return e.getKind() != TypeKind.NONE;
-    }
 }

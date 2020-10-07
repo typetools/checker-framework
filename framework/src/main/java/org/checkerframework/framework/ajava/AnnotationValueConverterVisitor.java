@@ -106,7 +106,7 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
                     new LongLiteralExpr(Long.toString(-value)), UnaryExpr.Operator.MINUS);
         }
 
-        return new LongLiteralExpr(Long.toString(-value));
+        return new LongLiteralExpr(Long.toString(value));
     }
 
     @Override
@@ -159,6 +159,6 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
                     new IntegerLiteralExpr(Integer.toString(-value)), UnaryExpr.Operator.MINUS);
         }
 
-        return new IntegerLiteralExpr(Integer.toString(-value));
+        return new IntegerLiteralExpr(Integer.toString(value));
     }
 }
