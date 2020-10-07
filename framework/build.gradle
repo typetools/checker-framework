@@ -242,6 +242,13 @@ task testWPIAjavas(type: Test) {
 
     doLast {
         commonWPIlogic()
+        // The ajava file format doesn't currentlysupport annotations on anonymous inner classes, so
+        // this test also expects errors on UsesAnonymous.java.
+        delete('tests/whole-program-inference/annotated/UsesAnonymous.java')
+        copy {
+            from file('tests/whole-program-inference/non-annotated/UsesAnonymous.java')
+            into file('tests/whole-program-inference/annotated')
+        }
     }
 }
 
