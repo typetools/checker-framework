@@ -67,7 +67,7 @@ public class TestDiagnosticUtils {
      * Instantiate the diagnostic from a string that would appear in a Java file, e.g.: "error:
      * (message)"
      *
-     * @parame filename the file containing the diagnostic (and the error)
+     * @param filename the file containing the diagnostic (and the error)
      * @param lineNumber the line number of the line immediately below the diagnostic comment in the
      *     Java file
      * @param stringFromjavaFile the string containing the diagnostic

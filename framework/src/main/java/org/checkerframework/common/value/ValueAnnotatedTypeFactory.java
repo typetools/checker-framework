@@ -1062,7 +1062,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the single possible boolean value, or null if there is not exactly one possible
      * value.
      *
-     * @see getBooleanValues
+     * @see #getBooleanValues
      * @param boolAnno a {@code @BoolVal} annotation, or null
      * @return the single possible boolean value, on null if that is not the case
      */
