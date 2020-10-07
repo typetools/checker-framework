@@ -673,7 +673,8 @@ public class NullnessAnnotatedTypeFactory
     protected boolean isNullnessAnnotation(AnnotationMirror am) {
         return isNonNullOrAlias(am)
                 || isNullableOrAlias(am)
-                || AnnotationUtils.areSameByName(am, MONOTONIC_NONNULL);
+                || AnnotationUtils.areSameByName(am, MONOTONIC_NONNULL)
+                || AnnotationUtils.areSameByName(am, POLYNULL);
     }
 
     /**

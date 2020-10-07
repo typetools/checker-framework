@@ -684,7 +684,7 @@ public class NullnessVisitor
     }
 
     // This is needed in addition to visitAnnotatedType because there isn't an AnnotatedTypeTree
-    // within a variable declaration -- all the annotations are atteched to the VariableTree.
+    // within a variable declaration -- all the annotations are attached to the VariableTree.
     @Override
     public Void visitVariable(VariableTree node, Void p) {
         TypeMirror tm = TreeUtils.typeOf(node.getType());
