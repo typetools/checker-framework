@@ -4077,10 +4077,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * a type system makes exceptions to this rule, its implementation should override this method.
      *
      * <p>This method is not called if {@link
-     * #shouldCheckTopLevelDeclaredOrPrimitiveType(AnnotatedTypeMirror, Tree)} returns false -- by
-     * default, it is not called on the top level for locals and expressions. To enforce a type
-     * validity property everwhere, override methods such as {@link BaseTypeValidator#visitDeclared}
-     * rather than this method.
+     * BaseTypeValidator#shouldCheckTopLevelDeclaredOrPrimitiveType(AnnotatedTypeMirror, Tree)}
+     * returns false -- by default, it is not called on the top level for locals and expressions. To
+     * enforce a type validity property everwhere, override methods such as {@link
+     * BaseTypeValidator#visitDeclared} rather than this method.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
