@@ -1,5 +1,7 @@
 Version 3.7.1, November 2, 2020
 
+The Constant Value Checker supports annotation @EnumValue.
+
 Implementation details:
 
 Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
@@ -24,8 +26,6 @@ The Nullness Checker supports annotations
 org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
 org.jspecify.annotations.Nullable.
-
-The Constant Value Chceker supports annotation @EnumValue.
 
 The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
 The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
