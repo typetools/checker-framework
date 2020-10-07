@@ -132,6 +132,26 @@ public class NullnessVisitor
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
+        // At most, a single qualifier on a type.
+        boolean foundInit = false;
+        boolean foundNonNull = false;
+        Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
+        Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
+
+        for (AnnotationMirror anno : useType.getAnnotations()) {
+            if (containsSameByName(initQuals, anno)) {
+                if (foundInit) {
+                    return false;
+                }
+                foundInit = true;
+            } else if (containsSameByName(nonNullQuals, anno)) {
+                if (foundNonNull) {
+                    return false;
+                }
+                foundNonNull = true;
+            }
+        }
+
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             Element vs = TreeUtils.elementFromTree(tree);
             switch (vs.getKind()) {
