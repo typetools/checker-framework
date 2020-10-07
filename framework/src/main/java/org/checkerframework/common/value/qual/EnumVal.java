@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * An annotation indicating the possible values for an enum type. If an expression's type has this
  * annotation, then at run time, the expression evaluates to one of the enum values named by the
  * arguments. EnumVal uses the simple name of the enum value: the EnumVal type corresponding to
- * {@code MyEnum.MY_VALUE} is {@code {@literal @}EnumVal("MY_VALUE")}.
+ * {@code MyEnum.MY_VALUE} is {@code @EnumVal("MY_VALUE")}.
  *
  * <p>This annotation is treated as {@link StringVal} internally by the Constant Value Checker.
  *
