@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CatchTree;
@@ -36,6 +37,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
@@ -51,6 +53,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -132,26 +135,6 @@ public class NullnessVisitor
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // At most, a single qualifier on a type.
-        boolean foundInit = false;
-        boolean foundNonNull = false;
-        Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
-        Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
-
-        for (AnnotationMirror anno : useType.getAnnotations()) {
-            if (containsSameByName(initQuals, anno)) {
-                if (foundInit) {
-                    return false;
-                }
-                foundInit = true;
-            } else if (containsSameByName(nonNullQuals, anno)) {
-                if (foundNonNull) {
-                    return false;
-                }
-                foundNonNull = true;
-            }
-        }
-
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             Element vs = TreeUtils.elementFromTree(tree);
             switch (vs.getKind()) {
@@ -169,6 +152,13 @@ public class NullnessVisitor
         }
 
         return super.isValidUse(declarationType, useType, tree);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
+        // The Nullness Checker issues a more comprehensible "nullable.on.primitive" error rather
+        // than the "type.invalid.annotations.on.use" error this method would issue.
+        return true;
     }
 
     private boolean containsSameByName(
@@ -671,6 +661,44 @@ public class NullnessVisitor
     public Void visitAnnotation(AnnotationTree node, Void p) {
         // All annotation arguments are non-null and initialized, so no need to check them.
         return null;
+    }
+
+    // This is needed in addition to visitAnnotatedType because there isn't an AnnotatedTypeTree
+    // within a variable declaration -- all the annotations are attached to the VariableTree.
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        TypeMirror tm = TreeUtils.typeOf(node.getType());
+        if (TypesUtils.isPrimitive(tm)) {
+            if (atypeFactory.containsNullnessAnnotation(node.getModifiers().getAnnotations())) {
+                checker.reportError(node, "nullness.on.primitive");
+                return null;
+            }
+        } else if (tm.getKind() == TypeKind.ARRAY) {
+            Tree innermostComponentTypeTree = node.getType();
+            while (innermostComponentTypeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
+                innermostComponentTypeTree = ((ArrayTypeTree) innermostComponentTypeTree).getType();
+            }
+            if (innermostComponentTypeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE
+                    && atypeFactory.containsNullnessAnnotation(
+                            node.getModifiers().getAnnotations())) {
+                checker.reportError(innermostComponentTypeTree, "nullness.on.primitive");
+                return null;
+            }
+        }
+
+        return super.visitVariable(node, p);
+    }
+
+    @Override
+    public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
+        TypeMirror tm = TreeUtils.typeOf(node);
+        if (TypesUtils.isPrimitive(tm)) {
+            if (atypeFactory.containsNullnessAnnotation(node.getAnnotations())) {
+                checker.reportError(node, "nullness.on.primitive");
+                return null;
+            }
+        }
+        return super.visitAnnotatedType(node, p);
     }
 
     @Override
