@@ -1158,7 +1158,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitVariable(VariableTree node, Void p) {
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
-        // Make a call to visitAnnotatedType.
         Tree typeTree = node.getType();
         while (typeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
             typeTree = ((ArrayTypeTree) typeTree).getType();
