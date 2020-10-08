@@ -651,7 +651,7 @@ public class NullnessAnnotatedTypeFactory
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * @param annos a list of annotations
-     * @returns true if some given annotation is a nullness annotation
+     * @return true if some given annotation is a nullness annotation
      */
     protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annos) {
         for (AnnotationTree annoTree : annos) {
@@ -668,7 +668,7 @@ public class NullnessAnnotatedTypeFactory
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
      * @param am an annotation
-     * @returns true if the given annotation is a nullness annotation
+     * @return true if the given annotation is a nullness annotation
      */
     protected boolean isNullnessAnnotation(AnnotationMirror am) {
         return isNonNullOrAlias(am)
@@ -681,7 +681,7 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if the given annotation is @NonNull or an alias for it.
      *
      * @param am an annotation
-     * @returns true if the given annotation is @NonNull or an alias for it
+     * @return true if the given annotation is @NonNull or an alias for it
      */
     protected boolean isNonNullOrAlias(AnnotationMirror am) {
         AnnotationMirror canonical = canonicalAnnotation(am);
@@ -695,7 +695,7 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if the given annotation is @Nullable or an alias for it.
      *
      * @param am an annotation
-     * @returns true if the given annotation is @Nullable or an alias for it
+     * @return true if the given annotation is @Nullable or an alias for it
      */
     protected boolean isNullableOrAlias(AnnotationMirror am) {
         AnnotationMirror canonical = canonicalAnnotation(am);
