@@ -35,22 +35,16 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
-        AliasAnalysis[] aliasAnalyses = createAliasAnalyses();
-        for (AliasAnalysis aliasAnalysis : aliasAnalyses) {
-            switch (aliasAnalysis) {
-                case RETURNS_RECEIVER:
-                    checkers.add(ReturnsReceiverChecker.class);
-                    break;
-            }
+        if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
+            checkers.add(ReturnsReceiverChecker.class);
         }
         return checkers;
     }
 
     /**
      * The alias analyses that an accumulation checker can support. To add support for a new alias
-     * analysis, add a new item to this enum, modify the loop in #getImmediateSubcheckerClasses, and
-     * then implement whatever functionality in the annotated type factory or transfer function that
-     * your new alias analysis permits.
+     * analysis, add a new item to this enum and then implement any functionality of the checker
+     * behind a call to {@link #isEnabled(AliasAnalysis)}.
      */
     public enum AliasAnalysis {
         RETURNS_RECEIVER
