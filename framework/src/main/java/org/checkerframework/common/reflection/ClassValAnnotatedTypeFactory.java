@@ -229,7 +229,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree etree = tree.getExpression();
                 Type classType = (Type) TreeUtils.typeOf(etree);
                 String name = getClassNameFromType(classType);
-                if (name != null) {
+                if (name != null && !name.equals("void")) {
                     AnnotationMirror newQual = createClassVal(Arrays.asList(name));
                     type.replaceAnnotation(newQual);
                 }
