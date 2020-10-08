@@ -664,13 +664,14 @@ public class NullnessVisitor
     @Override
     public Void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
-        if (TypesUtils.isPrimitive(tm)) {
-            if (atypeFactory.containsNullnessAnnotation(annos)) {
-                checker.reportError(tree, "nullness.on.primitive");
+        if (typeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+            if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
+                checker.reportError(node, "nullness.on.primitive");
                 return null;
             }
         }
-        return super.visitAnnotatedType(annos, tm, tree);
+
+        return super.visitAnnotatedType(declAnnos, typeTree, node);
     }
 
     @Override
