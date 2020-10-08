@@ -9,6 +9,8 @@ longer used.  Added new methods getWidenedValue() and getNarrowedValue().
 
 Renamed TestUtilities.assertResultsAreValid() to TestUtilities.assertTestDidNotFail().
 
+Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally().
+
 ---------------------------------------------------------------------------
 
 Version 3.7.0, October 1, 2020
