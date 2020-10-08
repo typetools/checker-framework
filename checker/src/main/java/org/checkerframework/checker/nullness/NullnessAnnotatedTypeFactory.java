@@ -712,7 +712,7 @@ public class NullnessAnnotatedTypeFactory
      * annotation would apply to, if written on a declaration of a variable of the given type.
      *
      * @param typeTree a type
-     * @returns the leftmost type component of the argument
+     * @return the leftmost type component of the argument
      */
     public Tree leftmostType(Tree typeTree) {
         while (true) {
