@@ -56,6 +56,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /** The visitor for the nullness type-system. */
 public class NullnessVisitor
@@ -662,23 +663,53 @@ public class NullnessVisitor
     }
 
     @Override
-    public Void visitAnnotatedType(List<? extends AnnotationTree> annos, TypeMirror tm, Tree tree) {
-        if (TypesUtils.isPrimitive(tm)) {
-            if (atypeFactory.containsNullnessAnnotation(annos)) {
-                checker.reportError(tree, "nullness.on.primitive");
+    public Void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
+        if (typeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+            if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
+                checker.reportError(node, "nullness.on.primitive");
                 return null;
             }
         }
 
-        AnnotatedDeclaredType enclosingType = type.getEnclosingType();
-        if (enclosingType != null && atypeFactory.containsNullnessAnnotation(annos)) {
-            System.out.printf(
-                    "visitDeclared(%s [%s], %s [%s])%n",
-                    type, type.getClass(), tree, tree.getClass());
-            return null;
-        }
+        Tree unannotatedType = unannotatedType(typeTree);
 
-        return super.visitAnnotatedType(annos, tm, tree);
+        if (unannotatedType.getKind() == Tree.Kind.MEMBER_SELECT) {
+            Tree outerType = ((MemberSelectTree) unannotatedType).getExpression();
+            if (atypeFactory.containsNullnessAnnotation(declAnnos, outerType)) {
+                checker.reportError(node, "nullness.on.outer");
+                UtilPlume.sleep(10);
+                return null;
+            }
+
+            // TODO: Does this go deep enough?  Should it be a loop?
+            if (outerType.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                if (atypeFactory.containsNullnessAnnotation(declAnnos, outerType)) {
+                    UtilPlume.sleep(10);
+                    checker.reportError(node, "nullness.on.outer");
+                    return null;
+                }
+                unannotatedType = ((AnnotatedTypeTree) outerType).getUnderlyingType();
+            } else {
+                unannotatedType = outerType;
+            }
+        }
+        return super.visitAnnotatedType(declAnnos, typeTree, node);
+    }
+
+    /**
+     * If the argument is a tree of kind ANNOTATED_TYPE, return its unannotated version. Otherwise,
+     * return the argument.
+     *
+     * @param typeTree a tree
+     * @return the tree without annotations
+     */
+    private Tree unannotatedType(Tree typeTree) {
+        if (typeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            return ((AnnotatedTypeTree) typeTree).getUnderlyingType();
+        } else {
+            return typeTree;
+        }
     }
 
     @Override

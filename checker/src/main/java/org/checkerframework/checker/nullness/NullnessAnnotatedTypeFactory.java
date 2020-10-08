@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -650,10 +651,32 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if some annotation in the given list is a nullness annotation such
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
-     * @param annos a list of annotations
-     * @return true if some given annotation is a nullness annotation
+     * @param declAnnos a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to test
+     * @return true if some annotation is a nullness annotation
      */
-    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annos) {
+    protected boolean containsNullnessAnnotation(
+            List<? extends AnnotationTree> declAnnos, Tree typeTree) {
+        // TODO: abstract out this computation
+        List<? extends AnnotationTree> annos;
+        if (declAnnos != null) {
+            annos = declAnnos;
+        } else {
+            switch (typeTree.getKind()) {
+                case ANNOTATED_TYPE:
+                    annos = ((AnnotatedTypeTree) typeTree).getAnnotations();
+                    break;
+                case IDENTIFIER:
+                    annos = Collections.emptyList();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
+        }
+
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am)) {
