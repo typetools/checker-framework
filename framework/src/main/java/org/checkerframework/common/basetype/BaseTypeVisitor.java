@@ -1162,7 +1162,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         while (typeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
             typeTree = ((ArrayTypeTree) typeTree).getType();
         }
-        visitAnnotatedType(node.getModifiers().getAnnotations(), TreeUtils.typeOf(typeTree), node);
+        visitAnnotatedType(node.getModifiers().getAnnotations(), typeTree, node);
 
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         AnnotatedTypeMirror variableType;
@@ -2267,7 +2267,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
-        visitAnnotatedType(node.getAnnotations(), TreeUtils.typeOf(node), node);
+        visitAnnotatedType(null, node, node);
         return super.visitAnnotatedType(node, p);
     }
 
@@ -2277,12 +2277,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * in visitVariable is needed because there isn't an AnnotatedTypeTree within a variable
      * declaration -- all the annotations are attached to the VariableTree.
      *
-     * @param annos the user-written type annotations
-     * @param tm the Java basetype on which the annotations are written
-     * @param tree where to report errors/warnings
+     * @param declAnnos the user-written type annotations on a variable/method declaration, if this
+     *     type is from one; null otherwise
+     * @param typeTree the type that the annotations apply to
+     * @param node where to report errors/warnings
      * @return nothing
      */
-    public Void visitAnnotatedType(List<? extends AnnotationTree> annos, TypeMirror tm, Tree tree) {
+    public Void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
         return null;
     }
 
