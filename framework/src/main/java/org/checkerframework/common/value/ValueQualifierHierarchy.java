@@ -74,10 +74,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
                 values =
                         values.stream()
-                                .filter(
-                                        value ->
-                                                regexes.stream()
-                                                        .anyMatch(regex -> value.matches(regex)))
+                                .filter(value -> regexes.stream().anyMatch(value::matches))
                                 .collect(Collectors.toList());
                 break;
             default:
