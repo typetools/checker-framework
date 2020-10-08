@@ -669,6 +669,15 @@ public class NullnessVisitor
                 return null;
             }
         }
+
+        AnnotatedDeclaredType enclosingType = type.getEnclosingType();
+        if (enclosingType != null && atypeFactory.containsNullnessAnnotation(annos)) {
+            System.out.printf(
+                    "visitDeclared(%s [%s], %s [%s])%n",
+                    type, type.getClass(), tree, tree.getClass());
+            return null;
+        }
+
         return super.visitAnnotatedType(annos, tm, tree);
     }
 
@@ -704,18 +713,6 @@ public class NullnessVisitor
                 return true;
             }
             return super.shouldCheckTopLevelDeclaredOrPrimitiveType(type, tree);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-            AnnotatedDeclaredType enclosingType = type.getEnclosingType();
-            if (enclosingType != null // && enclosingType.hasNonNullAnnotation()
-            ) {
-                System.out.printf(
-                        "visitDeclared(%s [%s], %s [%s])%n",
-                        type, type.getClass(), tree, tree.getClass());
-            }
-            return null;
         }
     }
 }
