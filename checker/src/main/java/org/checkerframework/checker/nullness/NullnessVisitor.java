@@ -694,6 +694,7 @@ public class NullnessVisitor
                 unannotatedType = outerType;
             }
         }
+
         return super.visitAnnotatedType(declAnnos, typeTree, node);
     }
 
