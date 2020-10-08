@@ -684,6 +684,7 @@ public class NullnessAnnotatedTypeFactory
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
+                case PRIMITIVE_TYPE:
                     if (declAnnos == null) {
                         return Collections.emptyList();
                     }
