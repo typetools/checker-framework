@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -56,7 +57,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /** The visitor for the nullness type-system. */
 public class NullnessVisitor
@@ -226,12 +226,17 @@ public class NullnessVisitor
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         Element e = TreeUtils.elementFromTree(node);
-        if (!(TreeUtils.isSelfAccess(node)
+        if (e.getKind() == ElementKind.CLASS) {
+            if (atypeFactory.containsNullnessAnnotation(null, node.getExpression())) {
+                checker.reportError(node, "nullness.on.outer");
+            }
+        } else if (!(TreeUtils.isSelfAccess(node)
                 || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
                 // case 8. static member access
                 || ElementUtils.isStatic(e))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
+
         return super.visitMemberSelect(node, p);
     }
 
@@ -672,26 +677,18 @@ public class NullnessVisitor
             }
         }
 
-        Tree unannotatedType = unannotatedType(typeTree);
-
-        if (unannotatedType.getKind() == Tree.Kind.MEMBER_SELECT) {
-            Tree outerType = ((MemberSelectTree) unannotatedType).getExpression();
-            if (atypeFactory.containsNullnessAnnotation(declAnnos, outerType)) {
-                checker.reportError(node, "nullness.on.outer");
-                UtilPlume.sleep(10);
-                return null;
-            }
-
-            // TODO: Does this go deep enough?  Should it be a loop?
-            if (outerType.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-                if (atypeFactory.containsNullnessAnnotation(declAnnos, outerType)) {
-                    UtilPlume.sleep(10);
-                    checker.reportError(node, "nullness.on.outer");
-                    return null;
-                }
-                unannotatedType = ((AnnotatedTypeTree) outerType).getUnderlyingType();
-            } else {
-                unannotatedType = outerType;
+        if (declAnnos != null) {
+            Tree unannotatedType = unannotatedType(typeTree);
+            switch (unannotatedType.getKind()) {
+                case MEMBER_SELECT:
+                    if (atypeFactory.containsNullnessAnnotation(
+                            declAnnos, ((MemberSelectTree) unannotatedType).getExpression())) {
+                        checker.reportError(
+                                atypeFactory.leftmostType(unannotatedType), "nullness.on.outer");
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 

@@ -11,6 +11,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -658,24 +659,7 @@ public class NullnessAnnotatedTypeFactory
      */
     protected boolean containsNullnessAnnotation(
             List<? extends AnnotationTree> declAnnos, Tree typeTree) {
-        // TODO: abstract out this computation
-        List<? extends AnnotationTree> annos;
-        if (declAnnos != null) {
-            annos = declAnnos;
-        } else {
-            switch (typeTree.getKind()) {
-                case ANNOTATED_TYPE:
-                    annos = ((AnnotatedTypeTree) typeTree).getAnnotations();
-                    break;
-                case IDENTIFIER:
-                    annos = Collections.emptyList();
-                    break;
-                default:
-                    throw new BugInCF(
-                            "what typeTree? %s %s %s",
-                            typeTree.getKind(), typeTree.getClass(), typeTree);
-            }
-        }
+        List<? extends AnnotationTree> annos = getExplicitAnnotations(declAnnos, typeTree);
 
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
@@ -684,6 +668,70 @@ public class NullnessAnnotatedTypeFactory
             }
         }
         return false;
+    }
+
+    // TODO: Move to TreeUtils.
+    /**
+     * Returns the annotations explicitly written on the given type.
+     *
+     * @param declAnnos a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to return
+     * @return the annotations explicitly written on the given type.
+     */
+    public List<? extends AnnotationTree> getExplicitAnnotations(
+            List<? extends AnnotationTree> declAnnos, Tree typeTree) {
+        while (true) {
+            switch (typeTree.getKind()) {
+                case IDENTIFIER:
+                    if (declAnnos == null) {
+                        return Collections.emptyList();
+                    }
+                    return declAnnos;
+                case ANNOTATED_TYPE:
+                    return ((AnnotatedTypeTree) typeTree).getAnnotations();
+                case MEMBER_SELECT:
+                    if (declAnnos == null) {
+                        return Collections.emptyList();
+                    }
+                    typeTree = ((MemberSelectTree) typeTree).getExpression();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeTree = ((ParameterizedTypeTree) typeTree).getType();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
+        }
+    }
+
+    /**
+     * Returns the leftmost type component of the argument. This is the type component that a type
+     * annotation would apply to, if written on a declaration of a variable of the given type.
+     *
+     * @param typeTree a type
+     * @returns the leftmost type component of the argument
+     */
+    public Tree leftmostType(Tree typeTree) {
+        while (true) {
+            switch (typeTree.getKind()) {
+                case IDENTIFIER:
+                case ANNOTATED_TYPE:
+                    return typeTree;
+                case MEMBER_SELECT:
+                    typeTree = ((MemberSelectTree) typeTree).getExpression();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeTree = ((ParameterizedTypeTree) typeTree).getType();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
+        }
     }
 
     /**
