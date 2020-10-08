@@ -1,7 +1,9 @@
 package org.checkerframework.common.basetype;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -1156,6 +1158,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitVariable(VariableTree node, Void p) {
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
+        // Make a call to visitAnnotatedType.
+        Tree typeTree = node.getType();
+        while (typeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
+            typeTree = ((ArrayTypeTree) typeTree).getType();
+        }
+        visitAnnotatedType(node.getModifiers().getAnnotations(), TreeUtils.typeOf(typeTree), node);
+
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         AnnotatedTypeMirror variableType;
         if (getCurrentPath().getParentPath() != null
@@ -2255,6 +2264,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitThrow(ThrowTree node, Void p) {
         checkThrownExpression(node);
         return super.visitThrow(node, p);
+    }
+
+    @Override
+    public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
+        visitAnnotatedType(node.getAnnotations(), TreeUtils.typeOf(node), node);
+        return super.visitAnnotatedType(node, p);
+    }
+
+    /**
+     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)} and
+     * also by {@link #visitVariable}. Exists to prevent code duplication between the two. Checking
+     * in visitVariable is needed because there isn't an AnnotatedTypeTree within a variable
+     * declaration -- all the annotations are attached to the VariableTree.
+     *
+     * @param annos the user-written type annotations
+     * @param tm the Java basetype on which the annotations are written
+     * @param tree where to report errors/warnings
+     * @return nothing
+     */
+    public Void visitAnnotatedType(List<? extends AnnotationTree> annos, TypeMirror tm, Tree tree) {
+        return null;
     }
 
     // **********************************************************************
