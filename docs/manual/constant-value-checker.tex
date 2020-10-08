@@ -80,10 +80,10 @@ not be applied to them.  This is because the conversion depends on the
 platform's character set.
 
 The \<@MatchesRegex> annotation uses the standard Java regular expression syntax.
-An \<@MatchesRegex> annotation is only a subtype of another \<@MatchesRegex> annotation
-if the arguments of both annotations are identical. An \<@StringVal> annotation is
-a subtype of an \<@MatchesRegex> annotation if all the strings match the regular
-expression.
+\<@MatchesRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+expressions \<A> is a subset of the set of regular expressions \<B>. An \<@StringVal> annotation is
+a subtype of an \<@MatchesRegex> annotation if each string matches at least one of the regular
+expressions.
 
 The \<@EnumVal> annotation's argument is the names of the enum constants
 that the type might evaluate to.  (Java syntax does not allow the enum

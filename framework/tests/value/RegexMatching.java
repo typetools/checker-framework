@@ -4,51 +4,100 @@ import org.checkerframework.common.value.qual.*;
 
 class RegexMatching {
     void stringConstants() {
-        @MatchesRegex("a*")
-        String a = "a";
-        @MatchesRegex("a*")
-        String blank = "";
+        @MatchesRegex("a*") String a = "a";
+        @MatchesRegex("a*") String blank = "";
         // :: error: assignment.type.incompatible
-        @MatchesRegex("a*")
-        String b = "b";
+        @MatchesRegex("a*") String b = "b";
 
-        @MatchesRegex("a")
-        String a1 = "a";
+        @MatchesRegex("a") String a1 = "a";
         // :: error: assignment.type.incompatible
-        @MatchesRegex("a")
-        String blank1 = "";
+        @MatchesRegex("a") String blank1 = "";
         // :: error: assignment.type.incompatible
-        @MatchesRegex("a")
-        String b1 = "b";
+        @MatchesRegex("a") String b1 = "b";
 
-        @MatchesRegex("\\s")
-        String space = " ";
-        @MatchesRegex("\\s")
-        String severalSpaces = "      ";
+        @MatchesRegex("\\s") String space = " ";
+        @MatchesRegex("\\s+") String severalSpaces = "      ";
         // :: error: assignment.type.incompatible
-        @MatchesRegex("\\s")
-        String b2 = "b";
+        @MatchesRegex("\\s") String b2 = "b";
 
-        @MatchesRegex("[^abc]")
-        String d = "d";
-        @MatchesRegex("[^abc]")
-        String d1 = String.valueOf(new char[] {'d'});
+        @MatchesRegex("[^abc]") String d = "d";
+        @MatchesRegex("[^abc]") String d1 = String.valueOf(new char[] {'d'});
         // :: error: assignment.type.incompatible
-        @MatchesRegex("[^abc]")
-        String c = "c";
+        @MatchesRegex("[^abc]") String c = "c";
     }
 
     void severalString(@StringVal({"a", "aa"}) String aaa, @StringVal({"aa", "b"}) String aab) {
-        @MatchesRegex("a*")
-        String a = aaa;
+        @MatchesRegex("a*") String a = aaa;
         // :: error: assignment.type.incompatible
-        @MatchesRegex("a*")
-        String a1 = aab;
+        @MatchesRegex("a*") String a1 = aab;
 
-        @MatchesRegex("a+")
-        String a2 = aaa;
+        @MatchesRegex("a+") String a2 = aaa;
         // :: error: assignment.type.incompatible
-        @MatchesRegex("a+")
-        String a3 = aab;
+        @MatchesRegex("a+") String a3 = aab;
+    }
+
+    void multipleRegexes(@StringVal({"a", "aa"}) String aaa, @StringVal({"aa", "b"}) String aab) {
+        @MatchesRegex({"a*", "b*"}) String a = aaa;
+        @MatchesRegex({"a*", "b*"}) String a1 = aab;
+
+        // :: error: assignment.type.incompatible
+        @MatchesRegex({"aa", "b*"}) String a2 = aaa;
+        @MatchesRegex({"aa", "b*"}) String a3 = aab;
+    }
+
+    void regexSubtypingConstant(@MatchesRegex({"a", "b"}) String ab) {
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("a") String a = ab;
+        @MatchesRegex({"a", "b"}) String ab1 = ab;
+        @MatchesRegex({"a", "b", "c"}) String abc = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal("a") String a1 = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal({"a", "b"}) String ab2 = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal({"a", "b", "c"}) String abc1 = ab;
+    }
+
+    void regexSubtyping2(@MatchesRegex({"a*", "b*"}) String ab) {
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("a*") String a = ab;
+        @MatchesRegex({"a*", "b*"}) String ab1 = ab;
+        @MatchesRegex({"a*", "b*", "c*"}) String abc = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal("a*") String a1 = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal({"a*", "b*"}) String ab2 = ab;
+        // :: error: assignment.type.incompatible
+        @StringVal({"a*", "b*", "c*"}) String abc1 = ab;
+    }
+
+    void lubRegexes(
+            @MatchesRegex({"a*"}) String astar, @MatchesRegex({"b*"}) String bstar, boolean b) {
+        String s;
+        if (b) {
+            s = astar;
+        } else {
+            s = bstar;
+        }
+        @MatchesRegex({"a*", "b*"}) String s1 = s;
+        // :: error: assignment.type.incompatible
+        @MatchesRegex({"a*"}) String s2 = s;
+        // :: error: assignment.type.incompatible
+        @MatchesRegex({"b*"}) String s3 = s;
+    }
+
+    void lubRegexWithStringVal(
+            @MatchesRegex({"a*"}) String astar, @StringVal({"b"}) String bval, boolean b) {
+        String s;
+        if (b) {
+            s = astar;
+        } else {
+            s = bval;
+        }
+        @MatchesRegex({"a*", "b"}) String s1 = s;
+        // :: error: assignment.type.incompatible
+        @MatchesRegex({"a*"}) String s2 = s;
+        // :: error: assignment.type.incompatible
+        @StringVal({"b"}) String s3 = s;
     }
 }

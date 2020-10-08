@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * An annotation indicating the possible values for a String type. If an expression's type has this
- * annotation, then at run time, the expression evaluates to a string that matches the annotation's
- * argument, which is a Java regular expression.
+ * annotation, then at run time, the expression evaluates to a string that matches at least one of
+ * the annotation's arguments, which are Java regular expressions.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
@@ -20,9 +20,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({UnknownVal.class})
 public @interface MatchesRegex {
     /**
-     * A Java regular expression.
+     * A set of Java regular expression.
      *
-     * @return the regular expression
+     * @return the regular expressions
      */
-    String value();
+    String[] value();
 }

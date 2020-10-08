@@ -33,6 +33,7 @@ import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.MatchesRegex;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
@@ -100,6 +101,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             "org.checkerframework.common.value.qual.IntRangeFromPositive";
     /** Fully-qualified class name of {@link MinLen} */
     public static final String MINLEN_NAME = "org.checkerframework.common.value.qual.MinLen";
+    /** Fully-qualified class name of {@link MatchesRegex} */
+    public static final String MATCHES_REGEX_NAME =
+            "org.checkerframework.common.value.qual.MatchesRegex";
 
     /** The maximum number of values allowed in an annotation's array. */
     protected static final int MAX_VALUES = 10;
@@ -218,6 +222,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         IntRange.class,
                         BoolVal.class,
                         StringVal.class,
+                        MatchesRegex.class,
                         DoubleVal.class,
                         BottomVal.class,
                         UnknownVal.class,
@@ -917,6 +922,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Creates an {@code MatchesRegex} annotation for the given regular expressions.
+     *
+     * @param regexes a list of Java regular expressions
+     * @return a MatchesRegex annotation with those values
+     */
+    private AnnotationMirror createMatchesRegexAnnotation(List<String> regexes) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
+        builder.setValue("value", regexes.toArray(new String[0]));
+        return builder.build();
+    }
+
     /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
     /* package-private */ AnnotationMirror convertStringValToArrayLenRange(
             AnnotationMirror stringValAnno) {
@@ -934,6 +951,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
         return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
+    }
+
+    /**
+     * Converts an {@code StringVal} annotation to an {@code MatchesRegex} annotation that matches
+     * exactly the string values listed in the {@code StringVal}.
+     *
+     * @param stringValAnno a StringVal annotation
+     * @return an equivalent MatchesReges annotation
+     */
+    /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
+            AnnotationMirror stringValAnno) {
+        List<String> values = getStringValues(stringValAnno);
+        return createMatchesRegexAnnotation(values);
     }
 
     /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
