@@ -662,7 +662,8 @@ public class NullnessVisitor
     }
 
     @Override
-    public Void visitAnnotatedType(List<? extends AnnotationTree> annos, TypeMirror tm, Tree tree) {
+    public Void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
         if (TypesUtils.isPrimitive(tm)) {
             if (atypeFactory.containsNullnessAnnotation(annos)) {
                 checker.reportError(tree, "nullness.on.primitive");
