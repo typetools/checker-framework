@@ -705,17 +705,5 @@ public class NullnessVisitor
             }
             return super.shouldCheckTopLevelDeclaredOrPrimitiveType(type, tree);
         }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-            AnnotatedDeclaredType enclosingType = type.getEnclosingType();
-            if (enclosingType != null // && enclosingType.hasNonNullAnnotation()
-            ) {
-                System.out.printf(
-                        "visitDeclared(%s [%s], %s [%s])%n",
-                        type, type.getClass(), tree, tree.getClass());
-            }
-            return null;
-        }
     }
 }
