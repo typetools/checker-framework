@@ -665,7 +665,7 @@ public class NullnessVisitor
     public Void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
         if (typeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-            if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
+            if (atypeFactory.containsNullnessAnnotation(declAnnos)) {
                 checker.reportError(node, "nullness.on.primitive");
                 return null;
             }
