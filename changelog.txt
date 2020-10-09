@@ -2,12 +2,16 @@ Version 3.7.1, November 2, 2020
 
 The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
 
+The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspecified.
+
 Implementation details:
 
 Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
 longer used.  Added new methods getWidenedValue() and getNarrowedValue().
 
 Renamed TestUtilities.assertResultsAreValid() to TestUtilities.assertTestDidNotFail().
+
+Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally().
 
 ---------------------------------------------------------------------------
 
