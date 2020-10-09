@@ -2,6 +2,8 @@ package org.checkerframework.common.value;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -134,6 +136,19 @@ class ValueTypeAnnotator extends TypeAnnotator {
                 atm.replaceAnnotation(typeFactory.createArrayLenAnnotation(lengths));
             }
 
+        } else if (AnnotationUtils.areSameByName(
+                anno, ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME)) {
+            // If the annotation contains an invalid regex, replace it with bottom. ValueVisitor
+            // will issue a warning where the annotation was written.
+            List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(anno);
+            for (String regex : regexes) {
+                try {
+                    Pattern.compile(regex);
+                } catch (PatternSyntaxException pse) {
+                    atm.replaceAnnotation(typeFactory.BOTTOMVAL);
+                    break;
+                }
+            }
         } else {
             // In here the annotation is @*Val where (*) is not Int, String but other types
             // (Double, etc).

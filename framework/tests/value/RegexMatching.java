@@ -94,10 +94,14 @@ class RegexMatching {
         } else {
             s = bval;
         }
-        @MatchesRegex({"a*", "b"}) String s1 = s;
+        @MatchesRegex({"a*", "^\\Qb\\E$"}) String s1 = s;
         // :: error: assignment.type.incompatible
         @MatchesRegex({"a*"}) String s2 = s;
         // :: error: assignment.type.incompatible
         @StringVal({"b"}) String s3 = s;
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("b") String s4 = s;
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("^b$") String s5 = s;
     }
 }
