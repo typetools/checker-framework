@@ -21,4 +21,8 @@ class ScopingConstruct {
     @Nullable ScopingConstruct.Inner nsci;
 
     ScopingConstruct.@Nullable Inner scni;
+
+    // :: error: (nullness.on.outer)
+    @Nullable ScopingConstruct.Inner @Nullable [] array;
+    ScopingConstruct.@Nullable Inner @Nullable [] array2;
 }
