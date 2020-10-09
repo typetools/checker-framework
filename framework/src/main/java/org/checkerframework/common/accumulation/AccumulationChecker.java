@@ -48,6 +48,10 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
      * behind a call to {@link #isEnabled(AliasAnalysis)}.
      */
     public enum AliasAnalysis {
+        /**
+         * An alias analysis that detects methods that always return their own receiver (i.e. whose
+         * return value and receiver are aliases).
+         */
         RETURNS_RECEIVER
     }
 
