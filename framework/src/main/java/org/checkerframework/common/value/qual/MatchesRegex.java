@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({UnknownVal.class})
 public @interface MatchesRegex {
     /**
-     * A set of Java regular expression.
+     * A set of Java regular expressions.
      *
      * @return the regular expressions
      */

@@ -32,7 +32,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     /**
-     * Computes greatest lower bound of a @StringVal annotation with another value checker
+     * Computes greatest lower bound of a @StringVal annotation with another Value Checker
      * annotation.
      *
      * @param stringValAnno annotation of type @StringVal

@@ -68,40 +68,40 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    /** Fully-qualified class name of {@link UnknownVal} */
+    /** Fully-qualified class name of {@link UnknownVal}. */
     public static final String UNKNOWN_NAME = "org.checkerframework.common.value.qual.UnknownVal";
-    /** Fully-qualified class name of {@link BottomVal} */
+    /** Fully-qualified class name of {@link BottomVal}. */
     public static final String BOTTOMVAL_NAME = "org.checkerframework.common.value.qual.BottomVal";
-    /** Fully-qualified class name of {@link PolyValue} */
+    /** Fully-qualified class name of {@link PolyValue}. */
     public static final String POLY_NAME = "org.checkerframework.common.value.qual.PolyValue";
-    /** Fully-qualified class name of {@link ArrayLen} */
+    /** Fully-qualified class name of {@link ArrayLen}. */
     public static final String ARRAYLEN_NAME = "org.checkerframework.common.value.qual.ArrayLen";
-    /** Fully-qualified class name of {@link BoolVal} */
+    /** Fully-qualified class name of {@link BoolVal}. */
     public static final String BOOLVAL_NAME = "org.checkerframework.common.value.qual.BoolVal";
-    /** Fully-qualified class name of {@link DoubleVal} */
+    /** Fully-qualified class name of {@link DoubleVal}. */
     public static final String DOUBLEVAL_NAME = "org.checkerframework.common.value.qual.DoubleVal";
-    /** Fully-qualified class name of {@link IntVal} */
+    /** Fully-qualified class name of {@link IntVal}. */
     public static final String INTVAL_NAME = "org.checkerframework.common.value.qual.IntVal";
-    /** Fully-qualified class name of {@link StringVal} */
+    /** Fully-qualified class name of {@link StringVal}. */
     public static final String STRINGVAL_NAME = "org.checkerframework.common.value.qual.StringVal";
-    /** Fully-qualified class name of {@link ArrayLenRange} */
+    /** Fully-qualified class name of {@link ArrayLenRange}. */
     public static final String ARRAYLENRANGE_NAME =
             "org.checkerframework.common.value.qual.ArrayLenRange";
-    /** Fully-qualified class name of {@link IntRange} */
+    /** Fully-qualified class name of {@link IntRange}. */
     public static final String INTRANGE_NAME = "org.checkerframework.common.value.qual.IntRange";
 
-    /** Fully-qualified class name of {@link IntRangeFromGTENegativeOne} */
+    /** Fully-qualified class name of {@link IntRangeFromGTENegativeOne}. */
     public static final String INTRANGE_FROMGTENEGONE_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne";
-    /** Fully-qualified class name of {@link IntRangeFromNonNegative} */
+    /** Fully-qualified class name of {@link IntRangeFromNonNegative}. */
     public static final String INTRANGE_FROMNONNEG_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromNonNegative";
-    /** Fully-qualified class name of {@link IntRangeFromPositive} */
+    /** Fully-qualified class name of {@link IntRangeFromPositive}. */
     public static final String INTRANGE_FROMPOS_NAME =
             "org.checkerframework.common.value.qual.IntRangeFromPositive";
-    /** Fully-qualified class name of {@link MinLen} */
+    /** Fully-qualified class name of {@link MinLen}. */
     public static final String MINLEN_NAME = "org.checkerframework.common.value.qual.MinLen";
-    /** Fully-qualified class name of {@link MatchesRegex} */
+    /** Fully-qualified class name of {@link MatchesRegex}. */
     public static final String MATCHES_REGEX_NAME =
             "org.checkerframework.common.value.qual.MatchesRegex";
 
