@@ -670,7 +670,9 @@ public class NullnessVisitor
     @Override
     public Void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
-        if (typeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+        Tree unannotatedType = unannotatedType(typeTree);
+
+        if (unannotatedType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
             if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
                 checker.reportError(node, "nullness.on.primitive");
                 return null;
@@ -678,7 +680,6 @@ public class NullnessVisitor
         }
 
         if (declAnnos != null) {
-            Tree unannotatedType = unannotatedType(typeTree);
             switch (unannotatedType.getKind()) {
                 case MEMBER_SELECT:
                     if (atypeFactory.containsNullnessAnnotation(
