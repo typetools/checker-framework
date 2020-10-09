@@ -20,8 +20,6 @@ public class TypecheckResult {
     private final CompilationResult compilationResult;
     private final List<TestDiagnostic> expectedDiagnostics;
 
-    private final boolean testFailed;
-
     private final List<TestDiagnostic> missingDiagnostics;
     private final List<TestDiagnostic> unexpectedDiagnostics;
 
@@ -29,13 +27,11 @@ public class TypecheckResult {
             TestConfiguration configuration,
             CompilationResult compilationResult,
             List<TestDiagnostic> expectedDiagnostics,
-            boolean testFailed,
             List<TestDiagnostic> missingDiagnostics,
             List<TestDiagnostic> unexpectedDiagnostics) {
         this.configuration = configuration;
         this.compilationResult = compilationResult;
         this.expectedDiagnostics = expectedDiagnostics;
-        this.testFailed = testFailed;
         this.missingDiagnostics = missingDiagnostics;
         this.unexpectedDiagnostics = unexpectedDiagnostics;
     }
@@ -57,7 +53,7 @@ public class TypecheckResult {
     }
 
     public boolean didTestFail() {
-        return testFailed;
+        return !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
     }
 
     public List<TestDiagnostic> getMissingDiagnostics() {
@@ -72,7 +68,7 @@ public class TypecheckResult {
         List<String> errorHeaders = new ArrayList<>();
 
         // none of these should be true if the test didn't fail
-        if (testFailed) {
+        if (didTestFail()) {
             if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
                 errorHeaders.add(
                         "The test run was expected to issue errors/warnings, but it did not.");
@@ -104,7 +100,7 @@ public class TypecheckResult {
      * @return summary of failures
      */
     public String summarize() {
-        if (!testFailed) {
+        if (!didTestFail()) {
             return "";
         }
         StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
@@ -159,13 +155,10 @@ public class TypecheckResult {
         final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
         missingDiagnostics.removeAll(actualDiagnostics);
 
-        boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
-
         return new TypecheckResult(
                 configuration,
                 result,
                 expectedDiagnostics,
-                testFailed,
                 missingDiagnostics,
                 new ArrayList<>(unexpectedDiagnostics));
     }
