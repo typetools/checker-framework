@@ -3,7 +3,6 @@ package org.checkerframework.common.accumulation;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 
@@ -24,12 +23,13 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
  */
 public abstract class AccumulationChecker extends BaseTypeChecker {
 
-    /**
-     * Set of alias analyses that are enabled in this particular accumulation checker. Set to
-     * non-null the first time {@link #isEnabled(AliasAnalysis)} is called, to allow the
-     * implementation of {@link #createAliasAnalyses()} to be as simple as possible.
-     */
-    private @MonotonicNonNull EnumSet<AliasAnalysis> aliasAnalyses;
+    /** Set of alias analyses that are enabled in this particular accumulation checker. */
+    private EnumSet<AliasAnalysis> aliasAnalyses;
+
+    public AccumulationChecker() {
+        super();
+        this.aliasAnalyses = createAliasAnalyses();
+    }
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
@@ -55,8 +55,9 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
      *
      * @return the alias analyses
      */
-    protected AliasAnalysis[] createAliasAnalyses(@UnderInitialization AccumulationChecker this) {
-        return new AliasAnalysis[] {AliasAnalysis.RETURNS_RECEIVER};
+    protected EnumSet<AliasAnalysis> createAliasAnalyses(
+            @UnderInitialization AccumulationChecker this) {
+        return EnumSet.of(AliasAnalysis.RETURNS_RECEIVER);
     }
 
     /**
@@ -66,12 +67,6 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
      * @return true iff the analysis is enabled
      */
     public boolean isEnabled(AliasAnalysis aliasAnalysis) {
-        if (aliasAnalyses == null) {
-            aliasAnalyses = EnumSet.noneOf(AliasAnalysis.class);
-            for (AliasAnalysis analysis : createAliasAnalyses()) {
-                aliasAnalyses.add(analysis);
-            }
-        }
         return aliasAnalyses.contains(aliasAnalysis);
     }
 }
