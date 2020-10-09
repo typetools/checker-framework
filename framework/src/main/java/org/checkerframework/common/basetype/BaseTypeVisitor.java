@@ -2265,6 +2265,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.visitThrow(node, p);
     }
 
+    /**
+     * It is often easier to override {@link visitAnnotatedType(List,Tree,Tree)}, which also handles
+     * the case of annotations at the beginning of a variable declaration that javac parses as being
+     * on the variable declaration rather than on the type.
+     */
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
         visitAnnotatedType(null, node, node);
@@ -2281,12 +2286,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *     type is from one; null otherwise
      * @param typeTree the type that the annotations apply to
      * @param node where to report errors/warnings
-     * @return nothing
      */
-    public Void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
-        return null;
-    }
+    public void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {}
 
     // **********************************************************************
     // Helper methods to provide a single overriding point

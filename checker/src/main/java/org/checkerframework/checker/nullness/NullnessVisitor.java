@@ -668,14 +668,14 @@ public class NullnessVisitor
     }
 
     @Override
-    public Void visitAnnotatedType(
+    public void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
-        Tree unannotatedType = unannotatedType(typeTree);
+        Tree unannotatedType = unannotatedTypeTree(typeTree);
 
         if (unannotatedType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
             if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
                 checker.reportError(node, "nullness.on.primitive");
-                return null;
+                return;
             }
         }
 
@@ -685,7 +685,7 @@ public class NullnessVisitor
                     if (atypeFactory.containsNullnessAnnotation(
                             declAnnos, ((MemberSelectTree) unannotatedType).getExpression())) {
                         checker.reportError(
-                                TreeUtils.leftmostType(unannotatedType), "nullness.on.outer");
+                                TreeUtils.leftmostTypeTree(unannotatedType), "nullness.on.outer");
                     }
                     break;
                 default:
@@ -693,7 +693,7 @@ public class NullnessVisitor
             }
         }
 
-        return super.visitAnnotatedType(declAnnos, typeTree, node);
+        super.visitAnnotatedType(declAnnos, typeTree, node);
     }
 
     /**
@@ -703,7 +703,7 @@ public class NullnessVisitor
      * @param typeTree a tree
      * @return the tree without annotations
      */
-    private Tree unannotatedType(Tree typeTree) {
+    private Tree unannotatedTypeTree(Tree typeTree) {
         if (typeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
             return ((AnnotatedTypeTree) typeTree).getUnderlyingType();
         } else {

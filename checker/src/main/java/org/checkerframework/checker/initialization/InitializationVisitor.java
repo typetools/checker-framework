@@ -153,7 +153,7 @@ public class InitializationVisitor<
         // is this a field (and not a local variable)?
         if (TreeUtils.elementFromDeclaration(node).getKind().isField()) {
             Set<AnnotationMirror> annotationMirrors =
-                    atypeFactory.getAnnotatedType(node).getExplicitAnnotations();
+                    atypeFactory.getAnnotatedType(node).getExplicitAnnotationTrees();
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
@@ -315,7 +315,7 @@ public class InitializationVisitor<
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
             Collection<? extends AnnotationMirror> returnTypeAnnotations =
-                    AnnotationUtils.getExplicitAnnotationsOnConstructorResult(node);
+                    AnnotationUtils.getExplicitAnnotationTreesOnConstructorResult(node);
             // check for invalid constructor return type
             for (Class<? extends Annotation> c :
                     atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {

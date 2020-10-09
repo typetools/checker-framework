@@ -660,7 +660,7 @@ public class NullnessAnnotatedTypeFactory
     protected boolean containsNullnessAnnotation(
             List<? extends AnnotationTree> declAnnos, Tree typeTree) {
         List<? extends AnnotationTree> annos =
-                TreeUtils.getExplicitAnnotations(declAnnos, typeTree);
+                TreeUtils.getExplicitAnnotationTrees(declAnnos, typeTree);
 
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);

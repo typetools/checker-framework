@@ -1549,7 +1549,7 @@ public final class TreeUtils {
      * @param typeTree the type whose annotations to return
      * @return the annotations explicitly written on the given type.
      */
-    public static List<? extends AnnotationTree> getExplicitAnnotations(
+    public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
             List<? extends AnnotationTree> declAnnos, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
@@ -1585,7 +1585,7 @@ public final class TreeUtils {
      * @param typeTree a type
      * @return the leftmost type component of the argument
      */
-    public static Tree leftmostType(Tree typeTree) {
+    public static Tree leftmostTypeTree(Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
