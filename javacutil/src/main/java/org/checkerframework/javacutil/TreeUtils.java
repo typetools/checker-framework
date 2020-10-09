@@ -1205,7 +1205,6 @@ public final class TreeUtils {
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
-        // TODO: is there a nicer way than an instanceof?
         return tree instanceof ExpressionTree;
     }
 
@@ -1539,6 +1538,70 @@ public final class TreeUtils {
 
             default:
                 return false;
+        }
+    }
+
+    /**
+     * Returns the annotations explicitly written on the given type.
+     *
+     * @param declAnnos a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to return
+     * @return the annotations explicitly written on the given type.
+     */
+    public static List<? extends AnnotationTree> getExplicitAnnotations(
+            List<? extends AnnotationTree> declAnnos, Tree typeTree) {
+        while (true) {
+            switch (typeTree.getKind()) {
+                case IDENTIFIER:
+                case PRIMITIVE_TYPE:
+                    if (declAnnos == null) {
+                        return Collections.emptyList();
+                    }
+                    return declAnnos;
+                case ANNOTATED_TYPE:
+                    return ((AnnotatedTypeTree) typeTree).getAnnotations();
+                case MEMBER_SELECT:
+                    if (declAnnos == null) {
+                        return Collections.emptyList();
+                    }
+                    typeTree = ((MemberSelectTree) typeTree).getExpression();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeTree = ((ParameterizedTypeTree) typeTree).getType();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
+        }
+    }
+
+    /**
+     * Returns the leftmost type component of the argument. This is the type component that a type
+     * annotation would apply to, if written on a declaration of a variable of the given type.
+     *
+     * @param typeTree a type
+     * @return the leftmost type component of the argument
+     */
+    public static Tree leftmostType(Tree typeTree) {
+        while (true) {
+            switch (typeTree.getKind()) {
+                case IDENTIFIER:
+                case ANNOTATED_TYPE:
+                    return typeTree;
+                case MEMBER_SELECT:
+                    typeTree = ((MemberSelectTree) typeTree).getExpression();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeTree = ((ParameterizedTypeTree) typeTree).getType();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
         }
     }
 }

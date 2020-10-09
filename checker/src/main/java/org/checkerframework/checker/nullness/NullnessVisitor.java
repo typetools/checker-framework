@@ -685,7 +685,7 @@ public class NullnessVisitor
                     if (atypeFactory.containsNullnessAnnotation(
                             declAnnos, ((MemberSelectTree) unannotatedType).getExpression())) {
                         checker.reportError(
-                                atypeFactory.leftmostType(unannotatedType), "nullness.on.outer");
+                                TreeUtils.leftmostType(unannotatedType), "nullness.on.outer");
                     }
                     break;
                 default:
