@@ -1,5 +1,6 @@
 package org.checkerframework.framework.testchecker.testaccumulation;
 
+import java.util.EnumSet;
 import org.checkerframework.common.accumulation.AccumulationChecker;
 
 /**
@@ -14,7 +15,7 @@ public class TestAccumulationNoReturnsReceiverChecker extends AccumulationChecke
      * @return the alias analyses
      */
     @Override
-    protected AliasAnalysis[] createAliasAnalyses() {
-        return new AliasAnalysis[0];
+    protected EnumSet<AliasAnalysis> createAliasAnalyses() {
+        return EnumSet.noneOf(AliasAnalysis.class);
     }
 }
