@@ -26,6 +26,7 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
     /** Set of alias analyses that are enabled in this particular accumulation checker. */
     private EnumSet<AliasAnalysis> aliasAnalyses;
 
+    /** Constructs a new AccumulationChecker. */
     public AccumulationChecker() {
         super();
         this.aliasAnalyses = createAliasAnalyses();

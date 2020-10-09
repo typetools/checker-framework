@@ -156,7 +156,7 @@ public class NullnessVisitor
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        // The Nullness Checker issues a more comprehensible "nullable.on.primitive" error rather
+        // The Nullness Checker issues a more comprehensible "nullness.on.primitive" error rather
         // than the "type.invalid.annotations.on.use" error this method would issue.
         return true;
     }
