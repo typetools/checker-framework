@@ -943,7 +943,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param stringValAnno a StringVal annotation
+     * @return an ArrayLenRange annotation representing the possible lengths of the values of the
+     *     given StringVal annotation
+     */
     /* package-private */ AnnotationMirror convertStringValToArrayLenRange(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
@@ -980,7 +986,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createMatchesRegexAnnotation(valuesAsRegexes);
     }
 
-    /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param arrayLenAnno an ArrayLen annotation
+     * @return an ArrayLenRange annotation representing the bounds of the given ArrayLen annotation
+     */
     public AnnotationMirror convertArrayLenToArrayLenRange(AnnotationMirror arrayLenAnno) {
         List<Integer> values = getArrayLength(arrayLenAnno);
         return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
