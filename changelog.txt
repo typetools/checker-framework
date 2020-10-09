@@ -1,5 +1,7 @@
 Version 3.7.1, November 2, 2020
 
+The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspecified.
+
 The Constant Value Checker supports annotation @EnumVal.
 
 Implementation details:
