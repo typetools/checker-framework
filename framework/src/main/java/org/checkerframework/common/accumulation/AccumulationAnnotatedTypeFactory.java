@@ -47,10 +47,7 @@ import org.checkerframework.javacutil.UserError;
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /**
-     * The typechecker associated with this factory. All AccumulationAnnotatedTypeFactory objects
-     * should use an accumulation checker rather than a standard base type checker.
-     */
+    /** The typechecker associated with this factory. */
     public final AccumulationChecker accumulationChecker;
 
     /**

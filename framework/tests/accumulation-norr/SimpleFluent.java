@@ -1,5 +1,5 @@
 // A simple test that the fluent API logic in the Accumulation Checker works.
-// This version has been edited to include expected errors because the RR checker
+// This version has been edited to include expected errors because the Returns Receiver Checker
 // is disabled.
 
 import org.checkerframework.common.returnsreceiver.qual.*;

@@ -25,7 +25,7 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 public abstract class AccumulationChecker extends BaseTypeChecker {
 
     /**
-     * Set of alias analyses that are enabled in this particular accumulation checker. Set to
+     * Set of alias analyses that are enabled in this particular accumulation checker. It is set to
      * non-null the first time {@link #isEnabled(AliasAnalysis)} is called, to allow the
      * implementation of {@link #createAliasAnalyses()} to be as simple as possible.
      */
