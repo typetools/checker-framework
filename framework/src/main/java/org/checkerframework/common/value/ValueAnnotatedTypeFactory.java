@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -20,6 +21,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -928,13 +931,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param regexes a list of Java regular expressions
      * @return a MatchesRegex annotation with those values
      */
-    private AnnotationMirror createMatchesRegexAnnotation(List<String> regexes) {
+    private AnnotationMirror createMatchesRegexAnnotation(@Nullable List<@Regex String> regexes) {
+        if (regexes == null) {
+            return UNKNOWNVAL;
+        }
+        if (regexes.isEmpty()) {
+            return BOTTOMVAL;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
         builder.setValue("value", regexes.toArray(new String[0]));
         return builder.build();
     }
 
-    /** Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param stringValAnno a StringVal annotation
+     * @return an ArrayLenRange annotation representing the possible lengths of the values of the
+     *     given StringVal annotation
+     */
     /* package-private */ AnnotationMirror convertStringValToArrayLenRange(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
@@ -963,10 +978,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
             AnnotationMirror stringValAnno) {
         List<String> values = getStringValues(stringValAnno);
-        return createMatchesRegexAnnotation(values);
+        List<@Regex String> valuesAsRegexes = new ArrayList<>();
+        for (String value : values) {
+            // Quote the String, and surround it with start-of-word and end-of-word markers.
+            valuesAsRegexes.add("^" + Pattern.quote(value) + "$");
+        }
+        return createMatchesRegexAnnotation(valuesAsRegexes);
     }
 
-    /** Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation. */
+    /**
+     * Converts an {@code @ArrayLen} annotation to an {@code @ArrayLenRange} annotation.
+     *
+     * @param arrayLenAnno an ArrayLen annotation
+     * @return an ArrayLenRange annotation representing the bounds of the given ArrayLen annotation
+     */
     public AnnotationMirror convertArrayLenToArrayLenRange(AnnotationMirror arrayLenAnno) {
         List<Integer> values = getArrayLength(arrayLenAnno);
         return createArrayLenRangeAnnotation(Collections.min(values), Collections.max(values));
