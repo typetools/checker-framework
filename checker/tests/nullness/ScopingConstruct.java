@@ -24,5 +24,24 @@ class ScopingConstruct {
 
     // :: error: (nullness.on.outer)
     @Nullable ScopingConstruct.Inner @Nullable [] array;
+
     ScopingConstruct.@Nullable Inner @Nullable [] array2;
+
+    // :: error: (nullness.on.outer)
+    @Nullable ScopingConstruct.Inner nsci() {
+        throw new Error("not implemented");
+    }
+
+    ScopingConstruct.@Nullable Inner scni() {
+        throw new Error("not implemented");
+    }
+
+    // :: error: (nullness.on.outer)
+    @Nullable ScopingConstruct.Inner @Nullable [] array() {
+        throw new Error("not implemented");
+    }
+
+    ScopingConstruct.@Nullable Inner @Nullable [] array2() {
+        throw new Error("not implemented");
+    }
 }

@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CatchTree;
@@ -20,6 +21,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -669,46 +671,49 @@ public class NullnessVisitor
 
     @Override
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {
-        Tree unannotatedType = unannotatedTypeTree(typeTree);
-
-        if (unannotatedType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-            if (atypeFactory.containsNullnessAnnotation(declAnnos, typeTree)) {
-                checker.reportError(node, "nullness.on.primitive");
-                return;
-            }
-        }
-
-        if (declAnnos != null) {
-            switch (unannotatedType.getKind()) {
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree) {
+        // Look for a MEMBER_SELECT or PRIMITIVE within the type.
+        Tree t = typeTree;
+        while (t != null) {
+            switch (t.getKind()) {
                 case MEMBER_SELECT:
-                    if (atypeFactory.containsNullnessAnnotation(
-                            declAnnos, ((MemberSelectTree) unannotatedType).getExpression())) {
-                        checker.reportError(
-                                TreeUtils.leftmostTypeTree(unannotatedType), "nullness.on.outer");
+                    Tree expr = ((MemberSelectTree) t).getExpression();
+                    if (atypeFactory.containsNullnessAnnotation(declAnnos, expr)) {
+                        checker.reportError(expr, "nullness.on.outer");
+                    }
+                    t = null;
+                    break;
+                case PRIMITIVE_TYPE:
+                    if (atypeFactory.containsNullnessAnnotation(declAnnos, t)) {
+                        checker.reportError(t, "nullness.on.primitive");
+                    }
+                    t = null;
+                    break;
+                case ANNOTATED_TYPE:
+                    AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
+                    Tree underlying = at.getUnderlyingType();
+                    if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        if (atypeFactory.containsNullnessAnnotation(null, at)) {
+                            checker.reportError(t, "nullness.on.primitive");
+                            t = null;
+                        }
+                    } else {
+                        t = underlying;
                     }
                     break;
+                case ARRAY_TYPE:
+                    t = ((ArrayTypeTree) t).getType();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    t = ((ParameterizedTypeTree) t).getType();
+                    break;
                 default:
+                    t = null;
                     break;
             }
         }
 
-        super.visitAnnotatedType(declAnnos, typeTree, node);
-    }
-
-    /**
-     * If the argument is a tree of kind ANNOTATED_TYPE, return its unannotated version. Otherwise,
-     * return the argument.
-     *
-     * @param typeTree a tree
-     * @return the tree without annotations
-     */
-    private Tree unannotatedTypeTree(Tree typeTree) {
-        if (typeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-            return ((AnnotatedTypeTree) typeTree).getUnderlyingType();
-        } else {
-            return typeTree;
-        }
+        super.visitAnnotatedType(declAnnos, typeTree);
     }
 
     @Override

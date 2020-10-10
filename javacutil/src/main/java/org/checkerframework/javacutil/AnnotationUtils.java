@@ -912,7 +912,7 @@ public class AnnotationUtils {
      * @param constructorDeclaration declaration tree of constructor
      * @return set of annotations explicit on the resulting type of the constructor
      */
-    public static Set<AnnotationMirror> getExplicitAnnotationTreesOnConstructorResult(
+    public static Set<AnnotationMirror> getExplicitAnnotationsOnConstructorResult(
             MethodTree constructorDeclaration) {
         Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
         ModifiersTree modifiersTree = constructorDeclaration.getModifiers();

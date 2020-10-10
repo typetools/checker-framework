@@ -3,7 +3,6 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -683,6 +682,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
+        if (node.getReturnType() != null) {
+            visitAnnotatedType(node.getModifiers().getAnnotations(), node.getReturnType());
+        }
+
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
@@ -1158,11 +1161,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitVariable(VariableTree node, Void p) {
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
-        Tree typeTree = node.getType();
-        while (typeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
-            typeTree = ((ArrayTypeTree) typeTree).getType();
-        }
-        visitAnnotatedType(node.getModifiers().getAnnotations(), typeTree, node);
+        visitAnnotatedType(node.getModifiers().getAnnotations(), node.getType());
 
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         AnnotatedTypeMirror variableType;
@@ -2266,29 +2265,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * It is often easier to override {@link visitAnnotatedType(List,Tree,Tree)}, which also handles
-     * the case of annotations at the beginning of a variable declaration that javac parses as being
-     * on the variable declaration rather than on the type.
+     * Rather than overriding this method, clients should often override {@link
+     * visitAnnotatedType(List,Tree)}. That method also handles the case of annotations at the
+     * beginning of a variable or method declaration. javac parses all those annotations as being on
+     * the variable or method declaration, even though the ones that are type annotations logically
+     * belong to the variable type or method return type.
      */
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
-        visitAnnotatedType(null, node, node);
+        visitAnnotatedType(null, node);
         return super.visitAnnotatedType(node, p);
     }
 
     /**
      * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)} and
-     * also by {@link #visitVariable}. Exists to prevent code duplication between the two. Checking
-     * in visitVariable is needed because there isn't an AnnotatedTypeTree within a variable
-     * declaration -- all the annotations are attached to the VariableTree.
+     * also by {@link #visitVariable} and {@link #visitMethod}. Exists to prevent code duplication
+     * between the three. Checking in visitVariable and visitMethod is needed because there isn't an
+     * AnnotatedTypeTree within a variable declaration or for a method return type -- all the
+     * annotations are attached to the VariableTree or MethodTree, respectively.
      *
-     * @param declAnnos the user-written type annotations on a variable/method declaration, if this
-     *     type is from one; null otherwise
-     * @param typeTree the type that the annotations apply to
-     * @param node where to report errors/warnings
+     * @param declAnnos annotations written before a variable/method declaration, if this type is
+     *     from one; null otherwise
+     * @param typeTree the type that any type annotations in declAnnos apply to
      */
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree, Tree node) {}
+            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree) {}
 
     // **********************************************************************
     // Helper methods to provide a single overriding point
