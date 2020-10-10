@@ -2266,7 +2266,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Rather than overriding this method, clients should often override {@link
-     * visitAnnotatedType(List,Tree)}. That method also handles the case of annotations at the
+     * #visitAnnotatedType(List,Tree)}. That method also handles the case of annotations at the
      * beginning of a variable or method declaration. javac parses all those annotations as being on
      * the variable or method declaration, even though the ones that are type annotations logically
      * belong to the variable type or method return type.
