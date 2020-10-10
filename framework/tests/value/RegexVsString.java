@@ -3,9 +3,17 @@
 import org.checkerframework.common.value.qual.*;
 
 class RegexVsString {
-    void stringToRegex(@StringVal({"(a)"}) String a) {
+    void stringToRegex1(@StringVal({"(a)"}) String a) {
         // :: error: assignment.type.incompatible
         @MatchesRegex("(a)") String a2 = a;
+    }
+
+    void stringToRegex2(@StringVal({"a"}) String a) {
+        @MatchesRegex("(a)") String a2 = a;
+    }
+
+    void stringToRegex3(@StringVal({"a"}) String a) {
+        @MatchesRegex("^a$") String a2 = a;
     }
 
     void regexToString(@MatchesRegex("^a$") String a) {
