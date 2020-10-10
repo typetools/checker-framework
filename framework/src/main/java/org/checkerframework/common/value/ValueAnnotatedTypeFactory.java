@@ -980,7 +980,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> values = getStringValues(stringValAnno);
         List<@Regex String> valuesAsRegexes = new ArrayList<>();
         for (String value : values) {
-            // Quote the String, and surround it with start-of-word and end-of-word markers.
+            // Quote the String, and surround it with start-of-string and end-of-string markers.
             valuesAsRegexes.add("^" + Pattern.quote(value) + "$");
         }
         return createMatchesRegexAnnotation(valuesAsRegexes);

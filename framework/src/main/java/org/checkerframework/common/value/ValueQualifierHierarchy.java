@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -71,7 +72,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 values = range;
                 break;
             case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-                List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
+                List<@Regex String> regexes = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
                 values =
                         values.stream()
                                 .filter(value -> regexes.stream().anyMatch(value::matches))

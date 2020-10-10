@@ -94,6 +94,9 @@ class RegexMatching {
         } else {
             s = bval;
         }
+        // NOTE: This depends on the internal implementation.  Semantically identical code like this
+        // yields an error:
+        // @MatchesRegex({"a*", "^b$"}) String s1 = s;
         @MatchesRegex({"a*", "^\\Qb\\E$"}) String s1 = s;
         // :: error: assignment.type.incompatible
         @MatchesRegex({"a*"}) String s2 = s;
