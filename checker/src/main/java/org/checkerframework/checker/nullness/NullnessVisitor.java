@@ -695,8 +695,8 @@ public class NullnessVisitor
                     if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                         if (atypeFactory.containsNullnessAnnotation(null, at)) {
                             checker.reportError(t, "nullness.on.primitive");
-                            t = null;
                         }
+                        t = null;
                     } else {
                         t = underlying;
                     }
