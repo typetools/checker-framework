@@ -872,16 +872,23 @@ public abstract class AnnotatedTypeMirror {
             wasRaw = !declty.getTypeArguments().isEmpty() && type.getTypeArguments().isEmpty();
 
             TypeMirror encl = type.getEnclosingType();
-            if (encl.getKind() == TypeKind.DECLARED) {
-                this.enclosingType =
-                        (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
-            } else if (encl.getKind() != TypeKind.NONE) {
-                throw new BugInCF(
-                        "AnnotatedDeclaredType: unsupported enclosing type: "
-                                + type.getEnclosingType()
-                                + " ("
-                                + encl.getKind()
-                                + ")");
+            switch (encl.getKind()) {
+                case NONE:
+                    this.enclosingType = null;
+                    break;
+                case DECLARED:
+                    this.enclosingType =
+                            (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
+                case ERROR:
+                    throw new BugInCF(
+                            "new AnnotatedDeclaredType: enclosing type has kind ERROR: "
+                                    + type.getEnclosingType());
+                default:
+                    throw new BugInCF(
+                            "AnnotatedDeclaredType: unsupported enclosing type kind "
+                                    + encl.getKind()
+                                    + ": "
+                                    + type.getEnclosingType());
             }
 
             this.declaration = declaration;
