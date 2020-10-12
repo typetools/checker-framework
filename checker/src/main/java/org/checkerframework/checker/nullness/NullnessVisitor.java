@@ -21,6 +21,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -36,8 +37,8 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
@@ -227,12 +228,17 @@ public class NullnessVisitor
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         Element e = TreeUtils.elementFromTree(node);
-        if (!(TreeUtils.isSelfAccess(node)
+        if (e.getKind() == ElementKind.CLASS) {
+            if (atypeFactory.containsNullnessAnnotation(null, node.getExpression())) {
+                checker.reportError(node, "nullness.on.outer");
+            }
+        } else if (!(TreeUtils.isSelfAccess(node)
                 || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
                 // case 8. static member access
                 || ElementUtils.isStatic(e))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
         }
+
         return super.visitMemberSelect(node, p);
     }
 
@@ -663,42 +669,51 @@ public class NullnessVisitor
         return null;
     }
 
-    // This is needed in addition to visitAnnotatedType because there isn't an AnnotatedTypeTree
-    // within a variable declaration -- all the annotations are attached to the VariableTree.
     @Override
-    public Void visitVariable(VariableTree node, Void p) {
-        TypeMirror tm = TreeUtils.typeOf(node.getType());
-        if (TypesUtils.isPrimitive(tm)) {
-            if (atypeFactory.containsNullnessAnnotation(node.getModifiers().getAnnotations())) {
-                checker.reportError(node, "nullness.on.primitive");
-                return null;
-            }
-        } else if (tm.getKind() == TypeKind.ARRAY) {
-            Tree innermostComponentTypeTree = node.getType();
-            while (innermostComponentTypeTree.getKind() == Tree.Kind.ARRAY_TYPE) {
-                innermostComponentTypeTree = ((ArrayTypeTree) innermostComponentTypeTree).getType();
-            }
-            if (innermostComponentTypeTree.getKind() == Tree.Kind.PRIMITIVE_TYPE
-                    && atypeFactory.containsNullnessAnnotation(
-                            node.getModifiers().getAnnotations())) {
-                checker.reportError(innermostComponentTypeTree, "nullness.on.primitive");
-                return null;
+    public void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        // Look for a MEMBER_SELECT or PRIMITIVE within the type.
+        Tree t = typeTree;
+        while (t != null) {
+            switch (t.getKind()) {
+                case MEMBER_SELECT:
+                    Tree expr = ((MemberSelectTree) t).getExpression();
+                    if (atypeFactory.containsNullnessAnnotation(annoTrees, expr)) {
+                        checker.reportError(expr, "nullness.on.outer");
+                    }
+                    t = null;
+                    break;
+                case PRIMITIVE_TYPE:
+                    if (atypeFactory.containsNullnessAnnotation(annoTrees, t)) {
+                        checker.reportError(t, "nullness.on.primitive");
+                    }
+                    t = null;
+                    break;
+                case ANNOTATED_TYPE:
+                    AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
+                    Tree underlying = at.getUnderlyingType();
+                    if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        if (atypeFactory.containsNullnessAnnotation(null, at)) {
+                            checker.reportError(t, "nullness.on.primitive");
+                        }
+                        t = null;
+                    } else {
+                        t = underlying;
+                    }
+                    break;
+                case ARRAY_TYPE:
+                    t = ((ArrayTypeTree) t).getType();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    t = ((ParameterizedTypeTree) t).getType();
+                    break;
+                default:
+                    t = null;
+                    break;
             }
         }
 
-        return super.visitVariable(node, p);
-    }
-
-    @Override
-    public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
-        TypeMirror tm = TreeUtils.typeOf(node);
-        if (TypesUtils.isPrimitive(tm)) {
-            if (atypeFactory.containsNullnessAnnotation(node.getAnnotations())) {
-                checker.reportError(node, "nullness.on.primitive");
-                return null;
-            }
-        }
-        return super.visitAnnotatedType(node, p);
+        super.visitAnnotatedType(annoTrees, typeTree);
     }
 
     @Override
