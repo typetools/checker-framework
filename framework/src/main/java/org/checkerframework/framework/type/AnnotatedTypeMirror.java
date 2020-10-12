@@ -879,6 +879,7 @@ public abstract class AnnotatedTypeMirror {
                 case DECLARED:
                     this.enclosingType =
                             (AnnotatedDeclaredType) createType(encl, atypeFactory, declaration);
+                    break;
                 case ERROR:
                     throw new BugInCF(
                             "new AnnotatedDeclaredType: enclosing type has kind ERROR: "
