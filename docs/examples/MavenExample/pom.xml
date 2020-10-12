@@ -78,39 +78,39 @@
       </activation>
       <build>
         <plugins>
-	  <plugin>
-	    <artifactId>maven-compiler-plugin</artifactId>
-	    <version>3.8.1</version>
-	    <configuration>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-	      <compilerArguments>
-		<Xmaxerrs>10000</Xmaxerrs>
-		<Xmaxwarns>10000</Xmaxwarns>
-	      </compilerArguments>
-	      <annotationProcessorPaths>
-		<path>
-		  <groupId>org.checkerframework</groupId>
-		  <artifactId>checker</artifactId>
-		  <version>3.7.0</version>
-		</path>
-	      </annotationProcessorPaths>
-	      <annotationProcessors>
+              <compilerArguments>
+                <Xmaxerrs>10000</Xmaxerrs>
+                <Xmaxwarns>10000</Xmaxwarns>
+              </compilerArguments>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.checkerframework</groupId>
+                  <artifactId>checker</artifactId>
+                  <version>3.7.0</version>
+                </path>
+              </annotationProcessorPaths>
+              <annotationProcessors>
                 <!-- Add all the checkers you want to enable here -->
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-	      </annotationProcessors>
-	      <compilerArgs>
+              </annotationProcessors>
+              <compilerArgs>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
-	      </compilerArgs>
-	    </configuration>
-	  </plugin>
+              </compilerArgs>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
       <dependencies>
-	<dependency>
-	  <groupId>org.checkerframework</groupId>
-	  <artifactId>checker</artifactId>
-	  <version>${checkerFrameworkVersion}</version>
-	</dependency>
+        <dependency>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker</artifactId>
+          <version>${checkerFrameworkVersion}</version>
+        </dependency>
       </dependencies>
     </profile>
 
@@ -161,7 +161,7 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <fork>true</fork>
-	      <release>11</release>
+              <release>11</release>
               <compilerArgs combine.children="append">
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>

@@ -958,39 +958,39 @@ section, or add it if it is not present.
       </activation>
       <build>
         <plugins>
-	  <plugin>
-	    <artifactId>maven-compiler-plugin</artifactId>
-	    <version>3.8.1</version>
-	    <configuration>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-	      <compilerArguments>
-		<Xmaxerrs>10000</Xmaxerrs>
-		<Xmaxwarns>10000</Xmaxwarns>
-	      </compilerArguments>
-	      <annotationProcessorPaths>
-		<path>
-		  <groupId>org.checkerframework</groupId>
-		  <artifactId>checker</artifactId>
-		  <version>\ReleaseVersion{}</version>
-		</path>
-	      </annotationProcessorPaths>
-	      <annotationProcessors>
+              <compilerArguments>
+                <Xmaxerrs>10000</Xmaxerrs>
+                <Xmaxwarns>10000</Xmaxwarns>
+              </compilerArguments>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.checkerframework</groupId>
+                  <artifactId>checker</artifactId>
+                  <version>\ReleaseVersion{}</version>
+                </path>
+              </annotationProcessorPaths>
+              <annotationProcessors>
                 <!-- Add all the checkers you want to enable here -->
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-	      </annotationProcessors>
-	      <compilerArgs>
+              </annotationProcessors>
+              <compilerArgs>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
-	      </compilerArgs>
-	    </configuration>
-	  </plugin>
+              </compilerArgs>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
       <dependencies>
-	<dependency>
-	  <groupId>org.checkerframework</groupId>
-	  <artifactId>checker</artifactId>
-	  <version>$\{checkerFrameworkVersion\}</version>
-	</dependency>
+        <dependency>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker</artifactId>
+          <version>$\{checkerFrameworkVersion\}</version>
+        </dependency>
       </dependencies>
     </profile>
 
@@ -1362,4 +1362,4 @@ Advantages of the latter two-step approach include:
 % LocalWords:  annotationProcessorPaths checkTypes OracleJDK java8 java11
 % LocalWords:  bootclasspath processorpath intellij typechecking postpass
 % LocalWords:  Delombok r4173 pathnames HandlerUtil errorProneJavac
-%%  LocalWords:  uncomment
+% LocalWords:  uncomment
