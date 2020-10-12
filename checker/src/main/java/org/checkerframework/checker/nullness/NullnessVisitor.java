@@ -671,20 +671,20 @@ public class NullnessVisitor
 
     @Override
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree) {
+            @Nullable List<? extends AnnotationTree> annoTree, Tree typeTree) {
         // Look for a MEMBER_SELECT or PRIMITIVE within the type.
         Tree t = typeTree;
         while (t != null) {
             switch (t.getKind()) {
                 case MEMBER_SELECT:
                     Tree expr = ((MemberSelectTree) t).getExpression();
-                    if (atypeFactory.containsNullnessAnnotation(declAnnos, expr)) {
+                    if (atypeFactory.containsNullnessAnnotation(annoTree, expr)) {
                         checker.reportError(expr, "nullness.on.outer");
                     }
                     t = null;
                     break;
                 case PRIMITIVE_TYPE:
-                    if (atypeFactory.containsNullnessAnnotation(declAnnos, t)) {
+                    if (atypeFactory.containsNullnessAnnotation(annoTree, t)) {
                         checker.reportError(t, "nullness.on.primitive");
                     }
                     t = null;
@@ -713,7 +713,7 @@ public class NullnessVisitor
             }
         }
 
-        super.visitAnnotatedType(declAnnos, typeTree);
+        super.visitAnnotatedType(annoTree, typeTree);
     }
 
     @Override

@@ -2284,12 +2284,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * AnnotatedTypeTree within a variable declaration or for a method return type -- all the
      * annotations are attached to the VariableTree or MethodTree, respectively.
      *
-     * @param declAnnos annotations written before a variable/method declaration, if this type is
+     * @param annoTree annotations written before a variable/method declaration, if this type is
      *     from one; null otherwise
-     * @param typeTree the type that any type annotations in declAnnos apply to
+     * @param typeTree the type that any type annotations in annoTree apply to
      */
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> declAnnos, Tree typeTree) {}
+            @Nullable List<? extends AnnotationTree> annoTree, Tree typeTree) {}
 
     // **********************************************************************
     // Helper methods to provide a single overriding point
