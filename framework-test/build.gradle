@@ -8,7 +8,7 @@ sourceSets {
 dependencies {
     // If this version changes, then the version
     // docs/developer/release/maven-artifacts/framework-test-pom.xml must be changed, too.
-    implementation  group: 'junit', name: 'junit', version: '4.13'
+    implementation  group: 'junit', name: 'junit', version: '4.13.1'
     implementation project(':javacutil')
     implementation project(':checker-qual')
 
