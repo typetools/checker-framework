@@ -1544,21 +1544,21 @@ public final class TreeUtils {
     /**
      * Returns the annotations explicitly written on the given type.
      *
-     * @param annoTree annotations written before a variable/method declaration; null if this type
+     * @param annoTrees annotations written before a variable/method declaration; null if this type
      *     is not from such a location
      * @param typeTree the type whose annotations to return
      * @return the annotations explicitly written on the given type.
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
-            List<? extends AnnotationTree> annoTree, Tree typeTree) {
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         while (true) {
             switch (typeTree.getKind()) {
                 case IDENTIFIER:
                 case PRIMITIVE_TYPE:
-                    if (annoTree == null) {
+                    if (annoTrees == null) {
                         return Collections.emptyList();
                     }
-                    return annoTree;
+                    return annoTrees;
                 case ANNOTATED_TYPE:
                     return ((AnnotatedTypeTree) typeTree).getAnnotations();
                 case ARRAY_TYPE:
@@ -1568,7 +1568,7 @@ public final class TreeUtils {
                 case SUPER_WILDCARD:
                     return Collections.emptyList();
                 case MEMBER_SELECT:
-                    if (annoTree == null) {
+                    if (annoTrees == null) {
                         return Collections.emptyList();
                     }
                     typeTree = ((MemberSelectTree) typeTree).getExpression();
