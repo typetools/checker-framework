@@ -46,7 +46,7 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  * BaseTypeVisitor#visitVariable}.
  */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
-    /** Is the type valid? */
+    /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
     protected boolean isValid = true;
 
     /** Should the primary annotation on the top level type be checked? */
@@ -70,18 +70,21 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
-     * The entry point to the type validator. Validate the type against the given tree. Neither this
-     * method nor visit should be called directly by a visitor, only use {@link
-     * BaseTypeVisitor#validateTypeOf(Tree)}.
+     * Validate the type against the given tree. This method both issues error messages and also
+     * returns a boolean value.
+     *
+     * <p>This is the entry point to the type validator. Neither this method nor visit should be
+     * called directly by a visitor, only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
      *
      * <p>This method is only called on top-level types, but it validates the entire type including
      * components of a compound type. Subclasses should override this only if there is special-case
      * behavior that should be performed only on top-level types.
      *
      * @param type the type to validate
-     * @param tree the tree from which the type originated. If the tree is a method tree, validate
-     *     its return type. If the tree is a variable tree, validate its field type.
-     * @return true, iff the type is valid
+     * @param tree the tree from which the type originated. If the tree is a method tree, {@code
+     *     type} is its return type. If the tree is a variable tree, {@code type} is the variable's
+     *     type.
+     * @return true if the type is valid
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
@@ -130,15 +133,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * not check whether the annotations are semantically sensible. Subclasses should generally
      * override visit methods such as {@link #visitDeclared} rather than this method.
      *
-     * <p>Currently, the following is checked:
+     * <p>Currently, this implementation checks the following (subclasses can extend this behavior):
      *
      * <ol>
      *   <li>There should not be multiple annotations from the same qualifier hierarchy.
      *   <li>There should not be more annotations than the width of the QualifierHierarchy.
      *   <li>If the type is not a type variable, then the number of annotations should be the same
      *       as the width of the QualifierHierarchy.
-     *   <li>These properties should also hold recursively for component types of arrays, as wells
-     *       as bounds of type variables and wildcards.
+     *   <li>These properties should also hold recursively for component types of arrays and for
+     *       bounds of type variables and wildcards.
      * </ol>
      *
      * @param qualifierHierarchy the QualifierHierarchy

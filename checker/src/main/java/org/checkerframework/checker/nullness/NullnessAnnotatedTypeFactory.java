@@ -652,10 +652,16 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if some annotation in the given list is a nullness annotation such
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
-     * @param annos a list of annotations
-     * @return true if some given annotation is a nullness annotation
+     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to test
+     * @return true if some annotation is a nullness annotation
      */
-    protected boolean containsNullnessAnnotation(List<? extends AnnotationTree> annos) {
+    protected boolean containsNullnessAnnotation(
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        List<? extends AnnotationTree> annos =
+                TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
             if (isNullnessAnnotation(am)) {

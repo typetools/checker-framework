@@ -32,6 +32,6 @@ public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
 
     // Bounds used to not actually be bounds but instead exactly the lower bound
     // so line below would fail because the argument could only be Regex(0).  So this
-    // tests BaseTypeValidator.checkTypeArguments range checking
+    // tests BaseTypeValidator.checkTypeArguments range checking.
     public void method(GenericsBoundsRange<@Regex(2) String> gbr) {}
 }
