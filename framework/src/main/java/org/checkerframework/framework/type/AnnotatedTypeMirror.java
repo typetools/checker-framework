@@ -80,12 +80,10 @@ public abstract class AnnotatedTypeMirror {
                         new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
                 break;
             case ERROR:
-                BugInCF bug =
-                        new BugInCF(
-                                "AnnotatedTypeMirror.createType: input is not compilable. Found error type: "
-                                        + type);
-                bug.printStackTrace(System.out);
-                throw bug;
+                throw new BugInCF(
+                        "AnnotatedTypeMirror.createType: input is not compilable. Found error type: "
+                                + type);
+
             case EXECUTABLE:
                 result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
                 break;
