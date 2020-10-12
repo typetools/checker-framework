@@ -1,9 +1,0 @@
-This directory contains an example Maven project that downloads the latest
-Checker Framework Maven artifacts and runs the Nullness Checker.
-
-To run the example, simply execute:
-mvn compile
-
-You should see output that includes:
-
-MavenExample.java:[29,29] error: [assignment.type.incompatible] incompatible types in assignment.
