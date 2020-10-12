@@ -937,100 +937,115 @@ section, or add it if it is not present.
 \end{alltt}
 
 \item Direct the Maven compiler plugin to use the desired checkers by
-  creating two new profiles as shown below (the example uses the Nullness
+  creating three new profiles as shown below (the example uses the Nullness
   Checker).  If your POM file does not already use the
   \code{maven-compiler-plugin} plugin, you are done.  If your POM file
-  already uses the plugin, copy the existing configuration into each
-  profile.
+  already uses the plugin, copy edit the first profile to incorporate the
+  existing configuration.
+
+%% TODO: Is this comment still accurate?
+%              <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
+%              <showWarnings>true</showWarnings>
+%              <verbose>true</verbose>
 
 \begin{mysmall}
 \begin{alltt}
+  <profiles>
     <profile>
-      <id>checkerframework-java8</id>
+      <id>checkerframework</id>
       <activation>
-        <jdk>1.8</jdk>
+        <jdk>[1.8,13)</jdk>
       </activation>
       <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
-            <configuration>
+	  <plugin>
+	    <artifactId>maven-compiler-plugin</artifactId>
+	    <version>3.8.1</version>
+	    <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <source>1.8</source>
-              <target>1.8</target>
-              <compilerArguments>
-                <Xmaxerrs>10000</Xmaxerrs>
-                <Xmaxwarns>10000</Xmaxwarns>
-              </compilerArguments>
-              <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
-              <showWarnings>true</showWarnings>
-              <verbose>true</verbose>
-              <annotationProcessorPaths>
-                <path>
-                  <groupId>org.checkerframework</groupId>
-                  <artifactId>checker</artifactId>
-                  <version>\ReleaseVersion{}</version>
-                </path>
-              </annotationProcessorPaths>
-              <annotationProcessors>
+	      <compilerArguments>
+		<Xmaxerrs>10000</Xmaxerrs>
+		<Xmaxwarns>10000</Xmaxwarns>
+	      </compilerArguments>
+	      <annotationProcessorPaths>
+		<path>
+		  <groupId>org.checkerframework</groupId>
+		  <artifactId>checker</artifactId>
+		  <version>\ReleaseVersion{}</version>
+		</path>
+	      </annotationProcessorPaths>
+	      <annotationProcessors>
                 <!-- Add all the checkers you want to enable here -->
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-              </annotationProcessors>
-              <compilerArgs>
-                <arg>-J-Xbootclasspath/p:${errorProneJavac}</arg>
+	      </annotationProcessors>
+	      <compilerArgs>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
+	      </compilerArgs>
+	    </configuration>
+	  </plugin>
+        </plugins>
+      </build>
+      <dependencies>
+	<dependency>
+	  <groupId>org.checkerframework</groupId>
+	  <artifactId>checker</artifactId>
+	  <version>$\{checkerFrameworkVersion\}</version>
+	</dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>checkerframework-jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+      <properties>
+        <javac.version>9+181-r4173-1</javac.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>javac</artifactId>
+          <version>9+181-r4173-1</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <fork>true</fork>
+              <compilerArgs combine.children="append">
+                <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
+                <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
         </plugins>
-        </build>
+      </build>
     </profile>
 
     <profile>
-      <id>checkerframework-java11</id>
+      <id>checkerframework-jdk11</id>
       <activation>
         <jdk>11</jdk>
       </activation>
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
             <configuration>
-              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <release>11</release>
-              <compilerArguments>
-                <Xmaxerrs>10000</Xmaxerrs>
-                <Xmaxwarns>10000</Xmaxwarns>
-              </compilerArguments>
-              <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
-              <showWarnings>true</showWarnings>
-              <verbose>true</verbose>
-              <annotationProcessorPaths>
-                <path>
-                  <groupId>org.checkerframework</groupId>
-                  <artifactId>checker</artifactId>
-                  <version>\ReleaseVersion{}</version>
-                </path>
-              </annotationProcessorPaths>
-              <annotationProcessors>
-                <!-- Add all the checkers you want to enable here -->
-                <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
-              </annotationProcessors>
-              <compilerArgs>
+              <fork>true</fork>
+              <compilerArgs combine.children="append">
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
-                <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
               </compilerArgs>
             </configuration>
           </plugin>
         </plugins>
       </build>
-      <properties>
-        <!-- Temporary until animal-sniffer-maven-plugin is released with https://github.com/mojohaus/animal-sniffer/pull/91.
-             Version 1.19 is broken:  https://github.com/mojohaus/animal-sniffer/issues/76. -->
-        <animal.sniffer.skip>true</animal.sniffer.skip>
-      </properties>
     </profile>
   </profiles>
 \end{alltt}
@@ -1039,13 +1054,13 @@ section, or add it if it is not present.
 Now, building with Maven will run the checkers during every compilation.
 
 If you wish to run checkers while compiling your source code but not your
-tests, wrap each {@code <configuration>...</configuration>} within
+tests, wrap the \code{<configuration>...</configuration>} within
 
 \begin{Verbatim}
 <executions>
   <execution>
     <id>default-compile</id>
-      ... <!-- <configuration> ... </configuration> goes here
+    ...
   </execution>
 </executions>
 \end{Verbatim}
