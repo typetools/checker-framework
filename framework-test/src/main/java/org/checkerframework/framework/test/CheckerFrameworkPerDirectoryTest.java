@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,8 +49,8 @@ public abstract class CheckerFrameworkPerDirectoryTest {
     /** The files containing test code, which will be type-checked. */
     protected final List<File> testFiles;
 
-    /** The fully-qualified class names of the checkers to run. */
-    protected final List<@FullyQualifiedName String> checkerNames;
+    /** The binary names of the checkers to run. */
+    protected final List<@BinaryName String> checkerNames;
 
     /** The path, relative to currentDir/test to the directory containing test inputs. */
     protected final String testDir;
@@ -92,6 +92,10 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * @param classpathExtra extra entries for the classpath
      * @param checkerOptions options to pass to the compiler when running tests
      */
+    @SuppressWarnings(
+            "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
+    // @BinaryName
+    )
     protected CheckerFrameworkPerDirectoryTest(
             List<File> testFiles,
             Class<? extends AbstractProcessor> checker,
@@ -113,14 +117,14 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * Iterable, Iterable, List, boolean)} adds additional checker options.
      *
      * @param testFiles the files containing test code, which will be type-checked
-     * @param checkerNames the fully-qualified names of the checkers to run
+     * @param checkerNames the binary names of the checkers to run
      * @param testDir the path to the directory of test inputs
      * @param classpathExtra extra entries for the classpath
      * @param checkerOptions options to pass to the compiler when running tests
      */
     protected CheckerFrameworkPerDirectoryTest(
             List<File> testFiles,
-            List<@FullyQualifiedName String> checkerNames,
+            List<@BinaryName String> checkerNames,
             String testDir,
             List<String> classpathExtra,
             String... checkerOptions) {

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.UtilPlume;
@@ -50,7 +51,7 @@ public class TestConfigurationBuilder {
             File outputClassDirectory,
             String classPath,
             Iterable<File> testSourceFiles,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
 
@@ -93,6 +94,10 @@ public class TestConfigurationBuilder {
      * @return a TestConfiguration with input parameters added plus the normal default options,
      *     compiler, and file manager used by Checker Framework tests
      */
+    @SuppressWarnings(
+            "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
+    // @BinaryName
+    )
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
             File testFile,
@@ -123,7 +128,7 @@ public class TestConfigurationBuilder {
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
             Iterable<File> testSourceFiles,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
         return buildDefaultConfiguration(
@@ -152,7 +157,7 @@ public class TestConfigurationBuilder {
             String testSourcePath,
             Iterable<File> testSourceFiles,
             Collection<String> classpathExtra,
-            Iterable<String> processors,
+            Iterable<@BinaryName String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
 
@@ -184,7 +189,7 @@ public class TestConfigurationBuilder {
     private List<File> testSourceFiles;
 
     /** The set of Checker Framework processors to test with. */
-    private Set<String> processors;
+    private Set<@BinaryName String> processors;
 
     /** The set of options to the Javac command line used to run the test. */
     private SimpleOptionMap options;
@@ -327,7 +332,7 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder setProcessors(Iterable<String> processors) {
+    public TestConfigurationBuilder setProcessors(Iterable<@BinaryName String> processors) {
         this.processors.clear();
         for (String proc : processors) {
             this.processors.add(proc);
@@ -335,12 +340,12 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-    public TestConfigurationBuilder addProcessor(String processor) {
+    public TestConfigurationBuilder addProcessor(@BinaryName String processor) {
         this.processors.add(processor);
         return this;
     }
 
-    public TestConfigurationBuilder addProcessors(Iterable<String> processors) {
+    public TestConfigurationBuilder addProcessors(Iterable<@BinaryName String> processors) {
         for (String processor : processors) {
             this.processors.add(processor);
         }
