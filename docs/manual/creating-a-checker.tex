@@ -812,12 +812,12 @@ enables the checker to create an dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
-\refclass{dataflow/analysis}{FlowExpressions.Receiver} object by calling
+\refclass{dataflow/expression}{Receiver} object by calling
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
 ExpressionTree)} or
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
 Node)}.
-Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
+Then, call \<toString()> on the \<Receiver> object.
 
 
 \subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
