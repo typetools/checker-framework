@@ -1656,11 +1656,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (analysis.isRunning()) {
             as = analysis.getValue(tree);
         }
-        if (as == null
-                &&
-                // TODO: this comparison shouldn't be needed, but
-                // checker-framework-inference fails without it.
-                flowResult != null) {
+        if (as == null) {
             as = flowResult.getValue(tree);
         }
         return as;
