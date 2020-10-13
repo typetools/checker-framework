@@ -114,7 +114,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
                         testDir,
                         testFiles,
                         classpathExtra,
-                        Collections.singleton(checkerName),
+                        checkersToRun(),
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
@@ -134,5 +134,14 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      */
     public List<String> customizeOptions(List<String> previousOptions) {
         return previousOptions;
+    }
+
+    /**
+     * Returns the list of checkers to run.
+     *
+     * @return the list of checkers to run
+     */
+    public Collection<String> checkersToRun() {
+        return Collections.singleton(checkerName);
     }
 }
