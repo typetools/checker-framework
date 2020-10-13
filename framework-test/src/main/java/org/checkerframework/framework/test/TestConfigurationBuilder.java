@@ -332,6 +332,12 @@ public class TestConfigurationBuilder {
         return this;
     }
 
+    /**
+     * Set the processors.
+     *
+     * @param processors the processors to run
+     * @return this
+     */
     public TestConfigurationBuilder setProcessors(Iterable<@BinaryName String> processors) {
         this.processors.clear();
         for (String proc : processors) {
@@ -340,11 +346,23 @@ public class TestConfigurationBuilder {
         return this;
     }
 
+    /**
+     * Add a processor
+     *
+     * @param processor a processor to run
+     * @return this
+     */
     public TestConfigurationBuilder addProcessor(@BinaryName String processor) {
         this.processors.add(processor);
         return this;
     }
 
+    /**
+     * Add processors.
+     *
+     * @param processors processors to run
+     * @return this
+     */
     public TestConfigurationBuilder addProcessors(Iterable<@BinaryName String> processors) {
         for (String processor : processors) {
             this.processors.add(processor);
