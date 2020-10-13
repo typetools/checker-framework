@@ -13,6 +13,9 @@ Renamed TestUtilities.assertResultsAreValid() to TestUtilities.assertTestDidNotF
 
 Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally().
 
+New method BaseTypeVisitor#visitAnnotatedType(List, Tree) centralizes checking
+of user-written type annotations, even when parsed in declaration locations.
+
 ---------------------------------------------------------------------------
 
 Version 3.7.0, October 1, 2020

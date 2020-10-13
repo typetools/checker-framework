@@ -812,12 +812,12 @@ enables the checker to create an dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
-\refclass{dataflow/analysis}{FlowExpressions.Receiver} object by calling
+\refclass{dataflow/expression}{Receiver} object by calling
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
 ExpressionTree)} or
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
 Node)}.
-Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
+Then, call \<toString()> on the \<Receiver> object.
 
 
 \subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
@@ -1938,6 +1938,10 @@ for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 where the first command creates file \<someDirectory/myClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
+
+In the output, conditional basic blocks are represented as octagons with
+two successors.  Special basic blocks are represented as ovals (e.g., the
+entry and exit point of the method).
 
 
 \subsubsectionAndLabel{Creating a CFG while running a type-checker}{creating-debugging-dataflow-graph-with-typechecker}

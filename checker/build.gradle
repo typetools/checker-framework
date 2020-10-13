@@ -26,7 +26,7 @@ dependencies {
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.2'
-    implementation 'org.plumelib:plume-util:1.1.6'
+    implementation 'org.plumelib:plume-util:1.1.7'
 
     // Called Methods Checker AutoValue + Lombok support
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
@@ -37,7 +37,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
 
-    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 

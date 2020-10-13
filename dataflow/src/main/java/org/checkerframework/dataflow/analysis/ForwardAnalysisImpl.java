@@ -66,8 +66,8 @@ public class ForwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
@@ -155,8 +155,6 @@ public class ForwardAnalysisImpl<
                     Block succ = eb.getSuccessor();
                     if (succ != null) {
                         currentInput = new TransferInput<>(node, this, transferResult);
-                        // TODO: Variable wasn't used.
-                        // Store.FlowRule storeFlow = eb.getFlowRule();
                         propagateStoresTo(
                                 succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                     }
