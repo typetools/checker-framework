@@ -530,11 +530,18 @@ public class ForwardAnalysisImpl<
                         addBlockToWorklist = true;
                     }
                 } else {
+                    boolean storeChanged = false;
                     S newThenStore = mergeStores(s, thenStore, shouldWiden);
-                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
-                    if (!newThenStore.equals(thenStore) || !newElseStore.equals(elseStore)) {
+                    if (!newThenStore.equals(thenStore)) {
                         thenStores.put(b, newThenStore);
+                        storeChanged = true;
+                    }
+                    S newElseStore = mergeStores(s, elseStore, shouldWiden);
+                    if (!newElseStore.equals(elseStore)) {
                         elseStores.put(b, newElseStore);
+                        storeChanged = true;
+                    }
+                    if (storeChanged) {
                         inputs.put(b, new TransferInput<>(node, this, newThenStore, newElseStore));
                         addBlockToWorklist = true;
                     }
