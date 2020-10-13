@@ -40,4 +40,23 @@ public class LessThanFloat {
     @LessThan("bigger") Boolean boolBoxed;
 
     @LessThan("bigger") Character cBoxed;
+
+    java.lang.@LessThan("bigger") Byte bBoxed2;
+
+    java.lang.@LessThan("bigger") Short sBoxed2;
+
+    java.lang.@LessThan("bigger") Integer iBoxed2;
+
+    java.lang.@LessThan("bigger") Long lBoxed2;
+
+    // :: error: (anno.on.nonintegral)
+    java.lang.@LessThan("bigger") Float fBoxed2;
+
+    // :: error: (anno.on.nonintegral)
+    java.lang.@LessThan("bigger") Double dBoxed2;
+
+    // :: error: (anno.on.nonintegral)
+    java.lang.@LessThan("bigger") Boolean boolBoxed2;
+
+    java.lang.@LessThan("bigger") Character cBoxed2;
 }

@@ -140,7 +140,6 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     }
 
     // TODO: This belongs in an IndexVisitor.
-    // TODO: Handle boxed primitives too.
     @Override
     public void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
@@ -151,22 +150,25 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 case PRIMITIVE_TYPE:
                     if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(t))
                             && atypeFactory.containsIntegralIndexAnnotation(annoTrees, t)) {
-                        checker.reportError(t, "anno.on.nonintegral");
+                        checker.reportError(t, "anno.on.nonintegral", annoTrees);
                     }
                     t = null;
                     break;
                 case ANNOTATED_TYPE:
                     AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
                     Tree underlying = at.getUnderlyingType();
-                    if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                        if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(underlying))
-                                && atypeFactory.containsIntegralIndexAnnotation(null, at)) {
-                            checker.reportError(t, "anno.on.nonintegral");
-                        }
-                        t = null;
-                    } else {
-                        t = underlying;
+                    if (!TypesUtils.isIntegralPrimitiveOrBoxed(TreeUtils.typeOf(underlying))
+                            && atypeFactory.containsIntegralIndexAnnotation(null, at)) {
+                        checker.reportError(t, "anno.on.nonintegral", at.getAnnotations());
                     }
+                    t = null;
+                    break;
+                case IDENTIFIER:
+                    if (!TypesUtils.isIntegralPrimitiveOrBoxed(TreeUtils.typeOf(t))
+                            && atypeFactory.containsIntegralIndexAnnotation(annoTrees, t)) {
+                        checker.reportError(t, "anno.on.nonintegral", annoTrees);
+                    }
+                    t = null;
                     break;
                 case ARRAY_TYPE:
                     t = ((ArrayTypeTree) t).getType();
