@@ -2,6 +2,7 @@ package tests;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;

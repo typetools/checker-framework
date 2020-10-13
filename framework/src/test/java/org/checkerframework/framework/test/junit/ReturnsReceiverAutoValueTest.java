@@ -25,7 +25,7 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
     }
 
     @Override
-    Collection<String> checkersToRun() {
+    public Collection<String> checkersToRun() {
         ImmutableList.of(
                 "com.google.auto.value.extension.memoized.processor.MemoizedValidator",
                 "com.google.auto.value.processor.AutoAnnotationProcessor",
