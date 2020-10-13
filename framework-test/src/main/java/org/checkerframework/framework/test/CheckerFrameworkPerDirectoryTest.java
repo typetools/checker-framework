@@ -149,7 +149,19 @@ public abstract class CheckerFrameworkPerDirectoryTest {
                         customizedOptions,
                         shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
-        TestUtilities.assertTestDidNotFail(testResult);
+        TypecheckResult adjustedTestResult = adjustTypecheckResult(testResult);
+        TestUtilities.assertTestDidNotFail(adjustedTestResult);
+    }
+
+    /**
+     * This method is called before issuing assertions about a TypecheckResult. Subclasses can
+     * override it to customize behavior.
+     *
+     * @param testResult a test result to possibly change
+     * @return a TypecheckResult to use instead, which may be the unmodified argument
+     */
+    public TypecheckResult adjustTypecheckResult(TypecheckResult testResult) {
+        return testResult;
     }
 
     /**
