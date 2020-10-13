@@ -12,7 +12,6 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -269,17 +268,13 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
                 ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-                if (receiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-                    MemberSelectTree mst = (MemberSelectTree) receiver;
-                    Name identifier = mst.getIdentifier();
-                    if (identifier.contentEquals("class")) {
-                        ExpressionTree classExpr = mst.getExpression();
-                        if (classExpr.getKind() == Tree.Kind.IDENTIFIER
-                                || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
-                                        && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
-                                                != TypeKind.VOID)) {
-                            type.replaceAnnotation(BINARY_NAME);
-                        }
+                if (TreeUtils.isClassLiteral(receiver)) {
+                    ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
+                    if (classExpr.getKind() == Tree.Kind.IDENTIFIER
+                            || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
+                                    && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                            != TypeKind.VOID)) {
+                        type.replaceAnnotation(BINARY_NAME);
                     }
                 }
             }
