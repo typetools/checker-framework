@@ -1,5 +1,5 @@
 import org.checkerframework.framework.test.*;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 class Monotonic {
 

@@ -31,6 +31,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UtilPlume;
@@ -85,9 +86,10 @@ public class AnnotationBuilder {
      * they can be added later).
      *
      * @param env the processing environment
-     * @param name the fully-qualified name of the annotation to build
+     * @param name the canonical name of the annotation to build
      */
-    public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
+    //
+    public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
         this.annotationElt = elements.getTypeElement(name);
@@ -192,7 +194,8 @@ public class AnnotationBuilder {
      * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't
      *     be loaded
      */
-    public static @Nullable AnnotationMirror fromName(Elements elements, CharSequence name) {
+    public static @Nullable AnnotationMirror fromName(
+            Elements elements, @FullyQualifiedName CharSequence name) {
         return fromName(elements, name, new HashMap<>());
     }
 
@@ -211,7 +214,9 @@ public class AnnotationBuilder {
      *     be loaded
      */
     public static @Nullable AnnotationMirror fromName(
-            Elements elements, CharSequence name, Map<String, AnnotationValue> elementNamesValues) {
+            Elements elements,
+            @FullyQualifiedName CharSequence name,
+            Map<String, AnnotationValue> elementNamesValues) {
         final TypeElement annoElt = elements.getTypeElement(name);
         if (annoElt == null) {
             return null;
@@ -411,25 +416,14 @@ public class AnnotationBuilder {
         return this;
     }
 
+    /**
+     * Given a class, return the corresponding TypeMirror.
+     *
+     * @param clazz a class
+     * @return the TypeMirror corresponding to the given class
+     */
     private TypeMirror typeFromClass(Class<?> clazz) {
-        if (clazz == void.class) {
-            return types.getNoType(TypeKind.VOID);
-        } else if (clazz.isPrimitive()) {
-            String primitiveName = clazz.getName().toUpperCase();
-            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return types.getPrimitiveType(primitiveKind);
-        } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType());
-            return types.getArrayType(componentType);
-        } else {
-            String name = clazz.getCanonicalName();
-            assert name != null : "@AssumeAssertion(nullness): assumption";
-            TypeElement element = elements.getTypeElement(name);
-            if (element == null) {
-                throw new BugInCF("Unrecognized class: " + clazz);
-            }
-            return element.asType();
-        }
+        return TypesUtils.typeFromClass(clazz, types, elements);
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
@@ -645,7 +639,7 @@ public class AnnotationBuilder {
         private final Map<ExecutableElement, AnnotationValue> elementValues;
         /** The annotation name. */
         // default visibility to allow access from within package.
-        final @Interned @FullyQualifiedName String annotationName;
+        final @Interned @CanonicalName String annotationName;
 
         /**
          * Create a CheckerFrameworkAnnotationMirror.

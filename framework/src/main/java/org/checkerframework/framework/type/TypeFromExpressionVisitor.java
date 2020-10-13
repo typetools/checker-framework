@@ -27,7 +27,6 @@ import com.sun.source.tree.WildcardTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -38,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Converts ExpressionTrees into AnnotatedTypeMirrors.
@@ -202,11 +202,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // TODO: Both of these don't work.  See https://tinyurl.com/cfissue/2208
-            // return f.getSelfType(node.getExpression());
-            // return f.getSelfType(node);
-            return f.getEnclosingType(
-                    (TypeElement) TreeUtils.elementFromTree(node.getExpression()), node);
+            // Node is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
+            // outer type.
+            return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(node)), node);
         } else {
             // node must be a field access, so get the type of the expression, and then call
             // asMemberOf.
@@ -218,7 +216,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node, AnnotatedTypeFactory f) {
 
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
+                f.visitorState.getAssignmentContext();
         try {
             // TODO: what other trees shouldn't maintain the context?
             f.visitorState.setAssignmentContext(null);
@@ -236,7 +235,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             }
             throw new BugInCF("Unexpected type: " + type);
         } finally {
-            f.visitorState.setAssignmentContext(preAssCtxt);
+            f.visitorState.setAssignmentContext(preAssignmentContext);
         }
     }
 

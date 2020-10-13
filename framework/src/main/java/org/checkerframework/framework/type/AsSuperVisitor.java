@@ -558,10 +558,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return visitPrimitive_Other(type, superType, p);
     }
 
-    /** All other narrowings require a cast. For example: Byte b = 100; See JLS 5.1.3 */
+    /**
+     * Returns true if the type is byte, short, char, Byte, Short, or Character. All other
+     * narrowings require a cast. See JLS 5.1.3.
+     *
+     * @param type a type
+     * @return true if assignment to the type may be a narrowing
+     */
     private boolean canBeNarrowingPrimitiveConversion(TypeMirror type) {
-        // org.checkerframework.dataflow.cfg.CFGBuilder
-        // .CFGTranslationPhaseOne#conversionRequiresNarrowing()
+        // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
         TypeMirror unboxedType = TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
         TypeKind unboxedKind = unboxedType.getKind();
         return unboxedKind == TypeKind.BYTE

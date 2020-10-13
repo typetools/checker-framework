@@ -1,0 +1,11 @@
+package com.amazonaws.services.kms;
+
+import org.checkerframework.checker.calledmethods.qual.*;
+
+interface AWSKMS {
+    // This predicate enforces two properties:
+    // 1) the number of bytes or the keyspec has been set. This property is enforced soundly.
+    // 2) both the number of bytes and the keyspec have not been set. This property uses the ! operator,
+    //    so it is best regarded as a bug-finder: what it really proves is that both are not set on all paths.
+    GenerateDataKeyResult generateDataKey(@CalledMethodsPredicate("(setNumberOfBytes || withNumberOfBytes || setKeySpec || withKeySpec) && !(setNumberOfBytes && setKeySpec) && !(setNumberOfBytes && withKeySpec) && !(withNumberOfBytes && setKeySpec) && !(withNumberOfBytes && withKeySpec)") GenerateDataKeyRequest request);
+}

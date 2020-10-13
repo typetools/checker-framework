@@ -118,6 +118,15 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         any customizations are necessary.
       </li>
       <li>
+        <b>Update the AWS Java SDK BOM dependency.</b> In file <code>checker/build.gradle</code>,
+        edit the <code>com.amazonaws:aws-java-sdk-bom</code> dependency to be the latest version
+        number at
+        <a href="https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk">https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk</a>.
+        (The next time Dependabot opens a pull request for that dependency, you
+        might need to respond <code>@dependabot ignore this dependency</code> to
+        prevent such pull requests for the next month.)
+      </li>
+      <li>
         <b>Update AFU and Checker Framework change logs</b> by following the instructions
         at <a href="#content_guidelines">content guidelines</a>.
       </li>
@@ -364,27 +373,8 @@ git config --global user.email you@example.com</pre>
           won't be automatically committed when the release is committed.
         </td>
       </tr>
-
     </table>
-    <table class="table table-bordered file_layout_table">
-      <tr><th colspan="2">Jenkins Tools Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 
-      <tr>
-        <td colspan="2" class="top_file">/scratch/secs-jenkins</td>
-        <td>Contains files used to run Jenkins including versions of Java.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td colspan="2">java</td>
-        <td>Contains the versions of Java used to build the release.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td colspan="2">tools</td>
-        <td>Contains the Hevea library and some TEXINPUTS for the release.</td>
-      </tr>
-
-    </table>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Live Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 
@@ -399,8 +389,8 @@ git config --global user.email you@example.com</pre>
           <a href="https://checkerframework.org/m2-repo">https://checkerframework.org/m2-repo</a>
         </td>
       </tr>
-
     </table>
+
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Staging (Development) Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 

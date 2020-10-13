@@ -4,6 +4,8 @@ import com.sun.source.tree.*;
 import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -519,6 +521,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
         visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
 
         if (TreeUtils.isArrayLengthAccess(tree)) {
             // The field access is to the length field, as in "someArrayExpression.length"
@@ -559,9 +562,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
             // compile-time constant.  Obtain its value reflectively.
             Element classElement = fieldElement.getEnclosingElement();
             if (classElement != null) {
-                @SuppressWarnings("signature" // TODO: this looks like a bug in
-                // ValueAnnotatedTypeFactory.  evaluateStaticFieldAcces requires a @ClassGetName
-                // but this passes a @FullyQualifiedName
+                @SuppressWarnings("signature" // TODO: bug in ValueAnnotatedTypeFactory.
+                // evaluateStaticFieldAccess requires a @ClassGetName but this passes a
+                // @FullyQualifiedName.  They differ for inner classes.
                 )
                 @BinaryName String classname = ElementUtils.getQualifiedClassName(classElement).toString();
                 @SuppressWarnings(
@@ -608,6 +611,36 @@ class ValueTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
         visitFieldAccess(tree, type);
+        visitEnumConstant(tree, type);
         return null;
+    }
+
+    /**
+     * Default the type of an enum constant {@code E.V} to {@code @StringVal("V")}. Does nothing if
+     * the argument is not an enum constant.
+     *
+     * @param tree an Identifier or MemberSelect tree that might be an enum
+     * @param type the type of that tree
+     */
+    private void visitEnumConstant(ExpressionTree tree, AnnotatedTypeMirror type) {
+        Element decl = TreeUtils.elementFromTree(tree);
+        if (decl.getKind() != ElementKind.ENUM_CONSTANT) {
+            return;
+        }
+
+        Name id;
+        switch (tree.getKind()) {
+            case MEMBER_SELECT:
+                id = ((MemberSelectTree) tree).getIdentifier();
+                break;
+            case IDENTIFIER:
+                id = ((IdentifierTree) tree).getName();
+                break;
+            default:
+                throw new BugInCF("unexpected kind of enum constant use tree: " + tree.getKind());
+        }
+        AnnotationMirror stringVal =
+                atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
+        type.replaceAnnotation(stringVal);
     }
 }

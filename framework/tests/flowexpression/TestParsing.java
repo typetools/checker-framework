@@ -1,4 +1,4 @@
-import testlib.flowexpression.qual.FlowExp;
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class TestParsing {
     int[] a = {1, 2};

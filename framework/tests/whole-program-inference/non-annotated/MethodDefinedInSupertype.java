@@ -1,5 +1,5 @@
-import testlib.wholeprograminference.qual.Parent;
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Parent;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 abstract class MethodDefinedInSupertype {
 

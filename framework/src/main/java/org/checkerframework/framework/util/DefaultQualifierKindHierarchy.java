@@ -19,6 +19,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -53,7 +54,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * A mapping from canonical name of a qualifier class to the QualifierKind object representing
      * that class.
      */
-    protected final Map<@Interned String, DefaultQualifierKind> nameToQualifierKind;
+    protected final Map<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind;
 
     /**
      * A list of all {@link QualifierKind}s for this DefaultQualifierKindHierarchy, sorted in
@@ -111,7 +112,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     }
 
     @Override
-    public @Nullable QualifierKind getQualifierKind(String name) {
+    public @Nullable QualifierKind getQualifierKind(@CanonicalName String name) {
         return nameToQualifierKind.get(name);
     }
 
@@ -231,10 +232,11 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @param qualifierClasses classes of annotations that are type qualifiers
      * @return a mapping from the canonical name of an annotation class to {@link QualifierKind}
      */
-    protected Map<@Interned String, DefaultQualifierKind> createQualifierKinds(
+    protected Map<@Interned @CanonicalName String, DefaultQualifierKind> createQualifierKinds(
             @UnderInitialization DefaultQualifierKindHierarchy this,
             Collection<Class<? extends Annotation>> qualifierClasses) {
-        TreeMap<@Interned String, DefaultQualifierKind> nameToQualifierKind = new TreeMap<>();
+        TreeMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
+                new TreeMap<>();
         for (Class<? extends Annotation> clazz : qualifierClasses) {
             @SuppressWarnings("interning") // uniqueness is tested immediately below
             @Interned DefaultQualifierKind qualifierKind = new DefaultQualifierKind(clazz);
@@ -248,8 +250,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
     /**
      * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifier kinds.
-     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used by
-     * {@link #createBottomsSet(Map)}, {@link #createTopsSet(Map)}, and {@link
+     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used to
+     * create the bottom set, to create the top set, and by {@link
      * #initializeQualifierKindFields(Map)}.
      *
      * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override
@@ -696,7 +698,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     public @Interned static class DefaultQualifierKind implements QualifierKind {
 
         /** The canonical name of the annotation class of this. */
-        private final @Interned String name;
+        private final @Interned @CanonicalName String name;
 
         /** The annotation class for this. */
         private final Class<? extends Annotation> clazz;
@@ -721,7 +723,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
          * this qualifier kind itself.
          */
         // Set while creating the QualifierKindHierarchy.
-        @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
+        protected @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
         /**
          * Creates a {@link DefaultQualifierKind} for the given annotation class.
@@ -736,7 +738,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
 
         @Override
-        public @Interned String getName() {
+        public @Interned @CanonicalName String getName() {
             return name;
         }
 

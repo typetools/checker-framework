@@ -5,11 +5,12 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs pre-processing on annotations written by users, replacing illegal annotations by legal
@@ -84,11 +85,11 @@ class ValueTypeAnnotator extends TypeAnnotator {
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
             TypeMirror underlyingType = atm.getUnderlyingType();
             // If the underlying type is neither a primitive integral type nor boxed integral type,
-            // return without making changes. NumberUtils#isIntegral fails if passed a non-primitive
-            // type that is not a declared type, so it cannot be called directly.
-            if (!NumberUtils.isPrimitiveIntegral(underlyingType.getKind())
+            // return without making changes. TypesUtils.isIntegralPrimitiveOrBoxed fails if passed
+            // a non-primitive type that is not a declared type, so it cannot be called directly.
+            if (!TypeKindUtils.isIntegral(underlyingType.getKind())
                     && (underlyingType.getKind() != TypeKind.DECLARED
-                            || !NumberUtils.isIntegral(underlyingType))) {
+                            || !TypesUtils.isIntegralPrimitiveOrBoxed(underlyingType))) {
                 return;
             }
 

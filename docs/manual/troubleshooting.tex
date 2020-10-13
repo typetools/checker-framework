@@ -502,6 +502,15 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 \end{Verbatim}
 \end{smaller}
 
+\item
+  If the Checker Framework issues an error or warning that you cannot
+  reproduce using a smaller test case, then try running the Checker
+  Framework with the \<-AatfDoNotCache> command-line argument.  If the
+  Checker Framework behaves differently with and without that command-line
+  argument, then there is a bug related to its internal caches.  Please
+  report that bug at
+  \url{https://github.com/typetools/checker-framework/issues}.
+
 \end{itemize}
 
 
@@ -592,7 +601,7 @@ helpful if you:
   method signatures of other methods.
 \item
   Indicate what you have already done to try to understand the problem.
-  Did you do any additional experiments?  What parts of the manual did
+  Did you do any additional experiments?  What parts of the manual did you
   read, and what else did you search for in the manual?  Without this
   information, the maintainers may give you redundant suggestions.
 \end{itemize}
@@ -813,8 +822,7 @@ a developer version of \<javac> in the \<bin-devel> directory. This
 version will use compiled classes from \<dataflow/build>,
 \<javacutil/build>, \<framework/build>,
 and \<checker/build> in the \<checker-framework> directory instead of
-the compiled jar files, and by default will print stack traces for all
-errors.
+the compiled jar files.
 
 To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
 

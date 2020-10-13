@@ -238,6 +238,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (exprName.contains("+")) {
             return null;
         }
+        @SuppressWarnings("signature") // special case for annotations containing "+"
         AnnotationDef def =
                 new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
         def.setFieldTypes(Collections.emptyMap());
@@ -552,9 +553,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                         @SuppressWarnings(
                                 "signature") // https://tinyurl.com/cfissue/658 for getNameAsString
                         @FullyQualifiedName String typeName = type.getNameAsString();
-                        @SuppressWarnings(
-                                "signature") // TODO looks like a bug in ToIndexFileConverter:
-                        // resolve requires a @BinaryName, but this passes a @FullyQualifiedName!
+                        @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
+                        // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
+                        // They differ for inner classes.
+                        )
                         String name = resolve(typeName);
                         if (name == null) {
                             // could be defined in the same stub file

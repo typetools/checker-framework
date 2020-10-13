@@ -1,6 +1,6 @@
 package flowexpression;
 
-import testlib.flowexpression.qual.FlowExp;
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class CharAndDoubleParsing {
     void doubleParsing(@FlowExp("1.0") Object doubleValue) {

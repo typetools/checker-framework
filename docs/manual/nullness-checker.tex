@@ -3,8 +3,8 @@
 
 If the Nullness Checker issues no warnings for a given program, then
 running that program will never throw a null pointer exception.  This
-guarantee enables a programmer to prevent errors from occurring when a
-program is run.  See Section~\ref{nullness-checks} for more details about
+guarantee enables a programmer to prevent run-time errors.
+See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
 The most important annotations supported by the Nullness Checker are
@@ -174,9 +174,12 @@ The nullness hierarchy contains these qualifiers:
 \begin{description}
 
 \item[\refqualclass{checker/nullness/qual}{Nullable}]
-  indicates a type that includes the null value.  For example, the type \code{Boolean}
+  indicates a type that includes the null value.  For example, the Java
+  type \code{Boolean}
   is nullable:  a variable of type \code{Boolean} always has one of the
   values \code{TRUE}, \code{FALSE}, or \code{null}.
+  (Since \<@NonNull> is the default type annotation, you would actually
+  write this type as \<@Nullable Boolean>.)
 
 \item[\refqualclass{checker/nullness/qual}{NonNull}]
   indicates a type that does not include the null value.  The type
@@ -200,32 +203,28 @@ The nullness hierarchy contains these qualifiers:
   non-\code{null}, then it never becomes \code{null} again.  This is
   appropriate for lazily-initialized fields, for field initialization that
   occurs in a lifecycle method other than the constructor (e.g., an
-  override of \<android.app.Activity.onCreate>), and other uses.  When the
-  variable is read, its type is treated as
-  \refqualclass{checker/nullness/qual}{Nullable}, but when the variable is
-  assigned, its type is treated as
-  \refqualclass{checker/nullness/qual}{NonNull}.
+  override of \<android.app.Activity.onCreate>), and other uses.
+  \<@MonotonicNonNull> is typically written on field types, but not elsewhere.
 
   \begin{sloppypar}
-  Because the Nullness Checker works intraprocedurally (it analyzes one
-  method at a time), when a \code{MonotonicNonNull} field is first read within a
-  method, the field cannot be assumed to be non-null.  The benefit of
-  MonotonicNonNull over Nullable is its different interaction with
-  type refinement (Section~\ref{type-refinement}).
-  After a check of a MonotonicNonNull
-  field, all subsequent accesses \emph{within that method} can be assumed
-  to be NonNull, even after arbitrary external method calls that have
-  access to the given field.
+  The benefit of \<@MonotonicNonNull> over \<@Nullable> is that after a
+  check of a \<@MonotonicNonNull> field, all subsequent accesses
+  \emph{within that method} can be assumed to be \<@NonNull>, even after
+  arbitrary external method calls that have access to the given field.
+  By contrast, for a \<@Nullable> field, the Nullness Checker assumes that
+  most method calls might set it to \<null>. (Exceptions are calls to
+  methods that are \<@SideEffectFree> or that have an \<@EnsuresNonNull> or
+  \<@EnsuresNonNullIf> annotation.)
   \end{sloppypar}
 
-  It is permitted to initialize a MonotonicNonNull field to null, but the
+  A \<@MonotonicNonNull> field may be initialized to null, but the
   field may not be assigned to null anywhere else in the program.  If you
   supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
   \<@MonotonicNonNull> fields are not allowed to have initializers at their
   declarations.
 
-  Use of \<@MonotonicNonNull> on a static field is a code smell:  it may
+  Use of \<@MonotonicNonNull> on a \emph{static} field is a code smell:  it may
   indicate poor design.  You should consider whether it is possible to make
   the field a member field that is set in the constructor.
 
@@ -344,10 +343,10 @@ implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 \subsectionAndLabel{Default annotation}{null-defaults}
 
 Unannotated references are treated as if they had a default annotation.
-The standard defaulting rule is CLIMB-to-top,  described in
-Section~\ref{climb-to-top}.  Its effect is to default all types to
+All types default to
 \<@NonNull>, except that \<@Nullable> is used for casts, locals,
-instanceof, and implicit bounds.  A user can choose a different defaulting
+instanceof, and implicit bounds (see Section~\ref{climb-to-top}).
+A user can choose a different defaulting
 rule by writing a \refqualclass{framework/qual}{DefaultQualifier} annotation on a
  package, class, or method.  In the example below, fields are defaulted to
 \<@Nullable> instead of \<@NonNull>.
@@ -775,7 +774,9 @@ Run the command \code{make check-nullness}.
 
 Here are some tips about getting started using the Nullness Checker on a
 legacy codebase.  For more generic advice (not specific to the Nullness
-Checker), see Section~\ref{get-started-with-legacy-code}.
+Checker), see Section~\ref{get-started-with-legacy-code}.  Also see the
+\ahreforurl{https://checkerframework.org/tutorial/}{Checker
+Framework tutorial}, which includes an example of using the Nullness Checker.
 
 Your goal is to add \refqualclass{checker/nullness/qual}{Nullable} annotations
 to the types of any variables that can be null.  (The default is to assume
@@ -946,6 +947,7 @@ $\Rightarrow$
  ~org.jetbrains.annotations.Nullable~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
  ~org.jspecify.annotations.Nullable~ \\ \hline
+ ~org.jspecify.annotations.NullnessUnspecified~ \\ \hline
  ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline

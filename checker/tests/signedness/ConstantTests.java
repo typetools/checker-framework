@@ -1,11 +1,13 @@
 // Tests of constants
 
-// @skip-test
-
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class ConstantTests {
+
+    @Unsigned int uint_negative_one = (@Unsigned int) -1;
+
+    @Unsigned int u1lit = 0xFFFFFFFE; // unsigned: 2^32 - 2, signed: -2
 
     void m() {
 
@@ -23,9 +25,8 @@ public class ConstantTests {
         @UnknownSignedness int y = s1 / 2;
 
         // :: error: (operation.unsignedlhs)
-        @UnknownSignedness int z = ((@Unsigned int) -1) / -2;
+        @UnknownSignedness int z = (uint_negative_one) / -2;
 
-        @Unsigned int u1lit = 0xFFFFFFFE; // unsigned: 2^32 - 2, signed: -2
         // :: error: (operation.unsignedlhs)
         @UnknownSignedness int w = u1lit / 2;
     }

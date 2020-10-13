@@ -1,4 +1,4 @@
-import testlib.wholeprograminference.qual.Top;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Top;
 
 public class ConstructorTest {
 
