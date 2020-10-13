@@ -225,7 +225,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             StringBuilder sb = new StringBuilder();
 
             boolean isFirst = true;
-            for (AnnotatedDeclaredType adt : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror adt : type.directSuperTypes()) {
                 if (!isFirst) {
                     sb.append(" & ");
                 }

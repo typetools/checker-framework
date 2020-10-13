@@ -218,10 +218,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 AnnotatedIntersectionType upperBound =
                         (AnnotatedIntersectionType) result.getUpperBound();
 
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<>(bounds.size());
-                for (AnnotatedTypeMirror b : bounds) {
-                    superBounds.add((AnnotatedDeclaredType) b);
-                }
+                List<AnnotatedTypeMirror> superBounds = new ArrayList<>(bounds.size());
+                superBounds.addAll(bounds);
                 upperBound.setDirectSuperTypes(superBounds);
         }
 

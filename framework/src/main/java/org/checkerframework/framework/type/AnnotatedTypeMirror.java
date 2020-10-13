@@ -1602,9 +1602,9 @@ public abstract class AnnotatedTypeMirror {
          */
         private void replaceUpperBoundAnnotations(Collection<? extends AnnotationMirror> newAnnos) {
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
-                final List<AnnotatedDeclaredType> bounds =
+                final List<AnnotatedTypeMirror> bounds =
                         ((AnnotatedIntersectionType) upperBound).directSuperTypes();
-                for (final AnnotatedDeclaredType bound : bounds) {
+                for (AnnotatedTypeMirror bound : bounds) {
                     bound.replaceAnnotations(newAnnos);
                 }
             } else {
@@ -2118,26 +2118,33 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
-        protected List<AnnotatedDeclaredType> supertypes;
+        protected List<AnnotatedTypeMirror> supertypes;
 
+        /**
+         * This returns the bounds of the intersection type. Although only declared types can appear
+         * in an explicitly written intersections, during capture conversion, intersections with
+         * other kinds of types are created.
+         *
+         * @return the bounds of this, which are also the direct super types of this
+         */
         @Override
-        public List<AnnotatedDeclaredType> directSuperTypes() {
+        public List<AnnotatedTypeMirror> directSuperTypes() {
             if (supertypes == null) {
                 List<? extends TypeMirror> ubounds = ((IntersectionType) actualType).getBounds();
-                List<AnnotatedDeclaredType> res = new ArrayList<>(ubounds.size());
+                List<AnnotatedTypeMirror> res = new ArrayList<>(ubounds.size());
                 for (TypeMirror bnd : ubounds) {
-                    res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory, false));
+                    res.add(createType(bnd, atypeFactory, false));
                 }
                 supertypes = Collections.unmodifiableList(res);
             }
             return supertypes;
         }
 
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
+        public List<AnnotatedTypeMirror> directSuperTypesField() {
             return supertypes;
         }
 
-        void setDirectSuperTypes(List<AnnotatedDeclaredType> supertypes) {
+        void setDirectSuperTypes(List<AnnotatedTypeMirror> supertypes) {
             this.supertypes = new ArrayList<>(supertypes);
         }
     }

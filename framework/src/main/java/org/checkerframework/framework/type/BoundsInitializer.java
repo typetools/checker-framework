@@ -375,9 +375,9 @@ public class BoundsInitializer {
 
             intersections.put(type.getUnderlyingType(), type);
 
-            List<AnnotatedDeclaredType> supertypes = type.directSuperTypes();
+            List<AnnotatedTypeMirror> supertypes = type.directSuperTypes();
             for (int i = 0; i < supertypes.size(); i++) {
-                AnnotatedDeclaredType supertype = supertypes.get(i);
+                AnnotatedTypeMirror supertype = supertypes.get(i);
                 TypePathNode node = currentStructure.addPathNode(new IntersectionBoundNode(i));
                 visit(supertype);
                 currentStructure.removePathNode(node);

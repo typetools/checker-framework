@@ -624,7 +624,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Declared(
             AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, Void p) {
         Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
             if (TypesUtils.isErasedSubtype(
                             subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype, currentTop)) {
@@ -637,7 +637,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitIntersection_Primitive(
             AnnotatedIntersectionType subtype, AnnotatedPrimitiveType supertype, Void p) {
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
             if (TypesUtils.isBoxedPrimitive(subtypeI.getUnderlyingType())
                     && isSubtype(subtypeI, supertype, currentTop)) {
                 return true;
@@ -650,8 +650,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Intersection(
             AnnotatedIntersectionType subtype, AnnotatedIntersectionType supertype, Void p) {
         Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            for (AnnotatedDeclaredType supertypeI : supertype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
+            for (AnnotatedTypeMirror supertypeI : supertype.directSuperTypes()) {
                 if (TypesUtils.isErasedSubtype(
                                 subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType(), types)
                         && !isSubtype(subtypeI, supertypeI, currentTop)) {
@@ -666,7 +666,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Null(
             AnnotatedIntersectionType subtype, AnnotatedNullType supertype, Void p) {
         // this can occur through capture conversion/comparing bounds
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
             if (isPrimarySubtype(subtypeI, supertype)) {
                 return true;
             }
@@ -679,7 +679,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedIntersectionType subtype, AnnotatedTypeVariable supertype, Void p) {
         // this can occur through capture conversion/comparing bounds
         Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
             if (TypesUtils.isErasedSubtype(
                             subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype, currentTop)) {
@@ -694,7 +694,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedIntersectionType subtype, AnnotatedWildcardType supertype, Void p) {
         // this can occur through capture conversion/comparing bounds
         Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subtypeI : subtype.directSuperTypes()) {
             if (TypesUtils.isErasedSubtype(
                             subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
                     && isSubtype(subtypeI, supertype, currentTop)) {

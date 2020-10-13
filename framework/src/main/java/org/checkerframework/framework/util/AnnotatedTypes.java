@@ -466,7 +466,7 @@ public class AnnotatedTypes {
                         memberType);
             case INTERSECTION:
                 AnnotatedTypeMirror iter = memberType;
-                for (AnnotatedDeclaredType superType :
+                for (AnnotatedTypeMirror superType :
                         ((AnnotatedIntersectionType) of).directSuperTypes()) {
                     iter = substituteTypeVariables(types, atypeFactory, superType, member, iter);
                 }

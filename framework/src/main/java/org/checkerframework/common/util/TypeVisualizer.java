@@ -306,7 +306,7 @@ public class TypeVisualizer {
 
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
-                final List<AnnotatedDeclaredType> superTypes = type.directSuperTypes();
+                final List<AnnotatedTypeMirror> superTypes = type.directSuperTypes();
                 for (int i = 0; i < superTypes.size(); i++) {
                     lines.add(connect(type, superTypes.get(i)) + " " + makeLabel("&"));
                 }

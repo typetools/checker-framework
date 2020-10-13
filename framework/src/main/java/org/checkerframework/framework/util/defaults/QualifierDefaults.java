@@ -820,7 +820,7 @@ public class QualifierDefaults {
              * Make sure to apply the default there too.
              */
             if (type.getKind() == TypeKind.INTERSECTION) {
-                List<AnnotatedDeclaredType> sups =
+                List<AnnotatedTypeMirror> sups =
                         ((AnnotatedIntersectionType) type).directSuperTypesField();
                 if (sups != null) {
                     for (AnnotatedTypeMirror sup : sups) {
