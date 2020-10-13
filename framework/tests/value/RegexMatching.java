@@ -9,6 +9,13 @@ class RegexMatching {
         // :: error: assignment.type.incompatible
         @MatchesRegex("a*") String b = "b";
 
+        // NOTE: these tests show that there are implicit anchors in the regular expressions
+        // used by @MatchesRegex.
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("a*") String ab = "ab";
+        // :: error: assignment.type.incompatible
+        @MatchesRegex("a*") String baa = "baa";
+
         @MatchesRegex("a") String a1 = "a";
         // :: error: assignment.type.incompatible
         @MatchesRegex("a") String blank1 = "";
@@ -96,8 +103,8 @@ class RegexMatching {
         }
         // NOTE: This depends on the internal implementation.  Semantically identical code like this
         // yields an error:
-        // @MatchesRegex({"a*", "^b$"}) String s1 = s;
-        @MatchesRegex({"a*", "^\\Qb\\E$"}) String s1 = s;
+        // @MatchesRegex({"a*", "b"}) String s0 = s;
+        @MatchesRegex({"a*", "\\Qb\\E"}) String s1 = s;
         // :: error: assignment.type.incompatible
         @MatchesRegex({"a*"}) String s2 = s;
         // :: error: assignment.type.incompatible
