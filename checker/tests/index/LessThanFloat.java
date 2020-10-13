@@ -21,4 +21,23 @@ public class LessThanFloat {
     @LessThan("bigger") boolean bool;
 
     @LessThan("bigger") char c;
+
+    @LessThan("bigger") Byte bBoxed;
+
+    @LessThan("bigger") Short sBoxed;
+
+    @LessThan("bigger") Integer iBoxed;
+
+    @LessThan("bigger") Long lBoxed;
+
+    // :: error: (anno.on.nonintegral)
+    @LessThan("bigger") Float fBoxed;
+
+    // :: error: (anno.on.nonintegral)
+    @LessThan("bigger") Double dBoxed;
+
+    // :: error: (anno.on.nonintegral)
+    @LessThan("bigger") Boolean boolBoxed;
+
+    @LessThan("bigger") Character cBoxed;
 }
