@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.inequality;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -36,6 +37,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror BOTTOM =
@@ -335,5 +337,43 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
             return list;
         }
+    }
+
+    /**
+     * Returns true if some annotation in the given list is an index annotation that is only
+     * applicable to integral types, such as @LessThan.
+     *
+     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to test
+     * @return true if some annotation is an index annotation that is only applicable to integral
+     *     types
+     */
+    protected boolean containsIntegralIndexAnnotation(
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        List<? extends AnnotationTree> annos =
+                TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+
+        for (AnnotationTree annoTree : annos) {
+            AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
+            if (isIntegralIndexAnnotation(am)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the given annotation is an index annotation that is only applicable to
+     * integral types, such as @LessThan.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is an index annotation that is only applicable to
+     *     integral types
+     */
+    protected boolean isIntegralIndexAnnotation(AnnotationMirror am) {
+        return AnnotationUtils.areSameByName(am, BOTTOM)
+                || AnnotationUtils.areSameByName(am, UNKNOWN)
+                || AnnotationUtils.areSameByClass(am, LessThan.class);
     }
 }

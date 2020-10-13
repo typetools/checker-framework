@@ -306,11 +306,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     throw (RuntimeException) err;
                 }
             }
+            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
             throw new BugInCF(
                     String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes)),
-                    (t instanceof InvocationTargetException) ? t.getCause() : t);
+                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
+                    cause);
         }
     }
 

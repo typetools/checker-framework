@@ -1,5 +1,8 @@
 package org.checkerframework.checker.index.inequality;
 
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -9,10 +12,13 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
@@ -130,5 +136,46 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         }
 
         return super.isTypeCastSafe(castType, exprType);
+    }
+
+    // TODO: This belongs in an IndexVisitor.
+    // TODO: Handle boxed primitives too.
+    @Override
+    public void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        // Look for a PRIMITIVE within the type.
+        Tree t = typeTree;
+        while (t != null) {
+            switch (t.getKind()) {
+                case PRIMITIVE_TYPE:
+                    if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(t))
+                            && atypeFactory.containsIntegralIndexAnnotation(annoTrees, t)) {
+                        checker.reportError(t, "anno.on.float");
+                    }
+                    t = null;
+                    break;
+                case ANNOTATED_TYPE:
+                    AnnotatedTypeTree at = ((AnnotatedTypeTree) t);
+                    Tree underlying = at.getUnderlyingType();
+                    if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                        if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(underlying))
+                                && atypeFactory.containsIntegralIndexAnnotation(null, at)) {
+                            checker.reportError(t, "anno.on.float");
+                        }
+                        t = null;
+                    } else {
+                        t = underlying;
+                    }
+                    break;
+                case ARRAY_TYPE:
+                    t = ((ArrayTypeTree) t).getType();
+                    break;
+                default:
+                    t = null;
+                    break;
+            }
+        }
+
+        super.visitAnnotatedType(annoTrees, typeTree);
     }
 }
