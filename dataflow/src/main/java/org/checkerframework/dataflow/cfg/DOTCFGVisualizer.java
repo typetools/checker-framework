@@ -15,7 +15,6 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
@@ -26,6 +25,11 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
@@ -259,27 +263,27 @@ public class DOTCFGVisualizer<
     }
 
     @Override
-    public String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value) {
+    public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
         return storeEntryIndent + localVar + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
-    public String visualizeStoreFieldVal(FlowExpressions.FieldAccess fieldAccess, V value) {
+    public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
         return storeEntryIndent + fieldAccess + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
-    public String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value) {
+    public String visualizeStoreArrayVal(ArrayAccess arrayValue, V value) {
         return storeEntryIndent + arrayValue + " > " + escapeDoubleQuotes(value);
     }
 
     @Override
-    public String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value) {
+    public String visualizeStoreMethodVals(MethodCall methodCall, V value) {
         return storeEntryIndent + escapeDoubleQuotes(methodCall) + " > " + value;
     }
 
     @Override
-    public String visualizeStoreClassVals(FlowExpressions.ClassName className, V value) {
+    public String visualizeStoreClassVals(ClassName className, V value) {
         return storeEntryIndent + className + " > " + escapeDoubleQuotes(value);
     }
 

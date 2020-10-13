@@ -13,9 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -24,6 +21,9 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -43,9 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *       can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
- *       InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       InitializationStore#insertValue(Receiver, CFAbstractValue)}).
  *   <li>All non-null fields with an initializer can be considered initialized (this is done in
- *       {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       {@link InitializationStore#insertValue(Receiver, CFAbstractValue)}).
  *   <li>After the call to a super constructor ("super()" call), all non-null fields of the super
  *       class can safely be considered initialized.
  * </ol>

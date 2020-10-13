@@ -7,13 +7,12 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -163,8 +162,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
         try {
             // Remove invariant annotated fields to avoid performance issue reported in #1438.
             for (FieldAccess invariantField : invariantFields.keySet()) {
@@ -187,8 +186,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public S leastUpperBound(S other) {
         // Remove invariant annotated fields to avoid performance issue reported in #1438.
-        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
         for (FieldAccess invariantField : invariantFields.keySet()) {
             V v = fieldValues.remove(invariantField);
             removedFieldValues.put(invariantField, v);

@@ -5,9 +5,8 @@ import com.sun.source.util.TreePath;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.qual.HasSubsequence;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
@@ -131,8 +130,8 @@ public class Subsequence {
         if (rec == null) {
             return null;
         }
-        if (rec instanceof FlowExpressions.FieldAccess) {
-            FieldAccess fa = (FlowExpressions.FieldAccess) rec;
+        if (rec instanceof FieldAccess) {
+            FieldAccess fa = (FieldAccess) rec;
             return new FlowExpressionParseUtil.FlowExpressionContext(
                     fa.getReceiver(), null, checker);
 
