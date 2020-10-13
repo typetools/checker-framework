@@ -39,10 +39,13 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    private final AnnotationMirror BOTTOM =
+    /** The @LessThanBottom annotation. */
+    private final AnnotationMirror LESS_THAN_BOTTOM =
             AnnotationBuilder.fromClass(elements, LessThanBottom.class);
-    public final AnnotationMirror UNKNOWN =
+    /** The @LessThanUnknown annotation. */
+    public final AnnotationMirror LESS_THAN_UNKNOWN =
             AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
 
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -146,7 +149,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThan(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -260,7 +263,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -296,7 +299,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public List<String> getLessThanExpressions(ExpressionTree expression) {
         AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-        return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(UNKNOWN));
+        return getLessThanExpressions(
+                annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN));
     }
 
     /**
@@ -307,9 +311,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {
-            return BOTTOM;
+            return LESS_THAN_BOTTOM;
         } else if (expressions.isEmpty()) {
-            return UNKNOWN;
+            return LESS_THAN_UNKNOWN;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, LessThan.class);
             builder.setValue("value", expressions);
@@ -372,8 +376,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *     integral types
      */
     protected boolean isIntegralIndexAnnotation(AnnotationMirror am) {
-        return AnnotationUtils.areSameByName(am, BOTTOM)
-                || AnnotationUtils.areSameByName(am, UNKNOWN)
+        return AnnotationUtils.areSameByName(am, LESS_THAN_BOTTOM)
+                || AnnotationUtils.areSameByName(am, LESS_THAN_UNKNOWN)
                 || AnnotationUtils.areSameByClass(am, LessThan.class);
     }
 }

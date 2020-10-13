@@ -11,13 +11,13 @@ public class LessThanFloat {
 
     @LessThan("bigger") long l;
 
-    // :: error: (anno.on.float)
+    // :: error: (anno.on.nonintegral)
     @LessThan("bigger") float f;
 
-    // :: error: (anno.on.float)
+    // :: error: (anno.on.nonintegral)
     @LessThan("bigger") double d;
 
-    // :: error: (anno.on.float)
+    // :: error: (anno.on.nonintegral)
     @LessThan("bigger") boolean bool;
 
     @LessThan("bigger") char c;

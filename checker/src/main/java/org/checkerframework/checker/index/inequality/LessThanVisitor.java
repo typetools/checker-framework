@@ -20,6 +20,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The visitor for the Less Than Checker. */
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
     private static final @CompilerMessageKey String FROM_GT_TO = "from.gt.to";
@@ -78,7 +79,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // is "a".
         List<String> expressions =
                 LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN));
+                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
         if (expressions != null) {
             boolean isLessThan = true;
             for (String expression : expressions) {
@@ -115,7 +116,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
         AnnotationMirror exprLTAnno =
-                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.UNKNOWN);
+                exprType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
 
         if (exprLTAnno != null) {
             List<String> initialAnnotations =
@@ -150,7 +151,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 case PRIMITIVE_TYPE:
                     if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(t))
                             && atypeFactory.containsIntegralIndexAnnotation(annoTrees, t)) {
-                        checker.reportError(t, "anno.on.float");
+                        checker.reportError(t, "anno.on.nonintegral");
                     }
                     t = null;
                     break;
@@ -160,7 +161,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                     if (underlying.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                         if (!TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(underlying))
                                 && atypeFactory.containsIntegralIndexAnnotation(null, at)) {
-                            checker.reportError(t, "anno.on.float");
+                            checker.reportError(t, "anno.on.nonintegral");
                         }
                         t = null;
                     } else {
