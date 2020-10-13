@@ -127,7 +127,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
      * override it to customize behavior.
      *
      * @param testResult a test result to possibly change
-     * @returns a TypecheckResult to use instead, which may be the unmodified argument
+     * @return a TypecheckResult to use instead, which may be the unmodified argument
      */
     public TypecheckResult adjustTypecheckResult(TypecheckResult testResult) {
         return testResult;
