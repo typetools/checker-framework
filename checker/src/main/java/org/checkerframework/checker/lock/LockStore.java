@@ -6,13 +6,15 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.source.SourceChecker;
@@ -64,43 +66,43 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * Insert an annotation exactly, without regard to whether an annotation was already present.
      * This is only done for @LockPossiblyHeld. This is not sound for other type qualifiers.
      */
-    public void insertLockPossiblyHeld(FlowExpressions.Receiver r) {
+    public void insertLockPossiblyHeld(Receiver r) {
         if (r.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
         }
-        if (r instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
+        if (r instanceof LocalVariable) {
+            LocalVariable localVar = (LocalVariable) r;
             CFValue current = localVariableValues.get(localVar);
             CFValue value = changeLockAnnoToTop(r, current);
             if (value != null) {
                 localVariableValues.put(localVar, value);
             }
-        } else if (r instanceof FlowExpressions.FieldAccess) {
-            FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
+        } else if (r instanceof FieldAccess) {
+            FieldAccess fieldAcc = (FieldAccess) r;
             CFValue current = fieldValues.get(fieldAcc);
             CFValue value = changeLockAnnoToTop(r, current);
             if (value != null) {
                 fieldValues.put(fieldAcc, value);
             }
-        } else if (r instanceof FlowExpressions.MethodCall) {
-            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
+        } else if (r instanceof MethodCall) {
+            MethodCall method = (MethodCall) r;
             CFValue current = methodValues.get(method);
             CFValue value = changeLockAnnoToTop(r, current);
             if (value != null) {
                 methodValues.put(method, value);
             }
-        } else if (r instanceof FlowExpressions.ArrayAccess) {
-            FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
+        } else if (r instanceof ArrayAccess) {
+            ArrayAccess arrayAccess = (ArrayAccess) r;
             CFValue current = arrayValues.get(arrayAccess);
             CFValue value = changeLockAnnoToTop(r, current);
             if (value != null) {
                 arrayValues.put(arrayAccess, value);
             }
-        } else if (r instanceof FlowExpressions.ThisReference) {
+        } else if (r instanceof ThisReference) {
             thisValue = changeLockAnnoToTop(r, thisValue);
-        } else if (r instanceof FlowExpressions.ClassName) {
-            FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+        } else if (r instanceof ClassName) {
+            ClassName className = (ClassName) r;
             CFValue current = classValues.get(className);
             CFValue value = changeLockAnnoToTop(r, current);
             if (value != null) {
@@ -141,17 +143,16 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public @Nullable CFValue getValue(FlowExpressions.Receiver expr) {
+    public @Nullable CFValue getValue(Receiver expr) {
 
         if (inConstructorOrInitializer) {
             // 'this' is automatically considered as being held in a constructor or initializer.
             // The class name, however, is not.
-            if (expr instanceof FlowExpressions.ThisReference) {
+            if (expr instanceof ThisReference) {
                 initializeThisValue(atypeFactory.LOCKHELD, expr.getType());
-            } else if (expr instanceof FlowExpressions.FieldAccess) {
-                FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
-                if (!fieldAcc.isStatic()
-                        && fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
+            } else if (expr instanceof FieldAccess) {
+                FieldAccess fieldAcc = (FieldAccess) expr;
+                if (!fieldAcc.isStatic() && fieldAcc.getReceiver() instanceof ThisReference) {
                     insertValue(fieldAcc.getReceiver(), atypeFactory.LOCKHELD);
                 }
             }
@@ -222,7 +223,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    public void insertValue(FlowExpressions.Receiver r, @Nullable CFValue value) {
+    public void insertValue(Receiver r, @Nullable CFValue value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
@@ -234,15 +235,15 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         // -Locks are assumed to be effectively final, hence another thread will not
         // side effect the lock expression that has value @LockHeld.
         if (hasLockHeld(value)) {
-            if (r instanceof FlowExpressions.FieldAccess) {
-                FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
+            if (r instanceof FieldAccess) {
+                FieldAccess fieldAcc = (FieldAccess) r;
                 CFValue oldValue = fieldValues.get(fieldAcc);
                 CFValue newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
                     fieldValues.put(fieldAcc, newValue);
                 }
-            } else if (r instanceof FlowExpressions.MethodCall) {
-                FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
+            } else if (r instanceof MethodCall) {
+                MethodCall method = (MethodCall) r;
                 CFValue oldValue = methodValues.get(method);
                 CFValue newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {

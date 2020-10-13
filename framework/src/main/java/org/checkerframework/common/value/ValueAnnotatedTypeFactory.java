@@ -39,7 +39,10 @@ import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -1244,7 +1247,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno;
-        FlowExpressions.Receiver expressionObj;
+        Receiver expressionObj;
         try {
             expressionObj = getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
         } catch (FlowExpressionParseException e) {
@@ -1252,19 +1255,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return 0;
         }
 
-        if (expressionObj instanceof FlowExpressions.ValueLiteral) {
-            FlowExpressions.ValueLiteral sequenceLiteral =
-                    (FlowExpressions.ValueLiteral) expressionObj;
+        if (expressionObj instanceof ValueLiteral) {
+            ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
             Object sequenceLiteralValue = sequenceLiteral.getValue();
             if (sequenceLiteralValue instanceof String) {
                 return ((String) sequenceLiteralValue).length();
             }
-        } else if (expressionObj instanceof FlowExpressions.ArrayCreation) {
-            FlowExpressions.ArrayCreation arrayCreation =
-                    (FlowExpressions.ArrayCreation) expressionObj;
+        } else if (expressionObj instanceof ArrayCreation) {
+            ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
             // This is only expected to support array creations in varargs methods
             return arrayCreation.getInitializers().size();
-        } else if (expressionObj instanceof FlowExpressions.ArrayAccess) {
+        } else if (expressionObj instanceof ArrayAccess) {
             List<? extends AnnotationMirror> annoList =
                     expressionObj.getType().getAnnotationMirrors();
             for (AnnotationMirror anno : annoList) {

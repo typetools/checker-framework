@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.Objects;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.plumelib.util.UniqueId;
@@ -52,7 +53,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     final transient long uid = UniqueId.nextUid.getAndIncrement();
 
     @Override
-    public long getUid() {
+    public long getUid(@UnknownInitialization TransferInput<V, S> this) {
         return uid;
     }
 

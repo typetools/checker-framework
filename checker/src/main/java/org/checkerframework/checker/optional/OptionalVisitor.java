@@ -23,7 +23,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
@@ -159,8 +160,8 @@ public class OptionalVisitor
 
     /** Return true if the two trees represent the same expression. */
     private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
-        FlowExpressions.Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
-        FlowExpressions.Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
         if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
             return r1.equals(r2);
         } else {
