@@ -2,7 +2,7 @@ package tests;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.framework.test.*;
@@ -14,8 +14,15 @@ public class CalledMethodsAutoValueTest extends CheckerFrameworkPerDirectoryTest
     public CalledMethodsAutoValueTest(List<File> testFiles) {
         super(
                 testFiles,
-                CalledMethodsChecker.class,
+                Arrays.asList(
+                        "com.google.auto.value.extension.memoized.processor.MemoizedValidator",
+                        "com.google.auto.value.processor.AutoAnnotationProcessor",
+                        "com.google.auto.value.processor.AutoOneOfProcessor",
+                        "com.google.auto.value.processor.AutoValueBuilderProcessor",
+                        "com.google.auto.value.processor.AutoValueProcessor",
+                        CalledMethodsChecker.class.getName()),
                 "calledmethods-autovalue",
+                Collections.emptyList(),
                 "-Anomsgtext",
                 "-nowarn");
     }
@@ -23,16 +30,5 @@ public class CalledMethodsAutoValueTest extends CheckerFrameworkPerDirectoryTest
     @Parameters
     public static String[] getTestDirs() {
         return new String[] {"calledmethods-autovalue"};
-    }
-
-    @Override
-    public Collection<String> checkersToRun() {
-        return Arrays.asList(
-                "com.google.auto.value.extension.memoized.processor.MemoizedValidator",
-                "com.google.auto.value.processor.AutoAnnotationProcessor",
-                "com.google.auto.value.processor.AutoOneOfProcessor",
-                "com.google.auto.value.processor.AutoValueBuilderProcessor",
-                "com.google.auto.value.processor.AutoValueProcessor",
-                CalledMethodsChecker.class.getName());
     }
 }

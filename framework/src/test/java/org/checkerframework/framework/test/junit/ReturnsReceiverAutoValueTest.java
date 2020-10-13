@@ -2,8 +2,9 @@ package org.checkerframework.framework.test.junit;
 
 import com.google.common.collect.ImmutableList;
 import java.io.File;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,8 +14,15 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
     public ReturnsReceiverAutoValueTest(List<File> testFiles) {
         super(
                 testFiles,
-                org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker.class,
+                ImmutableList.of(
+                        "com.google.auto.value.extension.memoized.processor.MemoizedValidator",
+                        "com.google.auto.value.processor.AutoAnnotationProcessor",
+                        "com.google.auto.value.processor.AutoOneOfProcessor",
+                        "com.google.auto.value.processor.AutoValueBuilderProcessor",
+                        "com.google.auto.value.processor.AutoValueProcessor",
+                        ReturnsReceiverChecker.class.getName()),
                 "basic",
+                Collections.emptyList(),
                 "-Anomsgtext",
                 "-nowarn");
     }
@@ -22,16 +30,5 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
     @Parameters
     public static String[] getTestDirs() {
         return new String[] {"returnsreceiverautovalue"};
-    }
-
-    @Override
-    public Collection<String> checkersToRun() {
-        ImmutableList.of(
-                "com.google.auto.value.extension.memoized.processor.MemoizedValidator",
-                "com.google.auto.value.processor.AutoAnnotationProcessor",
-                "com.google.auto.value.processor.AutoOneOfProcessor",
-                "com.google.auto.value.processor.AutoValueBuilderProcessor",
-                "com.google.auto.value.processor.AutoValueProcessor",
-                org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker.class.getName());
     }
 }
