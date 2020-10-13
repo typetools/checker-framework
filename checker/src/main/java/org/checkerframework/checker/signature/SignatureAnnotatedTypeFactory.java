@@ -89,7 +89,11 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final ExecutableElement classGetName =
             TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
 
-    /** Creates a SignatureAnnotatedTypeFactory. */
+    /**
+     * Creates a SignatureAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker assocated with this type factory
+     */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
