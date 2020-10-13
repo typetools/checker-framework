@@ -296,6 +296,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a sorted, modifiable list of expressions that {@code expression} is less than. If the
      * {@code expression} is annotated with {@link LessThanBottom}, null is returned.
+     *
+     * @param expression an expression
+     * @return expressions that {@code expression} is less than
      */
     public List<String> getLessThanExpressions(ExpressionTree expression) {
         AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
@@ -307,7 +310,10 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Creates a less than qualifier given the expressions.
      *
      * <p>If expressions is null, {@link LessThanBottom} is returned. If expressions is empty,
-     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThan(expressions)} is returned.
+     * {@link LessThanUnknown} is returned. Otherwise, {@code @LessThan(expressions)} is returned.
+     *
+     * @param expressions a list of expressions
+     * @return a @LessThan qualifier with the given arguments
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {
