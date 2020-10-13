@@ -4,13 +4,17 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 
 /**
  * Perform some visualization on a control flow graph. The particular operations depend on the
@@ -72,7 +76,7 @@ public interface CFGVisualizer<
      * @param value the value of the local variable
      * @return the String representation of the local variable
      */
-    String visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, V value);
+    String visualizeStoreLocalVar(LocalVariable localVar, V value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current
@@ -91,7 +95,7 @@ public interface CFGVisualizer<
      * @param value the value of the field
      * @return the String representation of the field
      */
-    String visualizeStoreFieldVal(FlowExpressions.FieldAccess fieldAccess, V value);
+    String visualizeStoreFieldVal(FieldAccess fieldAccess, V value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of one array
@@ -101,7 +105,7 @@ public interface CFGVisualizer<
      * @param value the value of the array
      * @return the String representation of the array
      */
-    String visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, V value);
+    String visualizeStoreArrayVal(ArrayAccess arrayValue, V value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of pure method
@@ -111,7 +115,7 @@ public interface CFGVisualizer<
      * @param value the value of the pure method call
      * @return the String representation of the pure method call
      */
-    String visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, V value);
+    String visualizeStoreMethodVals(MethodCall methodCall, V value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of class names
@@ -121,7 +125,7 @@ public interface CFGVisualizer<
      * @param value the value of the class name
      * @return the String representation of the class name
      */
-    String visualizeStoreClassVals(FlowExpressions.ClassName className, V value);
+    String visualizeStoreClassVals(ClassName className, V value);
 
     /**
      * Called by {@code CFAbstractStore#internalVisualize()} to visualize the specific information

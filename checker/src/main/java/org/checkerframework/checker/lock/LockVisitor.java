@@ -43,9 +43,9 @@ import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -1287,7 +1287,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
                     // the <self> expression, and then call FlowExpressionParseUtil.parse on the
                     // remaining expression string with the new flow expression context. However,
-                    // this currently results in a FlowExpressions.Receiver that has a different
+                    // this currently results in a Receiver that has a different
                     // hash code than if the following flow expression is parsed directly, which
                     // results in our inability to check that a lock expression is held as it does
                     // not match anything in the store due to the hash code mismatch.  For now,

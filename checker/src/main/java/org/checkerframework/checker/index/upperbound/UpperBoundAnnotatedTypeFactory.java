@@ -54,8 +54,8 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -796,7 +796,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            Pair<FlowExpressions.Receiver, String> receiverAndOffset;
+            Pair<Receiver, String> receiverAndOffset;
             try {
                 receiverAndOffset =
                         getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
@@ -806,7 +806,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (receiverAndOffset == null) {
                 continue;
             }
-            FlowExpressions.Receiver receiver = receiverAndOffset.first;
+            Receiver receiver = receiverAndOffset.first;
             String offset = receiverAndOffset.second;
 
             if (!CFAbstractStore.canInsertReceiver(receiver)) {
