@@ -2,6 +2,7 @@ package org.checkerframework.framework.test.junit;
 
 import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
