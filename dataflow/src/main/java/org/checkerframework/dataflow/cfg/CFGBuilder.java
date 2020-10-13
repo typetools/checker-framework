@@ -1421,6 +1421,7 @@ public class CFGBuilder {
                             }
                             block.setSuccessor(cb);
                             block = new RegularBlockImpl();
+
                             // use two anonymous SingleSuccessorBlockImpl that set the
                             // 'then' and 'else' successor of the conditional block
                             final Label thenLabel = cj.getThenLabel();
