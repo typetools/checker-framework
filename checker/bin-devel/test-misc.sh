@@ -26,6 +26,7 @@ if [ -z "$SKIPJAVADOC" ]; then
 status=0
 ./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
+/tmp/"$USER"/plume-scripts/ci-info --verbose
 (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
 /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
 (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
