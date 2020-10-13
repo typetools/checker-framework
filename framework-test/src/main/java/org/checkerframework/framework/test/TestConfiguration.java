@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 
 /** A configuration for running CheckerFrameworkTests or running the TypecheckExecutor. */
 public interface TestConfiguration {
@@ -42,7 +43,7 @@ public interface TestConfiguration {
      *
      * @return a list of annotation processors (Checkers) passed to the Javac compiler
      */
-    List<String> getProcessors();
+    List<@BinaryName String> getProcessors();
 
     /**
      * Some Javac command line arguments require arguments themselves (e.g. {@code -classpath} takes
