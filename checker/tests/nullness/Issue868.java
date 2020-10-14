@@ -45,4 +45,13 @@ public class Issue868 {
         // :: error: (type.argument.type.incompatible)
         this.<@Nullable MyList>test6(null);
     }
+
+    <T extends @Nullable Object & @Nullable MyList> void use2(T t, @NonNull T nonNullT) {
+        this.<T>test1(t);
+        // :: error: (argument.type.incompatible)
+        this.<@NonNull T>test2(t);
+        this.<@NonNull T>test2(nonNullT);
+        // :: error: (type.argument.type.incompatible)
+        this.<T>test2(t);
+    }
 }
