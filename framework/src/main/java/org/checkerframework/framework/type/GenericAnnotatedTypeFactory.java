@@ -39,10 +39,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
@@ -57,6 +53,10 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -103,6 +103,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -1569,27 +1570,53 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
+        String thisClass = null;
+        String treeString = null;
+        if (debug) {
+            thisClass = this.getClass().getSimpleName();
+            if (thisClass.endsWith("AnnotatedTypeFactory")) {
+                thisClass =
+                        thisClass.substring(
+                                0, thisClass.length() - "AnnotatedTypeFactory".length());
+            }
+            treeString = TreeUtils.toStringTruncated(tree, 60);
+        }
+        log(
+                "%s GATF.addComputedTypeAnnotations#1(%s, %s, %s)%n",
+                thisClass, treeString, type, iUseFlow);
         if (!TreeUtils.isExpressionTree(tree)) {
             // Don't apply defaults to expressions. Their types may be computed from subexpressions
             // in treeAnnotator.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+            log("%s GATF.addComputedTypeAnnotations#2(%s, %s)%n", thisClass, treeString, type);
         }
         applyQualifierParameterDefaults(tree, type);
+        log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
         treeAnnotator.visit(tree, type);
+        log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
         if (TreeUtils.isExpressionTree(tree)) {
             // If a tree annotator, did not add a type, add the DefaultForUse default.
             addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
+            log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
         }
         typeAnnotator.visit(type, null);
+        log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
         defaults.annotate(tree, type);
+        log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
 
             if (as != null) {
                 applyInferredAnnotations(type, as);
+                log(
+                        "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
+                        thisClass, treeString, type, as);
             }
         }
+        log(
+                "%s GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n",
+                thisClass, treeString, type, iUseFlow);
     }
 
     /**
@@ -1629,11 +1656,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (analysis.isRunning()) {
             as = analysis.getValue(tree);
         }
-        if (as == null
-                &&
-                // TODO: this comparison shouldn't be needed, but
-                // checker-framework-inference fails without it.
-                flowResult != null) {
+        if (as == null) {
             as = flowResult.getValue(tree);
         }
         return as;
@@ -2009,6 +2032,23 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             defaultQualifierForUseTypeAnnotator.visit(type);
             defaultForTypeAnnotator.visit(type);
+        }
+    }
+
+    // You can change this temporarily to produce verbose logs.
+    /** Whether to output verbose, low-level debugging messages. */
+    private static final boolean debug = false;
+
+    /**
+     * Output a message, if logging is on.
+     *
+     * @param format a format string
+     * @param args arguments to the format string
+     */
+    private static void log(String format, Object... args) {
+        if (debug) {
+            UtilPlume.sleep(1); // logging can interleave with typechecker output
+            System.out.printf(format, args);
         }
     }
 }

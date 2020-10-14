@@ -10,7 +10,7 @@
 #  ./gradlew compileJava
 # to debug changes rather than creating .jar files with "./gradlew assemble".
 
-# When editing, keep this file in sync with javac-debug in this directory.
+# When editing, keep this file in sync with ./javac-debug and ../bin/javac .
 
 mydir="$(dirname "$0")"
 case $(uname -s) in
@@ -61,4 +61,4 @@ eval "java" \
      "-DCheckerDevelMain.binary=${binaryDir} " \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" \
-     "${args}"
+     ${args}

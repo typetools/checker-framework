@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -59,7 +60,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     final transient long uid = UniqueId.nextUid.getAndIncrement();
 
     @Override
-    public long getUid() {
+    public long getUid(@UnknownInitialization AnalysisResult<V, S> this) {
         return uid;
     }
 
@@ -217,8 +218,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * <ol>
      *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
      *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}.
-     *   <li>Narrowing and widening primitive conversions can result in {@code
-     *       NarrowingConversionNode} and {@code WideningConversionNode}.
+     *   <li>Widening and narrowing primitive conversions can result in {@code
+     *       WideningConversionNode} and {@code NarrowingConversionNode}.
      *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
      *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
      *       within a finally block can have multiple corresponding {@code Node}s attached to them.

@@ -827,14 +827,14 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true if both types are integral and the first type is strictly narrower (represented
-     * by fewer bits) than the second type.
+     * Returns the type of primitive conversion from {@code from} to {@code to}.
      *
-     * @param a a primitive type
-     * @param b a primitive type
-     * @return true if {@code a} is represented by fewer bits than {@code b}
+     * @param from a primitive type
+     * @param to a primitive type
+     * @return the type of primitive conversion from {@code from} to {@code to}
      */
-    public static boolean isNarrowerIntegral(PrimitiveType a, PrimitiveType b) {
-        return TypeKindUtils.isNarrowerIntegral(a.getKind(), b.getKind());
+    public static TypeKindUtils.PrimitiveConversionKind getPrimitiveConversionKind(
+            PrimitiveType from, PrimitiveType to) {
+        return TypeKindUtils.getPrimitiveConversionKind(from.getKind(), to.getKind());
     }
 }

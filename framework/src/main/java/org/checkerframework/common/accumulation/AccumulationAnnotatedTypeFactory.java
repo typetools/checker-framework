@@ -19,6 +19,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationChecker.AliasAnalysis;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
@@ -35,6 +36,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -45,6 +47,9 @@ import org.checkerframework.javacutil.UserError;
  * #postInit()}.
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /** The typechecker associated with this factory. */
+    public final AccumulationChecker accumulationChecker;
 
     /**
      * The canonical top annotation for this accumulation checker: an instance of the accumulator
@@ -84,6 +89,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             Class<? extends Annotation> bottom,
             @Nullable Class<? extends Annotation> predicate) {
         super(checker);
+        if (!(checker instanceof AccumulationChecker)) {
+            throw new TypeSystemError(
+                    "AccumulationAnnotatedTypeFactory cannot be used with a checker "
+                            + "class that is not a subtype of AccumulationChecker. Found class: "
+                            + checker.getClass());
+        }
+        this.accumulationChecker = (AccumulationChecker) checker;
 
         this.accumulator = accumulator;
         // Check that the requirements of the accumulator are met.
@@ -213,6 +225,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
+        if (!accumulationChecker.isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
+            return false;
+        }
         // Must call `getTypeFactoryOfSubchecker` each time, not store and reuse.
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
@@ -303,7 +318,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public List<String> getAccumulatedValues(AnnotationMirror anno) {
         if (!isAccumulatorAnnotation(anno)) {
-            throw new BugInCF(anno + "isn't an accumulator annotation");
+            throw new BugInCF(anno + " isn't an accumulator annotation");
         }
         List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
         if (values == null) {
@@ -468,6 +483,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                     // checking for both predicate and non-predicate forms of top.
                     return "".equals(convertToPredicate(superAnno));
                 }
+            } else if (isPolymorphicQualifier(superAnno)) {
+                // Polymorphic annotations are only a supertype of other polymorphic annotations and
+                // the bottom type, both of which have already been checked above.
+                return false;
             }
 
             if (isPredicate(subAnno)) {

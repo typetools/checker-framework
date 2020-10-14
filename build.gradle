@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
     id "de.undercouch.download" version "4.1.1"
     id 'java'
@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.7.0-SNAPSHOT'
+    version '3.7.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
