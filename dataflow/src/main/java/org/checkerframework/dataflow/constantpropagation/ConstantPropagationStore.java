@@ -3,12 +3,12 @@ package org.checkerframework.dataflow.constantpropagation;
 import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.Receiver;
 
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
@@ -151,7 +151,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     }
 
     @Override
-    public boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b) {
+    public boolean canAlias(Receiver a, Receiver b) {
         return true;
     }
 
