@@ -11,6 +11,7 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
  * {@link NodeWithExceptionsHolder} or {@link NodeHolder}, and the node held by that extended node
  * is required to be of boolean type.
  */
+@SuppressWarnings("nullness") // TODO
 class ConditionalJump extends ExtendedNode {
 
     /** The true successor label. */

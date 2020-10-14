@@ -53,6 +53,7 @@ public class CFGTranslationPhaseThree {
      *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
      * @return the resulting control flow graph
      */
+    @SuppressWarnings("nullness") // TODO: successors
     public static ControlFlowGraph process(ControlFlowGraph cfg) {
         Set<Block> worklist = cfg.getAllBlocks();
         Set<Block> dontVisit = new HashSet<>();
@@ -155,7 +156,10 @@ public class CFGTranslationPhaseThree {
      * @param predecessors a set to be filled by this method with all predecessors
      * @return the single successor of the set of the empty basic blocks
      */
-    @SuppressWarnings("interning:not.interned") // AST node comparisons
+    @SuppressWarnings({
+        "interning:not.interned", // AST node comparisons
+        "nullness" // successors
+    })
     protected static BlockImpl computeNeighborhoodOfEmptyBlock(
             RegularBlockImpl start,
             Set<RegularBlockImpl> emptyBlocks,
@@ -309,8 +313,9 @@ public class CFGTranslationPhaseThree {
             case REGULAR_BLOCK:
                 RegularBlockImpl r = (RegularBlockImpl) pred;
                 return singleSuccessorHolder(r, cur);
+            default:
+                throw new Error("Unexpected block type " + pred.getType());
         }
-        return null;
     }
 
     /**

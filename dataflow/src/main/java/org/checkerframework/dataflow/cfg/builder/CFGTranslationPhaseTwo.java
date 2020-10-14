@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.MostlySingleton;
 
 /** Class that performs phase two of the translation process. */
+@SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseTwo {
 
     private CFGTranslationPhaseTwo() {}

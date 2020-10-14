@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -45,7 +44,6 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       preserving the control flow structure.
  * </ol>
  */
-@SuppressWarnings("nullness") // TODO
 public class CFGBuilder {
 
     /** This class should never be instantiated. Protected to still allow subclasses. */
@@ -108,8 +106,8 @@ public class CFGBuilder {
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             MethodTree tree,
-            @Nullable ClassTree classTree,
-            @Nullable ProcessingEnvironment env) {
+            ClassTree classTree,
+            ProcessingEnvironment env) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return build(root, underlyingAST, false, false, env);
     }

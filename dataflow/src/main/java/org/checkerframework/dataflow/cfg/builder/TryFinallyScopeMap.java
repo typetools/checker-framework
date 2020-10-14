@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.lang.model.element.Name;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A map that keeps track of new labels added within a try block. For names that are outside of the
@@ -21,7 +22,10 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
     }
 
     @Override
-    public Label get(Object key) {
+    public Label get(@Nullable Object key) {
+        if (key == null) {
+            throw new IllegalArgumentException();
+        }
         if (super.containsKey(key)) {
             return super.get(key);
         } else {
@@ -37,7 +41,7 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
     @Override
     @SuppressWarnings(
             "keyfor:contracts.conditional.postcondition.not.satisfied") // get adds everything
-    public boolean containsKey(Object key) {
+    public boolean containsKey(@Nullable Object key) {
         return true;
     }
 

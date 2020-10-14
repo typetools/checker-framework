@@ -192,6 +192,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  */
+@SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /** Annotation processing environment and its associated type and tree utilities. */
