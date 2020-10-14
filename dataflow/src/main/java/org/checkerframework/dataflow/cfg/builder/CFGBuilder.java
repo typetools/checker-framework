@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.builder;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -98,7 +98,8 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
-import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
@@ -109,6 +110,7 @@ import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
+import org.checkerframework.dataflow.cfg.builder.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ArrayTypeNode;
@@ -200,12 +202,12 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *
  * <ol>
  *   <li><em>Phase one.</em> In the first phase, the AST is translated into a sequence of {@link
- *       org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode}s. An extended node can either be
- *       a {@link Node}, or one of several meta elements such as a conditional or unconditional jump
- *       or a node with additional information about exceptions. Some of the extended nodes contain
- *       labels (e.g., for the jump target), and phase one additionally creates a mapping from
- *       labels to extended nodes. Finally, the list of leaders is computed: A leader is an extended
- *       node which will give rise to a basic block in phase two.
+ *       org.checkerframework.dataflow.cfg.builder.CFGBuilder.ExtendedNode}s. An extended node can
+ *       either be a {@link Node}, or one of several meta elements such as a conditional or
+ *       unconditional jump or a node with additional information about exceptions. Some of the
+ *       extended nodes contain labels (e.g., for the jump target), and phase one additionally
+ *       creates a mapping from labels to extended nodes. Finally, the list of leaders is computed:
+ *       A leader is an extended node which will give rise to a basic block in phase two.
  *   <li><em>Phase two.</em> In this phase, the sequence of extended nodes is translated to a graph
  *       of control flow blocks that contain nodes. The meta elements from phase one are translated
  *       into the correct edges.
@@ -525,7 +527,7 @@ public class CFGBuilder {
          * Produce a string representation.
          *
          * @return a string representation
-         * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
+         * @see org.checkerframework.dataflow.cfg.builder.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
         public String toString() {
@@ -587,7 +589,7 @@ public class CFGBuilder {
          * Produce a string representation.
          *
          * @return a string representation
-         * @see org.checkerframework.dataflow.cfg.CFGBuilder.PhaseOneResult#nodeToString
+         * @see org.checkerframework.dataflow.cfg.builder.CFGBuilder.PhaseOneResult#nodeToString
          */
         @Override
         public String toString() {
