@@ -2262,7 +2262,6 @@ public abstract class AnnotatedTypeMirror {
      * String>} and {@code @Nullable List<@NonNull Integer>}.
      *
      * @see Types#directSupertypes(TypeMirror)
-     * @return
      */
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return SupertypeFinder.directSuperTypes(this);
