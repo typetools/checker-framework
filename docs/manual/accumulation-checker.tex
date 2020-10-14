@@ -17,7 +17,7 @@ sufficiently many facts.
 The Called Methods Checker (\chapterpageref{called-methods-checker})
 is an accumulation analysis.
 The
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/TestAccumulationChecker.java}{Test Accumulation Checker}
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/TestAccumulationChecker.java}{Test Accumulation Checker}
 is a simplified version of the Called Methods Checker that you can also use as a model.
 
 Accumulation analysis is a special case of typestate analysis in which
@@ -51,16 +51,16 @@ qualifier should have no supertypes (\<@SubtypeOf({})>) and should
 be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 
 An example of such a qualifier can be found in the Checker Framework's tests:
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulation.java}{TestAccumulation.java}.
 
 \item
 Define a bottom type, analogous to
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulationBottom.java}{TestAccumulationBottom.java}.
 It should take no arguments, and should be a subtype of the accumulator type you defined earlier.
 
 \item
 Optionally, define a predicate annotation, analogous to
-\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
+\href{https://github.com/typetools/checker-framework/blob/master/framework/src/test/java/org/checkerframework/framework/testchecker/testaccumulation/qual/TestAccumulationPredicate.java}{TestAccumulationPredicate.java}.
 It must have a single argument named \<value> of type \<String>.
 The predicate syntax supports
 \begin{itemize}

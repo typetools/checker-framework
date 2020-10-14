@@ -37,8 +37,9 @@ The main type annotations are
 \refqualclass{common/value/qual}{BoolVal},
 \refqualclass{common/value/qual}{IntVal},
 \refqualclass{common/value/qual}{IntRange},
-\refqualclass{common/value/qual}{DoubleVal}, and
-\refqualclass{common/value/qual}{StringVal}.
+\refqualclass{common/value/qual}{DoubleVal},
+\refqualclass{common/value/qual}{StringVal},
+and \refqualclass{common/value/qual}{EnumVal}.
 Additional type annotations for arrays and strings are
 \refqualclass{common/value/qual}{ArrayLen},
 \refqualclass{common/value/qual}{ArrayLenRange},
@@ -76,6 +77,12 @@ arrays are often converted to/from strings, the \<@StringVal> annotation may
 not be applied to them.  This is because the conversion depends on the
 platform's character set.
 
+The \<@EnumVal> annotation's argument is the names of the enum constants
+that the type might evaluate to.  (Java syntax does not allow the enum
+constants themselves to be arguments.)  \<@EnumVal>
+is treated identically to \<@StringVal> by the checker internally, so
+\<@StringVal> may appear in error messages related to enums.
+
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
 
@@ -109,7 +116,8 @@ subtype of a \<@DoubleVal> annotation with the same values.
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
   annotations.
   The first four qualifiers are applicable to primitives and their
-  wrappers; the next to \<String>s, and the final two to arrays.
+  wrappers; the next to \<String>s (it can also be written as \<@EnumVal> for
+  enumeration constants), and the final two to arrays.
 Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.  At the bottom are examples of additional subtyping

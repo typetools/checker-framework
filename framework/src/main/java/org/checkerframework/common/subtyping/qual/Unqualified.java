@@ -24,6 +24,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({}) // empty target prevents programmers from writing this in a program.
 @InvisibleQualifier
 @SubtypeOf({})
-// At the moment defaulting is done in SubtypingATF to prevent errors in checker-framework-inference
-// @DefaultFor(TypeUseLocation.OTHERWISE)
 public @interface Unqualified {}

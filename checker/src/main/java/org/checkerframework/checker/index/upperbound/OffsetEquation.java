@@ -12,12 +12,15 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -254,27 +257,27 @@ public class OffsetEquation {
      * @param factory the AnnotatedTypeFactory used to access elements annotations. It can be null.
      */
     private Integer evalConstantTerm(Receiver termReceiver, BaseAnnotatedTypeFactory factory) {
-        if (termReceiver instanceof FlowExpressions.ValueLiteral) {
+        if (termReceiver instanceof ValueLiteral) {
             // Integer literal
-            Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
+            Object value = ((ValueLiteral) termReceiver).getValue();
             if (value instanceof Integer) {
                 return (Integer) value;
             }
-        } else if (termReceiver instanceof FlowExpressions.MethodCall) {
+        } else if (termReceiver instanceof MethodCall) {
             // TODO: generalize
             // Length of string literal
-            FlowExpressions.MethodCall call = (FlowExpressions.MethodCall) termReceiver;
+            MethodCall call = (MethodCall) termReceiver;
             if (call.getElement().getSimpleName().toString().equals("length")) {
                 Receiver callReceiver = call.getReceiver();
-                if (callReceiver instanceof FlowExpressions.ValueLiteral) {
-                    Object value = ((FlowExpressions.ValueLiteral) callReceiver).getValue();
+                if (callReceiver instanceof ValueLiteral) {
+                    Object value = ((ValueLiteral) callReceiver).getValue();
                     if (value instanceof String) {
                         return ((String) value).length();
                     }
                 }
             }
-        } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
-            Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
+        } else if (factory != null && termReceiver instanceof LocalVariable) {
+            Element element = ((LocalVariable) termReceiver).getElement();
             Long exactValue =
                     ValueCheckerUtils.getExactValue(
                             element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
@@ -532,8 +535,8 @@ public class OffsetEquation {
      * on the value of op.
      *
      * <p>Otherwise the return equation is created by converting the node to a {@link
-     * org.checkerframework.dataflow.analysis.FlowExpressions.Receiver} and then added as a term to
-     * the returned equation. If op is '-' then it is a subtracted term.
+     * org.checkerframework.dataflow.expression.Receiver} and then added as a term to the returned
+     * equation. If op is '-' then it is a subtracted term.
      *
      * @param node the Node from which to create an offset equation
      * @param factory an AnnotationTypeFactory

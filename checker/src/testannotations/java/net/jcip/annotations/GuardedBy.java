@@ -1,5 +1,5 @@
 // Upstream version:
-// http://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html
+// https://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html
 
 package net.jcip.annotations;
 

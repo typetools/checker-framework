@@ -4,12 +4,15 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
@@ -39,6 +42,7 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.reflection.SignatureRegexes;
 
 // TODO: Does not yet handle method signature annotations, such as
 // @MethodDescriptor.
@@ -80,7 +84,15 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     "java.lang.CharSequence",
                     "java.lang.CharSequence");
 
-    /** Creates a SignatureAnnotatedTypeFactory. */
+    /** The {@link Class#getName()} method. */
+    private final ExecutableElement classGetName =
+            TreeUtils.getMethod(java.lang.Class.class.getCanonicalName(), "getName", processingEnv);
+
+    /**
+     * Creates a SignatureAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker assocated with this type factory
+     */
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
@@ -201,11 +213,18 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * String.replace, when called with specific constant arguments, converts between internal
-         * form and binary name.
+         * form and binary name:
          *
          * <pre><code>
          * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
          * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
+         * </code></pre>
+         *
+         * Class.getName sometimes returns a binary name (which is more specific than its
+         * annotation, which is ClassGetName:
+         *
+         * <pre><code>
+         * {@literal @}BinaryName String binaryName = MyClass.class.getName();
          * </code></pre>
          */
         @Override
@@ -246,6 +265,20 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(BINARY_NAME);
                 }
             }
+
+            if (TreeUtils.isMethodInvocation(tree, classGetName, processingEnv)) {
+                ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+                if (TreeUtils.isClassLiteral(receiver)) {
+                    ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
+                    if (classExpr.getKind() == Tree.Kind.IDENTIFIER
+                            || (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE
+                                    && ((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind()
+                                            != TypeKind.VOID)) {
+                        type.replaceAnnotation(BINARY_NAME);
+                    }
+                }
+            }
+
             return super.visitMethodInvocation(tree, type);
         }
     }

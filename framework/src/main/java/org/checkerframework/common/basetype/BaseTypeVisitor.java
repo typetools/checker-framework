@@ -1,5 +1,6 @@
 package org.checkerframework.common.basetype;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -73,12 +74,11 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -681,6 +681,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
 
+        if (node.getReturnType() != null) {
+            visitAnnotatedType(node.getModifiers().getAnnotations(), node.getReturnType());
+        }
+
         try {
             if (TreeUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
@@ -920,7 +924,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     standardizeAnnotationFromContract(
                             annotation, flowExprContext, getCurrentPath());
 
-            FlowExpressions.Receiver expr = null;
+            Receiver expr = null;
             try {
                 expr =
                         FlowExpressionParseUtil.parse(
@@ -1155,6 +1159,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitVariable(VariableTree node, Void p) {
         warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
+
+        visitAnnotatedType(node.getModifiers().getAnnotations(), node.getType());
 
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
         AnnotatedTypeMirror variableType;
@@ -1594,7 +1600,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             anno = standardizeAnnotationFromContract(anno, flowExprContext, getCurrentPath());
 
-            FlowExpressions.Receiver expr;
+            Receiver expr;
             try {
                 expr =
                         FlowExpressionParseUtil.parse(
@@ -2158,7 +2164,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
-        AnnotatedTypeMirror exprTypeWidened = atypeFactory.applyWidening(exprType, castType);
+        AnnotatedTypeMirror exprTypeWidened = atypeFactory.getWidenedType(exprType, castType);
         return qualifierHierarchy.isSubtype(exprTypeWidened.getEffectiveAnnotations(), castAnnos);
     }
 
@@ -2256,6 +2262,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkThrownExpression(node);
         return super.visitThrow(node, p);
     }
+
+    /**
+     * Rather than overriding this method, clients should often override {@link
+     * #visitAnnotatedType(List,Tree)}. That method also handles the case of annotations at the
+     * beginning of a variable or method declaration. javac parses all those annotations as being on
+     * the variable or method declaration, even though the ones that are type annotations logically
+     * belong to the variable type or method return type.
+     */
+    @Override
+    public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
+        visitAnnotatedType(null, node);
+        return super.visitAnnotatedType(node, p);
+    }
+
+    /**
+     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)} and
+     * also by {@link #visitVariable} and {@link #visitMethod}. Exists to prevent code duplication
+     * between the three. Checking in visitVariable and visitMethod is needed because there isn't an
+     * AnnotatedTypeTree within a variable declaration or for a method return type -- all the
+     * annotations are attached to the VariableTree or MethodTree, respectively.
+     *
+     * @param annoTrees annotations written before a variable/method declaration, if this type is
+     *     from one; null otherwise
+     * @param typeTree the type that any type annotations in annoTrees apply to
+     */
+    public void visitAnnotatedType(
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {}
 
     // **********************************************************************
     // Helper methods to provide a single overriding point
@@ -2488,7 +2521,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
 
-        AnnotatedTypeMirror widenedValueType = atypeFactory.applyWidening(valueType, varType);
+        AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
         // TODO: integrate with subtype test.
@@ -3958,7 +3991,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // TODO: currently, these expressions are parsed many times.
                 // This could be optimized to store the result the first time.
                 // (same for other annotations)
-                FlowExpressions.Receiver expr =
+                Receiver expr =
                         FlowExpressionParseUtil.parse(expression, flowExprContext, path, false);
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
@@ -4075,6 +4108,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType}. If
      * a type system makes exceptions to this rule, its implementation should override this method.
+     *
+     * <p>This method is not called if {@link
+     * BaseTypeValidator#shouldCheckTopLevelDeclaredOrPrimitiveType(AnnotatedTypeMirror, Tree)}
+     * returns false -- by default, it is not called on the top level for locals and expressions. To
+     * enforce a type validity property everwhere, override methods such as {@link
+     * BaseTypeValidator#visitDeclared} rather than this method.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)

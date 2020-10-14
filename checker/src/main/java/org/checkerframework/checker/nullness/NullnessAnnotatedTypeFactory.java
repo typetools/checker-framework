@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -182,7 +183,9 @@ public class NullnessAnnotatedTypeFactory
                     "org.jetbrains.annotations.Nullable",
                     // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
                     "org.jmlspecs.annotation.Nullable",
+                    // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/annotations
                     "org.jspecify.annotations.Nullable",
+                    "org.jspecify.annotations.NullnessUnspecified",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
                     "org.netbeans.api.annotations.common.CheckForNull",
                     // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
@@ -643,5 +646,70 @@ public class NullnessAnnotatedTypeFactory
             throw new BugInCF(
                     "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
         }
+    }
+
+    /**
+     * Returns true if some annotation in the given list is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
+     *     not from such a location
+     * @param typeTree the type whose annotations to test
+     * @return true if some annotation is a nullness annotation
+     */
+    protected boolean containsNullnessAnnotation(
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        List<? extends AnnotationTree> annos =
+                TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
+
+        for (AnnotationTree annoTree : annos) {
+            AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
+            if (isNullnessAnnotation(am)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the given annotation is a nullness annotation such
+     * as @NonNull, @Nullable, @MonotonicNonNull, etc.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is a nullness annotation
+     */
+    protected boolean isNullnessAnnotation(AnnotationMirror am) {
+        return isNonNullOrAlias(am)
+                || isNullableOrAlias(am)
+                || AnnotationUtils.areSameByName(am, MONOTONIC_NONNULL)
+                || AnnotationUtils.areSameByName(am, POLYNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @NonNull or an alias for it.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is @NonNull or an alias for it
+     */
+    protected boolean isNonNullOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NONNULL);
+    }
+
+    /**
+     * Returns true if the given annotation is @Nullable or an alias for it.
+     *
+     * @param am an annotation
+     * @return true if the given annotation is @Nullable or an alias for it
+     */
+    protected boolean isNullableOrAlias(AnnotationMirror am) {
+        AnnotationMirror canonical = canonicalAnnotation(am);
+        if (canonical != null) {
+            am = canonical;
+        }
+        return AnnotationUtils.areSameByName(am, NULLABLE);
     }
 }

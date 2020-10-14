@@ -23,12 +23,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -60,6 +54,13 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -223,9 +224,13 @@ public abstract class CFAbstractTransfer<
      * Returns an abstract value with the given {@code type} and the annotations from {@code
      * annotatedValue}.
      *
+     * @param type the type to return
+     * @param annotatedValue the annotations to return
      * @return an abstract value with the given {@code type} and the annotations from {@code
      *     annotatedValue}
+     * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
      */
+    @Deprecated // use getWidenedValue() or getNarrowedValue()
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) {
             return null;
@@ -233,6 +238,7 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
+    /** The fixed initial store. */
     private S fixedInitialStore = null;
 
     /** Set a fixed initial Store. */
@@ -548,7 +554,7 @@ public abstract class CFAbstractTransfer<
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                FlowExpressions.Receiver expr =
+                Receiver expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
@@ -717,6 +723,14 @@ public abstract class CFAbstractTransfer<
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
 
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, false)
+                        || NodeUtils.isConstantBoolean(rightN, false))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
+
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
         res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
@@ -732,6 +746,14 @@ public abstract class CFAbstractTransfer<
         Node rightN = n.getRightOperand();
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
+
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, true)
+                        || NodeUtils.isConstantBoolean(rightN, true))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
@@ -1005,7 +1027,7 @@ public abstract class CFAbstractTransfer<
             if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
-                FlowExpressions.Receiver receiver =
+                Receiver receiver =
                         FlowExpressions.internalReprOf(
                                 analysis.getTypeFactory(), node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
@@ -1110,7 +1132,7 @@ public abstract class CFAbstractTransfer<
             anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
 
             try {
-                FlowExpressions.Receiver r =
+                Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
@@ -1218,24 +1240,68 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitNarrowingConversion(
-            NarrowingConversionNode n, TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
-        // Combine annotations from the operand with the narrow type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(narrowedValue);
-        return result;
-    }
-
-    @Override
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
         // Combine annotations from the operand with the wide type
         V operandValue = p.getValueOfSubNode(n.getOperand());
-        V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        V widenedValue = getWidenedValue(n.getType(), operandValue);
         result.setResultValue(widenedValue);
+        return result;
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for narrowing. This is only called at a narrowing conversion.
+     *
+     * @param type the type to narrow to
+     * @param annotatedValue the type to narrow from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> narrowedAnnos =
+                analysis.atypeFactory.getNarrowedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(narrowedAnnos, type);
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for widening. This is only called at a widening conversion.
+     *
+     * @param type the type to widen to
+     * @param annotatedValue the type to widen from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> widenedAnnos =
+                analysis.atypeFactory.getWidenedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(widenedAnnos, type);
+    }
+
+    @Override
+    public TransferResult<V, S> visitNarrowingConversion(
+            NarrowingConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
+        // Combine annotations from the operand with the narrow type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V narrowedValue = getNarrowedValue(n.getType(), operandValue);
+        result.setResultValue(narrowedValue);
         return result;
     }
 

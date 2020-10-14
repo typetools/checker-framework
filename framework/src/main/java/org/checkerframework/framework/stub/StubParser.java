@@ -10,6 +10,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -620,10 +621,34 @@ public class StubParser {
         }
 
         if (typeElt.getKind() == ElementKind.ENUM) {
+            if (!(typeDecl instanceof EnumDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is an enum, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
             typeParameters.addAll(processEnum((EnumDeclaration) typeDecl, typeElt));
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
+            if (!(typeDecl instanceof AnnotationDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is an annotation, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
             stubWarnNotFound("Skipping annotation type: " + fqTypeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
+            if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is a class or interface, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
             typeParameters.addAll(processType((ClassOrInterfaceDeclaration) typeDecl, typeElt));
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
@@ -2186,7 +2211,7 @@ public class StubParser {
     /// Parse state
     ///
 
-    /** Represents a class: its package name and simple name. */
+    /** Represents a class: its package name and name (including outer class names if any). */
     private static class FqName {
         /** Name of the package being parsed, or null. */
         public @Nullable String packageName;
@@ -2204,7 +2229,7 @@ public class StubParser {
          * @param className unqualified name of the type, including outer class names if any. May be
          *     null.
          */
-        public FqName(String packageName, String className) {
+        public FqName(String packageName, @Nullable String className) {
             this.packageName = packageName;
             this.className = className;
         }

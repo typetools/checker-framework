@@ -27,6 +27,7 @@ import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.EnumVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
@@ -38,7 +39,10 @@ import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -179,6 +183,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
         addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+
+        // EnumVal is treated as StringVal internally by the checker.
+        addAliasedAnnotation(EnumVal.class, StringVal.class, true);
 
         methods = new ValueMethodIdentifier(processingEnv);
 
@@ -1058,7 +1065,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the single possible boolean value, or null if there is not exactly one possible
      * value.
      *
-     * @see getBooleanValues
+     * @see #getBooleanValues
      * @param boolAnno a {@code @BoolVal} annotation, or null
      * @return the single possible boolean value, on null if that is not the case
      */
@@ -1240,7 +1247,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno;
-        FlowExpressions.Receiver expressionObj;
+        Receiver expressionObj;
         try {
             expressionObj = getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
         } catch (FlowExpressionParseException e) {
@@ -1248,19 +1255,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return 0;
         }
 
-        if (expressionObj instanceof FlowExpressions.ValueLiteral) {
-            FlowExpressions.ValueLiteral sequenceLiteral =
-                    (FlowExpressions.ValueLiteral) expressionObj;
+        if (expressionObj instanceof ValueLiteral) {
+            ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
             Object sequenceLiteralValue = sequenceLiteral.getValue();
             if (sequenceLiteralValue instanceof String) {
                 return ((String) sequenceLiteralValue).length();
             }
-        } else if (expressionObj instanceof FlowExpressions.ArrayCreation) {
-            FlowExpressions.ArrayCreation arrayCreation =
-                    (FlowExpressions.ArrayCreation) expressionObj;
+        } else if (expressionObj instanceof ArrayCreation) {
+            ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
             // This is only expected to support array creations in varargs methods
             return arrayCreation.getInitializers().size();
-        } else if (expressionObj instanceof FlowExpressions.ArrayAccess) {
+        } else if (expressionObj instanceof ArrayAccess) {
             List<? extends AnnotationMirror> annoList =
                     expressionObj.getType().getAnnotationMirrors();
             for (AnnotationMirror anno : annoList) {
