@@ -1,16 +1,48 @@
 // Test case for Issue 868
 // https://github.com/typetools/checker-framework/issues/868
 
-import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue868 {
-    <E extends @Nullable Object & @Nullable List> void test2(E e) {
+    interface MyList {}
+
+    <E extends @Nullable Object & @Nullable MyList> void test1(E e) {
         // :: error: (dereference.of.nullable)
         e.toString();
     }
 
+    <E extends Object & @Nullable MyList> void test2(E e) {
+        e.toString();
+    }
+
+    <E extends @Nullable Object & MyList> void test3(E e) {
+        e.toString();
+    }
+
+    <E extends Object & MyList> void test4(E e) {
+        e.toString();
+    }
+
+    <E extends @NonNull Object & @Nullable MyList> void test5(E e) {
+        e.toString();
+    }
+
+    <E extends @Nullable Object & @NonNull MyList> void test6(E e) {
+        e.toString();
+    }
+
     void use() {
-        test2(null);
+        this.<@Nullable MyList>test1(null);
+        // :: error: (type.argument.type.incompatible)
+        this.<@Nullable MyList>test2(null);
+        // :: error: (type.argument.type.incompatible)
+        this.<@Nullable MyList>test3(null);
+        // :: error: (type.argument.type.incompatible)
+        this.<@Nullable MyList>test4(null);
+        // :: error: (type.argument.type.incompatible)
+        this.<@Nullable MyList>test5(null);
+        // :: error: (type.argument.type.incompatible)
+        this.<@Nullable MyList>test6(null);
     }
 }

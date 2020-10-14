@@ -810,25 +810,29 @@ public class QualifierDefaults {
          * @param qual annotation to add
          */
         protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
-            // Add the default annotation, but only if no other
-            // annotation is present.
-            if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
-                type.addAnnotation(qual);
+            if (type.isAnnotatedInHierarchy(qual) || type.getKind() == TypeKind.EXECUTABLE) {
+                // Only add the annotation if one isn't already present.
+                return;
             }
-
-            /* Intersection types, list the types in the direct supertypes.
-             * Make sure to apply the default there too.
-             */
             if (type.getKind() == TypeKind.INTERSECTION) {
-                List<AnnotatedTypeMirror> sups =
-                        ((AnnotatedIntersectionType) type).getBoundsField();
-                if (sups != null) {
-                    for (AnnotatedTypeMirror sup : sups) {
-                        if (!sup.isAnnotatedInHierarchy(qual)) {
-                            sup.addAnnotation(qual);
-                        }
+                // GLB the primary annotations of the bounds of the intersection.  If a bound is
+                // not annotated, then use qual as the annotation on that bound.
+                AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(qual);
+                AnnotationMirror glb = null;
+                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
+                    AnnotationMirror newAnno = bound.getAnnotationInHierarchy(top);
+                    if (newAnno == null) {
+                        newAnno = qual;
+                    }
+                    if (glb == null) {
+                        glb = newAnno;
+                    } else {
+                        glb = atypeFactory.getQualifierHierarchy().greatestLowerBound(newAnno, glb);
                     }
                 }
+                type.addAnnotation(glb);
+            } else {
+                type.addAnnotation(qual);
             }
         }
 

@@ -11,10 +11,8 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.UtilPlume;
@@ -212,28 +210,5 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         }
 
         return null;
-    }
-
-    @Override
-    public Void visitIntersection(AnnotatedIntersectionType type, Void unused) {
-        Set<AnnotationMirror> glbs = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror top : typeFactory.getQualifierHierarchy().getTopAnnotations()) {
-            AnnotationMirror glb = null;
-            for (AnnotatedTypeMirror bound : type.getBounds()) {
-                AnnotationMirror newAnno = bound.getAnnotationInHierarchy(top);
-                if (newAnno == null) {
-                    continue;
-                } else if (glb == null) {
-                    glb = newAnno;
-                } else {
-                    glb = typeFactory.getQualifierHierarchy().greatestLowerBound(newAnno, glb);
-                }
-            }
-            if (glb != null) {
-                glbs.add(glb);
-            }
-        }
-        type.addMissingAnnotations(glbs);
-        return super.visitIntersection(type, unused);
     }
 }
