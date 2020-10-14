@@ -220,7 +220,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
                 List<AnnotatedTypeMirror> superBounds = new ArrayList<>(bounds.size());
                 superBounds.addAll(bounds);
-                upperBound.setDirectSuperTypes(superBounds);
+                upperBound.setBounds(superBounds);
         }
 
         return result;

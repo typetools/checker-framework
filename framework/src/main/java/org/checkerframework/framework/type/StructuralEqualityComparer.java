@@ -282,7 +282,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return false;
         }
 
-        Boolean result = areAllEqual(type1.directSuperTypes(), type2.directSuperTypes());
+        boolean result = areAllEqual(type1.getBounds(), type2.getBounds());
         visitHistory.add(type1, type2, currentTop, result);
         return result;
     }

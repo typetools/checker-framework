@@ -821,7 +821,7 @@ public class QualifierDefaults {
              */
             if (type.getKind() == TypeKind.INTERSECTION) {
                 List<AnnotatedTypeMirror> sups =
-                        ((AnnotatedIntersectionType) type).directSuperTypesField();
+                        ((AnnotatedIntersectionType) type).getBoundsField();
                 if (sups != null) {
                     for (AnnotatedTypeMirror sup : sups) {
                         if (!sup.isAnnotatedInHierarchy(qual)) {

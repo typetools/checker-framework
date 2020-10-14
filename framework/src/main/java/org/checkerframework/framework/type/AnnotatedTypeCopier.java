@@ -140,12 +140,12 @@ public class AnnotatedTypeCopier
 
         final AnnotatedIntersectionType copy = makeOrReturnCopy(original, originalToCopy);
 
-        if (original.supertypes != null) {
+        if (original.bounds != null) {
             List<AnnotatedTypeMirror> copySupertypes = new ArrayList<>();
-            for (AnnotatedTypeMirror supertype : original.supertypes) {
+            for (AnnotatedTypeMirror supertype : original.bounds) {
                 copySupertypes.add(visit(supertype, originalToCopy));
             }
-            copy.supertypes = Collections.unmodifiableList(copySupertypes);
+            copy.bounds = Collections.unmodifiableList(copySupertypes);
         }
 
         return copy;

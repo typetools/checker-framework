@@ -466,9 +466,8 @@ public class AnnotatedTypes {
                         memberType);
             case INTERSECTION:
                 AnnotatedTypeMirror iter = memberType;
-                for (AnnotatedTypeMirror superType :
-                        ((AnnotatedIntersectionType) of).directSuperTypes()) {
-                    iter = substituteTypeVariables(types, atypeFactory, superType, member, iter);
+                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) of).getBounds()) {
+                    iter = substituteTypeVariables(types, atypeFactory, bound, member, iter);
                 }
                 return iter;
             case UNION:
@@ -1326,11 +1325,11 @@ public class AnnotatedTypes {
             final AnnotationMirror top,
             final QualifierHierarchy qualifierHierarchy) {
         AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
-        for (final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
-            final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-            if (superAnno != null
-                    && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
-                anno = superAnno;
+        for (AnnotatedTypeMirror bound : isect.getBounds()) {
+            AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
+            if (boundAnno != null
+                    && (anno == null || qualifierHierarchy.isSubtype(boundAnno, anno))) {
+                anno = boundAnno;
             }
         }
 

@@ -90,9 +90,9 @@ public class DefaultInferredTypesApplier {
             if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
                 type.replaceAnnotation(inferred);
                 if (type.getKind() == TypeKind.INTERSECTION) {
-                    for (AnnotatedTypeMirror superType :
-                            ((AnnotatedIntersectionType) type).directSuperTypes()) {
-                        superType.replaceAnnotation(inferred);
+                    for (AnnotatedTypeMirror bound :
+                            ((AnnotatedIntersectionType) type).getBounds()) {
+                        bound.replaceAnnotation(inferred);
                     }
                 }
             }

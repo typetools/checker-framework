@@ -225,11 +225,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             StringBuilder sb = new StringBuilder();
 
             boolean isFirst = true;
-            for (AnnotatedTypeMirror adt : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror bound : type.getBounds()) {
                 if (!isFirst) {
                     sb.append(" & ");
                 }
-                sb.append(visit(adt, visiting));
+                sb.append(visit(bound, visiting));
                 isFirst = false;
             }
             return sb.toString();

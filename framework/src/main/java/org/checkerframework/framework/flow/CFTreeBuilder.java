@@ -132,7 +132,7 @@ public class CFTreeBuilder extends TreeBuilder {
                     AnnotatedTypeMirror.AnnotatedIntersectionType intersectionType =
                             (AnnotatedTypeMirror.AnnotatedIntersectionType) annotatedType;
                     List<JCTree.JCExpression> components = List.nil();
-                    for (AnnotatedTypeMirror adt : intersectionType.directSuperTypes()) {
+                    for (AnnotatedTypeMirror adt : intersectionType.getBounds()) {
                         components =
                                 components.append((JCTree.JCExpression) createAnnotatedType(adt));
                     }
