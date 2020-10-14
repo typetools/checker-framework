@@ -374,22 +374,6 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true if type has an index annotation that is only applicable to integral types, such
-     * as @LessThan.
-     *
-     * @param type a type
-     * @return true if the type has an index annotation that is only applicable to integral types
-     */
-    protected boolean hasIntegralIndexAnnotation(AnnotatedTypeMirror type) {
-        for (AnnotationMirror am : type.getAnnotations()) {
-            if (isIntegralIndexAnnotation(am)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns true if the given annotation is an index annotation that is only applicable to
      * integral types, such as @LessThan.
      *

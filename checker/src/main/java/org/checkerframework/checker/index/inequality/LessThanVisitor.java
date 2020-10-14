@@ -143,7 +143,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     @Override
     public void visitAnnotatedType(
             @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
-        // Look for a PRIMITIVE within the type.
+        // Look for a primitive or boxed primitive within the type.
         Tree t = typeTree;
         while (t != null) {
             switch (t.getKind()) {
