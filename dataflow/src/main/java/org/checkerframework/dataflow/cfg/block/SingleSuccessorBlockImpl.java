@@ -5,7 +5,10 @@ import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 
-/** Implementation of a non-special basic block. */
+/**
+ * A basic block that has at most one successor. SpecialBlockImpl extends this, but exit blocks have
+ * no successor.
+ */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
     /** Internal representation of the successor. */
