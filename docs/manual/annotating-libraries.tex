@@ -687,13 +687,14 @@ the stub files anywhere that is convenient.  However, please consider
 providing your stub files to the checker author, so that other users can
 also benefit from the stub files you wrote.
 
-If you are distributing stub files with a checker implementation, the stub files
-should appear in the same directory as the checker class, which is a subtype of
-\<BaseTypeChecker>.  A \refqualclass{framework/qual}{StubFiles} annotation on
-the checker class lists stub files that are always used.  You must also
+If you are distributing stub files with a checker implementation, you must
 configure your build system to copy the stub files into the distributed jar for
-your checker.  If you are using Gradle, the following build configuration is
-sufficient:
+your checker.  Here are instructions if you are using the Checker Framework
+Gradle plugin:
+\begin{itemize}
+\item
+  If the stub files appear in the same directory as the checker class, which is
+  a subtype of \<BaseTypeChecker>, use the following build configuration:
 \begin{Verbatim}
   sourceSets {
     main {
@@ -703,13 +704,17 @@ sufficient:
     }
   }
 \end{Verbatim}
-(If you would prefer to keep resource files separate from your source files, you
-can place the stub files under the \<src/main/resources> directory, in a
-sub-directory matching the package of your checker class.  In this case, the
-default Gradle build configuration is sufficient.) For stub files whose use is
-optional (for example, because the behavior is unsound, or unsound except in
-certain circumstances), users must supply the \<-Astubs=...> command-line
-option.
+\item
+  If the stub files appear under the \<src/main/resources/>
+  directory in a sub-directory matching the package of your checker class,
+  the default Gradle build configuration is sufficient.
+\end{itemize}
+In either case, recall that a \refqualclass{framework/qual}{StubFiles}
+annotation on the checker class lists stub files that are always used.  For
+stub files whose use is optional (for example, because the behavior is
+unsound, or unsound except in certain circumstances), users must supply the
+\<-Astubs=...> command-line option.
+
 
 If a stub file contains annotations that are used by the framework rather
 than by any specific checker (such as purity annotations), and you wish to

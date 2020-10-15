@@ -29,12 +29,12 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *
  * <ol>
  *   <li><em>Phase one.</em> In the first phase, the AST is translated into a sequence of {@link
- *       org.checkerframework.dataflow.cfg.builder.CFGBuilder.ExtendedNode}s. An extended node can
- *       either be a {@link Node}, or one of several meta elements such as a conditional or
- *       unconditional jump or a node with additional information about exceptions. Some of the
- *       extended nodes contain labels (e.g., for the jump target), and phase one additionally
- *       creates a mapping from labels to extended nodes. Finally, the list of leaders is computed:
- *       A leader is an extended node which will give rise to a basic block in phase two.
+ *       org.checkerframework.dataflow.cfg.builder.ExtendedNode}s. An extended node can either be a
+ *       {@link Node}, or one of several meta elements such as a conditional or unconditional jump
+ *       or a node with additional information about exceptions. Some of the extended nodes contain
+ *       labels (e.g., for the jump target), and phase one additionally creates a mapping from
+ *       labels to extended nodes. Finally, the list of leaders is computed: A leader is an extended
+ *       node which will give rise to a basic block in phase two.
  *   <li><em>Phase two.</em> In this phase, the sequence of extended nodes is translated to a graph
  *       of control flow blocks that contain nodes. The meta elements from phase one are translated
  *       into the correct edges.
