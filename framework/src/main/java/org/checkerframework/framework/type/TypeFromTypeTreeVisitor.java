@@ -339,12 +339,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitIntersectionType(
             IntersectionTypeTree node, AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror type = f.type(node);
-
-        if (type.getKind() == TypeKind.TYPEVAR) {
-            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
+        AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
+        List<AnnotatedTypeMirror> bounds = new ArrayList<>();
+        for (Tree boundTree : node.getBounds()) {
+            bounds.add(visit(boundTree, f));
         }
-
+        type.setBounds(bounds);
         return type;
     }
 }

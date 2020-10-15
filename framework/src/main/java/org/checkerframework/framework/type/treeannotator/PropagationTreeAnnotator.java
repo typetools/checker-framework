@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
@@ -184,42 +185,70 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         }
 
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
-        if (type.getKind() == TypeKind.TYPEVAR) {
-            if (exprType.getKind() == TypeKind.TYPEVAR) {
-                // If both types are type variables, take the direct annotations.
-                type.addMissingAnnotations(exprType.getAnnotations());
-            }
-            // else do nothing.
-        } else {
-            // Use effective annotations from the expression, to get upper bound
-            // of type variables.
-            Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
+        switch (type.getKind()) {
+            case TYPEVAR:
+                if (exprType.getKind() == TypeKind.TYPEVAR) {
+                    // If both types are type variables, take the direct annotations.
+                    type.addMissingAnnotations(exprType.getAnnotations());
+                }
+                // else do nothing.
+                break;
+            case INTERSECTION:
+                Set<AnnotationMirror> glbs = AnnotationUtils.createAnnotationSet();
+                for (AnnotationMirror expAnno : exprType.getAnnotations()) {
+                    AnnotationMirror top =
+                            atypeFactory.getQualifierHierarchy().getTopAnnotation(expAnno);
+                    AnnotationMirror glb = null;
+                    for (AnnotatedTypeMirror bound :
+                            ((AnnotatedIntersectionType) type).getBounds()) {
+                        AnnotationMirror newAnno = bound.getAnnotationInHierarchy(top);
+                        if (newAnno == null) {
+                            newAnno = expAnno;
+                        }
+                        if (glb == null) {
+                            glb = newAnno;
+                        } else {
+                            glb =
+                                    atypeFactory
+                                            .getQualifierHierarchy()
+                                            .greatestLowerBound(newAnno, glb);
+                        }
+                    }
+                    glbs.add(glb);
+                }
+                type.addMissingAnnotations(glbs);
+                break;
+            default:
+                // Use effective annotations from the expression, to get upper bound
+                // of type variables.
+                Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
 
-            TypeKind castKind = type.getPrimitiveKind();
-            if (castKind != null) {
-                TypeKind exprKind = exprType.getPrimitiveKind();
-                if (exprKind != null) {
-                    switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
-                        case WIDENING:
-                            expressionAnnos =
-                                    atypeFactory.getWidenedAnnotations(
-                                            expressionAnnos, exprKind, castKind);
-                            break;
-                        case NARROWING:
-                            atypeFactory.getNarrowedAnnotations(
-                                    expressionAnnos, exprKind, castKind);
-                            break;
-                        case SAME:
-                            // Nothing to do
-                            break;
+                TypeKind castKind = type.getPrimitiveKind();
+                if (castKind != null) {
+                    TypeKind exprKind = exprType.getPrimitiveKind();
+                    if (exprKind != null) {
+                        switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
+                            case WIDENING:
+                                expressionAnnos =
+                                        atypeFactory.getWidenedAnnotations(
+                                                expressionAnnos, exprKind, castKind);
+                                break;
+                            case NARROWING:
+                                atypeFactory.getNarrowedAnnotations(
+                                        expressionAnnos, exprKind, castKind);
+                                break;
+                            case SAME:
+                                // Nothing to do
+                                break;
+                        }
                     }
                 }
-            }
 
-            // If the qualifier on the expression type is a supertype of the qualifier upper bound
-            // of the cast type, then apply the bound as the default qualifier rather than the
-            // expression qualifier.
-            addAnnoOrBound(type, expressionAnnos);
+                // If the qualifier on the expression type is a supertype of the qualifier upper
+                // bound
+                // of the cast type, then apply the bound as the default qualifier rather than the
+                // expression qualifier.
+                addAnnoOrBound(type, expressionAnnos);
         }
 
         return null;

@@ -13,6 +13,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
@@ -29,6 +30,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -95,6 +97,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -1149,9 +1152,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree tpb : node.getBounds()) {
             validateTypeOf(tpb);
         }
+
+        if (node.getBounds().size() > 1) {
+            // The upper bound of the type parameter is an intersection
+            AnnotatedTypeVariable type =
+                    (AnnotatedTypeVariable) atypeFactory.getAnnotatedTypeFromTypeTree(node);
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) type.getUpperBound();
+            checkIntersectionType(intersection, node.getBounds());
+        }
+
         return super.visitTypeParameter(node, p);
     }
 
+    protected void checkIntersectionType(
+            AnnotatedIntersectionType intersection, List<? extends Tree> bounds) {
+        for (Tree bound : bounds) {
+            if (bound.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+                List<? extends AnnotationMirror> explictAnnos =
+                        TreeUtils.annotationsFromTree((AnnotatedTypeTree) bound);
+                for (AnnotationMirror explictAnno : explictAnnos) {
+                    if (atypeFactory.isSupportedQualifier(explictAnno)) {
+                        AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
+                        if (!AnnotationUtils.areSame(anno, explictAnno)) {
+                            checker.reportWarning(
+                                    bound,
+                                    "explicit.annotation.ignored",
+                                    anno,
+                                    anno,
+                                    explictAnno,
+                                    explictAnno,
+                                    explictAnno);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public Void visitWildcard(WildcardTree node, Void unused) {
+        return super.visitWildcard(node, unused);
+    }
     // **********************************************************************
     // Assignment checkers and pseudo-assignments
     // **********************************************************************
@@ -2206,6 +2248,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (atypeFactory.getDependentTypesHelper() != null) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
             atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
+        }
+
+        if (node.getType().getKind() == Tree.Kind.INTERSECTION_TYPE) {
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) atypeFactory.getAnnotatedType(node);
+            checkIntersectionType(
+                    intersection, ((IntersectionTypeTree) node.getType()).getBounds());
         }
         return super.visitTypeCast(node, p);
         // return scan(node.getExpression(), p);
