@@ -448,17 +448,18 @@ the CLIMB-to-top rule.
 
 In certain situations, it would be convenient for an annotation on a
 superclass member to be automatically inherited by subclasses that override
-it.  Such a feature would reduce annotation effort, but it would also reduce program
+it.  (An example is that programmers must add `@Nullable` to the formal
+parameter type of every implementation of the `equals()` method.)
+Such a feature would reduce annotation effort, but it would also reduce program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.
+feature.  In the future, this feature may be added.
 
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-
 Computation is necessary because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
@@ -466,9 +467,6 @@ annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
 annotations on overridden implementations in supertypes.  In each case, an
 error would be thrown if no such annotations existed.
-
-In the future, this feature may be added optionally, and each type-checker
-implementation can enable it if desired.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}

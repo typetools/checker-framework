@@ -12,6 +12,7 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
