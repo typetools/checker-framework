@@ -934,12 +934,14 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             List<AnnotatedTypeMirror> paramTypes,
             List<? extends ExpressionTree> trees) {
-        assert paramTypes.size() == trees.size()
-                : "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
-                        + "Parameter types: "
-                        + paramTypes
-                        + " Arguments: "
-                        + trees;
+        if (paramTypes.size() != trees.size()) {
+            throw new BugInCF(
+                    "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
+                            + "Parameter types: "
+                            + paramTypes
+                            + " Arguments: "
+                            + trees);
+        }
         List<AnnotatedTypeMirror> types = new ArrayList<>();
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();

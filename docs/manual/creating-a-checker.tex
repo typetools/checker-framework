@@ -1939,6 +1939,10 @@ where the first command creates file \<someDirectory/myClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
+In the output, conditional basic blocks are represented as octagons with
+two successors.  Special basic blocks are represented as ovals (e.g., the
+entry and exit point of the method).
+
 
 \subsubsectionAndLabel{Creating a CFG while running a type-checker}{creating-debugging-dataflow-graph-with-typechecker}
 
