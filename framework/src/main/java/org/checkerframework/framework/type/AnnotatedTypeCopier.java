@@ -142,8 +142,8 @@ public class AnnotatedTypeCopier
 
         if (original.bounds != null) {
             List<AnnotatedTypeMirror> copySupertypes = new ArrayList<>();
-            for (AnnotatedTypeMirror supertype : original.bounds) {
-                copySupertypes.add(visit(supertype, originalToCopy));
+            for (AnnotatedTypeMirror bound : original.bounds) {
+                copySupertypes.add(visit(bound, originalToCopy));
             }
             copy.bounds = Collections.unmodifiableList(copySupertypes);
         }

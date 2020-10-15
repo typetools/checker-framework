@@ -108,7 +108,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             Set<AnnotationMirror> glbs = null;
             for (AnnotatedTypeMirror bound : intersectionType.getBounds()) {
                 if (glbs == null) {
-                    glbs = bound.getAnnotations();
+                    glbs = bound.getEffectiveAnnotations();
                 } else {
                     Set<AnnotationMirror> newGlbs = AnnotationUtils.createAnnotationSet();
                     for (AnnotationMirror glb : glbs) {

@@ -2074,6 +2074,10 @@ public abstract class AnnotatedTypeMirror {
             fixupBoundAnnotations();
         }
 
+        /**
+         * Copies {@link #annotations} to all the bounds, replacing any existing annotations in the
+         * same hierarchy.
+         */
         private void fixupBoundAnnotations() {
             if (!this.getAnnotationsField().isEmpty()) {
                 Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
@@ -2122,12 +2126,14 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * {@inheritDoc} This returns the same types as {@link #getBounds()}.
+         * {@inheritDoc}
+         *
+         * <p>This returns the same types as {@link #getBounds()}.
          *
          * @return the direct super types of this
          */
         @Override
-        public List<AnnotatedTypeMirror> directSuperTypes() {
+        public List<? extends AnnotatedTypeMirror> directSuperTypes() {
             return getBounds();
         }
 
@@ -2153,12 +2159,13 @@ public abstract class AnnotatedTypeMirror {
             return bounds;
         }
 
-        public List<AnnotatedTypeMirror> getBoundsField() {
-            return bounds;
-        }
-
-        void setBounds(List<AnnotatedTypeMirror> bounds) {
-            this.bounds = new ArrayList<>(bounds);
+        /**
+         * Sets the bounds.
+         *
+         * @param bounds bounds to use
+         */
+        /*default-visibility*/ void setBounds(List<AnnotatedTypeMirror> bounds) {
+            this.bounds = bounds;
         }
     }
 
@@ -2226,8 +2233,6 @@ public abstract class AnnotatedTypeMirror {
      * immediate supertype (class or interface) of the Java type of this. If the directSuperType has
      * type arguments, then the annotations on those type arguments are taken with proper
      * translation from the declaration of the Java type of this.
-     *
-     * <p>The direct super types are recomputed
      *
      * <p>For example,
      *
