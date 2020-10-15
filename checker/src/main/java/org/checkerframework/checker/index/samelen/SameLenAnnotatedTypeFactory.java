@@ -26,8 +26,10 @@ import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -148,8 +150,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns true if the given expression may appear in a @SameLen annotation. */
     public static boolean mayAppearInSameLen(Receiver receiver) {
         return !receiver.containsUnknown()
-                && !(receiver instanceof FlowExpressions.ArrayCreation)
-                && !(receiver instanceof FlowExpressions.ClassName)
+                && !(receiver instanceof ArrayCreation)
+                && !(receiver instanceof ClassName)
                 // Big expressions cause a stack overflow in FlowExpressionParseUtil.
                 // So limit them to an arbitrary length of 999.
                 && receiver.toString().length() < 1000;
@@ -388,7 +390,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
-            List<FlowExpressions.Receiver> receivers, List<AnnotationMirror> annos) {
+            List<Receiver> receivers, List<AnnotationMirror> annos) {
 
         Set<String> exprs = new TreeSet<>();
         for (Receiver rec : receivers) {

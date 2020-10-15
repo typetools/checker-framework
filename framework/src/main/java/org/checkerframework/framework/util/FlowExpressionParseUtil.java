@@ -55,22 +55,22 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayCreation;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
@@ -166,10 +166,7 @@ public class FlowExpressionParseUtil {
         return updatedExpression;
     }
 
-    /**
-     * A visitor class that converts a JavaParser {@link Expression} to a {@link
-     * FlowExpressions.Receiver}.
-     */
+    /** A visitor class that converts a JavaParser {@link Expression} to a {@link Receiver}. */
     private static class ExpressionToReceiverVisitor
             extends GenericVisitorWithDefaults<Receiver, FlowExpressionContext> {
 
@@ -734,7 +731,7 @@ public class FlowExpressionParseUtil {
          * @param arguments used to replace parameter references, e.g. #1, in flow expressions, null
          *     if no arguments
          * @param checkerContext used to create {@link
-         *     org.checkerframework.dataflow.analysis.FlowExpressions.Receiver}s
+         *     org.checkerframework.dataflow.expression.Receiver}s
          */
         public FlowExpressionContext(
                 Receiver receiver, List<Receiver> arguments, BaseContext checkerContext) {
@@ -772,7 +769,7 @@ public class FlowExpressionParseUtil {
          * @param methodDeclaration used translate parameter numbers in a flow expression to formal
          *     parameters of the method
          * @param enclosingTree used to look up fields and as type of "this" in flow expressions
-         * @param checkerContext use to build FlowExpressions.Receiver
+         * @param checkerContext use to build Receiver
          * @return context created of {@code methodDeclaration}
          */
         public static FlowExpressionContext buildContextForMethodDeclaration(
@@ -788,7 +785,7 @@ public class FlowExpressionParseUtil {
          * @param methodDeclaration used translate parameter numbers in a flow expression to formal
          *     parameters of the method
          * @param enclosingType used to look up fields and as type of "this" in flow expressions
-         * @param checkerContext use to build FlowExpressions.Receiver
+         * @param checkerContext use to build Receiver
          * @return context created of {@code methodDeclaration}
          */
         public static FlowExpressionContext buildContextForMethodDeclaration(
@@ -847,7 +844,7 @@ public class FlowExpressionParseUtil {
          *     parameters of the method
          * @param currentPath to find the enclosing class, which is used to look up fields and as
          *     type of "this" in flow expressions
-         * @param checkerContext use to build FlowExpressions.Receiver
+         * @param checkerContext use to build Receiver
          * @return context created of {@code methodDeclaration}
          */
         public static FlowExpressionContext buildContextForMethodDeclaration(
@@ -909,7 +906,7 @@ public class FlowExpressionParseUtil {
         public static FlowExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, BaseContext checkerContext) {
             ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocation);
-            FlowExpressions.Receiver receiver;
+            Receiver receiver;
             if (receiverTree == null) {
                 receiver =
                         FlowExpressions.internalReprOfImplicitReceiver(
@@ -921,7 +918,7 @@ public class FlowExpressionParseUtil {
             }
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
-            List<FlowExpressions.Receiver> argReceivers = new ArrayList<>(args.size());
+            List<Receiver> argReceivers = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
                 argReceivers.add(
                         FlowExpressions.internalReprOf(
@@ -941,7 +938,7 @@ public class FlowExpressionParseUtil {
         public static FlowExpressionContext buildContextForNewClassUse(
                 ObjectCreationNode n, BaseContext checkerContext) {
 
-            // This returns an FlowExpressions.Unknown with the type set to the class in which the
+            // This returns an Unknown with the type set to the class in which the
             // constructor is declared
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), n);

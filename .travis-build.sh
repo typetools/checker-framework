@@ -60,7 +60,6 @@ case  $GROUP  in
         "$SCRIPTDIR/test-cftests-junit.sh"
         "$SCRIPTDIR/test-cftests-nonjunit.sh"
         "$SCRIPTDIR/test-misc.sh"
-        "$SCRIPTDIR/test-cf-inference.sh"
         "$SCRIPTDIR/test-plume-lib.sh"
         "$SCRIPTDIR/test-daikon.sh"
         "$SCRIPTDIR/test-guava.sh"
