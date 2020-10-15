@@ -2277,11 +2277,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)} and
-     * also by {@link #visitVariable} and {@link #visitMethod}. Exists to prevent code duplication
-     * between the three. Checking in visitVariable and visitMethod is needed because there isn't an
-     * AnnotatedTypeTree within a variable declaration or for a method return type -- all the
-     * annotations are attached to the VariableTree or MethodTree, respectively.
+     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)},
+     * {@link #visitVariable}, and {@link #visitMethod}. Exists to prevent code duplication among
+     * the three. Checking in {@code visitVariable} and {@code visitMethod} is needed because there
+     * isn't an AnnotatedTypeTree within a variable declaration or for a method return type -- all
+     * the annotations are attached to the VariableTree or MethodTree, respectively.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
      *     from one; null otherwise
