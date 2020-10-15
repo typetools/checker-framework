@@ -135,7 +135,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
             return LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                    factory.getQualifierHierarchy().findAnnotationInHierarchy(s, factory.UNKNOWN));
+                    factory.getQualifierHierarchy()
+                            .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
         } else {
             return Collections.emptyList();
         }
