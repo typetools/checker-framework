@@ -1072,6 +1072,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 // invocation conversion to all arguments.
                 for (int i = 0; i < numActuals; i++) {
                     Node actualVal = scan(actualExprs.get(i), null);
+                    if (actualVal == null) {
+                        throw new BugInCF(
+                                "CFGBuilder: scan returned null for %s [%s]",
+                                actualExprs.get(i), actualExprs.get(i).getClass());
+                    }
                     convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
                 }
             } else {
