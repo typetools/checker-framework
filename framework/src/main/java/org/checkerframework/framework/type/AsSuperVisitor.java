@@ -92,37 +92,17 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visit(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
-        ensurePrimaryIsCorrectForUnionsAndIntersections(type);
+        ensurePrimaryIsCorrectForUnions(type);
         return super.visit(type, superType, p);
     }
 
     /**
      * The code in this class is assuming that the primary annotation of an {@link
-     * AnnotatedIntersectionType} is the greatest lower bound of the annotations on its direct super
-     * types and that the primary annotation of an {@link AnnotatedUnionType} is the least upper
-     * bound of its alternatives. This method makes this assumption true.
+     * AnnotatedUnionType} is the least upper bound of its alternatives. This method makes this
+     * assumption true.
      */
-    private void ensurePrimaryIsCorrectForUnionsAndIntersections(AnnotatedTypeMirror type) {
-        if (type.getKind() == TypeKind.INTERSECTION) {
-            AnnotatedIntersectionType intersectionType = (AnnotatedIntersectionType) type;
-            Set<AnnotationMirror> glbs = null;
-            for (AnnotatedTypeMirror bound : intersectionType.getBounds()) {
-                if (glbs == null) {
-                    glbs = bound.getEffectiveAnnotations();
-                } else {
-                    Set<AnnotationMirror> newGlbs = AnnotationUtils.createAnnotationSet();
-                    for (AnnotationMirror glb : glbs) {
-                        AnnotationMirror anno = bound.getEffectiveAnnotationInHierarchy(glb);
-                        newGlbs.add(
-                                annotatedTypeFactory
-                                        .getQualifierHierarchy()
-                                        .greatestLowerBound(anno, glb));
-                    }
-                    glbs = newGlbs;
-                }
-            }
-            type.replaceAnnotations(glbs);
-        } else if (type.getKind() == TypeKind.UNION) {
+    private void ensurePrimaryIsCorrectForUnions(AnnotatedTypeMirror type) {
+        if (type.getKind() == TypeKind.UNION) {
             AnnotatedUnionType annotatedUnionType = (AnnotatedUnionType) type;
             Set<AnnotationMirror> lubs = null;
             for (AnnotatedDeclaredType altern : annotatedUnionType.getAlternatives()) {
@@ -408,7 +388,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // </editor-fold>
 
     /* The primary annotation on an intersection type should be the GLB of the primary annotations of
-    the alternatives.  #ensurePrimaryIsCorrectForUnionsAndIntersections ensures that this is the case.
+    the alternatives.  #ensurePrimaryIsCorrectForUnions ensures that this is the case.
 
     Example (java) subtyping relationship:
     C <: A & B <: A <:Object, where class C extends A implements B {...}
@@ -676,7 +656,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // </editor-fold>
 
     /* The primary annotation on a union type is the LUB of the primary annotations on its direct
-    supertypes. #ensurePrimaryIsCorrectForUnionsAndIntersections ensures that this is the case.
+    supertypes. #ensurePrimaryIsCorrectForUnions ensures that this is the case.
 
     All the alternatives in a union type must be subtype of Throwable and cannot have type arguments;
     however, a union type can be a subtype of an interface with a type argument. For example:
