@@ -8,7 +8,7 @@ public class LocalVarDefaults {
         int local2 = signedInt;
     }
 
-    // :: error: (type.invalid.annotations.on.use)
+    // :: error: (type.invalid.annotations.on.use) :: error:  (anno.on.irrelevant)
     void methodDouble(@Unsigned double unsigned, @Signed double signed) {
         // :: error: (assignment.type.incompatible)
         double local = unsigned;

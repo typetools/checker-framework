@@ -30,9 +30,6 @@ public @interface RelevantJavaTypes {
     /**
      * Classes where a type annotation supported by this checker may be written.
      *
-     * <p>{@code OnlyObject.class} means that the checker's type annotations may appear on {@code
-     * Object}, without implying that the annotations may appear on all reference types.
-     *
      * <p>{@code Object[].class} means that the checker processes all array types. No distinction
      * among array types is currently made, and no other array class should be supplied to
      * {@code @RelevantJavaTypes}.
@@ -41,15 +38,4 @@ public @interface RelevantJavaTypes {
      * for example as {@code int.class} and {@code Integer.class}.
      */
     Class<?>[] value();
-
-    /**
-     * When used in {@code @}{@link RelevantJavaTypes}, this class means that type annotations may
-     * appear on {@code Object} but not necessarily on all reference types.
-     */
-    public abstract class OnlyObject {
-        /** Do not instantiate this class. */
-        protected OnlyObject() {
-            throw new Error("Do not instantiate");
-        }
-    }
 }

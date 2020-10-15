@@ -307,10 +307,12 @@ public class OptionalVisitor
                 }
             } else if (isOptionalType(tm)) {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
-                assert typeArgs.size() == 1;
-                TypeMirror typeArg = typeArgs.get(0);
-                if (isCollectionType(typeArg)) {
-                    checker.reportError(tree, "optional.collection");
+                // If typeArgs.size()==0, then the user wrote a raw type `Optional`.
+                if (typeArgs.size() == 1) {
+                    TypeMirror typeArg = typeArgs.get(0);
+                    if (isCollectionType(typeArg)) {
+                        checker.reportError(tree, "optional.collection");
+                    }
                 }
             }
             return super.visitDeclared(type, tree);

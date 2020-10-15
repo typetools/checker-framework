@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -22,6 +23,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -2288,7 +2290,73 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {}
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        warnAboutIrrelevantJavaTypes(annoTrees, typeTree);
+    }
+
+    public void warnAboutIrrelevantJavaTypes(
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        if (atypeFactory.relevantJavaTypes == null) {
+            return;
+        }
+
+        Tree t = typeTree;
+        while (t != null) {
+            switch (t.getKind()) {
+
+                    // Recurse for compound types whose top level is not at the far left.
+                case ARRAY_TYPE:
+                    t = ((ArrayTypeTree) t).getType();
+                    continue;
+                case MEMBER_SELECT:
+                    t = ((MemberSelectTree) t).getExpression();
+                    continue;
+                case PARAMETERIZED_TYPE:
+                    t = ((ParameterizedTypeTree) t).getType();
+                    continue;
+
+                    // Base cases
+                case PRIMITIVE_TYPE:
+                case IDENTIFIER:
+                    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
+                    if (!supportedAnnoTrees.isEmpty()
+                            && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
+                        checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t);
+                    }
+                    return;
+                case ANNOTATED_TYPE:
+                    AnnotatedTypeTree at = (AnnotatedTypeTree) t;
+                    ExpressionTree underlying = at.getUnderlyingType();
+                    List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
+                    if (!annos.isEmpty()
+                            && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
+                        checker.reportError(t, "anno.on.irrelevant", annos, underlying);
+                    }
+                    return;
+
+                default:
+                    t = null;
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Returns a new list containing only the supported annotations from its argument -- that is,
+     * those that are part of the current type system.
+     *
+     * @param annoTrees annotation trees
+     * @returns a new list containing only the supported annotations from its argument
+     */
+    private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
+        List<AnnotationTree> result = new ArrayList<>(1);
+        for (AnnotationTree at : annoTrees) {
+            if (atypeFactory.isSupportedQualifier(TreeUtils.annotationFromAnnotationTree(at))) {
+                result.add(at);
+            }
+        }
+        return result;
+    }
 
     // **********************************************************************
     // Helper methods to provide a single overriding point
