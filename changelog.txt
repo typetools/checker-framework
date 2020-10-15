@@ -6,6 +6,9 @@ The Constant Value Checker supports annotation @EnumVal.
 
 Implementation details:
 
+AnnotatedIntersectionType#directSuperTypes now returns
+List<? extends AnnotatedTypeMirror>.
+
 Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
 longer used.  Added new methods getWidenedValue() and getNarrowedValue().
 
