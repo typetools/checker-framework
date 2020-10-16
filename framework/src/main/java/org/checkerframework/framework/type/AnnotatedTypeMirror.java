@@ -2167,6 +2167,26 @@ public abstract class AnnotatedTypeMirror {
         /*default-visibility*/ void setBounds(List<AnnotatedTypeMirror> bounds) {
             this.bounds = bounds;
         }
+
+        /**
+         * Copy the first explicit annotation (in each hierarchy) on a bound to the primary
+         * annotation location of the intersection type.
+         *
+         * <p>For example, {@code @NonNull Object & @Initialized @Nullable Serializable} is changed
+         * to {@code @NonNull @Initialized Object & @Initialized @NonNull Serializable}.
+         */
+        public void copyIntersectionBoundAnnotations() {
+            Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+            for (AnnotatedTypeMirror bound : getBounds()) {
+                for (AnnotationMirror a : bound.getAnnotations()) {
+                    if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)
+                            == null) {
+                        annos.add(a);
+                    }
+                }
+            }
+            addAnnotations(annos);
+        }
     }
 
     // TODO: Ensure union types are handled everywhere.

@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -810,28 +809,9 @@ public class QualifierDefaults {
          * @param qual annotation to add
          */
         protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
-            if (type.isAnnotatedInHierarchy(qual) || type.getKind() == TypeKind.EXECUTABLE) {
-                // Only add the annotation if one isn't already present.
-                return;
-            }
-            if (type.getKind() == TypeKind.INTERSECTION) {
-                // GLB the primary annotations of the bounds of the intersection.  If a bound is
-                // not annotated, then use qual as the annotation on that bound.
-                AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(qual);
-                AnnotationMirror glb = null;
-                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
-                    AnnotationMirror newAnno = bound.getAnnotationInHierarchy(top);
-                    if (newAnno == null) {
-                        newAnno = qual;
-                    }
-                    if (glb == null) {
-                        glb = newAnno;
-                    } else {
-                        glb = atypeFactory.getQualifierHierarchy().greatestLowerBound(newAnno, glb);
-                    }
-                }
-                type.addAnnotation(glb);
-            } else {
+            // Add the default annotation, but only if no other
+            // annotation is present.
+            if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
                 type.addAnnotation(qual);
             }
         }

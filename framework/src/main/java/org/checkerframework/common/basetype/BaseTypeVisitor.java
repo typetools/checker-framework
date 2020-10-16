@@ -1159,31 +1159,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     (AnnotatedTypeVariable) atypeFactory.getAnnotatedTypeFromTypeTree(node);
             AnnotatedIntersectionType intersection =
                     (AnnotatedIntersectionType) type.getUpperBound();
-            checkIntersectionType(intersection, node.getBounds());
+            checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
         }
 
         return super.visitTypeParameter(node, p);
     }
 
-    protected void checkIntersectionType(
-            AnnotatedIntersectionType intersection, List<? extends Tree> bounds) {
-        for (Tree bound : bounds) {
-            if (bound.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-                List<? extends AnnotationMirror> explictAnnos =
-                        TreeUtils.annotationsFromTree((AnnotatedTypeTree) bound);
-                for (AnnotationMirror explictAnno : explictAnnos) {
-                    if (atypeFactory.isSupportedQualifier(explictAnno)) {
-                        AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
-                        if (!AnnotationUtils.areSame(anno, explictAnno)) {
-                            checker.reportWarning(
-                                    bound,
-                                    "explicit.annotation.ignored",
-                                    anno,
-                                    anno,
-                                    explictAnno,
-                                    explictAnno,
-                                    explictAnno);
-                        }
+    /**
+     * Issues "explicit.annotation.ignored" error if any explicit annotation on an intersection
+     * bound is not the same as the primary annotation of the given intersection type.
+     *
+     * @param intersection type to use
+     * @param boundTrees trees of {@code intersection} bounds
+     */
+    protected void checkExplicitAnnotationsOnIntersectionBounds(
+            AnnotatedIntersectionType intersection, List<? extends Tree> boundTrees) {
+        for (Tree boundTree : boundTrees) {
+            if (boundTree.getKind() != Tree.Kind.ANNOTATED_TYPE) {
+                continue;
+            }
+            List<? extends AnnotationMirror> explictAnnos =
+                    TreeUtils.annotationsFromTree((AnnotatedTypeTree) boundTree);
+            for (AnnotationMirror explictAnno : explictAnnos) {
+                if (atypeFactory.isSupportedQualifier(explictAnno)) {
+                    AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
+                    if (!AnnotationUtils.areSame(anno, explictAnno)) {
+                        checker.reportWarning(
+                                boundTree,
+                                "explicit.annotation.ignored",
+                                explictAnno,
+                                anno,
+                                explictAnno,
+                                anno);
                     }
                 }
             }
@@ -2253,7 +2260,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (node.getType().getKind() == Tree.Kind.INTERSECTION_TYPE) {
             AnnotatedIntersectionType intersection =
                     (AnnotatedIntersectionType) atypeFactory.getAnnotatedType(node);
-            checkIntersectionType(
+            checkExplicitAnnotationsOnIntersectionBounds(
                     intersection, ((IntersectionTypeTree) node.getType()).getBounds());
         }
         return super.visitTypeCast(node, p);
