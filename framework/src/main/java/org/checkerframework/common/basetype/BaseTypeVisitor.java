@@ -2309,7 +2309,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         Tree t = typeTree;
-        while (t != null) {
+        while (true) {
             switch (t.getKind()) {
 
                     // Recurse for compound types whose top level is not at the far left.
@@ -2343,8 +2343,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return;
 
                 default:
-                    t = null;
-                    break;
+                    return;
             }
         }
     }

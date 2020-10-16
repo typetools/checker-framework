@@ -6,9 +6,8 @@ The Constant Value Checker supports annotation @EnumVal.
 
 Implementation details:
 
-The @RelevantJavaTypes annotation is now enforced when it is written on a
-checker:  the checker issues a warning if the programmer writes a type annotation on a
-type that is not listed.
+The @RelevantJavaTypes annotation is now enforced:  a checker issues a warning
+if the programmer writes a type annotation on a type that is not listed.
 
 Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
 longer used.  Added new methods getWidenedValue() and getNarrowedValue().
