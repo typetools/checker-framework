@@ -32,6 +32,7 @@ public class Issue194 {
         return true;
     }
 
+    @SuppressWarnings("anno.on.irrelevant")
     public void m2(Custom a, Custom b) {
         if (a.length() != b.length()) {
             return;

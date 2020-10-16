@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * may appear on any type.
  *
  * <p>This restriction is coarse-grained in that it applies to all type annotations for a given
- * checker. To have different restrictions for different Java types, override {@link package
+ * checker. To have different restrictions for different Java types, override {@link
  * org.checkerframework.common.basetype.BaseTypeVisitor#visitAnnotatedType(List, Tree)}.
  *
  * <p>This is orthogonal to Java's {@code @Target} annotation; each enforces a different type of
@@ -36,6 +36,8 @@ public @interface RelevantJavaTypes {
      *
      * <p>If a checker processes both primitive and boxed types, both must be specified separately,
      * for example as {@code int.class} and {@code Integer.class}.
+     *
+     * @return classes where a type annotation supported by this checker may be written
      */
     Class<?>[] value();
 }

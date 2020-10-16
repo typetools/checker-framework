@@ -2294,6 +2294,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         warnAboutIrrelevantJavaTypes(annoTrees, typeTree);
     }
 
+    /**
+     * Warns if a type annotation is written on a Java type that is not listed in
+     * the @RelevantJavaTypes annotation.
+     *
+     * @param annoTrees annotations written before a variable/method declaration, if this type is
+     *     from one; null otherwise
+     * @param typeTree the type that any type annotations in annoTrees apply to
+     */
     public void warnAboutIrrelevantJavaTypes(
             @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
         if (atypeFactory.relevantJavaTypes == null) {
@@ -2346,7 +2354,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * those that are part of the current type system.
      *
      * @param annoTrees annotation trees
-     * @returns a new list containing only the supported annotations from its argument
+     * @return a new list containing only the supported annotations from its argument
      */
     private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
         List<AnnotationTree> result = new ArrayList<>(1);
