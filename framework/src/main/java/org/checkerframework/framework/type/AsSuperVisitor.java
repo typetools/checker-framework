@@ -100,6 +100,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
      * The code in this class is assuming that the primary annotation of an {@link
      * AnnotatedUnionType} is the least upper bound of its alternatives. This method makes this
      * assumption true.
+     *
+     * @param type any kind of {@code AnnotatedTypeMirror}
      */
     private void ensurePrimaryIsCorrectForUnions(AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.UNION) {
@@ -211,6 +213,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, lowerBound);
     }
 
+    /**
+     * Returns true if the underlying, erased Java type of {@code subtype} is a subtype of the
+     * underlying, erased Java type of {@code supertype}.
+     *
+     * @param subtype a type
+     * @param supertype a type
+     * @return true if the underlying, erased Java type of {@code subtype} is a subtype of the
+     *     underlying, erased Java type of {@code supertype}
+     */
     private boolean isErasedJavaSubtype(
             AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {
         TypeMirror javaSubtype = types.erasure(subtype.getUnderlyingType());
@@ -218,6 +229,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return types.isSubtype(javaSubtype, javaSupertype);
     }
 
+    /**
+     * Returns true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
+     * equivalent.
+     *
+     * @param typeA a type
+     * @param typeB a type
+     * @return true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
+     *     equivalent
+     */
     private boolean areErasedJavaTypesEquivalent(
             AnnotatedTypeMirror typeA, AnnotatedTypeMirror typeB) {
         TypeMirror underlyingTypeA = types.erasure(typeA.getUnderlyingType());
