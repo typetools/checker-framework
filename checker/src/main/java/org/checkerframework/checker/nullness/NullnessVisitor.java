@@ -358,7 +358,8 @@ public class NullnessVisitor
 
     @Override
     public Void visitAssert(AssertTree node, Void p) {
-        // See also org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitAssert
+        // See also
+        // org.checkerframework.dataflow.cfg.builder.CFGBuilder.CFGTranslationPhaseOne.visitAssert
 
         // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
         // turned on and @AssumeAssertions is not used, checkForNullability is still called since

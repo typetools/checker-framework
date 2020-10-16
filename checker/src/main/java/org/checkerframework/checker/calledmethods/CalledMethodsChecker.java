@@ -1,6 +1,7 @@
 package org.checkerframework.checker.calledmethods;
 
 import java.util.LinkedHashSet;
+import org.checkerframework.common.accumulation.AccumulationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -27,7 +28,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
     CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS,
 })
 @StubFiles({"DescribeImages.astub", "GenerateDataKey.astub"})
-public class CalledMethodsChecker extends BaseTypeChecker {
+public class CalledMethodsChecker extends AccumulationChecker {
 
     /**
      * If this option is supplied, count the number of analyzed calls to build() in supported
