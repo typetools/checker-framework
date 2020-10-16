@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -22,6 +23,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -2277,18 +2279,91 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)} and
-     * also by {@link #visitVariable} and {@link #visitMethod}. Exists to prevent code duplication
-     * between the three. Checking in visitVariable and visitMethod is needed because there isn't an
-     * AnnotatedTypeTree within a variable declaration or for a method return type -- all the
-     * annotations are attached to the VariableTree or MethodTree, respectively.
+     * Checks an annotated type. Invoked by {@link #visitAnnotatedType(AnnotatedTypeTree, Void)},
+     * {@link #visitVariable}, and {@link #visitMethod}. Exists to prevent code duplication among
+     * the three. Checking in {@code visitVariable} and {@code visitMethod} is needed because there
+     * isn't an AnnotatedTypeTree within a variable declaration or for a method return type -- all
+     * the annotations are attached to the VariableTree or MethodTree, respectively.
      *
      * @param annoTrees annotations written before a variable/method declaration, if this type is
      *     from one; null otherwise
      * @param typeTree the type that any type annotations in annoTrees apply to
      */
     public void visitAnnotatedType(
-            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {}
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        warnAboutIrrelevantJavaTypes(annoTrees, typeTree);
+    }
+
+    /**
+     * Warns if a type annotation is written on a Java type that is not listed in
+     * the @RelevantJavaTypes annotation.
+     *
+     * @param annoTrees annotations written before a variable/method declaration, if this type is
+     *     from one; null otherwise
+     * @param typeTree the type that any type annotations in annoTrees apply to
+     */
+    public void warnAboutIrrelevantJavaTypes(
+            @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        if (atypeFactory.relevantJavaTypes == null) {
+            return;
+        }
+
+        Tree t = typeTree;
+        while (true) {
+            switch (t.getKind()) {
+
+                    // Recurse for compound types whose top level is not at the far left.
+                case ARRAY_TYPE:
+                    t = ((ArrayTypeTree) t).getType();
+                    continue;
+                case MEMBER_SELECT:
+                    t = ((MemberSelectTree) t).getExpression();
+                    continue;
+                case PARAMETERIZED_TYPE:
+                    t = ((ParameterizedTypeTree) t).getType();
+                    continue;
+
+                    // Base cases
+                case PRIMITIVE_TYPE:
+                case IDENTIFIER:
+                    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
+                    if (!supportedAnnoTrees.isEmpty()
+                            && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
+                        checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t);
+                    }
+                    return;
+                case ANNOTATED_TYPE:
+                    AnnotatedTypeTree at = (AnnotatedTypeTree) t;
+                    ExpressionTree underlying = at.getUnderlyingType();
+                    List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
+                    if (!annos.isEmpty()
+                            && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
+                        checker.reportError(t, "anno.on.irrelevant", annos, underlying);
+                    }
+                    return;
+
+                default:
+                    return;
+            }
+        }
+    }
+
+    /**
+     * Returns a new list containing only the supported annotations from its argument -- that is,
+     * those that are part of the current type system.
+     *
+     * @param annoTrees annotation trees
+     * @return a new list containing only the supported annotations from its argument
+     */
+    private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
+        List<AnnotationTree> result = new ArrayList<>(1);
+        for (AnnotationTree at : annoTrees) {
+            if (atypeFactory.isSupportedQualifier(TreeUtils.annotationFromAnnotationTree(at))) {
+                result.add(at);
+            }
+        }
+        return result;
+    }
 
     // **********************************************************************
     // Helper methods to provide a single overriding point
