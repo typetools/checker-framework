@@ -20,7 +20,7 @@ public class LocalVarDefaults {
         Integer local2 = signedInt;
     }
 
-    // :: error: (type.invalid.annotations.on.use)
+    // :: error: (type.invalid.annotations.on.use) :: error:  (anno.on.irrelevant)
     void methodDoubleWrapper(@Unsigned Double unsigned, @Signed Double signed) {
         // :: error: (assignment.type.incompatible)
         Double local = unsigned;
