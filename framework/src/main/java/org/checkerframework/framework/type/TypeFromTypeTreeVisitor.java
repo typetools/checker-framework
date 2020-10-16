@@ -338,8 +338,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitIntersectionType(
             IntersectionTypeTree node, AnnotatedTypeFactory f) {
         // This method is only called for IntersectionTypes in casts.  There is no
-        // IntersectionTypeTree
-        // for a type variable bound that is an intersection.  See #visitTypeParameter.
+        // IntersectionTypeTree for a type variable bound that is an intersection.  See
+        // #visitTypeParameter.
         AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
         List<AnnotatedTypeMirror> bounds = new ArrayList<>();
         for (Tree boundTree : node.getBounds()) {

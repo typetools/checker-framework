@@ -326,7 +326,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         List<AnnotatedTypeMirror> newBounds = new ArrayList<>();
         // Each type in the intersection must be a supertype of type, so call asSuper on all types
         // in the intersection.
-        // TODO: Is the above statement correct?
         for (AnnotatedTypeMirror superBound : superType.getBounds()) {
             if (types.isSubtype(type.getUnderlyingType(), superBound.getUnderlyingType())) {
                 AnnotatedTypeMirror found = visit(type, superBound, p);
@@ -387,15 +386,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     // </editor-fold>
 
-    /* The primary annotation on an intersection type should be the GLB of the primary annotations of
-    the alternatives.  #ensurePrimaryIsCorrectForUnions ensures that this is the case.
-
-    Example (java) subtyping relationship:
-    C <: A & B <: A <:Object, where class C extends A implements B {...}
-
-    Intersection#directSuperType returns a list of the ATM in the intersection.  For example, the
-    direct supertypes of  @NonNull (@Nullable A && @NonNull B) are @Nullable A and @NonNull B.
-     */
     // <editor-fold defaultstate="collapsed" desc="visitIntersection_Other methods">
 
     @Override
@@ -655,8 +645,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
     // </editor-fold>
 
-    /* The primary annotation on a union type is the LUB of the primary annotations on its direct
-    supertypes. #ensurePrimaryIsCorrectForUnions ensures that this is the case.
+    /* The primary annotation on a union type is the LUB of the primary annotations on its alternatives. #ensurePrimaryIsCorrectForUnions ensures that this is the case.
 
     All the alternatives in a union type must be subtype of Throwable and cannot have type arguments;
     however, a union type can be a subtype of an interface with a type argument. For example:

@@ -32,7 +32,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -1168,7 +1167,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issues "explicit.annotation.ignored" error if any explicit annotation on an intersection
+     * Issues "explicit.annotation.ignored" warning if any explicit annotation on an intersection
      * bound is not the same as the primary annotation of the given intersection type.
      *
      * @param intersection type to use
@@ -1199,10 +1198,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    @Override
-    public Void visitWildcard(WildcardTree node, Void unused) {
-        return super.visitWildcard(node, unused);
-    }
     // **********************************************************************
     // Assignment checkers and pseudo-assignments
     // **********************************************************************

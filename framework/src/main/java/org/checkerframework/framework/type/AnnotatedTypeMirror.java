@@ -2068,6 +2068,13 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
+        /**
+         * {@inheritDoc}
+         *
+         * <p>Also, copies {@code a} to all the bounds.
+         *
+         * @param a the annotation to add
+         */
         @Override
         public void addAnnotation(AnnotationMirror a) {
             super.addAnnotation(a);
@@ -2169,8 +2176,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Copy the first explicit annotation (in each hierarchy) on a bound to the primary
-         * annotation location of the intersection type.
+         * Copy the first annotation (in each hierarchy) on a bound to the primary annotation
+         * location of the intersection type.
          *
          * <p>For example, {@code @NonNull Object & @Initialized @Nullable Serializable} is changed
          * to {@code @NonNull @Initialized Object & @Initialized @NonNull Serializable}.
