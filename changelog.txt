@@ -9,6 +9,9 @@ Implementation details:
 AnnotatedIntersectionType#directSuperTypes now returns
 List<? extends AnnotatedTypeMirror>.
 
+The @RelevantJavaTypes annotation is now enforced:  a checker issues a warning
+if the programmer writes a type annotation on a type that is not listed.
+
 Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
 longer used.  Added new methods getWidenedValue() and getNarrowedValue().
 

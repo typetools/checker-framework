@@ -12,6 +12,10 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
+# Checker Framework demos
+"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
+./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
+
 # Code style and formatting
 ./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all --no-daemon
 
