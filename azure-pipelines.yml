@@ -83,6 +83,7 @@ jobs:
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
+   - misc_jdk11
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
