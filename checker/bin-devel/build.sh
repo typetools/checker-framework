@@ -51,7 +51,7 @@ echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
 
 
-## Build jspecify, only for the purpose of using its tests.
+## Build JSpecify, only for the purpose of using its tests.
 "/tmp/$USER/plume-scripts/git-clone-related" jspecify jspecify
 if type -p java; then
   _java=java

@@ -41,12 +41,16 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
 
     @Override
     public TypecheckResult adjustTypecheckResult(TypecheckResult testResult) {
+        // The "all*" variables are a copy that contains everything.
+        // This method removes from the non-all* variables.
         // These are Jspecify diagnostics.
         List<TestDiagnostic> missingDiagnostics = testResult.getMissingDiagnostics();
-        List<TestDiagnostic> allMissingDiagnostics = new ArrayList<>(missingDiagnostics);
+        List<TestDiagnostic> allMissingDiagnostics =
+                Collections.unmodifiableList(new ArrayList<>(missingDiagnostics));
         // These are Checker Framework diagnostics.
         List<TestDiagnostic> unexpectedDiagnostics = testResult.getUnexpectedDiagnostics();
-        List<TestDiagnostic> allUnexpectedDiagnostics = new ArrayList<>(unexpectedDiagnostics);
+        List<TestDiagnostic> allUnexpectedDiagnostics =
+                Collections.unmodifiableList(new ArrayList<>(unexpectedDiagnostics));
 
         unexpectedDiagnostics.removeIf(
                 unexpected ->
