@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -31,7 +33,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     /**
-     * Computes greatest lower bound of a @StringVal annotation with another value checker
+     * Computes greatest lower bound of a @StringVal annotation with another Value Checker
      * annotation.
      *
      * @param stringValAnno annotation of type @StringVal
@@ -68,6 +70,13 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                     }
                 }
                 values = range;
+                break;
+            case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+                List<@Regex String> regexes = ValueAnnotatedTypeFactory.getStringValues(otherAnno);
+                values =
+                        values.stream()
+                                .filter(value -> regexes.stream().anyMatch(value::matches))
+                                .collect(Collectors.toList());
                 break;
             default:
                 return atypeFactory.BOTTOMVAL;
@@ -268,13 +277,14 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             }
         }
 
-        // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen
-        // or a StringVal with one of them.
+        // Special handling for dealing with the lub of two annotations that are distinct but
+        // convertible (e.g. a StringVal and a MatchesRegex, or an IntVal and an IntRange).
         // Each of these variables is an annotation of the given type, or is null if neither of
         // the arguments to leastUpperBound is of the given types.
         AnnotationMirror arrayLenAnno = null;
         AnnotationMirror arrayLenRangeAnno = null;
         AnnotationMirror stringValAnno = null;
+        AnnotationMirror matchesRegexAnno = null;
         AnnotationMirror intValAnno = null;
         AnnotationMirror intRangeAnno = null;
         AnnotationMirror doubleValAnno = null;
@@ -288,6 +298,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 break;
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 stringValAnno = a1;
+                break;
+            case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+                matchesRegexAnno = a1;
                 break;
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
                 intValAnno = a1;
@@ -312,6 +325,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 stringValAnno = a2;
                 break;
+            case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+                matchesRegexAnno = a2;
+                break;
             case ValueAnnotatedTypeFactory.INTVAL_NAME:
                 intValAnno = a2;
                 break;
@@ -324,8 +340,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             default:
                 // Do nothing
         }
-        // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen
-        // or a StringVal with one of them.
+
+        // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen,
+        // a StringVal with one of them, or a StringVal and a MatchesRegex.
         if (arrayLenAnno != null && arrayLenRangeAnno != null) {
             return leastUpperBound(
                     arrayLenRangeAnno, atypeFactory.convertArrayLenToArrayLenRange(arrayLenAnno));
@@ -335,6 +352,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         } else if (stringValAnno != null && arrayLenRangeAnno != null) {
             return leastUpperBound(
                     arrayLenRangeAnno, atypeFactory.convertStringValToArrayLenRange(stringValAnno));
+        } else if (stringValAnno != null && matchesRegexAnno != null) {
+            return leastUpperBound(
+                    matchesRegexAnno, atypeFactory.convertStringValToMatchesRegex(stringValAnno));
         }
 
         // Annotations are both in the same hierarchy, but they are not the same.
@@ -453,6 +473,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                 List<String> superStringValues =
                         ValueAnnotatedTypeFactory.getStringValues(superAnno);
                 return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
+            case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME
+                    + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+                List<String> strings = ValueAnnotatedTypeFactory.getStringValues(subAnno);
+                List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(superAnno);
+                return strings.stream()
+                        .allMatch(string -> regexes.stream().anyMatch(string::matches));
             case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
                 // StringVal is a subtype of ArrayLen, if all the strings have one of the
                 // correct
