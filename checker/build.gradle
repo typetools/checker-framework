@@ -247,6 +247,15 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     }
 }
 
+// JSpecify tests are excluded by default.  To run them:
+// ./gradlew NullnessJspecifySamplesTest
+test {
+    // The fully-qualified name does not work.  I'm not sure why.
+    // exclude 'org.checkerframework.checker.test.junit.NullnessJspecifySamplesTest'
+    exclude '**/*Jspecify*'
+}
+
+
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
     description 'Deploys checker.jar to the local Maven repository'
     doLast {
