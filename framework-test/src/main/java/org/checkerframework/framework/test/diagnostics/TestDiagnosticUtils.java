@@ -106,7 +106,7 @@ public class TestDiagnosticUtils {
      * Instantiate the diagnostic from a Jspecify string that would appear in a Java file, e.g.:
      * "jspecify_some_category".
      *
-     * @parame filename the file containing the diagnostic (and the error)
+     * @param filename the file containing the diagnostic (and the error)
      * @param lineNumber the line number of the line immediately below the diagnostic comment in the
      *     Java file
      * @param stringFromjavaFile the string containing the diagnostic
@@ -123,6 +123,16 @@ public class TestDiagnosticUtils {
                 /*omitParentheses=*/ true);
     }
 
+    /**
+     * Instantiate the diagnostic via pattern-matching against patterns.
+     *
+     * @param diagnosticPattern a pattern that matches any diagnostic
+     * @param warningPattern a pattern that matches a warning diagnostic
+     * @param filename the file name
+     * @param lineNumber the line number
+     * @param diagnosticString the string to parse
+     * @return a diagnostic parsed from the given string
+     */
     @SuppressWarnings("nullness") // TODO: regular expression group access
     protected static TestDiagnostic fromPatternMatching(
             Pattern diagnosticPattern,
