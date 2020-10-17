@@ -27,6 +27,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 import org.plumelib.util.UtilPlume;
@@ -72,13 +73,25 @@ public class TestUtilities {
      * @return list where each item is a list of Java test files grouped by directory
      */
     public static List<List<File>> findJavaFilesPerDirectory(File parent, String... dirNames) {
+        if (!parent.exists()) {
+            throw new BugInCF(
+                    "test parent directory does not exist: %s %s",
+                    parent, parent.getAbsoluteFile());
+        }
+        if (!parent.isDirectory()) {
+            throw new BugInCF(
+                    "test parent directory is not a directory: %s %s",
+                    parent, parent.getAbsoluteFile());
+        }
+
         List<List<File>> filesPerDirectory = new ArrayList<>();
 
         for (String dirName : dirNames) {
-            File dir = new File(parent, dirName);
-            if (dir.isDirectory()) {
-                filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
+            File dir = new File(parent, dirName).toPath().toAbsolutePath().normalize().toFile();
+            if (!dir.isDirectory()) {
+                throw new BugInCF("test directory does not exist: %s", dir);
             }
+            filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
         }
 
         return filesPerDirectory;

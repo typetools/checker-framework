@@ -8,7 +8,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public enum DiagnosticKind {
     Warning("warning"),
     Error("error"),
-    Other("other");
+    Other("other"),
+    Jspecify("jspecify");
 
     /** How this DiagnosticKind appears in error messages or source code. */
     public final String parseString;
