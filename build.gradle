@@ -345,6 +345,7 @@ List<String> getJavaFilesToFormat(projectName) {
     }
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
+        // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
