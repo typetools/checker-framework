@@ -88,10 +88,14 @@ public class TestUtilities {
 
         for (String dirName : dirNames) {
             File dir = new File(parent, dirName).toPath().toAbsolutePath().normalize().toFile();
-            if (!dir.isDirectory()) {
-                throw new BugInCF("test directory does not exist: %s", dir);
+            // This fails for the whole-program-inference tests:  their sources are created
+            // by a prior test and do not necessarily exist yet.
+            // if (!dir.isDirectory()) {
+            //     throw new BugInCF("test directory does not exist: %s", dir);
+            // }
+            if (dir.isDirectory()) {
+                filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
             }
-            filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
         }
 
         return filesPerDirectory;
