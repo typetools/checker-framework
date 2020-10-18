@@ -76,8 +76,6 @@ public abstract class UnderlyingAST {
          *
          * @return the class tree this method belongs to
          */
-        protected final ClassTree classTree;
-
         public ClassTree getClassTree() {
             return classTree;
         }
