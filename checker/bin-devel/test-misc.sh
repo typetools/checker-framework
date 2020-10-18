@@ -23,18 +23,17 @@ source "$SCRIPTDIR"/build.sh
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon
 
 # Javadoc documentation
-# Uncomment this line temporarily for refactorings that touch a lot of code that
-# you don't understand.  Then, recomment it as soon as the pull request is merged.
-# SKIPJAVADOC=1
 status=0
 ./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
-if [ -z "$SKIPJAVADOC" ]; then
-(./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
-(./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
-/tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
-fi # end of "if [ -z $SKIPJAVADOC ]"
+# For refactorings that touch a lot of code that you don't understand, create
+# top-level file SKIP-REQUIRE-JAVADOC.  Delete it when the pull request is merged.
+if [ ! -f SKIP-REQUIRE-JAVADOC ]; then
+  (./gradlew requireJavadoc --console=plain --warning-mode=all --no-daemon > /tmp/warnings-rjp.txt 2>&1) || true
+  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-rjp.txt || status=1
+  (./gradlew javadocDoclintAll --console=plain --warning-mode=all --no-daemon > /tmp/warnings-jda.txt 2>&1) || true
+  /tmp/"$USER"/plume-scripts/ci-lint-diff /tmp/warnings-jda.txt || status=1
+fi
 if [ $status -ne 0 ]; then exit $status; fi
 
 
