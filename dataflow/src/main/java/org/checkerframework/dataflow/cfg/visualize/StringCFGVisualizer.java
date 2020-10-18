@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -12,10 +12,11 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
-import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;

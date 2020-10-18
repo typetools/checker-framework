@@ -31,6 +31,8 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -52,7 +54,7 @@ public class ControlFlowGraph {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected final UnderlyingAST underlyingAST;
+    public final UnderlyingAST underlyingAST;
 
     /**
      * Maps from AST {@link Tree}s to sets of {@link Node}s.

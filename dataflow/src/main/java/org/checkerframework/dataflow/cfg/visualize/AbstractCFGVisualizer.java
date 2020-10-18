@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis.Direction;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
