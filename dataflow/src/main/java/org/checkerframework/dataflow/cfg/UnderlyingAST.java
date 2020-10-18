@@ -12,6 +12,7 @@ import org.plumelib.util.UtilPlume;
  * graph.
  */
 public abstract class UnderlyingAST implements UniqueId {
+    /** The kinds of underlying ASTs. */
     public enum Kind {
         /** The underlying code is a whole method. */
         METHOD,
@@ -22,6 +23,7 @@ public abstract class UnderlyingAST implements UniqueId {
         ARBITRARY_CODE,
     }
 
+    /** The kind of the underlying AST. */
     protected final Kind kind;
 
     /** The unique ID of this object. */
@@ -32,6 +34,11 @@ public abstract class UnderlyingAST implements UniqueId {
         return uid;
     }
 
+    /**
+     * Creates an UnderlyingAST.
+     *
+     * @param kind the kind of the AST
+     */
     protected UnderlyingAST(Kind kind) {
         this.kind = kind;
     }
