@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
@@ -14,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.javacutil.BugInCF;
 

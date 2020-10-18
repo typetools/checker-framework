@@ -31,6 +31,8 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -53,7 +55,7 @@ public class ControlFlowGraph implements UniqueId {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected final UnderlyingAST underlyingAST;
+    public final UnderlyingAST underlyingAST;
 
     /** The unique ID of this object. */
     final transient long uid = UniqueId.nextUid.getAndIncrement();

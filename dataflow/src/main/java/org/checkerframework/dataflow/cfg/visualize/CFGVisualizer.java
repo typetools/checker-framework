@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -6,6 +6,7 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;

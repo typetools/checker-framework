@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
