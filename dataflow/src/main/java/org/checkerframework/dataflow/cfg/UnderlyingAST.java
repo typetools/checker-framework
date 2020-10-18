@@ -4,13 +4,14 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import org.plumelib.util.UniqueId;
 import org.plumelib.util.UtilPlume;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow
  * graph.
  */
-public abstract class UnderlyingAST {
+public abstract class UnderlyingAST implements UniqueId {
     public enum Kind {
         /** The underlying code is a whole method. */
         METHOD,
@@ -22,6 +23,14 @@ public abstract class UnderlyingAST {
     }
 
     protected final Kind kind;
+
+    /** The unique ID of this object. */
+    final transient long uid = UniqueId.nextUid.getAndIncrement();
+
+    @Override
+    public long getUid() {
+        return uid;
+    }
 
     protected UnderlyingAST(Kind kind) {
         this.kind = kind;
@@ -64,6 +73,15 @@ public abstract class UnderlyingAST {
 
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override
@@ -122,6 +140,15 @@ public abstract class UnderlyingAST {
         }
 
         /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
+        }
+
+        /**
          * Returns the enclosing method of the lambda.
          *
          * @return the enclosing method of the lambda
@@ -157,6 +184,15 @@ public abstract class UnderlyingAST {
 
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override

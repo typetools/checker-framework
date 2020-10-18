@@ -31,6 +31,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.plumelib.util.UniqueId;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -40,7 +41,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
  * ExceptionBlock#getExceptionalSuccessors}, {@link RegularBlock#getRegularSuccessor}) and
  * predecessors (method {@link Block#getPredecessors}) of the entry and exit blocks.
  */
-public class ControlFlowGraph {
+public class ControlFlowGraph implements UniqueId {
 
     /** The entry block of the control flow graph. */
     protected final SpecialBlock entryBlock;
@@ -53,6 +54,14 @@ public class ControlFlowGraph {
 
     /** The AST this CFG corresponds to. */
     protected final UnderlyingAST underlyingAST;
+
+    /** The unique ID of this object. */
+    final transient long uid = UniqueId.nextUid.getAndIncrement();
+
+    @Override
+    public long getUid() {
+        return uid;
+    }
 
     /**
      * Maps from AST {@link Tree}s to sets of {@link Node}s.
@@ -305,10 +314,12 @@ public class ControlFlowGraph {
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
         if (res == null) {
-            return super.toString();
+            return "unvisualizable " + getClass().getCanonicalName();
         }
         String stringGraph = (String) res.get("stringGraph");
-        return stringGraph == null ? super.toString() : stringGraph;
+        return stringGraph == null
+                ? "unvisualizable " + getClass().getCanonicalName()
+                : stringGraph;
     }
 
     /**
