@@ -44,10 +44,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       preserving the control flow structure.
  * </ol>
  */
-public class CFGBuilder {
-
-    /** This class should never be instantiated. Protected to still allow subclasses. */
-    protected CFGBuilder() {}
+public abstract class CFGBuilder {
 
     /** Build the control flow graph of some code. */
     public static ControlFlowGraph build(
