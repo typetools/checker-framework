@@ -59,7 +59,7 @@ public class ControlFlowGraph implements UniqueId {
     final transient long uid = UniqueId.nextUid.getAndIncrement();
 
     @Override
-    public long getUid() {
+    public long getUid(@UnknownInitialization ControlFlowGraph this) {
         return uid;
     }
 

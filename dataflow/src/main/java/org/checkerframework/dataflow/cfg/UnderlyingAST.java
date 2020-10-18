@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.plumelib.util.UniqueId;
 import org.plumelib.util.UtilPlume;
 
@@ -30,7 +31,7 @@ public abstract class UnderlyingAST implements UniqueId {
     final transient long uid = UniqueId.nextUid.getAndIncrement();
 
     @Override
-    public long getUid() {
+    public long getUid(@UnknownInitialization UnderlyingAST this) {
         return uid;
     }
 
