@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.block;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
@@ -23,7 +24,7 @@ public abstract class BlockImpl implements Block {
      * @return the unique ID of this object.
      */
     @Override
-    public long getUid(BlockImpl this) {
+    public long getUid(@UnknownInitialization BlockImpl this) {
         return uid;
     }
 
