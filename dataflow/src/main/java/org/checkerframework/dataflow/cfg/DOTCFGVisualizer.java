@@ -102,7 +102,7 @@ public class DOTCFGVisualizer<
 
         // Definition of all nodes including their labels.
         for (@KeyFor("processOrder") Block v : blocks) {
-            sbDotNodes.append("    ").append(v.getId()).append(" [");
+            sbDotNodes.append("    ").append(v.getUid()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
