@@ -180,7 +180,7 @@ public class DOTCFGVisualizer<
 
         if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement cfgStatement = (CFGStatement) ast;
-            String clsName = cfgStatement.getSimpleClassName();
+            String clsName = cfgStatement.getClassTree().getSimpleName().toString();
             outFile.append(clsName);
             outFile.append("-initializer-");
             outFile.append(ast.getUid());
@@ -192,7 +192,7 @@ public class DOTCFGVisualizer<
             srcLoc.append(">");
         } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
             CFGMethod cfgMethod = (CFGMethod) ast;
-            String clsName = cfgMethod.getSimpleClassName();
+            String clsName = cfgMethod.getClassTree().getSimpleName().toString();
             String methodName = cfgMethod.getMethod().getName().toString();
             StringJoiner params = new StringJoiner(",");
             for (VariableTree tree : cfgMethod.getMethod().getParameters()) {
@@ -217,7 +217,7 @@ public class DOTCFGVisualizer<
             srcLoc.append(">");
         } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
             CFGLambda cfgLambda = (CFGLambda) ast;
-            String clsName = cfgLambda.getSimpleClassName();
+            String clsName = cfgLambda.getClassTree().getSimpleName().toString();
             String methodName = cfgLambda.getMethod().getName().toString();
             int hashCode = cfgLambda.getCode().hashCode();
             outFile.append(clsName);

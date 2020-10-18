@@ -83,15 +83,6 @@ public abstract class UnderlyingAST implements UniqueId {
             return classTree;
         }
 
-        /**
-         * Returns the simple name of the enclosing class.
-         *
-         * @return the simple name of the enclosing class
-         */
-        public String getSimpleClassName() {
-            return classTree.getSimpleName().toString();
-        }
-
         @Override
         public String toString() {
             return UtilPlume.joinLines("CFGMethod(", method, ")");
@@ -148,15 +139,6 @@ public abstract class UnderlyingAST implements UniqueId {
         }
 
         /**
-         * Returns the simple name of the enclosing class.
-         *
-         * @return the simple name of the enclosing class
-         */
-        public String getSimpleClassName() {
-            return classTree.getSimpleName().toString();
-        }
-
-        /**
          * Returns the enclosing method of the lambda.
          *
          * @return the enclosing method of the lambda
@@ -192,15 +174,6 @@ public abstract class UnderlyingAST implements UniqueId {
 
         public ClassTree getClassTree() {
             return classTree;
-        }
-
-        /**
-         * Returns the simple name of the enclosing class.
-         *
-         * @return the simple name of the enclosing class
-         */
-        public String getSimpleClassName() {
-            return classTree.getSimpleName().toString();
         }
 
         @Override
