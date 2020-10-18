@@ -25,7 +25,7 @@ source "$SCRIPTDIR"/build.sh
 # Javadoc documentation
 # Uncomment this line temporarily for refactorings that touch a lot of code that
 # you don't understand.  Then, recomment it as soon as the pull request is merged.
-# SKIPJAVADOC=1
+SKIPJAVADOC=1
 status=0
 ./gradlew javadoc --console=plain --warning-mode=all --no-daemon || status=1
 ./gradlew javadocPrivate --console=plain --warning-mode=all --no-daemon || status=1
