@@ -146,6 +146,8 @@ public class CFGBuilder {
     /**
      * Print a set of {@link Block}s and the edges between them. This is useful for examining the
      * results of phase two.
+     *
+     * @param blocks the blocks to print
      */
     protected static void printBlocks(Set<Block> blocks) {
         for (Block b : blocks) {
