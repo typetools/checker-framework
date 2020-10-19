@@ -185,7 +185,7 @@ public class DOTCFGVisualizer<
             String clsName = cfgStatement.getClassTree().getSimpleName().toString();
             outFile.append(clsName);
             outFile.append("-initializer-");
-            outFile.append(ast.hashCode());
+            outFile.append(ast.getUid());
 
             srcLoc.append("<");
             srcLoc.append(clsName);
