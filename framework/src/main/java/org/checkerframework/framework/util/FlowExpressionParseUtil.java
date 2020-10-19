@@ -5,6 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
@@ -221,6 +222,11 @@ public class FlowExpressionParseUtil {
             TypeMirror stringTM =
                     TypesUtils.typeFromClass(String.class, types, env.getElementUtils());
             return new ValueLiteral(stringTM, expr.asString());
+        }
+
+        @Override
+        public Receiver visit(BooleanLiteralExpr expr, FlowExpressionContext context) {
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.BOOLEAN), expr.getValue());
         }
 
         /**
