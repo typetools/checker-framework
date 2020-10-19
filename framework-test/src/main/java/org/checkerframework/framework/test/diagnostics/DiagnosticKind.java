@@ -6,8 +6,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** The kinds of errors that can be encountered during typechecking. */
 public enum DiagnosticKind {
+    /** A warning. */
     Warning("warning"),
+    /** An error. */
     Error("error"),
+    /** A JSpecify diagnostic. */
+    Jspecify("jspecify"),
+    /** Something else. */
     Other("other");
 
     /** How this DiagnosticKind appears in error messages or source code. */
