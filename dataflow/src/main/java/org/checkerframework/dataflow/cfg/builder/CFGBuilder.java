@@ -46,10 +46,7 @@ import org.plumelib.util.UniqueIdMap;
  *       preserving the control flow structure.
  * </ol>
  */
-public class CFGBuilder {
-
-    /** This class should never be instantiated. Protected to still allow subclasses. */
-    protected CFGBuilder() {}
+public abstract class CFGBuilder {
 
     /** Unique IDs for trees. */
     static UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
