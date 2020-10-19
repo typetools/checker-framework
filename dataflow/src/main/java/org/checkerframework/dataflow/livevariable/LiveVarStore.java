@@ -25,7 +25,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
     /** Create a new LiveVarStore. */
     public LiveVarStore() {
-        liveVarValueSet = new HashSet<>();
+        liveVarValueSet = new LinkedHashSet<>();
     }
 
     /**
