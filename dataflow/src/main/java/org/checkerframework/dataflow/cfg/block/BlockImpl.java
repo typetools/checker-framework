@@ -38,7 +38,7 @@ public abstract class BlockImpl implements Block {
     }
 
     @Override
-    public long getId() {
+    public long getUid() {
         return id;
     }
 

@@ -37,7 +37,7 @@ public interface Block {
      *
      * @return the unique identifier of this block
      */
-    long getId();
+    long getUid();
 
     /**
      * Returns the predecessors of this basic block.
