@@ -12,7 +12,17 @@ import org.checkerframework.javacutil.BugInCF;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * JUnit tests for the Nullness Checker -- test the Jspecify samples. To run this test:
+ * JUnit tests for the Nullness Checker -- test the Jspecify samples.
+ *
+ * <p>Requirements:
+ *
+ * <ul>
+ *   <li>Java 9 or later
+ *   <li>Clone and build https://github.com/jspecify/jspecify in a sibling directory of the Checker
+ *       Framework.
+ * </ul>
+ *
+ * To run this test:
  *
  * <pre>{@code
  * ./gradlew :checker:NullnessJspecifySamples
@@ -29,7 +39,7 @@ public class NullnessJspecifySamplesTest extends CheckerFrameworkPerDirectoryTes
         super(
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
-                "nullness",
+                "../../../jspecify/samples",
                 Collections.singletonList("../../jspecify/build/libs/jspecify-0.1.0-SNAPSHOT.jar"),
                 "-Anomsgtext");
     }
