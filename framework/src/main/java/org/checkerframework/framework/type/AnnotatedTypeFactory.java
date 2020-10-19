@@ -25,6 +25,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -2048,22 +2049,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     (inferred) type arguments
      */
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-        ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         addComputedTypeAnnotations(tree, type);
+
+        ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
+        if (TreeUtils.isSyntheticArgument(tree)) {
+            AnnotatedExecutableType t =
+                    (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
+            List<AnnotatedTypeMirror> p = new ArrayList<>();
+            p.add(t.getParameterTypes().get(0));
+            p.addAll(1, con.getParameterTypes());
+            t.setParameterTypes(p);
+            con = t;
+        }
+
         constructorFromUsePreSubstitution(tree, con);
 
         con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
-
-        if (tree.getArguments().size() == con.getParameterTypes().size() + 1
-                && isSyntheticArgument(tree.getArguments().get(0))) {
-            // happens for anonymous constructors of inner classes
-            List<AnnotatedTypeMirror> actualParams = new ArrayList<>();
-            actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
-            actualParams.addAll(con.getParameterTypes());
-            con.setParameterTypes(actualParams);
-        }
 
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
 
@@ -2107,10 +2110,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
         return ret;
-    }
-
-    private boolean isSyntheticArgument(Tree tree) {
-        return tree.toString().contains("<*nullchk*>");
     }
 
     /**

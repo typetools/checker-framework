@@ -631,6 +631,15 @@ public final class TreeUtils {
         }
     }
 
+    public static boolean isSyntheticArgument(NewClassTree tree) {
+        if (tree.getClassBody() == null) {
+            return false;
+        }
+        if (tree.getArguments().size() != constructor(tree).getParameters().size() + 1) {
+            return false;
+        }
+        return true;
+    }
     /**
      * Returns the name of the invoked method.
      *
