@@ -79,8 +79,31 @@ public abstract class UnderlyingAST implements UniqueId {
             return method;
         }
 
+        /**
+         * Returns the name of the method
+         *
+         * @return the name of the method
+         */
+        public String getMethodName() {
+            return method.getName().toString();
+        }
+
+        /**
+         * Returns the class tree this method belongs to.
+         *
+         * @return the class tree this method belongs to
+         */
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override
@@ -139,12 +162,30 @@ public abstract class UnderlyingAST implements UniqueId {
         }
 
         /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
+        }
+
+        /**
          * Returns the enclosing method of the lambda.
          *
          * @return the enclosing method of the lambda
          */
         public MethodTree getMethod() {
             return method;
+        }
+
+        /**
+         * Returns the name of the enclosing method of the lambda.
+         *
+         * @return the name of the enclosing method of the lambda
+         */
+        public String getMethodName() {
+            return method.getName().toString();
         }
 
         @Override
@@ -174,6 +215,15 @@ public abstract class UnderlyingAST implements UniqueId {
 
         public ClassTree getClassTree() {
             return classTree;
+        }
+
+        /**
+         * Returns the simple name of the enclosing class.
+         *
+         * @return the simple name of the enclosing class
+         */
+        public String getSimpleClassName() {
+            return classTree.getSimpleName().toString();
         }
 
         @Override
