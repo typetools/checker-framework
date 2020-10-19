@@ -21,7 +21,7 @@ public abstract class BlockImpl implements Block {
     /**
      * Returns the unique ID of this object.
      *
-     * @return the unique ID of this object.
+     * @return the unique ID of this object
      */
     @Override
     public long getUid(@UnknownInitialization BlockImpl this) {

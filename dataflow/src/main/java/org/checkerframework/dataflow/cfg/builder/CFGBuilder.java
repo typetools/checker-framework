@@ -48,6 +48,9 @@ import org.plumelib.util.UniqueIdMap;
  */
 public class CFGBuilder {
 
+    /** This class should never be instantiated. Protected to still allow subclasses. */
+    protected CFGBuilder() {}
+
     /** Unique ids for trees. */
     static UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
