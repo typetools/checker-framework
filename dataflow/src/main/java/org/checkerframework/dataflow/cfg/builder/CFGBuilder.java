@@ -51,10 +51,19 @@ public class CFGBuilder {
     /** This class should never be instantiated. Protected to still allow subclasses. */
     protected CFGBuilder() {}
 
-    /** Unique ids for trees. */
+    /** Unique IDs for trees. */
     static UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
-    /** Build the control flow graph of some code. */
+    /**
+     * Build the control flow graph of some code.
+     *
+     * @param root the compilation unit
+     * @param underlyingAST the AST that underlies the control frow graph
+     * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
+     * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
+     * @param env annotation processing environment containing type utilities
+     * @return a control flow graph
+     */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             UnderlyingAST underlyingAST,
