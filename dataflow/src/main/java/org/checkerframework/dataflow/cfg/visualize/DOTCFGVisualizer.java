@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
@@ -17,7 +17,8 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
-import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
@@ -25,6 +26,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -102,7 +104,7 @@ public class DOTCFGVisualizer<
 
         // Definition of all nodes including their labels.
         for (@KeyFor("processOrder") Block v : blocks) {
-            sbDotNodes.append("    ").append(v.getId()).append(" [");
+            sbDotNodes.append("    ").append(v.getUid()).append(" [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
                 sbDotNodes.append("shape=polygon sides=8 ");
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
@@ -183,7 +185,7 @@ public class DOTCFGVisualizer<
             String clsName = cfgStatement.getSimpleClassName();
             outFile.append(clsName);
             outFile.append("-initializer-");
-            outFile.append(ast.hashCode());
+            outFile.append(ast.getUid());
 
             srcLoc.append("<");
             srcLoc.append(clsName);
