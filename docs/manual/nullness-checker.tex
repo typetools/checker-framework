@@ -1969,10 +1969,12 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-``initialization.''~(note the trailing period) warning suppression string.  You
-can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
+warning suppression string ``initialization.''~(note the trailing period)
+or ``fbc''.  You can write \<@SuppressWarnings("initialization.")> or
+\<@SuppressWarnings("fbc")> on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
+\<-AsuppressWarnings=initialization.>~or \<-AsuppressWarnings=fbc> when
+running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
 of no null pointer exceptions, but you can still use the Nullness Checker
