@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.livevariable;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -25,7 +26,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
     /** Create a new LiveVarStore. */
     public LiveVarStore() {
-        liveVarValueSet = new HashSet<>();
+        liveVarValueSet = new LinkedHashSet<>();
     }
 
     /**

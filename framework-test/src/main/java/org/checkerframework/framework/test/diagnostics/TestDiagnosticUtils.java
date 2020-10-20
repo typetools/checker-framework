@@ -102,6 +102,37 @@ public class TestDiagnosticUtils {
                 trimmed.first);
     }
 
+    /**
+     * Instantiate the diagnostic from a Jspecify string that would appear in a Java file, e.g.:
+     * "jspecify_some_category".
+     *
+     * @param filename the file containing the diagnostic (and the error)
+     * @param lineNumber the line number of the line immediately below the diagnostic comment in the
+     *     Java file
+     * @param stringFromjavaFile the string containing the diagnostic
+     * @return a new TestDiagnostic
+     */
+    public static TestDiagnostic fromJspecifyFileComment(
+            String filename, long lineNumber, String stringFromjavaFile) {
+        return new TestDiagnostic(
+                filename,
+                lineNumber,
+                DiagnosticKind.Jspecify,
+                stringFromjavaFile,
+                /*isFixable=*/ false,
+                /*omitParentheses=*/ true);
+    }
+
+    /**
+     * Instantiate the diagnostic via pattern-matching against patterns.
+     *
+     * @param diagnosticPattern a pattern that matches any diagnostic
+     * @param warningPattern a pattern that matches a warning diagnostic
+     * @param filename the file name
+     * @param lineNumber the line number
+     * @param diagnosticString the string to parse
+     * @return a diagnostic parsed from the given string
+     */
     @SuppressWarnings("nullness") // TODO: regular expression group access
     protected static TestDiagnostic fromPatternMatching(
             Pattern diagnosticPattern,
@@ -306,6 +337,11 @@ public class TestDiagnosticUtils {
                             true);
             return new TestDiagnosticLine(
                     filename, lineNumber, line, Collections.singletonList(diagnostic));
+        } else if (trimmedLine.startsWith("// jspecify_")) {
+            TestDiagnostic diagnostic =
+                    fromJspecifyFileComment(filename, errorLine, trimmedLine.substring(3));
+            return new TestDiagnosticLine(
+                    filename, errorLine, line, Collections.singletonList(diagnostic));
         } else {
             // It's a bit gross to create empty diagnostics (returning null might be more
             // efficient), but they will be filtered out later.
