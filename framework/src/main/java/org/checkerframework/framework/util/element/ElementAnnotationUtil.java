@@ -601,8 +601,8 @@ public class ElementAnnotationUtil {
             throws UnexpectedAnnotationLocationException {
         if (location.size() >= 1
                 && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
-            AnnotatedTypeMirror supertype = type.directSuperTypes().get(location.get(0).arg);
-            return getTypeAtLocation(supertype, tail(location));
+            AnnotatedTypeMirror bound = type.getBounds().get(location.get(0).arg);
+            return getTypeAtLocation(bound, tail(location));
         } else {
             throw new UnexpectedAnnotationLocationException(
                     "ElementAnnotationUtil.getLocatonTypeAIT: invalid location %s for type: %s ",

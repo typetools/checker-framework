@@ -14,6 +14,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
@@ -97,6 +98,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -1151,7 +1153,49 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree tpb : node.getBounds()) {
             validateTypeOf(tpb);
         }
+
+        if (node.getBounds().size() > 1) {
+            // The upper bound of the type parameter is an intersection
+            AnnotatedTypeVariable type =
+                    (AnnotatedTypeVariable) atypeFactory.getAnnotatedTypeFromTypeTree(node);
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) type.getUpperBound();
+            checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
+        }
+
         return super.visitTypeParameter(node, p);
+    }
+
+    /**
+     * Issues "explicit.annotation.ignored" warning if any explicit annotation on an intersection
+     * bound is not the same as the primary annotation of the given intersection type.
+     *
+     * @param intersection type to use
+     * @param boundTrees trees of {@code intersection} bounds
+     */
+    protected void checkExplicitAnnotationsOnIntersectionBounds(
+            AnnotatedIntersectionType intersection, List<? extends Tree> boundTrees) {
+        for (Tree boundTree : boundTrees) {
+            if (boundTree.getKind() != Tree.Kind.ANNOTATED_TYPE) {
+                continue;
+            }
+            List<? extends AnnotationMirror> explictAnnos =
+                    TreeUtils.annotationsFromTree((AnnotatedTypeTree) boundTree);
+            for (AnnotationMirror explictAnno : explictAnnos) {
+                if (atypeFactory.isSupportedQualifier(explictAnno)) {
+                    AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
+                    if (!AnnotationUtils.areSame(anno, explictAnno)) {
+                        checker.reportWarning(
+                                boundTree,
+                                "explicit.annotation.ignored",
+                                explictAnno,
+                                anno,
+                                explictAnno,
+                                anno);
+                    }
+                }
+            }
+        }
     }
 
     // **********************************************************************
@@ -2208,6 +2252,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (atypeFactory.getDependentTypesHelper() != null) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
             atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
+        }
+
+        if (node.getType().getKind() == Tree.Kind.INTERSECTION_TYPE) {
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) atypeFactory.getAnnotatedType(node);
+            checkExplicitAnnotationsOnIntersectionBounds(
+                    intersection, ((IntersectionTypeTree) node.getType()).getBounds());
         }
         return super.visitTypeCast(node, p);
         // return scan(node.getExpression(), p);
