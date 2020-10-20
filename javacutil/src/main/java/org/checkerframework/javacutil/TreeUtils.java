@@ -634,25 +634,35 @@ public final class TreeUtils {
     /**
      * Returns true if {@code tree} has a synthetic argument.
      *
-     * <p>For an anonymous class is a subtype of an inner class and the creation of the inner class
-     * has an explicit receiver, the receiver is passed as the first argument of the constructor.
-     *
-     * <p>Java 9: javac creates the following synthetic tree for {@code this.new MyInnerClass(){}}:
+     * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
+     * synthetic argument to the constructor that is the enclosing expression of the NewClass Tree.
      *
      * <pre><code>
-     *    new MyInnerClass(this){
-     *         (.AnoymousAndInnerClass x0) {
+     *     class Outer {
+     *         class Inner { }
+     *         void method() {
+     *             this.new Inner(){};
+     *         }
+     *     }
+     * </code></pre>
+     *
+     * For example, (Java 9) javac creates the following synthetic tree for {@code this.new
+     * Inner(){}}:
+     *
+     * <pre><code>
+     *    new Inner(this){
+     *         (.Outer x0) {
      *             x0.super();
      *         }
      *    }
      * </code></pre>
      *
-     * Java 11: javac creates a different the following synthetic tree without the synthetic
-     * argument for {@code this.new MyInnerClass(){}}:
+     * Java 11: javac creates a different tree without the synthetic argument for {@code this.new
+     * Inner(){}}:
      *
      * <pre><code>
-     *    this.new MyInnerClass(){
-     *         (.AnoymousAndInnerClass x0) {
+     *    this.new Inner(){
+     *         (.Outer x0) {
      *             x0.super();
      *         }
      *    }
