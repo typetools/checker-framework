@@ -1197,6 +1197,9 @@ The Initialization Checker determines whether an object is initialized or
 not.  For any object that is not fully initialized, the Nullness Checker
 treats its fields as possibly-null --- even fields annotated as
 \<@NonNull>.
+(The Initialization Checker focuses on \<@NonNull> fields, to detect null
+pointer exceptions when using them.  It does not
+currently ensure that primitives or \<@Nullable> fields are initialized.)
 
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different
@@ -1528,14 +1531,10 @@ Consider what happens during execution of \<new B()>.
   initialized, and their invariants (such as that field \<a> is non-null) can be
   depended on.  However, because \<B>'s constructor has not yet completed
   executing, the object being constructed is not yet fully initialized.
-  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
-  object is initialized, but when treated as a \<B>, the object
-  is still non-initialized.
-\item \<B>'s constructor completes.  The object is initialized when treated
-  as an \<A> or a \<B>.  (And, the object is fully initialized
-   if \<B>'s constructor was invoked via a \<new B()>.  But the type system
-   cannot assume that --- there might be a \<class C extends B \{
-  ... \}>, and \<B>'s constructor might have been invoked from that.)
+\item \<B>'s constructor completes.  The fields declared in \<A> and \<B>
+  are initialized.  However, the type system cannot assume that the object
+  is fully initialized --- there might be a \<class C extends B \{...\}>,
+  and \<B>'s constructor might have been invoked from that.
 \end{enumerate}
 
 At any moment during initialization, the superclasses of a given class
@@ -1552,7 +1551,7 @@ The \<@UnderInitialization(\emph{classliteral})>
 indicates the first class that is known to be fully initialized.
 When you write \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
 means that variable \<x> is initialized for \<OtherClass> and its
-superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subclasses.
+superclasses, and \<x> is (possibly) uninitialized for subclasses of \<OtherClass>.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
@@ -1569,6 +1568,47 @@ the type of the object being constructed is:
 \item
   \<@UnderInitialization(B.class) B>
 \end{enumerate}
+
+Note that neither \<@UnderInitialization(A.class) A> nor
+\<@UnderInitialization(A.class) B> may be used where <@Initialized A> is
+required.  Permitting that would be unsound.  For example, consider this
+code, where all types are \<@NonNull> because \<@NonNull> is the default annotation:
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+  }
+  Object get() {
+    return aField();
+  }
+}
+class B extends A {
+  Object bField;
+  B() {
+    super();
+    bField = new Object();
+  }
+  @Override
+  Object get() {
+    return bField();
+  }
+}
+\end{Verbatim}
+
+Given these declarations:
+
+\begin{Verbatim}
+@Initialized A w;
+@Initialized B x;
+@UnderInitialization(A.class) A y;
+@UnderInitialization(A.class) B z;
+\end{Verbatim}
+
+\noindent
+the expressions \<w.get()> and \<x.get()> evaluate to a non-null value, but
+\<y.get()> and \<z.get()> might evaluate to \<null>.
 
 
 \subsectionAndLabel{Method calls from the constructor}{initialization-constructor}
