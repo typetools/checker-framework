@@ -1012,7 +1012,7 @@ as \<@NonNull>.
 \subsectionAndLabel{Which tool is right for you?}{choosing-nullness-tool}
 
 Different tools are appropriate in different circumstances.  Here is a
-brief comparison with FindBugs, but similar points apply to other tools.
+brief comparison with FindBugs (and its successor SpotBugs), but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
 \href{https://fbinfer.com/docs/eradicate/}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
@@ -1047,7 +1047,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 \subsectionAndLabel{Incompatibility note about FindBugs \tt{@Nullable}}{findbugs-nullable}
 
-FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
+FindBugs (and its successor SpotBugs) has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
 \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for

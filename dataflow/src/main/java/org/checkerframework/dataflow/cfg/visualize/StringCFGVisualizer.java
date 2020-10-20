@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -12,10 +12,11 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
-import org.checkerframework.dataflow.cfg.AbstractCFGVisualizer.VisualizeWhere;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -50,7 +51,7 @@ public class StringCFGVisualizer<
 
         // Generate all the Nodes.
         for (@KeyFor("processOrder") Block v : blocks) {
-            sjStringNodes.add(v.getId() + ":");
+            sjStringNodes.add(v.getUid() + ":");
             if (verbose) {
                 sjStringNodes.add(getProcessOrderSimpleString(processOrder.get(v)));
             }
@@ -82,9 +83,9 @@ public class StringCFGVisualizer<
     @Override
     public String visualizeConditionalBlock(ConditionalBlock cbb) {
         return "ConditionalBlock: then: "
-                + cbb.getThenSuccessor().getId()
+                + cbb.getThenSuccessor().getUid()
                 + ", else: "
-                + cbb.getElseSuccessor().getId();
+                + cbb.getElseSuccessor().getUid();
     }
 
     @Override

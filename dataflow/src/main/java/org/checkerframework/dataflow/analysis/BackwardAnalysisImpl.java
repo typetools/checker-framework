@@ -273,7 +273,7 @@ public class BackwardAnalysisImpl<
                 && node != null) {
             @Nullable Block succBlock = ((ExceptionBlock) pred).getSuccessor();
             @Nullable Block block = node.getBlock();
-            if (succBlock != null && block != null && succBlock.getId() == block.getId()) {
+            if (succBlock != null && block != null && succBlock.getUid() == block.getUid()) {
                 // If the block of passing node is an exceptional successor of Block pred, propagate
                 // store to the exceptionStores. Currently it doesn't track the label of an
                 // exceptional edge from exception block to its exceptional successors in backward

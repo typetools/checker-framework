@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.cfg;
+package org.checkerframework.dataflow.cfg.visualize;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis.Direction;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -135,16 +136,16 @@ public abstract class AbstractCFGVisualizer<
             Block thenSuccessor = ccur.getThenSuccessor();
             sbGraph.append(
                     visualizeEdge(
-                            ccur.getId(),
-                            thenSuccessor.getId(),
+                            ccur.getUid(),
+                            thenSuccessor.getUid(),
                             ccur.getThenFlowRule().toString()));
             sbGraph.append(lineSeparator);
             addBlock(thenSuccessor, visited, workList);
             Block elseSuccessor = ccur.getElseSuccessor();
             sbGraph.append(
                     visualizeEdge(
-                            ccur.getId(),
-                            elseSuccessor.getId(),
+                            ccur.getUid(),
+                            elseSuccessor.getUid(),
                             ccur.getElseFlowRule().toString()));
             sbGraph.append(lineSeparator);
             addBlock(elseSuccessor, visited, workList);
@@ -153,7 +154,7 @@ public abstract class AbstractCFGVisualizer<
             Block succ = sscur.getSuccessor();
             if (succ != null) {
                 sbGraph.append(
-                        visualizeEdge(cur.getId(), succ.getId(), sscur.getFlowRule().name()));
+                        visualizeEdge(cur.getUid(), succ.getUid(), sscur.getFlowRule().name()));
                 sbGraph.append(lineSeparator);
                 addBlock(succ, visited, workList);
             }
@@ -167,7 +168,7 @@ public abstract class AbstractCFGVisualizer<
                     exception = exception.replace("java.lang.", "");
                 }
                 for (Block b : e.getValue()) {
-                    sbGraph.append(visualizeEdge(cur.getId(), b.getId(), exception));
+                    sbGraph.append(visualizeEdge(cur.getUid(), b.getUid(), exception));
                     sbGraph.append(lineSeparator);
                     addBlock(b, visited, workList);
                 }
