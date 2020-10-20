@@ -2179,8 +2179,9 @@ public abstract class AnnotatedTypeMirror {
          * Copy the first annotation (in each hierarchy) on a bound to the primary annotation
          * location of the intersection type.
          *
-         * <p>For example, {@code @NonNull Object & @Initialized @Nullable Serializable} is changed
-         * to {@code @NonNull @Initialized Object & @Initialized @NonNull Serializable}.
+         * <p>For example, in the type {@code @NonNull Object & @Initialized @Nullable
+         * Serializable}, {@code @Nullable} and {@code @Initialized} are copied to the primary
+         * annotation location.
          */
         public void copyIntersectionBoundAnnotations() {
             Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();

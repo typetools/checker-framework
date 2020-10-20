@@ -1000,6 +1000,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected boolean visitIntersectionSubtype(
             AnnotatedIntersectionType subtype, AnnotatedTypeMirror supertype) {
         Types types = checker.getTypeUtils();
+        // The primary annotations of the bounds should already be the same as the annotations on
+        // the intersection type.
         for (AnnotatedTypeMirror subtypeBound : subtype.getBounds()) {
             if (TypesUtils.isErasedSubtype(
                             subtypeBound.getUnderlyingType(), supertype.getUnderlyingType(), types)
