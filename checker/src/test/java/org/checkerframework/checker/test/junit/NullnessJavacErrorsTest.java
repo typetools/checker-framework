@@ -6,9 +6,9 @@ import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** JUnit tests for the Nullness checker that issue javac errors. */
-public class NullnessFbcJavacErrorsTest extends CheckerFrameworkPerFileTest {
+public class NullnessJavacErrorsTest extends CheckerFrameworkPerFileTest {
 
-    public NullnessFbcJavacErrorsTest(File testFile) {
+    public NullnessJavacErrorsTest(File testFile) {
         // TODO: remove soundArrayCreationNullness option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986

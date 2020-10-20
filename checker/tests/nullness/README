@@ -3,4 +3,4 @@ For more details, see
   ../README
 
 To run the tests, do
-  (cd $CHECKERFRAMEWORK && ./gradlew NullnessFBCTest)
+  (cd $CHECKERFRAMEWORK && ./gradlew NullnessTest)
