@@ -2054,7 +2054,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
-        if (TreeUtils.isSyntheticArgument(tree)) {
+        if (TreeUtils.hasSyntheticArgument(tree)) {
             AnnotatedExecutableType t =
                     (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
             List<AnnotatedTypeMirror> p = new ArrayList<>();

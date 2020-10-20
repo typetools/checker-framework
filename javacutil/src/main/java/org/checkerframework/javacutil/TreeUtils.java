@@ -631,14 +631,47 @@ public final class TreeUtils {
         }
     }
 
-    public static boolean isSyntheticArgument(NewClassTree tree) {
+    /**
+     * Returns true if {@code tree} has a synthetic argument.
+     *
+     * <p>For an anonymous class is a subtype of an inner class and the creation of the inner class
+     * has an explicit receiver, the receiver is passed as the first argument of the constructor.
+     *
+     * <p>For example, <code>this.new MyInnerClass(){}</code> is changed to the following:
+     *
+     * <pre><code>
+     *    new MyInnerClass(this){
+     *         (.AnoymousAndInnerClass x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * @param tree a new class tree
+     * @return true if {@code tree} has a synthetic argument
+     */
+    public static boolean hasSyntheticArgument(NewClassTree tree) {
         if (tree.getClassBody() == null) {
             return false;
         }
-        if (tree.getArguments().size() != constructor(tree).getParameters().size() + 1) {
-            return false;
-        }
-        return true;
+        // For an anonymous class is a subtype of an inner class and the creation of the inner class
+        // has an explicit receiver, the receiver is passed as the first argument of the
+        // constructor.
+        // For example:
+        // this.new MyInnerClass(){} is changed to the following:
+        // new MyInnerClass(this){
+        //    (.AnoymousAndInnerClass x0) {
+        //        x0.super();
+        //    }
+        // In order to detect this case, check if the super call in the constructor has a reciever.
+        JCNewClass newClassTree = (JCNewClass) tree;
+        JCMethodDecl anonConstructor =
+                (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
+        assert anonConstructor != null;
+        assert anonConstructor.body.stats.size() == 1;
+        JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
+        JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
+        return superInvok.getMethodSelect().getKind() != Kind.IDENTIFIER;
     }
     /**
      * Returns the name of the invoked method.
