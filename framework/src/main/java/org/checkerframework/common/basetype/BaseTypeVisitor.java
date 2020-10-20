@@ -4138,38 +4138,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
-        if (!isAccessAllowed(elem, receiver, tree)) {
-            checker.reportError(node, "unallowed.access", elem, receiver);
-        }
+        checkAccessAllowed(elem, receiver, tree);
     }
 
     /**
-     * Returns true if access is allowed, based on an @Unused annotation
+     * Issues an error if access not allowed, based on an @Unused annotation.
      *
-     * @param field the field to be accessed, whose declaration might be annotated by @Unused
-     * @param receiver the expression whose field is accessed
+     * @param field the field to be accessed, whose declaration might be annotated by @Unused. It
+     *     can also be (for example) {@code this}, in which case {@code receiver} is null.
+     * @param receiverType the type of the expression whose field is accessed
      * @param accessTree the access expression
-     * @return true if access is allowed
      */
-    protected boolean isAccessAllowed(
-            Element field, AnnotatedTypeMirror receiver, @FindDistinct ExpressionTree accessTree) {
+    protected void checkAccessAllowed(
+            Element field,
+            AnnotatedTypeMirror receiverType,
+            @FindDistinct ExpressionTree accessTree) {
         AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
         if (unused == null) {
-            return true;
+            return;
         }
 
         String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
-        if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
-            return true;
+
+        // TODO: Don't just look at the receiver type, but at the receiver declaration.  (That will
+        // enable handling type annotations that are not part of the type system being checked.)
+
+        if (!AnnotationUtils.containsSameByName(receiverType.getAnnotations(), when)) {
+            return;
         }
 
         Tree tree = this.enclosingStatement(accessTree);
 
-        // assigning unused to null is OK
-        return (tree != null
+        if (tree != null
                 && tree.getKind() == Tree.Kind.ASSIGNMENT
                 && ((AssignmentTree) tree).getVariable() == accessTree
-                && ((AssignmentTree) tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
+                && ((AssignmentTree) tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+            // Assigning unused to null is OK.
+            return;
+        }
+
+        checker.reportError(accessTree, "unallowed.access", field, receiverType);
     }
 
     /**
