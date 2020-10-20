@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Generate the control flow graph of a given method in a given class. See {@link
- * CFGVisualizeLauncher} for example usage.
+ * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for example usage.
  */
 @SupportedAnnotationTypes("*")
 public class CFGProcessor extends BasicTypeProcessor {
