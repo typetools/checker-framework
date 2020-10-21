@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -814,21 +813,6 @@ public class QualifierDefaults {
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
                 type.addAnnotation(qual);
-            }
-
-            /* Intersection types, list the types in the direct supertypes.
-             * Make sure to apply the default there too.
-             */
-            if (type.getKind() == TypeKind.INTERSECTION) {
-                List<AnnotatedDeclaredType> sups =
-                        ((AnnotatedIntersectionType) type).directSuperTypesField();
-                if (sups != null) {
-                    for (AnnotatedTypeMirror sup : sups) {
-                        if (!sup.isAnnotatedInHierarchy(qual)) {
-                            sup.addAnnotation(qual);
-                        }
-                    }
-                }
             }
         }
 
