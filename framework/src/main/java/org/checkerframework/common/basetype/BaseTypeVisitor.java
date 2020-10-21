@@ -4211,9 +4211,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
 
-        // TODO: Don't just look at the receiver type, but at the receiver declaration.  (That will
-        // enable handling type annotations that are not part of the type system being checked.)
+        // TODO: Don't just look at the receiver type, but at the declaration annotations on the
+        // receiver.  (That will enable handling type annotations that are not part of the type
+        // system being checked.)
 
+        // TODO: This requires exactly the same type qualifier, but it should permit subqualifiers.
         if (!AnnotationUtils.containsSameByName(receiverType.getAnnotations(), when)) {
             return;
         }
