@@ -1835,7 +1835,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     lambdaParameter,
                     functionType.getParameterTypes().get(i),
                     node.getParameters().get(i),
-                    "lambda.param.type.incompatible");
+                    "lambda.param.type.incompatible",
+                    i);
         }
 
         // TODO: Postconditions?
@@ -3736,12 +3737,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     checker.reportError(
                             overriderTree,
                             "methodref.receiver.invalid",
+                            overriderReceiver,
+                            overriddenReceiver,
                             overriderMeth,
                             overriderTyp,
                             overriddenMeth,
-                            overriddenTyp,
-                            overriderReceiver,
-                            overriddenReceiver);
+                            overriddenTyp);
                 }
                 return success;
             }
@@ -3799,10 +3800,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overriderTree,
                         "methodref.receiver.bound.invalid",
                         receiverArg,
-                        overriderMeth,
-                        overriderTyp,
+                        receiverDecl,
                         receiverArg,
-                        receiverDecl);
+                        overriderMeth,
+                        overriderTyp);
             }
 
             return success;
@@ -3838,12 +3839,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         overriderTree,
                         "override.receiver.invalid",
+                        pair.found,
+                        pair.required,
                         overriderMeth,
                         overriderTyp,
                         overriddenMeth,
-                        overriddenTyp,
-                        pair.found,
-                        pair.required);
+                        overriddenTyp);
                 return false;
             }
             return true;
@@ -3928,12 +3929,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         posTree,
                         msgKey,
                         overrider.getElement().getParameters().get(index).toString(),
+                        pair.found,
+                        pair.required,
                         overriderMeth,
                         overriderTyp,
                         overriddenMeth,
-                        overriddenTyp,
-                        pair.found,
-                        pair.required);
+                        overriddenTyp);
             }
         }
 
@@ -4014,12 +4015,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         posTree,
                         msgKey,
+                        pair.found,
+                        pair.required,
                         overriderMeth,
                         overriderTyp,
                         overriddenMeth,
-                        overriddenTyp,
-                        pair.found,
-                        pair.required);
+                        overriddenTyp);
             }
         }
     }
