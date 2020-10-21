@@ -1012,7 +1012,7 @@ as \<@NonNull>.
 \subsectionAndLabel{Which tool is right for you?}{choosing-nullness-tool}
 
 Different tools are appropriate in different circumstances.  Here is a
-brief comparison with FindBugs, but similar points apply to other tools.
+brief comparison with FindBugs (and its successor SpotBugs), but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
 \href{https://fbinfer.com/docs/eradicate/}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
@@ -1047,7 +1047,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 \subsectionAndLabel{Incompatibility note about FindBugs \tt{@Nullable}}{findbugs-nullable}
 
-FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
+FindBugs (and its successor SpotBugs) has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
 \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
@@ -1969,10 +1969,12 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-``initialization.''~(note the trailing period) warning suppression string.  You
-can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
+warning suppression string ``initialization.''~(note the trailing period)
+or ``fbc''.  You can write \<@SuppressWarnings("initialization.")> or
+\<@SuppressWarnings("fbc")> on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
+\<-AsuppressWarnings=initialization.>~or \<-AsuppressWarnings=fbc> when
+running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
 of no null pointer exceptions, but you can still use the Nullness Checker

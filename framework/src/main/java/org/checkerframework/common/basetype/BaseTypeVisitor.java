@@ -14,6 +14,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
@@ -97,6 +98,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -1151,7 +1153,49 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Tree tpb : node.getBounds()) {
             validateTypeOf(tpb);
         }
+
+        if (node.getBounds().size() > 1) {
+            // The upper bound of the type parameter is an intersection
+            AnnotatedTypeVariable type =
+                    (AnnotatedTypeVariable) atypeFactory.getAnnotatedTypeFromTypeTree(node);
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) type.getUpperBound();
+            checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
+        }
+
         return super.visitTypeParameter(node, p);
+    }
+
+    /**
+     * Issues "explicit.annotation.ignored" warning if any explicit annotation on an intersection
+     * bound is not the same as the primary annotation of the given intersection type.
+     *
+     * @param intersection type to use
+     * @param boundTrees trees of {@code intersection} bounds
+     */
+    protected void checkExplicitAnnotationsOnIntersectionBounds(
+            AnnotatedIntersectionType intersection, List<? extends Tree> boundTrees) {
+        for (Tree boundTree : boundTrees) {
+            if (boundTree.getKind() != Tree.Kind.ANNOTATED_TYPE) {
+                continue;
+            }
+            List<? extends AnnotationMirror> explictAnnos =
+                    TreeUtils.annotationsFromTree((AnnotatedTypeTree) boundTree);
+            for (AnnotationMirror explictAnno : explictAnnos) {
+                if (atypeFactory.isSupportedQualifier(explictAnno)) {
+                    AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
+                    if (!AnnotationUtils.areSame(anno, explictAnno)) {
+                        checker.reportWarning(
+                                boundTree,
+                                "explicit.annotation.ignored",
+                                explictAnno,
+                                anno,
+                                explictAnno,
+                                anno);
+                    }
+                }
+            }
+        }
     }
 
     // **********************************************************************
@@ -2208,6 +2252,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (atypeFactory.getDependentTypesHelper() != null) {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
             atypeFactory.getDependentTypesHelper().checkType(type, node.getType());
+        }
+
+        if (node.getType().getKind() == Tree.Kind.INTERSECTION_TYPE) {
+            AnnotatedIntersectionType intersection =
+                    (AnnotatedIntersectionType) atypeFactory.getAnnotatedType(node);
+            checkExplicitAnnotationsOnIntersectionBounds(
+                    intersection, ((IntersectionTypeTree) node.getType()).getBounds());
         }
         return super.visitTypeCast(node, p);
         // return scan(node.getExpression(), p);
@@ -4138,38 +4189,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
-        if (!isAccessAllowed(elem, receiver, tree)) {
-            checker.reportError(node, "unallowed.access", elem, receiver);
-        }
+        checkAccessAllowed(elem, receiver, tree);
     }
 
     /**
-     * Returns true if access is allowed, based on an @Unused annotation
+     * Issues an error if access not allowed, based on an @Unused annotation.
      *
-     * @param field the field to be accessed, whose declaration might be annotated by @Unused
-     * @param receiver the expression whose field is accessed
+     * @param field the field to be accessed, whose declaration might be annotated by @Unused. It
+     *     can also be (for example) {@code this}, in which case {@code receiver} is null.
+     * @param receiverType the type of the expression whose field is accessed
      * @param accessTree the access expression
-     * @return true if access is allowed
      */
-    protected boolean isAccessAllowed(
-            Element field, AnnotatedTypeMirror receiver, @FindDistinct ExpressionTree accessTree) {
+    protected void checkAccessAllowed(
+            Element field,
+            AnnotatedTypeMirror receiverType,
+            @FindDistinct ExpressionTree accessTree) {
         AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
         if (unused == null) {
-            return true;
+            return;
         }
 
         String when = AnnotationUtils.getElementValueClassName(unused, "when", false).toString();
-        if (!AnnotationUtils.containsSameByName(receiver.getAnnotations(), when)) {
-            return true;
+
+        // TODO: Don't just look at the receiver type, but at the declaration annotations on the
+        // receiver.  (That will enable handling type annotations that are not part of the type
+        // system being checked.)
+
+        // TODO: This requires exactly the same type qualifier, but it should permit subqualifiers.
+        if (!AnnotationUtils.containsSameByName(receiverType.getAnnotations(), when)) {
+            return;
         }
 
         Tree tree = this.enclosingStatement(accessTree);
 
-        // assigning unused to null is OK
-        return (tree != null
+        if (tree != null
                 && tree.getKind() == Tree.Kind.ASSIGNMENT
                 && ((AssignmentTree) tree).getVariable() == accessTree
-                && ((AssignmentTree) tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
+                && ((AssignmentTree) tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+            // Assigning unused to null is OK.
+            return;
+        }
+
+        checker.reportError(accessTree, "unallowed.access", field, receiverType);
     }
 
     /**

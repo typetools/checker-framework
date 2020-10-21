@@ -478,7 +478,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     case INTERSECTION:
                         Integer maxBound = null;
                         for (final AnnotatedTypeMirror bound :
-                                ((AnnotatedIntersectionType) type).directSuperTypes()) {
+                                ((AnnotatedIntersectionType) type).getBounds()) {
                             Integer boundRegexNum = getMinimumRegexCount(bound);
                             if (boundRegexNum != null) {
                                 if (maxBound == null || boundRegexNum > maxBound) {
