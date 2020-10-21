@@ -143,7 +143,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
         }
         visited.add(type1, type2, null);
 
-        return scan(type1.directSuperTypes(), type2.directSuperTypes(), param);
+        return scan(type1.getBounds(), type2.getBounds(), param);
     }
 
     @Override

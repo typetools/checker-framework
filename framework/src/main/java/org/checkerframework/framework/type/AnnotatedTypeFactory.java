@@ -4308,7 +4308,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
      * <p>This method is faster than {@link AnnotationUtils#areSameByClass(AnnotationMirror, Class)}
-     * because is caches the name of the class rather than computing it each time.
+     * because it caches the name of the class rather than computing it each time.
      *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare

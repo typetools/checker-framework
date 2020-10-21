@@ -6,6 +6,9 @@ The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspec
 
 Implementation details:
 
+AnnotatedIntersectionType#directSuperTypes now returns
+List<? extends AnnotatedTypeMirror>.
+
 The @RelevantJavaTypes annotation is now enforced:  a checker issues a warning
 if the programmer writes a type annotation on a type that is not listed.
 

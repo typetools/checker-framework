@@ -164,7 +164,7 @@ public abstract class AnnotatedTypeComparer<R>
             return visitedNodes.get(type);
         }
         visitedNodes.put(type, null);
-        R r = scan(type.directSuperTypes(), ((AnnotatedIntersectionType) p).directSuperTypes());
+        R r = scan(type.getBounds(), ((AnnotatedIntersectionType) p).getBounds());
         return r;
     }
 

@@ -6,7 +6,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
@@ -89,12 +88,6 @@ public class DefaultInferredTypesApplier {
             }
             if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
                 type.replaceAnnotation(inferred);
-                if (type.getKind() == TypeKind.INTERSECTION) {
-                    for (AnnotatedTypeMirror superType :
-                            ((AnnotatedIntersectionType) type).directSuperTypes()) {
-                        superType.replaceAnnotation(inferred);
-                    }
-                }
             }
         }
     }
