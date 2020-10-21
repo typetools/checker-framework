@@ -19,6 +19,8 @@ public class Issue3776 {
     }
 
     void test(Issue3776 outer, @Tainted String tainted) {
+        new MyInnerClass("1") {};
+        this.new MyInnerClass("2") {};
         new MyClass() {};
         // :: error: (argument.type.incompatible)
         new MyClass(tainted) {};

@@ -634,14 +634,35 @@ public final class TreeUtils {
     /**
      * Returns true if {@code tree} has a synthetic argument.
      *
-     * <p>For an anonymous class is a subtype of an inner class and the creation of the inner class
-     * has an explicit receiver, the receiver is passed as the first argument of the constructor.
-     *
-     * <p>For example, <code>this.new MyInnerClass(){}</code> is changed to the following:
+     * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
+     * synthetic argument to the constructor that is the enclosing expression of the NewClass Tree.
      *
      * <pre><code>
-     *    new MyInnerClass(this){
-     *         (.AnoymousAndInnerClass x0) {
+     *     class Outer {
+     *         class Inner { }
+     *         void method() {
+     *             this.new Inner(){};
+     *         }
+     *     }
+     * </code></pre>
+     *
+     * For example, (Java 9) javac creates the following synthetic tree for {@code this.new
+     * Inner(){}}:
+     *
+     * <pre><code>
+     *    new Inner(this){
+     *         (.Outer x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * Java 11: javac creates a different tree without the synthetic argument for {@code this.new
+     * Inner(){}}:
+     *
+     * <pre><code>
+     *    this.new Inner(){
+     *         (.Outer x0) {
      *             x0.super();
      *         }
      *    }
@@ -651,27 +672,18 @@ public final class TreeUtils {
      * @return true if {@code tree} has a synthetic argument
      */
     public static boolean hasSyntheticArgument(NewClassTree tree) {
-        if (tree.getClassBody() == null) {
+        if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
             return false;
         }
-        // For an anonymous class is a subtype of an inner class and the creation of the inner class
-        // has an explicit receiver, the receiver is passed as the first argument of the
-        // constructor.
-        // For example:
-        // this.new MyInnerClass(){} is changed to the following:
-        // new MyInnerClass(this){
-        //    (.AnoymousAndInnerClass x0) {
-        //        x0.super();
-        //    }
-        // In order to detect this case, check if the super call in the constructor has a reciever.
-        JCNewClass newClassTree = (JCNewClass) tree;
-        JCMethodDecl anonConstructor =
-                (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
-        assert anonConstructor != null;
-        assert anonConstructor.body.stats.size() == 1;
-        JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
-        JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-        return superInvok.getMethodSelect().getKind() != Kind.IDENTIFIER;
+        for (Tree member : tree.getClassBody().getMembers()) {
+            if (member.getKind() == Kind.METHOD && isConstructor((MethodTree) member)) {
+                MethodTree methodTree = (MethodTree) member;
+                StatementTree f = methodTree.getBody().getStatements().get(0);
+                return TreeUtils.getReceiverTree(((ExpressionStatementTree) f).getExpression())
+                        != null;
+            }
+        }
+        return false;
     }
     /**
      * Returns the name of the invoked method.
