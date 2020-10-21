@@ -1609,6 +1609,9 @@ Given these declarations:
 \noindent
 the expressions \<w.get()> and \<x.get()> evaluate to a non-null value, but
 \<y.get()> and \<z.get()> might evaluate to \<null>.
+(\<y.get()> might evaluate to \<null> because the run-time type of \<y>
+might be \<B>.  That is, \<y> and \<z> might refer to the same value, just
+as \<w> and \<x> might refer to the same value.)
 
 
 \subsectionAndLabel{Method calls from the constructor}{initialization-constructor}
