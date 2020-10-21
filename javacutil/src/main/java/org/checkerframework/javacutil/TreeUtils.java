@@ -635,7 +635,8 @@ public final class TreeUtils {
      * Returns true if {@code tree} has a synthetic argument.
      *
      * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
-     * synthetic argument to the constructor that is the enclosing expression of the NewClass Tree.
+     * synthetic argument to the constructor that is the enclosing expression of the NewClassTree.
+     * Suppose a programmer writes:
      *
      * <pre><code>
      *     class Outer {
@@ -646,22 +647,21 @@ public final class TreeUtils {
      *     }
      * </code></pre>
      *
-     * For example, (Java 9) javac creates the following synthetic tree for {@code this.new
-     * Inner(){}}:
+     * Java 9 javac creates the following synthetic tree for {@code this.new Inner(){}}:
      *
      * <pre><code>
-     *    new Inner(this){
+     *    new Inner(this) {
      *         (.Outer x0) {
      *             x0.super();
      *         }
      *    }
      * </code></pre>
      *
-     * Java 11: javac creates a different tree without the synthetic argument for {@code this.new
+     * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
      * Inner(){}}:
      *
      * <pre><code>
-     *    this.new Inner(){
+     *    this.new Inner() {
      *         (.Outer x0) {
      *             x0.super();
      *         }
