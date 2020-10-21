@@ -1581,7 +1581,7 @@ class A {
     aField = new Object();
   }
   Object get() {
-    return aField();
+    return aField;
   }
 }
 class B extends A {
@@ -1592,7 +1592,7 @@ class B extends A {
   }
   @Override
   Object get() {
-    return bField();
+    return bField;
   }
 }
 \end{Verbatim}
