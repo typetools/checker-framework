@@ -1,4 +1,4 @@
-// Upstream version (this is a reimplementation of its interface):
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
 
 package android.support.annotation;

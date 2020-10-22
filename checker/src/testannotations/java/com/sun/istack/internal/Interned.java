@@ -1,4 +1,4 @@
-// Upstream version (this is a reimplementation of its interface):
+// Upstream version (this is a clean-room reimplementation of its interface):
 // in the OpenJDK repository, file
 // jaxws/src/share/jaxws_classes/com/sun/istack/internal/Interned.java
 

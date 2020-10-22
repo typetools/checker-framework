@@ -1,4 +1,4 @@
-// Upstream version (this is a reimplementation of its interface):
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html
 
 package net.jcip.annotations;
