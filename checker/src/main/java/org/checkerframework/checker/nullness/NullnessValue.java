@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -39,7 +40,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
         AnnotationMirror resultNullableAnno =
                 AnnotationUtils.getAnnotationByClass(result.annotations, Nullable.class);
 
-        if (resultNullableAnno != null) {
+        if (resultNullableAnno != null && other != null) {
             if ((this.isPolyNullNonNull
                             && this.containsNonNullOrPolyNull()
                             && other.isPolyNullNull
@@ -61,6 +62,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
      *
      * @return true if this value contans {@code @NonNull} or {@code @PolyNull}
      */
+    @Pure
     private boolean containsNonNullOrPolyNull() {
         return AnnotationUtils.containsSameByClass(annotations, NonNull.class)
                 || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
@@ -71,6 +73,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
      *
      * @return true if this value contans {@code @Nullable} or {@code @PolyNull}
      */
+    @Pure
     private boolean containsNullableOrPolyNull() {
         return AnnotationUtils.containsSameByClass(annotations, Nullable.class)
                 || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
