@@ -137,6 +137,16 @@ public class NullnessTransfer
         return value;
     }
 
+    @Override
+    protected NullnessValue finishValue(
+            NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
+        value = super.finishValue(value, thenStore, elseStore);
+        if (value != null) {
+            value.isPolyNullNull = thenStore.isPolyNullNull() && elseStore.isPolyNullNull();
+        }
+        return value;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -181,7 +191,11 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
-                thenStore.setPolyNullNull(true);
+                if (notEqualTo) {
+                    elseStore.setPolyNullNull(true);
+                } else {
+                    thenStore.setPolyNullNull(true);
+                }
             }
 
             if (thenStore != null) {
