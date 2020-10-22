@@ -7,14 +7,14 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** JUnit tests for the Nullness checker. */
-public class NullnessFbcTest extends CheckerFrameworkPerDirectoryTest {
+public class NullnessTest extends CheckerFrameworkPerDirectoryTest {
 
     /**
-     * Create a NullnessFbcTest.
+     * Create a NullnessTest.
      *
      * @param testFiles the files containing test code, which will be type-checked
      */
-    public NullnessFbcTest(List<File> testFiles) {
+    public NullnessTest(List<File> testFiles) {
         // TODO: remove soundArrayCreationNullness option once it's no
         // longer needed.  See issue #986:
         // https://github.com/typetools/checker-framework/issues/986
@@ -31,6 +31,6 @@ public class NullnessFbcTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"nullness", "initialization/fbc", "all-systems"};
+        return new String[] {"nullness", "initialization", "all-systems"};
     }
 }
