@@ -453,7 +453,9 @@ already compiled, or source code is not available), it does check
 the \emph{uses} of those classes in the source code being compiled.
 Type-checking works modularly and intraprocedurally:  when verifying a
 method, it examines only the signature (including annotations) of other
-methods, not their implementations.
+methods, not their implementations.  When analyzing a variable use, it
+relies on the type of the variable, not any dataflow outside the current
+method that produced the value.
 
 After you compile your code while running a checker, the resulting
 \<.class> and \<.jar> files can be used for pluggable type-checking of client code.
@@ -1093,10 +1095,12 @@ for example, if the method returns null, you know its return type should be
 annotated \<@Nullable>, and a parameter that is compared against \<null>
 may need to be annotated \<@Nullable>.
 
-The specification should state any facts that are relevant to callees.
-When checking a method, use only the specification, not the
+The specification should state all facts that are relevant to callees.
+When checking a method, the checker uses only the specification, not the
 implementation, of other methods.  (Equivalently, type-checking is
-``modular'' or ``intraprocedural''.)
+``modular'' or ``intraprocedural''.)  When analyzing a variable use, the
+checker relies on the type of the variable, not any dataflow outside the
+current method that produced the value.
 
 After you have annotated all the signatures, run the checker.
 Then, fix bugs in code and add/modify annotations as necessary.
