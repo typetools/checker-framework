@@ -36,8 +36,6 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
     public NullnessValue leastUpperBound(NullnessValue other) {
         NullnessValue result = super.leastUpperBound(other);
 
-        System.out.printf("lub(%s, %s) => %s%n", this, other, result);
-
         AnnotationMirror resultNullableAnno =
                 AnnotationUtils.getAnnotationByClass(result.annotations, Nullable.class);
 
@@ -53,7 +51,6 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
                 result.annotations.remove(resultNullableAnno);
                 result.annotations.add(
                         ((NullnessAnnotatedTypeFactory) analysis.atypeFactory).POLYNULL);
-                System.out.printf("  lub(%s, %s) => %s%n", this, other, result);
             }
         }
         return result;
