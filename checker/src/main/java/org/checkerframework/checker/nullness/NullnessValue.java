@@ -3,17 +3,24 @@ package org.checkerframework.checker.nullness;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Behaves just like {@link CFValue}, but additionally tracks whether at this point {@link PolyNull}
  * is known to be {@link Nullable}.
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
+
+    /** True if, at this point, {@link PolyNull} is known to be {@link NonNull}. */
+    protected boolean isPolyNullNonNull;
 
     /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
     protected boolean isPolyNullNull;
@@ -23,5 +30,56 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
         super(analysis, annotations, underlyingType);
+    }
+
+    @Override
+    public NullnessValue leastUpperBound(NullnessValue other) {
+        NullnessValue result = super.leastUpperBound(other);
+
+        System.out.printf("lub(%s, %s) => %s%n", this, other, result);
+
+        AnnotationMirror resultNullableAnno =
+                AnnotationUtils.getAnnotationByClass(result.annotations, Nullable.class);
+
+        if (resultNullableAnno != null) {
+            if ((this.isPolyNullNonNull
+                            && this.containsNonNullOrPolyNull()
+                            && other.isPolyNullNull
+                            && other.containsNullableOrPolyNull())
+                    || (other.isPolyNullNonNull
+                            && other.containsNonNullOrPolyNull()
+                            && this.isPolyNullNull
+                            && this.containsNullableOrPolyNull())) {
+                result.annotations.remove(resultNullableAnno);
+                result.annotations.add(
+                        ((NullnessAnnotatedTypeFactory) analysis.atypeFactory).POLYNULL);
+                System.out.printf("  lub(%s, %s) => %s%n", this, other, result);
+            }
+        }
+        return result;
+    }
+
+    private boolean containsNonNullOrPolyNull() {
+        return AnnotationUtils.containsSameByClass(annotations, NonNull.class)
+                || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
+    }
+
+    private boolean containsNullableOrPolyNull() {
+        return AnnotationUtils.containsSameByClass(annotations, Nullable.class)
+                || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
+    }
+
+    @SideEffectFree
+    @Override
+    public String toStringSimple() {
+        return "NV{"
+                + AnnotationUtils.toStringSimple(annotations)
+                + ", "
+                + TypesUtils.simpleTypeName(underlyingType)
+                + ", "
+                + (isPolyNullNonNull ? 't' : 'f')
+                + ' '
+                + (isPolyNullNull ? 't' : 'f')
+                + '}';
     }
 }

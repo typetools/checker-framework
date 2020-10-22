@@ -16,6 +16,9 @@ import org.plumelib.util.UniqueId;
 public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
         implements UniqueId {
 
+    /** True if, at this point, {@link PolyNull} is known to be {@link NonNull}. */
+    protected boolean isPolyNullNonNull;
+
     /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
     protected boolean isPolyNullNull;
 
@@ -44,22 +47,21 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
             CFAbstractAnalysis<NullnessValue, NullnessStore, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
+        isPolyNullNonNull = false;
         isPolyNullNull = false;
     }
 
     public NullnessStore(NullnessStore s) {
         super(s);
+        isPolyNullNonNull = s.isPolyNullNonNull;
         isPolyNullNull = s.isPolyNullNull;
     }
 
     @Override
     public NullnessStore leastUpperBound(NullnessStore other) {
         NullnessStore lub = super.leastUpperBound(other);
-        if (isPolyNullNull == other.isPolyNullNull) {
-            lub.isPolyNullNull = isPolyNullNull;
-        } else {
-            lub.isPolyNullNull = false;
-        }
+        lub.isPolyNullNonNull = isPolyNullNonNull && other.isPolyNullNonNull;
+        lub.isPolyNullNull = isPolyNullNull && other.isPolyNullNull;
         return lub;
     }
 
@@ -69,7 +71,8 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
             return false;
         }
         NullnessStore other = (NullnessStore) o;
-        if (other.isPolyNullNull != isPolyNullNull) {
+        if ((other.isPolyNullNonNull != isPolyNullNonNull)
+                || (other.isPolyNullNull != isPolyNullNull)) {
             return false;
         }
         return super.supersetOf(other);
@@ -79,7 +82,17 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
     protected String internalVisualize(CFGVisualizer<NullnessValue, NullnessStore, ?> viz) {
         return super.internalVisualize(viz)
                 + viz.getSeparator()
-                + viz.visualizeStoreKeyVal("isPolyNonNull", isPolyNullNull);
+                + viz.visualizeStoreKeyVal("isPolyNullNonNull", isPolyNullNonNull)
+                + viz.getSeparator()
+                + viz.visualizeStoreKeyVal("isPolyNullNull", isPolyNullNull);
+    }
+
+    public boolean isPolyNullNonNull() {
+        return isPolyNullNonNull;
+    }
+
+    public void setPolyNullNonNull(boolean isPolyNullNonNull) {
+        this.isPolyNullNonNull = isPolyNullNonNull;
     }
 
     public boolean isPolyNullNull() {

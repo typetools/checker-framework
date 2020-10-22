@@ -48,10 +48,12 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <ol>
  *   <li>After an expression is compared with the {@code null} literal, then that expression can
- *       safely be considered {@link NonNull} if the result of the comparison is false.
+ *       safely be considered {@link NonNull} if the result of the comparison is false or {@link
+ *       Nullable} if the result is true.
  *   <li>If an expression is dereferenced, then it can safely be assumed to non-null in the future.
  *       If it would not be, then the dereference would have raised a {@link NullPointerException}.
- *   <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
+ *   <li>Tracks whether {@link PolyNull} is known to be {@link NonNull} or {@link Nullable} (or not
+ *       known to be either).
  * </ol>
  */
 public class NullnessTransfer
@@ -132,7 +134,20 @@ public class NullnessTransfer
     protected NullnessValue finishValue(NullnessValue value, NullnessStore store) {
         value = super.finishValue(value, store);
         if (value != null) {
+            value.isPolyNullNonNull = store.isPolyNullNonNull();
             value.isPolyNullNull = store.isPolyNullNull();
+        }
+        return value;
+    }
+
+    @Override
+    protected NullnessValue finishValue(
+            NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
+        value = super.finishValue(value, thenStore, elseStore);
+        if (value != null) {
+            value.isPolyNullNonNull =
+                    thenStore.isPolyNullNonNull() && elseStore.isPolyNullNonNull();
+            value.isPolyNullNull = thenStore.isPolyNullNull() && elseStore.isPolyNullNull();
         }
         return value;
     }
@@ -181,7 +196,13 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
-                thenStore.setPolyNullNull(true);
+                if (notEqualTo) {
+                    elseStore.setPolyNullNull(true);
+                    thenStore.setPolyNullNonNull(true);
+                } else {
+                    thenStore.setPolyNullNull(true);
+                    elseStore.setPolyNullNonNull(true);
+                }
             }
 
             if (thenStore != null) {
@@ -302,8 +323,8 @@ public class NullnessTransfer
     public TransferResult<NullnessValue, NullnessStore> visitReturn(
             ReturnNode n, TransferInput<NullnessValue, NullnessStore> in) {
         // HACK: make sure we have a value for return statements, because we
-        // need to record whether (at this return statement) isPolyNullNull is
-        // set or not.
+        // need to record (at this return statement) the values of isPolyNullNotNull and
+        // isPolyNullNull.
         NullnessValue value = createDummyValue();
         if (in.containsTwoStores()) {
             NullnessStore thenStore = in.getThenStore();

@@ -766,10 +766,11 @@ public abstract class CFAbstractTransfer<
     /**
      * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
      * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression
-     * that is tracked by the store (e.g., a local variable or a field).
+     * that is tracked by the store (e.g., a local variable or a field). Clients usually call this
+     * twice with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
      *
-     * <p>Note that when overriding this method, when a new type is inserted into the store,
-     * splitAssignments should be called, and the new type should be inserted into the store for
+     * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
+     * splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
      * @param res the previous result

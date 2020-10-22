@@ -2,15 +2,38 @@
 
 // @skip-test until the issue is fixed
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class Issue3614 {
+
+    public static @Nullable Boolean m1(@PolyNull Boolean b) {
+        return (b == null) ? b : b;
+    }
+
+    public static @NonNull Boolean m2(@PolyNull Boolean b) {
+        return (b == null) ? Boolean.TRUE : !b;
+    }
+
+    public static @PolyNull Boolean m3(@PolyNull Boolean b) {
+        return (b == null) ? null : Boolean.TRUE;
+    }
+
+    public static @PolyNull Boolean m4(@PolyNull Boolean b) {
+        return (b == null) ? null : b;
+    }
+
+    public static @PolyNull Boolean m5(@PolyNull Boolean b) {
+        return (b == null) ? b : Boolean.TRUE;
+    }
 
     public static @PolyNull Boolean not1(@PolyNull Boolean b) {
         return (b == null) ? null : !b;
     }
 
     public static @PolyNull Boolean not2(@PolyNull Boolean b) {
+        // :: error: (unboxing.of.nullable)
         return (b == null) ? b : !b;
     }
 
