@@ -146,24 +146,31 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore,CFAbstractStore)}.
+     *
+     * @param value a value to possibly modify
+     * @param store the store
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S store) {
         return value;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed (two stores, as the
-     * result is a {@link ConditionalTransferResult}.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore)}.
      *
      * @param value the value to finish
      * @param thenStore the "then" store
      * @param elseStore the "else" store
-     * @return the finished value
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
@@ -766,10 +773,11 @@ public abstract class CFAbstractTransfer<
     /**
      * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
      * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression
-     * that is tracked by the store (e.g., a local variable or a field).
+     * that is tracked by the store (e.g., a local variable or a field). Clients usually call this
+     * twice with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
      *
-     * <p>Note that when overriding this method, when a new type is inserted into the store,
-     * splitAssignments should be called, and the new type should be inserted into the store for
+     * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
+     * splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
      * @param res the previous result
