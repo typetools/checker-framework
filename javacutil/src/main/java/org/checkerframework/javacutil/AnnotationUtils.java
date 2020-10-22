@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -37,6 +38,8 @@ import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -976,5 +979,22 @@ public class AnnotationUtils {
         }
 
         return hasTypeUse;
+    }
+
+    /**
+     * Returns a string representation of the annotation mirrors, using simple (not fully-qualified)
+     * names.
+     *
+     * @param annos annotations to format
+     * @return the string representation, using simple (not fully-qualified) names
+     */
+    @SideEffectFree
+    public static String toStringSimple(Set<AnnotationMirror> annos) {
+        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
+        StringJoiner result = new StringJoiner(" ");
+        for (AnnotationMirror am : annos) {
+            result.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
+        }
+        return result.toString();
     }
 }
