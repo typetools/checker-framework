@@ -12,7 +12,7 @@ import org.plumelib.util.UniqueId;
 
 /**
  * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is
- * known to be {@link Nullable}.
+ * known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
 public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
         implements UniqueId {

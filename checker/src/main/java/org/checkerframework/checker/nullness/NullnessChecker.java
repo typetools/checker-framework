@@ -41,7 +41,7 @@ public class NullnessChecker extends InitializationChecker {
     public static final boolean LINT_DEFAULT_NOINITFORMONOTONICNONNULL = false;
 
     /**
-     * Warn about redundant comparisons of expressions with {@code null}, if the expressions is
+     * Warn about redundant comparisons of an expression with {@code null}, if the expression is
      * known to be non-null.
      */
     public static final String LINT_REDUNDANTNULLCOMPARISON = "redundantNullComparison";
