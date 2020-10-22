@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a reimplementation of its interface):
 // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
 
 package edu.umd.cs.findbugs.annotations;

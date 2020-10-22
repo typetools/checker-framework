@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a reimplementation of its interface):
 // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
 
 package javax.validation.constraints;

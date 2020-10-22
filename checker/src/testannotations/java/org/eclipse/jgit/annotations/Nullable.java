@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a reimplementation of its interface):
 // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
 
 package org.eclipse.jgit.annotations;
