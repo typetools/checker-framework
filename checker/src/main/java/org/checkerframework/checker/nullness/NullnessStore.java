@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.InitializationStore;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
@@ -51,6 +52,11 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
         isPolyNullNull = false;
     }
 
+    /**
+     * Create a NullnessStore (copy constructor).
+     *
+     * @param s a store te copy
+     */
     public NullnessStore(NullnessStore s) {
         super(s);
         isPolyNullNonNull = s.isPolyNullNonNull;
@@ -87,18 +93,40 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
                 + viz.visualizeStoreKeyVal("isPolyNullNull", isPolyNullNull);
     }
 
+    /**
+     * Returns true if, at this point, {@link PolyNull} is known to be {@link NonNull}.
+     *
+     * @return true if, at this point, {@link PolyNull} is known to be {@link NonNull}
+     */
     public boolean isPolyNullNonNull() {
         return isPolyNullNonNull;
     }
 
+    /**
+     * Set the value of whether, at this point, {@link PolyNull} is known to be {@link NonNull}.
+     *
+     * @param isPolyNullNonNull whether, at this point, {@link PolyNull} is known to be {@link
+     *     NonNull}
+     */
     public void setPolyNullNonNull(boolean isPolyNullNonNull) {
         this.isPolyNullNonNull = isPolyNullNonNull;
     }
 
+    /**
+     * Returns true if, at this point, {@link PolyNull} is known to be {@link Nullable}.
+     *
+     * @return true if, at this point, {@link PolyNull} is known to be {@link Nullable}
+     */
     public boolean isPolyNullNull() {
         return isPolyNullNull;
     }
 
+    /**
+     * Set the value of whether, at this point, {@link PolyNull} is known to be {@link Nullable}.
+     *
+     * @param isPolyNullNull whether, at this point, {@link PolyNull} is known to be {@link
+     *     Nullable}
+     */
     public void setPolyNullNull(boolean isPolyNullNull) {
         this.isPolyNullNull = isPolyNullNull;
     }

@@ -59,11 +59,21 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
         return result;
     }
 
+    /**
+     * Returns true if this value contans {@code @NonNull} or {@code @PolyNull}.
+     *
+     * @return true if this value contans {@code @NonNull} or {@code @PolyNull}
+     */
     private boolean containsNonNullOrPolyNull() {
         return AnnotationUtils.containsSameByClass(annotations, NonNull.class)
                 || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);
     }
 
+    /**
+     * Returns true if this value contans {@code @Nullable} or {@code @PolyNull}.
+     *
+     * @return true if this value contans {@code @Nullable} or {@code @PolyNull}
+     */
     private boolean containsNullableOrPolyNull() {
         return AnnotationUtils.containsSameByClass(annotations, Nullable.class)
                 || AnnotationUtils.containsSameByClass(annotations, PolyNull.class);

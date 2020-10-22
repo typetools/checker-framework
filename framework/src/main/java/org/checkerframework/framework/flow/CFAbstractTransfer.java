@@ -146,24 +146,31 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore,CFAbstractStore)}.
+     *
+     * @param value a value to possibly modify
+     * @param store the store
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S store) {
         return value;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed (two stores, as the
-     * result is a {@link ConditionalTransferResult}.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore)}.
      *
      * @param value the value to finish
      * @param thenStore the "then" store
      * @param elseStore the "else" store
-     * @return the finished value
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
