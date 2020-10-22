@@ -1,7 +1,5 @@
 // Test case for https://tinyurl.com/cfissue/3614
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
