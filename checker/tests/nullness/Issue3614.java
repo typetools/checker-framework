@@ -43,11 +43,11 @@ public class Issue3614 {
         }
     }
 
-    public static <T> T of1(T a) {
+    public static <@Nullable T> T of1(T a) {
         return a == null ? null : a;
     }
 
-    public static <T> T of2(T a) {
+    public static <@Nullable T> T of2(T a) {
         if (a == null) {
             return null;
         } else {
