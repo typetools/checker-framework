@@ -128,12 +128,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 checker.reportError(
                         overriderTree,
                         "override.receiver.invalid",
+                        overrider.getReceiverType(),
+                        overridden.getReceiverType(),
                         overriderMeth,
                         overriderTyp,
                         overriddenMeth,
-                        overriddenTyp,
-                        overrider.getReceiverType(),
-                        overridden.getReceiverType());
+                        overriddenTyp);
                 return false;
             }
             return true;

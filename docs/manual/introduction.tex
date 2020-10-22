@@ -184,7 +184,7 @@ Alternately, you can build the latest development version from source
 % Keep in sync with build.gradle and SourceChecker.init.
 You must have \textbf{JDK 8} or \textbf{JDK 11} installed.
 
-The installation process is simple!  It has two required steps and one
+The installation process has two required steps and one
 optional step.
 \begin{enumerate}
 \item
@@ -206,13 +206,11 @@ optional step.
 
 \end{enumerate}
 
-That's all there is to it!  Now you are ready to start using the checkers.
+Now you are ready to start using the checkers.
 
 We recommend that you work through the
 \ahreforurl{https://checkerframework.org/tutorial/}{Checker
-Framework tutorial}, which walks you through how to use the Checker
-Framework on
-the command line (Nullness, Regex, and Tainting Checkers).
+Framework tutorial}, which demonstrates the Nullness, Regex, and Tainting Checkers.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
@@ -223,37 +221,8 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 This section gives a very simple example of running the Checker Framework.
 There is also a \ahreforurl{https://checkerframework.org/tutorial/}{tutorial}
-that gives more extensive instructions for using the Checker Framework
-on the command line.
+that you can work along with.
 
-% To run a checker on a source file, just compile as usual, but pass the
-% \<-processor> flag to the compiler.
-%
-% For instance, if you usually run the javac compiler like
-% this:
-%
-% \begin{Verbatim}
-%   javac Foo.java Bar.java
-% \end{Verbatim}
-%
-% \noindent
-% then you will instead a command line such as:
-%
-% \begin{alltt}
-%   javac \textbf{-processor NullnessChecker} Foo.java Bar.java
-%   javac \textbf{-processor RegexChecker} Foo.java Bar.java
-% \end{alltt}
-%
-% \noindent
-% but take note that the \code{javac} command must refer to the
-% Checker Framework compiler (see Section~\ref{javac-wrapper}).
-%
-% If you usually do your coding within an IDE, you will need to configure
-% the IDE; see Chapter~\ref{external-tools}.
-
-
-\begin{enumerate}
-\item
   Let's consider this very simple Java class.  The local variable \<ref>'s type is
   annotated as \refqualclass{checker/nullness/qual}{NonNull}, indicating that \<ref> must be a reference to a
   non-null object.  Save the file as \<GetStarted.java>.
@@ -268,43 +237,15 @@ public class GetStarted {
 }
 \end{Verbatim}
 
-\item
-  Run the Nullness Checker on the class.
-  You can do that from the command line or from an IDE:
+If you run the Nullness Checker (Chapter~\ref{nullness-checker}), the
+compilation completes without any errors.
 
-\begin{enumerate}
-\item
-  From the command line, run this command:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{alltt}
-  \emph{javac} -processor org.checkerframework.checker.nullness.NullnessChecker GetStarted.java
-\end{alltt}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-where \emph{\code{javac}} is set as in Section~\ref{javac-wrapper}.
-
-\item
-  To compile within your IDE, you must have customized it to use the
-  Checker Framework compiler and to pass the extra arguments (see
-  Chapter~\ref{external-tools}).
-\end{enumerate}
-
-  The compilation should complete without any errors.
-
-\item
-  Let's introduce an error now.  Modify \<ref>'s assignment to:
+Now, introduce an error.  Modify \<ref>'s assignment to:
 \begin{alltt}
   @NonNull Object ref = \textbf{null};
 \end{alltt}
 
-\item
-  Run the Nullness Checker again, just as before.  This run should emit
+If you run the Nullness Checker again, it emits
   the following error:
 \begin{Verbatim}
 GetStarted.java:5: incompatible types.
@@ -315,9 +256,12 @@ required: @NonNull Object
 1 error
 \end{Verbatim}
 
-\end{enumerate}
+This is a trivially simple example.  Even an unsound bug-finding tool like
+FindBugs, SpotBugs, or Error Prone could have detected this bug.  The
+Checker Framework's analysis is more powerful than those tools and detects
+more code defects than they do.
 
-The type qualifiers (e.g., \<@NonNull>) are permitted anywhere
+Type qualifiers such as \<@NonNull> are permitted anywhere
 that you can write a type, including generics and casts; see
 Section~\ref{writing-annotations}.  Here are some examples:
 
@@ -344,7 +288,7 @@ described in Sections~\ref{writing-annotations} and~\ref{running}.
 \item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
   \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
   (Or, the programmer uses an inference tool to automatically insert
-  annotations in his code:  see Section~\ref{nullness-inference}.)
+  annotations in his code:  see Section~\ref{type-inference-to-annotate}.)
   It is possible to annotate only part of your code:  see
   Section~\ref{unannotated-code}.
 
@@ -412,7 +356,7 @@ The Java Language Specification also defines
 declaration annotations, such as \<@Deprecated> and \<@Override>, which apply
 to a class, method, or field but do not apply to the method's return type
 or the field's type.  They should be written on their own line in the
-source code.
+source code, before the method's signature.
 
 
 \sectionAndLabel{Running a checker}{running}
@@ -437,8 +381,8 @@ Buck (Section~\ref{buck}),
 Gradle (Section~\ref{gradle}), and
 Maven (Section~\ref{maven});
 IDEs such as
-IntelliJ IDEA (Section~\ref{intellij}),
 Eclipse (Section~\ref{eclipse}),
+IntelliJ IDEA (Section~\ref{intellij}),
 NetBeans (Section~\ref{netbeans}),
 and
 tIDE (Section~\ref{tide});
@@ -465,7 +409,7 @@ command-line option, no checking of the type
 annotations is performed.  Furthermore, only explicitly-written annotations
 are written to the \<.class> file; defaulted annotations are not, and this
 will interfere with type-checking of clients that use your code.
-Therefore, you create
+Therefore, to create
 \<.class> files that will be distributed or compiled against, you should run the
 type-checkers for all the annotations that you have written.
 
@@ -907,18 +851,21 @@ This feature does not apply to javac \href{https://docs.oracle.com/javase/7/docs
 
 \sectionAndLabel{What the checker guarantees}{checker-guarantees}
 
-A checker guarantees that a particular property holds throughout the
-code.
+A checker guarantees two things:  type annotations reflect facts about
+run-time values, and illegal operations are not performed.
 
 For example, the Nullness Checker (Chapter~\ref{nullness-checker})
-guarantees lack of null pointer exceptions; more precisely, it guarantees
-that only expressions whose type is a
-\refqualclass{checker/nullness/qual}{NonNull} type are dereferenced, and
-that such expressions never evaluate to null.
-The Interning Checker (Chapter~\ref{interning-checker})
-guarantees that every expression whose type is an \refqualclass{checker/interning/qual}{Interned} type
-evaluates to an interned value, and thereby it prevents incorrect
-equality tests.
+guarantees lack of null pointer exceptions.  More precisely, it guarantees
+that expressions whose type is annotated with
+\refqualclass{checker/nullness/qual}{NonNull} never evaluate to null,
+and it forbids other expressions from being dereferenced.
+
+As another example, the Interning Checker (Chapter~\ref{interning-checker})
+guarantees that correct equality tests are performed.
+More precisely, it guarantees that
+every expression whose type is an \refqualclass{checker/interning/qual}{Interned} type
+evaluates to an interned value, and it forbids
+\<==>  on other expressions.
 
 The guarantee holds only if you run the checker on every part of your
 program and the checker issues no warnings anywhere in the code.
@@ -937,14 +884,12 @@ There are some limitations to the guarantee.
 
   \begin{itemize}
   \item
-    Code compiled without the \code{-processor} switch, including any
-    external library supplied as a \code{.class} file.
+    Code compiled without the \code{-processor} switch.  This includes
+    external libraries supplied as a \code{.class} file and native methods
+    (because the implementation is not Java code, it cannot be checked).
   \item
     Code compiled with the \code{-AskipUses}, \code{-AonlyUses}, \code{-AskipDefs} or \code{-AonlyDefs}
-    properties (see Chapter~\ref{suppressing-warnings}).
-  \item
-    Native methods (because the implementation is not Java code, it cannot
-    be checked).
+    command-line arguments (see Chapter~\ref{suppressing-warnings}).
   \item
     Dynamically generated code, such as generated by Spring or MyBatis.
     Its bytecode is directly generated and run, not compiled by javac and
@@ -988,7 +933,7 @@ There are some limitations to the guarantee.
 \end{itemize}
 
 In order to avoid a flood of unhelpful warnings, many of the checkers avoid
-issuing the same warning multiple times.  For example, in this code:
+issuing the same warning multiple times.  For example, consider this code:
 
 \begin{Verbatim}
   @Nullable Object x = ...;
@@ -997,7 +942,7 @@ issuing the same warning multiple times.  For example, in this code:
 \end{Verbatim}
 
 \noindent
-In this case, the second call to \<toString> cannot possibly throw a null
+The second call to \<toString> cannot possibly throw a null
 pointer warning --- \<x> is non-null if control flows to the second
 statement.
 In other cases, a checker avoids issuing later warnings with the same cause
@@ -1030,8 +975,9 @@ according to the warnings issued.  This approach is less systematic, so you
 may overlook some annotations.  It often leads to confusion and poor
 results.  It leads users to make changes not for any principled reason, but
 to ``make the type-checker happy'', even when the changes are in conflict
-with the documentation or the code.  Also see ``Annotations
-are a specification'', below.
+with the documentation or the code.  Also see
+\ahref{#get-started-annotations-are-a-specification}{``Annotations are a
+  specification''}, below.
 
 
 \subsectionAndLabel{How to get started annotating legacy code}{get-started-with-legacy-code}
@@ -1050,7 +996,7 @@ the most mission-critical or error-prone part of your code; don't try to
 annotate your whole program at first.
 
 It is easiest to add annotations if you know the code or the
-code contains documentation; you will find that you spend most of your time
+code contains documentation.  While adding annotations, you will spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
@@ -1060,11 +1006,10 @@ so that you don't lose track of your work or redo work.  For example,
 working class-by-class avoids confusion about whether an unannotated type
 means you determined that the default is desirable, or it means you didn't
 yet examine that type.
-You may find it helpful to start annotating the leaves of the call tree ---
+Start annotating classes at the leaves of the call tree ---
 that is,
-start with methods/classes/packages that have few dependencies on other
-code or, equivalently, start with code that a lot of your other code
-depends on.  For example, within a package annotate supertypes before you
+start with classes/packages that have few dependencies on other
+code.  Annotate supertypes before you
 annotated classes that extend or implement them.
 The reason for this rule is that it is
 easiest to annotate a class if the code it depends on has already been
@@ -1087,8 +1032,8 @@ specifications.
 For each class, read its Javadoc.  For instance, if you are adding
 annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
 you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  For now, just annotate signatures and fields; there is no
-need to annotate method bodies.  The only reason to even
+anywhere appropriate.  Start by annotating signatures and fields, but not
+method bodies.  The only reason to even
 \emph{read} the method bodies yet is to determine signature annotations for
 undocumented methods ---
 for example, if the method returns null, you know its return type should be
@@ -1133,15 +1078,18 @@ to eliminate checker warnings by adding annotations.
 \subsubsectionAndLabel{Write good code}{get-started-write-good-code}
 
 Avoid complex code, which is more error-prone.  If you write your code to
-be simple and clean enough for the type-checker to verify, then it will
-also be easier for programmers to understand.
+be simple and clear enough for the type-checker to verify, then it will
+also be easier for programmers to understand.  A sneaky side benefit of
+verifying your code is improving your code's structure.
 
-Your code should compile cleanly under the regular Java compiler.  If you
-are not willing to write code that type-checks in Java, then there is
-little point in using an even more powerful, restrictive type system.  As a
+Your code should compile cleanly under the regular Java compiler.  As a
 specific example, your code should not use raw types like \code{List}; use
 parameterized types like \code{List<String>} instead
-(Section~\ref{generics-raw-types}).
+(Section~\ref{generics-raw-types}).  If you suppress Java compiler
+warnings, then the Checker Framework will issue more warnings, and its
+messages will be more confusing.  (Also, if you are not willing to write
+code that type-checks in Java, then you might not be willing to use an even
+more powerful type system.)
 
 Do not write unnecessary annotations.
 \begin{itemize}
@@ -1192,6 +1140,9 @@ annotations indicate all the values that you \emph{want} to flow to a
 reference --- not every value that might possibly flow there if your
 program has a bug.
 
+
+\subsubsectionAndLabel{Methods that crash when passed certain values}{annotate-normal-behavior-always-crash}
+
 As an example, the goal of the Nullness Checker is to guarantee that your
 program does not crash due to a null value.  In a method like this:
 
@@ -1215,7 +1166,8 @@ parameter as \<@Nullable Object>, the Nullness Checker would permit clients
 to make calls that lead to a crash.
 
 
-Many methods are guaranteed to throw an exception if they are passed \code{null}
+The same argument applies to methods that guaranteed to throw an exception
+if they are passed \code{null}
 as an argument.  Examples include
 
 \begin{Verbatim}
@@ -1245,17 +1197,28 @@ Therefore, you should specify such parameters as
 \refqualclass{checker/nullness/qual}{NonNull}, indicating
 the intended use of the method.  When you specify the parameter as the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
-possible run-time exceptions, which is its purpose.  Specifying the parameter
-as \code{@Nullable} would suppress such warnings, which is undesirable.
-(Since \code{@NonNull} is the default, you don't have to write anything in
-the source code to specify the parameter as non-null.  You are allowed to
-write a redundant \code{@NonNull} annotation, but it is discouraged.)
+possible run-time exceptions, which is its purpose.
 
+
+Another example is the Optional Checker (\chapterpageref{optional-checker})
+and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} method.
+The goal of the Optional Checker is to ensure that the program does not
+crash due to use of a non-present Optional value.  Therefore, the receiver
+of
+\<orElseThrow> is annotated as
+\refqualclass{checker/optional/qual}{Present},
+and the optional Checker issues a warning if the client calls
+\<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
+
+
+\subsubsectionAndLabel{Methods that sometimes crash when passed certain values}{annotate-normal-behavior-sometimes-crash}
+
+%% TODO: This text should be revised when @NullableWhen or @NonNullWhen is implemented.
 % This is only an issue for code with unchecked, trusted annotations such as
 % library methods; if the method is type-checked, then the type-checker
 % warnings will lead you to leave the formal parameter as the default, which
 % means \<@NonNull>.
-If a method can possibly throw an exception because its parameter
+If a method can \emph{possibly} throw an exception because its parameter
 is \<null>, then that parameter's type should be \<@NonNull>, which
 guarantees that the type-checker will issue a warning for every client
 use that has the potential to cause an exception.  Don't write
@@ -1269,16 +1232,6 @@ don't necessarily throw an exception.
 % erroneous case, the annotation would be counterproductive rather than
 % useful.)
 
-Another example is the Optional Checker (\chapterpageref{optional-checker})
-and the \<orElseThrow> method.
-The goal of the Optional Checker is to ensure that the program does not
-crash due to use of a non-present Optional value.  Therefore, the receiver
-of
-\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} is annotated as
-\ahref{https://checkerframework.org/api/org/checkerframework/checker/optional/qual/Present.html}{\<@Present>},
-and the optional Checker issues a warning if the client calls
-\<orElseThrow> on a \<@MaybePresent> value.
-
 
 \subsectionAndLabel{Subclasses must respect superclass annotations}{annotations-are-a-contract}
 
@@ -1290,6 +1243,7 @@ A subclass is permitted to \emph{strengthen} the contract; for example,
 if a method does \emph{not} accept \code{null} as an argument, then an
 overriding definition is permitted to accept \code{null}.
 
+%% TODO: Revise when @NullableWhen or @NonNullWhen is implemented
 \begin{sloppypar}
 As a bad example, consider an erroneous \code{@Nullable} annotation in
 \href{https://github.com/google/guava/blob/master/guava/src/com/google/common/collect/Multiset.java\#L129}{\code{com/google/common/collect/Multiset.java}}:
@@ -1380,6 +1334,10 @@ errors.  Don't panic!  There are three general causes for the warnings:
 \item
   There is a weakness in the type-checker.  Your code is safe --- it never
   suffers the error at run time --- but the checker cannot prove this fact.
+  (It is not omniscient, and it works modularly:  when type-checking a
+  method \<m>, it relies on the types, but not the code, of variables and
+  methods used by \<m>.)
+
   If possible, rewrite your code to be simpler for the checker to analyze;
   this is likely to make it easier for people to understand, too.
   If that is not possible, suppress the warning (see
@@ -1389,7 +1347,7 @@ errors.  Don't panic!  There are three general causes for the warnings:
 
   (Do not add an \<if> test that can never fail, just to suppress a
   warning.  Adding a gratuitous \<if> clutters the code and confuses
-  readers, who will assume that every \<if> condition can evaluate to true
+  readers.  A reader should assume that every \<if> condition can evaluate to true
   or false.  It can be acceptable to add an \<if> test that throws a
   descriptive error message.)
 \end{itemize}
@@ -1445,6 +1403,14 @@ verify your reasoning.
     argument must have been non-null'', then annotate \<isEmpty>'s
     declaration with
     \refqualclasswithparams{checker/nullness/qual}{EnsuresNonNullIf}{expression="\#1",result=false}.
+  \item
+    If your proof includes ``method \<m> has no side effects'',
+    then annotate \<m>'s declaration with
+    \refqualclass{dataflow/qual}{SideEffectFree}.
+  \item
+    If your proof includes ``each call to method \<m> returns the same value'',
+    then annotate \<m>'s declaration with
+    \refqualclass{dataflow/qual}{Deterministic}.
   \end{itemize}
 
   All of these are examples of correcting weaknesses in the annotations you wrote.
@@ -1491,7 +1457,9 @@ verify your reasoning.
 \end{enumerate}
 
 If you have trouble understanding a Checker Framework warning message, you
-can search for its text in this manual.  Also see
+can search for its text in this manual.
+
+Also see
 Section~\ref{common-problems-typechecking} and
 Chapter~\ref{troubleshooting}, Troubleshooting.
 In particular, Section~\ref{common-problems-typechecking} explains this
