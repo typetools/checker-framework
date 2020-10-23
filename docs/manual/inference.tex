@@ -140,6 +140,77 @@ uses in the program.  For example, the inferred type for a field is the
 least upper bound of the types of all the expressions that are assigned
 into the field.
 
+There are three ways to run whole-program inference: via the
+\<checker-framework/checker/bin/wpi.sh> script, via the \<checker-framework/checker/bin/wpi-many.sh>
+scripts, or via the \<checker-framework/checker/bin/infer-and-annotate.sh> script.
+In most cases, you should choose \<wpi.sh> if you are running whole-program inference
+on a single project, and \<wpi-many.sh> if you are running an experiment on many
+projects that you will download from GitHub or another repository. You should
+only use \<infer-and-annotate.sh> if you know that you need to use \<.jaif> files
+to store the inferred annotations.
+
+\subsectionAndLabel{Running whole-program inference on many projects}{wpi-many}
+
+To run an experiment on many projects:
+\begin{enumerate}
+\item Use \<checker-framework/checker/bin/query-github.sh> to search GitHub for candidate repositories.
+File \<checker-framework/checker/bin/securerandom.query> is an example query, and file
+\<checker-framework/checker/bin/securerandom.list>
+was created by running \<checker-framework/checker/bin/query-github.sh securerandom.query 100>. If you do
+not want to use GitHub, construct a file yourself that matches the format of
+the file \<checker-framework/checker/bin/securerandom.list>.
+
+\item Use \<checker-framework/checker/bin/wpi-many.sh> to run whole-program inference on every
+Gradle or Maven project in a list of (GitHub repository URL, git hash)
+pairs.
+\begin{itemize}
+\item If you are using a checker that is distributed with the Checker
+Framework, use wpi-many.sh or wpi.sh directly.
+\item If you are using a checker that is not distributed with the Checker
+Framework (also known as a "custom checker"), file
+\<checker-framework/checker/bin/custom-checker-example.sh> is a no-arguments
+script that serves as an example of how to use \<checker-framework/checker/bin/wpi-many.sh>.
+\end{itemize}
+
+The log files for each project are placed in a results directory.
+For a failed run, the log file indicate the reason that WPI could not
+be run to completion on the project.
+For a successful run the log file indicates whether the project was verified
+(i.e. no errors were reported), or whether the checker issued warnings
+(which might be true positive or false positive warnings).
+
+\item Use \<checker-framework/checker/bin/wpi-summary.sh> to summarize the logs in the output results directory.
+Use its output to guide your analysis of the results of running \<checker-framework/checker/bin/wpi-many.sh>:
+you should manually examine the log files for the projects that appear in the
+"results available" list it produces. This list is the list of every project
+that the script was able to successfully run WPI on.
+
+\item (Optional) Fork repositories and make changes (e.g., add annotations or fix bugs).
+Modify the input file for wpi-many.sh to remove the line for the original repository,
+but add a new line that indicates the location of both your
+fork and the original repository.
+Then, re-run your experiments, supplying the \<-u "\$yourGithubId"> option to \<checker-framework/checker/bin/wpi-many.sh>.
+\<checker-framework/checker/bin/wpi-many.sh> will perform inference on your forked version rather than
+the original.
+
+\end{enumerate}
+
+See the documentation of the individual scripts for more information.
+
+\subsectionAndLabel{Running whole-program inference on a single projects}{wpi-one}
+
+Run \<checker-framework/checker/bin/wpi.sh>.
+Its use is similar to \<checker-framework/checker/bin/wpi-many.sh>, described above. However,
+its input is a single directory on your local machine rather than
+a list of repository URLs and hashes. \<checker-framework/checker/bin/wpi-many.sh> uses this script internally
+after checking out projects.
+
+\subsectionAndLabel{Running whole-program inference using JAIF files}{wpi-jaif}
+
+\textbf{Note: this section describes legacy instructions to use the infer-and-annotate.sh script. Unless
+you know you need to use .jaif-based WPI, you should follow the instructions in the previous two sections
+rather than these instructions.}
+
 \begin{sloppypar}
 To use whole-program inference, make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
