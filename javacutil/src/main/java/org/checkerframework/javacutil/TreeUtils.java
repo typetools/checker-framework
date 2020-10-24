@@ -74,6 +74,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueIdMap;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -83,6 +84,9 @@ public final class TreeUtils {
     private TreeUtils() {
         throw new AssertionError("Class TreeUtils cannot be instantiated.");
     }
+
+    /** Unique IDs for trees. */
+    public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
     /**
      * Checks if the provided method is a constructor method or no.
