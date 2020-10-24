@@ -200,14 +200,23 @@ Here is an explanation of the arguments:
 
 \item[DLJC-ARGS]
   Arguments that are passed directly to
-  \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac} without
+  \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
+  \<dljc> program without
   modification.  One argument is required: \<--checker>, which indicates
-  what type-checker to run.  For all possible arguments, see
-  the help text of \<do-like-javac>, which you can obtain by running:
-  \begin{Verbatim}
-    git clone https://github.com/kelloggm/do-like-javac
-    cd do-like-javac
-    python2 dljc --help
+  what type-checker to run.  Usage of dljc is:
+%% To obtain this usage string, which we should update periodically:
+%  git clone https://github.com/kelloggm/do-like-javac
+%  cd do-like-javac
+%  python2 dljc --help
+%% Even better, the do-like-javac repository could document the
+%% command-line arguments, and this could just link to that documentation.
+\begin{Verbatim}
+dljc [-o <directory>] [--log_to_stderr] [-t <tool>]
+     [--timeout <seconds>] [--guess] [--quiet] [--cache] [-c <checker>]
+     [--stubs <stubs>] [-l <lib_dir>] [--jdkVersion <jdkVersion>]
+     [--quals <quals>] [-s <solver>] [-afud <afud>] [-m <mode>]
+     [-solverArgs <solverArgs>] [-cfArgs <cfArgs>]
+     [--graph-jar <graphtool-jar>] [-X] [-- <cmd>]
 \end{Verbatim}
 
 You may need to wait a few minutes for the command to complete.
