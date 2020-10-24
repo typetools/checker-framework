@@ -908,6 +908,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+            'checker/bin/securerandom.query',
+            'checker/bin/securerandom.list',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
