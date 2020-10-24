@@ -1,22 +1,15 @@
 #!/bin/bash
 
-# This script performs WPI via dljc on a given project directory.
-# The inputs are similar to wpi-many.sh, which uses this script internally.
-# The only difference is that wpi-many.sh takes a list of projects, while
-# this script operates on a single project at a time.
-# See the documentation of wpi-many.sh for information on the inputs to this
-# script.
-#
-# Input differences compared to wpi-many.sh:
-# -i and -o are not valid options
-# new required option -d: the absolute path to the directory containing the target project
-#
+# This script performs whole-program inference on a project directory.
+
+# For usage and requirements, see the "Whole-program inference"
+# section of the Checker Framework manual:
+# https://checkerframework.org/manual/#whole-program-inference
+
 
 while getopts "d:u:t:" opt; do
   case $opt in
     d) DIR="$OPTARG"
-       ;;
-    u) USER="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
        ;;
