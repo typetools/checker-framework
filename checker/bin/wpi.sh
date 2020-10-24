@@ -7,7 +7,7 @@
 # https://checkerframework.org/manual/#whole-program-inference
 
 
-while getopts "d:u:t:" opt; do
+while getopts "d:t:" opt; do
   case $opt in
     d) DIR="$OPTARG"
        ;;
@@ -138,7 +138,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
 if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
-    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac
+    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac --depth 1
 else
     git -C "${SCRIPTDIR}/../do-like-javac" pull
 fi
