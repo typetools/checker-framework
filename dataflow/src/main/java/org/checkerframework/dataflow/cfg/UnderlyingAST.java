@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.plumelib.util.UniqueId;
 import org.plumelib.util.UtilPlume;
@@ -27,8 +28,10 @@ public abstract class UnderlyingAST implements UniqueId {
     /** The kind of the underlying AST. */
     protected final Kind kind;
 
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
     /** The unique ID of this object. */
-    final transient long uid = UniqueId.nextUid.getAndIncrement();
+    final transient long uid = nextUid.getAndIncrement();
 
     @Override
     public long getUid(@UnknownInitialization UnderlyingAST this) {
