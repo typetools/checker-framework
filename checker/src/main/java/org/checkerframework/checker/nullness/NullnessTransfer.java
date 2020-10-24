@@ -2,6 +2,8 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Transfer function for the non-null type system. Performs the following refinements:
@@ -196,12 +199,24 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
+                MethodTree methodTree =
+                        TreeUtils.enclosingMethod(
+                                nullnessTypeFactory.getPath(secondNode.getTree()));
+                /*
+                  ExecutableElement methodElem =
+                        TreeUtils.elementFromDeclaration(
+                                analysis.getContainingMethod(secondNode.getTree()));
+                */
                 if (notEqualTo) {
                     elseStore.setPolyNullNull(true);
-                    thenStore.setPolyNullNonNull(true);
+                    if (polyNullIsNonNull(methodTree, thenStore)) {
+                        thenStore.setPolyNullNonNull(true);
+                    }
                 } else {
                     thenStore.setPolyNullNull(true);
-                    elseStore.setPolyNullNonNull(true);
+                    if (polyNullIsNonNull(methodTree, elseStore)) {
+                        elseStore.setPolyNullNonNull(true);
+                    }
                 }
             }
 
@@ -210,6 +225,36 @@ public class NullnessTransfer
             }
         }
         return res;
+    }
+
+    /**
+     * Returns true if every formal parameter that is declared as @PolyNull is currently known to be
+     * non-null.
+     *
+     * @param s a store
+     * @return true if every formal parameter declared as @PolyNull is non-null
+     */
+    private boolean polyNullIsNonNull(MethodTree method, NullnessStore s) {
+        System.out.printf(
+                "polyNullIsNonNull(%s [%s])%n",
+                TreeUtils.toStringTruncated(method, 60), method.getClass());
+        System.out.printf("  store %s%n", UtilPlume.indentLinesExceptFirst(2, s));
+        // No need to check the receiver, which is always non-null.
+        for (VariableTree var : method.getParameters()) {
+            System.out.printf("  var %s [%s]%n", TreeUtils.toStringOneLine(var), var.getClass());
+            // TypeMirror varType = ElementUtils.getType(var);
+            // System.out.printf("    type %s [%s]%n", varType, varType.getClass());
+
+            Set<Node> varNodes = analysis.getNodesForTree(var);
+            System.out.printf("  varNodes: %s%n", varNodes);
+
+            // need a Node in order to look up in the store.
+            // System.out.printf("  in store: %s%n", s.getValue(var));
+        }
+        return false;
+
+        // else:
+        // return true;
     }
 
     @Override

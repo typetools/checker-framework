@@ -341,8 +341,8 @@ public class ForwardAnalysisImpl<
         worklist.process(cfg);
         Block entry = cfg.getEntryBlock();
         worklist.add(entry);
-        List<LocalVariableNode> parameters = getParameters(cfg.getUnderlyingAST());
-        assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
+        UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
+        List<LocalVariableNode> parameters = getParameters(underlyingAST);
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
@@ -377,7 +377,10 @@ public class ForwardAnalysisImpl<
                 }
                 return result;
             default:
-                return null;
+                throw new Error(
+                        String.format(
+                                "Unexpected AST (kind=%s): %s",
+                                underlyingAST.getKind(), underlyingAST));
         }
     }
 

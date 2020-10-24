@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -138,11 +139,33 @@ public class ControlFlowGraph implements UniqueId {
      *     trees that don't produce a value
      */
     public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
+        System.out.printf(
+                "getNodesCorrespondingToTree(%s [%s])%n",
+                TreeUtils.toStringTruncated(t, 60), t.getClass());
+        System.out.printf(
+                "  convertedTreeLookup.containsKey(t)=%s%n", convertedTreeLookup.containsKey(t));
+        System.out.printf("  treeLookup.containsKey(t)=%s%n", treeLookup.containsKey(t));
+        System.out.printf("  convertedTreeLookup:%n%s%n", mapToString(convertedTreeLookup));
+        System.out.printf("  treeLookup:%n%s%n", mapToString(treeLookup));
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
         } else {
             return treeLookup.get(t);
         }
+    }
+
+    private String mapToString(Map<?, ?> m) {
+        StringJoiner result = new StringJoiner(System.lineSeparator());
+        for (Map.Entry<?, ?> e : m.entrySet()) {
+            result.add(
+                    String.format(
+                            "    %s [%s] => %s [%s]",
+                            e.getKey(),
+                            e.getKey().getClass(),
+                            e.getValue(),
+                            e.getValue().getClass()));
+        }
+        return result.toString();
     }
 
     /**
