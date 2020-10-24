@@ -86,7 +86,7 @@ public final class TreeUtils {
     }
 
     /** Unique IDs for trees. */
-    static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
+    public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
     /**
      * Checks if the provided method is a constructor method or no.
