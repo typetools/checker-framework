@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.builder;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Map;
@@ -22,7 +21,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
 import org.checkerframework.javacutil.trees.TreeBuilder;
-import org.plumelib.util.UniqueIdMap;
 
 /**
  * Builds the control flow graph of some Java code (either a method, or an arbitrary statement).
@@ -47,9 +45,6 @@ import org.plumelib.util.UniqueIdMap;
  * </ol>
  */
 public abstract class CFGBuilder {
-
-    /** Unique IDs for trees. */
-    static UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
     /**
      * Build the control flow graph of some code.
