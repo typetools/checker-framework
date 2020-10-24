@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
@@ -221,12 +222,12 @@ public class DOTCFGVisualizer<
             CFGLambda cfgLambda = (CFGLambda) ast;
             String clsName = cfgLambda.getSimpleClassName();
             String methodName = cfgLambda.getMethodName();
-            int hashCode = cfgLambda.getCode().hashCode();
+            long uid = TreeUtils.treeUids.get(cfgLambda.getCode());
             outFile.append(clsName);
             outFile.append("-");
             outFile.append(methodName);
             outFile.append("-");
-            outFile.append(hashCode);
+            outFile.append(uid);
 
             srcLoc.append("<");
             srcLoc.append(clsName);
