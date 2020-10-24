@@ -188,7 +188,7 @@ public abstract class Node implements UniqueId {
      * @return a printed representation of this
      */
     public String toStringDebug() {
-        return String.format("%s [%s #%d]", this, this.getClass().getSimpleName(), this.getUid());
+        return String.format("%s [%s #%d]", this, this.getClassAndUid());
     }
 
     /**
