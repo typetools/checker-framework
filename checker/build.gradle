@@ -181,7 +181,7 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
+                    args = ['clone', '--depth', '1', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {
