@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.constantpropagation;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -16,7 +16,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     Map<Node, Constant> contents;
 
     public ConstantPropagationStore() {
-        contents = new HashMap<>();
+        contents = new LinkedHashMap<>();
     }
 
     protected ConstantPropagationStore(Map<Node, Constant> contents) {
@@ -50,12 +50,12 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
 
     @Override
     public ConstantPropagationStore copy() {
-        return new ConstantPropagationStore(new HashMap<>(contents));
+        return new ConstantPropagationStore(new LinkedHashMap<>(contents));
     }
 
     @Override
     public ConstantPropagationStore leastUpperBound(ConstantPropagationStore other) {
-        Map<Node, Constant> newContents = new HashMap<>();
+        Map<Node, Constant> newContents = new LinkedHashMap<>();
 
         // go through all of the information of the other class
         for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
@@ -141,7 +141,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     @Override
     public String toString() {
         // only output local variable information
-        Map<Node, Constant> smallerContents = new HashMap<>();
+        Map<Node, Constant> smallerContents = new LinkedHashMap<>();
         for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             if (e.getKey() instanceof LocalVariableNode) {
                 smallerContents.put(e.getKey(), e.getValue());
