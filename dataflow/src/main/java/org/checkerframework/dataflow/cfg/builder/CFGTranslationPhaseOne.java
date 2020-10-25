@@ -89,7 +89,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -1989,10 +1989,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     ConditionalJump cjump;
                     if (kind == Tree.Kind.CONDITIONAL_AND) {
                         cjump = new ConditionalJump(rightStartL, shortCircuitL);
-                        cjump.setFalseFlowRule(Store.FlowRule.ELSE_TO_ELSE);
+                        cjump.setFalseFlowRule(FlowRule.ELSE_TO_ELSE);
                     } else {
                         cjump = new ConditionalJump(shortCircuitL, rightStartL);
-                        cjump.setTrueFlowRule(Store.FlowRule.THEN_TO_THEN);
+                        cjump.setTrueFlowRule(FlowRule.THEN_TO_THEN);
                     }
                     extendWithExtendedNode(cjump);
 
@@ -2196,12 +2196,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         addLabelForNextNode(trueStart);
         Node trueExpr = scan(tree.getTrueExpression(), p);
         trueExpr = conditionalExprPromotion(trueExpr, exprType);
-        extendWithExtendedNode(new UnconditionalJump(merge, Store.FlowRule.BOTH_TO_THEN));
+        extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
 
         addLabelForNextNode(falseStart);
         Node falseExpr = scan(tree.getFalseExpression(), p);
         falseExpr = conditionalExprPromotion(falseExpr, exprType);
-        extendWithExtendedNode(new UnconditionalJump(merge, Store.FlowRule.BOTH_TO_ELSE));
+        extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
         addLabelForNextNode(merge);
         Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);

@@ -5,7 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -23,9 +23,9 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
      * flows to BOTH of the stores of the then successor, while the ELSE store before a conditional
      * block flows to BOTH of the stores of the else successor.
      */
-    protected Store.FlowRule thenFlowRule = Store.FlowRule.THEN_TO_BOTH;
+    protected FlowRule thenFlowRule = FlowRule.THEN_TO_BOTH;
 
-    protected Store.FlowRule elseFlowRule = Store.FlowRule.ELSE_TO_BOTH;
+    protected FlowRule elseFlowRule = FlowRule.ELSE_TO_BOTH;
 
     /**
      * Initialize an empty conditional basic block to be filled with contents and linked to other
@@ -74,22 +74,22 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     }
 
     @Override
-    public Store.FlowRule getThenFlowRule() {
+    public FlowRule getThenFlowRule() {
         return thenFlowRule;
     }
 
     @Override
-    public Store.FlowRule getElseFlowRule() {
+    public FlowRule getElseFlowRule() {
         return elseFlowRule;
     }
 
     @Override
-    public void setThenFlowRule(Store.FlowRule rule) {
+    public void setThenFlowRule(FlowRule rule) {
         thenFlowRule = rule;
     }
 
     @Override
-    public void setElseFlowRule(Store.FlowRule rule) {
+    public void setElseFlowRule(FlowRule rule) {
         elseFlowRule = rule;
     }
 
