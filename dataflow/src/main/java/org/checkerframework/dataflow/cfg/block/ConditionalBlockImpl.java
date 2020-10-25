@@ -19,12 +19,15 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     protected @Nullable BlockImpl elseSuccessor;
 
     /**
-     * The initial values for the rules below say that the THEN store before a conditional block
-     * flows to BOTH of the stores of the then successor, while the ELSE store before a conditional
-     * block flows to BOTH of the stores of the else successor.
+     * The initial value says that the THEN store before a conditional block flows to BOTH of the
+     * stores of the then successor.
      */
     protected FlowRule thenFlowRule = FlowRule.THEN_TO_BOTH;
 
+    /**
+     * The initial value says that the ELSE store before a conditional block flows to BOTH of the
+     * stores of the else successor.
+     */
     protected FlowRule elseFlowRule = FlowRule.ELSE_TO_BOTH;
 
     /**

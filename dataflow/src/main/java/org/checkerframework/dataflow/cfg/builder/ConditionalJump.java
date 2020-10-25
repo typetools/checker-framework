@@ -46,18 +46,38 @@ class ConditionalJump extends ExtendedNode {
         return falseSucc;
     }
 
+    /**
+     * Returns the true branch flow rule.
+     *
+     * @return the true branch flow rule
+     */
     public FlowRule getTrueFlowRule() {
         return trueFlowRule;
     }
 
+    /**
+     * Returns the false branch flow rule.
+     *
+     * @return the false branch flow rule
+     */
     public FlowRule getFalseFlowRule() {
         return falseFlowRule;
     }
 
+    /**
+     * Sets the true branch flow rule.
+     *
+     * @param rule the new true branch flow rule
+     */
     public void setTrueFlowRule(FlowRule rule) {
         trueFlowRule = rule;
     }
 
+    /**
+     * Sets the false branch flow rule.
+     *
+     * @param rule the new false branch flow rule
+     */
     public void setFalseFlowRule(FlowRule rule) {
         falseFlowRule = rule;
     }

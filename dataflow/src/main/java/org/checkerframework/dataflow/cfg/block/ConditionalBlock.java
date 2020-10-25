@@ -37,9 +37,17 @@ public interface ConditionalBlock extends Block {
      */
     FlowRule getElseFlowRule();
 
-    /** Set the flow rule for information flowing from this block to its then successor. */
+    /**
+     * Set the flow rule for information flowing from this block to its then successor.
+     *
+     * @param rule the new flow rule for information flowing from this block to its then successor
+     */
     void setThenFlowRule(FlowRule rule);
 
-    /** Set the flow rule for information flowing from this block to its else successor. */
+    /**
+     * Set the flow rule for information flowing from this block to its else successor.
+     *
+     * @param rule the new flow rule for information flowing from this block to its else successor
+     */
     void setElseFlowRule(FlowRule rule);
 }
