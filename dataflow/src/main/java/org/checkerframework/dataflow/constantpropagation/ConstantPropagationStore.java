@@ -15,6 +15,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     /** Information about variables gathered so far. */
     Map<Node, Constant> contents;
 
+    /** Creates a new ConstantPropagationStore. */
     public ConstantPropagationStore() {
         contents = new LinkedHashMap<>();
     }
