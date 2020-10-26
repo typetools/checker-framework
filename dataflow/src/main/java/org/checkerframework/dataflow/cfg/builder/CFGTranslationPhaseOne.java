@@ -295,6 +295,29 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     final List<LambdaExpressionTree> declaredLambdas;
 
+    /** The ArithmeticException type. */
+    final TypeMirror arithmeticExceptionType;
+    /** The AssertionError type. */
+    final TypeMirror assertionErrorType;
+
+    /** The ArrayIndexOutOfBoundsException type */
+    final TypeMirror arrayIndexOutOfBoundsExceptionType;
+
+    /** The ClassCastException type . */
+    final TypeMirror classCastExceptionType;
+
+    /** The (erased) Iterable type . */
+    final TypeMirror iterableType;
+
+    /** The NullPointerException type . */
+    final TypeMirror nullPointerExceptionType;
+
+    /** The String type. */
+    final TypeMirror stringType;
+
+    /** The Throwable type. */
+    final TypeMirror throwableType;
+
     /**
      * @param treeBuilder builder for new AST nodes
      * @param annotationProvider extracts annotations from AST nodes
@@ -337,6 +360,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         returnNodes = new ArrayList<>();
         declaredClasses = new ArrayList<>();
         declaredLambdas = new ArrayList<>();
+
+        arithmeticExceptionType = getTypeMirror(ArithmeticException.class);
+        arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
+        assertionErrorType = getTypeMirror(AssertionError.class);
+        classCastExceptionType = getTypeMirror(ClassCastException.class);
+        iterableType = types.erasure(getTypeMirror(Iterable.class));
+        nullPointerExceptionType = getTypeMirror(NullPointerException.class);
+        stringType = getTypeMirror(String.class);
+        throwableType = getTypeMirror(Throwable.class);
     }
 
     /**
@@ -667,10 +699,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                             getCurrentPath());
             boxed.setInSource(false);
             // Add Throwable to account for unchecked exceptions
-            TypeElement throwableElement = getTypeElement(Throwable.class);
             addToConvertedLookupMap(node.getTree(), boxed);
             insertNodeWithExceptionsAfter(
-                    boxed, Collections.singleton(throwableElement.asType()), valueOfAccess);
+                    boxed, Collections.singleton(throwableType), valueOfAccess);
             return boxed;
         } else {
             return node;
@@ -693,9 +724,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
             primValueAccess.setInSource(false);
             // Method access may throw NullPointerException
-            TypeElement npeElement = getTypeElement(NullPointerException.class);
             insertNodeWithExceptionsAfter(
-                    primValueAccess, Collections.singleton(npeElement.asType()), node);
+                    primValueAccess, Collections.singleton(nullPointerExceptionType), node);
 
             MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
             handleArtificialTree(primValueCall);
@@ -708,10 +738,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             unboxed.setInSource(false);
 
             // Add Throwable to account for unchecked exceptions
-            TypeElement throwableElement = getTypeElement(Throwable.class);
             addToConvertedLookupMap(node.getTree(), unboxed);
             insertNodeWithExceptionsAfter(
-                    unboxed, Collections.singleton(throwableElement.asType()), primValueAccess);
+                    unboxed, Collections.singleton(throwableType), primValueAccess);
             return unboxed;
         } else {
             return node;
@@ -766,9 +795,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     protected Node stringConversion(Node node) {
         // For string conversion, see JLS 5.1.11
-        TypeElement stringElement = getTypeElement(String.class);
         if (!TypesUtils.isString(node.getType())) {
-            Node converted = new StringConversionNode(node.getTree(), node, stringElement.asType());
+            Node converted = new StringConversionNode(node.getTree(), node, stringType);
             addToConvertedLookupMap(converted);
             insertNodeAfter(converted, node);
             return converted;
@@ -1248,8 +1276,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(target);
         } else {
-            TypeElement npeElement = getTypeElement(NullPointerException.class);
-            extendWithNodeWithException(target, npeElement.asType());
+            extendWithNodeWithException(target, nullPointerExceptionType);
         }
 
         List<Node> arguments = new ArrayList<>();
@@ -1275,8 +1302,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
         thrownSet.addAll(thrownTypes);
         // Add Throwable to account for unchecked exceptions
-        TypeElement throwableElement = getTypeElement(Throwable.class);
-        thrownSet.add(throwableElement.asType());
+        thrownSet.add(throwableType);
 
         ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
@@ -1393,14 +1419,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         if (tree.getDetail() != null) {
             detail = scan(tree.getDetail(), null);
         }
-        TypeElement assertException = getTypeElement(AssertionError.class);
         AssertionErrorNode assertNode =
-                new AssertionErrorNode(tree, condition, detail, assertException.asType());
+                new AssertionErrorNode(tree, condition, detail, assertionErrorType);
         extendWithNode(assertNode);
         NodeWithExceptionsHolder exNode =
                 extendWithNodeWithException(
-                        new ThrowNode(null, assertNode, env.getTypeUtils()),
-                        assertException.asType());
+                        new ThrowNode(null, assertNode, env.getTypeUtils()), assertionErrorType);
         exNode.setTerminatesExecution(true);
 
         // then branch (nothing happens)
@@ -1434,8 +1458,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 // No NullPointerException can be thrown, use normal node
                 extendWithNode(target);
             } else {
-                TypeElement npeElement = getTypeElement(NullPointerException.class);
-                extendWithNodeWithException(target, npeElement.asType());
+                extendWithNodeWithException(target, nullPointerExceptionType);
             }
 
             // add assignment node
@@ -1572,9 +1595,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             operNode = new IntegerDivisionNode(operTree, targetRHS, value);
 
-                            TypeElement throwableElement =
-                                    getTypeElement(ArithmeticException.class);
-                            extendWithNodeWithException(operNode, throwableElement.asType());
+                            extendWithNodeWithException(operNode, arithmeticExceptionType);
                         } else {
                             operNode = new FloatingDivisionNode(operTree, targetRHS, value);
                         }
@@ -1583,9 +1604,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             operNode = new IntegerRemainderNode(operTree, targetRHS, value);
 
-                            TypeElement throwableElement =
-                                    getTypeElement(ArithmeticException.class);
-                            extendWithNodeWithException(operNode, throwableElement.asType());
+                            extendWithNodeWithException(operNode, arithmeticExceptionType);
                         } else {
                             operNode = new FloatingRemainderNode(operTree, targetRHS, value);
                         }
@@ -1787,9 +1806,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             r = new IntegerDivisionNode(tree, left, right);
 
-                            TypeElement throwableElement =
-                                    getTypeElement(ArithmeticException.class);
-                            extendWithNodeWithException(r, throwableElement.asType());
+                            extendWithNodeWithException(r, arithmeticExceptionType);
                         } else {
                             r = new FloatingDivisionNode(tree, left, right);
                         }
@@ -1798,9 +1815,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             r = new IntegerRemainderNode(tree, left, right);
 
-                            TypeElement throwableElement =
-                                    getTypeElement(ArithmeticException.class);
-                            extendWithNodeWithException(r, throwableElement.asType());
+                            extendWithNodeWithException(r, arithmeticExceptionType);
                         } else {
                             r = new FloatingRemainderNode(tree, left, right);
                         }
@@ -2307,9 +2322,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         // Distinguish loops over Iterables from loops over arrays.
 
-        TypeElement iterableElement = getTypeElement(Iterable.class);
-        TypeMirror iterableType = types.erasure(iterableElement.asType());
-
         VariableTree variable = tree.getVariable();
         VariableElement variableElement = TreeUtils.elementFromDeclaration(variable);
         ExpressionTree expression = tree.getExpression();
@@ -2513,8 +2525,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             arrayAccessNode.setInSource(false);
             extendWithNode(arrayAccessNode);
             translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-            Element npeElement = getTypeElement(NullPointerException.class);
-            extendWithNodeWithException(arrayAccessNode, npeElement.asType());
+            extendWithNodeWithException(arrayAccessNode, nullPointerExceptionType);
 
             assert statement != null;
             scan(statement, p);
@@ -2727,10 +2738,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
         Node arrayAccess = new ArrayAccessNode(tree, array, index);
         extendWithNode(arrayAccess);
-        Element aioobeElement = getTypeElement(ArrayIndexOutOfBoundsException.class);
-        extendWithNodeWithException(arrayAccess, aioobeElement.asType());
-        Element npeElement = getTypeElement(NullPointerException.class);
-        extendWithNodeWithException(arrayAccess, npeElement.asType());
+        extendWithNodeWithException(arrayAccess, arrayIndexOutOfBoundsExceptionType);
+        extendWithNodeWithException(arrayAccess, nullPointerExceptionType);
         return arrayAccess;
     }
 
@@ -2863,8 +2872,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
         thrownSet.addAll(thrownTypes);
         // Add Throwable to account for unchecked exceptions
-        TypeElement throwableElement = getTypeElement(Throwable.class);
-        thrownSet.add(throwableElement.asType());
+        thrownSet.add(throwableType);
 
         extendWithNodeWithExceptions(node, thrownSet);
 
@@ -2955,8 +2963,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(node);
         } else {
-            TypeElement npeElement = getTypeElement(NullPointerException.class);
-            extendWithNodeWithException(node, npeElement.asType());
+            extendWithNodeWithException(node, nullPointerExceptionType);
         }
 
         return node;
@@ -3132,7 +3139,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
                 scan(finallyBlock, p);
 
-                TypeMirror throwableType = getTypeElement(Throwable.class).asType();
                 NodeWithExceptionsHolder throwing =
                         extendWithNodeWithException(
                                 new MarkerNode(
@@ -3319,9 +3325,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         final Node operand = scan(tree.getExpression(), p);
         final TypeMirror type = TreeUtils.typeOf(tree.getType());
         final Node node = new TypeCastNode(tree, operand, type, types);
-        final TypeElement cceElement = getTypeElement(ClassCastException.class);
 
-        extendWithNodeWithException(node, cceElement.asType());
+        extendWithNodeWithException(node, classCastExceptionType);
         return node;
     }
 
@@ -3645,12 +3650,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
-     * Returns the TypeElement for the given class.
+     * Returns the TypeMirror for the given class.
      *
      * @param clazz a class
-     * @return the TypeElement for the class
+     * @return the TypeMirror for the class
      */
-    private TypeElement getTypeElement(Class<?> clazz) {
-        return elements.getTypeElement(clazz.getCanonicalName());
+    private TypeMirror getTypeMirror(Class<?> clazz) {
+        return TypesUtils.typeFromClass(clazz, types, elements);
     }
 }
