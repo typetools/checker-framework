@@ -3656,6 +3656,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return the TypeMirror for the class
      */
     private TypeMirror getTypeMirror(Class<?> clazz) {
-        return elements.getTypeElement(clazz.getCanonicalName()).asType();
+        return TypesUtils.typeFromClass(clazz, types, elements);
     }
 }
