@@ -49,12 +49,12 @@ import java.lang.annotation.*;
  *                    {@code @Untainted} MyStringBuffer
  * </pre>
  *
- * <p>This annotation may not be written on the same class as {@code NoQualifierParameter} for the
- * same hierarchy.
+ * <p>When a class is {@code @HasQualifierParameter}, all its subclasses must be as well.
  *
- * <p>When {@code @HasQualifierParameter} is written on a package, it is equivalent to writing it on
- * each class in that package with the same arguments, including classes in sub-packages. It can be
- * disabled on a specific class by writing {@code @NoQualifierParameter} on that class.
+ * <p>When {@code @HasQualifierParameter} is written on a package, it is equivalent to writing that
+ * annotation on each class in the package or in a sub-package. It can be disabled on a specific
+ * class by writing {@code @NoQualifierParameter} on that class. This annotation may not be written
+ * on the same class as {@code NoQualifierParameter} for the same hierarchy.
  *
  * @see NoQualifierParameter
  */

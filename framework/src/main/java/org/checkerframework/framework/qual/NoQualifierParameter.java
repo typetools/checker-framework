@@ -17,6 +17,9 @@ import java.lang.annotation.Target;
  * parameters. This annotation may not be written on the same class as {@code HasQualifierParameter}
  * for the same hierarchy.
  *
+ * <p>It is an error for a superclass to be {@code @HasQualifierParameter} but a subclass to be
+ * {@code @NoQualifierParameter} for the same hierarchy.
+ *
  * @see HasQualifierParameter
  */
 @Documented
