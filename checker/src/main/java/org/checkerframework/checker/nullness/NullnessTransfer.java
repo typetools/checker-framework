@@ -256,7 +256,7 @@ public class NullnessTransfer
      * Returns true if there is an occurrence of @PolyNull that is not at the top level.
      *
      * @param t a type
-     * @returns true if there is an occurrence of @PolyNull that is not at the top level
+     * @return true if there is an occurrence of @PolyNull that is not at the top level
      */
     private boolean containsPolyNullNotAtTopLevel(AnnotatedTypeMirror t) {
         switch (t.getKind()) {
