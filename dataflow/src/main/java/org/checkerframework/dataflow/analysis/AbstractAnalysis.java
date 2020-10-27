@@ -26,7 +26,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Implementation of common features for {@link BackwardAnalysisImpl} and {@link
@@ -257,9 +256,6 @@ public abstract class AbstractAnalysis<
      * @return the set of corresponding nodes to the given tree
      */
     public @Nullable Set<Node> getNodesForTree(Tree t) {
-        System.out.printf(
-                "getNodesForTree(%s) cfg=%s%n",
-                TreeUtils.toStringTruncated(t, 60), (cfg == null) ? "null" : "non-null");
         if (cfg == null) {
             return null;
         }

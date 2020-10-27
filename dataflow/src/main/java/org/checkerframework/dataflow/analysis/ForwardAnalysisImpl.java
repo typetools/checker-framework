@@ -4,6 +4,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -377,10 +378,7 @@ public class ForwardAnalysisImpl<
                 }
                 return result;
             default:
-                throw new Error(
-                        String.format(
-                                "Unexpected AST (kind=%s): %s",
-                                underlyingAST.getKind(), underlyingAST));
+                return Collections.emptyList();
         }
     }
 

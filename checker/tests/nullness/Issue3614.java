@@ -66,4 +66,36 @@ public class Issue3614 {
             return b0 + b1;
         }
     }
+
+    public static @PolyNull Integer plus3(@PolyNull Integer a, @PolyNull Integer b) {
+        if (a == null) {
+            return null;
+        }
+        if (b == null) {
+            return null;
+        }
+        return a + b;
+    }
+
+    public static @PolyNull Integer plus1Err(@PolyNull Integer b0, @PolyNull Integer b1) {
+        // :: error: (return.type.incompatible) :: error: (unboxing.of.nullable)
+        return (b0 == null) ? null : (b0 + b1);
+    }
+
+    public static @PolyNull Integer plus2Err(@PolyNull Integer b0, @PolyNull Integer b1) {
+        if (b0 == null) {
+            return null;
+        } else {
+            // :: error: (unboxing.of.nullable)
+            return b0 + b1;
+        }
+    }
+
+    public static @PolyNull Integer plus3Err(@PolyNull Integer a, @PolyNull Integer b) {
+        if (a == null) {
+            return null;
+        }
+        // :: error: (unboxing.of.nullable)
+        return a + b;
+    }
 }

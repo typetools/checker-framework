@@ -2,13 +2,12 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -31,6 +30,7 @@ import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -44,7 +44,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Transfer function for the non-null type system. Performs the following refinements:
@@ -199,22 +198,17 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
-                MethodTree methodTree =
-                        TreeUtils.enclosingMethod(
-                                nullnessTypeFactory.getPath(secondNode.getTree()));
-                /*
-                  ExecutableElement methodElem =
+                ExecutableElement methodElem =
                         TreeUtils.elementFromDeclaration(
                                 analysis.getContainingMethod(secondNode.getTree()));
-                */
                 if (notEqualTo) {
                     elseStore.setPolyNullNull(true);
-                    if (polyNullIsNonNull(methodTree, thenStore)) {
+                    if (polyNullIsNonNull(methodElem, thenStore)) {
                         thenStore.setPolyNullNonNull(true);
                     }
                 } else {
                     thenStore.setPolyNullNull(true);
-                    if (polyNullIsNonNull(methodTree, elseStore)) {
+                    if (polyNullIsNonNull(methodElem, elseStore)) {
                         elseStore.setPolyNullNonNull(true);
                     }
                 }
@@ -231,30 +225,20 @@ public class NullnessTransfer
      * Returns true if every formal parameter that is declared as @PolyNull is currently known to be
      * non-null.
      *
+     * @param method a method
      * @param s a store
      * @return true if every formal parameter declared as @PolyNull is non-null
      */
-    private boolean polyNullIsNonNull(MethodTree method, NullnessStore s) {
-        System.out.printf(
-                "polyNullIsNonNull(%s [%s])%n",
-                TreeUtils.toStringTruncated(method, 60), method.getClass());
-        System.out.printf("  store %s%n", UtilPlume.indentLinesExceptFirst(2, s));
+    private boolean polyNullIsNonNull(ExecutableElement method, NullnessStore s) {
         // No need to check the receiver, which is always non-null.
-        for (VariableTree var : method.getParameters()) {
-            System.out.printf("  var %s [%s]%n", TreeUtils.toStringOneLine(var), var.getClass());
-            // TypeMirror varType = ElementUtils.getType(var);
-            // System.out.printf("    type %s [%s]%n", varType, varType.getClass());
-
-            Set<Node> varNodes = analysis.getNodesForTree(var);
-            System.out.printf("  varNodes: %s%n", varNodes);
-
-            // need a Node in order to look up in the store.
-            // System.out.printf("  in store: %s%n", s.getValue(var));
+        for (VariableElement var : method.getParameters()) {
+            LocalVariable localVar = new LocalVariable(var);
+            NullnessValue v = s.getValue(localVar);
+            if (!AnnotationUtils.containsSameByName(v.getAnnotations(), NONNULL)) {
+                return false;
+            }
         }
-        return false;
-
-        // else:
-        // return true;
+        return true;
     }
 
     @Override
