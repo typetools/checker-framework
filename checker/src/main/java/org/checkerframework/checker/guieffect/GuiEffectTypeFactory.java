@@ -438,11 +438,6 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                         && getDeclAnnotation(overridingMethod, SafeEffect.class) == null;
         boolean isPolyUI = getDeclAnnotation(overridingMethod, PolyUIEffect.class) != null;
 
-        // TODO: We must account for @UI and @AlwaysSafe annotations for extends
-        // and implements clauses, and do the proper substitution of @Poly effects and quals!
-        // List<? extends TypeMirror> interfaces = declaringType.getInterfaces();
-        TypeMirror superclass = declaringType.getSuperclass();
-
         // Check for invalid overrides.
         // AnnotatedTypes.overriddenMethods retrieves all transitive definitions overridden by this
         // declaration
