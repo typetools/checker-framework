@@ -1,12 +1,12 @@
 Version 3.7.1, November 2, 2020
 
+New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run
+whole-program inference using the -Ainfer=stubs mode.  These scripts
+replace infer-and-annotate.sh, which has been removed.
+
 The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
 
 The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspecified.
-
-New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program inference
-using the -Ainfer=stubs mode. Use these scripts rather than infer-and-annotate.sh unless
--Ainfer=jaifs is required.
 
 Implementation details:
 

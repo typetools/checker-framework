@@ -2,58 +2,9 @@
 
 # This script runs the Checker Framework's whole-program inference on each of a list of projects.
 
-### Usage
-#
-# See the README.md file that accompanies this script.
-#
-
-### Dependencies:
-#
-# - JAVA8_HOME environment variable must point to a Java 8 JDK
-# - JAVA11_HOME environment variable must point to a Java 11 JDK
-# - CHECKERFRAMEWORK environment variable must point to a built copy of the Checker Framework
-# - Other dependencies: python2.7 (for dljc), awk, git, mvn, gradle, wget, curl
-#
-
-### Required arguments:
-#
-# -o outdir : run the experiment in the ./outdir directory, and place the
-#             results in the ./outdir-results directory. Both will be created
-#             if they do not exist.
-#
-# -i infile : read the list of repositories to use from the file $infile. Each
-#             line should have 2 or 3 elements:
-#              * The URL of the git repository on GitHub. The URL must be of the
-#                form:  https://github.com/username/repository .  The script is
-#                reliant on the number of slashes, so excluding https:// is an
-#                error.
-#              * The commit hash to use, separated by whitespace.
-#              * if the repository's owner is the user specified by
-#                the -u flag, the original (upstream) GitHub
-#                repository.  Its only use is to be made an upstream
-#                named "unannotated".
-
-
-### Optional arguments:
-#
-# -u user : the GitHub owner for repositories that have
-#           been forked and modified. These repositories must have a third entry
-#           in the infile indicating their origin. Default is "$USER".
-#
-# -t timeout : the timeout for running the checker (via WPI) on a single project, in seconds
-#
-# Any arguments that follow these arguments (and are separated by a
-# literal "--") are passed directly to DLJC without modification. See
-# the help text of DLJC (e.g. clone
-# https://github.com/kelloggm/do-like-javac and run
-# `python2 dljc --help`) for an explanation of these arguments.
-#
-# At least one such argument is required: --checker, which tells DLJC
-# what typechecker to run. A literal "--" argument must be given
-# before the DLJC arguments (if there are any) to indicate that the
-# remaining arguments should be passed to DLJC rather than interpreted
-# as command line options for this script.
-#
+# For usage and requirements, see the "Whole-program inference"
+# section of the Checker Framework manual:
+# https://checkerframework.org/manual/#whole-program-inference
 
 while getopts "o:i:u:t:" opt; do
   case $opt in
@@ -185,7 +136,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -u "${GITHUB_USER}" -t "${TIMEOUT}" -- "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
