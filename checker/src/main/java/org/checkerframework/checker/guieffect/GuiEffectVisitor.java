@@ -369,8 +369,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
-            System.err.println();
-            System.err.println("Visiting method " + methElt);
+            System.err.println(
+                    "Visiting method " + methElt + " of " + methElt.getEnclosingElement());
         }
 
         // Check for conflicting (multiple) annotations
