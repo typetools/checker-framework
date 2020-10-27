@@ -777,7 +777,7 @@ public abstract class CFAbstractTransfer<
      * twice with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
      *
      * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
-     * splitAssignments} should be called, and the new type should be inserted into the store for
+     * #splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
      * @param res the previous result

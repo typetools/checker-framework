@@ -22,6 +22,7 @@ public class Unknown extends Receiver {
         return obj == this;
     }
 
+    // Overridden to avoid an error "overrides equals, but does not override hashCode"
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
