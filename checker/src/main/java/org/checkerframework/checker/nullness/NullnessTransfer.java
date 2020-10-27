@@ -286,6 +286,12 @@ public class NullnessTransfer
                 }
                 return false;
 
+            case WILDCARD:
+            case TYPEVAR:
+                // If the wildcard or type variable cannot be instantiated by a collection or array
+                // type, it would be OK to return false.
+                return true;
+
             default:
                 throw new BugInCF("Unexpected TypeKind %s for %s", t.getKind(), t);
         }
