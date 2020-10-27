@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -344,6 +345,7 @@ public class ForwardAnalysisImpl<
         worklist.add(entry);
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
         List<LocalVariableNode> parameters = getParameters(underlyingAST);
+        assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
@@ -356,6 +358,7 @@ public class ForwardAnalysisImpl<
      * @param underlyingAST the AST for the method
      * @return the formal parameters for the method
      */
+    @SideEffectFree
     private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
         List<LocalVariableNode> result;
         switch (underlyingAST.getKind()) {

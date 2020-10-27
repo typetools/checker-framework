@@ -98,4 +98,20 @@ public class Issue3614 {
         // :: error: (unboxing.of.nullable)
         return a + b;
     }
+
+    public static @PolyNull /*("elt")*/ String @PolyNull /*("container")*/ [] typeArray(
+            @PolyNull /*("elt")*/ Object @PolyNull /*("container")*/ [] seq) {
+        if (seq == null) {
+            return null;
+        }
+        @PolyNull /*("elt")*/ String[] retval = new @PolyNull /*("elt")*/ String[seq.length];
+        for (int i = 0; i < seq.length; i++) {
+            if (seq[i] == null) {
+                retval[i] = null;
+            } else {
+                retval[i] = seq[i].getClass().toString();
+            }
+        }
+        return retval;
+    }
 }

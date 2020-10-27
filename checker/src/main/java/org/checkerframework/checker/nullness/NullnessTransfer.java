@@ -35,6 +35,7 @@ import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -65,6 +66,8 @@ public class NullnessTransfer
     protected final AnnotationMirror NONNULL;
     /** The @{@link Nullable} annotation. */
     protected final AnnotationMirror NULLABLE;
+    /** The @{@link PolyNull} annotation. */
+    protected final AnnotationMirror POLYNULL;
 
     /**
      * Java's Map interface.
@@ -95,6 +98,7 @@ public class NullnessTransfer
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+        POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
 
         MAP_TYPE =
                 (AnnotatedDeclaredType)
@@ -232,13 +236,59 @@ public class NullnessTransfer
     private boolean polyNullIsNonNull(ExecutableElement method, NullnessStore s) {
         // No need to check the receiver, which is always non-null.
         for (VariableElement var : method.getParameters()) {
-            LocalVariable localVar = new LocalVariable(var);
-            NullnessValue v = s.getValue(localVar);
-            if (!AnnotationUtils.containsSameByName(v.getAnnotations(), NONNULL)) {
+            AnnotatedTypeMirror varType = atypeFactory.fromElement(var);
+
+            if (containsPolyNullNotAtTopLevel(varType)) {
                 return false;
+            }
+
+            if (varType.hasAnnotation(POLYNULL)) {
+                NullnessValue v = s.getValue(new LocalVariable(var));
+                if (!AnnotationUtils.containsSameByName(v.getAnnotations(), NONNULL)) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    /**
+     * Returns true if there is an occurrence of @PolyNull that is not at the top level.
+     *
+     * @param t a type
+     * @returns true if there is an occurrence of @PolyNull that is not at the top level
+     */
+    private boolean containsPolyNullNotAtTopLevel(AnnotatedTypeMirror t) {
+        switch (t.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                // primitive types
+                return false;
+
+            case ARRAY:
+                AnnotatedArrayType at = (AnnotatedArrayType) t;
+                AnnotatedTypeMirror component = at.getComponentType();
+                return component.hasAnnotation(POLYNULL)
+                        || containsPolyNullNotAtTopLevel(component);
+
+            case DECLARED:
+                AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
+                for (AnnotatedTypeMirror typeArg : dt.getTypeArguments()) {
+                    if (typeArg.hasAnnotation(POLYNULL) || containsPolyNullNotAtTopLevel(typeArg)) {
+                        return true;
+                    }
+                }
+                return false;
+
+            default:
+                throw new BugInCF("Unexpected TypeKind %s for %s", t.getKind(), t);
+        }
     }
 
     @Override
