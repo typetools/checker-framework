@@ -6,7 +6,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
- * object comparison and a {@link HashSet} for backing storage.
+ * object comparison and a {@link LinkedHashSet} for backing storage.
  */
 public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
