@@ -1,6 +1,12 @@
 package org.checkerframework.framework.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * This is a declaration annotation that applies to type declarations and packages. On a type, it
@@ -49,12 +55,12 @@ import java.lang.annotation.*;
  *                    {@code @Untainted} MyStringBuffer
  * </pre>
  *
- * <p>When a class is {@code @HasQualifierParameter}, all its subclasses must be as well.
+ * <p>When a class is {@code @HasQualifierParameter}, all its subclasses are as well.
  *
  * <p>When {@code @HasQualifierParameter} is written on a package, it is equivalent to writing that
  * annotation on each class in the package or in a sub-package. It can be disabled on a specific
- * class by writing {@code @NoQualifierParameter} on that class. This annotation may not be written
- * on the same class as {@code NoQualifierParameter} for the same hierarchy.
+ * class and its subclasses by writing {@code @NoQualifierParameter} on that class. This annotation
+ * may not be written on the same class as {@code NoQualifierParameter} for the same hierarchy.
  *
  * @see NoQualifierParameter
  */
