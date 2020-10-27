@@ -2,12 +2,10 @@ package org.checkerframework.framework.type.poly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * Interface to implement qualifier polymorphism.
@@ -17,55 +15,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * @see DefaultQualifierPolymorphism
  */
 public interface QualifierPolymorphism {
-
-    /**
-     * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
-     *     otherwise return null
-     */
-    static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
-        if (qual == null) {
-            return null;
-        }
-        Element qualElt = qual.getAnnotationType().asElement();
-        for (AnnotationMirror am : qualElt.getAnnotationMirrors()) {
-            if (AnnotationUtils.areSameByClass(am, PolymorphicQualifier.class)) {
-                return am;
-            }
-        }
-        return null;
-    }
-
-    /** @return true if {@code qual} has the {@link PolymorphicQualifier} meta-annotation. */
-    static boolean hasPolymorphicQualifier(AnnotationMirror qual) {
-        return getPolymorphicQualifier(qual) != null;
-    }
-
-    /**
-     * If {@code qual} is a polymorphic qualifier, return the class specified by the {@link
-     * PolymorphicQualifier} meta-annotation on the polymorphic qualifier is returned. Otherwise,
-     * return null.
-     *
-     * <p>This value identifies the qualifier hierarchy to which this polymorphic qualifier belongs.
-     * By convention, it is the top qualifier of the hierarchy. Use of {@code
-     * PolymorphicQualifier.class} is discouraged, because it can lead to ambiguity if used for
-     * multiple type systems.
-     *
-     * @param qual an annotation
-     * @return the class specified by the {@link PolymorphicQualifier} meta-annotation on {@code
-     *     qual}, if {@code qual} is a polymorphic qualifier; otherwise, null.
-     * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
-     */
-    static Name getPolymorphicQualifierElement(AnnotationMirror qual) {
-        AnnotationMirror poly = getPolymorphicQualifier(qual);
-
-        // System.out.println("poly: " + poly + " pq: " +
-        //     PolymorphicQualifier.class.getCanonicalName());
-        if (poly == null) {
-            return null;
-        }
-        Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
-        return ret;
-    }
 
     /**
      * Resolves polymorphism annotations for the given type.
@@ -91,4 +40,13 @@ public interface QualifierPolymorphism {
      */
     void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference);
+
+    /**
+     * Resolves polymorphism annotations for the given field type.
+     *
+     * @param field field element to whose poly annotation must be resolved
+     * @param owner the type of the object whose field is being typed
+     * @param type type of the field which still has poly annotations
+     */
+    void resolve(VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type);
 }

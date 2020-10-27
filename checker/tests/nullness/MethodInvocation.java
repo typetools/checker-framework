@@ -15,7 +15,7 @@ class MethodInvocation {
 
     public MethodInvocation(boolean p) {
         // :: error: (method.invocation.invalid)
-        a(); // still not okay to be committed
+        a(); // still not okay to be initialized
         s = "abc";
     }
 

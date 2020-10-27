@@ -4,7 +4,7 @@
 // an annotation from the main checker.
 
 import org.checkerframework.common.value.qual.IntVal;
-import testlib.wholeprograminference.qual.Sibling1;
+import org.checkerframework.framework.testchecker.wholeprograminference.qual.Sibling1;
 
 class ValueCheck {
 

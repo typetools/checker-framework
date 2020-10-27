@@ -442,7 +442,6 @@ class ChapterExamples {
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {
-            // :: error: (assignment.type.incompatible)
             d = b;
 
             // Expected, since b cannot be @GuardedBy("lock") since it is a boxed primitive.
@@ -464,7 +463,6 @@ class ChapterExamples {
             c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
         }
 
-        // :: error: (assignment.type.incompatible)
         a = b;
         b = c; // OK
     }

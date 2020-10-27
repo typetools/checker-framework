@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
@@ -24,7 +24,13 @@ import org.checkerframework.javacutil.BugInCF;
  */
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
-    /** @return true if element is a TYPE_PARAMETER */
+    /**
+     * Returns true if element is a TYPE_PARAMETER.
+     *
+     * @param typeMirror ignored
+     * @param element the element that might be a TYPE_PARAMETER
+     * @return true if element is a TYPE_PARAMETER
+     */
     public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER;
     }
@@ -32,10 +38,18 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     protected final AnnotatedTypeVariable typeParam;
     protected final AnnotatedTypeFactory typeFactory;
 
-    /** @return target type that represents the location of the lower bound of element */
+    /**
+     * Returns target type that represents the location of the lower bound of element.
+     *
+     * @return target type that represents the location of the lower bound of element
+     */
     protected abstract TargetType lowerBoundTarget();
 
-    /** @return target type that represents the location of the upper bound of element */
+    /**
+     * Returns target type that represents the location of the upper bound of element.
+     *
+     * @return target type that represents the location of the upper bound of element
+     */
     protected abstract TargetType upperBoundTarget();
 
     TypeParamElementAnnotationApplier(
@@ -47,13 +61,20 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         this.typeFactory = typeFactory;
     }
 
-    /** @return the lower bound and upper bound targets */
+    /**
+     * Returns the lower bound and upper bound targets.
+     *
+     * @return the lower bound and upper bound targets
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {lowerBoundTarget(), upperBoundTarget()};
     }
 
     /**
+     * Returns the parameter_index of anno's TypeAnnotationPosition which will actually point to the
+     * type parameter's index in its enclosing type parameter list.
+     *
      * @return the parameter_index of anno's TypeAnnotationPosition which will actually point to the
      *     type parameter's index in its enclosing type parameter list
      */
@@ -113,15 +134,14 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
             if (upperBoundType.getKind() == TypeKind.INTERSECTION) {
 
-                final List<? extends AnnotatedTypeMirror> intersectionTypes =
-                        upperBoundType.directSuperTypes();
-                final int boundIndexOffset =
-                        ElementAnnotationUtil.getBoundIndexOffset(intersectionTypes);
+                final List<AnnotatedTypeMirror> bounds =
+                        ((AnnotatedIntersectionType) upperBoundType).getBounds();
+                final int boundIndexOffset = ElementAnnotationUtil.getBoundIndexOffset(bounds);
 
                 for (final TypeCompound anno : upperBounds) {
                     final int boundIndex = anno.position.bound_index + boundIndexOffset;
 
-                    if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
+                    if (boundIndex < 0 || boundIndex > bounds.size()) {
                         throw new BugInCF(
                                 "Invalid bound index on element annotation ( "
                                         + anno
@@ -137,8 +157,9 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                                         + " ) ");
                     }
 
-                    intersectionTypes.get(boundIndex).replaceAnnotation(anno); // TODO: WHY NOT ADD?
+                    bounds.get(boundIndex).replaceAnnotation(anno); // TODO: WHY NOT ADD?
                 }
+                ((AnnotatedIntersectionType) upperBoundType).copyIntersectionBoundAnnotations();
 
             } else {
                 upperBoundType.addAnnotations(upperBounds);
@@ -181,13 +202,13 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         if (anno.position.type == upperBoundTarget()) {
 
             if (upperBoundType.getKind() == TypeKind.INTERSECTION) {
-                final List<? extends AnnotatedTypeMirror> intersectionTypes =
-                        upperBoundType.directSuperTypes();
+                final List<AnnotatedTypeMirror> bounds =
+                        ((AnnotatedIntersectionType) upperBoundType).getBounds();
                 final int boundIndex =
                         anno.position.bound_index
-                                + ElementAnnotationUtil.getBoundIndexOffset(intersectionTypes);
+                                + ElementAnnotationUtil.getBoundIndexOffset(bounds);
 
-                if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
+                if (boundIndex < 0 || boundIndex > bounds.size()) {
                     throw new BugInCF(
                             "Invalid bound index on element annotation ( "
                                     + anno
@@ -198,7 +219,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                                     + typeParam.getUpperBound()
                                     + " )");
                 }
-                addAnnotationToMap(intersectionTypes.get(boundIndex), anno, typeToAnnotations);
+                addAnnotationToMap(bounds.get(boundIndex), anno, typeToAnnotations);
 
             } else {
                 addAnnotationToMap(upperBoundType, anno, typeToAnnotations);
@@ -208,7 +229,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
             addAnnotationToMap(typeParam.getLowerBound(), anno, typeToAnnotations);
         }
 
-        for (Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
+        for (Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
                 typeToAnnotations.entrySet()) {
             ElementAnnotationUtil.annotateViaTypeAnnoPosition(
                     typeToAnno.getKey(), typeToAnno.getValue());

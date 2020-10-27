@@ -13,7 +13,7 @@ public final class String {
      String(@Nullable String arg0);
      void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3);
 // Used to test stub file warnings.
-     void thisMethodIsNotReal(String s);
+     void notReal(String s);
 }
 // The rest of these are used to test stub file warnings.
 public class NotARealClass{}

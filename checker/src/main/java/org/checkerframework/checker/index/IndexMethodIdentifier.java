@@ -77,8 +77,11 @@ public class IndexMethodIdentifier {
     }
 
     /**
-     * @return whether or not {@code tree} is an invocation of a method that returns the length of
-     *     "this"
+     * Returns true if {@code tree} is an invocation of a method that returns the length of "this"
+     *
+     * @param tree a tree
+     * @return true if {@code tree} is an invocation of a method that returns the length of {@code
+     *     this}
      */
     public boolean isLengthOfMethodInvocation(Tree tree) {
         if (tree.getKind() != Kind.METHOD_INVOCATION) {
@@ -110,8 +113,12 @@ public class IndexMethodIdentifier {
     }
 
     /**
-     * @return whether or not {@code tree} is an invocation of a method that returns the length of
-     *     "this"
+     * Returns true if {@code node} is an invocation of a method that returns the length of {@code
+     * this}
+     *
+     * @param node a node
+     * @return true if {@code node} is an invocation of a method that returns the length of {@code
+     *     this}
      */
     public boolean isLengthOfMethodInvocation(Node node) {
         if (node instanceof MethodInvocationNode) {

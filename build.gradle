@@ -2,16 +2,16 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "4.0.4"
+    id "de.undercouch.download" version "4.1.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "1.2.1"
+    id "net.ltgt.errorprone" version "1.3.0"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.0.2' apply false
+    id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.2"
+    id "com.gorylenko.gradle-git-properties" version "2.2.4"
 }
 apply plugin: "de.undercouch.download"
 
@@ -97,11 +97,12 @@ allprojects {
     apply plugin: 'net.ltgt.errorprone'
 
     group 'org.checkerframework'
-    // Increment the minor version rather than just the patch level if:
+    // Increment the minor version (second number) rather than just the patch
+    // level (third number) if:
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.5.0-SNAPSHOT'
+    version '3.7.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -164,7 +165,7 @@ allprojects {
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
                 options.addStringOption('source', '8')
                 // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
-		// on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
                 // options.addBooleanOption('Xwerror', true)
                 options.addStringOption('Xmaxwarns', '99999')
             }
@@ -218,10 +219,44 @@ allprojects {
             options.encoding = 'UTF-8'
             options.fork = true
             if (isJava8) {
-                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+                options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
-            // Don't use error-prone by default
-            options.errorprone.enabled = false
+
+            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // All the classes in checker-qual are also in checker, so they are checked.
+            // TODO: enable Error Prone on test classes.
+            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+                // Error Prone must be available in the annotation processor path
+                options.annotationProcessorPath = configurations.errorprone
+                // Enable Error Prone
+                options.errorprone.enabled = true
+                options.errorprone.disableWarningsInGeneratedCode = true
+                options.errorprone.errorproneArgs = [
+                        // Many compiler classes are interned.
+                        '-Xep:ReferenceEquality:OFF',
+                        // These might be worth fixing.
+                        '-Xep:DefaultCharset:OFF',
+                        // Not useful to suggest Splitter; maybe clean up.
+                        '-Xep:StringSplitter:OFF',
+                        // Too broad, rejects seemingly-correct code.
+                        '-Xep:EqualsGetClass:OFF',
+                        // Not a real problem
+                        '-Xep:MixedMutabilityReturnType:OFF',
+                        // Don't want to add a dependency to ErrorProne.
+                        '-Xep:AnnotateFormatMethod:OFF',
+                        // Warns for every use of "@checker_framework.manual"
+                        '-Xep:InvalidBlockTag:OFF',
+                        // @SuppressWarnings doesn't work: https://github.com/google/error-prone/issues/1650
+                        '-Xep:InlineFormatString:OFF',
+                        // -Werror halts the build if Error Prone issues a warning, which ensures that
+                        // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
+                        // stops as soon as it issues one warning, rather than outputting them all.
+                        // https://github.com/google/error-prone/issues/436
+                        '-Werror',
+                ]
+            } else {
+                options.errorprone.enabled = false
+            }
         }
     }
 }
@@ -249,15 +284,16 @@ task version() {
 
 /**
  * Creates a task that runs the checker on the main source set of each subproject. The task is named
- * "check${shortName}", for example "checkPurity" or "checkNullness".
+ * "check${taskName}", for example "checkPurity" or "checkNullness".
+ *
  * @param projectName name of the project
- * @param checker full qualified name of the checker to run
- * @param shortName shorter version of the checker to use to name the task.
+ * @param taskName short name (often the checker name) to use as part of the task name
+ * @param checker fully qualified name of the checker to run
  * @param args list of arguments to pass to the checker
  */
-def createCheckTypeTask(projectName, checker, shortName, args = []) {
-    project("${projectName}").tasks.create(name: "check${shortName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
-        description "Run the ${shortName} Checker on the main sources."
+def createCheckTypeTask(projectName, taskName, checker, args = []) {
+    project("${projectName}").tasks.create(name: "check${taskName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
+        description "Run the ${taskName} Checker on the main sources."
         group 'Verification'
         // Always run the task.
         outputs.upToDateWhen { false }
@@ -270,7 +306,11 @@ def createCheckTypeTask(projectName, checker, shortName, args = []) {
                 '-processor', "${checker}",
                 '-proc:only',
                 '-Xlint:-processing',
-                ]
+                '-Xmaxerrs', '10000',
+                '-Xmaxwarns', '10000',
+                '-ArequirePrefixInWarningSuppressions',
+                '-AwarnUnneededSuppressions',
+        ]
         options.compilerArgs += args
 
         if (isJava8) {
@@ -305,7 +345,11 @@ List<String> getJavaFilesToFormat(projectName) {
     }
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        // If you change this, also change checker/bin-devel/git.pre-commit
+        if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("returnsreceiverdelomboked")
+                && !details.path.contains("build")
+                && details.name.endsWith('java')) {
             javaFiles.add(details.file)
         }
     }
@@ -316,7 +360,7 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    // Collect all java files in jtreg directory
+    // Collect all java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)
@@ -384,7 +428,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:0.3.0"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.0"
 }
 task requireJavadoc(type: JavaExec) {
     description = 'Ensures that Javadoc documentation exists.'
@@ -460,7 +504,7 @@ task getCodeFormatScripts() {
         exec {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
         }
     }
 }
@@ -471,6 +515,8 @@ task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
     if (! new File(formatScriptsHome).exists()) {
+      // There is no support for the --depth argument:
+      // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
       def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
     } else {
       def rgjfGit = Grgit.open(dir: formatScriptsHome)
@@ -492,7 +538,7 @@ task getPlumeScripts() {
         exec {
             workingDir "${plumeScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
         }
     }
 }
@@ -524,9 +570,11 @@ subprojects {
         // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
         // If you update this:
         //  * Temporarily comment out "-Werror" elsewhere in this file
-        //  * Repeatedly run `./gradlew clean runErrorProne` and fix all errors
+        //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.3.4'
+        //  * Don't edit framework/build.gradle to use the same version number
+        //    (it is updated when the annotated version of Guava is updated).
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -583,7 +631,7 @@ subprojects {
     if (!project.name.startsWith('checker-qual')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
-            commandLine "bash", "-c", "find . \\( -name jdk11 \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+            commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
@@ -633,12 +681,22 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // TODO: fix or suppress all not.interned warnings and remove the suppression here.
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.interning.InterningChecker', 'Interning', ['-AsuppressWarnings=not.interned'])
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'Nullness')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.nullness.NullnessChecker', 'WorkingNullness', ['-AskipUses=com.sun.*', '-AskipDefs=org.checkerframework.checker.*|org.checkerframework.common.*|org.checkerframework.framework.*|org.checkerframework.dataflow.cfg.CFGBuilder'])
-        createCheckTypeTask(project.name, 'org.checkerframework.framework.util.PurityChecker', 'Purity')
-        createCheckTypeTask(project.name, 'org.checkerframework.checker.signature.SignatureChecker', 'Signature')
+        // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'Interning',
+            'org.checkerframework.checker.interning.InterningChecker',
+            ['-Astubs=javax-lang-model-element-name.astub'])
+        createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+        createCheckTypeTask(project.name, 'Purity',
+            'org.checkerframework.framework.util.PurityChecker')
+        createCheckTypeTask(project.name, 'Signature',
+            'org.checkerframework.checker.signature.SignatureChecker')
+        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
+        createCheckTypeTask(project.name, 'Nullness',
+            'org.checkerframework.checker.nullness.NullnessChecker',
+            ['-AskipUses=com.sun.*'])
+
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
@@ -702,7 +760,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
@@ -713,7 +771,7 @@ subprojects {
         // Configure JUnit tests
         tasks.withType(Test) {
             if (isJava8) {
-                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+                jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             } else {
                 jvmArgs += [
                         "--illegal-access=warn",
@@ -757,47 +815,9 @@ subprojects {
             }
         }
 
-        // Create a runErrorProne task.
-        tasks.create(name: 'runErrorProne', type: JavaCompile, group: 'Verification') {
-            description 'Run the error-prone compiler on the main sources'
-
-            source = sourceSets.main.java.asFileTree
-            classpath = sourceSets.main.compileClasspath.asFileTree
-            destinationDir = new File("${buildDir}", 'errorprone')
-
-            // Error Prone must be available in the annotation processor path
-            options.annotationProcessorPath = configurations.errorprone
-            // Enable Error Prone
-            options.errorprone.enabled = true
-            options.errorprone.disableWarningsInGeneratedCode = true
-            options.errorprone.errorproneArgs = [
-                    // Many compiler classes are interned.
-                    '-Xep:ReferenceEquality:OFF',
-                    // These might be worth fixing.
-                    '-Xep:DefaultCharset:OFF',
-                    // Not useful to suggest Splitter; maybe clean up.
-                    '-Xep:StringSplitter:OFF',
-                    // Too broad, rejects seemingly-correct code.
-                    '-Xep:EqualsGetClass:OFF',
-                    // Not a real problem
-                    '-Xep:MixedMutabilityReturnType:OFF',
-                    // Don't want to add a dependency to ErrorProne.
-                    '-Xep:AnnotateFormatMethod:OFF',
-                    // -Werror halts the build if Error Prone issues a warning, which ensures that
-                    // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
-                    // stops as soon as it one warning, rather than outputting them all.
-                    // https://github.com/google/error-prone/issues/436
-                    '-Werror',
-            ]
-        }
-
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature', 'checkWorkingNullness')
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
-            }
             if (project.name.is('framework')) {
                 dependsOn('wholeProgramInferenceTests', 'loaderTests')
             }
@@ -808,14 +828,34 @@ subprojects {
                 }
                 dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
+
+            if (project.name.is('dataflow')) {
+                dependsOn('liveVariableTest')
+                dependsOn('issue3447Test')
+            }
+        }
+
+        // Create a typecheck task per project (dogfooding the Checker Framework on itself).
+        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        tasks.create(name: 'typecheck', group: 'Verification') {
+            description 'Run the Checker Framework on itself'
+            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkNullnessOnlyAnnotatedFor')
+            } else {
+                dependsOn('checkNullness')
+            }
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('checkCompilerMessages', 'jtregTests')
+            }
         }
 
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests
+        // allTests = test + nonJunitTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test')
+            dependsOn('nonJunitTests', 'test', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {
@@ -837,9 +877,10 @@ task checkBasicStyle(group: 'Format') {
                                   '.gradle',
                                   '.idea',
                                   '.plume-scripts',
+                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
-                                  'bib',
+                                  'plume-bib',
                                   'bootstrap',
                                   'build',
                                   'jdk',
@@ -869,6 +910,8 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+            'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
+            'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)
@@ -881,11 +924,18 @@ task checkBasicStyle(group: 'Format') {
         boolean failed = false
         tree.visit {
             if (!it.file.isDirectory()) {
-                int isBlankLine
+                boolean blankLineAtEnd = false
+                String fileName = it.file.getName()
+                boolean checkTabs = !fileName.equals("Makefile")
                 it.file.eachLine { line ->
                     if (line.endsWith(' ')) {
                         println("Trailing whitespace: ${it.file.absolutePath}")
                         failed = true
+                    }
+                    if (checkTabs && line.contains('\t')) {
+                        println("Contains tab (use spaces): ${it.file.absolutePath}")
+                        failed = true
+                        checkTabs = false
                     }
                     if (!line.startsWith('\\') &&
                             (line.matches('^.* (else|finally|try)\\{}.*$')
@@ -896,13 +946,13 @@ task checkBasicStyle(group: 'Format') {
                         failed = true
                     }
                     if (line.isEmpty()) {
-                        isBlankLine++;
+                        blankLineAtEnd = true;
                     } else {
-                        isBlankLine = 0;
+                        blankLineAtEnd = false;
                     }
                 }
 
-                if (isBlankLine > 1) {
+                if (blankLineAtEnd) {
                     println("Blank line at end of file: ${it.file.absolutePath}")
                     failed = true
                 }

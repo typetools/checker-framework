@@ -16,8 +16,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -30,6 +28,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -137,6 +137,16 @@ public class NullnessTransfer
         return value;
     }
 
+    @Override
+    protected NullnessValue finishValue(
+            NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
+        value = super.finishValue(value, thenStore, elseStore);
+        if (value != null) {
+            value.isPolyNullNull = thenStore.isPolyNullNull() && elseStore.isPolyNullNull();
+        }
+        return value;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -181,7 +191,11 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
-                thenStore.setPolyNullNull(true);
+                if (notEqualTo) {
+                    elseStore.setPolyNullNull(true);
+                } else {
+                    thenStore.setPolyNullNull(true);
+                }
             }
 
             if (thenStore != null) {

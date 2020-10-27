@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -208,17 +209,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 // getTypeArguments sets the field if it does not already exist.
                 final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
                 if (!typeArgs.isEmpty()) {
-                    sb.append("<");
-
-                    boolean isFirst = true;
+                    StringJoiner sj = new StringJoiner(", ", "<", ">");
                     for (AnnotatedTypeMirror typeArg : typeArgs) {
-                        if (!isFirst) {
-                            sb.append(", ");
-                        }
-                        sb.append(visit(typeArg, visiting));
-                        isFirst = false;
+                        sj.add(visit(typeArg, visiting));
                     }
-                    sb.append(">");
+                    sb.append(sj);
                 }
             }
             return sb.toString();
@@ -230,11 +225,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             StringBuilder sb = new StringBuilder();
 
             boolean isFirst = true;
-            for (AnnotatedDeclaredType adt : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror bound : type.getBounds()) {
                 if (!isFirst) {
                     sb.append(" & ");
                 }
-                sb.append(visit(adt, visiting));
+                sb.append(visit(bound, visiting));
                 isFirst = false;
             }
             return sb.toString();

@@ -12,7 +12,6 @@ import com.sun.tools.classfile.RuntimeAnnotations_attribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
-import org.checkerframework.javacutil.PluginUtil;
 
 public class ReferenceInfoUtil {
 
@@ -123,7 +122,8 @@ class ComparisonException extends RuntimeException {
                 throw new RuntimeException(e);
             }
         }
-        return PluginUtil.joinLines(
+        return String.join(
+                System.lineSeparator(),
                 super.toString(),
                 "\tExpected: "
                         + expected.size()

@@ -9,14 +9,14 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -135,7 +135,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                 (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
         if (s != null && !s.isEmpty()) {
             return LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                    factory.getQualifierHierarchy().findAnnotationInHierarchy(s, factory.UNKNOWN));
+                    factory.getQualifierHierarchy()
+                            .findAnnotationInHierarchy(s, factory.LESS_THAN_UNKNOWN));
         } else {
             return Collections.emptyList();
         }

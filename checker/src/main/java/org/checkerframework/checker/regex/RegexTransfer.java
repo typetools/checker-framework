@@ -3,8 +3,6 @@ package org.checkerframework.checker.regex;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -17,6 +15,8 @@ import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -172,7 +172,6 @@ public class RegexTransfer extends CFTransfer {
      * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
      * @param possibleConstant the Node that might be a constant
      * @param isAlsoEqual whether the comparison operation is strict or reflexive
-     * @param in the TransferInput
      * @param resultIn TransferResult
      * @return the possibly refined output TransferResult
      */

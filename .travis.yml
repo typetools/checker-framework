@@ -24,8 +24,8 @@ env:
     - GROUP=cftests-nonjunit JDKVER=jdk11
     - GROUP=misc JDKVER=jdk8-plus
     - GROUP=misc JDKVER=jdk11-plus
-    - GROUP=cf-inference JDKVER=jdk8
-    - GROUP=cf-inference JDKVER=jdk11
+#    - GROUP=cf-inference JDKVER=jdk8
+#    - GROUP=cf-inference JDKVER=jdk11
     - GROUP=daikon-part1 JDKVER=jdk8
     - GROUP=daikon-part1 JDKVER=jdk11
     - GROUP=daikon-part2 JDKVER=jdk8

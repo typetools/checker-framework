@@ -69,13 +69,21 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         this.index = index;
     }
 
-    /** @return the type_index that should represent supertype */
+    /**
+     * Returns the type_index that should represent supertype.
+     *
+     * @return the type_index that should represent supertype
+     */
     @Override
     public int getElementIndex() {
         return index;
     }
 
-    /** @return the type_index of anno's TypeAnnotationPosition */
+    /**
+     * Returns the type_index of anno's TypeAnnotationPosition.
+     *
+     * @return the type_index of anno's TypeAnnotationPosition
+     */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         int typeIndex = anno.getPosition().type_index;
@@ -85,13 +93,21 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         return typeIndex == 0xffff ? -1 : typeIndex;
     }
 
-    /** @return TargetType.CLASS_EXTENDS */
+    /**
+     * Returns TargetType.CLASS_EXTENDS.
+     *
+     * @return TargetType.CLASS_EXTENDS
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
-    /** @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND */
+    /**
+     * Returns TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND.
+     *
+     * @return TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND
+     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -99,7 +115,11 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         };
     }
 
-    /** @return the TypeCompounds (annotations) of the subclass */
+    /**
+     * Returns the TypeCompounds (annotations) of the subclass.
+     *
+     * @return the TypeCompounds (annotations) of the subclass
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return subclassSymbol.getRawTypeAttributes();

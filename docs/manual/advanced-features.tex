@@ -88,7 +88,7 @@ The examples in this section use the type qualifier hierarchy \code{@A :> @B :> 
 
 A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
 The upper bound of qualifiers used on a given type is specified by annotating the type declaration
-with some qualifier.
+with some qualifier --- that is, by writing an annotation on a class declaration.
 \begin{Verbatim}
   @C class MyClass {}
 \end{Verbatim}
@@ -96,7 +96,9 @@ with some qualifier.
 This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
 default annotations for uses of the type; see Section~\ref{default-for-use})
 
-An upper bound can also be specified by the type-system designer using the meta-annotation
+If it is not possible to annotate the class's definition (e.g., for
+primitives and some library classes),
+the type-system designer can specify an upper bound by using the meta-annotation
 \refqualclass{framework/qual}{UpperBoundFor}.
 
 If no annotation is present on a type declaration and if no \<@UpperBoundFor> mentions the type, then
@@ -114,7 +116,7 @@ There are two exceptions.
   For consistency, users are allowed to write such a type on a local variable declaration.
 \end{itemize}
 
-Due to existing type rules, an expression of type \<A MyClass> can only be used in limited ways.
+Due to existing type rules, an expression of type \<@A MyClass> can only be used in limited ways.
 \begin{itemize}
   \item
   Since every field, formal parameter, and return type of type MyClass (or lower) is annotated as
@@ -128,8 +130,8 @@ Due to existing type rules, an expression of type \<A MyClass> can only be used 
 These operations might refine its type.  If a user wishes to annotate a method that does type refinement,
 its formal parameter must be of illegal type \<@A MyClass>, which requires a warning suppression.
 
-If the framework forbid expressions and local variables from having types inconsistent with the class annotation,
-then important APIs and common coding paradigms will no longer type-check.
+If the framework were to forbid expressions and local variables from having types inconsistent with the class annotation,
+then important APIs and common coding paradigms would no longer type-check.
 
 Consider the annotation
 \begin{Verbatim}
@@ -206,7 +208,7 @@ rules are used in order, until one applies.
 
 \begin{enumerate}
 \item
-  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of \<MyClass>.
   (Section~\ref{default-for-use})
 \item
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
@@ -222,10 +224,9 @@ rules are used in order, until one applies.
 \item
   The qualifier in the meta-annotation \<@DefaultFor> for the location of the use of \<MyClass>.
   These are defaults specified by the type system designer (Section~\ref{creating-typesystem-defaults});
-  this is usually CLIMB-to-top (Section~\ref{climb-to-top}) (CLIMB means \textbf{C}asts, \textbf{L}ocals,
-  \textbf{I}nstanceof, and (some) i\textbf{M}plicit \textbf{B}ounds).
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
-  The qualifier with the meta-annotation \<@DefaultQualifierInHierarchy>
+  The qualifier with the meta-annotation \refqualclass{framework/qual}{DefaultQualifierInHierarchy}.
 \end{enumerate}
 
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
@@ -345,12 +346,13 @@ The type system applies that default qualifier to most but
 not all type uses.  In particular, unless otherwise stated, every type system
 uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is the default for
-the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
-and (some) i\textbf{M}plicit \textbf{B}ounds.
+the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals,
+and (some) \textbf{Im}plicit \textbf{B}ounds.
 For example, when the user writes an unqualified type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
 hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
+(Casts are treated a bit specially; see below.)
 
 % TODO:  Add wildcard bounds to the set of type-refined locations?
 % Especially in light of
@@ -382,12 +384,11 @@ exceptions of arbitrary qualified types can be thrown and the Checker Framework
 does not provide run-time checks.
 
 \item
-Cast and instanceof types
-are given the same type as their argument expression.  This has the same
-effect as if they were given the
+Cast types are defaulted to the same type as their argument expression.
+This has the same effect as if they were given the
 top type and then flow-sensitively refined to the type of their argument.
 However, note that programmer-written type qualifiers are \emph{not}
-refined.
+refined, so writing the top annotation is not the same as writing no annotation.
 % Programmer-written type qualifiers could be refined, but it has never
 % been a priority.  The code that defaults casts in this manner predates
 % the dataflow framework and we never reimplemented casts in the dataflow
@@ -447,17 +448,18 @@ the CLIMB-to-top rule.
 
 In certain situations, it would be convenient for an annotation on a
 superclass member to be automatically inherited by subclasses that override
-it.  Such a feature would reduce annotation effort, but it would also reduce program
+it.  (An example is that programmers must add `@Nullable` to the formal
+parameter type of every implementation of the `equals()` method.)
+Such a feature would reduce annotation effort, but it would also reduce program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.
+feature.  In the future, this feature may be added.
 
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-
 Computation is necessary because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
@@ -465,9 +467,6 @@ annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
 annotations on overridden implementations in supertypes.  In each case, an
 error would be thrown if no such annotations existed.
-
-In the future, this feature may be added optionally, and each type-checker
-implementation can enable it if desired.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -1140,7 +1139,9 @@ expression as an argument include:
 \item \refqualclass{checker/lock/qual}{Holding}
 \end{itemize}
 
-The set of permitted expressions is a subset of all Java expressions:
+The set of permitted expressions is a subset of all Java expressions,
+with a few extensions, formal parameters like \<\#1> and (for some type
+systems) \code{<self>}.
 
 \begin{itemize}
 \item
@@ -1246,19 +1247,11 @@ The set of permitted expressions is a subset of all Java expressions:
 
 
 \textbf{Limitations:}
-The following Java expressions may not currently be written:
-% The Checker Framework is best at reasoning about Java expressions that
-% are variable references, but these expressions are not.
-\begin{itemize}
-\item String concatenation expressions.
-\item Mathematical operators (plus, minus, division, ...).
-\item Comparisons (equality, less than, etc.).
-\end{itemize}
-
-Additionally, it is not possible to write
-quantification over all array components (e.g. to express that all
+It is not possible to write a
+quantification over all array components (e.g., to express that all
   array elements are non-null).  There is no such Java expression, but it
   would be useful when writing specifications.
+
 
 \sectionAndLabel{Field invariants}{field-invariants}
 
@@ -1509,20 +1502,20 @@ class @Marsupial-Animal {
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
-%  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
-%  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-%  LocalWords:  computeValue AsuggestPureMethods Instanceof arg myInt Anno
-%  LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit instanceof m2
-%  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
-%  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
-%  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
-%  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
-%%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
-%%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
-%%  LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
+% LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
+% LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
+% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno
+% LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
+% LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
+% LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
+% LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
+% LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
+% LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
+% LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
+% LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
+% LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
 % LocalWords:  EnsuresKeyFor EnsuresKeyForIf
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
-%%  LocalWords:  Signedness MonotonicNonNull UpperBoundFor
+% LocalWords:  Signedness MonotonicNonNull UpperBoundFor
 % LocalWords:  getTypeDeclarationBounds identityHashCode

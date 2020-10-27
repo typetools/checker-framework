@@ -2,7 +2,7 @@ package org.checkerframework.framework.test.diagnostics;
 
 import java.util.List;
 
-/** Represents a list of TestDiagnostics, which was read from a file. */
+/** Represents a list of TestDiagnostics, which was read from a one line of a file. */
 public class TestDiagnosticLine {
     private final String filename;
     private final long lineNumber;
@@ -34,15 +34,6 @@ public class TestDiagnosticLine {
 
     public String getOriginalLine() {
         return originalLine;
-    }
-
-    /**
-     * @return a String representation of how this diagnostic should appear in source. This may
-     *     differ from the original line if there was no original line, the original line had
-     *     extraneous whitespace.
-     */
-    public String asSourceString() {
-        return "// :: " + String.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
     }
 
     public List<TestDiagnostic> getDiagnostics() {

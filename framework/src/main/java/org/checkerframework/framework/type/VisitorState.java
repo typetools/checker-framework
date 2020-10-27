@@ -24,7 +24,7 @@ public class VisitorState {
     private MethodTree mt;
 
     /** The assignment context is a tree as well as its type. */
-    private Pair<Tree, AnnotatedTypeMirror> assignmentcontext;
+    private Pair<Tree, AnnotatedTypeMirror> assignmentContext;
 
     /** The visitor's current tree path. */
     private TreePath path;
@@ -49,8 +49,13 @@ public class VisitorState {
         this.mt = mt;
     }
 
-    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assCtxt) {
-        this.assignmentcontext = assCtxt;
+    /**
+     * Updates the assignment context.
+     *
+     * @param assignmentContext the new assignment context to use
+     */
+    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assignmentContext) {
+        this.assignmentContext = assignmentContext;
     }
 
     /** Sets the current path for the visitor. */
@@ -58,7 +63,11 @@ public class VisitorState {
         this.path = path;
     }
 
-    /** @return the type of the enclosing class */
+    /**
+     * Returns the type of the enclosing class.
+     *
+     * @return the type of the enclosing class
+     */
     public AnnotatedDeclaredType getClassType() {
         if (act == null) {
             return null;
@@ -66,12 +75,20 @@ public class VisitorState {
         return act.deepCopy();
     }
 
-    /** @return the class tree currently visiting */
+    /**
+     * Returns the class tree currently visiting.
+     *
+     * @return the class tree currently visiting
+     */
     public ClassTree getClassTree() {
         return this.ct;
     }
 
-    /** @return the method receiver type of the enclosing method */
+    /**
+     * Returns the method receiver type of the enclosing method.
+     *
+     * @return the method receiver type of the enclosing method
+     */
     public AnnotatedDeclaredType getMethodReceiver() {
         if (mrt == null) {
             return null;
@@ -79,16 +96,29 @@ public class VisitorState {
         return mrt.deepCopy();
     }
 
-    /** @return the method tree currently visiting */
+    /**
+     * Returns the method tree currently visiting.
+     *
+     * @return the method tree currently visiting
+     */
     public MethodTree getMethodTree() {
         return this.mt;
     }
 
+    /**
+     * Returns the assignment context.
+     *
+     * @return the assignment context
+     */
     public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {
-        return assignmentcontext;
+        return assignmentContext;
     }
 
-    /** @return the current path for the visitor */
+    /**
+     * Returns the current path for the visitor.
+     *
+     * @return the current path for the visitor
+     */
     public TreePath getPath() {
         return this.path;
     }
@@ -104,8 +134,8 @@ public class VisitorState {
                 mrt,
                 (ct != null ? ct.getSimpleName() : "null"),
                 act,
-                (assignmentcontext != null ? assignmentcontext.first : "null"),
-                (assignmentcontext != null ? assignmentcontext.second : "null"),
+                (assignmentContext != null ? assignmentContext.first : "null"),
+                (assignmentContext != null ? assignmentContext.second : "null"),
                 path != null);
     }
 }

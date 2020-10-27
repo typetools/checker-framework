@@ -31,23 +31,39 @@ public class Constant implements AbstractValue<Constant> {
         this.value = value;
     }
 
-    /** @return whether or not the constant is TOP. */
+    /**
+     * Returns whether or not the constant is TOP.
+     *
+     * @return whether or not the constant is TOP
+     */
     public boolean isTop() {
         return type == Type.TOP;
     }
 
-    /** @return whether or not the constant is BOTTOM. */
+    /**
+     * Returns whether or not the constant is BOTTOM.
+     *
+     * @return whether or not the constant is BOTTOM
+     */
     public boolean isBottom() {
         return type == Type.BOTTOM;
     }
 
-    /** @return whether or not the constant is CONSTANT. */
+    /**
+     * Returns whether or not the constant is CONSTANT.
+     *
+     * @return whether or not the constant is CONSTANT
+     */
     @EnsuresNonNullIf(result = true, expression = "value")
     public boolean isConstant() {
         return type == Type.CONSTANT && value != null;
     }
 
-    /** @return the value. */
+    /**
+     * Returns the value.
+     *
+     * @return the value
+     */
     public Integer getValue() {
         assert isConstant() : "@AssumeAssertion(nullness): inspection";
         return value;
@@ -101,8 +117,8 @@ public class Constant implements AbstractValue<Constant> {
             case CONSTANT:
                 assert isConstant() : "@AssumeAssertion(nullness)";
                 return value.toString();
+            default:
+                throw new Error("Unexpected type");
         }
-        assert false;
-        return "???";
     }
 }

@@ -51,7 +51,7 @@ public abstract class Contract {
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
      */
-    public Contract(
+    protected Contract(
             Kind kind,
             String expression,
             AnnotationMirror annotation,

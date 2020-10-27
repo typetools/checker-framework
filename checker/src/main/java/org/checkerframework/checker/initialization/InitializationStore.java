@@ -3,18 +3,16 @@ package org.checkerframework.checker.initialization;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -164,8 +162,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
         try {
             // Remove invariant annotated fields to avoid performance issue reported in #1438.
             for (FieldAccess invariantField : invariantFields.keySet()) {
@@ -188,8 +186,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public S leastUpperBound(S other) {
         // Remove invariant annotated fields to avoid performance issue reported in #1438.
-        Map<FlowExpressions.FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FlowExpressions.FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
         for (FieldAccess invariantField : invariantFields.keySet()) {
             V v = fieldValues.remove(invariantField);
             removedFieldValues.put(invariantField, v);
@@ -210,7 +208,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         result.initializedFields.retainAll(initializedFields);
 
         // Set intersection for invariantFields.
-        for (Entry<FieldAccess, V> e : invariantFields.entrySet()) {
+        for (Map.Entry<FieldAccess, V> e : invariantFields.entrySet()) {
             if (other.invariantFields.containsKey(e.getKey())) {
                 result.invariantFields.put(e.getKey(), e.getValue());
             }
@@ -223,9 +221,19 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     @Override
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
-        return super.internalVisualize(viz)
-                + viz.visualizeStoreKeyVal("initialized fields", initializedFields)
-                + viz.visualizeStoreKeyVal("invariant fields", invariantFields);
+        String superVisualize = super.internalVisualize(viz);
+        if (superVisualize.isEmpty()) {
+            return String.join(
+                    viz.getSeparator(),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        } else {
+            return String.join(
+                    viz.getSeparator(),
+                    super.internalVisualize(viz),
+                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
+                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+        }
     }
 
     public Map<FieldAccess, V> getFieldValues() {

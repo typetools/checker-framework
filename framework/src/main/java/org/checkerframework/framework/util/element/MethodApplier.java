@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -18,7 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
@@ -53,7 +52,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * @return receiver, returns, and throws. See extract and apply as we also annotate type params.
+     * Returns receiver, returns, and throws. See extract and apply as we also annotate type params.
+     *
+     * @return receiver, returns, and throws
      */
     @Override
     protected TargetType[] annotatedTargets() {
@@ -62,7 +63,11 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         };
     }
 
-    /** @return all possible annotation positions for a method except those in annotatedTargets */
+    /**
+     * Returns all possible annotation positions for a method except those in annotatedTargets.
+     *
+     * @return all possible annotation positions for a method except those in annotatedTargets
+     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -93,7 +98,11 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         };
     }
 
-    /** @return the annotations on the method symbol (element) */
+    /**
+     * Returns the annotations on the method symbol (element).
+     *
+     * @return the annotations on the method symbol (element)
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return methodSymbol.getRawTypeAttributes();
@@ -158,7 +167,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         if (!unmatched.isEmpty()) {
             throw new BugInCF(
                     "Unexpected annotations ( "
-                            + SystemUtil.join(",", unmatched)
+                            + UtilPlume.join(",", unmatched)
                             + " ) for"
                             + "type ( "
                             + type
@@ -199,7 +208,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
             }
         }
 
-        for (final Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
+        for (final Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
                 typeToAnnos.entrySet()) {
             ElementAnnotationUtil.annotateViaTypeAnnoPosition(
                     typeToAnno.getKey(), typeToAnno.getValue());

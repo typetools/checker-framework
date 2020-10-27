@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -21,16 +20,11 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
-import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -45,6 +39,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -59,6 +54,13 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -94,7 +96,7 @@ public abstract class CFAbstractTransfer<
                 S extends CFAbstractStore<V, S>,
                 T extends CFAbstractTransfer<V, S, T>>
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
-        implements TransferFunction<V, S> {
+        implements ForwardTransferFunction<V, S> {
 
     /** The analysis class this store belongs to. */
     protected final CFAbstractAnalysis<V, S, T> analysis;
@@ -108,7 +110,7 @@ public abstract class CFAbstractTransfer<
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
-    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
+    protected CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         this.infer = analysis.checker.hasOption("infer");
@@ -123,7 +125,7 @@ public abstract class CFAbstractTransfer<
      *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
      *     semantics.
      */
-    public CFAbstractTransfer(
+    protected CFAbstractTransfer(
             CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
         this.analysis = analysis;
         this.sequentialSemantics =
@@ -132,42 +134,61 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
+     * Returns true if the transfer function uses sequential semantics, false if it uses concurrent
+     * semantics. Useful when creating an empty store, since a store makes different decisions
+     * depending on whether sequential or concurrent semantics are used.
+     *
      * @return true if the transfer function uses sequential semantics, false if it uses concurrent
-     *     semantics. Useful when creating an empty store, since a store makes different decisions
-     *     depending on whether sequential or concurrent semantics are used.
+     *     semantics
      */
     public boolean usesSequentialSemantics() {
         return sequentialSemantics;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore,CFAbstractStore)}.
+     *
+     * @param value a value to possibly modify
+     * @param store the store
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S store) {
         return value;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed (two stores, as the
-     * result is a {@link ConditionalTransferResult}.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore)}.
+     *
+     * @param value the value to finish
+     * @param thenStore the "then" store
+     * @param elseStore the "else" store
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
     }
 
     /**
+     * Returns the abstract value of a non-leaf tree {@code tree}, as computed by the {@link
+     * AnnotatedTypeFactory}.
+     *
      * @return the abstract value of a non-leaf tree {@code tree}, as computed by the {@link
-     *     AnnotatedTypeFactory}.
+     *     AnnotatedTypeFactory}
      */
     protected V getValueFromFactory(Tree tree, Node node) {
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
                 analysis.atypeFactory;
         Tree preTree = analysis.getCurrentTree();
-        Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preContext =
+                factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -175,38 +196,48 @@ public abstract class CFAbstractTransfer<
             // assignment context tree's type in the factory while flow is
             // disabled.
             Tree contextTree = node.getAssignmentContext().getContextTree();
-            AnnotatedTypeMirror assCtxt = null;
+            AnnotatedTypeMirror assignmentContext = null;
             if (contextTree != null) {
-                assCtxt = factory.getAnnotatedTypeLhs(contextTree);
+                assignmentContext = factory.getAnnotatedTypeLhs(contextTree);
             } else {
-                Element assCtxtElement = node.getAssignmentContext().getElementForType();
-                if (assCtxtElement != null) {
+                Element assignmentContextElement = node.getAssignmentContext().getElementForType();
+                if (assignmentContextElement != null) {
                     // if contextTree is null, use the element to get the type
-                    assCtxt = factory.getAnnotatedType(assCtxtElement);
+                    assignmentContext = factory.getAnnotatedType(assignmentContextElement);
                 }
             }
 
-            if (assCtxt != null) {
-                if (assCtxt instanceof AnnotatedExecutableType) {
+            if (assignmentContext != null) {
+                if (assignmentContext instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
-                    assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+                    assignmentContext =
+                            ((AnnotatedExecutableType) assignmentContext).getReturnType();
                 }
                 factory.getVisitorState()
                         .setAssignmentContext(
-                                Pair.of(node.getAssignmentContext().getContextTree(), assCtxt));
+                                Pair.of(
+                                        node.getAssignmentContext().getContextTree(),
+                                        assignmentContext));
             }
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
-        factory.getVisitorState().setAssignmentContext(preCtxt);
+        factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);
     }
 
     /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}.
+     *
+     * @param type the type to return
+     * @param annotatedValue the annotations to return
      * @return an abstract value with the given {@code type} and the annotations from {@code
-     *     annotatedValue}.
+     *     annotatedValue}
+     * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
      */
+    @Deprecated // use getWidenedValue() or getNarrowedValue()
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) {
             return null;
@@ -214,6 +245,7 @@ public abstract class CFAbstractTransfer<
         return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
+    /** The fixed initial store. */
     private S fixedInitialStore = null;
 
     /** Set a fixed initial Store. */
@@ -306,7 +338,8 @@ public abstract class CFAbstractTransfer<
             }
 
             CFGLambda lambda = (CFGLambda) underlyingAST;
-            Tree enclosingTree =
+            @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+            @InternedDistinct Tree enclosingTree =
                     TreeUtils.enclosingOfKind(
                             factory.getPath(lambda.getLambdaTree()),
                             new HashSet<>(
@@ -356,7 +389,7 @@ public abstract class CFAbstractTransfer<
 
             // We want the initialization stuff, but need to throw out any refinements.
             Map<FieldAccess, V> fieldValuesClone = new HashMap<>(info.fieldValues);
-            for (Entry<FieldAccess, V> fieldValue : fieldValuesClone.entrySet()) {
+            for (Map.Entry<FieldAccess, V> fieldValue : fieldValuesClone.entrySet()) {
                 AnnotatedTypeMirror declaredType =
                         factory.getAnnotatedType(fieldValue.getKey().getField());
                 V lubbedValue =
@@ -445,7 +478,7 @@ public abstract class CFAbstractTransfer<
 
     private void addFinalLocalValues(S info, Element enclosingElement) {
         // add information about effectively final variables (from outer scopes)
-        for (Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+        for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
             Element elem = e.getKey();
 
@@ -528,7 +561,7 @@ public abstract class CFAbstractTransfer<
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                FlowExpressions.Receiver expr =
+                Receiver expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
@@ -662,19 +695,21 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
-    /** The resulting abstract value is the merge of the 'then' and 'else' branch. */
     @Override
     public TransferResult<V, S> visitTernaryExpression(
             TernaryExpressionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitTernaryExpression(n, p);
-        S store = result.getRegularStore();
+        S thenStore = result.getThenStore();
+        S elseStore = result.getElseStore();
         V thenValue = p.getValueOfSubNode(n.getThenOperand());
         V elseValue = p.getValueOfSubNode(n.getElseOperand());
         V resultValue = null;
         if (thenValue != null && elseValue != null) {
+            // The resulting abstract value is the merge of the 'then' and 'else' branch.
             resultValue = thenValue.leastUpperBound(elseValue);
         }
-        return new RegularTransferResult<>(finishValue(resultValue, store), store);
+        V finishedValue = finishValue(resultValue, thenStore, elseStore);
+        return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
     }
 
     /** Reverse the role of the 'thenStore' and 'elseStore'. */
@@ -695,6 +730,14 @@ public abstract class CFAbstractTransfer<
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
 
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, false)
+                        || NodeUtils.isConstantBoolean(rightN, false))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
+
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
         res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
@@ -711,6 +754,14 @@ public abstract class CFAbstractTransfer<
         V leftV = p.getValueOfSubNode(leftN);
         V rightV = p.getValueOfSubNode(rightN);
 
+        if (res.containsTwoStores()
+                && (NodeUtils.isConstantBoolean(leftN, true)
+                        || NodeUtils.isConstantBoolean(rightN, true))) {
+            S thenStore = res.getElseStore();
+            S elseStore = res.getThenStore();
+            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+        }
+
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
         res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, true);
@@ -721,11 +772,12 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
-     * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
-     * that is tracked by the store (e.g., a local variable or a field).
+     * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression
+     * that is tracked by the store (e.g., a local variable or a field). Clients usually call this
+     * twice with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
      *
-     * <p>Note that when overriding this method, when a new type is inserted into the store,
-     * splitAssignments should be called, and the new type should be inserted into the store for
+     * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
+     * #splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
      * @param res the previous result
@@ -971,9 +1023,36 @@ public abstract class CFAbstractTransfer<
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
     }
 
+    @Override
+    public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitInstanceOf(node, in);
+        // The "reference type" is the type after "instanceof".
+        Tree refTypeTree = node.getTree().getType();
+        if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
+            AnnotatedTypeMirror expType =
+                    analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+            if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
+                    && !refType.getAnnotations().equals(expType.getAnnotations())
+                    && !expType.getAnnotations().isEmpty()) {
+                Receiver receiver =
+                        FlowExpressions.internalReprOf(
+                                analysis.getTypeFactory(), node.getTree().getExpression());
+                for (AnnotationMirror anno : refType.getAnnotations()) {
+                    in.getRegularStore().insertOrRefine(receiver, anno);
+                }
+                return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns true if whole-program inference should be performed. If the tree is in the scope of
-     * a @SuppressWarning, then this method returns false.
+     * a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @return whether to perform whole-program inference on the tree
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
         return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
@@ -981,11 +1060,15 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns true if whole-program inference should be performed. If the expressionTree or lhsTree
-     * is in the scope of a @SuppressWarning, then this method returns false.
+     * is in the scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param expressionTree the right-hand side of an assignment
+     * @param lhsTree the left-hand side of an assignment
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-        // Check that infer is true and the tree isn't in scope of a @SuppressWarning
-        // before calling  InternalUtils.symbol(lhs)
+        // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
+        // before calling InternalUtils.symbol(lhs).
         if (!shouldPerformWholeProgramInference(expressionTree)) {
             return false;
         }
@@ -995,7 +1078,11 @@ public abstract class CFAbstractTransfer<
 
     /**
      * Returns true if whole-program inference should be performed. If the tree or element is in the
-     * scope of a @SuppressWarning, then this method returns false.
+     * scope of a @SuppressWarnings, then this method returns false.
+     *
+     * @param tree a tree
+     * @param elt its element
+     * @return whether to perform whole-program inference
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
@@ -1053,7 +1140,7 @@ public abstract class CFAbstractTransfer<
             anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
 
             try {
-                FlowExpressions.Receiver r =
+                Receiver r =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
@@ -1161,24 +1248,68 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public TransferResult<V, S> visitNarrowingConversion(
-            NarrowingConversionNode n, TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
-        // Combine annotations from the operand with the narrow type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(narrowedValue);
-        return result;
-    }
-
-    @Override
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
         // Combine annotations from the operand with the wide type
         V operandValue = p.getValueOfSubNode(n.getOperand());
-        V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        V widenedValue = getWidenedValue(n.getType(), operandValue);
         result.setResultValue(widenedValue);
+        return result;
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for narrowing. This is only called at a narrowing conversion.
+     *
+     * @param type the type to narrow to
+     * @param annotatedValue the type to narrow from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> narrowedAnnos =
+                analysis.atypeFactory.getNarrowedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(narrowedAnnos, type);
+    }
+
+    /**
+     * Returns an abstract value with the given {@code type} and the annotations from {@code
+     * annotatedValue}, adapted for widening. This is only called at a widening conversion.
+     *
+     * @param type the type to widen to
+     * @param annotatedValue the type to widen from
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}; returns null if {@code annotatedValue} is null
+     */
+    protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) {
+            return null;
+        }
+        Set<AnnotationMirror> widenedAnnos =
+                analysis.atypeFactory.getWidenedAnnotations(
+                        annotatedValue.getAnnotations(),
+                        annotatedValue.getUnderlyingType().getKind(),
+                        type.getKind());
+
+        return analysis.createAbstractValue(widenedAnnos, type);
+    }
+
+    @Override
+    public TransferResult<V, S> visitNarrowingConversion(
+            NarrowingConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
+        // Combine annotations from the operand with the narrow type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V narrowedValue = getNarrowedValue(n.getType(), operandValue);
+        result.setResultValue(narrowedValue);
         return result;
     }
 

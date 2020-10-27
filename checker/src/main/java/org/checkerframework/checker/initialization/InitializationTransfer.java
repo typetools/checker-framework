@@ -13,10 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -25,6 +21,9 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -44,9 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *       can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
- *       InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       InitializationStore#insertValue(Receiver, CFAbstractValue)}).
  *   <li>All non-null fields with an initializer can be considered initialized (this is done in
- *       {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *       {@link InitializationStore#insertValue(Receiver, CFAbstractValue)}).
  *   <li>After the call to a super constructor ("super()" call), all non-null fields of the super
  *       class can safely be considered initialized.
  * </ol>
@@ -76,7 +75,8 @@ public class InitializationTransfer<
         final AnnotatedDeclaredType receiverType =
                 analysis.getTypeFactory().getAnnotatedType(methodTree).getReceiverType();
         if (receiverType != null) {
-            return atypeFactory.isUnclassified(receiverType) || atypeFactory.isFree(receiverType);
+            return atypeFactory.isUnknownInitialization(receiverType)
+                    || atypeFactory.isUnderInitialization(receiverType);
         } else {
             // There is no receiver e.g. in static methods.
             return false;
@@ -86,9 +86,11 @@ public class InitializationTransfer<
     /**
      * Returns the fields that can safely be considered initialized after the method call {@code
      * node}.
+     *
+     * @param node a method call
+     * @return the fields that are initialized after the method call
      */
-    protected List<VariableElement> initializedFieldsAfterCall(
-            MethodInvocationNode node, ConditionalTransferResult<V, S> transferResult) {
+    protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
         List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -138,7 +140,7 @@ public class InitializationTransfer<
                 continue;
             }
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
-            if (atypeFactory.hasFieldInvariantAnnotation(fieldType)) {
+            if (atypeFactory.hasFieldInvariantAnnotation(fieldType, field)) {
                 result.add(field);
             }
         }
@@ -194,9 +196,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
-        assert result instanceof ConditionalTransferResult;
-        List<VariableElement> newlyInitializedFields =
-                initializedFieldsAfterCall(n, (ConditionalTransferResult<V, S>) result);
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n);
         if (!newlyInitializedFields.isEmpty()) {
             for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);

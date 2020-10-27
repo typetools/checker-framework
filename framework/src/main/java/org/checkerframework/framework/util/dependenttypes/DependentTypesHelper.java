@@ -32,8 +32,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -45,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -52,8 +55,8 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
@@ -140,7 +143,7 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
-        FlowExpressions.Receiver r = FlowExpressions.internalReprOfImplicitReceiver(classDecl);
+        Receiver r = FlowExpressions.internalReprOfImplicitReceiver(classDecl);
         FlowExpressionContext context = new FlowExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
@@ -189,7 +192,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        FlowExpressions.Receiver receiver;
+        Receiver receiver;
         if (receiverTree == null) {
             receiver =
                     FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
@@ -213,8 +216,7 @@ public class DependentTypesHelper {
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                argReceivers.add(
-                        new FlowExpressions.ArrayCreation(tm, Collections.emptyList(), varargArgs));
+                argReceivers.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
             }
         }
 
@@ -248,6 +250,9 @@ public class DependentTypesHelper {
     }
 
     /**
+     * Returns true if methodCalled is varargs method invocation and its varargs arguments are not
+     * passed in an array, false otherwise.
+     *
      * @return true if methodCalled is varargs method invocation and its varargs arguments are not
      *     passed in an array, false otherwise
      */
@@ -287,8 +292,7 @@ public class DependentTypesHelper {
             return;
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,
@@ -335,10 +339,10 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
-        FlowExpressionContext classContext =
+        Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
+        FlowExpressionContext classignmentContext =
                 new FlowExpressionContext(receiverF, null, factory.getContext());
-        standardizeDoNotUseLocals(classContext, path, type);
+        standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
     /**
@@ -389,7 +393,7 @@ public class DependentTypesHelper {
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
-                FlowExpressions.Receiver receiver =
+                Receiver receiver =
                         FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
                 List<Receiver> params =
                         FlowExpressions.getParametersOfEnclosingMethod(factory, path);
@@ -399,14 +403,10 @@ public class DependentTypesHelper {
                 break;
             case FIELD:
             case ENUM_CONSTANT:
-                FlowExpressions.Receiver receiverF;
+                Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
-                    FlowExpressions.Receiver r =
-                            FlowExpressions.internalReprOf(factory, (IdentifierTree) node);
-                    receiverF =
-                            r instanceof FlowExpressions.FieldAccess
-                                    ? ((FlowExpressions.FieldAccess) r).getReceiver()
-                                    : r;
+                    Receiver r = FlowExpressions.internalReprOf(factory, (IdentifierTree) node);
+                    receiverF = r instanceof FieldAccess ? ((FieldAccess) r).getReceiver() : r;
                 } else {
                     receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
                 }
@@ -438,8 +438,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        FlowExpressions.Receiver receiver =
-                FlowExpressions.internalReprOf(factory, node.getExpression());
+        Receiver receiver = FlowExpressions.internalReprOf(factory, node.getExpression());
         FlowExpressionContext context =
                 new FlowExpressionContext(receiver, null, factory.getContext());
         standardizeDoNotUseLocals(context, factory.getPath(node), type);
@@ -459,8 +458,7 @@ public class DependentTypesHelper {
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
-        FlowExpressions.Receiver receiver =
-                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        Receiver receiver = FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
 
         FlowExpressionContext localContext =
                 new FlowExpressionContext(
@@ -534,7 +532,7 @@ public class DependentTypesHelper {
             return expression;
         }
         try {
-            FlowExpressions.Receiver result =
+            Receiver result =
                     FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
             if (result == null) {
                 return new DependentTypesError(expression, " ").toString();
@@ -748,7 +746,7 @@ public class DependentTypesHelper {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();
-        String error = SystemUtil.joinLines(errors);
+        String error = UtilPlume.joinLines(errors);
         checker.reportError(errorTree, "flowexpr.parse.error", error);
     }
 
@@ -826,40 +824,33 @@ public class DependentTypesHelper {
      * returned.
      */
     private class ExpressionErrorChecker
-            extends AnnotatedTypeScanner<List<DependentTypesError>, Void> {
+            extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
-        @Override
-        protected List<DependentTypesError> scan(AnnotatedTypeMirror type, Void aVoid) {
-            List<DependentTypesError> errors = new ArrayList<>();
-            for (AnnotationMirror am : type.getAnnotations()) {
-                if (isExpressionAnno(am)) {
-                    errors.addAll(checkForError(am));
-                }
-            }
-            List<DependentTypesError> superList = super.scan(type, aVoid);
-            if (superList != null) {
-                errors.addAll(superList);
-            }
-            return errors;
-        }
-
-        @Override
-        protected List<DependentTypesError> reduce(
-                List<DependentTypesError> r1, List<DependentTypesError> r2) {
-            if (r1 != null && r2 != null) {
-                r1.addAll(r2);
-                return r1;
-            } else if (r1 != null) {
-                return r1;
-            } else if (r2 != null) {
-                return r2;
-            } else {
-                return null;
-            }
+        /** Create ExpressionErrorChecker. */
+        private ExpressionErrorChecker() {
+            super(
+                    (AnnotatedTypeMirror type, Void aVoid) -> {
+                        List<DependentTypesError> errors = new ArrayList<>();
+                        for (AnnotationMirror am : type.getAnnotations()) {
+                            if (isExpressionAnno(am)) {
+                                errors.addAll(checkForError(am));
+                            }
+                        }
+                        return errors;
+                    },
+                    (r1, r2) -> {
+                        List<DependentTypesError> newList = new ArrayList<>(r1);
+                        newList.addAll(r2);
+                        return newList;
+                    },
+                    Collections.emptyList());
         }
     }
 
-    /** Copies annotations that might have been viewpoint adapted from type to the parameter. */
+    /**
+     * Copies annotations that might have been viewpoint adapted from the visited type to the
+     * parameter.
+     */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
@@ -915,38 +906,15 @@ public class DependentTypesHelper {
         if (atm == null) {
             return false;
         }
-        Boolean b = new ContainsDependentType().visit(atm);
-        if (b == null) {
-            return false;
-        }
+        boolean b =
+                new SimpleAnnotatedTypeScanner<>(
+                                (type, p) ->
+                                        type.getAnnotations().stream()
+                                                .anyMatch(this::isExpressionAnno),
+                                Boolean::logicalOr,
+                                false)
+                        .visit(atm);
         return b;
-    }
-
-    /** Checks whether or not an annotated type contains an dependent type annotation. */
-    private class ContainsDependentType extends AnnotatedTypeScanner<Boolean, Void> {
-        @Override
-        protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
-            for (AnnotationMirror am : type.getAnnotations()) {
-                if (isExpressionAnno(am)) {
-                    return true;
-                }
-            }
-            return super.scan(type, aVoid);
-        }
-
-        @Override
-        protected Boolean reduce(Boolean r1, Boolean r2) {
-            if (r1 != null && r2 != null) {
-                // if either have an expression anno, return true;
-                return r1 || r2;
-            } else if (r1 != null) {
-                return r1;
-            } else if (r2 != null) {
-                return r2;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**

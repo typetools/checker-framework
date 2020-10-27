@@ -4,9 +4,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
  * A type-checker for preventing fixed-length sequences such as arrays or strings from being
@@ -14,8 +16,25 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SuppressWarningsKeys({"index", "lowerbound"})
+@SuppressWarningsPrefix({"index", "lowerbound"})
+@RelevantJavaTypes({
+    Byte.class,
+    Short.class,
+    Integer.class,
+    Long.class,
+    Character.class,
+    byte.class,
+    short.class,
+    int.class,
+    long.class,
+    char.class,
+})
 public class LowerBoundChecker extends BaseTypeChecker {
+
+    /**
+     * These collection classes have some subtypes whose length can change and some subtypes whose
+     * length cannot change. Lower bound checker warnings are skipped at uses of them.
+     */
     private HashSet<String> collectionBaseTypeNames;
 
     /**
@@ -23,9 +42,6 @@ public class LowerBoundChecker extends BaseTypeChecker {
      * accessed with values that are too low. Normally bundled as part of the Index Checker.
      */
     public LowerBoundChecker() {
-        // These classes are bases for both mutable and immutable sequence collections, which
-        // contain methods that change the length.
-        // Lower bound checker warnings are skipped at uses of them.
         Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
         collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
         for (Class<?> collectionBaseClass : collectionBaseClasses) {
@@ -34,7 +50,7 @@ public class LowerBoundChecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean shouldSkipUses(String typeName) {
+    public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
         if (collectionBaseTypeNames.contains(typeName)) {
             return true;
         }

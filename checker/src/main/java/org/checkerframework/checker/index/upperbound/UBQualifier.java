@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -475,9 +474,9 @@ public abstract class UBQualifier {
         /**
          * If superType is Unknown, return true. If superType is Bottom, return false.
          *
-         * <p>Otherwise, this qualifier must contain all the sequences in superType. For each the
-         * offsets for each sequence in superType, there must be an offset in this qualifier for the
-         * sequence that is greater than or equal to the super offset.
+         * <p>Otherwise, return true if this qualifier contains all the sequences in superType, AND
+         * for each of the offsets for each sequence in superType, there is an offset in this
+         * qualifier for the sequence that is greater than or equal to the super offset.
          *
          * @param superType other qualifier
          * @return whether this qualifier is a subtype of superType
@@ -628,7 +627,7 @@ public abstract class UBQualifier {
                 return;
             }
             List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
-            for (Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
                 String sequence = entry.getKey();
                 Set<OffsetEquation> lubOffsets = entry.getValue();
                 Set<OffsetEquation> thisOffsets = this.map.get(sequence);
@@ -976,7 +975,7 @@ public abstract class UBQualifier {
          */
         private UBQualifier computeNewOffsets(OffsetEquationFunction f) {
             Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
-            for (Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+            for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
                 Set<OffsetEquation> offsets = new HashSet<>(entry.getValue().size());
                 for (OffsetEquation eq : entry.getValue()) {
                     OffsetEquation newEq = f.compute(eq);

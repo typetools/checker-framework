@@ -88,6 +88,7 @@ public class TypeAnnotationUtils {
      * @param p2 the second position
      * @return true, iff the two positions are equal except for the source tree position
      */
+    @SuppressWarnings("interning:not.interned") // reference equality for onLambda field
     public static boolean isSameTAPositionExceptTreePos(
             TypeAnnotationPosition p1, TypeAnnotationPosition p2) {
         return p1.type == p2.type

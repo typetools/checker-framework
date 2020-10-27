@@ -11,12 +11,14 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -52,21 +54,20 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -326,7 +327,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The last argument should be Positive.class, NonNegative.class, or GTENegativeOne.class.
      *
      * @param node the given node
-     * @param classOfType Positive.class, NonNegative.class, or GTENegativeOne.class
+     * @param classOfType one of Positive.class, NonNegative.class, or GTENegativeOne.class
      * @return true iff the given node has the passed Lower Bound qualifier according to the LBC
      */
     public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
@@ -338,19 +339,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UpperBoundQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new UpperBoundQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /**
-     * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
-     * the relationships within the qualifiers - especially subtyping relations.
-     */
-    protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        /** @param factory the MultiGraphFactory to use to construct this */
-        public UpperBoundQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory);
+    /** The qualifier hierarchy for the upperbound type system. */
+    protected final class UpperBoundQualifierHierarchy extends ElementQualifierHierarchy {
+        /**
+         * Creates an UpperBoundQualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers
+         * @param elements element utils
+         */
+        UpperBoundQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         @Override
@@ -392,7 +395,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are the same. In this case, rhs is a subtype of lhs iff rhs contains at least
+         * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains
          * every element of lhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise
@@ -793,7 +796,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Tree tree, TreePath treePath, List<String> lessThanExpressions) {
         UBQualifier ubQualifier = null;
         for (String expression : lessThanExpressions) {
-            Pair<FlowExpressions.Receiver, String> receiverAndOffset;
+            Pair<Receiver, String> receiverAndOffset;
             try {
                 receiverAndOffset =
                         getReceiverAndOffsetFromJavaExpressionString(expression, treePath);
@@ -803,7 +806,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (receiverAndOffset == null) {
                 continue;
             }
-            FlowExpressions.Receiver receiver = receiverAndOffset.first;
+            Receiver receiver = receiverAndOffset.first;
             String offset = receiverAndOffset.second;
 
             if (!CFAbstractStore.canInsertReceiver(receiver)) {

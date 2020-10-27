@@ -1,17 +1,12 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
-
-    /** A unique ID for this node. */
-    protected final long id = BlockImpl.uniqueID();
-
-    /** The last ID that has already been used. */
-    protected static long lastId = 0;
 
     /** The type of this basic block. */
     protected final BlockType type;
@@ -19,19 +14,28 @@ public abstract class BlockImpl implements Block {
     /** The set of predecessors. */
     protected final Set<BlockImpl> predecessors;
 
-    /** @return a fresh identifier */
-    private static long uniqueID() {
-        return lastId++;
-    }
-
-    public BlockImpl(BlockType type) {
-        this.type = type;
-        this.predecessors = new HashSet<>();
-    }
-
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final long uid = nextUid.getAndIncrement();
+    /**
+     * Returns the unique ID of this object.
+     *
+     * @return the unique ID of this object
+     */
     @Override
-    public long getId() {
-        return id;
+    public long getUid(@UnknownInitialization BlockImpl this) {
+        return uid;
+    }
+
+    /**
+     * Create a new BlockImpl.
+     *
+     * @param type the type of this basic block
+     */
+    protected BlockImpl(BlockType type) {
+        this.type = type;
+        this.predecessors = new LinkedHashSet<>();
     }
 
     @Override
@@ -39,9 +43,11 @@ public abstract class BlockImpl implements Block {
         return type;
     }
 
-    /** @return the list of predecessors of this basic block */
-    public Set<BlockImpl> getPredecessors() {
-        return Collections.unmodifiableSet(predecessors);
+    @Override
+    public Set<Block> getPredecessors() {
+        // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
+        // order.
+        return new LinkedHashSet<>(predecessors);
     }
 
     public void addPredecessor(BlockImpl pred) {

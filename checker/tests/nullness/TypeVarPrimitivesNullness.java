@@ -9,7 +9,7 @@ public class TypeVarPrimitivesNullness {
     }
 
     <T extends @Nullable Long & @Nullable Cloneable> void methodIntersection(T tLong) {
-        // :: error: (assignment.type.incompatible)
+        // :: error: (unboxing.of.nullable)
         long l = tLong;
     }
 
@@ -27,7 +27,7 @@ public class TypeVarPrimitivesNullness {
     }
 
     <T extends @Nullable Long & @Nullable Cloneable> void methodIntersection3(@Nullable T tLong) {
-        // :: error: (assignment.type.incompatible)
+        // :: error: (unboxing.of.nullable)
         long l = tLong;
     }
 }

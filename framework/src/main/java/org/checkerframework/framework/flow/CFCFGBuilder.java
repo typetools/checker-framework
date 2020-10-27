@@ -15,9 +15,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.builder.*;
+import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseOne;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -72,10 +73,10 @@ public class CFCFGBuilder extends CFGBuilder {
         ExpressionTree detail = tree.getDetail();
         if (detail != null) {
             String msg = detail.toString();
-            Collection<String> warningKeys = checker.getSuppressWarningsKeys();
-            for (String warningKey : warningKeys) {
-                String key = "@AssumeAssertion(" + warningKey + ")";
-                if (msg.contains(key)) {
+            Collection<String> prefixes = checker.getSuppressWarningsPrefixes();
+            for (String prefix : prefixes) {
+                String assumeAssert = "@AssumeAssertion(" + prefix + ")";
+                if (msg.contains(assumeAssert)) {
                     return true;
                 }
             }

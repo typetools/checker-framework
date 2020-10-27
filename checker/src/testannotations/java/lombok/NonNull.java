@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
 
 package lombok;
@@ -11,5 +11,11 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.CLASS)
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+@Target({
+    ElementType.FIELD,
+    ElementType.METHOD,
+    ElementType.PARAMETER,
+    ElementType.LOCAL_VARIABLE,
+    ElementType.TYPE_USE
+})
 public @interface NonNull {}

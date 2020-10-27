@@ -15,7 +15,7 @@
    style="background-color: rgb(255, 255, 255);"
    id="svg190"
    sodipodi:docname="signature-types.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata194">
     <rdf:RDF>
@@ -41,8 +41,8 @@
      id="namedview192"
      showgrid="false"
      inkscape:zoom="2"
-     inkscape:cx="522.49737"
-     inkscape:cy="280.9168"
+     inkscape:cx="256.24737"
+     inkscape:cy="133.08719"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -66,27 +66,12 @@
       <switch
          id="switch8"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="136"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 136px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@ClassGetSimpleName<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="68"
            y="19"
            font-size="12px"
            id="text6"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@ClassGetSimpleName</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@ClassGetSimpleName</text>
       </switch>
     </g>
     <rect
@@ -103,27 +88,12 @@
       <switch
          id="switch16"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="86"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 86px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@InternalForm<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="43"
            y="19"
            font-size="12px"
            id="text14"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@InternalForm</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@InternalForm</text>
       </switch>
     </g>
     <rect
@@ -140,27 +110,12 @@
       <switch
          id="switch24"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="100"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 100px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@FieldDescriptor<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="50"
            y="19"
            font-size="12px"
            id="text22"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@FieldDescriptor</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FieldDescriptor</text>
       </switch>
     </g>
     <rect
@@ -177,27 +132,12 @@
       <switch
          id="switch32"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="96"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 98px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@ClassGetName<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="48"
            y="19"
            font-size="12px"
            id="text30"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@ClassGetName</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@ClassGetName</text>
       </switch>
     </g>
     <rect
@@ -213,27 +153,12 @@
        id="g42">
       <switch
          id="switch40">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="82"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 82px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@BinaryName<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="41"
            y="19"
            font-size="12px"
            id="text38"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@BinaryName</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@BinaryName</text>
       </switch>
     </g>
     <rect
@@ -250,27 +175,12 @@
       <switch
          id="switch48"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="123"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 125px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>
-              <xhtml:b>@FullyQualifiedName<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="62"
            y="19"
            font-size="12px"
            id="text46"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@FullyQualifiedName</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FullyQualifiedName</text>
       </switch>
     </g>
     <rect
@@ -286,19 +196,6 @@
        id="g58">
       <switch
          id="switch56">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="114"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 114px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@SignatureUnknown<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="57"
            y="19"
@@ -320,25 +217,12 @@
        id="g66">
       <switch
          id="switch64">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="100"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 102px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@IdentifierOrArray<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="50"
            y="19"
            font-size="12px"
            id="text62"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@IdentifierOrArray</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@ArrayWithoutPackage</text>
       </switch>
     </g>
     <rect
@@ -354,53 +238,27 @@
        id="g74">
       <switch
          id="switch72">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="308"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 308px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="154"
            y="19"
            font-size="12px"
            id="text70"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FieldDescriptorForPrimitiveOrArrayInUnnamedPackage</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FieldDescriptorWithoutPackage</text>
       </switch>
     </g>
     <rect
        x="340"
-       y="345"
+       y="371"
        width="120"
        height="40"
        pointer-events="none"
        id="rect76"
        style="fill:#ffffff;stroke:#000000" />
     <g
-       transform="translate(369.5,351.5)"
+       transform="translate(369.5,377.5)"
        id="g82">
       <switch
          id="switch80">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="58"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 60px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@Identifier<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="29"
            y="19"
@@ -422,25 +280,12 @@
        id="g90">
       <switch
          id="switch88">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="186"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 188px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@BinaryNameInUnnamedPackage<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="93"
            y="19"
            font-size="12px"
            id="text86"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@BinaryNameInUnnamedPackage</text>
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@BinaryNameWithoutPackage</text>
       </switch>
     </g>
     <path
@@ -535,13 +380,6 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="M 400.33,345.33 548.7,301.79"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path132"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-miterlimit:10" />
-    <path
        d="m 553.74,300.31 -5.73,5.33 0.69,-3.85 -2.66,-2.86 z"
        stroke-miterlimit="10"
        pointer-events="none"
@@ -564,39 +402,23 @@
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <rect
        x="450"
-       y="415"
+       y="425"
        width="210"
        height="40"
-       fill="#ffffff"
-       stroke="#000000"
        pointer-events="none"
-       id="rect148" />
+       id="rect148"
+       style="fill:#ffffff;stroke:#000000" />
     <g
-       transform="translate(475.5,425.5)"
+       transform="translate(475.5,435.5)"
        id="g154">
       <switch
          id="switch152">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="156"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 158px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@FieldDescriptorForPrimitive<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="78"
            y="19"
-           fill="#000000"
-           text-anchor="middle"
            font-size="12px"
-           font-family="Helvetica"
-           id="text150">@FieldDescriptorForPrimitive</text>
+           id="text150"
+           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@FieldDescriptorForPrimitive</text>
       </switch>
     </g>
     <rect
@@ -612,19 +434,6 @@
        id="g162">
       <switch
          id="switch160">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="138"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 140px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div>@DotSeparatedIdentifiers<xhtml:br />
-<xhtml:br />
-</xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="69"
            y="19"
@@ -634,13 +443,6 @@
       </switch>
     </g>
     <path
-       d="M 599.98664,414.51863 860.35336,232.72137"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path168"
-       inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.94365686;stroke-miterlimit:10" />
-    <path
        d="m 864.59,229.66 -3.61,6.94 -0.64,-3.86 -3.47,-1.81 z"
        stroke-miterlimit="10"
        pointer-events="none"
@@ -648,26 +450,12 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="M 555.33 415.33 L 406.59 386.54"
-       fill="none"
-       stroke="#000000"
+       d="m 401.43,411.55 7.54,-2.11 -2.38,3.1 1.05,3.77 z"
        stroke-miterlimit="10"
        pointer-events="none"
-       id="path172" />
-    <path
-       d="M 401.43 385.55 L 408.97 383.44 L 406.59 386.54 L 407.64 390.31 Z"
-       fill="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path174" />
-    <path
-       d="m 400.33,345.33 -4.29,-38.67"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path176"
+       id="path174"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-miterlimit:10" />
+       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
        d="m 395.46,301.44 4.25,6.58 -3.67,-1.36 -3.29,2.13 z"
        stroke-miterlimit="10"
@@ -717,28 +505,12 @@
       <switch
          id="switch32-7"
          transform="translate(0,-4)">
-        <foreignObject
-           style="overflow:visible;"
-           pointer-events="all"
-           width="96"
-           height="26"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-          <xhtml:div
-             style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 98px; white-space: nowrap; word-wrap: normal; text-align: center;">
-            <xhtml:div
-               style="display:inline-block;text-align:inherit;text-decoration:inherit;">
-              <xhtml:b>@FqBinaryName<xhtml:br />
-</xhtml:b>
-              <xhtml:br />
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
         <text
            x="48"
            y="19"
            font-size="12px"
            id="text30-5"
-           style="font-size:12px;font-family:'Courier Bold';text-anchor:middle;fill:#000000">@FqBinaryName</text>
+           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700,'Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FqBinaryName</text>
       </switch>
     </g>
     <path
@@ -858,6 +630,111 @@
        stroke-miterlimit="10"
        pointer-events="none"
        id="path178-9"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
+    <rect
+       x="73.5"
+       y="406.94159"
+       width="120"
+       height="40"
+       pointer-events="none"
+       id="rect76-3"
+       style="fill:#ffffff;stroke:#000000" />
+    <g
+       transform="translate(103,413.4416)"
+       id="g82-6">
+      <switch
+         id="switch80-7">
+        <text
+           x="29"
+           y="19"
+           font-size="12px"
+           id="text78-5"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000">
+          <tspan
+             sodipodi:role="line"
+             id="tspan4658"
+             x="29"
+             y="19">@PrimitiveType</tspan>
+        </text>
+      </switch>
+    </g>
+    <rect
+       x="180.08162"
+       y="318.97141"
+       width="152.38857"
+       height="39.940365"
+       pointer-events="none"
+       id="rect76-5"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1.12606013" />
+    <g
+       transform="translate(227,325.4416)"
+       id="g82-62">
+      <switch
+         id="switch80-9">
+        <text
+           x="29"
+           y="19"
+           font-size="12px"
+           id="text78-1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000">
+          <tspan
+             sodipodi:role="line"
+             id="tspan4656"
+             x="28.999996"
+             y="19">@IdentifierOrPrimitiveType</tspan>
+        </text>
+      </switch>
+    </g>
+    <path
+       d="m 258.93,359.4916 7.54,-2.11 -2.38,3.1 1.05,3.77 z"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path174-2"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 235.5,318 218,300.5"
+       id="path4660"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 395.46,301.44 399,371 553.74,300.31"
+       id="path4662"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 399,371 264.09,360.4816"
+       id="path4664"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 509,424.5 406.59,412.54"
+       id="path4666"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 629.5,424.5 864.59,229.66"
+       id="path4668"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 138,407 238,358.5"
+       id="path4670"
+       inkscape:connector-curvature="0" />
+    <path
+       d="m 235.00648,360.20995 -5.73,5.33 0.69,-3.85 -2.66,-2.86 z"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path134-5-3"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
+    <path
+       d="m 214.81134,299.17685 7.78,0.79 -3.35,2.02 -0.39,3.89 z"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path102-0-8"
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
   </g>

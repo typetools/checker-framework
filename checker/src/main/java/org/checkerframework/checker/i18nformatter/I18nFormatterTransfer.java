@@ -5,19 +5,23 @@ import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/** @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker */
+/**
+ * The transfer function for the Internationalization Format String Checker.
+ *
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
+ */
 public class I18nFormatterTransfer extends CFTransfer {
 
     public I18nFormatterTransfer(CFAnalysis analysis) {

@@ -13,8 +13,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * AnnotationUtils#areSame} rather than equals.
  *
  * <p>For example, the specification for the contains(Object o) method says: "returns true if and
- * only if this collection contains at least one element e such that (o == null ? e == null : o
- * .equals(e))." The specification for {@link AnnotationMirrorSet#contains} is "returns true if and
+ * only if this collection contains at least one element e such that (o == null ? e == null :
+ * o.equals(e))." The specification for {@link AnnotationMirrorSet#contains} is "returns true if and
  * only if this collection contains at least one element e such that (o == null ? e == null :
  * AnnotationUtils.areSame(o, e))".
  *

@@ -6,6 +6,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.HashMap;
 import java.util.Map;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target Tree.
@@ -25,6 +26,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     private TreePath path;
 
     /**
+     * Returns true if the tree is cached.
+     *
      * @param target the tree to search for
      * @return true if the tree is cached
      */
@@ -33,6 +36,8 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     }
 
     /**
+     * Adds the given key and value to the cache.
+     *
      * @param target the tree to add
      * @param path the path to cache
      */
@@ -51,7 +56,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
      * @return the TreePath corresponding to target, or null if target is not found in the
      *     compilation root
      */
-    public TreePath getPath(CompilationUnitTree root, Tree target) {
+    public TreePath getPath(CompilationUnitTree root, @FindDistinct Tree target) {
         if (foundPaths.containsKey(target)) {
             return foundPaths.get(target);
         }
@@ -85,6 +90,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     }
 
     /** Scan a single node. The current path is updated for the duration of the scan. */
+    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     public TreePath scan(Tree tree, Tree target) {
         TreePath prev = path;

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * SimpleOptionMap is a very basic Option container. The keys of the Option container are the set of
@@ -12,8 +13,8 @@ import java.util.Map;
  *
  * <pre>{@code
  * Map(
- *    "-AprintAllQualifiers" &rArr; null
- *    "-classpath" &rArr; "myDir1:myDir2"
+ *    "-AprintAllQualifiers" => null
+ *    "-classpath" => "myDir1:myDir2"
  * )
  * }</pre>
  *
@@ -23,15 +24,15 @@ import java.util.Map;
  * needed to make this class usable from the command line.
  */
 public class SimpleOptionMap {
-    /** A Map (optionName &rarr; arg) where arg is null if the option doesn't require any args. */
-    private final Map<String, String> options = new LinkedHashMap<>();
+    /** A Map from optionName to arg, where arg is null if the option doesn't require any args. */
+    private final Map<String, @Nullable String> options = new LinkedHashMap<>();
 
     /**
      * Clears the current set of options and copies the input options to this map.
      *
      * @param options the new options to use for this object
      */
-    public void setOptions(Map<String, String> options) {
+    public void setOptions(Map<String, @Nullable String> options) {
         this.options.clear();
         this.options.putAll(options);
     }
@@ -104,7 +105,7 @@ public class SimpleOptionMap {
      *
      * @param options the options to add to this object
      */
-    public void addOptions(Map<String, String> options) {
+    public void addOptions(Map<String, @Nullable String> options) {
         this.options.putAll(options);
     }
 
@@ -133,7 +134,7 @@ public class SimpleOptionMap {
      *
      * @return the options in this object
      */
-    public Map<String, String> getOptions() {
+    public Map<String, @Nullable String> getOptions() {
         return options;
     }
 

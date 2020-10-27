@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -58,8 +59,10 @@ public class Range {
     /** A range containing all possible 8-bit values. */
     public static final Range BYTE_EVERYTHING = create(Byte.MIN_VALUE, Byte.MAX_VALUE);
 
-    /** The empty range singleton. */
-    public static final Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
+    /** The empty range. This is the only Range object that contains nothing */
+    @SuppressWarnings(
+            "interning:assignment.type.incompatible") // no other constructor call makes this
+    public static final @InternedDistinct Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
 
     /** An alias to the range containing all possible 64-bit values. */
     public static final Range EVERYTHING = LONG_EVERYTHING;
@@ -489,16 +492,20 @@ public class Range {
     }
 
     /**
-     * @param other the range to compare.
-     * @return the range with the lowest to and from values of this range and the passed range.
+     * Returns the range with the lowest to and from values of this range and the passed range.
+     *
+     * @param other the range to compare
+     * @return the range with the lowest to and from values of this range and the passed range
      */
     public Range min(Range other) {
         return create(Math.min(this.from, other.from), Math.min(this.to, other.to));
     }
 
     /**
-     * @param other the range to compare.
-     * @return the range with the highest to and from values of this range and the passed range.
+     * Returns the range with the highest to and from values of this range and the passed range.
+     *
+     * @param other the range to compare
+     * @return the range with the highest to and from values of this range and the passed range
      */
     public Range max(Range other) {
         return create(Math.max(this.from, other.from), Math.max(this.to, other.to));

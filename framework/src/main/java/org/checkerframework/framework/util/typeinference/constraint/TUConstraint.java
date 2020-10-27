@@ -51,7 +51,7 @@ public abstract class TUConstraint {
     /** Whether or not U is a type from an argument to the method. */
     public final boolean uIsArg;
 
-    public TUConstraint(
+    protected TUConstraint(
             final AnnotatedTypeVariable typeVariable,
             final AnnotatedTypeMirror relatedType,
             boolean uIsArg) {

@@ -9,8 +9,6 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +27,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -36,6 +35,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -47,13 +47,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.UtilPlume;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
@@ -399,7 +398,7 @@ public class AnnotatedTypes {
     public static AnnotatedTypeMirror asMemberOf(
             Types types,
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
+            @Nullable AnnotatedTypeMirror t,
             Element elem,
             AnnotatedTypeMirror elemType) {
         // asMemberOf is only for fields, variables, and methods!
@@ -412,11 +411,13 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return elemType;
             default:
-                AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
-                if (!ElementUtils.isStatic(elem)) {
+                if (!ElementUtils.isStatic(elem) && t != null) {
+                    AnnotatedTypeMirror res =
+                            asMemberOfImpl(types, atypeFactory, t, elem, elemType);
                     atypeFactory.postAsMemberOf(res, t, elem);
+                    return res;
                 }
-                return res;
+                return elemType;
         }
     }
 
@@ -438,10 +439,6 @@ public class AnnotatedTypes {
             final AnnotatedTypeMirror of,
             final Element member,
             final AnnotatedTypeMirror memberType) {
-        if (ElementUtils.isStatic(member)) {
-            return memberType;
-        }
-
         switch (of.getKind()) {
             case ARRAY:
                 // Method references like String[]::clone should have a return type of String[]
@@ -469,9 +466,8 @@ public class AnnotatedTypes {
                         memberType);
             case INTERSECTION:
                 AnnotatedTypeMirror iter = memberType;
-                for (AnnotatedDeclaredType superType :
-                        ((AnnotatedIntersectionType) of).directSuperTypes()) {
-                    iter = substituteTypeVariables(types, atypeFactory, superType, member, iter);
+                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) of).getBounds()) {
+                    iter = substituteTypeVariables(types, atypeFactory, bound, member, iter);
                 }
                 return iter;
             case UNION:
@@ -530,7 +526,7 @@ public class AnnotatedTypes {
         for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                        SystemUtil.joinLines(
+                        UtilPlume.joinLines(
                                 "Type arguments of a declaration should be type variables",
                                 "enclosingClassOfElem=" + enclosingClassOfElem,
                                 "enclosingType=" + enclosingType,
@@ -542,7 +538,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
             throw new BugInCF(
-                    SystemUtil.joinLines(
+                    UtilPlume.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
@@ -627,12 +623,11 @@ public class AnnotatedTypes {
             throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
-        TypeElement iterableElement =
-                processingEnv.getElementUtils().getTypeElement("java.lang.Iterable");
+        TypeElement iterableElement = ElementUtils.getTypeElement(processingEnv, Iterable.class);
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = asSuper(atypeFactory, iterableType, iterableElmType);
         if (dt.getTypeArguments().isEmpty()) {
-            TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
+            TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
             AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
@@ -735,7 +730,7 @@ public class AnnotatedTypes {
      *     subtype of MethodInvocationTree or NewClassTree
      * @param elt the element corresponding to the tree
      * @param preType the (partially annotated) type corresponding to the tree - the result of
-     *     AnnotatedTypes.asMemberOf with the receiver and elt.
+     *     AnnotatedTypes.asMemberOf with the receiver and elt
      * @return the mapping of the type variables to type arguments for this method or constructor
      *     invocation
      */
@@ -938,14 +933,16 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             List<AnnotatedTypeMirror> paramTypes,
             List<? extends ExpressionTree> trees) {
-        assert paramTypes.size() == trees.size()
-                : "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
-                        + "Parameter types: "
-                        + paramTypes
-                        + " Arguments: "
-                        + trees;
+        if (paramTypes.size() != trees.size()) {
+            throw new BugInCF(
+                    "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
+                            + "Parameter types: "
+                            + paramTypes
+                            + " Arguments: "
+                            + trees);
+        }
         List<AnnotatedTypeMirror> types = new ArrayList<>();
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
@@ -956,7 +953,7 @@ public class AnnotatedTypes {
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
         } finally {
-            atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
+            atypeFactory.getVisitorState().setAssignmentContext(preAssignmentContext);
         }
         return types;
     }
@@ -1045,50 +1042,26 @@ public class AnnotatedTypes {
         return found;
     }
 
-    /**
-     * Returns true if the given annotation mirror targets {@link ElementType#TYPE_USE}, false
-     * otherwise.
-     *
-     * @param anno the {@link AnnotationMirror}
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the anno targets both {@link ElementType#TYPE_USE} and something
-     *     besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated Use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
-        TypeElement elem = (TypeElement) anno.getAnnotationType().asElement();
-        return hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
-    }
-
-    /**
-     * Returns true if the given array contains {@link ElementType#TYPE_USE}, false otherwise.
-     *
-     * @param elements an array of {@link ElementType} values
-     * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true iff the give array contains {@link ElementType#TYPE_USE}
-     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
-     *     something besides {@link ElementType#TYPE_PARAMETER}
-     * @deprecated use {@link AnnotationUtils#hasTypeQualifierElementTypes(ElementType[], Class)}.
-     */
-    @Deprecated
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
-        return AnnotationUtils.hasTypeQualifierElementTypes(elements, cls);
-    }
-
-    private static String annotationClassName =
+    /** java.lang.annotation.Annotation.class canonical name. */
+    private static @CanonicalName String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
-    /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
+    /**
+     * Returns true if the underlying type of this atm is a java.lang.annotation.Annotation.
+     *
+     * @return true if the underlying type of this atm is a java.lang.annotation.Annotation
+     */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
         return TypesUtils.isDeclaredOfName(atm.getUnderlyingType(), annotationClassName);
     }
 
     /**
-     * @return true if atm is an Annotation interface, i.e. an implementation of
-     *     java.lang.annotation.Annotation e.g. @interface MyAnno - implementsAnnotation would
-     *     return true when called on an AnnotatedDeclaredType representing a use of MyAnno
+     * Returns true if atm is an Annotation interface, i.e. an implementation of
+     * java.lang.annotation.Annotation. Given {@code @interface MyAnno}, a call to {@code
+     * implementsAnnotation} returns true when called on an AnnotatedDeclaredType representing a use
+     * of MyAnno.
+     *
+     * @return true if atm is an Annotation interface
      */
     public static boolean implementsAnnotation(final AnnotatedTypeMirror atm) {
         if (atm.getKind() != TypeKind.DECLARED) {
@@ -1121,14 +1094,18 @@ public class AnnotatedTypes {
     public static boolean isDeclarationOfJavaLangEnum(
             final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
         if (isEnum(typeMirror)) {
-            return elements.getTypeElement("java.lang.Enum")
+            return elements.getTypeElement(Enum.class.getCanonicalName())
                     .equals(((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
         }
 
         return false;
     }
 
-    /** @return true if the typeVar1 and typeVar2 are two uses of the same type variable */
+    /**
+     * Returns true if the typeVar1 and typeVar2 are two uses of the same type variable.
+     *
+     * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
+     */
     public static boolean haveSameDeclaration(
             Types types,
             final AnnotatedTypeVariable typeVar1,
@@ -1242,7 +1219,7 @@ public class AnnotatedTypes {
                     }
 
                     throw new BugInCF(
-                            SystemUtil.joinLines(
+                            UtilPlume.joinLines(
                                     "Unexpected AnnotatedTypeMirror with no primary annotation.",
                                     "toSearch=" + toSearch,
                                     "top=" + top,
@@ -1350,11 +1327,11 @@ public class AnnotatedTypes {
             final AnnotationMirror top,
             final QualifierHierarchy qualifierHierarchy) {
         AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
-        for (final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
-            final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-            if (superAnno != null
-                    && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
-                anno = superAnno;
+        for (AnnotatedTypeMirror bound : isect.getBounds()) {
+            AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
+            if (boundAnno != null
+                    && (anno == null || qualifierHierarchy.isSubtype(boundAnno, anno))) {
+                anno = boundAnno;
             }
         }
 
@@ -1432,7 +1409,7 @@ public class AnnotatedTypes {
         // Collect all polymorphic qualifiers; we should substitute them.
         Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : returnType.getAnnotations()) {
-            if (QualifierPolymorphism.hasPolymorphicQualifier(anno)) {
+            if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
                 polys.add(anno);
             }
         }
@@ -1465,6 +1442,27 @@ public class AnnotatedTypes {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * Add all the annotations in {@code declaredType} to {@code annotatedDeclaredType}.
+     *
+     * <p>(The {@code TypeMirror} returned by {@code annotatedDeclaredType#getUnderlyingType} may
+     * have not have all the annotations on the type, so allow the user to specify a different one.)
+     *
+     * @param annotatedDeclaredType annotated type to which annotations are added
+     * @param declaredType TypeMirror that may have annotations
+     */
+    public static void applyAnnotationsFromDeclaredType(
+            AnnotatedDeclaredType annotatedDeclaredType, DeclaredType declaredType) {
+        TypeMirror underlyingTypeMirror = declaredType;
+        while (annotatedDeclaredType != null) {
+            List<? extends AnnotationMirror> annosOnTypeMirror =
+                    underlyingTypeMirror.getAnnotationMirrors();
+            annotatedDeclaredType.addAnnotations(annosOnTypeMirror);
+            annotatedDeclaredType = annotatedDeclaredType.getEnclosingType();
+            underlyingTypeMirror = ((DeclaredType) underlyingTypeMirror).getEnclosingType();
         }
     }
 }

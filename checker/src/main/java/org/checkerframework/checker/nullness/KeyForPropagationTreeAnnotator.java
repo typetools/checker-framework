@@ -54,13 +54,17 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
         this.keyForPropagator = propagationTreeAnnotator;
         keySetMethod =
                 TreeUtils.getMethod(
-                        java.util.Map.class.getName(),
+                        java.util.Map.class.getCanonicalName(),
                         "keySet",
                         0,
                         atypeFactory.getProcessingEnv());
     }
 
-    /** @return true iff expression is a call to java.util.Map.KeySet */
+    /**
+     * Returns true iff expression is a call to java.util.Map.KeySet.
+     *
+     * @return true iff expression is a call to java.util.Map.KeySet
+     */
     public boolean isCallToKeyset(ExpressionTree expression) {
         return TreeUtils.isMethodInvocation(
                 expression, keySetMethod, atypeFactory.getProcessingEnv());

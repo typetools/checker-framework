@@ -1,7 +1,7 @@
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.test.*;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // various tests for the precondition mechanism
 class FieldShadowing {
