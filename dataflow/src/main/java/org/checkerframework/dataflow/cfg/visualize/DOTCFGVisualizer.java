@@ -301,7 +301,7 @@ public class DOTCFGVisualizer<
      * @param str the string to be escaped
      * @return the escaped version of the string
      */
-    private String escapeDoubleQuotes(final String str) {
+    private static String escapeDoubleQuotes(final String str) {
         return str.replace("\"", "\\\"");
     }
 
@@ -311,7 +311,7 @@ public class DOTCFGVisualizer<
      * @param obj an object
      * @return an escaped version of the string representation of the object
      */
-    private String escapeDoubleQuotes(final Object obj) {
+    private static String escapeDoubleQuotes(final Object obj) {
         return escapeDoubleQuotes(String.valueOf(obj));
     }
 

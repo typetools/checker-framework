@@ -10,10 +10,10 @@ import java.lang.annotation.Target;
 
 /**
  * This is a declaration annotation that applies to type declarations. Some classes conceptually
- * take a type qualifier parameter. This annotations indicates that this class and its subclasses
- * explicitly do not do so. If {@code HasQualifierParameter} is enabled by default, for example, by
- * writing {@code HasQualifierParameter} on a package, then this annotation can disable it for a
- * specific class and its subclasses.
+ * take a type qualifier parameter. This annotation indicates that this class and its subclasses
+ * explicitly do not do so. The only reason to write this annotation is when {@code
+ * HasQualifierParameter} is enabled by default, by writing {@code HasQualifierParameter} on a
+ * package.
  *
  * <p>When a class is {@code @NoQualifierParameter}, all its subclasses are as well.
  *

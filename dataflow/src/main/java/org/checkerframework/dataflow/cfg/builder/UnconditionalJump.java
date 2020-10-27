@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
 
 /** An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}. */
@@ -10,7 +10,7 @@ class UnconditionalJump extends ExtendedNode {
     protected final Label jumpTarget;
 
     /** The flow rule for this edge. */
-    protected final Store.FlowRule flowRule;
+    protected final FlowRule flowRule;
 
     /**
      * Construct an UnconditionalJump.
@@ -18,7 +18,7 @@ class UnconditionalJump extends ExtendedNode {
      * @param jumpTarget the jump target label
      */
     public UnconditionalJump(Label jumpTarget) {
-        this(jumpTarget, Store.FlowRule.EACH_TO_EACH);
+        this(jumpTarget, FlowRule.EACH_TO_EACH);
     }
 
     /**
@@ -27,7 +27,7 @@ class UnconditionalJump extends ExtendedNode {
      * @param jumpTarget the jump target label
      * @param flowRule the flow rule for this edge
      */
-    public UnconditionalJump(Label jumpTarget, Store.FlowRule flowRule) {
+    public UnconditionalJump(Label jumpTarget, FlowRule flowRule) {
         super(ExtendedNodeType.UNCONDITIONAL_JUMP);
         assert jumpTarget != null;
         this.jumpTarget = jumpTarget;
@@ -44,7 +44,7 @@ class UnconditionalJump extends ExtendedNode {
      *
      * @return the flow rule for this edge
      */
-    public Store.FlowRule getFlowRule() {
+    public FlowRule getFlowRule() {
         return flowRule;
     }
 
