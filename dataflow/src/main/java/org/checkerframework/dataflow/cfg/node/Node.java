@@ -4,11 +4,14 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueId;
 
 /**
  * A node in the abstract representation used for Java code inside a basic block.
@@ -31,7 +34,7 @@ import org.checkerframework.dataflow.qual.Pure;
  *
  * @see org.checkerframework.dataflow.util.IdentityMostlySingleton
  */
-public abstract class Node {
+public abstract class Node implements UniqueId {
 
     /**
      * The basic block this node belongs to. If null, this object represents a method formal
@@ -57,6 +60,25 @@ public abstract class Node {
      */
     protected final TypeMirror type;
 
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final long uid = nextUid.getAndIncrement();
+    /**
+     * Returns the unique ID of this object.
+     *
+     * @return the unique ID of this object
+     */
+    @Override
+    public long getUid(@UnknownInitialization Node this) {
+        return uid;
+    }
+
+    /**
+     * Creates a new Node.
+     *
+     * @param type the type of the node
+     */
     protected Node(TypeMirror type) {
         assert type != null;
         this.type = type;
@@ -166,12 +188,7 @@ public abstract class Node {
      * @return a printed representation of this
      */
     public String toStringDebug() {
-        return String.format(
-                "%s [%s %s %s]",
-                this,
-                this.getClass().getSimpleName(),
-                this.hashCode(),
-                System.identityHashCode(this));
+        return String.format("%s [%s]", this, this.getClassAndUid());
     }
 
     /**
