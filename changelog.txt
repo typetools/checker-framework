@@ -1,3 +1,29 @@
+Version 3.7.1, November 2, 2020
+
+The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
+
+The Nullness Checker supports annotation org.jspecify.annotations.NullnessUnspecified.
+
+Implementation details:
+
+AnnotatedIntersectionType#directSuperTypes now returns
+List<? extends AnnotatedTypeMirror>.
+
+The @RelevantJavaTypes annotation is now enforced:  a checker issues a warning
+if the programmer writes a type annotation on a type that is not listed.
+
+Deprecated CFAbstractTransfer.getValueWithSameAnnotations(), which is no
+longer used.  Added new methods getWidenedValue() and getNarrowedValue().
+
+Renamed TestUtilities.assertResultsAreValid() to TestUtilities.assertTestDidNotFail().
+
+Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally().
+
+New method BaseTypeVisitor#visitAnnotatedType(List, Tree) centralizes checking
+of user-written type annotations, even when parsed in declaration locations.
+
+---------------------------------------------------------------------------
+
 Version 3.7.0, October 1, 2020
 
 The new Called Methods Checker tracks methods that have definitely been

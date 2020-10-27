@@ -27,6 +27,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 import org.plumelib.util.UtilPlume;
@@ -34,15 +35,13 @@ import org.plumelib.util.UtilPlume;
 /** Utilities for testing. */
 public class TestUtilities {
 
-    public static final boolean IS_AT_LEAST_9_JVM;
-    public static final boolean IS_AT_LEAST_11_JVM;
+    public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
+    public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
-        IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
-        IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {
@@ -74,10 +73,26 @@ public class TestUtilities {
      * @return list where each item is a list of Java test files grouped by directory
      */
     public static List<List<File>> findJavaFilesPerDirectory(File parent, String... dirNames) {
+        if (!parent.exists()) {
+            throw new BugInCF(
+                    "test parent directory does not exist: %s %s",
+                    parent, parent.getAbsoluteFile());
+        }
+        if (!parent.isDirectory()) {
+            throw new BugInCF(
+                    "test parent directory is not a directory: %s %s",
+                    parent, parent.getAbsoluteFile());
+        }
+
         List<List<File>> filesPerDirectory = new ArrayList<>();
 
         for (String dirName : dirNames) {
-            File dir = new File(parent, dirName);
+            File dir = new File(parent, dirName).toPath().toAbsolutePath().normalize().toFile();
+            // This fails for the whole-program-inference tests:  their sources do not necessarily
+            // exist yet but will be created by a test that runs earlier than they do.
+            // if (!dir.isDirectory()) {
+            //     throw new BugInCF("test directory does not exist: %s", dir);
+            // }
             if (dir.isDirectory()) {
                 filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
             }
@@ -412,7 +427,7 @@ public class TestUtilities {
      *
      * @param testResult the result of type-checking
      */
-    public static void assertResultsAreValid(TypecheckResult testResult) {
+    public static void assertTestDidNotFail(TypecheckResult testResult) {
         if (testResult.didTestFail()) {
             if (getShouldEmitDebugInfo()) {
                 System.out.println("---------------- start of javac ouput ----------------");

@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -306,11 +306,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                     throw (RuntimeException) err;
                 }
             }
+            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
             throw new BugInCF(
                     String.format(
-                            "Error when invoking constructor for class %s on args %s; parameter types: %s",
-                            name, Arrays.toString(args), Arrays.toString(paramTypes)),
-                    (t instanceof InvocationTargetException) ? t.getCause() : t);
+                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
+                    cause);
         }
     }
 

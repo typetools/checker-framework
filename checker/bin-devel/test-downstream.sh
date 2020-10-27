@@ -21,6 +21,7 @@ source "$SCRIPTDIR"/build.sh
 ##  * daikon-typecheck is run as a separate CI project
 ##  * guava is run as a separate CI project
 
-# Checker Framework demos
-"/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
-./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
+## This is moved to misc, because otherwise it would be the only work done by this script.
+# # Checker Framework demos
+# "/tmp/$USER/plume-scripts/git-clone-related" typetools checker-framework.demos
+# ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon

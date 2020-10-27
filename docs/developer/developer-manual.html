@@ -104,7 +104,7 @@ Frequently-used tasks:
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
   <li> <code>allTests</code>: runs all tests.
   <li> <code>reformat</code>: reformats Java files.
-  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessFbcTest</code>.
+  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
   <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
 
@@ -220,20 +220,23 @@ Ernst's advice about creating GitHub pull requests</a>.
 
 <p>
   It is good style to create a branch (in your fork of the Checker
-  Framework GitHub repository) for each independent change.  Do not make
-  changes to your <code>master</code> branch.
+  Framework GitHub repository) for each independent change.
+  Do not make changes to your <code>master</code> branch.
+  Do not make changes to a branch of the upstream (<code>typetools</code>) repository.
+  Such a branch competes for CI resources with all pull requests.
+  Make changes on a branch of your own fork, so that both you and others get faster CI feedback.
 </p>
 
 <p>
-If you make related changes in the <code>checker-framework</code>, <code>jdk</code>,
-and <code>checker-framework-inference</code> repositories, use the <em>same
+If you make related changes in the <code>checker-framework</code> and <code>jdk</code>
+repositories, use the <em>same
 branch name</em> for each.  The continuous integration framework will find
 and use that branch when running tests.
 
 <p>
 Furthermore, whenever you make a pull request from
 a <code>checker-framework</code> branch A into branch B, if B has a
-corresponding <code>jdk</code> or <code>checker-framework-inference</code>
+corresponding <code>jdk</code>
 branch,then A also needs one (even if identical to B's version).
 </p>
 

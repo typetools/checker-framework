@@ -7,8 +7,10 @@ interface Bar {}
 class Baz implements Foo, Bar {}
 
 class IntersectionTypes {
+    // :: warning: (explicit.annotation.ignored)
     <S extends @B Foo & @C Bar> void call1(S p) {}
 
+    // :: warning: (explicit.annotation.ignored)
     <T extends @C Bar & @B Foo> void call2(T p) {}
 
     void foo1(@D Baz baz1) {
@@ -22,7 +24,6 @@ class IntersectionTypes {
     }
 
     void foo3(@B Baz baz3) {
-        // :: error: (type.argument.type.incompatible)
         call1(baz3);
         // :: error: (type.argument.type.incompatible)
         call2(baz3);

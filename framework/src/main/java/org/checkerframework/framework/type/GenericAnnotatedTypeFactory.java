@@ -36,18 +36,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -57,6 +52,12 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -101,6 +102,8 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.UtilPlume;
@@ -143,6 +146,18 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to handle dependent type annotations */
     protected DependentTypesHelper dependentTypesHelper;
+
+    /**
+     * The Java types on which users may write this type system's type annotations. null means no
+     * restrictions. Arrays are handled by separate field {@link #arraysAreRelevant}.
+     */
+    public @Nullable Set<TypeMirror> relevantJavaTypes;
+
+    /**
+     * Whether users may write type annotations on arrays. Ignored unless relevantJavaTypes is
+     * non-null.
+     */
+    boolean arraysAreRelevant = false;
 
     // Flow related fields
 
@@ -256,6 +271,29 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
             flowResultAnalysisCaches = null;
             initializerCache = null;
+        }
+
+        RelevantJavaTypes relevantJavaTypesAnno =
+                checker.getClass().getAnnotation(RelevantJavaTypes.class);
+        if (relevantJavaTypesAnno == null) {
+            this.relevantJavaTypes = null;
+            this.arraysAreRelevant = true;
+        } else {
+            this.relevantJavaTypes = new HashSet<TypeMirror>();
+            this.arraysAreRelevant = false;
+            for (Class<?> clazz : relevantJavaTypesAnno.value()) {
+                if (clazz == Object[].class) {
+                    arraysAreRelevant = true;
+                } else if (clazz.isArray()) {
+                    throw new TypeSystemError(
+                            "Don't use arrays other than Object[] in @RelevantJavaTypes on "
+                                    + this.getClass().getSimpleName());
+                } else {
+                    relevantJavaTypes.add(
+                            TypesUtils.typeFromClass(
+                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                }
+            }
         }
 
         // Every subclass must call postInit, but it must be called after
@@ -386,7 +424,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * ListTypeAnnotator} of the following:
      *
      * <ol>
-     *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
+     *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@code @}{@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
      * </ol>
@@ -395,14 +433,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected TypeAnnotator createTypeAnnotator() {
         List<TypeAnnotator> typeAnnotators = new ArrayList<>();
-        RelevantJavaTypes relevantJavaTypes =
-                checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
-            Class<?>[] relevantClasses = relevantJavaTypes.value();
-            // Must be first in order to annotate all irrelevant types.
             typeAnnotators.add(
-                    new IrrelevantTypeAnnotator(
-                            this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
+                    new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         return new ListTypeAnnotator(typeAnnotators);
@@ -1656,11 +1689,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (analysis.isRunning()) {
             as = analysis.getValue(tree);
         }
-        if (as == null
-                &&
-                // TODO: this comparison shouldn't be needed, but
-                // checker-framework-inference fails without it.
-                flowResult != null) {
+        if (as == null) {
             as = flowResult.getValue(tree);
         }
         return as;
@@ -2053,6 +2082,85 @@ public abstract class GenericAnnotatedTypeFactory<
         if (debug) {
             UtilPlume.sleep(1); // logging can interleave with typechecker output
             System.out.printf(format, args);
+        }
+    }
+
+    /**
+     * Cache of types found that are relevantTypes or subclass of supported types. Used so that
+     * isSubtype doesn't need to be called repeatedly on the same types.
+     */
+    private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+
+    /**
+     * Returns true if users can write type annotations from this type system on the given Java
+     * type.
+     *
+     * @param tm a type
+     * @return true if users can write type annotations from this type system on the given Java type
+     */
+    public boolean isRelevant(TypeMirror tm) {
+        Boolean cachedResult = allFoundRelevantTypes.get(tm);
+        if (cachedResult != null) {
+            return cachedResult;
+        }
+        boolean result = isRelevantHelper(tm);
+        allFoundRelevantTypes.put(tm, result);
+        return result;
+    }
+
+    /**
+     * Returns true if users can write type annotations from this type system on the given Java
+     * type. Does not use a cache. Is a helper method for {@link #isRelevant}.
+     *
+     * @param tm a type
+     * @return true if users can write type annotations from this type system on the given Java type
+     */
+    private boolean isRelevantHelper(TypeMirror tm) {
+
+        if (relevantJavaTypes.contains(tm)) {
+            return true;
+        }
+
+        switch (tm.getKind()) {
+
+                // Primitives have no subtyping relationships, but the lookup might have failed
+                // because tm has metadata such as annotations.
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                for (TypeMirror relevantJavaType : relevantJavaTypes) {
+                    if (types.isSameType(tm, relevantJavaType)) {
+                        return true;
+                    }
+                }
+                return false;
+
+                // Void is never relevant
+            case VOID:
+                return false;
+
+            case ARRAY:
+                return arraysAreRelevant;
+
+            case DECLARED:
+                for (TypeMirror relevantJavaType : relevantJavaTypes) {
+                    if (types.isSubtype(relevantJavaType, tm)
+                            || types.isSubtype(tm, relevantJavaType)) {
+                        return true;
+                    }
+                }
+                return false;
+
+            case TYPEVAR:
+                return isRelevant(((TypeVariable) tm).getUpperBound());
+
+            default:
+                throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
         }
     }
 }

@@ -812,12 +812,12 @@ enables the checker to create an dependent type annotation that refers to
 it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
-\refclass{dataflow/analysis}{FlowExpressions.Receiver} object by calling
+\refclass{dataflow/expression}{Receiver} object by calling
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
 ExpressionTree)} or
 \refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
 Node)}.
-Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
+Then, call \<toString()> on the \<Receiver> object.
 
 
 \subsectionAndLabel{Repeatable annotations}{repeatable-annotations}
@@ -1939,6 +1939,10 @@ where the first command creates file \<someDirectory/myClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
 The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
 
+In the output, conditional basic blocks are represented as octagons with
+two successors.  Special basic blocks are represented as ovals (e.g., the
+entry and exit point of the method).
+
 
 \subsubsectionAndLabel{Creating a CFG while running a type-checker}{creating-debugging-dataflow-graph-with-typechecker}
 
@@ -2038,6 +2042,17 @@ no arguments.
 
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.
+
+\item \<-AatfDoNotCache>:
+  If provided, the Checker Framework will not cache results but will
+  recompute them.  This makes the Checker Framework run slower.  If the
+  Checker Framework behaves differently with and without this flag, then
+  there is a bug in its caching code.  Please report that bug.
+
+\item \<-AatfCacheSize>:
+  The size of the Checker Framework's internal caches.
+  Ignored if \<-AatfDoNotCache> is provided.
+  Most users have no need to set this.
 
 \end{itemize}
 

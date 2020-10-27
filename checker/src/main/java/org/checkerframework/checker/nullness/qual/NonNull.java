@@ -21,15 +21,16 @@ import org.checkerframework.framework.qual.UpperBoundFor;
  * <p>For fields of a class, the {@link NonNull} annotation indicates that this field is never
  * {@code null} <em>after the class has been fully initialized</em>. For static fields, the {@link
  * NonNull} annotation indicates that this field is never {@code null} <em>after the containing
- * class is initialized</em>. See {@link
- * org.checkerframework.checker.initialization.InitializationChecker} for more details.
+ * class is initialized</em>. See the <a
+ * href="https://checkerframework.org/manual/#initialization-checker">Initialization Checker
+ * documentation</a> for more details.
  *
  * <p>This annotation is rarely written in source code, because it is the default.
  *
  * @see Nullable
  * @see MonotonicNonNull
- * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #initialization-checker Initialization Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
