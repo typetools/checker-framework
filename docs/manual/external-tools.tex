@@ -1277,8 +1277,8 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 \sectionAndLabel{Type inference tools}{type-inference-varieties}
 
 There are two different tasks that are commonly called ``type inference''.
-You are probably interested in type inference to annotate a program's
-source code; see Section~\ref{type-inference-to-annotate}.  This section
+You are probably interested in global type inference to replace the need to manually
+annotate a program's source code; see Section~\ref{global-type-inference}.  This section
 explains the two different varieties of type inference.
 
 
@@ -1298,7 +1298,7 @@ works within a method, not across method boundaries.
 Every method
 signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
-(Section~\ref{type-inference-to-annotate}).
+(Section~\ref{global-type-inference}).
 A
 programmer rarely writes any qualifiers
 inside the body of a method (except sometimes on type arguments).
@@ -1317,16 +1317,16 @@ Advantages of this variety of type inference include:
 \end{itemize}
 
 
-\subsectionAndLabel{Type inference to annotate a program's source code}{type-inference-whole-program}
+\subsectionAndLabel{Global type inference}{type-inference-whole-program}
 
 As a separate step before type-checking, a type inference tool takes the
-whole program as input, and outputs a set of type qualifiers that can be
-inserted into the source code or the class file
-(Section~\ref{type-inference-to-annotate}).  They can be used by other
+whole program as input, and outputs a set of type qualifiers that might be
+inserted into the source code or the class file, or stored in some other format
+(Section~\ref{global-type-inference}).  They can be used by other
 tools.
 
-A programmer runs inference just once.  The programmer can view and adjust the
-annotations before committing them to the source code repository.
+A programmer usually runs inference just once.  The programmer can view and adjust the
+annotations before committing them to their source code repository.
 
 This variety of type inference must be provided by a separate tool,
 before type-checking runs.  The Checker Framework comes with such a tool

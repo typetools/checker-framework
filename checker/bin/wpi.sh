@@ -60,8 +60,8 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
 fi
 
 if [ "x${DIR}" = "x" ]; then
-    echo "wpi.sh was called without a -d argument. The -d argument must be the absolute path to the directory containing the project on which to run WPI."
-    exit 4
+    echo "wpi.sh was called without a -d argument. Running on the current directory instead."
+    DIR=$(pwd)
 fi
 
 if [ ! -d "${DIR}" ]; then
@@ -95,6 +95,10 @@ function configure_and_exec_dljc {
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}"
           BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}"
       fi
+  elif [ -f build.xml ]; then
+    # TODO: test these more thoroughly
+    CLEAN_CMD="ant clean"
+    BUILD_CMD="ant clean compile"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
       WPI_RESULTS_AVAILABLE="no"
@@ -137,13 +141,14 @@ function configure_and_exec_dljc {
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
-if [ ! -d "${SCRIPTDIR}/../do-like-javac" ]; then
-    git -C "${SCRIPTDIR}/.." clone https://github.com/kelloggm/do-like-javac --depth 1
+if [ ! -d "${SCRIPTDIR}/.do-like-javac/do-like-javac" ]; then
+    mkdir -p "${SCRIPTDIR}/.do-like-javac/"
+    git -C "${SCRIPTDIR}/.do-like-javac/do-like-javac" clone https://github.com/kelloggm/do-like-javac --depth 1
 else
-    git -C "${SCRIPTDIR}/../do-like-javac" pull
+    git -C "${SCRIPTDIR}/.do-like-javac/do-like-javac" pull
 fi
 
-DLJC="${SCRIPTDIR}/../do-like-javac/dljc"
+DLJC="${SCRIPTDIR}/.do-like-javac/do-like-javac/dljc"
 
 #### Main script
 

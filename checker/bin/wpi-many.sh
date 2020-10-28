@@ -173,12 +173,12 @@ if [ -n "${results_available}" ]; then
     # results can be inspected by hand (that is, those that WPI succeeded on).
     grep -oh "\S*\.java" "${results_available}" | sort | uniq > "${listpath}"
 
-    pushd "${SCRIPTDIR}/.." || exit 5
+    pushd "${SCRIPTDIR}/.do-like-javac" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
     popd || exit 5
 
-    "${SCRIPTDIR}/../scc" --output "${OUTDIR}-results/loc.txt" \
+    "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
         "$(< "${listpath}")"
 
     rm -f "${listpath}"
