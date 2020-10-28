@@ -412,11 +412,21 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Find the greatest and least effects of methods the specified definition overrides.
+     * Find the greatest and least effects of methods the specified definition overrides. This
+     * method is used for two reasons:
+     *
+     * <p>1. {@link GuiEffectVisitor#visitMethod(MethodTree,Void) GuiEffectVisitor.visitMethod}
+     * calls this to perform an effect override check (that a method's effect is less than or equal
+     * to the effect of any method it overrides). This use passes {@code true} for the {@code
+     * issueConflictWarning} in order to trigger warning messages.
+     *
+     * <p>2. {@link #getDeclaredEffect(ExecutableElement) getDeclaredEffect} in this class uses this
+     * to infer the default effect of methods in anonymous inner classes. This use passes {@code
+     * false} for {@code issueConflictWarning}, because it only needs the return value.
      *
      * @param declaringType The type declaring the override
      * @param overridingMethod The method override itself
-     * @param issueConflictWarning Whether or not to issue warnings
+     * @param issueConflictWarning Whether or not to issue warnings.
      * @param errorNode Node for reporting errors (the method declaration node)
      * @return The min and max inherited effects.
      */
@@ -506,7 +516,6 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        // TODO: should probably just drop the issueConflictWarning flag
         // We don't need to issue warnings for inheriting from poly and a concrete effect.
         if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
