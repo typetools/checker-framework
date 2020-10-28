@@ -51,7 +51,7 @@ public abstract class CFAbstractAnalysis<
     protected final DependentTypesHelper dependentTypesHelper;
 
     /** A type factory that can provide static type annotations for AST Trees. */
-    public final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
+    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
             atypeFactory;
 
     /** A checker that contains command-line arguments and other information. */

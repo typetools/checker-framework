@@ -51,7 +51,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
                             && this.containsNullableOrPolyNull())) {
                 result.annotations.remove(resultNullableAnno);
                 result.annotations.add(
-                        ((NullnessAnnotatedTypeFactory) analysis.atypeFactory).POLYNULL);
+                        ((NullnessAnnotatedTypeFactory) analysis.getTypeFactory()).POLYNULL);
             }
         }
         return result;
