@@ -1,5 +1,6 @@
 package org.checkerframework.framework.stub;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -205,6 +206,28 @@ public class AnnotationFileElementTypes {
         }
 
         parseAnnotationFiles(ajavaFiles, StubUtil.AnnotationFileType.AJAVA);
+        parsing = false;
+    }
+
+    public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+        parsing = true;
+        SourceChecker checker = factory.getContext().getChecker();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        InputStream in;
+        try {
+            in = new FileInputStream(ajavaPath);
+            StubParser.parseAjavaFile(
+                    ajavaPath,
+                    in,
+                    root,
+                    factory,
+                    processingEnv,
+                    typesFromAnnotationFiles,
+                    declAnnosFromAnnotationFiles);
+        } catch (IOException e) {
+            checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+        }
+
         parsing = false;
     }
 

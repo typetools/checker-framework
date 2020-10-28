@@ -7,9 +7,11 @@ import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -44,6 +46,10 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.io.InputStream;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -73,6 +79,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -87,6 +94,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 // From an implementation perspective, this class represents a single stub file, notably its
 // annotated types and its declaration annotations.  From a client perspective, it has two static
@@ -103,6 +111,10 @@ import org.checkerframework.javacutil.Pair;
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
 public class StubParser {
+
+    private final boolean isParsingStubFile;
+
+    private CompilationUnitTree root;
 
     /**
      * Whether to print warnings about types/members that were not found. The warning states that a
@@ -171,6 +183,12 @@ public class StubParser {
      */
     private final List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
 
+    /**
+     * The annotations on the declared package of the complation unit being processed. Contains null
+     * if not processing a compilation unit or if the file has no declared package.
+     */
+    @Nullable List<AnnotationExpr> packageAnnos;
+
     // The following variables are stored in the StubParser because otherwise they would need to be
     // passed through everywhere, which would be verbose.
 
@@ -214,11 +232,14 @@ public class StubParser {
             ProcessingEnvironment processingEnv,
             Map<Element, AnnotatedTypeMirror> atypes,
             Map<String, Set<AnnotationMirror>> declAnnos,
-            boolean isJdkAsStub) {
+            boolean isJdkAsStub,
+            boolean isParsingStubFile) {
         this.filename = filename;
         this.atypeFactory = atypeFactory;
         this.processingEnv = processingEnv;
         this.elements = processingEnv.getElementUtils();
+        this.isParsingStubFile = isParsingStubFile;
+        this.root = null;
 
         // TODO: This should use SourceChecker.getOptions() to allow
         // setting these flags per checker.
@@ -236,6 +257,10 @@ public class StubParser {
         this.atypes = atypes;
         this.declAnnos = declAnnos;
         this.isJdkAsStub = isJdkAsStub;
+    }
+
+    private void setRoot(CompilationUnitTree root) {
+        this.root = root;
     }
 
     /**
@@ -449,6 +474,33 @@ public class StubParser {
         parse(filename, inputStream, atypeFactory, processingEnv, atypes, declAnnos, false);
     }
 
+    public static void parseAjavaFile(
+            String filename,
+            InputStream inputStream,
+            CompilationUnitTree root,
+            AnnotatedTypeFactory atypeFactory,
+            ProcessingEnvironment processingEnv,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos) {
+        StubParser sp =
+                new StubParser(
+                        filename, atypeFactory, processingEnv, atypes, declAnnos, false, false);
+        try {
+            sp.parseStubUnit(inputStream);
+            sp.setRoot(root);
+            sp.process();
+        } catch (ParseProblemException e) {
+            StringJoiner message = new StringJoiner(LINE_SEPARATOR);
+            message.add(
+                    e.getProblems().size() + " problems while parsing stub file " + filename + ":");
+            // Manually build up the message, to get verbose location information.
+            for (Problem p : e.getProblems()) {
+                message.add(p.getVerboseMessage());
+            }
+            sp.stubWarn(message.toString());
+        }
+    }
+
     /**
      * Parse a stub file that is a part of the annotated JDK and side-effects the last two
      * arguments.
@@ -495,7 +547,13 @@ public class StubParser {
             boolean isJdkAsStub) {
         StubParser sp =
                 new StubParser(
-                        filename, atypeFactory, processingEnv, atypes, declAnnos, isJdkAsStub);
+                        filename,
+                        atypeFactory,
+                        processingEnv,
+                        atypes,
+                        declAnnos,
+                        isJdkAsStub,
+                        true);
         try {
             sp.parseStubUnit(inputStream);
             sp.process();
@@ -555,8 +613,6 @@ public class StubParser {
     }
 
     private void processCompilationUnit(CompilationUnit cu) {
-        final List<AnnotationExpr> packageAnnos;
-
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
             typeName = new FqName(null, null);
@@ -565,11 +621,18 @@ public class StubParser {
             packageAnnos = pDecl.getAnnotations();
             processPackage(pDecl);
         }
-        if (cu.getTypes() != null) {
-            for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
-                processTypeDecl(typeDeclaration, null, packageAnnos);
+
+        if (isParsingStubFile) {
+            if (cu.getTypes() != null) {
+                for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
+                    processTypeDecl(typeDeclaration, null, null);
+                }
             }
+        } else {
+            root.accept(new AjavaParserVisitor(), cu);
         }
+
+        packageAnnos = null;
     }
 
     private void processPackage(PackageDeclaration packDecl) {
@@ -591,24 +654,37 @@ public class StubParser {
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
-     * @param packageAnnos the annotation declared in the package
+     * @param classTree The tree corresponding typeDecl if processing an ajava file, null otherwise
      */
     private void processTypeDecl(
-            TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
+            TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
         assert typeName != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
             return;
         }
-        String innerName =
-                (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
-        typeName = new FqName(typeName.packageName, innerName);
-        @SuppressWarnings(
-                "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
-        // this is its declaration
-        @CanonicalName String fqTypeName = typeName.toString();
-        TypeElement typeElt = elements.getTypeElement(fqTypeName);
+        String innerName;
+        @CanonicalName String fqTypeName;
+        TypeElement typeElt;
+        if (classTree != null) {
+            typeElt = TreeUtils.elementFromDeclaration(classTree);
+            innerName = typeElt.getQualifiedName().toString();
+            typeName = new FqName(typeName.packageName, innerName);
+            // @SuppressWarnings(
+            // "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
+            // // this is its declaration
+            fqTypeName = typeName.toString();
+        } else {
+            innerName =
+                    (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
+            typeName = new FqName(typeName.packageName, innerName);
+            // @SuppressWarnings(
+            // "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
+            // // this is its declaration
+            fqTypeName = typeName.toString();
+            typeElt = elements.getTypeElement(fqTypeName);
+        }
         if (typeElt == null) {
             if (debugStubParser
                     || (!hasNoStubParserWarning(typeDecl.getAnnotations())
@@ -629,6 +705,12 @@ public class StubParser {
         // annotations, right?
 
         Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
+        // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
+        // of this method.
+        if (!isParsingStubFile) {
+            return;
+        }
+
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
@@ -646,10 +728,10 @@ public class StubParser {
                     break;
                 case CLASS:
                 case INTERFACE:
-                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, packageAnnos);
+                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
                     break;
                 case ENUM:
-                    processTypeDecl((EnumDeclaration) decl, innerName, packageAnnos);
+                    processTypeDecl((EnumDeclaration) decl, innerName, null);
                     break;
                 default:
                     /* do nothing */
@@ -797,8 +879,12 @@ public class StubParser {
         }
     }
 
-    /** Adds type and declaration annotations from {@code decl}. */
-    private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
+    /**
+     * Adds type and declaration annotations from {@code decl}. Returns type variables for the
+     * method.
+     */
+    private List<AnnotatedTypeVariable> processCallableDeclaration(
+            CallableDeclaration<?> decl, ExecutableElement elt) {
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations());
         if (decl.isMethodDeclaration()) {
@@ -873,7 +959,11 @@ public class StubParser {
 
         // Store the type.
         putMerge(atypes, elt, methodType);
-        typeParameters.removeAll(methodType.getTypeVariables());
+        if (isParsingStubFile) {
+            typeParameters.removeAll(methodType.getTypeVariables());
+        }
+
+        return methodType.getTypeVariables();
     }
 
     /**
@@ -2179,6 +2269,65 @@ public class StubParser {
             processingEnv
                     .getMessager()
                     .printMessage(javax.tools.Diagnostic.Kind.NOTE, "StubParser: " + warning);
+        }
+    }
+
+    @SuppressWarnings("UnusedNestedClass")
+    private class AjavaParserVisitor extends DefaultJointVisitor {
+        public AjavaParserVisitor() {
+            super(TraversalType.PRE_ORDER);
+        }
+
+        @Override
+        public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+            if (javaParserNode instanceof TypeDeclaration<?>
+                    && !(javaParserNode instanceof AnnotationDeclaration)) {
+                processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
+            }
+
+            super.visitClass(javacTree, javaParserNode);
+            // TODO: In theory, I think we would only want to clear the type parameters that were
+            // added to this class because if the prescence of nested and inner classes. This line
+            // is copied from the original implementation, which was supposed to handle inner
+            // classes, so perhaps it was a bug there as well?
+            typeParameters.clear();
+            return null;
+        }
+
+        @Override
+        public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
+            if (TreeUtils.elementFromTree(javacTree) != null) {
+                VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+                if (elt != null) {
+                    if (elt.getKind() == ElementKind.FIELD) {
+                        processField((FieldDeclaration) javaParserNode.getParentNode().get(), elt);
+                    }
+
+                    if (elt.getKind() == ElementKind.ENUM_CONSTANT) {
+                        processEnumConstant((EnumConstantDeclaration) javaParserNode, elt);
+                    }
+                }
+            }
+
+            super.visitVariable(javacTree, javaParserNode);
+            return null;
+        }
+
+        @Override
+        public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
+            ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+            List<AnnotatedTypeVariable> variablesToClear = null;
+            if (javaParserNode instanceof CallableDeclaration<?>) {
+                variablesToClear =
+                        processCallableDeclaration((CallableDeclaration<?>) javaParserNode, elt);
+            }
+
+            super.visitMethod(javacTree, javaParserNode);
+            if (variablesToClear != null) {
+                typeParameters.removeAll(variablesToClear);
+            }
+
+            return null;
         }
     }
 

@@ -3,9 +3,9 @@ package org.checkerframework.framework.test.junit.wpirunners;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
-import org.checkerframework.framework.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
 
 /**
  * Tests whole-program inference with the aid of ajava files. This test is the first pass on the

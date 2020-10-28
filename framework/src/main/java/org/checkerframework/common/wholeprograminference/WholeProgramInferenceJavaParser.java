@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -53,6 +52,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.ajava.AjavaUtils;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -672,7 +672,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement mostEnclosing = mostEnclosingClass(element);
-        String path = getSourceFilePath(mostEnclosing);
+        String path = AjavaUtils.getSourceFilePath(mostEnclosing);
         addSourceFile(path);
         CompilationUnitWrapper wrapper = sourceFiles.get(path);
         TypeDeclaration<?> javaParserNode =
@@ -795,7 +795,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         TypeElement mostEnclosing = mostEnclosingClass(element);
-        String path = getSourceFilePath(mostEnclosing);
+        String path = AjavaUtils.getSourceFilePath(mostEnclosing);
         if (classes.containsKey(getClassName(mostEnclosing))) {
             return path;
         }
@@ -809,10 +809,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         mostEnclosing.getSimpleName().toString());
         createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
         return path;
-    }
-
-    private String getSourceFilePath(Element element) {
-        return ((ClassSymbol) element).sourcefile.toUri().getPath();
     }
 
     private @BinaryName String getClassName(Element element) {
@@ -942,23 +938,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
-            Optional<ClassOrInterfaceDeclaration> classDecl = declaration.getClassByName(name);
-            if (classDecl.isPresent()) {
-                return classDecl.get();
-            }
-
-            Optional<ClassOrInterfaceDeclaration> interfaceDecl =
-                    declaration.getInterfaceByName(name);
-            if (interfaceDecl.isPresent()) {
-                return interfaceDecl.get();
-            }
-
-            Optional<EnumDeclaration> enumDecl = declaration.getEnumByName(name);
-            if (enumDecl.isPresent()) {
-                return enumDecl.get();
-            }
-
-            throw new BugInCF("Requesting declaration for type that doesn't exist: " + name);
+            return AjavaUtils.getTypeDeclarationByName(declaration, name);
         }
     }
 

@@ -240,12 +240,13 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             throwUnexpectedNodeType(javacTree, javaParserNode, NodeWithAnnotations.class);
         }
 
-        NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
+        // NodeWithAnnotations<?> node = (NodeWithAnnotations<?>) javaParserNode;
         if (traversalType == TraversalType.PRE_ORDER) {
             processAnnotatedType(javacTree, javaParserNode);
         }
 
-        visitLists(javacTree.getAnnotations(), node.getAnnotations());
+        // TODO: Uncomment this and for other annotations.
+        // visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getUnderlyingType().accept(this, javaParserNode);
         if (traversalType == TraversalType.POST_ORDER) {
             processAnnotatedType(javacTree, javaParserNode);
@@ -704,7 +705,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
      * @param javaParserMembers list of members for the anonymous class body of an {@code
      *     ObjectCreationExpr}
      */
-    private void visitAnonymouClassBody(
+    public void visitAnonymouClassBody(
             ClassTree javacBody, List<BodyDeclaration<?>> javaParserMembers) {
         List<Tree> members = new ArrayList<>(javacBody.getMembers());
         while (!members.isEmpty()) {
@@ -1309,9 +1310,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         javacTree.getReturnType().accept(this, javaParserNode.getType());
         // Unlike other constructs, the list is non-null even if no type parameters are present.
         visitLists(javacTree.getTypeParameters(), javaParserNode.getTypeParameters());
-        assert (javacTree.getReceiverParameter() != null)
-                == javaParserNode.getReceiverParameter().isPresent();
-        if (javacTree.getReceiverParameter() != null) {
+        if (javacTree.getReceiverParameter() != null
+                && javaParserNode.getReceiverParameter().isPresent()) {
             javacTree
                     .getReceiverParameter()
                     .accept(this, javaParserNode.getReceiverParameter().get());
@@ -1468,7 +1468,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processModule(javacTree, node);
         }
 
-        visitLists(javacTree.getAnnotations(), node.getAnnotations());
+        // visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getName().accept(this, node.getName());
         if (traversalType == TraversalType.POST_ORDER) {
             processModule(javacTree, node);
@@ -1570,7 +1570,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processPackage(javacTree, node);
         }
 
-        visitLists(javacTree.getAnnotations(), node.getAnnotations());
+        // visitLists(javacTree.getAnnotations(), node.getAnnotations());
         javacTree.getPackageName().accept(this, node.getName());
         if (traversalType == TraversalType.POST_ORDER) {
             processPackage(javacTree, node);
@@ -1833,7 +1833,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processTypeParameter(javacTree, node);
         }
 
-        visitLists(javacTree.getAnnotations(), node.getAnnotations());
+        // visitLists(javacTree.getAnnotations(), node.getAnnotations());
         visitLists(javacTree.getBounds(), node.getTypeBound());
         if (traversalType == TraversalType.POST_ORDER) {
             processTypeParameter(javacTree, node);

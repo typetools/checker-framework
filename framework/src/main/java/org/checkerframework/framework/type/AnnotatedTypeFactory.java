@@ -34,6 +34,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -239,6 +240,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public final AnnotationFileElementTypes ajavaTypes;
 
+    public AnnotationFileElementTypes currentFileAjavaTypes;
+
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
      * calling the method {@link #getDeclAnnotations(Element)}.
@@ -438,6 +441,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.supportedQualNames = new HashSet<>();
         this.stubTypes = new AnnotationFileElementTypes(this);
         this.ajavaTypes = new AnnotationFileElementTypes(this);
+        this.currentFileAjavaTypes = null;
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -880,6 +884,38 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // There is no need to clear the following cache, it is limited by cache size and it
             // contents won't change between compilation units.
             // elementCache.clear();
+        }
+
+        if (root != null && checker.hasOption("ajavas")) {
+            // TODO: This relies on the toString implementations of MemberSelectTree and
+            // IdentifierTree. This could be turned into its own method that does this correctly.
+            String qualifiedName =
+                    root.getPackageName() != null ? root.getPackageName().toString() : "";
+            // TODO: Try to get this by finding primary type declaration in file?
+            String className = root.getSourceFile().getName();
+            int lastSeparator = className.lastIndexOf(File.separator);
+            if (lastSeparator != -1) {
+                className = className.substring(lastSeparator + 1);
+            }
+
+            qualifiedName += className;
+            if (qualifiedName.endsWith(".java")) {
+                qualifiedName =
+                        qualifiedName.substring(0, qualifiedName.length() - ".java".length());
+            }
+
+            String ajavaPath =
+                    checker.getOption("ajavas")
+                            + File.separator
+                            + qualifiedName.replaceAll("\\.", "/");
+            ajavaPath += "-" + checker.getClass().getCanonicalName() + ".ajava";
+            File ajavaFile = new File(ajavaPath);
+            if (ajavaFile.exists()) {
+                currentFileAjavaTypes = new AnnotationFileElementTypes(this);
+                currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
+            }
+        } else {
+            currentFileAjavaTypes = null;
         }
     }
 
@@ -1403,12 +1439,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         type = mergeStubsIntoType(type, elt, ajavaTypes);
+        if (currentFileAjavaTypes != null) {
+            type = mergeStubsIntoType(type, elt, currentFileAjavaTypes);
+        }
+
         if (checker.hasOption("mergeStubsWithSource")) {
             type = mergeStubsIntoType(type, elt, stubTypes);
         }
         // Caching is disabled if stub files are being parsed, because calls to this
         // method before the stub files are fully read can return incorrect results.
-        if (shouldCache && !stubTypes.isParsing() && !ajavaTypes.isParsing()) {
+        if (shouldCache
+                && !stubTypes.isParsing()
+                && !ajavaTypes.isParsing()
+                && (currentFileAjavaTypes == null || !currentFileAjavaTypes.isParsing())) {
             elementCache.put(elt, type.deepCopy());
         }
         return type;
@@ -1446,6 +1489,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
         result = mergeStubsIntoType(result, tree, ajavaTypes);
+        if (currentFileAjavaTypes != null) {
+            result = mergeStubsIntoType(result, tree, currentFileAjavaTypes);
+        }
+
         if (checker.hasOption("mergeStubsWithSource")) {
             result = mergeStubsIntoType(result, tree, stubTypes);
         }
@@ -3476,10 +3523,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
+        // TODO: Factor out common code in following if statements.
         if (!ajavaTypes.isParsing()) {
 
             // Retrieving annotations from ajava files.
             Set<AnnotationMirror> ajavaAnnos = ajavaTypes.getDeclAnnotation(elt);
+            results.addAll(ajavaAnnos);
+
+            if (elt.getKind() == ElementKind.METHOD) {
+                // Retrieve the annotations from the overridden method's element.
+                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
+            } else if (ElementUtils.isTypeDeclaration(elt)) {
+                inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
+            }
+
+            // Add the element and its annotations to the cache.
+            cacheDeclAnnos.put(elt, results);
+        }
+
+        if (currentFileAjavaTypes != null && !ajavaTypes.isParsing()) {
+
+            // Retrieving annotations from current ajava file.
+            Set<AnnotationMirror> ajavaAnnos = currentFileAjavaTypes.getDeclAnnotation(elt);
             results.addAll(ajavaAnnos);
 
             if (elt.getKind() == ElementKind.METHOD) {
