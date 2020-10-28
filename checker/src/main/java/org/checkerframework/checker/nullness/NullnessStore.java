@@ -55,7 +55,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
     /**
      * Create a NullnessStore (copy constructor).
      *
-     * @param s a store te copy
+     * @param s a store to copy
      */
     public NullnessStore(NullnessStore s) {
         super(s);
