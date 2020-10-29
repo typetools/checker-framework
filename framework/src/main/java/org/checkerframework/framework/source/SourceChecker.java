@@ -480,17 +480,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private Map<String, String> activeOptions;
 
     /**
-     * Should the analysis assume that side effects to a value can change the type of aliased
-     * references?
-     *
-     * <p>For many type systems, once a local variable's type is refined, side effects to the
-     * variable's value do not change the variable's type annotations. For some type systems, a side
-     * effect to the value could change them; set this field to true.
-     */
-    // Not final so that subclasses can set it.
-    public boolean sideEffectsUnrefineAliases = false;
-
-    /**
      * The string that separates the checker name from the option name in a "-A" command-line
      * argument. This string may only consist of valid Java identifier part characters, because it
      * will be used within the key of an option.

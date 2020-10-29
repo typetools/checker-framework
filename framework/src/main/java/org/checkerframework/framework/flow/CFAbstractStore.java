@@ -200,22 +200,25 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 || analysis.checker.hasOption("assumePure")
                 || isSideEffectFree(atypeFactory, method))) {
 
+            boolean sideEffectsUnrefineAliases =
+                    ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;
+
             // update local variables
             // TODO: Also remove if any element/argument to the annotation is not
             // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-            if (analysis.checker.sideEffectsUnrefineAliases) {
+            if (sideEffectsUnrefineAliases) {
                 localVariableValues
                         .entrySet()
                         .removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
             }
 
             // update this value
-            if (analysis.checker.sideEffectsUnrefineAliases) {
+            if (sideEffectsUnrefineAliases) {
                 thisValue = null;
             }
 
             // update field values
-            if (analysis.checker.sideEffectsUnrefineAliases) {
+            if (sideEffectsUnrefineAliases) {
                 fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
             } else {
                 Map<FieldAccess, V> newFieldValues = new HashMap<>();
@@ -267,6 +270,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 fieldValues = newFieldValues;
             }
 
+            // update array values
             arrayValues.clear();
 
             // update method values
