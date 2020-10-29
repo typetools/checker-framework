@@ -186,8 +186,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
         // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
-        // LockChecker, but it affects only one of the two type hierarchies, so it cannot use that
-        // logic.
+        // Lockannotatedtypefactory, but it affects only one of the two type hierarchies, so it
+        // cannot use that logic.
         if (!isSideEffectFree(atypeFactory, method)) {
             // After the call to super.updateForMethodCall, only final fields are left in
             // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
