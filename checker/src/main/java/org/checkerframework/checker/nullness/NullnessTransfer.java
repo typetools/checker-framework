@@ -256,6 +256,7 @@ public class NullnessTransfer
      * A scanner that returns true if there is an occurrence of @PolyNull that is not at the top
      * level.
      */
+    // Not static so it can access field POLYNULL.
     private class ContainsPolyNullNotAtTopLevelScanner
             extends SimpleAnnotatedTypeScanner<Boolean, Void> {
         /**
