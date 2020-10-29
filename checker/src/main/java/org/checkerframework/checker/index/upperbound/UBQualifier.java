@@ -209,6 +209,11 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /**
+     * Return true if this is UBQualifier.PolyQualifier.
+     *
+     * @return true if this is UBQualifier.PolyQualifier
+     */
     @Pure
     public boolean isPoly() {
         return false;
@@ -1059,8 +1064,8 @@ public abstract class UBQualifier {
     private static class PolyQualifier extends UBQualifier {
         static final UBQualifier POLY = new PolyQualifier();
 
-        @Pure
         @Override
+        @Pure
         public boolean isPoly() {
             return true;
         }
