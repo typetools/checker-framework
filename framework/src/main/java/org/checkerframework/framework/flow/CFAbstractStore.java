@@ -200,6 +200,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 || analysis.checker.hasOption("assumePure")
                 || isSideEffectFree(atypeFactory, method))) {
 
+            // TODO: Also remove if any element/argument to the annotation is not
+            // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
             // update local variables
             if (analysis.checker.sideEffectsUnrefineAliases) {
                 localVariableValues
