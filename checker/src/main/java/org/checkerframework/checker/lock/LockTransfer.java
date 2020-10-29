@@ -29,7 +29,12 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
     /** The type factory associated with this transfer function. */
     private final LockAnnotatedTypeFactory atypeFactory;
 
-    /** Create a transfer function for the Lock Checker. */
+    /**
+     * Create a transfer function for the Lock Checker.
+     *
+     * @param analysis the analysis this transfer function belongs to
+     * @param checker the type-checker this transfer function belongs to
+     */
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         // Always run the Lock Checker with -AconcurrentSemantics turned on.
         super(analysis, /*useConcurrentSemantics=*/ true);
