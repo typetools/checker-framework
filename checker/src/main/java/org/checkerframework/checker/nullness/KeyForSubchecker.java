@@ -11,6 +11,10 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  */
 public class KeyForSubchecker extends BaseTypeChecker {
     {
-        this.sideEffectsUnrefineAliases = true;
+        // While strictly required for soundness, this leads to too many false positives.  Printing
+        // a key or putting it in a map erases all knowledge of what maps it was currently a key
+        // for.
+        // TODO: Revisit when side effect annotations are more precise.
+        // this.sideEffectsUnrefineAliases = true;
     }
 }
