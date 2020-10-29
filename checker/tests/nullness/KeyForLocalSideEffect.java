@@ -12,6 +12,7 @@ public class KeyForLocalSideEffect {
         if (m_local.containsKey(k)) {
             @KeyFor("m_local") String s = k;
             havoc();
+            // TODO: This should be an error, because s is no longer a key for m_local.
             @NonNull Integer val = m_local.get(s);
         }
     }
