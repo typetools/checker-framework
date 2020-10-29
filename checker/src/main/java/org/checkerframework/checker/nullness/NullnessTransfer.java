@@ -35,10 +35,10 @@ import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -253,48 +253,41 @@ public class NullnessTransfer
     }
 
     /**
+     * A scanner that returns true if there is an occurrence of @PolyNull that is not at the top
+     * level.
+     */
+    private class ContainsPolyNullNotAtTopLevelScanner
+            extends SimpleAnnotatedTypeScanner<Boolean, Void> {
+        /**
+         * True if the top-level type has not yet been processed (by the first call to
+         * defaultAction).
+         */
+        private boolean isTopLevel = true;
+
+        /** Create a ContainsPolyNullNotAtTopLevelScanner. */
+        ContainsPolyNullNotAtTopLevelScanner() {
+            super(Boolean::logicalOr, false);
+        }
+
+        @Override
+        protected Boolean defaultAction(AnnotatedTypeMirror type, Void p) {
+            if (isTopLevel) {
+                isTopLevel = false;
+                return false;
+            } else {
+                return type.hasAnnotation(POLYNULL);
+            }
+        }
+    }
+
+    /**
      * Returns true if there is an occurrence of @PolyNull that is not at the top level.
      *
      * @param t a type
      * @return true if there is an occurrence of @PolyNull that is not at the top level
      */
     private boolean containsPolyNullNotAtTopLevel(AnnotatedTypeMirror t) {
-        switch (t.getKind()) {
-            case BOOLEAN:
-            case BYTE:
-            case CHAR:
-            case DOUBLE:
-            case FLOAT:
-            case INT:
-            case LONG:
-            case SHORT:
-                // primitive types
-                return false;
-
-            case ARRAY:
-                AnnotatedArrayType at = (AnnotatedArrayType) t;
-                AnnotatedTypeMirror component = at.getComponentType();
-                return component.hasAnnotation(POLYNULL)
-                        || containsPolyNullNotAtTopLevel(component);
-
-            case DECLARED:
-                AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
-                for (AnnotatedTypeMirror typeArg : dt.getTypeArguments()) {
-                    if (typeArg.hasAnnotation(POLYNULL) || containsPolyNullNotAtTopLevel(typeArg)) {
-                        return true;
-                    }
-                }
-                return false;
-
-            case WILDCARD:
-            case TYPEVAR:
-                // If the wildcard or type variable cannot be instantiated by a collection or array
-                // type, it would be OK to return false.
-                return true;
-
-            default:
-                throw new BugInCF("Unexpected TypeKind %s for %s", t.getKind(), t);
-        }
+        return new ContainsPolyNullNotAtTopLevelScanner().visit(t);
     }
 
     @Override
