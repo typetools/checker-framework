@@ -168,7 +168,8 @@ fi
 # support wpi-many.sh's ability to delete projects without usable results
 # automatically
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
-    echo "dljc could not run the build successfully"
+    echo "dljc could not run the build successfully."
+    echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
     touch .cannot-run-wpi
 fi
 

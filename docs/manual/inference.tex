@@ -127,7 +127,7 @@ Each has advantages and disadvantages, discussed below:
 These type inference scripts appear in the \<checker/bin/> directory.
 The remainder of this chapter describes them
 (Sections~\ref{wpi-one}--\ref{wpi-insert}), then concludes with discussion
-that applies to all of them.x
+that applies to all of them.
 
 
 \sectionAndLabel{Running whole-program inference on a single project}{wpi-one}
@@ -140,7 +140,9 @@ A typical invocation of \<wpi.sh> is
 
 The result is a set of log files placed in the \<dljc-out> folder of the
 target project. The results of type-checking with each candidate set of
-annotations will be concatenated into the file \<dljc-out/wpi.log>.
+annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
+results (i.e. those obtained using the most precise, consistent set of annotations)
+will appear at the end of this file.
 
 The full syntax for invoking \<wpi.sh> is
 
@@ -164,7 +166,7 @@ Here is an explanation of the arguments:
   \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
   \<dljc> program without
   modification.  One argument is required: \<-\relax-checker>, which indicates
-  what type-checker to run (use the fully-qualified name of the checker).
+  what type-checker(s) to run (in the format described in~\ref{shorthand-for-checkers}).
   The \ahreforurl{https://github.com/kelloggm/do-like-javac}{documentation of do-like-javac}
   describes the other commands that its WPI tool supports.
 \end{description}
