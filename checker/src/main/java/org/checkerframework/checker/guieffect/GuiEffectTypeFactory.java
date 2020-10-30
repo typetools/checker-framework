@@ -424,11 +424,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
      * to infer the default effect of methods in anonymous inner classes. This use passes {@code
      * false} for {@code issueConflictWarning}, because it only needs the return value.
      *
-     * @param declaringType The type declaring the override
-     * @param overridingMethod The method override itself
-     * @param issueConflictWarning Whether or not to issue warnings.
-     * @param errorNode Node for reporting errors (the method declaration node)
-     * @return The min and max inherited effects.
+     * @param declaringType the type declaring the override
+     * @param overridingMethod the method override itself
+     * @param issueConflictWarning whether or not to issue warnings
+     * @param errorNode the method declaration node; used for reporting errors
+     * @return the min and max inherited effects
      */
     public Effect.EffectRange findInheritedEffectRange(
             TypeElement declaringType,
@@ -441,7 +441,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         ExecutableElement polyOverride = null;
 
         // We must account for explicit annotation, type declaration annotations, and package
-        // annotations
+        // annotations.
         boolean isUI =
                 (getDeclAnnotation(overridingMethod, UIEffect.class) != null
                                 || isUIType(declaringType))
@@ -450,7 +450,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Check for invalid overrides.
         // AnnotatedTypes.overriddenMethods retrieves all transitive definitions overridden by this
-        // declaration
+        // declaration.
         Map<AnnotatedTypeMirror.AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
                 AnnotatedTypes.overriddenMethods(elements, this, overridingMethod);
 
@@ -519,7 +519,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         // We don't need to issue warnings for inheriting from poly and a concrete effect.
         if (uiOverride != null && safeOverride != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
-            // enough to know there are at least 2 in conflict
+            // enough to know there are at least 2 in conflict.
             checker.reportWarning(
                     errorNode,
                     "override.effect.warning.inheritance",
