@@ -25,8 +25,10 @@ Inserting the inferred annotations into the program source code creates document
 qualifiers, which can aid programmer understanding and may make
 type-checking warnings more comprehensible.
 Storing annotations in side-files is more desirable if the program's source code cannot
-be modified for some reason, or if the typechecking is "one-off": that is, typechecking will
-be done once and its results will be evaluated, but it will not be done repeatedly.
+be modified for some reason, if the typechecking is "one-off" (typechecking will
+be done once and its results will be evaluated, but it will not be done
+repeatedly), or if the set of annotations is extremely voluminous and would
+clutter the code.
 
 
 Type inference is most effective when you run it on a program rather than
@@ -170,7 +172,7 @@ Here is an explanation of the arguments:
 You may need to wait a few minutes for the command to complete.
 
 
-\sectionAndLabel{Requirements for whole-program inference scripts}{wpi-shared-requirements}
+\subsectionAndLabel{Requirements for whole-program inference scripts}{wpi-shared-requirements}
 
 The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 
@@ -328,7 +330,65 @@ change your only copy.  One way to do this is to work in a clone of your
 repository that has no uncommitted changes.
 
 
-\sectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
+\sectionAndLabel{Inference results depend on uses in your program or test suite}{whole-program-inference-non-representative-uses}
+
+Type inference outputs the most specific type qualifiers that are
+consistent with all the source code it is given.
+(Section~\ref{whole-program-inference-ignores-some-code}
+explains when type inference ignores some code.)
+This may be different than the specification the programmer had in mind
+when writing tho code.
+If the program uses a method or field in a limited way, then the inferred
+annotations will be legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.
+
+Here are some examples:
+
+\begin{itemize}
+\item
+Suppose that your program (or test suite) currently calls
+method \<m1> only with non-null
+arguments.  The tool will infer that \<m1>'s parameter has
+\<@NonNull> type.  If you had intended the method to be able to
+take \<null> as an argument and you later add such a call, the type-checker
+will issue a warning because the inferred \<@NonNull>
+annotation is inconsistent with the new call.
+
+\item
+If your program (or test suite) passes only \<null> as an argument, the
+inferred type will be the bottom type, such as \<@GuardedByBottom>.
+
+\item
+Suppose that method \<m2> has no body, because it is defined in an interface or
+abstract class.
+Type inference can still infer types for its signature, based on the
+overriding implementations.
+If all the methods that override \<m2> return a non-null value, type
+inference will infer that \<m2>'s return type has \<@NonNull> type, even if
+some other overriding method is allowed to return
+\<null>.
+
+\end{itemize}
+
+If the program contains erroneous calls, the
+inferred annotations may reflect those errors.
+Suppose you intend method \<m3> to be called with
+non-null arguments, but your program contains an error and one of the calls
+to \<m3> passes \<null> as the argument.  Then the tool will infer that
+\<m3>'s parameter has \<@Nullable> type.
+
+
+Whole-program inference is a ``forward analysis''.
+% This might change in the future.
+It determines a method parameter's type
+annotation based on what arguments are passed to the method but not on how the
+parameter is used within the method body.
+It determines a method's return type based on code in the method body but
+not on uses of the method return value in client code.
+
+
+\subsectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
 
 Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
@@ -337,9 +397,10 @@ the scope do not contribute to the inferred type, and declarations within
 the scope are not changed.  You should remove \<@SuppressWarnings> annotations
 from the class declaration of any class you wish to infer types for.
 
-As noted below, whole-program inference requires invocations of your code, or
-assignments to your methods, to generalize from.  If a field is set via
-reflection (such as via injection), then whole-program inference would produce
+As noted above, whole-program inference generalizes from invocations of methods and
+assignments to fields.  If a field is set via
+reflection (such as via injection), there are no explicit assignments to it
+for type inference to generalize from, and type inference will produce
 an inaccurate result.  There are two ways to make whole-program inference
 ignore such a field.
 %
@@ -360,87 +421,21 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\sectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
+\subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
 
 With any type inference tool, it is a good idea to manually examine the
-results.
-
-\begin{itemize}
-\item
-Whole-program inference can produce undesired results when your code has
-non-representative or erroneous calls to a particular method or assignments to a
-particular field, as explained below.
-This is especially noticeable when the arguments or assignments are literals.
-
-\item
-If an annotation is inferred for a \emph{use} of a type variable,
-it might be more appropriate for you to move the annotation
-to the corresponding upper bounds of the type variable \emph{declaration}.
-
-\end{itemize}
-
-
-\subsectionAndLabel{Poor whole-program inference results due to non-representative uses}{whole-program-inference-non-representative-uses}
-
-TODO:
-Type inference outputs the most specific type qualifiers that are
-consistent with all the source code it is given.  If the given code can never
-passes \<null> to method \<m>, type inference will infer that \<m>'s formal
-parameter type is \<@NonNull>, even if \<m> was designed to be able to take
-\<null> as an argument.  Similarly, if all the methods that override
-\<m> return a non-null value, type inference will infer that \<m>'s return
-type has \<@NonNull> type, even if some other overriding method can return
-\<null>.
-
-
-Whole-program inference determines a method parameter's type
-annotation based on what arguments are passed to the method, but not on how the
-parameter is used within the method body.
-
-\begin{itemize}
-\item
-If the program contains erroneous calls, the
-inferred annotations may reflect those errors.
-
-Suppose you intend method \<m2> to be called with
-non-null arguments, but your program contains an error and one of the calls
-to \<m2> passes \<null> as the argument.  Then the tool will infer that
-\<m2>'s parameter has \<@Nullable> type.
-You should correct the bug and re-run inference.
-
-\item
-If the program uses (say) a method in a limited way, then the inferred
-annotations will be legal for the program as
-currently written but may not be as general as possible and may not
-accommodate future program changes.
-
-Here are some examples:
-
-\begin{itemize}
-\item
-Suppose that your program (or test suite) currently calls
-method \<m1> only with non-null
-arguments.  The tool will infer that \<m1>'s parameter has
-\<@NonNull> type.  If you had intended the method to be able to
-take \<null> as an argument and you later add such a call, the type-checker
-will issue a warning because the automatically-inserted \<@NonNull>
-annotation is inconsistent with the new call.
-
-\item
-If your program (or test suite) passes only \<null> as an argument, the
-inferred type will be the bottom type, such as \<@GuardedByBottom>.
-
-\item
-It is common for whole-program inference to infer
-\<@Interned> and \<@Regex> annotations on String variables for which the
-analyzed code only uses a constant string.
-
-\end{itemize}
-
-In each case, you can correct the inferred results manually, or you can
+results.  This can help you find bugs in your code or places where type
+inference inferred an overly-precise result.
+You can correct the inferred results manually, or you can
 add tests that pass additional values and then re-run inference.
 
-\end{itemize}
+When arguments or assignments are literals, whole-program inference
+commonly infers overly precise type annotations, such as \<@Interned> and
+\<@Regex> annotations when the analyzed code only uses a constant string.
+
+When an annotation is inferred for a \emph{use} of a type variable,
+you may wish to move the annotation
+to the corresponding upper bounds of the type variable \emph{declaration}.
 
 
 \sectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
@@ -489,6 +484,8 @@ type-checking fast.  However, it has some disadvantages:
 
 
 
-%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax
-%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom
-%%  LocalWords:  IgnoreInWholeProgramInference
+%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax CFI
+%%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom dljc
+%%  LocalWords:  IgnoreInWholeProgramInference typechecking Inference'' m3
+% LocalWords:  PROJECTDIR awk gradle mvn python2 wget subprocess32 github
+% LocalWords:  securerandom astub typecheck
