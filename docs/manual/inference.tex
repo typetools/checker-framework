@@ -3,8 +3,8 @@
 
 This chapter is about tools that infer annotations for your
 program's method signatures and fields, before you run a type-checker.
-(To learn about local type inference within a method body,
-see Section~\ref{type-refinement}.)
+To learn about local type inference within a method body,
+see Section~\ref{type-refinement}.
 
 A typical workflow (Section~\ref{tips-about-writing-annotations}) is for a
 programmer to first write annotations on method signatures and fields, then
@@ -17,15 +17,9 @@ program's source code.  Your program still might not type-check if your
 program contains a bug or contains tricky code that is beyond the
 capabilities of the type checker.
 
-These qualifiers can be inserted into the source code or the
-class file, or stored separately in an annotation file.
-They can be viewed and adjusted by the programmer, and can
-be used by tools such as the type-checker.
-
-Type inference can either modify your program to insert annotations, or it
-can store the annotations in a separate file.  The separate file is read by
-the type-checker, but you lose the documentation benefits of the
-annotations for programmers who read the source code.
+The qualifiers are output into an annotation file.  They can be viewed and
+adjusted by the programmer, can be used by tools such as the type-checker,
+and can be inserted into the source code or the class file.
 
 Inserting the inferred annotations into the program source code creates documentation in the form of type
 qualifiers, which can aid programmer understanding and may make
@@ -40,10 +34,6 @@ on a library --- unless you also run it on an extensive test suite for the
 library.  See Section~\ref{whole-program-inference-non-representative-uses}
 for an explanation.
 
-
-
-For both of these reasons, you may wish to double-check inference results before
-using them, or you may need to manually revise some of the inferred annotations.
 
 Type inference is costly:  it takes several times longer than
 type-checking does.  However, it only needs to be run once, after which
