@@ -1,3 +1,5 @@
+# Remove Checker Framework annotations from all files under the current directory.
+
 preplace '^import org.checkerframework.*\n' ''
 preplace '^ *\@(Deterministic|EnsuresNonNull|FormatMethod|Pure|SideEffectFree)(\([^()]*\))?\n' ''
 preplace '\@A(\([^()"]("[^"]*"[^()"]*)*\))? ' ''
@@ -294,3 +296,5 @@ preplace '\@UpperBoundBottom(\([^()"]("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@UpperBoundUnknown(\([^()"]("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@Value(\([^()"]("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@WholeProgramInferenceBottom(\([^()"]("[^"]*"[^()"]*)*\))? ' ''
+preplace '\([ \n]*[A-Za-z][A-Za-z0-9_]*(<[^<>]*>)? this\)' '()'
+preplace '\([ \n]*[A-Za-z][A-Za-z0-9_]*(<[^<>]*>)? this,[ \t]*' '('
