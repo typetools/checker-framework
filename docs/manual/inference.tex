@@ -1,70 +1,48 @@
 \htmlhr
 \chapterAndLabel{Type inference}{type-inference}
 
-There are two different tasks that are commonly called ``type inference'':
-\begin{enumerate}
-\item
-  \emph{Local} type inference during type-checking:
-  The type-checker fills in an appropriate type where the programmer didn't
-  write one, but does not change the source code.
-  See Section~\ref{type-inference-refinement}.
-\item
-  \emph{Global} type inference as a separate step:
-  A type inference tool finds a set of type qualifiers that are consistent
-   with the source code.
-  See Section~\ref{global-type-inference}.
-\end{enumerate}
+This chapter is about tools that you can run to infer annotations for your
+entire program's method signatures and fields, before running a type-checker.
+(To learn about local type inference within a method body,
+see Section~\ref{type-refinement}.)
 
-Each variety has its own advantages, discussed below.
-Advantages of \emph{all} varieties of type inference include:
-\begin{itemize}
-\item
-  Less work for the programmer.
-\item
-  The tool chooses the most general type, whereas a programmer might
-  accidentally write a more-specific, less-generally-useful annotation.
-\end{itemize}
+A typical workflow (Section~\ref{tips-about-writing-annotations}) is for a
+programmer to first write annotations on method signatures and fields, then
+run a type-checker.  Type inference performs the first step automatically
+for you.  This saves time for programmers who would otherwise have to
+understand the code, then write annotations manually.
 
-All varieties of type inference share a common disadvantage: increased computational
-cost. Because type-checking is modular and local type inference is restricted to a single method body,
-the cost of local inference is small. Global type inference might need to consider the entire program to infer a single
-type qualifier, so it is usually significantly more expensive than type-checking (sometimes many times more expensive).
+Type inference can either modify your program to insert annotations, or it
+can store the annotations in a separate file.  The separate file is read by
+the type-checker, but you lose the documentation benefits of the
+annotations for programmers who read the source code.
 
-\sectionAndLabel{Local type inference during type-checking}{type-inference-refinement}
+Type inference is a static analysis --- it does not run your program, but
+merely analyzes your program's source code.
 
-During type-checking, if certain variables have no programmer-written type qualifier, the
-type-checker determines whether there is some type qualifier that would
-permit the program to type-check.  If so, the type-checker uses that type
-qualifier, but does not change the source code.  Each time the
-type-checker runs, it re-infers the type qualifier for that variable.  If
-no type qualifier exists that permits the program to type-check, the
-type-checker issues a warning.
+Type inference is most effective when you run it on a program rather than
+on a library --- unless you also run it on an extensive test suite for the
+library.  Type inference outputs the most specific type qualifiers that are
+consistent with all the source code it is given.  If the given code can never
+passes \<null> to method \<m>, type inference will infer that \<m>'s formal
+parameter type is \<@NonNull>, even if \<m> was designed to be able to take
+\<null> as an argument.  Similarly, if all the methods that override
+\<m> return a non-null value, type inference will infer that \<m>'s return
+type has \<@NonNull> type, even if some other overriding method can return
+\<null>.
 
-Local type inference is built into the Checker Framework.
-Every checker automatically uses it.  As a result, a programmer typically
-does not have to write any qualifiers inside the body of a method
-(except occasionally on type arguments).
-However, it primarily
-works within a method, not across method boundaries.
-The source code must already contain annotations for method
-signatures (arguments and return values) and fields.
+The goal of type inference is to find a set of annotations that make your
+code type-check:  the annotations are consistent with the source code and
+with one another.  Type inference can fail at this task in no such set
+exists, because your program contains a bug or contains tricky code that is
+beyond the capabilities of the type checker.
 
-Advantages of this variety of type inference include:
-\begin{itemize}
-\item
-  If the type qualifier is obvious to the programmer, then omitting it
-  can reduce annotation clutter in the program.
-\item
-  If the code changes, then there is no old annotation that
-  might need to be updated.
-\item
-  Within-method type inference occurs automatically.
-  The programmer doesn't have to do anything to take advantage of it.
-\end{itemize}
+For both of these reasons, you may wish to double-check inference results before
+using them, or you may need to manually revise some of the inferred annotations.
 
-For more details about local type inference during type-checking, also
-known as ``flow-sensitive type refinement'', see
-Section~\ref{type-refinement}.
+Type inference is costly:  it usually takes several times longer than
+type-checking does.  However, it only needs to be run once, after which
+programmers can use and possibly modify the results.
 
 
 \sectionAndLabel{Global type inference}{global-type-inference}
@@ -79,21 +57,6 @@ class file, or stored separately in an annotation file.
 They can be viewed and adjusted by the programmer, and can
 be used by tools such as the type-checker.
 
-Advantages of this variety of type inference include:
-\begin{itemize}
-\item
-  The inference may be more precise by taking account of the entire program
-  rather than just reasoning one method at a time.
-\item
-  The inference process is fully automatic, so it can save time for programmers who
-  would otherwise have to write many annotations.
-\item
-  The inference process does not require the user to understand the source code
-  of the target program unless the inference tool cannot find a consistent set of
-  type qualifiers. For type systems that require few type qualifiers and rarely issue
-  errors (e.g. high-precision type systems that detect rare security errors), this sort
-  of inference can enable a single user scan many potentially-erroneous codebases.
-\end{itemize}
 
 Inserting the inferred annotations into the program source code creates documentation in the form of type
 qualifiers, which can aid programmer understanding and may make
@@ -102,7 +65,8 @@ Storing annotations in side-files is more desirable if the program's source code
 be modified for some reason, or if the typechecking is "one-off": that is, typechecking will
 be done once and its results will be evaluated, but it will not be done repeatedly.
 
-\subsectionAndLabel{Type inference tools}{type-inference-tools}
+
+\sectionAndLabel{Type inference tools}{type-inference-tools}
 
 This section lists tools that take a program and output a set of
 annotations for it.
@@ -110,29 +74,31 @@ It first lists tools that work only for a single type system (but may do a
 more accurate job for that type system)
 then lists general tools that work for any type system.
 
-
-\subsubsectionAndLabel{Type inference for specific type systems}{type-inference-tools-specialized}
-
+\begin{description}
+  \item[For the Nullness Checker:]
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
 
+\item[For the Purity Checker:]
 If you run the Checker Framework with the \<-AsuggestPureMethods>
 command-line option, it will suggest methods that can be marked as
 \<@SideEffectFree>, \<@Deterministic>, or \<@Pure>; see
 Section~\ref{type-refinement-purity}.
 
-
-\subsubsectionAndLabel{Type inference for any type system}{type-inference-tools-general}
-
+\item[WPI, for any type system:]
 ``Whole program inference'', or WPI, utilizes the \<-Ainfer=\emph{outputformat}>
 command-line option.  See Section~\ref{whole-program-inference}.
 
+\item[CFI, for any type system:]
 \href{https://github.com/opprop/checker-framework-inference}{``Checker
   Framework Inference''}, or CFI, is a type inference framework built on
 the Checker Framework.  You need to slightly rewrite your type system to
-work with CFI\@.  The CFI repository contains rewritten versions of some of
-the type systems that are distributed with the Checker Framework.
+work with CFI\@.  The CFI repository
+(\url{{https://github.com/opprop/checker-framework-inference}} contains
+rewritten versions of some of the type systems that are distributed with
+the Checker Framework.
 
+\item[Cascade, for any type system:]
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
 is an Eclipse plugin that implements interactive type qualifier inference.
 Cascade is interactive rather than fully-automated:  it makes it easier for
@@ -144,6 +110,8 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 % See last commit at https://github.com/reprogrammer/cascade/commits/master .
 Cascade was last updated in November 2014, so it might or might not work for you.
+
+\end{description}
 
 
 \sectionAndLabel{Whole-program inference}{whole-program-inference}
@@ -187,9 +155,10 @@ Each has advantages and disadvantages, discussed below:
     scripts because it does not automatically infer how to build your project.
 \end{itemize}
 
-All WPI-related scripts appear in the \<checker/bin/> directory.
+These type inference scripts appear in the \<checker/bin/> directory.
 
-\subsectionAndLabel{Shared requirements for whole-program inference scripts that do not insert annotations into source code}{wpi-shared-requirements}
+
+\sectionAndLabel{Shared requirements for whole-program inference scripts that do not insert annotations into source code}{wpi-shared-requirements}
 
 The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 
@@ -213,7 +182,8 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
   subprocess32.
 \end{itemize}
 
-\subsectionAndLabel{Running whole-program inference on a single project}{wpi-one}
+
+\sectionAndLabel{Running whole-program inference on a single project}{wpi-one}
 
 The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same. See Section~\ref{wpi-shared-requirements}
 for the list of requirements.
@@ -257,7 +227,8 @@ Here is an explanation of the arguments:
 
 You may need to wait a few minutes for the command to complete.
 
-\subsectionAndLabel{Running whole-program inference on many projects}{wpi-many}
+
+\sectionAndLabel{Running whole-program inference on many projects}{wpi-many}
 
 The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same. See Section~\ref{wpi-shared-requirements}
 for the list of requirements.
@@ -340,7 +311,8 @@ which \<-o> and \<-i> are mandatory:
 
 \end{description}
 
-\subsectionAndLabel{Whole-program inference that inserts annotations into source code}{wpi-insert}
+
+\sectionAndLabel{Whole-program inference that inserts annotations into source code}{wpi-insert}
 
 \begin{sloppypar}
 To use this version of whole-program inference, make sure that
@@ -386,7 +358,8 @@ code, so that you can see what changes it made and so that it does not
 change your only copy.  One way to do this is to work in a clone of your
 repository that has no uncommitted changes.
 
-\subsectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
+
+\sectionAndLabel{Whole-program inference ignores some code}{whole-program-inference-ignores-some-code}
 
 Whole-program inference ignores code within the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
@@ -418,7 +391,7 @@ Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 
-\subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
+\sectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
@@ -438,7 +411,7 @@ to the corresponding upper bounds of the type variable \emph{declaration}.
 \end{itemize}
 
 
-\subsubsectionAndLabel{Poor whole-program inference results due to non-representative uses}{whole-program-inference-non-representative-uses}
+\subsectionAndLabel{Poor whole-program inference results due to non-representative uses}{whole-program-inference-non-representative-uses}
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
@@ -490,7 +463,7 @@ add tests that pass additional values then re-run inference.
 \end{itemize}
 
 
-\subsectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
+\sectionAndLabel{How whole-program inference works}{how-whole-program-inference-works}
 
 This section explains how the \<wpi.sh> and \<infer-and-annotate.sh> scripts work.  If you
 merely want to run the scripts and you are not encountering trouble, you can
@@ -501,7 +474,7 @@ types for fields and method signatures.  The output of this step
 is a \<.jaif> (for \<infer-and-annotate.sh>) or stub (for \<wpi.sh>) file that records the inferred types.
 Each script adds the inferred annotation to the next run, so that the checker takes them into
 account (and checks them). \<wpi.sh> does this using the \<-AmergeStubsWithSource> command-line
-option to the Checker Framework; \<infer-and-annotate.sh> insers the inferred annotations in the program using the
+option to the Checker Framework; \<infer-and-annotate.sh> inserts the inferred annotations in the program using the
 Annotation File Utilities(\myurl{https://checkerframework.org/annotation-file-utilities/}).
 
 The process halts when there are no more changes to the inference results,

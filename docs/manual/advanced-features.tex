@@ -678,15 +678,18 @@ suppress the warning if the code is correct.
 
 \sectionAndLabel{Type refinement (flow-sensitive type qualifier inference)}{type-refinement}
 
-The
-checkers treat expressions within a method body as having a
-subtype of their declared or defaulted (Section~\ref{defaults})
-type.
+A checker can sometimes deduce that an expression's type is more specific
+than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defaults}).
+This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
-Type refinement eliminates some false positive warnings.
-Type refinement also
-reduces your burden of writing type qualifiers in your program,
-since you do not need to write type qualifiers on local variables.
+Due to local type inference, a programmer typically
+does not have to write any qualifiers on local variables within a method body
+(except occasionally on type arguments).
+However, the programmer must write type annotations for method
+signatures (arguments and return values) and fields, unless the default
+annotations are correct..
+Local type inference does not change the source code; it re-runs every time
+you run a checker.
 
 
 \subsectionAndLabel{Type refinement examples}{type-refinement-examples}
