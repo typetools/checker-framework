@@ -1278,7 +1278,7 @@ You can download it from \myurl{https://sourceforge.net/projects/tide/}.
 
 There are two different tasks that are commonly called ``type inference''.
 You are probably interested in global type inference to replace the need to manually
-annotate a program's source code; see Section~\ref{global-type-inference}.  This section
+annotate a program's source code; see Section~\ref{type-inference}.  This section
 explains the two different varieties of type inference.
 
 
@@ -1298,7 +1298,7 @@ works within a method, not across method boundaries.
 Every method
 signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
-(Section~\ref{global-type-inference}).
+(Section~\ref{type-inference}).
 A
 programmer rarely writes any qualifiers
 inside the body of a method (except sometimes on type arguments).
@@ -1322,7 +1322,7 @@ Advantages of this variety of type inference include:
 As a separate step before type-checking, a type inference tool takes the
 whole program as input, and outputs a set of type qualifiers that might be
 inserted into the source code or the class file, or stored in some other format
-(Section~\ref{global-type-inference}).  They can be used by other
+(Section~\ref{type-inference}).  They can be used by other
 tools.
 
 A programmer usually runs inference just once.  The programmer can view and adjust the

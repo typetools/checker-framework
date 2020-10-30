@@ -681,13 +681,13 @@ A checker can sometimes deduce that an expression's type is more specific
 than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defaults}).
 This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
-Due to local type inference, a programmer typically
+Due to local type refinement, a programmer typically
 does not have to write any qualifiers on local variables within a method body
 (except occasionally on type arguments).
 However, the programmer must write type annotations for method
 signatures (arguments and return values) and fields, unless the default
 annotations are correct..
-Local type inference does not change the source code; it re-runs every time
+Local type refinement does not change the source code; it re-runs every time
 you run a checker.
 
 
@@ -760,7 +760,7 @@ The checker never treats a variable as
 a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
 type is never treated as possibly-null, and such an assignment is always illegal.
 
-The functionality has a variety of names:  automatic type refinement,
+The functionality has a variety of names:  type refinement,
 flow-sensitive type qualifier inference, local type inference, and
 sometimes just ``flow''.
 
