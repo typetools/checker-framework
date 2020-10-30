@@ -60,7 +60,7 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
 fi
 
 if [ "x${DIR}" = "x" ]; then
-    echo "wpi.sh was called without a -d argument. Running on the current directory instead."
+    echo "wpi.sh: no -d argument supplied, using the current directory."
     DIR=$(pwd)
 fi
 
@@ -141,14 +141,13 @@ function configure_and_exec_dljc {
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
-if [ ! -d "${SCRIPTDIR}/.do-like-javac/do-like-javac" ]; then
-    mkdir -p "${SCRIPTDIR}/.do-like-javac/"
-    git -C "${SCRIPTDIR}/.do-like-javac/do-like-javac" clone https://github.com/kelloggm/do-like-javac --depth 1
+if [ -d "${SCRIPTDIR}/.do-like-javac" ]; then
+    git -C "${SCRIPTDIR}/.do-like-javac" pull
 else
-    git -C "${SCRIPTDIR}/.do-like-javac/do-like-javac" pull
+    git -C "${SCRIPTDIR}" clone https://github.com/kelloggm/do-like-javac --depth 1 .do-like-javac || (echo "Cannot clone do-like-javac" && exit 1)
 fi
 
-DLJC="${SCRIPTDIR}/.do-like-javac/do-like-javac/dljc"
+DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
