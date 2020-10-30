@@ -1,8 +1,7 @@
 Version 3.7.1, November 2, 2020
 
-New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run
-whole-program inference using the -Ainfer=stubs mode, without modifying the
-source code of the target program(s).
+New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
+inference, without modifying the source code of the target program(s).
 
 The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
 
