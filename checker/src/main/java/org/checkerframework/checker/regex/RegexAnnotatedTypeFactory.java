@@ -199,7 +199,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
@@ -227,7 +228,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);

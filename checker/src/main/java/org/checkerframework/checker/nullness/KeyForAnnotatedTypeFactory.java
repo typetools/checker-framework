@@ -211,6 +211,7 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
+    /// TODO: eliminate
     /** KeyForQualifierHierarchy */
     private final class KeyForQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
@@ -261,7 +262,8 @@ public class KeyForAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
@@ -281,7 +283,8 @@ public class KeyForAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
 
                 List<String> a1Values = extractValues(a1);

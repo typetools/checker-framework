@@ -629,7 +629,8 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
@@ -642,7 +643,8 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return FBCBOTTOM;
