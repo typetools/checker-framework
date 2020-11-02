@@ -73,19 +73,22 @@ function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
       if [ -f gradlew ]; then
-    chmod +x gradlew
-    GRADLE_EXEC="./gradlew"
+        chmod +x gradlew
+        GRADLE_EXEC="./gradlew"
       else
-    GRADLE_EXEC="gradle"
+        GRADLE_EXEC="gradle"
+      fi
+      if [ ! -d .gradle ]; then
+        touch ".gradle"
       fi
       CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
       BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
   elif [ -f pom.xml ]; then
       if [ -f mvnw ]; then
-    chmod +x mvnw
-    MVN_EXEC="./mvnw"
+        chmod +x mvnw
+        MVN_EXEC="./mvnw"
       else
-    MVN_EXEC="mvn"
+        MVN_EXEC="mvn"
       fi
       # if running on java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
