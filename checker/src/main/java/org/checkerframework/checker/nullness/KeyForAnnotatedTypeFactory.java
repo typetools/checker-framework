@@ -211,7 +211,6 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    /// TODO: eliminate
     /** KeyForQualifierHierarchy */
     private final class KeyForQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
