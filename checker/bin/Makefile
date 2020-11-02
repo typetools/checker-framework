@@ -19,4 +19,3 @@ shell-script-style:
 showvars:
 	@echo "SH_SCRIPTS=${SH_SCRIPTS}"
 	@echo "BASH_SCRIPTS=${BASH_SCRIPTS}"
-
