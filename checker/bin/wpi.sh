@@ -79,7 +79,7 @@ function configure_and_exec_dljc {
         GRADLE_EXEC="gradle"
       fi
       if [ ! -d .gradle ]; then
-        touch ".gradle"
+        mkdir ".gradle"
       fi
       CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
       BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
