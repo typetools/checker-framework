@@ -22,6 +22,11 @@ Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally
 New method BaseTypeVisitor#visitAnnotatedType(List, Tree) centralizes checking
 of user-written type annotations, even when parsed in declaration locations.
 
+Closed issues:
+#868, #1908, #2075, #3349, #3362, #3569, #3614, #3637, #3709, #3710, #3711,
+#3720, #3730, #3742, #3760, #3770, #3775, #3776, #3792, #3793, #3794, #3819,
+#3831.
+
 ---------------------------------------------------------------------------
 
 Version 3.7.0, October 1, 2020
