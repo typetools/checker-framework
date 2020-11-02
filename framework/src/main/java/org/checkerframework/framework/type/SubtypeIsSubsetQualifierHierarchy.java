@@ -123,8 +123,9 @@ public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierH
      *
      * @param kind the qualifier kind
      * @param values the annotation's {@code values} element/argument
+     * @return an annotation of the given kind and values
      */
-    public AnnotationMirror createAnnotationMirrorWithValue(
+    private AnnotationMirror createAnnotationMirrorWithValue(
             QualifierKind kind, LinkedHashSet<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
         builder.setValue("value", values.toArray());
