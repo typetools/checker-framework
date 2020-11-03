@@ -37,6 +37,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -124,7 +126,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected static boolean flowByDefault = true;
 
     /** To cache the supported monotonic type qualifiers. */
-    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+    private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
@@ -145,11 +147,11 @@ public abstract class GenericAnnotatedTypeFactory<
     protected QualifierDefaults defaults;
 
     /** to handle dependent type annotations */
-    protected DependentTypesHelper dependentTypesHelper;
+    protected @Nullable DependentTypesHelper dependentTypesHelper;
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
-     * restrictions. Arrays are handled by separate field {@link #arraysAreRelevant}.
+     * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
      */
     public @Nullable Set<TypeMirror> relevantJavaTypes;
 
@@ -554,7 +556,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return a new {@link DependentTypesHelper}
      */
-    protected DependentTypesHelper createDependentTypesHelper() {
+    protected @Nullable DependentTypesHelper createDependentTypesHelper() {
         DependentTypesHelper helper = new DependentTypesHelper(this);
         if (helper.hasDependentAnnotations()) {
             return helper;
@@ -776,7 +778,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the annotation on expression or null if one does not exist
      * @throws FlowExpressionParseException thrown if the expression cannot be parsed
      */
-    public AnnotationMirror getAnnotationFromJavaExpressionString(
+    public @Nullable AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
             throws FlowExpressionParseException {
 
@@ -791,7 +793,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param clazz the Class of the annotation
      * @return the annotation on expression or null if one does not exist
      */
-    public AnnotationMirror getAnnotationFromReceiver(
+    public @Nullable AnnotationMirror getAnnotationFromReceiver(
             Receiver receiver, Tree tree, Class<? extends Annotation> clazz) {
 
         AnnotationMirror annotationMirror = null;
@@ -872,7 +874,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return an AnnotationMirror representing the type in the store at the given location from
      *     this type factory's type system, or null if one is not available
      */
-    public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+    public @Nullable AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
             throws FlowExpressionParseException {
         Receiver rec = getReceiverFromJavaExpressionString(expression, currentPath);
@@ -908,7 +910,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Note that flowResult contains analysis results for Trees from multiple classes which are
      * produced by multiple calls to performFlowAnalysis.
      */
-    protected AnalysisResult<Value, Store> flowResult;
+    protected @Nullable AnalysisResult<Value, Store> flowResult;
 
     /**
      * A mapping from methods (or other code blocks) to their regular exit store (used to check
@@ -1003,11 +1005,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the store immediately before a given {@link Node}.
+     * Returns the store immediately before a given node.
      *
-     * @return the store immediately before a given {@link Node}
+     * @param node a node whose pre-store to return
+     * @return the store immediately before {@code node}
      */
-    public Store getStoreBefore(Node node) {
+    public @Nullable Store getStoreBefore(Node node) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreBefore(node);
         }
@@ -1035,11 +1038,13 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the store immediately after a given set of {@link Node}s.
+     * Returns the store immediately after a given set of nodes.
      *
-     * @return the store immediately after a given set of {@link Node}s
+     * @param nodes the nodes whose post-stores to LUB
+     * @return the LUB of the stores store immediately after {@code nodes}
      */
-    public Store getStoreAfter(Set<Node> nodes) {
+    // The result is non-null if the argument is non-empty.
+    public @Nullable Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
             Store s = getStoreAfter(node);
@@ -1091,12 +1096,15 @@ public abstract class GenericAnnotatedTypeFactory<
      * uses a {@link Node} in a rather unusual way. Callers should probably be rewritten to not use
      * a {@link Node} at all.
      *
+     * @param <T> the class of the node to return
+     * @param tree a tree in which to search for a node of class {@code kind}
+     * @param kind the class of the node to return
+     * @return the first {@link Node} for a given {@link Tree} that has class {@code kind}
      * @see #getNodesForTree(Tree)
      * @see #getStoreBefore(Tree)
      * @see #getStoreAfter(Tree)
-     * @return the first {@link Node} for a given {@link Tree} that of class {@code kind}.
      */
-    public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
+    public <T extends Node> @Nullable T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
         Set<Node> nodes = getNodesForTree(tree);
         for (Node node : nodes) {
             if (node.getClass() == kind) {
@@ -1118,7 +1126,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Perform a org.checkerframework.dataflow analysis over a single class tree and its nested
      * classes.
+     *
+     * @param classTree the class to analyze
      */
+    @EnsuresNonNull("flowResult")
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
@@ -1463,7 +1474,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return AnnotatedTypeMirror of {@code lhsTree}
      */
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
-        AnnotatedTypeMirror res = null;
+        AnnotatedTypeMirror res;
         boolean oldUseFlow = useFlow;
         boolean oldShouldCache = shouldCache;
         useFlow = false;
@@ -1650,7 +1661,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
         if (iUseFlow) {
             Value as = getInferredValueFor(tree);
-
             if (as != null) {
                 applyInferredAnnotations(type, as);
                 log(
@@ -1942,9 +1952,9 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Create a new CFGVisualizer.
      *
-     * @return a new CFGVisualizer
+     * @return a new CFGVisualizer, or null if none will be used on this run
      */
-    protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
+    protected @Nullable CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
             if (flowdotdir.equals("")) {
