@@ -138,11 +138,13 @@ A typical invocation of \<wpi.sh> is
   wpi.sh -- --checker nullness
 \end{Verbatim}
 
-The result is a set of log files placed in the \<dljc-out> folder of the
+The result is a set of log files placed in the \<dljc-out/> folder of the
 target project. The results of type-checking with each candidate set of
 annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
 results (i.e. those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
+The inferred annotations appear in \<.stub> files in a
+temporary directory whose name appears in the \<dlcj-out/wpi.log> file.
 
 The full syntax for invoking \<wpi.sh> is
 
