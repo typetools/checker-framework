@@ -7,7 +7,7 @@
 # https://checkerframework.org/manual/#whole-program-inference
 
 
-while getopts "d:t:" opt; do
+while getopts "d:t:b:" opt; do
   case $opt in
     d) DIR="$OPTARG"
        ;;
