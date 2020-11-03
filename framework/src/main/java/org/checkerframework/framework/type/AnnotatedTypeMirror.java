@@ -807,20 +807,16 @@ public abstract class AnnotatedTypeMirror {
      *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
-        boolean result = uninferredTypeArgumentScanner.visit(this);
-        // Reset the scanner to clear out the map that prevents infinite recursion.
-        uninferredTypeArgumentScanner.reset();
-        return result;
+        // Don't save this class as it takes too much memory.
+        return new SimpleAnnotatedTypeScanner<>(
+                        (type, p) ->
+                                type.getKind() == TypeKind.WILDCARD
+                                        && ((AnnotatedWildcardType) type)
+                                                .isUninferredTypeArgument(),
+                        Boolean::logicalOr,
+                        false)
+                .visit(this);
     }
-
-    /** The implementation of the visitor for #containsUninferredTypeArguments. */
-    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
-            new SimpleAnnotatedTypeScanner<>(
-                    (type, p) ->
-                            type.getKind() == TypeKind.WILDCARD
-                                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
-                    Boolean::logicalOr,
-                    false);
 
     /**
      * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
