@@ -296,6 +296,13 @@ which \<-o> and \<-i> are mandatory:
   modified. These repositories must have a third entry in the infile
   indicating their origin. Default is "\$USER".
 
+\item[-g GRADLECACHEDIR]
+  The directory to use for the `-g` option to Gradle (the Gradle home
+  directory). This option is ignored if the target project does not
+  build with Gradle. The default is `.gradle` relative to the target
+  project (i.e. each target project has its own Gradle home). This default
+  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+
 \end{description}
 
 

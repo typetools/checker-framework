@@ -6,7 +6,7 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
-while getopts "o:i:u:t:" opt; do
+while getopts "o:i:u:t:g:" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
@@ -15,6 +15,8 @@ while getopts "o:i:u:t:" opt; do
     u) GITHUB_USER="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
+       ;;
+    g) GRADLECACHEDIR="$OPTARG"
        ;;
     \?) # the remainder of the arguments will be passed to DLJC directly
        ;;
@@ -72,6 +74,10 @@ fi
 
 if [ "x${GITHUB_USER}" = "x" ]; then
     GITHUB_USER="${USER}"
+fi
+
+if [ "x${GRADLECACHEDIR}" = "x" ]; then
+  GRADLECACHEDIR=".gradle"
 fi
 
 export JAVA_HOME="${JAVA11_HOME}"
@@ -136,7 +142,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -- "$@" &> "${RESULT_LOG}"
+    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
