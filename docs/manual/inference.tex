@@ -147,7 +147,7 @@ will appear at the end of this file.
 The full syntax for invoking \<wpi.sh> is
 
 \begin{Verbatim}
-  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] -- [DLJC-ARGS]
+  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-b EXTRA_BUILD_ARGS] -- [DLJC-ARGS]
 \end{Verbatim}
 
 Arguments in square brackets are optional.
@@ -160,6 +160,11 @@ Here is an explanation of the arguments:
 
 \item[-t TIMEOUT]
   The timeout for running the checker, in seconds
+
+\item[-b EXTRA_BUILD_ARGS]
+  Extra arguments to pass to the build script invocation. This argument
+  will be passed unmodified to the target's build system (i.e. Maven, Gradle,
+  or Ant). The default is the empty string.
 
 \item[DLJC-ARGS]
   Arguments that are passed directly to

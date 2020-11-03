@@ -13,6 +13,8 @@ while getopts "d:t:" opt; do
        ;;
     t) TIMEOUT="$OPTARG"
        ;;
+    b) EXTRA_BUILD_ARGS="$OPTARG"
+       ;;
     \?) # echo "Invalid option -$OPTARG" >&2
        ;;
   esac
@@ -69,6 +71,10 @@ if [ ! -d "${DIR}" ]; then
     exit 4
 fi
 
+if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
+  EXTRA_BUILD_ARGS=""
+fi
+
 function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
@@ -81,8 +87,8 @@ function configure_and_exec_dljc {
       if [ ! -d .gradle ]; then
         mkdir ".gradle"
       fi
-      CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
-      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME}"
+      CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
       if [ -f mvnw ]; then
         chmod +x mvnw
@@ -92,16 +98,16 @@ function configure_and_exec_dljc {
       fi
       # if running on java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
-          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre"
+          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
       else
-          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}"
+          CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
       fi
   elif [ -f build.xml ]; then
     # TODO: test these more thoroughly
-    CLEAN_CMD="ant clean"
-    BUILD_CMD="ant clean compile"
+    CLEAN_CMD="ant clean ${EXTRA_BUILD_ARGS}"
+    BUILD_CMD="ant clean compile ${EXTRA_BUILD_ARGS}"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
       WPI_RESULTS_AVAILABLE="no"
