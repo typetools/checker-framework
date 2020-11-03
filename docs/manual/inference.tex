@@ -168,6 +168,13 @@ Here is an explanation of the arguments:
   will be passed unmodified to the target's build system (i.e. Maven, Gradle,
   or Ant). The default is the empty string.
 
+\item[-g GRADLECACHEDIR]
+  The directory to use for the `-g` option to Gradle (the Gradle home
+  directory). This option is ignored if the target project does not
+  build with Gradle. The default is `.gradle` relative to the target
+  project (i.e. each target project has its own Gradle home). This default
+  is motivated by [this Gradle issue](https://github.com/gradle/gradle/issues/1319).
+
 \item[DLJC-ARGS]
   Arguments that are passed directly to
   \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s

@@ -7,13 +7,15 @@
 # https://checkerframework.org/manual/#whole-program-inference
 
 
-while getopts "d:t:b:" opt; do
+while getopts "d:t:b:g:" opt; do
   case $opt in
     d) DIR="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
        ;;
     b) EXTRA_BUILD_ARGS="$OPTARG"
+       ;;
+    g) GRADLECACHEDIR="$OPTARG"
        ;;
     \?) # echo "Invalid option -$OPTARG" >&2
        ;;
@@ -75,6 +77,10 @@ if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
   EXTRA_BUILD_ARGS=""
 fi
 
+if [ "x${GRADLECACHEDIR}" = "x" ]; then
+  GRADLECACHEDIR=".gradle"
+fi
+
 function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
@@ -84,11 +90,11 @@ function configure_and_exec_dljc {
       else
         GRADLE_EXEC="gradle"
       fi
-      if [ ! -d .gradle ]; then
-        mkdir ".gradle"
+      if [ ! -d "${GRADLECACHEDIR}" ]; then
+        mkdir "${GRADLECACHEDIR}"
       fi
-      CLEAN_CMD="${GRADLE_EXEC} clean -g .gradle -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g .gradle -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+      CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
       if [ -f mvnw ]; then
         chmod +x mvnw
