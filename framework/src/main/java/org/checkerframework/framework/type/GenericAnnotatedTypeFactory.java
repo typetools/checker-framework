@@ -1045,7 +1045,6 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param nodes the nodes whose post-stores to LUB
      * @return the LUB of the stores store immediately after {@code nodes}
      */
-    // The result is non-null if the argument is non-empty.
     public @Nullable Store getStoreAfter(Set<Node> nodes) {
         Store merge = null;
         for (Node node : nodes) {
