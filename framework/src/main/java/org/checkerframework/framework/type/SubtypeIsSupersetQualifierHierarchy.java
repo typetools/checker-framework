@@ -18,7 +18,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where, when a qualifier has
- * arguments, the subtype relation is determined by a superset test on the arguments.
+ * arguments, the subtype relation is determined by a superset test on the elements (arguments). The
+ * elements must be strings.
  *
  * <p>This assumes that if the lub or glb of two qualifiers has elements, then both of the arguments
  * had the same kind as the result does.
@@ -103,7 +104,8 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
     }
 
     /**
-     * Returns a mutable list containing the {@code values} element of the given annotation.
+     * Returns a mutable list containing the {@code values} element of the given annotation. The
+     * {@code values} element must be an array of strings.
      *
      * @param anno an annotation
      * @return a mutable list containing the {@code values} element; may be the empty list
