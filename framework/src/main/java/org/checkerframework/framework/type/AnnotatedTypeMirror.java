@@ -807,7 +807,10 @@ public abstract class AnnotatedTypeMirror {
      *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
-        return uninferredTypeArgumentScanner.visit(this);
+        boolean result = uninferredTypeArgumentScanner.visit(this);
+        // Reset the scanner to clear out the map that prevents infinite recursion.
+        uninferredTypeArgumentScanner.reset();
+        return result;
     }
 
     /** The implementation of the visitor for #containsUninferredTypeArguments. */
