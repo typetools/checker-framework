@@ -1027,9 +1027,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the store immediately after a given {@link Tree}.
      *
+     * <p>May return null; for example, after a {@code return} statement.
+     *
      * @return the store immediately after a given {@link Tree}
      */
-    public Store getStoreAfter(Tree tree) {
+    public @Nullable Store getStoreAfter(Tree tree) {
         if (!analysis.isRunning()) {
             return flowResult.getStoreAfter(tree);
         }

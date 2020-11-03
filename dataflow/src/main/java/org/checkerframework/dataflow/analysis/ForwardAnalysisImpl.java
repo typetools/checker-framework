@@ -236,7 +236,7 @@ public class ForwardAnalysisImpl<
     }
 
     @Override
-    public S runAnalysisFor(
+    public @Nullable S runAnalysisFor(
             @FindDistinct Node node,
             boolean before,
             TransferInput<V, S> blockTransferInput,
