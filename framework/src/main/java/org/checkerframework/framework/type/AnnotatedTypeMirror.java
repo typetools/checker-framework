@@ -807,7 +807,7 @@ public abstract class AnnotatedTypeMirror {
      *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
-        // Don't save this class as it takes too much memory.
+        // Don't store this class as a field because it takes too much memory.
         return new SimpleAnnotatedTypeScanner<>(
                         (type, p) ->
                                 type.getKind() == TypeKind.WILDCARD
