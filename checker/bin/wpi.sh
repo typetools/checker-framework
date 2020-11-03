@@ -162,6 +162,8 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 pushd "${DIR}" || exit 1
 
+rm -f .cannot-run-wpi
+
 configure_and_exec_dljc "$@"
 
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
