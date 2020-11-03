@@ -600,7 +600,6 @@ subprojects {
         description 'Format the Java source code'
         // checker-qual* projects have no source, so skip
         onlyIf { !project.name.startsWith('checker-qual') }
-//        workingDir projectDir
         executable 'python'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
