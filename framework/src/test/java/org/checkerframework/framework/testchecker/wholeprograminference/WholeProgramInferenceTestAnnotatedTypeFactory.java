@@ -115,7 +115,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == qualifierKind2 && qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
                 if (isSubtypeWithElements(a1, qualifierKind1, a2, qualifierKind2)) {
                     return a1;
@@ -135,7 +136,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == qualifierKind2 && qualifierKind1 == SIBLING_WITH_FIELDS_KIND) {
                 if (isSubtypeWithElements(a1, qualifierKind1, a2, qualifierKind2)) {
                     return a1;

@@ -25,9 +25,9 @@ import org.checkerframework.framework.util.QualifierKindHierarchy;
  *   <li>{@link #isSubtypeWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
  *       QualifierKind)}
  *   <li>{@link #leastUpperBoundWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
- *       QualifierKind)}
+ *       QualifierKind,QualifierKind)}
  *   <li>{@link #greatestLowerBoundWithElements(AnnotationMirror, QualifierKind, AnnotationMirror,
- *       QualifierKind)}
+ *       QualifierKind,QualifierKind)}
  * </ul>
  *
  * <p>MostlyNoElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the
@@ -90,7 +90,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
             return null;
         }
         if (lub.hasElements()) {
-            return leastUpperBoundWithElements(a1, qual1, a2, qual2);
+            return leastUpperBoundWithElements(a1, qual1, a2, qual2, lub);
         }
         return kindToElementlessQualifier.get(lub);
     }
@@ -106,13 +106,15 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
      * @param qualifierKind1 QualifierKind for {@code a1}
      * @param a2 second annotation
      * @param qualifierKind2 QualifierKind for {@code a2}
+     * @param lubKind the kind of the lub of {@code qualifierKind1} and {@code qualifierKind2}
      * @return the least upper bound of {@code a1} and {@code a2}
      */
     protected abstract AnnotationMirror leastUpperBoundWithElements(
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,
-            QualifierKind qualifierKind2);
+            QualifierKind qualifierKind2,
+            QualifierKind lubKind);
 
     @Override
     public final @Nullable AnnotationMirror greatestLowerBound(
@@ -125,7 +127,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
             return null;
         }
         if (glb.hasElements()) {
-            return greatestLowerBoundWithElements(a1, qual1, a2, qual2);
+            return greatestLowerBoundWithElements(a1, qual1, a2, qual2, glb);
         }
         return kindToElementlessQualifier.get(glb);
     }
@@ -147,5 +149,6 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
             AnnotationMirror a1,
             QualifierKind qualifierKind1,
             AnnotationMirror a2,
-            QualifierKind qualifierKind2);
+            QualifierKind qualifierKind2,
+            QualifierKind glbKind);
 }

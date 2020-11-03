@@ -324,7 +324,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -355,7 +356,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
