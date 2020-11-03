@@ -71,7 +71,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
     }
 
-    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
+    @SuppressWarnings("compilermessages") // These warnings are not translated.
     @Override
     public Void scan(Tree tree, Void p) {
         if ((tree != null) && (treeKinds != null) && treeKinds.contains(tree.getKind())) {
@@ -280,7 +280,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         return super.visitInstanceOf(node, p);
     }
 
-    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
+    @SuppressWarnings("compilermessages") // These warnings are not translated.
     @Override
     public Void visitModifiers(ModifiersTree node, Void p) {
         if (node != null && modifiers != null) {

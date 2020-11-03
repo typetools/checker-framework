@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * may appear on any type.
  *
  * <p>This restriction is coarse-grained in that it applies to all type annotations for a given
- * checker. To have different restrictions for different Java types, override {@link
+ * checker. To have different restrictions for different Java types, override {@code
  * org.checkerframework.common.basetype.BaseTypeVisitor#visitAnnotatedType(List, Tree)}.
  *
  * <p>This is orthogonal to Java's {@code @Target} annotation; each enforces a different type of

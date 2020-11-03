@@ -149,7 +149,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
-     * restrictions. Arrays are handled by separate field {@link #arraysAreRelevant}.
+     * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
      */
     public @Nullable Set<TypeMirror> relevantJavaTypes;
 
