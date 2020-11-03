@@ -327,7 +327,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @param block a block
      * @return the store after the given block
      */
-    public S getStoreAfter(Block block) {
+    public @Nullable S getStoreAfter(Block block) {
         TransferInput<V, S> transferInput = stores.get(block);
         assert transferInput != null
                 : "@AssumeAssertion(nullness): transferInput should be non-null";
