@@ -369,7 +369,7 @@ List<String> getJavaFilesToFormat(projectName) {
 
     List<String> args = new ArrayList<>();
     for (File f : javaFiles) {
-        args += f.absolutePath
+        args += project(projectName).relativePath(f)
     }
     return args
 }
