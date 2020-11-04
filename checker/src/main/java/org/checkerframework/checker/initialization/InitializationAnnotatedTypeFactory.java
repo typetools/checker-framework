@@ -946,7 +946,7 @@ public abstract class InitializationAnnotatedTypeFactory<
          * Returns the greatest lower bound of two types.
          *
          * @param a the first argument
-         * @param a the second argument
+         * @param b the second argument
          * @return the glb of the two arguments
          */
         protected TypeMirror glbTypeFrame(TypeMirror a, TypeMirror b) {
