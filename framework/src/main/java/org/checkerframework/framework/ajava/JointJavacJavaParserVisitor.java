@@ -842,7 +842,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processDoWhileLoop(javacTree, node);
         }
 
-        javacTree.getCondition().accept(this, node.getCondition());
+        // In javac the condition is parenthesized but not in JavaParser.
+        ParenthesizedTree condition = (ParenthesizedTree) javacTree.getCondition();
+        condition.getExpression().accept(this, node.getCondition());
         javacTree.getStatement().accept(this, node.getBody());
         if (traversalType == TraversalType.POST_ORDER) {
             processDoWhileLoop(javacTree, node);
@@ -951,6 +953,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                     assert javacIter.hasNext();
                     javacIter.next().accept(this, declarator);
                 }
+            } else if (initializer.isAssignExpr()) {
+                ExpressionStatementTree statement = (ExpressionStatementTree) javacIter.next();
+                statement.getExpression().accept(this, initializer);
             } else {
                 assert javacIter.hasNext();
                 javacIter.next().accept(this, initializer);

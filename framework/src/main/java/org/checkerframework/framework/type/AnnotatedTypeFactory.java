@@ -677,7 +677,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        boolean shouldPrint = false;
+        boolean shouldPrint = true;
         if (root != null && shouldPrint) {
             new TreePathScanner<Void, Void>() {
                 @Override

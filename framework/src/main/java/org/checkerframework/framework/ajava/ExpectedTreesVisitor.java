@@ -8,6 +8,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -310,6 +311,15 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitWhileLoop(WhileLoopTree tree, Void p) {
         super.visitWhileLoop(tree, p);
+        // For some reason, javac surrounds while loop conditions in a ParenthesizedTree but
+        // JavaParser does not, so don't check the condition tree.
+        trees.remove(tree.getCondition());
+        return null;
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
+        super.visitDoWhileLoop(tree, p);
         // For some reason, javac surrounds while loop conditions in a ParenthesizedTree but
         // JavaParser does not, so don't check the condition tree.
         trees.remove(tree.getCondition());
