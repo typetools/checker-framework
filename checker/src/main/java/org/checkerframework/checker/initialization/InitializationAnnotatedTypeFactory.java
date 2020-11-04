@@ -882,7 +882,7 @@ public abstract class InitializationAnnotatedTypeFactory<
          * Returns the least upper bound of two types.
          *
          * @param a the first argument
-         * @param a the second argument
+         * @param b the second argument
          * @return the lub of the two arguments
          */
         protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
