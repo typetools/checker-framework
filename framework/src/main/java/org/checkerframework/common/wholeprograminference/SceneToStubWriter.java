@@ -250,10 +250,10 @@ public final class SceneToStubWriter {
     private static String formatParameter(AField param, String parameterName, String basename) {
         StringBuilder result = new StringBuilder(" ");
         for (Annotation declAnno : param.tlAnnotationsHere) {
-            result.add(formatAnnotation(declAnno));
+            result.append(formatAnnotation(declAnno));
         }
-        result.add(formatAFieldImpl(param, parameterName, basename));
-        return result;
+        result.append(formatAFieldImpl(param, parameterName, basename));
+        return result.toString();
     }
 
     /**
