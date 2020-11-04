@@ -98,7 +98,7 @@ public abstract class CFAbstractTransfer<
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements ForwardTransferFunction<V, S> {
 
-    /** The analysis class this store belongs to. */
+    /** The analysis used by this transfer function. */
     protected final CFAbstractAnalysis<V, S, T> analysis;
 
     /**
@@ -110,16 +110,20 @@ public abstract class CFAbstractTransfer<
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
+    /**
+     * Create a CFAbstractTransfer.
+     *
+     * @param the analysis used by this transfer function
+     */
     protected CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
-        this.analysis = analysis;
-        this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        this.infer = analysis.checker.hasOption("infer");
+        this(analysis, false);
     }
 
     /**
      * Constructor that allows forcing concurrent semantics to be on for this instance of
      * CFAbstractTransfer.
      *
+     * @param the analysis used by this transfer function
      * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
      *     false, concurrent semantics are turned off by default, but the user can still turn them
      *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
