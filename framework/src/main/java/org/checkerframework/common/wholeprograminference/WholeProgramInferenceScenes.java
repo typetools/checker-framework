@@ -10,6 +10,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -430,6 +431,27 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     overriddenMethodReturnType,
                     TypeUseLocation.RETURN);
         }
+    }
+
+    @Override
+    public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
+
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+            return;
+        }
+
+        String className = getEnclosingClassName(methodElt);
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz =
+                storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
+        AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
+
+        scenelib.annotations.Annotation sceneAnno =
+                AnnotationConverter.annotationMirrorToAnnotation(anno);
+        method.tlAnnotationsHere.add(sceneAnno);
+        System.out.printf(
+                "addMethodDeclarationAnnotation(%s) => %s%n", methodElt, method.tlAnnotationsHere);
     }
 
     /** Write all modified scenes into .jaif files or stub files. */

@@ -21,6 +21,7 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -124,6 +125,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                         tu.warning(invc, "format.indirect.arguments");
                         break;
                 }
+            }
+
+            // Support -Ainfer command-line argument
+            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+            if (wpi != null && forwardsArguments(node, enclosingMethod)) {
+                System.out.printf("forwardsArguments: %s %s%n", node, enclosingMethod);
+                wpi.addMethodDeclarationAnnotation(
+                        TreeUtils.elementFromDeclaration(enclosingMethod),
+                        atypeFactory.FORMATMETHOD);
             }
         }
         return super.visitMethodInvocation(node, p);
