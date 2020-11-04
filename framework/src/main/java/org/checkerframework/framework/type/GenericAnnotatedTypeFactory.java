@@ -149,7 +149,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
-     * restrictions. Arrays are handled by separate field {@link #arraysAreRelevant}.
+     * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
      */
     public @Nullable Set<TypeMirror> relevantJavaTypes;
 
@@ -208,6 +208,17 @@ public abstract class GenericAnnotatedTypeFactory<
      * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
      */
     private Map<Tree, AnnotatedTypeMirror> initializerCache;
+
+    /**
+     * Should the analysis assume that side effects to a value can change the type of aliased
+     * references?
+     *
+     * <p>For many type systems, once a local variable's type is refined, side effects to the
+     * variable's value do not change the variable's type annotations. For some type systems, a side
+     * effect to the value could change them; set this field to true.
+     */
+    // Not final so that subclasses can set it.
+    public boolean sideEffectsUnrefineAliases = false;
 
     /** An empty store. */
     // Set in postInit only

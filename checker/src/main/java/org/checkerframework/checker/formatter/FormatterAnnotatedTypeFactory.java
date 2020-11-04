@@ -145,7 +145,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return anno2;
             } else if (qualifierKind2.isBottom()) {
@@ -203,7 +204,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1.isTop()) {
                 return anno2;
             } else if (qualifierKind2.isTop()) {

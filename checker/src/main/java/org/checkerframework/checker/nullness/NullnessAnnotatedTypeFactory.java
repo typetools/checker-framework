@@ -261,8 +261,8 @@ public class NullnessAnnotatedTypeFactory
 
     /**
      * For types of left-hand side of an assignment, this method replaces {@link PolyNull} with
-     * {@link Nullable} if the org.checkerframework.dataflow analysis has determined that this is
-     * allowed soundly. For example:
+     * {@link Nullable} (or with {@link NonNull} if the org.checkerframework.dataflow analysis has
+     * determined that this is allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -280,8 +280,12 @@ public class NullnessAnnotatedTypeFactory
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)) {
             NullnessValue inferred = getInferredValueFor(context);
-            if (inferred != null && inferred.isPolyNullNull) {
-                lhsType.replaceAnnotation(NULLABLE);
+            if (inferred != null) {
+                if (inferred.isPolyNullNonNull) {
+                    lhsType.replaceAnnotation(NONNULL);
+                } else if (inferred.isPolyNullNull) {
+                    lhsType.replaceAnnotation(NULLABLE);
+                }
             }
         }
     }
@@ -625,7 +629,8 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
@@ -638,7 +643,8 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return FBCBOTTOM;

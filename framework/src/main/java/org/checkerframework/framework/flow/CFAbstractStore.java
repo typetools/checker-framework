@@ -155,16 +155,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
-    /*
-     * Indicates whether the given method is side-effect-free as far as the
-     * current store is concerned.
-     * In some cases, a store for a checker allows for other mechanisms to specify
-     * whether a method is side-effect-free. For example, unannotated methods may
-     * be considered side-effect-free by default.
+    /**
+     * Indicates whether the given method is side-effect-free as far as the current store is
+     * concerned. In some cases, a store for a checker allows for other mechanisms to specify
+     * whether a method is side-effect-free. For example, unannotated methods may be considered
+     * side-effect-free by default.
      *
-     * @param atypeFactory     the type factory used to retrieve annotations on the method element
-     * @param method           the method element
-     *
+     * @param atypeFactory the type factory used to retrieve annotations on the method element
+     * @param method the method element
      * @return whether the method is side-effect-free
      */
     protected boolean isSideEffectFree(
@@ -201,59 +199,82 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
                 || analysis.checker.hasOption("assumePure")
                 || isSideEffectFree(atypeFactory, method))) {
-            // update field values
-            Map<FieldAccess, V> newFieldValues = new HashMap<>();
-            for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-                FieldAccess fieldAccess = e.getKey();
-                V otherVal = e.getValue();
 
-                // case 3:
-                if (!((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                        .getSupportedMonotonicTypeQualifiers()
-                        .isEmpty()) {
-                    List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-                            atypeFactory.getAnnotationWithMetaAnnotation(
-                                    fieldAccess.getField(), MonotonicQualifier.class);
-                    V newOtherVal = null;
-                    for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation :
-                            fieldAnnotations) {
-                        AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                        Name annotation =
-                                AnnotationUtils.getElementValueClassName(
-                                        monotonicAnnotation, "value", false);
-                        AnnotationMirror target =
-                                AnnotationBuilder.fromName(
-                                        atypeFactory.getElementUtils(), annotation);
-                        // Make sure the 'target' annotation is present.
-                        if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
-                            newOtherVal =
-                                    analysis.createSingleAnnotationValue(
-                                                    target, otherVal.getUnderlyingType())
-                                            .mostSpecific(newOtherVal, null);
+            boolean sideEffectsUnrefineAliases =
+                    ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;
+
+            // update local variables
+            // TODO: Also remove if any element/argument to the annotation is not
+            // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+            if (sideEffectsUnrefineAliases) {
+                localVariableValues
+                        .entrySet()
+                        .removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+            }
+
+            // update this value
+            if (sideEffectsUnrefineAliases) {
+                thisValue = null;
+            }
+
+            // update field values
+            if (sideEffectsUnrefineAliases) {
+                fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+            } else {
+                Map<FieldAccess, V> newFieldValues = new HashMap<>();
+                for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
+                    FieldAccess fieldAccess = e.getKey();
+                    V otherVal = e.getValue();
+
+                    // case 3: the field has a monotonic annotation
+                    if (!((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                            .getSupportedMonotonicTypeQualifiers()
+                            .isEmpty()) {
+                        List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                                atypeFactory.getAnnotationWithMetaAnnotation(
+                                        fieldAccess.getField(), MonotonicQualifier.class);
+                        V newOtherVal = null;
+                        for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation :
+                                fieldAnnotations) {
+                            AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                            Name annotation =
+                                    AnnotationUtils.getElementValueClassName(
+                                            monotonicAnnotation, "value", false);
+                            AnnotationMirror target =
+                                    AnnotationBuilder.fromName(
+                                            atypeFactory.getElementUtils(), annotation);
+                            // Make sure the 'target' annotation is present.
+                            if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
+                                newOtherVal =
+                                        analysis.createSingleAnnotationValue(
+                                                        target, otherVal.getUnderlyingType())
+                                                .mostSpecific(newOtherVal, null);
+                            }
+                        }
+                        if (newOtherVal != null) {
+                            // keep information for all hierarchies where we had a
+                            // monotone annotation.
+                            newFieldValues.put(fieldAccess, newOtherVal);
+                            continue;
                         }
                     }
-                    if (newOtherVal != null) {
-                        // keep information for all hierarchies where we had a
-                        // monotone annotation.
-                        newFieldValues.put(fieldAccess, newOtherVal);
-                        continue;
+
+                    // case 2:
+                    if (!fieldAccess.isUnassignableByOtherCode()) {
+                        continue; // remove information completely
                     }
-                }
 
-                // case 2:
-                if (!fieldAccess.isUnassignableByOtherCode()) {
-                    continue; // remove information completely
+                    // keep information
+                    newFieldValues.put(fieldAccess, otherVal);
                 }
-
-                // keep information
-                newFieldValues.put(fieldAccess, otherVal);
+                fieldValues = newFieldValues;
             }
-            fieldValues = newFieldValues;
+
+            // update array values
+            arrayValues.clear();
 
             // update method values
             methodValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
-
-            arrayValues.clear();
         }
 
         // store information about method call if possible
