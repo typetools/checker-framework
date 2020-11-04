@@ -146,6 +146,9 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
+    /** Whether to print verbose debugging messages about stub files. */
+    private final boolean debugStubParser;
+
     /** The {@link Trees} instance to use for tree node path finding. */
     protected final Trees trees;
 
@@ -471,10 +474,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     break;
                 default:
                     throw new UserError(
-                            "Unexpected option to -Ainfer: "
+                            "Bad argument -Ainfer="
                                     + inferArg
-                                    + System.lineSeparator()
-                                    + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
+                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             boolean isNullnessChecker =
                     "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
@@ -485,6 +487,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
+
+        this.debugStubParser = checker.hasOption("stubDebug");
     }
 
     /**
@@ -1178,7 +1182,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
+            if (debugStubParser) {
+                System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
+            }
             type = mergeStubsIntoType(type, elt);
+            if (debugStubParser) {
+                System.out.printf(" => %s%n", type);
+            }
         }
         // Caching is disabled if stub files are being parsed, because calls to this
         // method before the stub files are fully read can return incorrect results.
@@ -1220,7 +1230,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
         if (checker.hasOption("mergeStubsWithSource")) {
+            if (debugStubParser) {
+                System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
+            }
             result = mergeStubsIntoType(result, tree);
+            if (debugStubParser) {
+                System.out.printf(" => %s%n", result);
+            }
         }
 
         if (shouldCache) {
