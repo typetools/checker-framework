@@ -40,12 +40,13 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
+            ExecutableElement enclosingMethodElement = enclosingMethodElement(node);
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
             Result<String> errMissingFormat = fc.hasFormatAnnotation();
             if (errMissingFormat != null) {
                 // The string's type has no @Format annotation.
-                if (isWrappedFormatCall(fc)) {
+                if (isWrappedFormatCall(fc, enclosingMethodElement)) {
                     // Nothing to do, because call is legal.
                 } else {
                     // I.1
@@ -133,25 +134,44 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
      * format method.
      *
      * @param fc an invocation of a format method
-     * @return true if {@code fc} is a call to a format method that forwards its containing methods'
+     * @return true if {@code fc} is a call to a format method that forwards its containing method's
      *     arguments
      */
-    private boolean isWrappedFormatCall(FormatCall fc) {
-
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));
-        if (enclosingMethod == null) {
-            return false;
-        }
-        ExecutableElement enclosingMethodElement =
-                TreeUtils.elementFromDeclaration(enclosingMethod);
+    private boolean isWrappedFormatCall(FormatCall fc, ExecutableElement enclosingMethodElement) {
         boolean withinFormatMethod =
                 (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
                         != null);
-        if (!withinFormatMethod) {
-            return false;
-        }
+        return withinFormatMethod && forwardsArguments(fc.node, enclosingMethodElement);
+    }
 
-        List<? extends ExpressionTree> args = fc.node.getArguments();
+    /**
+     * Returns the method that the given call is within, or null if it isn't in a method.
+     *
+     * @param invocTree a method invocation
+     * @param enclosingMethodElement the method that the invocation is within
+     * @return the method that the given call is within, or null if it isn't in a method
+     */
+    private ExecutableElement enclosingMethodElement(MethodInvocationTree invocTree) {
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(invocTree));
+        if (enclosingMethod == null) {
+            return null;
+        }
+        return TreeUtils.elementFromDeclaration(enclosingMethod);
+    }
+
+    /**
+     * Returns true if {@code fc} is within a method m, and fc's arguments are m's formal
+     * parameters. In other words, fc forwards m's arguments.
+     *
+     * @param invocTree an invocation of a method
+     * @param enclosingMethodElement the method that the invocation is within
+     * @return true if {@code fc} is a call to a method that forwards its containing method's
+     *     arguments
+     */
+    private boolean forwardsArguments(
+            MethodInvocationTree invocTree, ExecutableElement enclosingMethodElement) {
+
+        List<? extends ExpressionTree> args = invocTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
         List<? extends VariableElement> paramElements = enclosingMethodElement.getParameters();
 
