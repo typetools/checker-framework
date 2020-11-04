@@ -851,8 +851,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
                 return anno1;
             }
-            boolean unc1 = isUnknownInitialization(anno1);
-            boolean unc2 = isUnknownInitialization(anno2);
+            boolean unknowninit1 = isUnknownInitialization(anno1);
+            boolean unknowninit2 = isUnknownInitialization(anno2);
             boolean underinit1 = isUnderInitialization(anno1);
             boolean underinit2 = isUnderInitialization(anno2);
 
@@ -872,13 +872,19 @@ public abstract class InitializationAnnotatedTypeFactory<
                                 getTypeFrameFromAnnotation(anno2)));
             }
 
-            assert (unc1 || underinit1) && (unc2 || underinit2);
+            assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
             return createUnknownInitializationAnnotation(
                     lubTypeFrame(
                             getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
         }
 
-        /** Returns the least upper bound of two types. */
+        /**
+         * Returns the least upper bound of two types.
+         *
+         * @param a the first argument
+         * @param b the second argument
+         * @return the lub of the two arguments
+         */
         protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
             if (types.isSubtype(a, b)) {
                 return b;
