@@ -113,7 +113,7 @@ public abstract class CFAbstractTransfer<
     /**
      * Create a CFAbstractTransfer.
      *
-     * @param the analysis used by this transfer function
+     * @param analysis the analysis used by this transfer function
      */
     protected CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this(analysis, false);
@@ -123,7 +123,7 @@ public abstract class CFAbstractTransfer<
      * Constructor that allows forcing concurrent semantics to be on for this instance of
      * CFAbstractTransfer.
      *
-     * @param the analysis used by this transfer function
+     * @param analysis the analysis used by this transfer function
      * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
      *     false, concurrent semantics are turned off by default, but the user can still turn them
      *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
