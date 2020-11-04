@@ -206,6 +206,25 @@ public class ElementUtils {
     }
 
     /**
+     * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
+     * "<clinit>"} as ExecutableElement.getSimpleName() does.
+     *
+     * @param element a method declaration
+     * @return a user-friendly name for the method
+     */
+    public static CharSequence getFriendlyName(ExecutableElement element) {
+        Name result = element.getSimpleName();
+        switch (result.toString()) {
+            case "<init>":
+                return element.getEnclosingElement().getSimpleName();
+            case "<clinit>":
+                return "class initializer";
+            default:
+                return result;
+        }
+    }
+
+    /**
      * Check if the element is an element for 'java.lang.Object'
      *
      * @param element the type element
