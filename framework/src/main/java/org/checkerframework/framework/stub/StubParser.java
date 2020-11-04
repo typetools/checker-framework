@@ -620,6 +620,7 @@ public class StubParser {
             return;
         }
 
+        List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
         if (typeElt.getKind() == ElementKind.ENUM) {
             if (!(typeDecl instanceof EnumDeclaration)) {
                 stubWarn(
@@ -629,7 +630,8 @@ public class StubParser {
                                 + "...");
                 return;
             }
-            typeParameters.addAll(processEnum((EnumDeclaration) typeDecl, typeElt));
+            typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
             if (!(typeDecl instanceof AnnotationDeclaration)) {
                 stubWarn(
@@ -649,7 +651,8 @@ public class StubParser {
                                 + "...");
                 return;
             }
-            typeParameters.addAll(processType((ClassOrInterfaceDeclaration) typeDecl, typeElt));
+            typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
@@ -682,7 +685,9 @@ public class StubParser {
                     break;
             }
         }
-        typeParameters.clear();
+        if (typeDeclTypeParameters != null) {
+            typeParameters.removeAll(typeDeclTypeParameters);
+        }
     }
 
     /** True if the argument contains {@code @NoStubParserWarning}. */
