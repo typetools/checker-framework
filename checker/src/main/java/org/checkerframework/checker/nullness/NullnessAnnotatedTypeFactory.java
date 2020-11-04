@@ -645,7 +645,8 @@ public class NullnessAnnotatedTypeFactory
                 QualifierKind qualifierKind2) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
-                return FBCBOTTOM;
+                return this.greatestLowerBoundInitialization(
+                        a1, qualifierKind1, a2, qualifierKind2);
             }
             throw new BugInCF(
                     "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
