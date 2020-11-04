@@ -22,6 +22,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -164,6 +165,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         // Javac nests a for loop's updates in expression statements but JavaParser stores the
         // statements directly, so remove the expression statements.
         Void result = super.visitForLoop(tree, p);
+        for (StatementTree initializer : tree.getInitializer()) {
+            trees.remove(initializer);
+        }
+
         for (ExpressionStatementTree update : tree.getUpdate()) {
             trees.remove(update);
         }
