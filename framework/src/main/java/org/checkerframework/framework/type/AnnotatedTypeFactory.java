@@ -90,6 +90,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
@@ -3741,6 +3742,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return found;
+    }
+
+    /** The implementation of the visitor for #containsUninferredTypeArguments. */
+    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
+            new SimpleAnnotatedTypeScanner<>(
+                    (type, p) ->
+                            type.getKind() == TypeKind.WILDCARD
+                                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
+                    Boolean::logicalOr,
+                    false);
+
+    /**
+     * Returns whether this type or any component type is a wildcard type for which Java 7 type
+     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     *
+     * @param type type to check
+     * @return whether this type or any component type is a wildcard type for which Java 7 type
+     *     inference is insufficient
+     */
+    public boolean containsUninferredTypeArguments(AnnotatedTypeMirror type) {
+        return uninferredTypeArgumentScanner.visit(type);
     }
 
     /**
