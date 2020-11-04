@@ -248,11 +248,11 @@ public final class SceneToStubWriter {
      * @return the formatted formal parameter, as if it were written in Java source code
      */
     private static String formatParameter(AField param, String parameterName, String basename) {
-        StringBuilder result = new StringBuilder(" ");
+        StringJoiner result = new StringJoiner(" ");
         for (Annotation declAnno : param.tlAnnotationsHere) {
-            result.append(formatAnnotation(declAnno));
+            result.add(formatAnnotation(declAnno));
         }
-        result.append(formatAFieldImpl(param, parameterName, basename));
+        result.add(formatAFieldImpl(param, parameterName, basename));
         return result.toString();
     }
 
