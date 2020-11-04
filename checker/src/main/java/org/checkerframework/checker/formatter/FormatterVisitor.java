@@ -18,6 +18,7 @@ import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -40,13 +41,13 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
-            ExecutableElement enclosingMethodElement = enclosingMethodElement(node);
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(fc.node));
 
             Result<String> errMissingFormat = fc.hasFormatAnnotation();
             if (errMissingFormat != null) {
                 // The string's type has no @Format annotation.
-                if (isWrappedFormatCall(fc, enclosingMethodElement)) {
+                if (isWrappedFormatCall(fc, enclosingMethod)) {
                     // Nothing to do, because call is legal.
                 } else {
                     // I.1
@@ -134,29 +135,20 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
      * format method.
      *
      * @param fc an invocation of a format method
+     * @param enclosingMethod the method that contains the call
      * @return true if {@code fc} is a call to a format method that forwards its containing method's
      *     arguments
      */
-    private boolean isWrappedFormatCall(FormatCall fc, ExecutableElement enclosingMethodElement) {
+    private boolean isWrappedFormatCall(FormatCall fc, @Nullable MethodTree enclosingMethod) {
+        if (enclosingMethod == null) {
+            return false;
+        }
+        ExecutableElement enclosingMethodElement =
+                TreeUtils.elementFromDeclaration(enclosingMethod);
         boolean withinFormatMethod =
                 (atypeFactory.getDeclAnnotation(enclosingMethodElement, FormatMethod.class)
                         != null);
-        return withinFormatMethod && forwardsArguments(fc.node, enclosingMethodElement);
-    }
-
-    /**
-     * Returns the method that the given call is within, or null if it isn't in a method.
-     *
-     * @param invocTree a method invocation
-     * @param enclosingMethodElement the method that the invocation is within
-     * @return the method that the given call is within, or null if it isn't in a method
-     */
-    private ExecutableElement enclosingMethodElement(MethodInvocationTree invocTree) {
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(invocTree));
-        if (enclosingMethod == null) {
-            return null;
-        }
-        return TreeUtils.elementFromDeclaration(enclosingMethod);
+        return withinFormatMethod && forwardsArguments(fc.node, enclosingMethod);
     }
 
     /**
@@ -164,12 +156,18 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
      * parameters. In other words, fc forwards m's arguments.
      *
      * @param invocTree an invocation of a method
-     * @param enclosingMethodElement the method that the invocation is within
+     * @param enclosingMethod the method that contains the call
      * @return true if {@code fc} is a call to a method that forwards its containing method's
      *     arguments
      */
     private boolean forwardsArguments(
-            MethodInvocationTree invocTree, ExecutableElement enclosingMethodElement) {
+            MethodInvocationTree invocTree, @Nullable MethodTree enclosingMethod) {
+
+        if (enclosingMethod == null) {
+            return false;
+        }
+        ExecutableElement enclosingMethodElement =
+                TreeUtils.elementFromDeclaration(enclosingMethod);
 
         List<? extends ExpressionTree> args = invocTree.getArguments();
         List<? extends VariableTree> params = enclosingMethod.getParameters();
