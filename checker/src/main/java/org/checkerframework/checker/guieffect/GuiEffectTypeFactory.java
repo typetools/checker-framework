@@ -436,9 +436,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             boolean issueConflictWarning,
             Tree errorNode) {
         assert (declaringType != null);
-        ExecutableElement uiOverride = null;
-        ExecutableElement safeOverride = null;
-        ExecutableElement polyOverride = null;
+        ExecutableElement uiOverriden = null;
+        ExecutableElement safeOverriden = null;
+        ExecutableElement polyOverriden = null;
 
         // We must account for explicit annotation, type declaration annotations, and package
         // annotations.
@@ -472,14 +472,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                 + overriddenMethod);
             Effect eff = getDeclaredEffect(overriddenMethodElt);
             if (eff.isSafe()) {
-                safeOverride = overriddenMethodElt;
+                safeOverriden = overriddenMethodElt;
                 if (isUI) {
                     checker.reportError(
                             errorNode,
                             "override.effect.invalid",
                             overridingMethod,
                             declaringType,
-                            safeOverride,
+                            safeOverriden,
                             overriddenType);
                 } else if (isPolyUI) {
                     checker.reportError(
@@ -487,14 +487,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                             "override.effect.invalid.polymorphic",
                             overridingMethod,
                             declaringType,
-                            safeOverride,
+                            safeOverriden,
                             overriddenType);
                 }
             } else if (eff.isUI()) {
-                uiOverride = overriddenMethodElt;
+                uiOverriden = overriddenMethodElt;
             } else {
                 assert eff.isPoly();
-                polyOverride = overriddenMethodElt;
+                polyOverriden = overriddenMethodElt;
                 if (isUI) {
                     // Need to special case an anonymous class with @UI on
                     // the decl, because "new @UI Runnable {...}" parses as
@@ -509,15 +509,15 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                 "override.effect.invalid.nonui",
                                 overridingMethod,
                                 declaringType,
-                                polyOverride,
+                                polyOverriden,
                                 overriddenType);
                     }
                 }
             }
         }
 
-        // We don't need to issue warnings for inheriting from poly and a concrete effect.
-        if (uiOverride != null && safeOverride != null && issueConflictWarning) {
+        // We don't need to issue warnings for overriding both poly and a concrete effect.
+        if (uiOverriden != null && safeOverriden != null && issueConflictWarning) {
             // There may be more than two parent methods, but for now it's
             // enough to know there are at least 2 in conflict.
             checker.reportWarning(
@@ -525,24 +525,24 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     "override.effect.warning.inheritance",
                     overridingMethod,
                     declaringType,
-                    uiOverride.toString(),
-                    uiOverride.getEnclosingElement().asType().toString(),
-                    safeOverride.toString(),
-                    safeOverride.getEnclosingElement().asType().toString());
+                    uiOverriden.toString(),
+                    uiOverriden.getEnclosingElement().asType().toString(),
+                    safeOverriden.toString(),
+                    safeOverriden.getEnclosingElement().asType().toString());
         }
 
         Effect min =
-                (safeOverride != null
+                (safeOverriden != null
                         ? new Effect(SafeEffect.class)
-                        : (polyOverride != null
+                        : (polyOverriden != null
                                 ? new Effect(PolyUIEffect.class)
-                                : (uiOverride != null ? new Effect(UIEffect.class) : null)));
+                                : (uiOverriden != null ? new Effect(UIEffect.class) : null)));
         Effect max =
-                (uiOverride != null
+                (uiOverriden != null
                         ? new Effect(UIEffect.class)
-                        : (polyOverride != null
+                        : (polyOverriden != null
                                 ? new Effect(PolyUIEffect.class)
-                                : (safeOverride != null ? new Effect(SafeEffect.class) : null)));
+                                : (safeOverriden != null ? new Effect(SafeEffect.class) : null)));
         if (debugSpew) {
             System.err.println(
                     "Found "
