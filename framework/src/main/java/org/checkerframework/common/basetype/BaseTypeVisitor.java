@@ -1454,7 +1454,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ExecutableElement method = invokedMethod.getElement();
-        Name methodName = method.getSimpleName();
+        CharSequence methodName = ElementUtils.getFriendlyName(method);
         checkTypeArguments(
                 node,
                 paramBounds,
@@ -1776,7 +1776,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedTypes.expandVarArgs(atypeFactory, constructorType, passedArguments);
 
         ExecutableElement constructor = constructorType.getElement();
-        Name constructorName = constructor.getSimpleName();
+        CharSequence constructorName = ElementUtils.getFriendlyName(constructor);
 
         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
         checkVarargs(constructorType, node);
@@ -2911,7 +2911,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<? extends AnnotatedTypeParameterBounds> paramBounds,
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees,
-            Name typeOrMethodName,
+            CharSequence typeOrMethodName,
             List<?> paramNames) {
 
         // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s%n",
@@ -3163,7 +3163,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs,
-            Name executableName,
+            CharSequence executableName,
             List<?> paramNames) {
         int size = requiredArgs.size();
         assert size == passedArgs.size()

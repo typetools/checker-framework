@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -36,6 +35,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -490,7 +490,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
                 AnnotatedExecutableType invokedMethod = mType.executableType;
                 ExecutableElement method = invokedMethod.getElement();
-                Name methodName = method.getSimpleName();
+                CharSequence methodName = ElementUtils.getFriendlyName(method);
                 List<? extends VariableElement> methodParams = method.getParameters();
                 List<AnnotatedTypeMirror> argsTypes =
                         AnnotatedTypes.expandVarArgs(

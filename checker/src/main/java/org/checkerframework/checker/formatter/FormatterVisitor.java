@@ -9,7 +9,6 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -23,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -93,7 +93,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                             // II.3
                                             ExecutableElement method =
                                                     TreeUtils.elementFromUse(node);
-                                            Name methodName = method.getSimpleName();
+                                            CharSequence methodName =
+                                                    ElementUtils.getFriendlyName(method);
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",
