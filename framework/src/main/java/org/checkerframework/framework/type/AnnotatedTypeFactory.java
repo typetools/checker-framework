@@ -472,10 +472,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     break;
                 default:
                     throw new UserError(
-                            "Unexpected option to -Ainfer: "
+                            "Bad argument -Ainfer="
                                     + inferArg
-                                    + System.lineSeparator()
-                                    + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
+                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             boolean isNullnessChecker =
                     "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());

@@ -180,7 +180,7 @@ public class StubTypes {
             Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
         }
 
-        // 5. Stub files provided via stubs option
+        // 5. Stub files provided via stubs command-line option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
@@ -202,8 +202,9 @@ public class StubTypes {
                     stubPath = stubPath.substring("checker.jar/".length());
                 }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                // Didn't find the stub file.
                 if (in == null) {
+                    // Didn't find the stub file.
+
                     // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
                     // warning. Currently, only the original checker will try to parse the target
