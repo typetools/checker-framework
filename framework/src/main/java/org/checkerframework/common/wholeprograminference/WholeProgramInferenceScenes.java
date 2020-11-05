@@ -362,7 +362,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             return;
         }
 
-        // See Issue 682
+        // Whole-program inference ignores some locations.  See Issue 682:
         // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) { // TODO: Handle anonymous classes.
             return;
