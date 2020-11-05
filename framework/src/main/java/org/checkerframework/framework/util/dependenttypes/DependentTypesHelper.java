@@ -526,6 +526,10 @@ public class DependentTypesHelper {
         standardizeDoNotUseLocals(context, localScope, type, false);
     }
 
+    /**
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private void standardizeDoNotUseLocals(
             FlowExpressionContext context,
             TreePath localScope,
@@ -542,6 +546,10 @@ public class DependentTypesHelper {
         standardizeAtm(context, localScope, type, useLocalScope, false);
     }
 
+    /**
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private void standardizeAtm(
             FlowExpressionContext context,
             TreePath localScope,
@@ -565,6 +573,12 @@ public class DependentTypesHelper {
         return standardizeString(expression, context, localScope, useLocalScope, false);
     }
 
+    /**
+     * Standardize the Java expression.
+     *
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     protected @Nullable String standardizeString(
             String expression,
             FlowExpressionContext context,
@@ -626,7 +640,12 @@ public class DependentTypesHelper {
                 context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
-    /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
+    /**
+     * Standardizes an annotation. If it is not a dependent type annotation, returns null.
+     *
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private AnnotationMirror standardizeAnnotationIfDependentType(
             FlowExpressionContext context,
             TreePath localScope,
@@ -640,7 +659,12 @@ public class DependentTypesHelper {
                 context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
-    /** Standardizes a dependent type annotation. */
+    /**
+     * Standardizes a dependent type annotation.
+     *
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private AnnotationMirror standardizeDependentTypeAnnotation(
             FlowExpressionContext context,
             TreePath localScope,
@@ -685,6 +709,10 @@ public class DependentTypesHelper {
          */
         private final boolean removeErroneousExpressions;
 
+        /**
+         * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+         *     converting them into an explanation of why they are illegal
+         */
         private StandardizeTypeAnnotator(
                 FlowExpressionContext context,
                 TreePath localScope,
