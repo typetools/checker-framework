@@ -28,6 +28,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -935,34 +936,22 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return FBCBOTTOM;
             }
 
+            TypeMirror typeFrame =
+                    TypesUtils.greatestLowerBound(
+                            getTypeFrameFromAnnotation(anno1),
+                            getTypeFrameFromAnnotation(anno2),
+                            processingEnv);
+            if (typeFrame.getKind() == TypeKind.ERROR
+                    || typeFrame.getKind() == TypeKind.INTERSECTION) {
+                return FBCBOTTOM;
+            }
+
             if (underinit1 && underinit2) {
-                return createUnderInitializationAnnotation(
-                        glbTypeFrame(
-                                getTypeFrameFromAnnotation(anno1),
-                                getTypeFrameFromAnnotation(anno2)));
+                return createUnderInitializationAnnotation(typeFrame);
             }
 
             assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
-            return createUnderInitializationAnnotation(
-                    glbTypeFrame(
-                            getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
-        }
-
-        /**
-         * Returns the greatest lower bound of two types.
-         *
-         * @param a the first argument
-         * @param b the second argument
-         * @return the glb of the two arguments
-         */
-        protected TypeMirror glbTypeFrame(TypeMirror a, TypeMirror b) {
-            if (types.isSubtype(a, b)) {
-                return a;
-            } else if (types.isSubtype(b, a)) {
-                return b;
-            }
-
-            return TypesUtils.greatestLowerBound(a, b, processingEnv);
+            return createUnderInitializationAnnotation(typeFrame);
         }
     }
 }
