@@ -308,7 +308,7 @@ public class DependentTypesHelper {
      * @param m the method to be standardized
      * @param atm the method return type
      */
-    public void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
+    public final void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
         standardizeReturnType(m, atm, false);
     }
 
@@ -565,7 +565,7 @@ public class DependentTypesHelper {
     }
 
     @SuppressWarnings("nullness") // removeErroneousExpressions==false => return value is non-null
-    protected String standardizeString(
+    protected final String standardizeString(
             String expression,
             FlowExpressionContext context,
             TreePath localScope,
@@ -586,11 +586,11 @@ public class DependentTypesHelper {
             boolean useLocalScope,
             boolean removeErroneousExpressions) {
         if (DependentTypesError.isExpressionError(expression)) {
-            return expression;
-        }
-        if (expression.equals("<self>")) {
-            // Hack for Lock Checker
-            return expression;
+            if (removeErroneousExpressions) {
+                return null;
+            } else {
+                return expression;
+            }
         }
         try {
             Receiver result =
