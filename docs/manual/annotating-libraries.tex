@@ -490,10 +490,6 @@ The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
 permitted by \emph{both} the source and stub annotations.  (This is called
 the greatest lower bound, or GLB, of the types.)
-% Note for maintainers:
-% The choice of GLB is made for the convenience of whole-program inference.
-Do not use \<-AmergeStubsWithSource> if the default qualifier
-is other than top (e.g., the Nullness Checker).
 
 As an example of GLB, suppose the source annotation says the value is in
 the range [1..20] and the stub file says the value is in the range
