@@ -20,6 +20,8 @@ import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnCont
  *   return
  *   return <em>expression</em>
  * </pre>
+ *
+ * No ReturnNode is created for implicit return statements.
  */
 public class ReturnNode extends Node {
 
