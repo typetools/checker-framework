@@ -588,8 +588,9 @@ public class DependentTypesHelper {
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
             if (removeErroneousExpressions) {
                 return null;
+            } else {
+                return new DependentTypesError(expression, e).toString();
             }
-            return new DependentTypesError(expression, e).toString();
         }
     }
 
