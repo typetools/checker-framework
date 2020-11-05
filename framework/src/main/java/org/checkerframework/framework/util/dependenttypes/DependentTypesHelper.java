@@ -32,6 +32,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FlowExpressions;
@@ -308,6 +309,19 @@ public class DependentTypesHelper {
      * @param atm the method return type
      */
     public void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
+        standardizeReturnType(m, atm, false);
+    }
+
+    /**
+     * Standardizes a method return in a Java expression.
+     *
+     * @param m the method to be standardized
+     * @param atm the method return type
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    public void standardizeReturnType(
+            MethodTree m, AnnotatedTypeMirror atm, boolean removeErroneousExpressions) {
         if (atm.getKind() == TypeKind.NONE) {
             return;
         }
@@ -321,7 +335,7 @@ public class DependentTypesHelper {
         FlowExpressionContext context =
                 FlowExpressionContext.buildContextForMethodDeclaration(
                         m, enclosingType, factory.getContext());
-        standardizeDoNotUseLocals(context, factory.getPath(m), atm);
+        standardizeDoNotUseLocals(context, factory.getPath(m), atm, removeErroneousExpressions);
     }
 
     /**
@@ -509,7 +523,15 @@ public class DependentTypesHelper {
 
     private void standardizeDoNotUseLocals(
             FlowExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localScope, type, false);
+        standardizeDoNotUseLocals(context, localScope, type, false);
+    }
+
+    private void standardizeDoNotUseLocals(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotatedTypeMirror type,
+            boolean removeErroneousExpressions) {
+        standardizeAtm(context, localScope, type, false, removeErroneousExpressions);
     }
 
     private void standardizeAtm(
@@ -517,17 +539,38 @@ public class DependentTypesHelper {
             TreePath localScope,
             AnnotatedTypeMirror type,
             boolean useLocalScope) {
+        standardizeAtm(context, localScope, type, useLocalScope, false);
+    }
+
+    private void standardizeAtm(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotatedTypeMirror type,
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
         if (localScope != null) {
-            new StandardizeTypeAnnotator(context, localScope, useLocalScope).visit(type);
+            new StandardizeTypeAnnotator(
+                            context, localScope, useLocalScope, removeErroneousExpressions)
+                    .visit(type);
         }
     }
 
+    @SuppressWarnings("nullness") // removeErroneousExpressions==false => return value is non-null
     protected String standardizeString(
             String expression,
             FlowExpressionContext context,
             TreePath localScope,
             boolean useLocalScope) {
+        return standardizeString(expression, context, localScope, useLocalScope, false);
+    }
+
+    protected @Nullable String standardizeString(
+            String expression,
+            FlowExpressionContext context,
+            TreePath localScope,
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
@@ -535,10 +578,17 @@ public class DependentTypesHelper {
             Receiver result =
                     FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
             if (result == null) {
-                return new DependentTypesError(expression, " ").toString();
+                if (removeErroneousExpressions) {
+                    return null;
+                } else {
+                    return new DependentTypesError(expression, " ").toString();
+                }
             }
             return result.toString();
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            if (removeErroneousExpressions) {
+                return null;
+            }
             return new DependentTypesError(expression, e).toString();
         }
     }
@@ -566,11 +616,13 @@ public class DependentTypesHelper {
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         if (!isExpressionAnno(anno)) {
             return anno;
         }
-        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(
+                context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
     /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
@@ -578,11 +630,13 @@ public class DependentTypesHelper {
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         if (!isExpressionAnno(anno)) {
             return null;
         }
-        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(
+                context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
     /** Standardizes a dependent type annotation. */
@@ -590,7 +644,8 @@ public class DependentTypesHelper {
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
@@ -600,8 +655,18 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
-                standardizedStrings.add(
-                        standardizeString(expression, context, localScope, useLocalScope));
+                String standardized =
+                        standardizeString(
+                                expression,
+                                context,
+                                localScope,
+                                useLocalScope,
+                                removeErroneousExpressions);
+                if (standardized == null) {
+                    assert removeErroneousExpressions;
+                } else {
+                    standardizedStrings.add(standardized);
+                }
             }
             builder.setValue(value, standardizedStrings);
         }
@@ -613,12 +678,21 @@ public class DependentTypesHelper {
         private final TreePath localScope;
         /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
+        /**
+         * If true, remove erroneous expressions. If false, replace them by an explanation of why
+         * they are illegal.
+         */
+        private final boolean removeErroneousExpressions;
 
         private StandardizeTypeAnnotator(
-                FlowExpressionContext context, TreePath localScope, boolean useLocalScope) {
+                FlowExpressionContext context,
+                TreePath localScope,
+                boolean useLocalScope,
+                boolean removeErroneousExpressions) {
             this.context = context;
             this.localScope = localScope;
             this.useLocalScope = useLocalScope;
+            this.removeErroneousExpressions = removeErroneousExpressions;
         }
 
         @Override
@@ -651,7 +725,11 @@ public class DependentTypesHelper {
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
                         standardizeAnnotationIfDependentType(
-                                context, localScope, anno, useLocalScope);
+                                context,
+                                localScope,
+                                anno,
+                                useLocalScope,
+                                removeErroneousExpressions);
                 if (annotationMirror != null) {
                     newAnnos.add(annotationMirror);
                 }

@@ -27,7 +27,9 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -379,6 +381,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
+        DependentTypesHelper dependentTypesHelper =
+                ((GenericAnnotatedTypeFactory) atf).getDependentTypesHelper();
+        if (dependentTypesHelper != null) {
+            dependentTypesHelper.standardizeReturnType(
+                    methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
+        }
         storage.updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
