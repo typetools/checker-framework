@@ -1,7 +1,20 @@
-Version 3.7.1, November 2, 2020
+Version 3.8.0, December 1, 2020
 
 New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
 inference, without modifying the source code of the target program(s).
+
+Ipmlementation details:
+
+Added classes `SubtypeIsSubsetQualifierHierarchy` and
+`SubtypeIsSupersetQualifierHierarchy`.
+
+Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
+ * `leastUpperBoundWithElements`
+ * `greatestLowerBoundWithElements`
+
+---------------------------------------------------------------------------
+
+Version 3.7.1, November 2, 2020
 
 The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.
 
@@ -24,6 +37,11 @@ Renamed BaseTypeValidator.isValidType() to BaseTypeValidator.isValidStructurally
 
 New method BaseTypeVisitor#visitAnnotatedType(List, Tree) centralizes checking
 of user-written type annotations, even when parsed in declaration locations.
+
+Closed issues:
+#868, #1908, #2075, #3349, #3362, #3569, #3614, #3637, #3709, #3710, #3711,
+#3720, #3730, #3742, #3760, #3770, #3775, #3776, #3792, #3793, #3794, #3819,
+#3831.
 
 ---------------------------------------------------------------------------
 
