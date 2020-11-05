@@ -3320,7 +3320,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 checker.reportWarning(
                         annotation.getAnnotationType().asElement(),
                         "annotation.not.completed",
-                        ElementUtils.getVerboseName(elt),
+                        ElementUtils.getQualifiedName(elt),
                         annotation);
             }
         }
@@ -3372,7 +3372,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     checker.reportWarning(
                             annotation.getAnnotationType().asElement(),
                             "annotation.not.completed",
-                            ElementUtils.getVerboseName(elt),
+                            ElementUtils.getQualifiedName(elt),
                             annotation);
                     continue;
                 }
@@ -3411,7 +3411,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         checker.reportWarning(
                                 annotation.getAnnotationType().asElement(),
                                 "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
+                                ElementUtils.getQualifiedName(elt),
                                 annotation);
                         continue;
                     }
@@ -3479,7 +3479,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 checker.reportWarning(
                         candidate.getAnnotationType().asElement(),
                         "annotation.not.completed",
-                        ElementUtils.getVerboseName(element),
+                        ElementUtils.getQualifiedName(element),
                         candidate);
                 continue;
             }

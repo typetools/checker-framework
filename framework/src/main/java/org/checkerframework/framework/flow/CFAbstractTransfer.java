@@ -1164,7 +1164,8 @@ public abstract class CFAbstractTransfer<
                 // report errors here
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
-                    args[0] = ElementUtils.getSimpleName(TreeUtils.elementFromUse(n.getTree()));
+                    args[0] =
+                            ElementUtils.getSimpleSignature(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
                     analysis.checker.reportError(tree, "flowexpr.parse.error.postcondition", args);
                 } else {
