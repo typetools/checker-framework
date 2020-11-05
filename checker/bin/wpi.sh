@@ -166,6 +166,8 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
+echo "Starting wpi.sh. The output of this script is purely informational. Results will be placed in ${DIR}/dljc-out/."
+
 pushd "${DIR}" || exit 1
 
 rm -f .cannot-run-wpi
@@ -190,3 +192,5 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
 fi
 
 popd || exit 1
+
+echo "Exiting wpi.sh. The output of this script was purely informational. Results were placed in ${DIR}/dljc-out/."

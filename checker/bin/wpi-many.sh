@@ -84,6 +84,8 @@ export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
+echo "Starting wpi-many.sh. The output of this script is purely informational. Results will be placed in ${OUTDIR}-results/."
+
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 export PATH="${JAVA_HOME}/bin:${PATH}"
@@ -189,3 +191,5 @@ if [ -n "${results_available}" ]; then
 
     rm -f "${listpath}"
 fi
+
+echo "Exiting wpi-many.sh. The output of this script was purely informational. Results were placed in ${OUTDIR}-results/."
