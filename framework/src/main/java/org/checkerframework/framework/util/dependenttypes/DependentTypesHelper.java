@@ -588,6 +588,10 @@ public class DependentTypesHelper {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
+        if (expression.equals("<self>")) {
+            // Hack for Lock Checker
+            return expression;
+        }
         try {
             Receiver result =
                     FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
