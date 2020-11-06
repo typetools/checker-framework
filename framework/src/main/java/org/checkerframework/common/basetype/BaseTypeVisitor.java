@@ -986,7 +986,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (dependentTypesHelper != null) {
             AnnotationMirror anno =
                     dependentTypesHelper.standardizeAnnotation(
-                            flowExprContext, path, annoFromContract, false);
+                            flowExprContext, path, annoFromContract, false, false);
             dependentTypesHelper.checkAnnotation(anno, path.getLeaf());
             return anno;
         } else {
