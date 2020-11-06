@@ -248,7 +248,12 @@ public final class SceneToStubWriter {
      * @return the formatted formal parameter, as if it were written in Java source code
      */
     private static String formatParameter(AField param, String parameterName, String basename) {
-        return formatAFieldImpl(param, parameterName, basename);
+        StringJoiner result = new StringJoiner(" ");
+        for (Annotation declAnno : param.tlAnnotationsHere) {
+            result.add(formatAnnotation(declAnno));
+        }
+        result.add(formatAFieldImpl(param, parameterName, basename));
+        return result.toString();
     }
 
     /**
@@ -501,6 +506,11 @@ public final class SceneToStubWriter {
             return;
         }
 
+        for (Annotation declAnno : aField.tlAnnotationsHere) {
+            printWriter.print(indentLevel);
+            printWriter.println(formatAnnotation(declAnno));
+        }
+
         printWriter.print(indentLevel);
         printWriter.print(formatAFieldImpl(aField, fieldName, /*enclosing class=*/ null));
         printWriter.println(";");
@@ -522,6 +532,11 @@ public final class SceneToStubWriter {
         if (aMethod.getTypeParameters() == null) {
             // aMethod.setFieldsFromMethodElement has not been called
             return;
+        }
+
+        for (Annotation declAnno : aMethod.tlAnnotationsHere) {
+            printWriter.print(indentLevel);
+            printWriter.println(formatAnnotation(declAnno));
         }
 
         printWriter.print(indentLevel);

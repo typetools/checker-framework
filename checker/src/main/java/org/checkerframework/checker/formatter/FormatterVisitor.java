@@ -183,15 +183,17 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             params = params.subList(1, params.size());
         }
 
-        if (args.size() == params.size()) {
-            for (int i = 0; i < args.size(); i++) {
-                ExpressionTree arg = args.get(i);
-                if (!(arg instanceof IdentifierTree
-                        && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
-                    return false;
-                }
+        if (args.size() != params.size()) {
+            return false;
+        }
+        for (int i = 0; i < args.size(); i++) {
+            ExpressionTree arg = args.get(i);
+            if (!(arg instanceof IdentifierTree
+                    && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
+                return false;
             }
         }
+
         return true;
     }
 

@@ -187,7 +187,8 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Updates the set of annotations in a location of a Scene.
+     * Updates the set of annotations in a location of a Scene, as the result of a
+     * pseudo-assignment.
      *
      * <ul>
      *   <li>If there was no previous annotation for that location, then the updated set will be the
@@ -199,7 +200,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param jaifPath used to identify a Scene
+     * @param jaifPath path to a .jaif file for a Scene
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param defLoc the location where the annotation will be added
