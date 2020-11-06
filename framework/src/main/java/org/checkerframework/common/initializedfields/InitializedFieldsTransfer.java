@@ -42,14 +42,20 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
-        // TODO
-        /*
-        Node receiver = node.getTarget().getReceiver();
-        if (receiver != null) {
-            String methodName = node.getTarget().getMethod().getSimpleName().toString();
-            accumulate(receiver, result, methodName);
+
+        ExecutableElement method = node.getTarget().getMethod();
+        AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, InitializesFields.class);
+        if (anno != null) {
+            String objectWithFields =
+                    List < String > newFields =
+                            AnnotationUtils.getElementValueArray(
+                                    anno, "fields", String.class, false);
+            Node receiver = node.getTarget().getReceiver();
+            if (receiver == null) {
+                // TODO: receiver is "this";
+            }
+            accumulate(objectWithFields, result, newFields.toArray(new String[newFields.size()]));
         }
-        */
         return result;
     }
 }
