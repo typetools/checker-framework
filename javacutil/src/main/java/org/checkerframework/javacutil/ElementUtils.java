@@ -212,7 +212,7 @@ public class ElementUtils {
      * @param element a method declaration
      * @return a user-friendly name for the method
      */
-    public static CharSequence getFriendlyName(ExecutableElement element) {
+    public static CharSequence getUserFriendlyName(ExecutableElement element) {
         Name result = element.getSimpleName();
         switch (result.toString()) {
             case "<init>":
