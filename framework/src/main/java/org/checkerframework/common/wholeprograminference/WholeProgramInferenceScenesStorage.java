@@ -187,7 +187,8 @@ public class WholeProgramInferenceScenesStorage {
     }
 
     /**
-     * Updates the set of annotations in a location of a Scene.
+     * Updates the set of annotations in a location of a Scene, as the result of a
+     * pseudo-assignment.
      *
      * <ul>
      *   <li>If there was no previous annotation for that location, then the updated set will be the

@@ -204,7 +204,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
                                 + " for annotation: "
                                 + anno
                                 + " for element: "
-                                + ElementUtils.getVerboseName(element));
+                                + ElementUtils.getQualifiedName(element));
             }
         }
 

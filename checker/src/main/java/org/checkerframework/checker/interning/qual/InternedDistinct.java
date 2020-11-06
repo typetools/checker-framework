@@ -16,6 +16,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * <p>This is a stronger property than {@link Interned}, but a weaker property than every value of a
  * Java type being interned.
  *
+ * <p>This annotation is trusted, not verified.
+ *
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */

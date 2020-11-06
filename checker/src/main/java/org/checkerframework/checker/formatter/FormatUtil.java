@@ -58,8 +58,8 @@ public class FormatUtil {
     }
 
     /**
-     * Returns if the format string is satisfiable, and if the format's parameters match the passed
-     * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
+     * Returns the first argument if the format string is satisfiable, and if the format's
+     * parameters match the passed {@link ConversionCategory}s. Otherwise throws an exception.
      *
      * @param format a format string
      * @param cc an array of conversion categories

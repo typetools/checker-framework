@@ -8,6 +8,10 @@ Implementation details:
 Added classes `SubtypeIsSubsetQualifierHierarchy` and
 `SubtypeIsSupersetQualifierHierarchy`.
 
+Method renamings:
+  ElementUtils.getVerboseName => ElementUtils.getQualifiedName
+  ElementUtils.getSimpleName => ElementUtils.getSimpleSignature
+
 Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
  * `leastUpperBoundWithElements`
  * `greatestLowerBoundWithElements`
