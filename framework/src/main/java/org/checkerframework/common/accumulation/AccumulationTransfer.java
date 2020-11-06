@@ -99,7 +99,7 @@ public class AccumulationTransfer extends CFTransfer {
         }
 
         AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-        insertIntoStores(result, node, newAnno);
+        insertIntoStores(result, target, newAnno);
 
         Tree tree = node.getTree();
         if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
@@ -114,20 +114,19 @@ public class AccumulationTransfer extends CFTransfer {
      * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
      *
      * @param result the TransferResult holding the stores to modify
-     * @param node the node whose value should be modified
+     * @param target the receiver whose value should be modified
      * @param newAnno the new value
      */
     private void insertIntoStores(
-            TransferResult<CFValue, CFStore> result, Node node, AnnotationMirror newAnno) {
-        Receiver receiver = FlowExpressions.internalReprOf(atypeFactory, node);
+            TransferResult<CFValue, CFStore> result, Receiver target, AnnotationMirror newAnno) {
         if (result.containsTwoStores()) {
             CFStore thenStore = result.getThenStore();
             CFStore elseStore = result.getElseStore();
-            thenStore.insertValue(receiver, newAnno);
-            elseStore.insertValue(receiver, newAnno);
+            thenStore.insertValue(target, newAnno);
+            elseStore.insertValue(target, newAnno);
         } else {
             CFStore store = result.getRegularStore();
-            store.insertValue(receiver, newAnno);
+            store.insertValue(target, newAnno);
         }
     }
 }
