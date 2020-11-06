@@ -94,7 +94,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                             ExecutableElement method =
                                                     TreeUtils.elementFromUse(node);
                                             CharSequence methodName =
-                                                    ElementUtils.getUserFriendlyName(method);
+                                                    ElementUtils.getSimpleNameOrDescription(method);
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",

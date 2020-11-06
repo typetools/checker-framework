@@ -1454,7 +1454,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         ExecutableElement method = invokedMethod.getElement();
-        CharSequence methodName = ElementUtils.getUserFriendlyName(method);
+        CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
         checkTypeArguments(
                 node,
                 paramBounds,
@@ -1776,7 +1776,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedTypes.expandVarArgs(atypeFactory, constructorType, passedArguments);
 
         ExecutableElement constructor = constructorType.getElement();
-        CharSequence constructorName = ElementUtils.getUserFriendlyName(constructor);
+        CharSequence constructorName = ElementUtils.getSimpleNameOrDescription(constructor);
 
         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
         checkVarargs(constructorType, node);
