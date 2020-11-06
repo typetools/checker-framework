@@ -73,33 +73,10 @@ public class AccumulationTransfer extends CFTransfer {
      * @param values the new accumulation values
      */
     public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
-
-        accumulate(FlowExpressions.internalReprOf(atypeFactory, node), result, values);
-
-        Tree tree = node.getTree();
-        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
-            Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
-            if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
-                accumulate(receiver, result, values);
-            }
-        }
-    }
-
-    /**
-     * Updates the estimate of how many things {@code target} has accumulated.
-     *
-     * <p>Use this method if you have access only to a {@link Receiver}. If you have access to a
-     * {link Node}, call {@link #accumulate(Node, TransferResult, String[])}.
-     *
-     * @param target the receiver whose estimate should be expanded
-     * @param result the transfer result containing the store to be modified
-     * @param values the new accumulation values
-     */
-    public void accumulate(
-            Receiver target, TransferResult<CFValue, CFStore> result, String... values) {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
+        Receiver target = FlowExpressions.internalReprOf(atypeFactory, node);
         if (CFAbstractStore.canInsertReceiver(target)) {
             CFValue flowValue = result.getRegularStore().getValue(target);
             if (flowValue != null) {
@@ -123,6 +100,14 @@ public class AccumulationTransfer extends CFTransfer {
 
         AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
         insertIntoStores(result, target, newAnno);
+
+        Tree tree = node.getTree();
+        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
+            Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
+            if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
+                accumulate(receiver, result, values);
+            }
+        }
     }
 
     /**
