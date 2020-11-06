@@ -1,5 +1,7 @@
 package org.checkerframework.common.initializedfields;
 
+import com.sun.source.util.TreePath;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
@@ -10,9 +12,13 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Accumulates the names of fields that are initialized. */
 public class InitializedFieldsTransfer extends AccumulationTransfer {
@@ -49,14 +55,27 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
         ExecutableElement method = node.getTarget().getMethod();
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, InitializesFields.class);
         if (anno != null) {
-            String objectWithFields =
-                    List < String > newFields =
-                            AnnotationUtils.getElementValueArray(
-                                    anno, "fields", String.class, false);
-            Node receiver = node.getTarget().getReceiver();
-            if (receiver == null) {
-                // TODO: receiver is "this";
+            String objectWithFieldsExpr =
+                    AnnotationUtils.getElementValue(anno, "fields", String.class, true);
+
+            Receiver objectWithFields;
+            {
+                TreePath currentPath = atypeFactory.getPath(node.getTree());
+                if (currentPath == null) {
+                    throw new BugInCF("Why no currentPath?");
+                }
+                try {
+                    objectWithFields =
+                            atypeFactory.getReceiverFromJavaExpressionString(
+                                    objectWithFieldsExpr, currentPath);
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    // TODO: report error
+                    return result;
+                }
             }
+
+            List<String> newFields =
+                    AnnotationUtils.getElementValueArray(anno, "fields", String.class, false);
             accumulate(objectWithFields, result, newFields.toArray(new String[newFields.size()]));
         }
         return result;
