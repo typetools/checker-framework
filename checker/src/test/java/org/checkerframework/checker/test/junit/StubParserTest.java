@@ -2,30 +2,29 @@ package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized;
 
-/** JUnit tests for stub parsing. */
-public class StubParserTest extends CheckerFrameworkPerDirectoryTest {
+/** Tests for stub parsing. */
+public class StubparserTaintingTest extends CheckerFrameworkPerDirectoryTest {
 
     /**
-     * Create a StubParserTest.
+     * Create a StubparserTaintingTest.
      *
      * @param testFiles the files containing test code, which will be type-checked
      */
-    public StubParserTest(List<File> testFiles) {
+    public StubparserTaintingTest(List<File> testFiles) {
         super(
                 testFiles,
-                TaintingChecker.class,
-                "stubparser",
+                org.checkerframework.checker.tainting.TaintingChecker.class,
+                "stubparser-tainting",
                 "-Anomsgtext",
                 "-AmergeStubsWithSource",
                 "-Astubs=tests/stubparser/TypeParamWithInner.astub");
     }
 
-    @Parameters
+    @Parameterized.Parameters
     public static String[] getTestDirs() {
-        return new String[] {"stubparser", "all-systems"};
+        return new String[] {"stubparser-tainting", "all-systems"};
     }
 }
