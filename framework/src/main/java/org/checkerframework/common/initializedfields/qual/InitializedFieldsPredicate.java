@@ -11,5 +11,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({InitializedFields.class})
 public @interface InitializedFieldsPredicate {
+    /**
+     * A boolean expression indicating which fields are initialized.
+     *
+     * @return a boolean expression indicating which fields are initialized
+     * @checker_framework.manual #accumulation-qualifiers
+     */
     String value();
 }
