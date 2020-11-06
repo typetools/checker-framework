@@ -1,6 +1,9 @@
 package org.checkerframework.common.initializedfields;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
+import org.checkerframework.common.initializedfields.qual.InitializesFields;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;

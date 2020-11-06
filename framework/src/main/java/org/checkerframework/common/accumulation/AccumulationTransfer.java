@@ -28,7 +28,7 @@ import org.checkerframework.framework.flow.CFValue;
 public class AccumulationTransfer extends CFTransfer {
 
     /** The type factory. */
-    protected final AccumulationAnnotatedTypeFactory typeFactory;
+    protected final AccumulationAnnotatedTypeFactory atypeFactory;
 
     /**
      * Build a new AccumulationTransfer for the given analysis.
@@ -37,7 +37,7 @@ public class AccumulationTransfer extends CFTransfer {
      */
     public AccumulationTransfer(CFAnalysis analysis) {
         super(analysis);
-        typeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
+        atypeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     /**
@@ -74,12 +74,12 @@ public class AccumulationTransfer extends CFTransfer {
      */
     public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
 
-        accumulate(FlowExpressions.internalReprOf(typeFactory, node), result, values);
+        accumulate(FlowExpressions.internalReprOf(atypeFactory, node), result, values);
 
         Tree tree = node.getTree();
         if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
             Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
-            if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
+            if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
                 accumulate(receiver, result, values);
             }
         }
@@ -103,7 +103,7 @@ public class AccumulationTransfer extends CFTransfer {
                 Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
                 assert flowAnnos.size() <= 1;
                 for (AnnotationMirror anno : flowAnnos) {
-                    if (typeFactory.isAccumulatorAnnotation(anno)) {
+                    if (atypeFactory.isAccumulatorAnnotation(anno)) {
                         List<String> oldFlowValues =
                                 ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
                         if (oldFlowValues != null) {
@@ -118,7 +118,7 @@ public class AccumulationTransfer extends CFTransfer {
             }
         }
 
-        AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(valuesAsList);
+        AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
         insertIntoStores(result, target, newAnno);
     }
 
