@@ -88,6 +88,9 @@ public class AccumulationTransfer extends CFTransfer {
     /**
      * Updates the estimate of how many things {@code target} has accumulated.
      *
+     * <p>Use this method if you have access only to a {@link Receiver}. If you have access to a
+     * {link Node}, call {@link #accumulate(Node, TransferResult, String[])}.
+     *
      * @param target the receiver whose estimate should be expanded
      * @param result the transfer result containing the store to be modified
      * @param values the new accumulation values

@@ -6,7 +6,7 @@ public class SimpleConstructor {
     int y;
     int z;
 
-    SimpleConstructor(byte ignore) {
+    SimpleConstructor() {
         // :: error: (assignment.type.incompatible)
         @InitializedFields({"x", "y", "z"}) SimpleConstructor sc1 = this;
         @InitializedFields() SimpleConstructor sc2 = this;
@@ -24,18 +24,4 @@ public class SimpleConstructor {
         @InitializedFields({"x", "y"}) SimpleConstructor sc6 = this;
         @InitializedFields({"y", "x"}) SimpleConstructor sc7 = this;
     }
-
-    SimpleConstructor(short ignore) {}
-
-    SimpleConstructor(int ignore) {}
-
-    SimpleConstructor(long ignore) {}
-
-    SimpleConstructor(float ignore) {}
-
-    SimpleConstructor(double ignore) {}
-
-    SimpleConstructor(boolean ignore) {}
-
-    SimpleConstructor(char ignore) {}
 }
