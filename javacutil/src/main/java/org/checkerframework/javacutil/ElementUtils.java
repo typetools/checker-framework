@@ -176,14 +176,14 @@ public class ElementUtils {
      * @return the qualified name of the given element
      */
     public static String getQualifiedName(Element elt) {
-        Name n = getQualifiedClassName(elt);
-        if (n == null) {
-            return "Unexpected element: " + elt;
-        }
         if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
+            Name n = getQualifiedClassName(elt);
+            if (n == null) {
+                return "Unexpected element: " + elt;
+            }
             return n.toString();
         } else {
-            return n + "." + elt;
+            return getQualifiedName(elt.getEnclosingElement()) + "." + elt;
         }
     }
 
