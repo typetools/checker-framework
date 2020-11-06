@@ -90,6 +90,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
@@ -471,10 +472,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     break;
                 default:
                     throw new UserError(
-                            "Unexpected option to -Ainfer: "
+                            "Bad argument -Ainfer="
                                     + inferArg
-                                    + System.lineSeparator()
-                                    + "Available options: -Ainfer=jaifs, -Ainfer=stubs");
+                                    + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
             boolean isNullnessChecker =
                     "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
@@ -3319,7 +3319,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 checker.reportWarning(
                         annotation.getAnnotationType().asElement(),
                         "annotation.not.completed",
-                        ElementUtils.getVerboseName(elt),
+                        ElementUtils.getQualifiedName(elt),
                         annotation);
             }
         }
@@ -3371,7 +3371,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     checker.reportWarning(
                             annotation.getAnnotationType().asElement(),
                             "annotation.not.completed",
-                            ElementUtils.getVerboseName(elt),
+                            ElementUtils.getQualifiedName(elt),
                             annotation);
                     continue;
                 }
@@ -3410,7 +3410,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         checker.reportWarning(
                                 annotation.getAnnotationType().asElement(),
                                 "annotation.not.completed",
-                                ElementUtils.getVerboseName(elt),
+                                ElementUtils.getQualifiedName(elt),
                                 annotation);
                         continue;
                     }
@@ -3478,7 +3478,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 checker.reportWarning(
                         candidate.getAnnotationType().asElement(),
                         "annotation.not.completed",
-                        ElementUtils.getVerboseName(element),
+                        ElementUtils.getQualifiedName(element),
                         candidate);
                 continue;
             }
@@ -3741,6 +3741,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return found;
+    }
+
+    /** The implementation of the visitor for #containsUninferredTypeArguments. */
+    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
+            new SimpleAnnotatedTypeScanner<>(
+                    (type, p) ->
+                            type.getKind() == TypeKind.WILDCARD
+                                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
+                    Boolean::logicalOr,
+                    false);
+
+    /**
+     * Returns whether this type or any component type is a wildcard type for which Java 7 type
+     * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
+     *
+     * @param type type to check
+     * @return whether this type or any component type is a wildcard type for which Java 7 type
+     *     inference is insufficient
+     */
+    public boolean containsUninferredTypeArguments(AnnotatedTypeMirror type) {
+        return uninferredTypeArgumentScanner.visit(type);
     }
 
     /**

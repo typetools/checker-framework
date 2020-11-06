@@ -9,7 +9,6 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -24,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -94,7 +94,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                             // II.3
                                             ExecutableElement method =
                                                     TreeUtils.elementFromUse(node);
-                                            Name methodName = method.getSimpleName();
+                                            CharSequence methodName =
+                                                    ElementUtils.getSimpleNameOrDescription(method);
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",
@@ -192,15 +193,17 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             params = params.subList(1, params.size());
         }
 
-        if (args.size() == params.size()) {
-            for (int i = 0; i < args.size(); i++) {
-                ExpressionTree arg = args.get(i);
-                if (!(arg instanceof IdentifierTree
-                        && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
-                    return false;
-                }
+        if (args.size() != params.size()) {
+            return false;
+        }
+        for (int i = 0; i < args.size(); i++) {
+            ExpressionTree arg = args.get(i);
+            if (!(arg instanceof IdentifierTree
+                    && ((IdentifierTree) arg).getName() == params.get(i).getName())) {
+                return false;
             }
         }
+
         return true;
     }
 

@@ -334,7 +334,7 @@ public class AnnotationUtils {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
         Set<ExecutableElement> sortedElements =
-                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleName));
+                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
         sortedElements.addAll(
                 ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 

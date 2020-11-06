@@ -30,7 +30,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -807,17 +806,8 @@ public abstract class AnnotatedTypeMirror {
      *     inference is insufficient
      */
     public boolean containsUninferredTypeArguments() {
-        return uninferredTypeArgumentScanner.visit(this);
+        return atypeFactory.containsUninferredTypeArguments(this);
     }
-
-    /** The implementation of the visitor for #containsUninferredTypeArguments. */
-    private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
-            new SimpleAnnotatedTypeScanner<>(
-                    (type, p) ->
-                            type.getKind() == TypeKind.WILDCARD
-                                    && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
-                    Boolean::logicalOr,
-                    false);
 
     /**
      * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It

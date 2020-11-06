@@ -173,9 +173,9 @@ public class ElementUtils {
      * Returns a verbose name that identifies the element.
      *
      * @param elt the element whose name to obtain
-     * @return the verbose name of the given element
+     * @return the qualified name of the given element
      */
-    public static String getVerboseName(Element elt) {
+    public static String getQualifiedName(Element elt) {
         Name n = getQualifiedClassName(elt);
         if (n == null) {
             return "Unexpected element: " + elt;
@@ -195,7 +195,7 @@ public class ElementUtils {
      * @return the simple name of the method, followed by the simple names of the formal parameter
      *     types
      */
-    public static String getSimpleName(ExecutableElement element) {
+    public static String getSimpleSignature(ExecutableElement element) {
         // note: constructor simple name is <init>
         StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
@@ -203,6 +203,25 @@ public class ElementUtils {
             sj.add(TypesUtils.simpleTypeName(i.next().asType()));
         }
         return sj.toString();
+    }
+
+    /**
+     * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
+     * "<clinit>"} as ExecutableElement.getSimpleName() does.
+     *
+     * @param element a method declaration
+     * @return a user-friendly name for the method
+     */
+    public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
+        Name result = element.getSimpleName();
+        switch (result.toString()) {
+            case "<init>":
+                return element.getEnclosingElement().getSimpleName();
+            case "<clinit>":
+                return "class initializer";
+            default:
+                return result;
+        }
     }
 
     /**
