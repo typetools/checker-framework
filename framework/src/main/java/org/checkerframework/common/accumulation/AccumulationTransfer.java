@@ -73,10 +73,30 @@ public class AccumulationTransfer extends CFTransfer {
      * @param values the new accumulation values
      */
     public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
+
+        accumulate(FlowExpressions.internalReprOf(typeFactory, node), result, values);
+
+        Tree tree = node.getTree();
+        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
+            Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
+            if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
+                accumulate(receiver, result, values);
+            }
+        }
+    }
+
+    /**
+     * Updates the estimate of how many things {@code target} has accumulated.
+     *
+     * @param target the receiver whose estimate should be expanded
+     * @param result the transfer result containing the store to be modified
+     * @param values the new accumulation values
+     */
+    public void accumulate(
+            Receiver target, TransferResult<CFValue, CFStore> result, String... values) {
         List<String> valuesAsList = Arrays.asList(values);
         // If dataflow has already recorded information about the target, fetch it and integrate
         // it into the list of values in the new annotation.
-        Receiver target = FlowExpressions.internalReprOf(typeFactory, node);
         if (CFAbstractStore.canInsertReceiver(target)) {
             CFValue flowValue = result.getRegularStore().getValue(target);
             if (flowValue != null) {
@@ -99,35 +119,26 @@ public class AccumulationTransfer extends CFTransfer {
         }
 
         AnnotationMirror newAnno = typeFactory.createAccumulatorAnnotation(valuesAsList);
-        insertIntoStores(result, node, newAnno);
-
-        Tree tree = node.getTree();
-        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
-            Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
-            if (receiver != null && typeFactory.returnsThis((MethodInvocationTree) tree)) {
-                accumulate(receiver, result, values);
-            }
-        }
+        insertIntoStores(result, target, newAnno);
     }
 
     /**
      * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
      *
      * @param result the TransferResult holding the stores to modify
-     * @param node the node whose value should be modified
+     * @param target the receiver whose value should be modified
      * @param newAnno the new value
      */
     private void insertIntoStores(
-            TransferResult<CFValue, CFStore> result, Node node, AnnotationMirror newAnno) {
-        Receiver receiver = FlowExpressions.internalReprOf(typeFactory, node);
+            TransferResult<CFValue, CFStore> result, Receiver target, AnnotationMirror newAnno) {
         if (result.containsTwoStores()) {
             CFStore thenStore = result.getThenStore();
             CFStore elseStore = result.getElseStore();
-            thenStore.insertValue(receiver, newAnno);
-            elseStore.insertValue(receiver, newAnno);
+            thenStore.insertValue(target, newAnno);
+            elseStore.insertValue(target, newAnno);
         } else {
             CFStore store = result.getRegularStore();
-            store.insertValue(receiver, newAnno);
+            store.insertValue(target, newAnno);
         }
     }
 }
