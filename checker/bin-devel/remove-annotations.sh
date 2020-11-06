@@ -1,7 +1,7 @@
-# Remove Checker Framework annotations from all files under the current directory.
+# Remove Checker Framework annotations (except trusted ones) from all files under the current directory.
 
 preplace '^import org.checkerframework.*\n' ''
-preplace '^ *\@(Deterministic|EnsuresNonNull|FormatMethod|Pure|SideEffectFree)(\([^()]*\))?\n' ''
+preplace '^ *\@(Deterministic|EnsuresNonNull|FormatMethod|Pure|RequiresNonNull|SideEffectFree)(\([^()]*\))?\n' ''
 preplace '\@A(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@ACCBottom(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@Acceleration(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
@@ -109,7 +109,6 @@ preplace '\@IndexOrLow(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@Initialized(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@InternalForm(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@Interned(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
-preplace '\@InternedDistinct(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@IntRange(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@IntVal(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 preplace '\@InvalidFormat(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
