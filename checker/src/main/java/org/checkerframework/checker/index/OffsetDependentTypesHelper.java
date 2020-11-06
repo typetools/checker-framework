@@ -3,7 +3,6 @@ package org.checkerframework.checker.index;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -26,12 +25,11 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     }
 
     @Override
-    protected @Nullable String standardizeString(
+    protected String standardizeString(
             final String expression,
             FlowExpressionContext context,
             TreePath localScope,
-            boolean useLocalScope,
-            boolean removeErroneousExpressions) {
+            boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
             return expression;
         }
@@ -46,11 +44,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
                 return new DependentTypesError(expression, e).toString();
             }
             if (result == null) {
-                if (removeErroneousExpressions) {
-                    return null;
-                } else {
-                    return new DependentTypesError(expression, " ").toString();
-                }
+                return new DependentTypesError(expression, " ").toString();
             }
             if (result instanceof FieldAccess && ((FieldAccess) result).isFinal()) {
                 Object constant = ((FieldAccess) result).getField().getConstantValue();

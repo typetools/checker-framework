@@ -170,10 +170,9 @@ public class LockAnnotatedTypeFactory
                     String expression,
                     FlowExpressionContext context,
                     TreePath localScope,
-                    boolean useLocalScope,
-                    boolean removeErroneousExpressions) {
+                    boolean useLocalScope) {
                 if (DependentTypesError.isExpressionError(expression)) {
-                    return null;
+                    return expression;
                 }
 
                 // Adds logic to parse <self> expression, which only the Lock Checker uses.
@@ -186,29 +185,17 @@ public class LockAnnotatedTypeFactory
                             FlowExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
-                        if (removeErroneousExpressions) {
-                            return null;
-                        } else {
-                            return new DependentTypesError(expression, " ").toString();
-                        }
+                        return new DependentTypesError(expression, " ").toString();
                     }
                     if (!isExpressionEffectivelyFinal(result)) {
                         // If the expression isn't effectively final, then return the
                         // NOT_EFFECTIVELY_FINAL error string.
-                        if (removeErroneousExpressions) {
-                            return null;
-                        } else {
-                            return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
-                                    .toString();
-                        }
+                        return new DependentTypesError(expression, NOT_EFFECTIVELY_FINAL)
+                                .toString();
                     }
                     return result.toString();
                 } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                    if (removeErroneousExpressions) {
-                        return null;
-                    } else {
-                        return new DependentTypesError(expression, e).toString();
-                    }
+                    return new DependentTypesError(expression, e).toString();
                 }
             }
         };

@@ -32,7 +32,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FlowExpressions;
@@ -564,51 +563,23 @@ public class DependentTypesHelper {
         }
     }
 
-    @SuppressWarnings("nullness") // removeErroneousExpressions==false => return value is non-null
-    protected final String standardizeString(
+    protected String standardizeString(
             String expression,
             FlowExpressionContext context,
             TreePath localScope,
             boolean useLocalScope) {
-        return standardizeString(expression, context, localScope, useLocalScope, false);
-    }
-
-    /**
-     * Standardize the Java expression.
-     *
-     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
-     *     converting them into an explanation of why they are illegal
-     */
-    protected @Nullable String standardizeString(
-            String expression,
-            FlowExpressionContext context,
-            TreePath localScope,
-            boolean useLocalScope,
-            boolean removeErroneousExpressions) {
         if (DependentTypesError.isExpressionError(expression)) {
-            if (removeErroneousExpressions) {
-                return null;
-            } else {
-                return expression;
-            }
+            return expression;
         }
         try {
             Receiver result =
                     FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
             if (result == null) {
-                if (removeErroneousExpressions) {
-                    return null;
-                } else {
-                    return new DependentTypesError(expression, " ").toString();
-                }
+                return new DependentTypesError(expression, " ").toString();
             }
             return result.toString();
         } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-            if (removeErroneousExpressions) {
-                return null;
-            } else {
-                return new DependentTypesError(expression, e).toString();
-            }
+            return new DependentTypesError(expression, e).toString();
         }
     }
 
@@ -685,14 +656,10 @@ public class DependentTypesHelper {
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
                 String standardized =
-                        standardizeString(
-                                expression,
-                                context,
-                                localScope,
-                                useLocalScope,
-                                removeErroneousExpressions);
-                if (standardized == null) {
-                    assert removeErroneousExpressions;
+                        standardizeString(expression, context, localScope, useLocalScope);
+                if (removeErroneousExpressions
+                        && DependentTypesError.isExpressionError(standardized)) {
+                    // nothing to do
                 } else {
                     standardizedStrings.add(standardized);
                 }
