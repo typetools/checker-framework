@@ -187,9 +187,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** For storing visitor state. */
     protected final VisitorState visitorState;
 
-    /** An instance of the {@link ContractsUtils} helper class. */
-    protected final ContractsUtils contractsUtils;
-
     /** The element for java.util.Vector#copyInto. */
     private final ExecutableElement vectorCopyInto;
 
@@ -226,7 +223,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         this.checker = checker;
         this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
-        this.contractsUtils = new ContractsUtils(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
@@ -283,10 +279,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     public final Factory getTypeFactory() {
         return atypeFactory;
-    }
-
-    public ContractsUtils getContractsUtils() {
-        return contractsUtils;
     }
 
     // **********************************************************************
@@ -914,7 +906,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExecutableElement methodElement,
             List<String> formalParamNames,
             boolean abstractMethod) {
-        Set<Contract> contracts = contractsUtils.getContracts(methodElement);
+        Set<Contract> contracts = atypeFactory.getContractsUtils().getContracts(methodElement);
 
         if (contracts.isEmpty()) {
             return;
@@ -1484,7 +1476,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
+        checkPreconditions(
+                node, atypeFactory.getContractsUtils().getPreconditions(invokedMethodElement));
 
         if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
@@ -3639,6 +3632,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // static.
                 return;
             }
+
+            ContractsUtils contractsUtils = atypeFactory.getContractsUtils();
 
             // Check postconditions
             Set<Postcondition> superPost =

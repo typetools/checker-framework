@@ -542,8 +542,7 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contractsUtils =
-                analysis.atypeFactory.getChecker().getVisitor().getContractsUtils();
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         FlowExpressionContext flowExprContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
@@ -1105,8 +1104,7 @@ public abstract class CFAbstractTransfer<
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contractsUtils =
-                analysis.atypeFactory.getChecker().getVisitor().getContractsUtils();
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
@@ -1121,8 +1119,7 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contractsUtils =
-                analysis.atypeFactory.getChecker().getVisitor().getContractsUtils();
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         Set<ConditionalPostcondition> conditionalPostconditions =
                 contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
