@@ -226,7 +226,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         this.checker = checker;
         this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
-        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
+        this.contractsUtils = new ContractsUtils(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
@@ -283,6 +283,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     public final Factory getTypeFactory() {
         return atypeFactory;
+    }
+
+    public ContractsUtils getContractsUtils() {
+        return contractsUtils;
     }
 
     // **********************************************************************
@@ -3637,7 +3641,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             // Check postconditions
-            ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
+            ContractsUtils contracts = contractsUtils;
             Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
             Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =

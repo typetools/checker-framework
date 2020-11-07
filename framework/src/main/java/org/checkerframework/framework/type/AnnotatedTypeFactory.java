@@ -594,6 +594,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
+    /**
+     * Returns the checker associated with this factory.
+     *
+     * @return the checker associated with this factory
+     */
+    public BaseTypeChecker getChecker() {
+        return checker;
+    }
+
     /** Creates {@link QualifierUpperBounds} for this type factory. */
     protected QualifierUpperBounds createQualifierUpperBounds() {
         return new QualifierUpperBounds(this);
