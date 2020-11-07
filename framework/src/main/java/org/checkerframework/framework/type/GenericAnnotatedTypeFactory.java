@@ -5,6 +5,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -15,7 +16,12 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,6 +30,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -2172,6 +2179,78 @@ public abstract class GenericAnnotatedTypeFactory<
 
             default:
                 throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+        }
+    }
+
+    /**
+     * Return the type of the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @return the annotated type of {@code type}'s default value
+     */
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        return getAnnotatedType(getDefaultValueTree(typeMirror));
+    }
+
+    /**
+     * Return a tree for the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @return a tree for {@code type}'s default value
+     */
+    private static LiteralTree getDefaultValueTree(TypeMirror typeMirror) {
+        switch (typeMirror.getKind()) {
+            case BYTE:
+                return createJCLiteral(TypeTag.BYTE, (byte) 0, typeMirror);
+            case CHAR:
+                return createJCLiteral(TypeTag.CHAR, '\u0000', typeMirror);
+            case SHORT:
+                return createJCLiteral(TypeTag.SHORT, (short) 0, typeMirror);
+            case LONG:
+                return createJCLiteral(TypeTag.LONG, 0L, typeMirror);
+            case FLOAT:
+                return createJCLiteral(TypeTag.FLOAT, 0.0f, typeMirror);
+            case INT:
+                return createJCLiteral(TypeTag.INT, 0, typeMirror);
+            case DOUBLE:
+                return createJCLiteral(TypeTag.DOUBLE, 0.0d, typeMirror);
+            case BOOLEAN:
+                return createJCLiteral(TypeTag.BOOLEAN, false, typeMirror);
+            default:
+                return createJCLiteral(TypeTag.CLASS, null, typeMirror);
+        }
+    }
+
+    /** The constructor for the JCLiteral class. */
+    private static Constructor<JCLiteral> jcLiteralConstructor;
+
+    {
+        try {
+            jcLiteralConstructor =
+                    JCLiteral.class.getDeclaredConstructor(TypeTag.class, Object.class);
+        } catch (NoSuchElementException | NoSuchMethodException e) {
+            throw new BugInCF(e);
+        }
+        jcLiteralConstructor.setAccessible(true);
+    }
+
+    /**
+     * Calls the protected JCLiteral constructor.
+     *
+     * @param typeTag the literal's type tag
+     * @param value the literal's value
+     * @param typeMirror the typeMirror for the literal
+     * @return a JCLiteral tree for the given type tag and value
+     */
+    private static JCLiteral createJCLiteral(TypeTag typeTag, Object value, TypeMirror typeMirror) {
+        try {
+            JCLiteral result = jcLiteralConstructor.newInstance(typeTag, value);
+            result.type = (Type) typeMirror;
+            return result;
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new BugInCF(e);
         }
     }
 }
