@@ -2198,4 +2198,35 @@ public abstract class GenericAnnotatedTypeFactory<
                 throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
         }
     }
+
+    /**
+     * Return the type of the default value of the given type. The default value is 0 or false.
+     *
+     * @param typeMirror a type
+     * @return the annotated type of {@code type}'s default value
+     */
+    AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        LiteralTree lit;
+        switch (typeMirror.getKind()) {
+            case BYTE:
+                lit = new JCLiteral(TypeTag.BYTE, (byte) 0);
+            case CHAR:
+                lit = new JCLiteral(TypeTag.CHAR, '\u0000');
+            case SHORT:
+                lit = new JCLiteral(TypeTag.SHORT, (short) 0);
+            case LONG:
+                lit = new JCLiteral(TypeTag.LONG, 0L);
+            case FLOAT:
+                lit = new JCLiteral(TypeTag.FLOAT, 0.0f);
+            case INT:
+                lit = new JCLiteral(TypeTag.INT, 0);
+            case DOUBLE:
+                lit = new JCLiteral(TypeTag.DOUBLE, 0.0d);
+            case BOOLEAN:
+                lit = new JCLiteral(TypeTag.BOOLEAN, false);
+            default:
+                lit = new JCLiteral(TypeTag.CLASS, null);
+        }
+        return getAnnotatedType(lit);
+    }
 }
