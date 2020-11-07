@@ -25,7 +25,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * A utility class to handle pre- and postconditions.
+ * A utility class to retrieve pre- and postconditions from a method.
  *
  * @see PreconditionAnnotation
  * @see RequiresQualifier
@@ -34,8 +34,8 @@ import org.checkerframework.javacutil.Pair;
  * @see ConditionalPostconditionAnnotation
  * @see EnsuresQualifierIf
  */
-// TODO: This class assumes that most annotations have a field named "expression".
-// If not, issue a more helpful error message.
+// TODO: This class assumes that most annotations have a field named "expression". If not, issue a
+// more helpful error message.
 public class ContractsUtils {
 
     /** The factory that this ContractsUtils is associated with. */
