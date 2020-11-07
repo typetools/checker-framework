@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * A utility class to handle pre- and postconditions.
+ * A utility class to retrieve pre- and postconditions from a method.
  *
  * @see PreconditionAnnotation
  * @see RequiresQualifier
