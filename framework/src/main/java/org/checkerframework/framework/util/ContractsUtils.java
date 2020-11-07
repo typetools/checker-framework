@@ -41,7 +41,11 @@ public class ContractsUtils {
     /** The factory that this ContractsUtils is associated with. */
     protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
-    /** Creates a ContractsUtils for the given factory. */
+    /**
+     * Creates a ContractsUtils for the given factory.
+     *
+     * @param factory the type factory associated with the newly-created ContractsUtils
+     */
     public ContractsUtils(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         this.factory = factory;
     }

@@ -603,7 +603,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return checker;
     }
 
-    /** Creates {@link QualifierUpperBounds} for this type factory. */
+    /**
+     * Creates {@link QualifierUpperBounds} for this type factory.
+     *
+     * @return a new {@link QualifierUpperBounds} for this type factory
+     */
     protected QualifierUpperBounds createQualifierUpperBounds() {
         return new QualifierUpperBounds(this);
     }

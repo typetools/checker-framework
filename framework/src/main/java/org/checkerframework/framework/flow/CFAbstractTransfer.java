@@ -1097,6 +1097,11 @@ public abstract class CFAbstractTransfer<
     /**
      * Add information based on all postconditions of method {@code n} with tree {@code tree} and
      * element {@code method} to the store {@code store}.
+     *
+     * @param n a method call
+     * @param store a store
+     * @param methodElement the method being called
+     * @param tree the tree for method call {@code n}
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
