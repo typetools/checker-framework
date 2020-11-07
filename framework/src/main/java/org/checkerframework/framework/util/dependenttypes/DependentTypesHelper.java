@@ -156,7 +156,7 @@ public class DependentTypesHelper {
      * methodInvocationTree.
      *
      * @param methodInvocationTree use of the method
-     * @param methodDeclType type of the method declaration
+     * @param methodDeclType type of the method declaration; is side-effected by this method
      */
     public void viewpointAdaptMethod(
             MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodDeclType) {
@@ -170,7 +170,7 @@ public class DependentTypesHelper {
      * newClassTree.
      *
      * @param newClassTree invocation of the constructor
-     * @param constructorType type of the constructor
+     * @param constructorType type of the constructor; is side-effected by this method
      */
     public void viewpointAdaptConstructor(
             NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
