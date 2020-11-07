@@ -3641,9 +3641,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             // Check postconditions
-            ContractsUtils contracts = contractsUtils;
-            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
-            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Postcondition> superPost =
+                    contractsUtils.getPostconditions(overridden.getElement());
+            Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -3659,8 +3659,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -3677,9 +3677,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check conditional postconditions
             Set<ConditionalPostcondition> superCPost =
-                    contracts.getConditionalPostconditions(overridden.getElement());
+                    contractsUtils.getConditionalPostconditions(overridden.getElement());
             Set<ConditionalPostcondition> subCPost =
-                    contracts.getConditionalPostconditions(overrider.getElement());
+                    contractsUtils.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
             Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
             Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
