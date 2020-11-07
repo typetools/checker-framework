@@ -4,8 +4,8 @@
 This chapter discusses how to run a checker from the command line, from a
 build system, or from an IDE\@.  You can skip to the appropriate section:
 
-% Keep this list up to date with the sections of this chapter and with TWO
-% copies of the list in file introduction.tex .
+% Keep this list up to date with the sections of this chapter and with a
+% copy of the list in file introduction.tex .
 \begin{itemize}
 \item Android (Section~\ref{android})
 \item Android Gradle Plugin (Section~\ref{android-gradle})
@@ -20,6 +20,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
+\item sbt (Section~\ref{sbt})
 \item tIDE (Section~\ref{tide})
 \end{itemize}
 
@@ -1264,6 +1265,53 @@ now appear in the build console. However, annotation processor output
 will not appear in the editor.
 
 \end{enumerate}
+
+
+\sectionAndLabel{sbt}{sbt}
+
+\ahref{https://www.scala-sbt.org/}{sbt} is a build tool for
+Scala, Java, and more.
+
+Adjust the \<-processor> command-line argument for the processor(s)
+you wish to run (see Section~\ref{running}).
+
+
+\subsectionAndLabel{JDK 8}{sbt-jdk8}
+
+\begin{Verbatim}
+javacOptions ++= Seq(
+    "-J-Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar",
+    "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker",
+    "-source 8", "-target 8"
+  )
+\end{Verbatim}
+
+
+\subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
+
+\begin{Verbatim}
+javacOptions ++= Seq(
+    "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker"
+  )
+\end{Verbatim}
+
+
+\subsectionAndLabel{For modularized code}{sbt-modularized-code}
+
+\begin{Verbatim}
+For compiling modularized code:
+javacOptions ++= Seq(
+    "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker"
+  )
+\end{Verbatim}
 
 
 \sectionAndLabel{tIDE}{tide}
