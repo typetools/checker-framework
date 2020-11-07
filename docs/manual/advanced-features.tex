@@ -409,7 +409,7 @@ upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.
-This may seem confusing, but it is the least bad option.  The
+This is a bit unfortunate, but it is the least bad option.  The
 more confusing alternative would be for ``\code{Object}'' to be defaulted
 differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
