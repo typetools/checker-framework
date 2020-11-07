@@ -64,24 +64,16 @@ public enum TypeUseLocation {
      *
      * <p>Especially useful for parametrized classes that provide a lot of static methods with the
      * same generic parameters as the class.
-     *
-     * <p>TODO: more doc, relation to other UPPER_BOUND
      */
     UPPER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but explicit upper bounds: {@code <T extends
      * Object>}.
-     *
-     * <p>TODO: more doc, relation to other UPPER_BOUND
      */
     EXPLICIT_UPPER_BOUND,
 
-    /**
-     * Apply default annotations to unannotated type variables: {@code <T>}.
-     *
-     * <p>TODO: more doc, relation to other UPPER_BOUND
-     */
+    /** Apply default annotations to unannotated type variables: {@code <T>}. */
     IMPLICIT_UPPER_BOUND,
 
     /** Apply if nothing more concrete is provided. TODO: clarify relation to ALL. */

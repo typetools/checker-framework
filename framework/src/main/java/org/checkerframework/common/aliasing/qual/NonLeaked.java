@@ -14,9 +14,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>For example, the parameter of {@link String#String(String s)} is {@code @NonLeaked}, because
  * the method only uses the parameter to make a copy of it.
  *
+ * <p>This annotation is currently trusted, not checked.
+ *
  * @see LeakedToResult
  * @checker_framework.manual #aliasing-checker Aliasing Checker
- *     <p>TODO: This annotation is currently trusted. A verification must be implemented.
  */
 
 // This is a type qualifier because of a checker framework limitation (Issue 383), but its
