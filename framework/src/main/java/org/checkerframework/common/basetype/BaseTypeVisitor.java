@@ -281,15 +281,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return atypeFactory;
     }
 
-    /**
-     * Return an instance of the {@link ContractsUtils} helper class.
-     *
-     * @return an instance of the {@link ContractsUtils} helper class
-     */
-    public ContractsUtils getContractsUtils() {
-        return contractsUtils;
-    }
-
     // **********************************************************************
     // Responsible for updating the factory for the location (for performance)
     // **********************************************************************
