@@ -1149,6 +1149,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Creates an AnnotatedTypeMirror for {@code elt} that includes: annotations explicitly written
      * on the element and annotations from stub files.
      *
+     * <p>Does not include default qualifiers. To obtain them, use {@link
+     * #getAnnotatedType(Element)}.
+     *
      * @param elt the element
      * @return AnnotatedTypeMirror of the element with explicitly-written and stub file annotations
      */
@@ -2871,7 +2874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Attempt to obtain the type via TreePath (slower).
         TreePath path = this.getPath(node);
-        assert path != null : "No path or type in tree: " + node;
+        assert path != null : "No path or type in tree: " + node + " [" + node.getClass() + "]";
 
         TypeMirror t = trees.getTypeMirror(path);
         assert validType(t) : "Invalid type " + t + " for node " + t;
