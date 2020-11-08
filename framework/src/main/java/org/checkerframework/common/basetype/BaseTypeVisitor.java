@@ -281,6 +281,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return atypeFactory;
     }
 
+    /**
+     * A public variant of {@link #createTypeFactory}. Only use this if you know what you are doing.
+     *
+     * @return the appropriate type factory
+     */
+    public Factory createTypeFactoryPublic() {
+        return createTypeFactory();
+    }
+
     // **********************************************************************
     // Responsible for updating the factory for the location (for performance)
     // **********************************************************************

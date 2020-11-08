@@ -1199,7 +1199,10 @@ treats its fields as possibly-null --- even fields annotated as
 \<@NonNull>.
 (The Initialization Checker focuses on \<@NonNull> fields, to detect null
 pointer exceptions when using them.  It does not
-currently ensure that primitives or \<@Nullable> fields are initialized.)
+currently ensure that primitives or \<@Nullable> fields are initialized.
+Use the Initialized Fields Checker
+(\chapterpageref{initialized-fields-checker} to check initialization with
+respect to properties other than nullness.)
 
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different

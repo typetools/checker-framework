@@ -937,11 +937,15 @@ Type systems that cannot support a run-time test are:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
   \ahrefloc{purity-checker}{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{aliasing-checker})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})

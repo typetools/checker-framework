@@ -35,11 +35,11 @@ import org.checkerframework.javacutil.SystemUtil;
  * To debug this class, use the {@code -AoutputArgsToFile=FILENAME} command-line argument or {@code
  * -AoutputArgsToFile=-} to output to standard out.
  *
- * <p>"To run the Checker Framework" really means to run java, where the program being run is a
- * special version of javac, and javac is passed a {@code -processor} command-line argument that
- * mentions a Checker Framework checker. There are 5 relevant classpaths: The classpath and
- * bootclasspath when running java, and the classpath, bootclasspath, and processorpath used by
- * javac. The latter three are the only important ones.
+ * <p>"To run the Checker Framework" really means to run java, where the program being run is javac
+ * and javac is passed a {@code -processor} command-line argument that mentions a Checker Framework
+ * checker. There are 5 relevant classpaths: The classpath and bootclasspath when running java, and
+ * the classpath, bootclasspath, and processorpath used by javac. The latter three are the only
+ * important ones.
  *
  * <p>Note for developers: Try to limit the work done (and options interpreted) by CheckerMain,
  * because its functionality is not available to users who choose not to use the Checker Framework

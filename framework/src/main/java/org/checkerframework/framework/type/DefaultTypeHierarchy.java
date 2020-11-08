@@ -182,6 +182,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             final AnnotationMirror top) {
         assert top != null;
         currentTop = top;
+        if (false)
+            System.out.printf(
+                    "isSubtype(%s, %s, %s) in %s%n", subtype, supertype, top, this.getClass());
         return AtmCombo.accept(subtype, supertype, null, this);
     }
 
@@ -224,6 +227,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, boolean annosCanBeEmtpy) {
         final AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
         final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+        if (false)
+            System.out.printf(
+                    "%s.isPrimarySubtype(%s, %s, %s)%n  checker=%s%n  checker.getTypeFactory()=%s%n  currentTop=%s%n",
+                    this.getClass().getSimpleName(),
+                    subtype,
+                    supertype,
+                    annosCanBeEmtpy,
+                    checker,
+                    checker.getTypeFactory(),
+                    currentTop);
         if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
                 && checker.getTypeFactory().hasQualifierParameterInHierarchy(subtype, currentTop)) {
             // If the types have a class qualifier parameter, the qualifiers must be equivalent.

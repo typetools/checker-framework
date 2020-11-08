@@ -7,7 +7,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-/** Indicates which fields have definitely been initialized. */
+/**
+ * Indicates which fields have definitely been initialized.
+ *
+ * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})

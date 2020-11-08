@@ -7,7 +7,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 
-/** A method postcondition annotation indicates which fields the method definitely initializes. */
+/**
+ * A method postcondition annotation indicates which fields the method definitely initializes.
+ *
+ * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
+ */
 @PostconditionAnnotation(qualifier = InitializedFields.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})

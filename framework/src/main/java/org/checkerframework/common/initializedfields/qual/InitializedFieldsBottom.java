@@ -9,8 +9,10 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom type qualifier for the Initialized Fields type system. Programmers should rarely write
- * this qualifier.
+ * The bottom type qualifier for the Initialized Fields type system. It is the type of {@code null}.
+ * Programmers should rarely write this qualifier.
+ *
+ * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
  */
 @SubtypeOf({InitializedFields.class, InitializedFieldsPredicate.class})
 @Retention(RetentionPolicy.RUNTIME)

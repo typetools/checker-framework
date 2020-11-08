@@ -6,7 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-/** A predicate annotation for the Initialized Fields type system. */
+/**
+ * A predicate annotation for the Initialized Fields type system.
+ *
+ * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({InitializedFields.class})

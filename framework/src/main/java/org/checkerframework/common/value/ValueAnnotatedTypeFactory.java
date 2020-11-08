@@ -698,6 +698,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return a {@link StringVal} annotation using the values
      */
     public AnnotationMirror createStringAnnotation(List<String> values) {
+        if (false) System.out.printf("createStringAnnotation(%s)%n", values);
         if (values == null) {
             return UNKNOWNVAL;
         }
@@ -711,7 +712,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return createArrayLenAnnotation(lengths);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
-            builder.setValue("value", values);
+            try {
+                builder.setValue("value", values);
+            } catch (Throwable t) {
+                throw new BugInCF(String.format("createStringAnnotation(%s)", values), t);
+            }
             return builder.build();
         }
     }

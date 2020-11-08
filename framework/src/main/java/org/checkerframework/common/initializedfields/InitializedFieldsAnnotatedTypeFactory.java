@@ -1,6 +1,7 @@
 package org.checkerframework.common.initializedfields;
 
 import com.sun.source.tree.VariableTree;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +13,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
@@ -21,10 +23,19 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** The annotated type factory for the Initialized Fields Checker. */
 public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
+
+    /**
+     * The type factories that determine whether the default value is consistent with the annotated
+     * type. If null, warn about all uninitialized fields.
+     */
+    List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
+
     /**
      * Create a new accumulation checker's annotated type factory.
      *
@@ -36,7 +47,61 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                 InitializedFields.class,
                 InitializedFieldsBottom.class,
                 InitializedFieldsPredicate.class);
+
+        if (!checker.hasOption("checkInitializedFields")) {
+            defaultValueAtypeFactories = null;
+        } else {
+            defaultValueAtypeFactories = new ArrayList<>();
+            String checkerNames = checker.getOption("checkInitializedFields");
+            if (checkerNames == null) {
+                throw new UserError(
+                        "-AcheckInitializedFields is empty; provide a list of checkers");
+            }
+            for (String checkerName : checkerNames.split(",")) {
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
+                if (atf == null) {
+                    throw new BugInCF("atf==null for %s, %s", checkerName, checkerName);
+                }
+                defaultValueAtypeFactories.add(atf);
+            }
+        }
+
         this.postInit();
+    }
+
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(String checkerName) {
+        try {
+            Class<?> checkerClass;
+            checkerClass = Class.forName(checkerName);
+            @SuppressWarnings("unchecked")
+            BaseTypeChecker c =
+                    ((Class<? extends BaseTypeChecker>) checkerClass)
+                            .getDeclaredConstructor()
+                            .newInstance();
+            c.init(processingEnv);
+            c.initChecker();
+            if (false)
+                System.out.println(
+                        "about to call createSourceVisitorPublic: " + c.getClass().getSimpleName());
+            BaseTypeVisitor<?> v = c.createSourceVisitorPublic();
+            if (false)
+                System.out.println(
+                        "called createSourceVisitorPublic: " + c.getClass().getSimpleName());
+            if (false)
+                System.out.println(
+                        "about to call createTypeFactoryPublic: " + c.getClass().getSimpleName());
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = v.createTypeFactoryPublic();
+            if (false)
+                System.out.println(
+                        "called createTypeFactoryPublic: " + c.getClass().getSimpleName());
+            return atf;
+        } catch (ClassNotFoundException
+                | InstantiationException
+                | InvocationTargetException
+                | IllegalAccessException
+                | NoSuchMethodException e) {
+            throw new UserError("Problem instantiating " + checkerName, e);
+        }
     }
 
     @Override
@@ -112,6 +177,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      *   <li>No initialization block or static initialization block sets the field.
      *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null)
      * </ul>
+     *
+     * @param type the type whose fields to list
+     * @return the fields whose type is not consistent with the default value, so the constructor
+     *     must initialize them
      */
     private String[] fieldsToInitialize(TypeElement type) {
         List<String> result = new ArrayList<String>();
@@ -123,6 +192,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             }
 
             VariableElement field = (VariableElement) member;
+
+            if (field == null) {
+                throw new BugInCF("null element for %s of %s", member, type);
+            }
+
             if (ElementUtils.isFinal(field)) {
                 continue;
             }
@@ -134,16 +208,38 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                 continue;
             }
 
-            AnnotatedTypeMirror fieldType = getAnnotatedType(field);
-            AnnotatedTypeMirror defaultValueType =
-                    getDefaultValueAnnotatedType(fieldType.getUnderlyingType());
-            if (getTypeHierarchy().isSubtype(defaultValueType, fieldType)) {
-                continue;
+            if (!defaultValueIsOK(field)) {
+                result.add(field.getSimpleName().toString());
             }
-
-            result.add(field.getSimpleName().toString());
         }
 
         return result.toArray(new String[result.size()]);
+    }
+
+    private boolean defaultValueIsOK(VariableElement field) {
+        if (defaultValueAtypeFactories == null) {
+            return false;
+        }
+
+        for (GenericAnnotatedTypeFactory<?, ?, ?, ?> defaultValueAtypeFactory :
+                defaultValueAtypeFactories) {
+
+            AnnotatedTypeMirror fieldType = defaultValueAtypeFactory.getAnnotatedType(field);
+            AnnotatedTypeMirror defaultValueType =
+                    defaultValueAtypeFactory.getDefaultValueAnnotatedType(
+                            fieldType.getUnderlyingType());
+            if (false)
+                System.out.printf(
+                        "defaultValueIsOK:%n  fieldType=%s%n  defaultValueType=%s%n",
+                        fieldType, defaultValueType);
+            // Could call isPrimarySubtype, but that is only defined in DefaultTypeHierarchy.
+            if (!defaultValueAtypeFactory
+                    .getTypeHierarchy()
+                    .isSubtype(defaultValueType, fieldType)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

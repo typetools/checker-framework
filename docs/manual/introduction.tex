@@ -11,13 +11,14 @@ guarantee that those errors do not occur.
 The Checker Framework comes with checkers for specific types of errors:
 
 \begin{enumerate}
+% If you update this list, also update the list in advanced-features.tex .
 
 \item
   \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
-  fields are set in the constructor (see
+  \<@NonNull> fields are set in the constructor (see
   \chapterpageref{initialization-checker})
 \item
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
@@ -81,9 +82,6 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
   \ahrefloc{purity-checker}{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
@@ -94,6 +92,13 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{reflection-resolution}{Reflection Checker} to determine
   whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
   (see \chapterpageref{reflection-resolution})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -828,7 +833,7 @@ annotation processing including all pluggable type-checking.
 % the standard javac. Should this be explained?
 
 Ordinarily, javac's \code{-processor} flag requires fully-qualified class names.
-When running a built-in checker, you may
+When using the Checker Framework javac wrapper (Section~\ref{javac-wrapper}), you may
 omit the package name and the \<Checker> suffix.
 The following three commands are equivalent:
 
