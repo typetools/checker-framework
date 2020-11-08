@@ -1,3 +1,5 @@
+WARNING: Illegal reflective access by org.checkerframework.framework.type.GenericAnnotatedTypeFactory (file:/__w/1/s/checker/dist/checker.jar) to constructor com.sun.tools.javac.tree.JCTree$JCLiteral(com.sun.tools.javac.code.TypeTag,java.lang.Object)
+WARNING: Illegal reflective access by org.checkerframework.framework.type.GenericAnnotatedTypeFactory (file:/__w/1/s/checker/dist/checker.jar) to constructor com.sun.tools.javac.tree.JCTree$JCLiteral(com.sun.tools.javac.code.TypeTag,java.lang.Object)
 CompatTest.java:6: error: [assignment.type.incompatible] incompatible types in assignment.
         @NonNull Object o = Lib.maybeGetObject();
                                               ^
