@@ -1803,7 +1803,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
+     * Issues a warning about any {@code @SuppressWarnings} that didn't suppress a warning, but
      * starts with this checker name or "allcheckers".
      */
     protected void warnUnneededSuppressions() {
@@ -1820,8 +1820,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * starts with, or is, one of the given prefixes.
+     * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning,
+     * but starts with one of the given prefixes (checker names).
      *
      * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
      *     warning

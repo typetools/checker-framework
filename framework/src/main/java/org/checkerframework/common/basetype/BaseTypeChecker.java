@@ -510,8 +510,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that contains this checker name (or
-     * "allcheckers"), but contains a string that would suppress a warning from this checker.
+     * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning,
+     * but starts with this checker name (or "allcheckers").
      *
      * <p>Collects needed warning suppressions for all subcheckers.
      */
