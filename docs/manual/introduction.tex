@@ -635,11 +635,11 @@ Type-checking modes:  enable/disable functionality
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
-  issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
-  (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
-  \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
-  your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
+  issued by the checker.  This only warns about
+  \<@SuppressWarnings> strings that contain a checker name
+  (Section~\ref{suppresswarnings-annotation-syntax}).  The
+  \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
+  that all \<@SuppressWarnings> contain a checker name.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the string in a warning suppression annotation begin with a checker
   name.  Otherwise, the suppress warning annotation does not

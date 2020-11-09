@@ -1804,7 +1804,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * starts with this checker name or "allcheckers".
      */
     protected void warnUnneededSuppressions() {
         if (!hasOption("warnUnneededSuppressions")) {
@@ -1821,7 +1821,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * starts with, or is, one of the given prefixes.
      *
      * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
      *     warning
@@ -1844,8 +1844,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
             for (String suppressWarningsString : suppressWarningsStrings) {
-                for (String errorKey : allErrorKeys) {
-                    if (shouldSuppress(prefixes, new String[] {suppressWarningsString}, errorKey)) {
+                for (String prefix : prefixes) {
+                    if (suppressWarningsString.equals(prefix)
+                            || suppressWarningsString.startsWith(prefix + ":")) {
                         reportUnneededSuppression(tree, suppressWarningsString);
                         break; // Don't report the same warning string more than once.
                     }
