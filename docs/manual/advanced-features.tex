@@ -416,7 +416,7 @@ upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.
-This may seem confusing, but it is the least bad option.  The
+This is a bit unfortunate, but it is the least bad option.  The
 more confusing alternative would be for ``\code{Object}'' to be defaulted
 differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
@@ -618,7 +618,6 @@ misbehave at run time.
 % external libraries.
 
 
-\newpage
 \sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
@@ -945,11 +944,11 @@ Type systems that cannot support a run-time test are:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
-  methods have side effects (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})

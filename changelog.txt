@@ -1,3 +1,23 @@
+Version 3.8.0, December 1, 2020
+
+The manual describes how to modify an sbt build file to run the Checker
+Framework.
+
+Implementation details:
+
+Added classes `SubtypeIsSubsetQualifierHierarchy` and
+`SubtypeIsSupersetQualifierHierarchy`.
+
+Method renamings:
+  ElementUtils.getVerboseName => ElementUtils.getQualifiedName
+  ElementUtils.getSimpleName => ElementUtils.getSimpleSignature
+
+Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
+ * `leastUpperBoundWithElements`
+ * `greatestLowerBoundWithElements`
+
+---------------------------------------------------------------------------
+
 Version 3.7.1, November 2, 2020
 
 The Constant Value Checker supports two new annotations: @EnumVal and @MatchesRegex.

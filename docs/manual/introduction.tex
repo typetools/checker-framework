@@ -81,9 +81,6 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
   \ahrefloc{purity-checker}{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
@@ -94,6 +91,9 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{reflection-resolution}{Reflection Checker} to determine
   whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
   (see \chapterpageref{reflection-resolution})
+\item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -192,7 +192,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.7.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.7.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -378,8 +378,9 @@ You can also run a checker from within your favorite IDE or build system.  See
 Chapter~\ref{external-tools} for details about build tools such as
 Ant (Section~\ref{ant-task}),
 Buck (Section~\ref{buck}),
-Gradle (Section~\ref{gradle}), and
-Maven (Section~\ref{maven});
+Gradle (Section~\ref{gradle}),
+Maven (Section~\ref{maven}), and
+sbt (Section~\ref{sbt});
 IDEs such as
 Eclipse (Section~\ref{eclipse}),
 IntelliJ IDEA (Section~\ref{intellij}),
@@ -669,7 +670,7 @@ Partially-annotated libraries
   If both a stub file and a source file for a class are available, trust
   both and use the greatest lower bound of their annotations. The default
   behavior (without this flag) is to ignore types from the stub file if
-  source is available.
+  source is available. See Section~\ref{stub-multiple-specifications}.
   % note to maintainers: GLB of the two types was chosen to support
   % using this flag in combination with \<-Ainfer=stubs>.
 % This item is repeated above:
