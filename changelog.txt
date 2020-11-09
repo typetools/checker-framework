@@ -16,6 +16,10 @@ Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
  * `leastUpperBoundWithElements`
  * `greatestLowerBoundWithElements`
 
+Removed a formal parameter from methods in `BaseTypeVisitor`:
+ * `checkPostcondition`
+ * `checkConditionalPostcondition`
+
 ---------------------------------------------------------------------------
 
 Version 3.7.1, November 2, 2020
