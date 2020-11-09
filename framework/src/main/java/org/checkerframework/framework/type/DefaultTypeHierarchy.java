@@ -217,8 +217,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on
-     *     supertype for the current top or both annotations are null. False is returned if one
-     *     annotation is null and the other is not.
+     *     supertype for the current top. Returns true if both annotations are null. Returns false
+     *     if one annotation is null and the other is not.
      */
     protected boolean isPrimarySubtype(
             AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, boolean annosCanBeEmtpy) {
@@ -247,8 +247,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             @Nullable AnnotationMirror subtypeAnno,
             @Nullable AnnotationMirror supertypeAnno,
             boolean annosCanBeEmtpy) {
-        if (annosCanBeEmtpy && subtypeAnno == null && supertypeAnno == null) {
-            return true;
+        if (annosCanBeEmtpy) {
+            if (subtypeAnno == null && supertypeAnno == null) {
+                return true;
+            }
+            if (subtypeAnno == null || supertypeAnno == null) {
+                return false;
+            }
         }
 
         return qualifierHierarchy.isSubtype(subtypeAnno, supertypeAnno);
