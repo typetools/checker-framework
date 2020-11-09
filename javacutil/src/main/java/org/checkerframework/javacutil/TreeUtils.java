@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -1652,6 +1653,10 @@ public final class TreeUtils {
     public static LiteralTree createLiteral(Object value, ProcessingEnvironment processingEnv) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         TreeMaker maker = TreeMaker.instance(context);
-        return maker.Literal(value);
+        if (value == null) {
+            return maker.Literal(TypeTag.BOT, null);
+        } else {
+            return maker.Literal(value);
+        }
     }
 }
