@@ -458,8 +458,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         scenelib.annotations.Annotation sceneAnno =
                 AnnotationConverter.annotationMirrorToAnnotation(anno);
         method.tlAnnotationsHere.add(sceneAnno);
-        System.out.printf(
-                "addMethodDeclarationAnnotation(%s) => %s%n", methodElt, method.tlAnnotationsHere);
     }
 
     /** Write all modified scenes into .jaif files or stub files. */

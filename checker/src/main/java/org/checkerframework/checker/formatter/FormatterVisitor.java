@@ -131,7 +131,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             // Support -Ainfer command-line argument
             WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
             if (wpi != null && forwardsArguments(node, enclosingMethod)) {
-                System.out.printf("forwardsArguments: %s %s%n", node, enclosingMethod);
                 wpi.addMethodDeclarationAnnotation(
                         TreeUtils.elementFromDeclaration(enclosingMethod),
                         atypeFactory.FORMATMETHOD);
