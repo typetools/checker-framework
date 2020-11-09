@@ -29,9 +29,7 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
         Node lhs = node.getTarget();
         if (lhs instanceof FieldAccessNode) {
             FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
-            Node receiver = fieldAccess.getReceiver();
-            String fieldName = fieldAccess.getFieldName();
-            accumulate(receiver, result, fieldName);
+            accumulate(fieldAccess.getReceiver(), result, fieldAccess.getFieldName());
         }
         return result;
     }
