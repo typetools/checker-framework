@@ -698,7 +698,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return a {@link StringVal} annotation using the values
      */
     public AnnotationMirror createStringAnnotation(List<String> values) {
-        if (false) System.out.printf("createStringAnnotation(%s)%n", values);
         if (values == null) {
             return UNKNOWNVAL;
         }

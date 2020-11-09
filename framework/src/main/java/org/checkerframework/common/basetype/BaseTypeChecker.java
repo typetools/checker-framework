@@ -294,10 +294,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
     public static <T> T invokeConstructorFor(
             @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
-        if (false)
-            System.out.printf(
-                    "entered invokeConstructorFor(%s, %s, %s) => null%n",
-                    name, Arrays.toString(paramTypes), Arrays.toString(args));
 
         // Load the class.
         Class<T> cls = null;
@@ -305,10 +301,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             cls = (Class<T>) Class.forName(name);
         } catch (Exception e) {
             // no class is found, simply return null
-            if (false)
-                System.out.printf(
-                        "invokeConstructorFor(%s, %s, %s) => null%n",
-                        name, Arrays.toString(paramTypes), Arrays.toString(args));
             return null;
         }
 
@@ -317,16 +309,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // Invoke the constructor.
         try {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
-            if (false)
-                System.out.printf(
-                        "about to call newInstance%n  ctor=%s%n  args=%s%n",
-                        ctor, Arrays.toString(args));
             T result = ctor.newInstance(args);
-            if (false)
-                System.out.printf(
-                        "invokeConstructorFor(%s, %s, %s) => %s%n",
-                        name, Arrays.toString(paramTypes), Arrays.toString(args), result);
-
             return result;
         } catch (Throwable t) {
             if (t instanceof InvocationTargetException) {
@@ -337,10 +320,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 }
             }
             Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
-            if (false)
-                System.out.printf(
-                        "invokeConstructorFor(%s, %s, %s) threw exception:%n",
-                        name, Arrays.toString(paramTypes), Arrays.toString(args));
 
             cause.printStackTrace(System.out);
             throw new BugInCF(

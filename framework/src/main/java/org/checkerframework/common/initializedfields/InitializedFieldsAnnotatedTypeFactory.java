@@ -80,20 +80,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                             .newInstance();
             c.init(processingEnv);
             c.initChecker();
-            if (false)
-                System.out.println(
-                        "about to call createSourceVisitorPublic: " + c.getClass().getSimpleName());
             BaseTypeVisitor<?> v = c.createSourceVisitorPublic();
-            if (false)
-                System.out.println(
-                        "called createSourceVisitorPublic: " + c.getClass().getSimpleName());
-            if (false)
-                System.out.println(
-                        "about to call createTypeFactoryPublic: " + c.getClass().getSimpleName());
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = v.createTypeFactoryPublic();
-            if (false)
-                System.out.println(
-                        "called createTypeFactoryPublic: " + c.getClass().getSimpleName());
             return atf;
         } catch (ClassNotFoundException
                 | InstantiationException
@@ -228,10 +216,6 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             AnnotatedTypeMirror defaultValueType =
                     defaultValueAtypeFactory.getDefaultValueAnnotatedType(
                             fieldType.getUnderlyingType());
-            if (false)
-                System.out.printf(
-                        "defaultValueIsOK:%n  fieldType=%s%n  defaultValueType=%s%n",
-                        fieldType, defaultValueType);
             // Could call isPrimarySubtype, but that is only defined in DefaultTypeHierarchy.
             if (!defaultValueAtypeFactory
                     .getTypeHierarchy()

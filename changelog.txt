@@ -1,6 +1,6 @@
 Version 3.8.0, December 1, 2020
 
-A new Initialized Fields Checker warns when a field is not initialized by a
+The Initialized Fields Checker warns when a field is not initialized by a
 constructor.  This is like the Initialization Checker, but the
 Initialization Checker only checks that `@NonNull` fields are initialized.
 
