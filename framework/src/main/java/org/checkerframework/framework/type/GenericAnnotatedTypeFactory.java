@@ -2243,7 +2243,7 @@ public abstract class GenericAnnotatedTypeFactory<
             case BOOLEAN:
                 return createJCLiteral(TypeTag.BOOLEAN, false, typeMirror);
             default:
-                return createJCLiteral(TypeTag.CLASS, null, typeMirror);
+                return createJCLiteral(TypeTag.BOT, null, typeMirror);
         }
     }
 
