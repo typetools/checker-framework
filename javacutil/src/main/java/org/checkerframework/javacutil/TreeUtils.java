@@ -49,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1639,6 +1640,22 @@ public final class TreeUtils {
                             "what typeTree? %s %s %s",
                             typeTree.getKind(), typeTree.getClass(), typeTree);
             }
+        }
+    }
+
+    /**
+     * Creates a LiteralTree for the given value.
+     *
+     * @param value a wrapped primitive, null, or a String
+     * @param processingEnv the processing environment
+     */
+    public static LiteralTree createLiteral(Object value, ProcessingEnvironment processingEnv) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        TreeMaker maker = TreeMaker.instance(context);
+        if (value == null) {
+            return maker.Literal(TypeTag.BOT, null);
+        } else {
+            return maker.Literal(value);
         }
     }
 }
