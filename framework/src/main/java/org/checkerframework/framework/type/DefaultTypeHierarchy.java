@@ -247,8 +247,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             @Nullable AnnotationMirror subtypeAnno,
             @Nullable AnnotationMirror supertypeAnno,
             boolean annosCanBeEmtpy) {
-        if (annosCanBeEmtpy && subtypeAnno == null && supertypeAnno == null) {
-            return true;
+        if (annosCanBeEmtpy) {
+            if (subtypeAnno == null && supertypeAnno == null) {
+                return true;
+            }
+            if (subtypeAnno == null || supertypeAnno == null) {
+                return false;
+            }
         }
         if (annosCanBeEmtpy && (subtypeAnno == null || supertypeAnno == null)) {
             return false;
