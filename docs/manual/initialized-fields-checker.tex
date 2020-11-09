@@ -1,18 +1,12 @@
 \htmlhr
 \chapterAndLabel{Initialized Fields Checker}{initialized-fields-checker}
 
-The Initialized Fields Checker warns you if you have not initialized a
+The Initialized Fields Checker warns if a constructor does not initialize a
 field.
 If you supply the \<-AcheckInitializedFields=...> command-line argument,
-then warnings are issued only if
-the default value assigned by Java (0, true, or null) is not
-consistent with the field's annotation, for the given type systems.
-
-The Initialized Fields Checker works by tracking the fields that have been
-initialized so far, and issuing a warning at the end of any constructor if
-not all the fields of this class have been initialized.
-You usually run the Initialized Fields Checker together with another
-checker that ensures that the values assigned to fields are legal.
+then warnings are issued only if the default value assigned by Java (0,
+true, or null) is not consistent with the field's annotation, for the given
+type systems.
 
 An example invocation is
 
@@ -21,6 +15,10 @@ javac -processor ValueChecker,InitializedFieldsChecker \
   -AcheckInitializedFields=org.checkerframework.common.value.ValueChecker \
   MyFile.java
 \end{Verbatim}
+
+The \<-AcheckInitializedFields> is a comma-separated list of
+fully-qualified names of checkers.  They are used to determine whether a
+field's type is consistent with the Java default value (0, true, or null).
 
 
 \sectionAndLabel{Example}{initialized-fields-example}
@@ -44,7 +42,7 @@ public class ManualConstructor {
 \end{Verbatim}
 
 When run with the
-\<-AcheckInitializedFields=org.checkerframework.common.value.ValueChecker>
+\<-AcheckInitializedFields=org.checkerframework.common.value.IndexChecker>
 command-line option, the Initialized Fields Checker warns that field \<y>
 is not set.  It does not warn about field \<z>, because its default value
 (0) is consistent with its annotations.
@@ -55,7 +53,7 @@ pass no \<-AcheckInitializedFields> command-line option.
 
 \sectionAndLabel{Annotations}{initialized-fields-annotations}
 
-The Initialized Fields type system uses the following annotations:
+The Initialized Fields type system uses the following type annotations:
 \begin{description}
 \item[\refqualclass{checker/initializedfields/qual}{InitializedFields}]
   indicates which fields have definitely been initialized so far.
@@ -97,11 +95,11 @@ The Initialized Fields Checker is a lightweight version of the  Initialization C
  & unsound treatment of partially-initialized objects
  \\
  type systems
- & works only for the nullness type system (*)
+ & works only with the Nullness Checker (*)
  & works for any type system
  \\
  disabling
- & always runs; user can suppress warnings
+ & always runs with the Nullness Checker
  & can be enabled/disabled per run
  \\
  \hline

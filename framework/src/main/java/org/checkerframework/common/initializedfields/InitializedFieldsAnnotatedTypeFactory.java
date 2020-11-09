@@ -37,7 +37,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
 
     /**
-     * Create a new accumulation checker's annotated type factory.
+     * Creates a new InitializedFieldsAnnotatedTypeFactory.
      *
      * @param checker the checker
      */
@@ -69,10 +69,15 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         this.postInit();
     }
 
+    /**
+     * Returns the type factory for the given checker.
+     *
+     * @param checkerName the fully-qualified class name of a checker
+     * @returns the type factory for the given checker
+     */
     GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(String checkerName) {
         try {
-            Class<?> checkerClass;
-            checkerClass = Class.forName(checkerName);
+            Class<?> checkerClass = Class.forName(checkerName);
             @SuppressWarnings("unchecked")
             BaseTypeChecker c =
                     ((Class<? extends BaseTypeChecker>) checkerClass)
@@ -97,6 +102,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         return new InitializedFieldsContractsUtils(this);
     }
 
+    /**
+     * A subclass of ContractsUtils that adds a postcondition contract to each constructor,
+     * requiring that it initializes all fields.
+     */
     private class InitializedFieldsContractsUtils extends ContractsUtils {
         /**
          * Creates an InitializedFieldsContractsUtils for the given factory.
@@ -161,8 +170,9 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      *
      * <ul>
      *   <li>F is a non-final field (if final, Java will issue a warning, so we don't need to).
-     *   <li>F's declaration has no initializer
-     *   <li>No initialization block or static initialization block sets the field.
+     *   <li>F's declaration has no initializer.
+     *   <li>No initialization block or static initialization block sets the field. (This seems to
+     *       be handled automagically. There is no code for it in this method, butthet tests pass.)
      *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null)
      * </ul>
      *
@@ -180,18 +190,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             }
 
             VariableElement field = (VariableElement) member;
-
-            if (field == null) {
-                throw new BugInCF("null element for %s of %s", member, type);
-            }
-
             if (ElementUtils.isFinal(field)) {
                 continue;
             }
 
             VariableTree fieldTree = (VariableTree) declarationFromElement(field);
-
-            // TODO: Check whether an initialization block sets the field.
             if (fieldTree.getInitializer() != null) {
                 continue;
             }
@@ -204,6 +207,13 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         return result.toArray(new String[result.size()]);
     }
 
+    /**
+     * Returns true if the default field value (0, true, or null) is consistent with the field's
+     * declared type.
+     *
+     * @param field a field
+     * @returns true if the default field value is consistent with the field's declared type
+     */
     private boolean defaultValueIsOK(VariableElement field) {
         if (defaultValueAtypeFactories == null) {
             return false;
