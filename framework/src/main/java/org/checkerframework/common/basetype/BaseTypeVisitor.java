@@ -187,9 +187,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** For storing visitor state. */
     protected final VisitorState visitorState;
 
-    /** An instance of the {@link ContractsUtils} helper class. */
-    protected final ContractsUtils contractsUtils;
-
     /** The element for java.util.Vector#copyInto. */
     private final ExecutableElement vectorCopyInto;
 
@@ -226,7 +223,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         this.checker = checker;
         this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
-        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
         this.typeValidator = createTypeValidator();
@@ -910,7 +906,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExecutableElement methodElement,
             List<String> formalParamNames,
             boolean abstractMethod) {
-        Set<Contract> contracts = contractsUtils.getContracts(methodElement);
+        Set<Contract> contracts = atypeFactory.getContractsUtils().getContracts(methodElement);
 
         if (contracts.isEmpty()) {
             return;
@@ -944,13 +940,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (expr != null && !abstractMethod) {
                 switch (contract.kind) {
                     case POSTCONDITION:
-                        checkPostcondition(node, annotation, contract.contractAnnotation, expr);
+                        checkPostcondition(node, annotation, expr);
                         break;
                     case CONDITIONALPOSTCONDITION:
                         checkConditionalPostcondition(
                                 node,
                                 annotation,
-                                contract.contractAnnotation,
                                 expr,
                                 ((ConditionalPostcondition) contract).resultValue);
                         break;
@@ -1022,15 +1017,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
-     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
-     *     expression}. Used only for diagnostic messages.
-     * @param expression the expression that the postcondition {@code contractAnnotation} concerns
+     * @param expression the expression that must have an annotation
      */
     protected void checkPostcondition(
-            MethodTree methodTree,
-            AnnotationMirror annotation,
-            AnnotationMirror contractAnnotation,
-            Receiver expression) {
+            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
         CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
         if (exitStore == null) {
             // if there is no regular exitStore, then the method
@@ -1079,17 +1069,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param method tree of method with the postcondition
      * @param annotation expression's type must have this annotation
-     * @param contractAnnotation the user-written postcondition annotation, which mentions {@code
-     *     expression}. Used only for diagnostic messages.
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree method,
-            AnnotationMirror annotation,
-            AnnotationMirror contractAnnotation,
-            Receiver expression,
-            boolean result) {
+            MethodTree method, AnnotationMirror annotation, Receiver expression, boolean result) {
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(TreeUtils.typeOf(method.getReturnType()));
         if (!booleanReturnType) {
@@ -1480,7 +1464,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
+        checkPreconditions(
+                node, atypeFactory.getContractsUtils().getPreconditions(invokedMethodElement));
 
         if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
@@ -3636,10 +3621,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
+            ContractsUtils contractsUtils = atypeFactory.getContractsUtils();
+
             // Check postconditions
-            ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
-            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Postcondition> superPost =
+                    contractsUtils.getPostconditions(overridden.getElement());
+            Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -3655,8 +3642,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -3673,9 +3660,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check conditional postconditions
             Set<ConditionalPostcondition> superCPost =
-                    contracts.getConditionalPostconditions(overridden.getElement());
+                    contractsUtils.getConditionalPostconditions(overridden.getElement());
             Set<ConditionalPostcondition> subCPost =
-                    contracts.getConditionalPostconditions(overrider.getElement());
+                    contractsUtils.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
             Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
             Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);

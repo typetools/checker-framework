@@ -44,6 +44,11 @@ public class AssignmentNode extends Node {
         rhs.setAssignmentContext(new AssignmentLhsContext(lhs));
     }
 
+    /**
+     * Returns the left-hand-side of the assignment.
+     *
+     * @return the left-hand-side of the assignment
+     */
     public Node getTarget() {
         return lhs;
     }
