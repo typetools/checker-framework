@@ -215,10 +215,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     /**
      * Compare the primary annotations of {@code subtype} and {@code supertype}.
      *
+     * @param subtype the type that might be a subtype
+     * @param supertype the type that might be a supertype
      * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on
-     *     supertype for the current top. Returns true if both annotations are null. Returns false
-     *     if one annotation is null and the other is not.
+     *     supertype for the current top. Returns true if neither annotated type has a primary
+     *     annotation. Returns false if one annotation is does and the other does not.
      */
     protected boolean isPrimarySubtype(
             AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, boolean annosCanBeEmtpy) {
