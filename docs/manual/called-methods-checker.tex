@@ -1,0 +1,244 @@
+\htmlhr
+\chapterAndLabel{Called Methods Checker}{called-methods-checker}
+
+The Called Methods Checker tracks the names of methods that have definitely
+been called on an object. This checker is useful for checking any property
+of the form ``call method A before method B''.
+
+The Called Methods Checker provides built-in support for one such property:
+that clients of the builder pattern for object
+construction always provide all required arguments before calling
+\<build()>.  The builder pattern is a flexible and readable way to
+construct objects, but it is error-prone.  Failing to provide
+a required argument causes a run-time error that manifests during testing
+or in the field, instead of at compile time as for regular Java
+constructors.  The Called Methods Checker verifies at compile time that
+your code correctly uses the builder pattern, never omitting a required
+argument. The Called Methods Checker has built-in support for
+\href{https://projectlombok.org/}{Lombok} (see the caveats about Lombok in
+Section~\ref{called-methods-lombok}) and
+\href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
+
+You can verify other builders, or verify other properties of the form
+``foo() must be called before bar()'', by writing method specifications.
+Section~\ref{called-methods-other} describes another example related to a
+security property.
+
+If the checker issues no warnings, then you have a guarantee that your code
+supplies all the required information to the builder.  The checker might
+yield a false positive warning when your code is too tricky for it to
+verify.  Please submit an
+\href{https://github.com/typetools/checker-framework/issues}{issue} if you
+discover this.
+
+
+\sectionAndLabel{How to run the Called Methods Checker}{called-methods-run-checker}
+
+\begin{Verbatim}
+javac -processor CalledMethods MyFile.java ...
+\end{Verbatim}
+
+The Called Methods Checker supports the following optional command-line arguments:
+\begin{itemize}
+\item The \<-ACalledMethodsChecker\_disableBuilderFrameworkSupports> option disables automatic
+ annotation inference for builder frameworks.
+ Section~\ref{called-methods-framework-details} describes its syntax.
+ Supply this if you are uninterested in errors in the use of builders, but
+ are using the Called Methods Checker to detect errors in other types of
+ code.
+\item The \<-ACalledMethodsChecker\_useValueChecker> option improves precision when analyzing
+ code that uses the AWS SDK's \<DescribeImageRequest> API\@.  See
+ Section~\ref{called-methods-other}.
+\end{itemize}
+
+\sectionAndLabel{For Lombok users}{called-methods-lombok}
+
+The Called Methods Checker supports projects that use Lombok via
+the \href{https://plugins.gradle.org/plugin/io.freefair.lombok}{io.freefair.lombok} Gradle plugin automatically.
+However, note that the checker's error messages refer to Lombok's output, which is a variant of your source code
+that appears in a \<delombok> directory.
+To fix issues, you should edit your original source code, \textbf{not} the files in the checker's error messages.
+
+If you use Lombok with a build system other than Gradle, you must configure it to do two tasks.
+If either of these is not done, the checker will not issue any errors on Lombok code.
+\begin{itemize}
+\item set Lombok configuration option \<lombok.addLombokGeneratedAnnotation = true>
+\item delombok the code before passing it to the checker
+\end{itemize}
+
+
+\sectionAndLabel{Specifying your code}{called-methods-spec}
+
+The Called Methods Checker reads method specifications (contracts) that
+state what a method requires when it is called.  It warns if method
+arguments do not satisfy the method's specification.
+
+If you use AutoValue or Lombok, most specifications are automatically
+inferred by the Called Methods Checker, from field annotations such as
+\<@Nullable> and field types such as
+\<Optional>. Section~\ref{called-methods-framework-details} gives
+defaulting rules for Lombok and AutoValue.
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{calledmethods}{5cm}
+  \hfill
+\end{center}
+  \caption{The type hierarchy for the Called Methods type system, for an object with two methods: \<a()> and \<b()>.
+  Types displayed in gray should rarely be written by the programmer.}
+  \label{fig-called-methods-types}
+\end{figure}
+
+In some cases, you may need to specify your code. You do so by writing one of the following type
+annotations (Figure~\ref{fig-called-methods-types}):
+\begin{description}
+\item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
+  The annotated type represents values on which all the given method were definitely called.
+  (Other methods might also have been called.) \<@CalledMethods()>, with no
+  arguments, is the default annotation.
+
+  Suppose that the method \<build> is annotated as
+
+  \begin{Verbatim}
+  class MyObjectBuilder {
+    MyObject build(@CalledMethods({"setX", "setY"}) MyObjectBuilder this) { ... }
+  }
+  \end{Verbatim}
+
+  Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
+
+\item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethodsPredicate}{String expression}]
+  The boolean expression specifies the required method calls.  The string
+  is a boolean expression composed of method names, disjunction (\<||>),
+  conjunction (\<\&\&>), not (\<!>), and parentheses.
+
+  For example, the annotation \<@CalledMethodsPredicate("x \&\& y || z")> on a type represents
+  objects such that either both the  \<x()> and \<y()> methods have been called on the object, \textbf{or}
+  the \<z()> method has been called on the object.
+
+  A note on the not operator (\<!>): the annotation
+  \<@CalledMethodsPredicate("!m")> means ``it is not true \<m> was
+  definitely called''; equivalently ``there is some path on which \<m> was
+  not called''.  The annotation \<@CalledMethodsPredicate("!m")> does
+  \emph{not} mean ``\<m> was not called''.
+
+  The Called Methods Checker does not have a way of expressing that a
+  method must never be called.  You can do unsound bug-finding for such a
+  property by using the \<!> operator.  The Called Methods Checker will
+  detect if the method was always called, but will silently approve the code
+  if the method is called on some but not all paths.
+
+\item[\refqualclass{common/returnsreceiver/qual}{This}]
+  \<@This> may only be written on a method return type, and means that the method returns its receiver.
+  This is helpful when type-checking fluent APIs. This annotation is defined by the
+  Returns Receiver Checker (\chapterpageref{returns-receiver-checker}), but is particularly useful
+  for the Called Methods Checker because many builders are fluent APIs.
+
+\item[\refqualclass{checker/calledmethods/qual}{CalledMethodsBottom}]
+  The bottom type for the Called Methods hierarchy. Conceptually, this annotation
+  means that all possible methods have been called on the object. Programmers should rarely,
+  if ever, need to write this annotation---write an appropriate \<@CalledMethods> annotation
+  instead.
+
+\end{description}
+
+There are also method annotations:
+
+\begin{description}
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
+  This declaration annotation specifies a post-condition on a method, indicating the methods it
+  guarantees to be called.
+
+  For example, this specification:
+
+  \begin{Verbatim}
+    @EnsuresCalledMethods(value = "#1", methods = {"x", "y"})
+    void m(Param p) { ... }
+  \end{Verbatim}
+
+  guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
+  The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsIf}]
+  This declaration annotation specifies a post-condition on a method, indicating the methods it
+  guarantees to be called if it returns a given result.
+
+  For example, this specification:
+
+  \begin{Verbatim}
+    @EnsuresCalledMethodsIf(expression = "#1", methods = {"x", "y"}, result=true)
+    boolean m(Param p) { ... }
+  \end{Verbatim}
+
+  guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
+  The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+\end{description}
+
+\sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}
+
+This section explains how the Called Methods Checker infers types for code
+that uses the Lombok and AutoValue frameworks. Most readers can skip these
+details.
+
+You can disable the builder framework support by specifying them in a
+comma-separated lowercase list to the command-line flag
+\<disableBuilderFrameworkSupports>.  For example, to disable both Lombok
+and AutoValue support, use: \\
+\<-ACalledMethodsChecker\_disableBuilderFrameworkSupports=autovalue,lombok>
+
+The Called Methods Checker automatically assumes default annotations for code that uses builders generated
+by Lombok and AutoValue. There are three places annotations are usually assumed:
+\begin{itemize}
+\item A \<@CalledMethods> annotation is placed on the receiver of the
+  \<build()> method, indicating the setter methods that must be invoked on
+  the builder before calling \<build()>. For Lombok, this annotation's
+  argument is the set of \<@lombok.NonNull> fields that do not have default
+  values.  For AutoValue, it is the set of fields that are not
+  \<@Nullable>, \<Optional>, or a Guava Immutable Collection.
+\item The return type of a \<toBuilder()> method (for example, if the
+  \<toBuilder = true> option is passed to Lombok's \<@Builder> annotation)
+  is annotated with the same \<@CalledMethods> annotation as the receiver
+  of \<build()>, using the same rules as above.
+\item A \<@This> annotation is placed on the return type of each setter in
+  the builder's implementation.
+\end{itemize}
+
+If your program directly defines any of these methods (for example, by adding your own setters to
+a Lombok builder), you may need to write the annotations manually.
+
+Minor notes/caveats on these rules:
+\begin{itemize}
+\item Lombok fields annotated with \<@Singular> will be treated as defaulted (i.e., not required), because
+Lombok will set them to empty collections if the corresponding setter is not called.
+\item If you manually provide defaults to a Lombok builder (for example, by defining the builder yourself
+and assigning a default value to the builder's field), the checker will treat that field as defaulted
+\emph{most} of the time. In particular, it will not treat it as defaulted if it is defined in bytecode rather
+than in source code.
+\end{itemize}
+
+
+\sectionAndLabel{Using the Called Methods Checker for properties unrelated to builders}{called-methods-other}
+
+The Called Methods Checker can be used to verify any property of the form
+``always call A before B'', even if the property is unrelated to builders.
+
+For example, consider the AWS EC2 \<describeImages> API, which
+clients use during the process of initializing a new cloud instance.
+\href{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15869}{CVE-2018-15869}
+describes how an improperly-configured request to this API can make the
+requesting client vulnerable to a ``machine-image sniping'' attack that
+would allow a malicious third-party to control the operating system image
+used to initialize the machine. To prevent this attack, clients must
+specify some trusted source for the image by calling the \<withOwners> or
+\<withImageIds> methods on the request prior to sending it to AWS\@. Using
+a stub file for the \<describeImages> API
+(\href{https://github.com/typetools/checker-framework/blob/master/checker/src/main/java/org/checkerframework/checker/calledmethods/DescribeImages.astub}{DescribeImages.astub}),
+the Called Methods Checker can prove that a client is not vulnerable to
+such an attack.
+
+To improve precision, you can specify the
+\<-ACalledMethodsChecker\_useValueChecker> command-line option, which
+instructs the checker to treat provably-safe calls to the \<withFilters>
+method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
+\<withImageIds> methods.

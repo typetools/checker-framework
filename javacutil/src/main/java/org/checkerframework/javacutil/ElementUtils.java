@@ -29,6 +29,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
@@ -73,7 +74,7 @@ public class ElementUtils {
     /**
      * Returns the "parent" package element for the given package element. For package "A.B" it
      * gives "A". For package "A" it gives the default package. For the default package it returns
-     * null;
+     * null.
      *
      * <p>Note that packages are not enclosed within each other, we have to manually climb the
      * namespaces. Calling "enclosingPackage" on a package element returns the package element
@@ -172,17 +173,17 @@ public class ElementUtils {
      * Returns a verbose name that identifies the element.
      *
      * @param elt the element whose name to obtain
-     * @return the verbose name of the given element
+     * @return the qualified name of the given element
      */
-    public static String getVerboseName(Element elt) {
-        Name n = getQualifiedClassName(elt);
-        if (n == null) {
-            return "Unexpected element: " + elt;
-        }
+    public static String getQualifiedName(Element elt) {
         if (elt.getKind() == ElementKind.PACKAGE || isClassElement(elt)) {
+            Name n = getQualifiedClassName(elt);
+            if (n == null) {
+                return "Unexpected element: " + elt;
+            }
             return n.toString();
         } else {
-            return n + "." + elt;
+            return getQualifiedName(elt.getEnclosingElement()) + "." + elt;
         }
     }
 
@@ -194,7 +195,7 @@ public class ElementUtils {
      * @return the simple name of the method, followed by the simple names of the formal parameter
      *     types
      */
-    public static String getSimpleName(ExecutableElement element) {
+    public static String getSimpleSignature(ExecutableElement element) {
         // note: constructor simple name is <init>
         StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
@@ -202,6 +203,25 @@ public class ElementUtils {
             sj.add(TypesUtils.simpleTypeName(i.next().asType()));
         }
         return sj.toString();
+    }
+
+    /**
+     * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
+     * "<clinit>"} as ExecutableElement.getSimpleName() does.
+     *
+     * @param element a method declaration
+     * @return a user-friendly name for the method
+     */
+    public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
+        Name result = element.getSimpleName();
+        switch (result.toString()) {
+            case "<init>":
+                return element.getEnclosingElement().getSimpleName();
+            case "<clinit>":
+                return "class initializer";
+            default:
+                return result;
+        }
     }
 
     /**
@@ -407,10 +427,26 @@ public class ElementUtils {
      * @return whether the element requires a receiver for accesses
      */
     public static boolean hasReceiver(Element element) {
-        return (element.getKind().isField()
-                        || element.getKind() == ElementKind.METHOD
-                        || element.getKind() == ElementKind.CONSTRUCTOR)
-                && !ElementUtils.isStatic(element);
+        if (element.getKind() == ElementKind.CONSTRUCTOR) {
+            // The enclosing element of a constructor is the class it creates.
+            // A constructor can only have a receiver if the class it creates has an outer type.
+            TypeMirror t = element.getEnclosingElement().asType();
+            return TypesUtils.hasEnclosingType(t);
+        } else if (element.getKind().isField()) {
+            if (ElementUtils.isStatic(element)) {
+                return false;
+            } else {
+                // In constructors, the element for "this" is a non-static field, but that field
+                // does not have a receiver.
+                return !element.getSimpleName().contentEquals("this");
+            }
+        } else if (element.getKind() == ElementKind.METHOD) {
+            Element enclosingClass = ElementUtils.enclosingClass(element);
+            if (enclosingClass != null && enclosingClass.getKind() == ElementKind.ANNOTATION_TYPE) {
+                return false;
+            }
+        }
+        return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
     }
 
     /**
@@ -558,10 +594,10 @@ public class ElementUtils {
      * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
      * only populated when annotated.
      *
-     * @param method the method Element
-     * @param methodName the name of the method
-     * @param parameters the formal parameters' Classes
-     * @return true if the method matches
+     * @param method the method Element to be tested
+     * @param methodName the goal method name
+     * @param parameters the goal formal parameter Classes
+     * @return true if the method matches the methodName and parameters
      */
     public static boolean matchesElement(
             ExecutableElement method, String methodName, Class<?>... parameters) {
@@ -594,5 +630,32 @@ public class ElementUtils {
         TypeElement enclosing = (TypeElement) questioned.getEnclosingElement();
         return questioned.equals(method)
                 || env.getElementUtils().overrides(questioned, method, enclosing);
+    }
+
+    /**
+     * Given an annotation name, return true if the element has the annotation of that name.
+     *
+     * @param element the element
+     * @param annotName name of the annotation
+     * @return true if the element has the annotation of that name
+     */
+    public static boolean hasAnnotation(Element element, String annotName) {
+        return element.getAnnotationMirrors().stream()
+                .anyMatch(anm -> AnnotationUtils.areSameByName(anm, annotName));
+    }
+
+    /**
+     * Returns the TypeElement for the given class.
+     *
+     * @param processingEnv the processing environment
+     * @param clazz a class
+     * @return the TypeElement for the class
+     */
+    public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
+        @CanonicalName String className = clazz.getCanonicalName();
+        if (className == null) {
+            throw new Error("Anonymous class " + clazz + " has no canonical name");
+        }
+        return processingEnv.getElementUtils().getTypeElement(className);
     }
 }

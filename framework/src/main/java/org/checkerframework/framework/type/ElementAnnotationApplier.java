@@ -99,7 +99,7 @@ public class ElementAnnotationApplier {
             typeFactory.checker.reportWarning(
                     element,
                     "invalid.annotation.location.bytecode",
-                    ElementUtils.getVerboseName(report));
+                    ElementUtils.getQualifiedName(report));
         }
     }
 

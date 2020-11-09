@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
 
 package lombok;

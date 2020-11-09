@@ -375,9 +375,9 @@ public class BoundsInitializer {
 
             intersections.put(type.getUnderlyingType(), type);
 
-            List<AnnotatedDeclaredType> supertypes = type.directSuperTypes();
-            for (int i = 0; i < supertypes.size(); i++) {
-                AnnotatedDeclaredType supertype = supertypes.get(i);
+            List<AnnotatedTypeMirror> bounds = type.getBounds();
+            for (int i = 0; i < bounds.size(); i++) {
+                AnnotatedTypeMirror supertype = bounds.get(i);
                 TypePathNode node = currentStructure.addPathNode(new IntersectionBoundNode(i));
                 visit(supertype);
                 currentStructure.removePathNode(node);
@@ -461,17 +461,17 @@ public class BoundsInitializer {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedPrimitiveType.");
+            throw new BugInCF("Unexpected AnnotatedPrimitiveType " + type);
         }
 
         @Override
         public Void visitNoType(AnnotatedNoType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedNoType.");
+            throw new BugInCF("Unexpected AnnotatedNoType " + type);
         }
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Void aVoid) {
-            throw new BugInCF("Unexpected AnnotatedExecutableType.");
+            throw new BugInCF("Unexpected AnnotatedExecutableType " + type);
         }
 
         /**
@@ -1222,17 +1222,17 @@ public class BoundsInitializer {
     private static class IntersectionBoundNode extends TypePathNode {
 
         /** The index of the particular bound type of an intersection type this node represents. */
-        public final int superIndex;
+        public final int boundIndex;
 
         /**
          * Creates an IntersectionBoundNode.
          *
-         * @param superIndex the index of the particular bound type of an intersection type this
+         * @param boundIndex the index of the particular bound type of an intersection type this
          *     node represents
          */
-        IntersectionBoundNode(int superIndex) {
+        IntersectionBoundNode(int boundIndex) {
             super(TypeKind.INTERSECTION);
-            this.superIndex = superIndex;
+            this.boundIndex = boundIndex;
         }
 
         /**
@@ -1242,12 +1242,12 @@ public class BoundsInitializer {
          */
         IntersectionBoundNode(IntersectionBoundNode template) {
             super(template);
-            superIndex = template.superIndex;
+            boundIndex = template.boundIndex;
         }
 
         @Override
         public String toString() {
-            return super.toString() + "( superIndex=" + superIndex + " )";
+            return super.toString() + "( superIndex=" + boundIndex + " )";
         }
 
         @Override
@@ -1261,11 +1261,11 @@ public class BoundsInitializer {
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
-            if (parent.directSuperTypes().size() <= superIndex) {
-                throw new BugInCF("Invalid superIndex %d: parent=%s", superIndex, parent);
+            if (isect.getBounds().size() <= boundIndex) {
+                throw new BugInCF("Invalid superIndex %d: parent=%s", boundIndex, parent);
             }
 
-            return isect.directSuperTypes().get(superIndex);
+            return isect.directSuperTypes().get(boundIndex);
         }
 
         @Override

@@ -23,9 +23,10 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -159,8 +160,8 @@ public class OptionalVisitor
 
     /** Return true if the two trees represent the same expression. */
     private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
-        FlowExpressions.Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
-        FlowExpressions.Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        Receiver r1 = FlowExpressions.internalReprOf(atypeFactory, tree1);
+        Receiver r2 = FlowExpressions.internalReprOf(atypeFactory, tree1);
         if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
             return r1.equals(r2);
         } else {
@@ -288,14 +289,12 @@ public class OptionalVisitor
             super(checker, visitor, atypeFactory);
         }
 
-        // TODO: Why is "isValid" called twice on the right-hand-side of a variable initializer?
-        // It leads to the error being issued twice.
         /**
          * Rules 6 (partial) and 7: Don't permit {@code Collection<Optional<...>>} or {@code
          * Optional<Collection<...>>}.
          */
         @Override
-        public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
             TypeMirror tm = type.getUnderlyingType();
             if (isCollectionType(tm)) {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
@@ -308,13 +307,15 @@ public class OptionalVisitor
                 }
             } else if (isOptionalType(tm)) {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) tm).getTypeArguments();
-                assert typeArgs.size() == 1;
-                TypeMirror typeArg = typeArgs.get(0);
-                if (isCollectionType(typeArg)) {
-                    checker.reportError(tree, "optional.collection");
+                // If typeArgs.size()==0, then the user wrote a raw type `Optional`.
+                if (typeArgs.size() == 1) {
+                    TypeMirror typeArg = typeArgs.get(0);
+                    if (isCollectionType(typeArg)) {
+                        checker.reportError(tree, "optional.collection");
+                    }
                 }
             }
-            return super.isValid(type, tree);
+            return super.visitDeclared(type, tree);
         }
     }
 

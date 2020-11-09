@@ -7,7 +7,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.Element;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -15,6 +17,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.UniqueId;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -24,7 +27,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
  */
-public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
+public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> implements UniqueId {
 
     /** Abstract values of nodes. */
     protected final IdentityHashMap<Node, V> nodeValues;
@@ -53,6 +56,16 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      */
     protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
             analysisCaches;
+
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final transient long uid = nextUid.getAndIncrement();
+
+    @Override
+    public long getUid(@UnknownInitialization AnalysisResult<V, S> this) {
+        return uid;
+    }
 
     /**
      * Initialize with given mappings.
@@ -208,8 +221,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> {
      * <ol>
      *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
      *       IntegerLiteralNode} and a {@code LambdaResultExpressionNode}.
-     *   <li>Narrowing and widening primitive conversions can result in {@code
-     *       NarrowingConversionNode} and {@code WideningConversionNode}.
+     *   <li>Widening and narrowing primitive conversions can result in {@code
+     *       WideningConversionNode} and {@code NarrowingConversionNode}.
      *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
      *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
      *       within a finally block can have multiple corresponding {@code Node}s attached to them.

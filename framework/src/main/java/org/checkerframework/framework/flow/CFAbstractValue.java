@@ -2,7 +2,6 @@ package org.checkerframework.framework.flow;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -19,7 +18,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.UtilPlume;
@@ -186,14 +184,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      */
     @SideEffectFree
     public String toStringSimple() {
-
-        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
-        StringJoiner annotationsString = new StringJoiner(", ");
-        for (AnnotationMirror am : annotations) {
-            annotationsString.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
-        }
-
-        return "CFAV{" + annotationsString + ", " + TypesUtils.simpleTypeName(underlyingType) + '}';
+        return "CFAV{"
+                + AnnotationUtils.toStringSimple(annotations)
+                + ", "
+                + TypesUtils.simpleTypeName(underlyingType)
+                + '}';
     }
 
     /**

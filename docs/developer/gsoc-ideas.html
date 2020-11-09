@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Checker Framework organization: GSoC ideas 2020</title>
+  <title>Checker Framework ideas for new contributors (GSoC ideas)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href=
@@ -11,7 +11,7 @@
 
 <img src="../logo/Logo/CFLogo.png" alt="Checker Framework logo" />
 
-<h1>GSoC ideas 2020</h1> <!-- omit from toc -->
+<h1>New contributor ideas</h1> <!-- omit from toc -->
 
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
@@ -1289,19 +1289,19 @@ some distinct challenges:
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
 Java expression</a>.  The representation for these
-(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/Receiver.html"><code>Receiver</code></a>
 class) is a hack.  The goal of this
 project is to remove it.
 </p>
 
 <p>
-The <code>FlowExpressions.Receiver</code> class is about 1000 lines of code
-that represent an AST.  There is no need for the Checker Framework to
+The <code>Receiver</code> class
+represents an AST.  There is no need for the Checker Framework to
 define its own AST when the JavaParser AST already exists and is
 maintained.  In fact, <code>FlowExpressionParseUtil</code> uses JavaParser,
 but needlessly converts a
 JavaParser <code>Expression</code> into
-a <code>FlowExpressions.Receiver</code>.
+a <code>Receiver</code>.
 </p>
 
 <p>
@@ -1310,17 +1310,17 @@ a <code>FlowExpressions.Receiver</code>.
 <ul>
   <li>
     Replace every use
-    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>FlowExpressions.Receiver</code></a>
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/Receiver.html"><code>Receiver</code></a>
     by a use of the JavaParser
     class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
   </li>
   <li>
     Replace every use of a subclass of <code>Receiver</code> (listed in the
     "Direct Known Subclasses" section of
-    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.Receiver.html"><code>Receiver</code>
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/Receiver.html"><code>Receiver</code>
     API documentation)</a> by a use of a
     <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
-    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/analysis/FlowExpressions.MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
   </li>
   <li>
     The <a href="https://checkerframework.org/api/org/checkerframework/framework/util/FlowExpressionParseUtil.html"><code>FlowExpressionParseUtil</code></a>

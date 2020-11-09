@@ -10,6 +10,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -70,6 +71,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -142,9 +146,9 @@ public class StubParser {
     private final Elements elements;
 
     /**
-     * The set of annotations found in the stub file. Keys are simple (unqualified) names. (This may
-     * be a problem in the unlikely occurrence that a type-checker supports two annotations with the
-     * same simple name.)
+     * The set of annotations found in the stub file. Keys are both fully-qualified and simple
+     * names. There are two entries for each annotation: the annotation's simple name and its
+     * fully-qualified name.
      *
      * @see #getAllStubAnnotations
      */
@@ -154,7 +158,7 @@ public class StubParser {
      * A list of the fully-qualified names of enum constants and static fields with constant values
      * that have been imported.
      */
-    private final List<String> importedConstants = new ArrayList<>();
+    private final List<@FullyQualifiedName String> importedConstants = new ArrayList<>();
 
     /** A map of imported fully-qualified type names to type elements. */
     private final Map<String, TypeElement> importedTypes = new HashMap<>();
@@ -237,38 +241,39 @@ public class StubParser {
 
     /**
      * All annotations defined in the package (but not those nested within classes in the package).
-     * Keys are simple names.
+     * Keys are both fully-qualified and simple names.
      *
      * @param packageElement a package
      * @return a map from annotation name to TypeElement
      */
     private Map<String, TypeElement> annosInPackage(PackageElement packageElement) {
-        return createImportedAnnotationsMap(
+        return createNameToAnnotationMap(
                 ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
 
     /**
-     * All annotations declared (directly) within a class. Keys are simple names.
+     * All annotations declared (directly) within a class. Keys are both fully-qualified and simple
+     * names.
      *
      * @param typeElement a type
      * @return a map from annotation name to TypeElement
      */
     private Map<String, TypeElement> annosInType(TypeElement typeElement) {
-        return createImportedAnnotationsMap(
-                ElementFilter.typesIn(typeElement.getEnclosedElements()));
+        return createNameToAnnotationMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
     }
 
     /**
      * All annotations declared within any of the given elements.
      *
      * @param typeElements the elements whose annotations to retrieve
-     * @return a map from annotation name to TypeElement
+     * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
      */
-    private Map<String, TypeElement> createImportedAnnotationsMap(List<TypeElement> typeElements) {
+    private Map<String, TypeElement> createNameToAnnotationMap(List<TypeElement> typeElements) {
         Map<String, TypeElement> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 putNoOverride(result, typeElm.getSimpleName().toString(), typeElm);
+                putNoOverride(result, typeElm.getQualifiedName().toString(), typeElm);
             }
         }
         return result;
@@ -278,33 +283,39 @@ public class StubParser {
      * Get all members of a Type that are importable in a stub file. Currently these are values of
      * enums, or compile time constants.
      *
+     * @param typeElement the type whose members to return
      * @return a list fully-qualified member names
      */
-    private static List<String> getImportableMembers(TypeElement typeElement) {
-        List<String> result = new ArrayList<>();
+    private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
+        List<@FullyQualifiedName String> result = new ArrayList<>();
         List<VariableElement> memberElements =
                 ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
             if (varElement.getConstantValue() != null
                     || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
-                result.add(
-                        String.format(
-                                "%s.%s",
-                                typeElement.getQualifiedName().toString(),
-                                varElement.getSimpleName().toString()));
+                @SuppressWarnings("signature") // string concatenation
+                @FullyQualifiedName String fqName =
+                        typeElement.getQualifiedName().toString()
+                                + "."
+                                + varElement.getSimpleName().toString();
+                result.add(fqName);
             }
         }
         return result;
     }
 
-    // TODO: I'm not sure what "found" means.  This method seems to collect only those that are
-    // imported, so it will miss ones whose fully-qualified name is used in the stub file.
+    //  TODO: This method collects only those that are imported, so it will miss ones whose
+    //   fully-qualified name is used in the stub file. The #getAnnotation method in this class
+    //   compensates for this deficiency by attempting to add any fully-qualified annotation
+    //   that it encounters.
     /**
-     * Returns all annotations found in the stub file, as a value for {@link #allStubAnnotations}.
-     * Note that this also modifies {@link #importedConstants} and {@link #importedTypes}.
+     * Returns all annotations imported by the stub file, as a value for {@link
+     * #allStubAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
+     * #importedTypes}.
      *
-     * @return a map from simple (unqualified) name to TypeElement, for all annotations found in the
-     *     stub file
+     * @return a map from names to TypeElement, for all annotations imported by the stub file. Two
+     *     entries for each annotation: one for the simple name and another for the fully-qualified
+     *     name, with the same value.
      * @see #allStubAnnotations
      */
     private Map<String, TypeElement> getAllStubAnnotations() {
@@ -319,9 +330,13 @@ public class StubParser {
         }
 
         for (ImportDeclaration importDecl : cu.getImports()) {
-            String imported = importDecl.getNameAsString();
             try {
                 if (importDecl.isAsterisk()) {
+                    @SuppressWarnings("signature" // https://tinyurl.com/cfissue/3094:
+                    // com.github.javaparser.ast.expr.Name inherits toString,
+                    // so there can be no stub file annotation for it
+                    )
+                    @DotSeparatedIdentifiers String imported = importDecl.getName().toString();
                     if (importDecl.isStatic()) {
                         // Wildcard import of members of a type (class or interface)
                         TypeElement element = getTypeElement(imported, "Imported type not found");
@@ -342,7 +357,11 @@ public class StubParser {
                         }
                     }
                 } else {
-                    // A single (non-wildcard) import
+                    // A single (non-wildcard) import.
+                    @SuppressWarnings("signature" // importDecl is non-wildcard, so its name is
+                    // @FullyQualifiedName
+                    )
+                    @FullyQualifiedName String imported = importDecl.getNameAsString();
 
                     final TypeElement importType = elements.getTypeElement(imported);
                     if (importType == null && !importDecl.isStatic()) {
@@ -352,7 +371,8 @@ public class StubParser {
                     } else if (importType == null) {
                         // static import of field or method.
 
-                        Pair<String, String> typeParts = StubUtil.partitionQualifiedName(imported);
+                        Pair<@FullyQualifiedName String, String> typeParts =
+                                StubUtil.partitionQualifiedName(imported);
                         String type = typeParts.first;
                         String fieldName = typeParts.second;
                         TypeElement enclType =
@@ -376,11 +396,8 @@ public class StubParser {
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
-
-                        AnnotationMirror anno = AnnotationBuilder.fromName(elements, imported);
-                        if (anno != null) {
-                            TypeElement annoElt =
-                                    (TypeElement) anno.getAnnotationType().asElement();
+                        TypeElement annoElt = elements.getTypeElement(imported);
+                        if (annoElt != null) {
                             putNoOverride(result, annoElt.getSimpleName().toString(), annoElt);
                             importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {
@@ -588,7 +605,10 @@ public class StubParser {
         String innerName =
                 (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
         typeName = new FqName(typeName.packageName, innerName);
-        String fqTypeName = typeName.toString();
+        @SuppressWarnings(
+                "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
+        // this is its declaration
+        @CanonicalName String fqTypeName = typeName.toString();
         TypeElement typeElt = elements.getTypeElement(fqTypeName);
         if (typeElt == null) {
             if (debugStubParser
@@ -600,12 +620,39 @@ public class StubParser {
             return;
         }
 
+        List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
         if (typeElt.getKind() == ElementKind.ENUM) {
-            typeParameters.addAll(processEnum((EnumDeclaration) typeDecl, typeElt));
+            if (!(typeDecl instanceof EnumDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is an enum, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
+            typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
+            if (!(typeDecl instanceof AnnotationDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is an annotation, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
             stubWarnNotFound("Skipping annotation type: " + fqTypeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
-            typeParameters.addAll(processType((ClassOrInterfaceDeclaration) typeDecl, typeElt));
+            if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
+                stubWarn(
+                        innerName
+                                + " is a class or interface, but stub file declared it as "
+                                + typeDecl.toString().split("\\R", 2)[0]
+                                + "...");
+                return;
+            }
+            typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
@@ -638,7 +685,9 @@ public class StubParser {
                     break;
             }
         }
-        typeParameters.clear();
+        if (typeDeclTypeParameters != null) {
+            typeParameters.removeAll(typeDeclTypeParameters);
+        }
     }
 
     /** True if the argument contains {@code @NoStubParserWarning}. */
@@ -849,7 +898,7 @@ public class StubParser {
                             "in file %s at line %s: redundant stub file specification for: %s",
                             filename.substring(filename.lastIndexOf('/') + 1),
                             decl.getBegin().get().line,
-                            ElementUtils.getVerboseName(elt)));
+                            ElementUtils.getQualifiedName(elt)));
         }
 
         // Store the type.
@@ -1003,9 +1052,7 @@ public class StubParser {
             return;
         }
 
-        if (mightHaveTypeArguments(atype)) {
-            clearAnnotations(atype, typeDef);
-        }
+        clearAnnotations(atype, typeDef);
 
         // Primary annotations for the type of a variable declaration are not stored in typeDef, but
         // rather as declaration annotations (passed as declAnnos to this method).  But, if typeDef
@@ -1099,26 +1146,6 @@ public class StubParser {
                 break;
             default:
                 // No additional annotations to add.
-        }
-    }
-
-    /**
-     * Returns true if atype might have type arguments that {@link
-     * #clearAnnotations(AnnotatedTypeMirror, Type)} might need to remove.
-     *
-     * @param atype the type to check
-     * @return a conservative approximation of whether atype might have type arguments
-     */
-    private boolean mightHaveTypeArguments(AnnotatedTypeMirror atype) {
-        switch (atype.getKind()) {
-            case DECLARED:
-                AnnotatedDeclaredType adtype = (AnnotatedDeclaredType) atype;
-                return !adtype.getTypeArguments().isEmpty();
-            case WILDCARD:
-            case TYPEVAR:
-                return true;
-            default:
-                return false;
         }
     }
 
@@ -1238,7 +1265,7 @@ public class StubParser {
                 }
             }
         }
-        String eltName = ElementUtils.getVerboseName(elt);
+        String eltName = ElementUtils.getQualifiedName(elt);
         putOrAddToMap(declAnnos, eltName, annos);
     }
 
@@ -1251,7 +1278,7 @@ public class StubParser {
             return;
         }
         putOrAddToMap(
-                declAnnos, ElementUtils.getVerboseName(elt), Collections.singleton(fromStubFile));
+                declAnnos, ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFile));
     }
 
     private void annotateTypeParameters(
@@ -1493,7 +1520,7 @@ public class StubParser {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
-                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
             }
         }
@@ -1545,7 +1572,7 @@ public class StubParser {
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
-                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
             }
         }
@@ -1597,7 +1624,7 @@ public class StubParser {
      * @param name a fully-qualified type name
      * @return a TypeElement for the name, or null
      */
-    private @Nullable TypeElement getTypeElementOrNull(String name) {
+    private @Nullable TypeElement getTypeElementOrNull(@FullyQualifiedName String name) {
         TypeElement typeElement = elements.getTypeElement(name);
         if (typeElement != null) {
             importedTypes.put(name, typeElement);
@@ -1607,10 +1634,15 @@ public class StubParser {
     }
 
     /**
-     * Get the type element for the given fully-qualified type name, or issue a warning if none is
-     * found.
+     * Get the type element for the given fully-qualified type name. If none is found, issue a
+     * warning and return null.
+     *
+     * @param typeName a type name
+     * @param msg a warning message to issue if the type element for {@code typeName} cannot be
+     *     found
+     * @return the type element for the given fully-qualified type name, or null
      */
-    private TypeElement getTypeElement(String typeName, String... msg) {
+    private TypeElement getTypeElement(@FullyQualifiedName String typeName, String... msg) {
         TypeElement classElement = elements.getTypeElement(typeName);
         if (classElement == null) {
             if (msg.length == 0) {
@@ -1640,14 +1672,27 @@ public class StubParser {
      */
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allStubAnnotations) {
-        String annoName = annotation.getNameAsString();
 
-        TypeElement annoTypeElm = allStubAnnotations.get(annoName);
+        TypeElement annoTypeElm = allStubAnnotations.get(annotation.getNameAsString());
         if (annoTypeElm == null) {
-            // Not a supported qualifier -> ignore
+            // If the annotation was not imported, then #getAllStubAnnotations does
+            // not add it to the allStubAnnotations field. This code compensates for
+            // that deficiency by adding the annotation when it is encountered (i.e. here).
+            // Note that this goes not call #getTypeElement to avoid a spurious diagnostic
+            // if the annotation is actually unknown.
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+            TypeElement annoTypeElt = elements.getTypeElement(annotation.getNameAsString());
+            if (annoTypeElt != null) {
+                putAllNew(
+                        allStubAnnotations,
+                        createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
+                return getAnnotation(annotation, allStubAnnotations);
+            }
+            // Not a supported annotation -> ignore
             return null;
         }
-        annoName = annoTypeElm.getQualifiedName().toString();
+        @SuppressWarnings("signature") // not anonymous, so name is not empty
+        @CanonicalName String annoName = annoTypeElm.getQualifiedName().toString();
 
         if (annotation instanceof MarkerAnnotationExpr) {
             return AnnotationBuilder.fromName(elements, annoName);
@@ -1751,7 +1796,8 @@ public class StubParser {
             }
         } else if (expr instanceof ClassExpr) {
             ClassExpr classExpr = (ClassExpr) expr;
-            String className = classExpr.getType().toString();
+            @SuppressWarnings("signature") // Type.toString(): @FullyQualifiedName
+            @FullyQualifiedName String className = classExpr.getType().toString();
             if (importedTypes.containsKey(className)) {
                 return importedTypes.get(className).asType();
             }
@@ -1778,7 +1824,8 @@ public class StubParser {
      * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
-    private @Nullable TypeElement findTypeOfName(String name) {
+    @SuppressWarnings("signature:argument.type.incompatible") // string concatenation
+    private @Nullable TypeElement findTypeOfName(@FullyQualifiedName String name) {
         String packageName = typeName.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
@@ -1962,7 +2009,8 @@ public class StubParser {
         VariableElement res = null;
         boolean importFound = false;
         for (String imp : importedConstants) {
-            Pair<String, String> partitionedName = StubUtil.partitionQualifiedName(imp);
+            Pair<@FullyQualifiedName String, String> partitionedName =
+                    StubUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
             if (fieldName.equals(nexpr.getNameAsString())) {
@@ -1999,6 +2047,13 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> findVariableElementFieldCache =
             new HashMap<>();
 
+    /**
+     * Returns the VariableElement for the given field access.
+     *
+     * @param faexpr a field access expression
+     * @return the VariableElement for the given field access
+     */
+    @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
     private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
@@ -2161,7 +2216,7 @@ public class StubParser {
     /// Parse state
     ///
 
-    /** Represents a class: its package name and simple name. */
+    /** Represents a class: its package name and name (including outer class names if any). */
     private static class FqName {
         /** Name of the package being parsed, or null. */
         public @Nullable String packageName;
@@ -2179,14 +2234,15 @@ public class StubParser {
          * @param className unqualified name of the type, including outer class names if any. May be
          *     null.
          */
-        public FqName(String packageName, String className) {
+        public FqName(String packageName, @Nullable String className) {
             this.packageName = packageName;
             this.className = className;
         }
 
         /** Fully-qualified name of the class. */
         @Override
-        public String toString() {
+        @SuppressWarnings("signature") // string concatenation
+        public @FullyQualifiedName String toString() {
             if (packageName == null) {
                 return className;
             } else {

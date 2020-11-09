@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -302,26 +302,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
                 if (err instanceof UserError || err instanceof TypeSystemError) {
-                    // Don't add another stack frame, just show the message.
+                    // Don't add more information about the constructor invocation.
                     throw (RuntimeException) err;
                 }
-                throw new BugInCF(
-                        String.format(
-                                "InvocationTargetException when invoking constructor for class %s on args %s; Underlying cause: %s",
-                                name, Arrays.toString(args), err),
-                        t);
-            } else {
-                throw new BugInCF(
-                        "Unexpected "
-                                + t.getClass().getSimpleName()
-                                + " for "
-                                + "class "
-                                + name
-                                + " when invoking the constructor; parameter types: "
-                                + Arrays.toString(paramTypes),
-                        // + " and args: " + Arrays.toString(args),
-                        t);
             }
+            Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
+            throw new BugInCF(
+                    String.format(
+                            "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",
+                            name, Arrays.toString(args), Arrays.toString(paramTypes), cause),
+                    cause);
         }
     }
 
@@ -444,14 +434,15 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return Collections.unmodifiableList(immediateSubcheckers);
     }
 
-    /*
-     * Get the list of all subcheckers (if any). via the instantiateSubcheckers method.
-     * This list is only non-empty for the one checker that runs all other subcheckers.
-     * These are recursively instantiated via instantiateSubcheckers the first time
-     * the method is called if subcheckers is null.
-     * Assumes all checkers run on the same thread.
+    /**
+     * Get the list of all subcheckers (if any). via the instantiateSubcheckers method. This list is
+     * only non-empty for the one checker that runs all other subcheckers. These are recursively
+     * instantiated via instantiateSubcheckers the first time the method is called if subcheckers is
+     * null. Assumes all checkers run on the same thread.
+     *
+     * @return the list of all subcheckers (if any)
      */
-    private List<BaseTypeChecker> getSubcheckers() {
+    public List<BaseTypeChecker> getSubcheckers() {
         if (subcheckers == null) {
             // Instantiate the checkers this one depends on, if any.
             LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =
@@ -563,7 +554,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * <p>Otherwise, it prints the message.
      */
-    @SuppressWarnings("interning:not.interned") // assertion
     @Override
     protected void printOrStoreMessage(
             Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {

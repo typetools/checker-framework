@@ -1,12 +1,12 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
- * object comparison and a {@link HashSet} for backing storage.
+ * object comparison and a {@link LinkedHashSet} for backing storage.
  */
 public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
@@ -30,7 +30,7 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
                 return true;
             case SINGLETON:
                 state = State.ANY;
-                set = new HashSet<>();
+                set = new LinkedHashSet<>();
                 assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
                 set.add(value);
                 value = null;

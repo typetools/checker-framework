@@ -25,7 +25,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -683,13 +682,13 @@ public class AnnotationClassLoader {
                                     .replace(SLASH, DOT);
                 }
                 // Simple annotation name, which is the same as the file name (without directory)
-                // but with file extension removed
+                // but with file extension removed.
                 @BinaryName String annotationName = fileName;
                 if (fileName.lastIndexOf(DOT) != -1) {
                     annotationName = fileName.substring(0, fileName.lastIndexOf(DOT));
                 }
 
-                // Fully qualified annotation class name
+                // Fully qualified annotation class name (a @BinaryName, not a @FullyQualifiedName)
                 @BinaryName String fullyQualifiedAnnoName =
                         Signatures.addPackage(
                                 packageName, Signatures.addPackage(qualPackage, annotationName));
@@ -708,10 +707,10 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads the class indicated by the fullyQualifiedClassName, and checks to see if it is an
-     * annotation that is supported by a checker.
+     * Loads the class indicated by the name, and checks to see if it is an annotation that is
+     * supported by a checker.
      *
-     * @param fullyQualifiedClassName the fully qualified name of the class
+     * @param className the name of the class, in binary name format
      * @param issueError set to true to issue a warning when a loaded annotation is not a type
      *     annotation. It is useful to set this to true if a given annotation must be a well-defined
      *     type annotation (eg for annotation class names given as command line arguments). It
@@ -721,21 +720,21 @@ public class AnnotationClassLoader {
      *     annotation is not supported by a checker, null is returned.
      */
     protected final @Nullable Class<? extends Annotation> loadAnnotationClass(
-            final @ClassGetName String fullyQualifiedClassName, boolean issueError) {
+            final @BinaryName String className, boolean issueError) {
 
         // load the class
         Class<?> cls = null;
         try {
             if (classLoader != null) {
-                cls = Class.forName(fullyQualifiedClassName, true, classLoader);
+                cls = Class.forName(className, true, classLoader);
             } else {
-                cls = Class.forName(fullyQualifiedClassName);
+                cls = Class.forName(className);
             }
         } catch (ClassNotFoundException e) {
             throw new UserError(
                     checker.getClass().getSimpleName()
                             + ": could not load class for annotation: "
-                            + fullyQualifiedClassName
+                            + className
                             + ". Ensure that it is a type annotation"
                             + " and your classpath is correct.");
         }
@@ -779,22 +778,20 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads a set of annotations indicated by fullyQualifiedAnnoNames.
+     * Loads a set of annotations indicated by their names.
      *
-     * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
-     *     class's fully qualified name
+     * @param annoNames a set of binary names for annotation classes
      * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String, boolean)
      */
     protected final Set<Class<? extends Annotation>> loadAnnotationClasses(
-            final @Nullable Set<@BinaryName String> fullyQualifiedAnnoNames) {
+            final @Nullable Set<@BinaryName String> annoNames) {
         Set<Class<? extends Annotation>> loadedClasses = new LinkedHashSet<>();
 
-        if (fullyQualifiedAnnoNames != null && !fullyQualifiedAnnoNames.isEmpty()) {
+        if (annoNames != null && !annoNames.isEmpty()) {
             // loop through each class name & load the class
-            for (String fullyQualifiedAnnoName : fullyQualifiedAnnoNames) {
-                Class<? extends Annotation> annoClass =
-                        loadAnnotationClass(fullyQualifiedAnnoName, false);
+            for (String annoName : annoNames) {
+                Class<? extends Annotation> annoClass = loadAnnotationClass(annoName, false);
                 if (annoClass != null) {
                     loadedClasses.add(annoClass);
                 }

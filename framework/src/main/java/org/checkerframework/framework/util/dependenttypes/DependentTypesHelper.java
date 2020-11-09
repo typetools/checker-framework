@@ -32,8 +32,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.ArrayCreation;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.qual.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -141,7 +143,7 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
-        FlowExpressions.Receiver r = FlowExpressions.internalReprOfImplicitReceiver(classDecl);
+        Receiver r = FlowExpressions.internalReprOfImplicitReceiver(classDecl);
         FlowExpressionContext context = new FlowExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
@@ -154,7 +156,7 @@ public class DependentTypesHelper {
      * methodInvocationTree.
      *
      * @param methodInvocationTree use of the method
-     * @param methodDeclType type of the method declaration
+     * @param methodDeclType type of the method declaration; is side-effected by this method
      */
     public void viewpointAdaptMethod(
             MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodDeclType) {
@@ -168,7 +170,7 @@ public class DependentTypesHelper {
      * newClassTree.
      *
      * @param newClassTree invocation of the constructor
-     * @param constructorType type of the constructor
+     * @param constructorType type of the constructor; is side-effected by this method
      */
     public void viewpointAdaptConstructor(
             NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
@@ -190,7 +192,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        FlowExpressions.Receiver receiver;
+        Receiver receiver;
         if (receiverTree == null) {
             receiver =
                     FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
@@ -214,8 +216,7 @@ public class DependentTypesHelper {
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
                 TypeMirror tm = ElementUtils.getType(varargsElement);
-                argReceivers.add(
-                        new FlowExpressions.ArrayCreation(tm, Collections.emptyList(), varargArgs));
+                argReceivers.add(new ArrayCreation(tm, Collections.emptyList(), varargArgs));
             }
         }
 
@@ -291,8 +292,7 @@ public class DependentTypesHelper {
             return;
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-        FlowExpressions.Receiver r =
-                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        Receiver r = FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
         FlowExpressionContext context =
                 new FlowExpressionContext(
                         r,
@@ -307,7 +307,20 @@ public class DependentTypesHelper {
      * @param m the method to be standardized
      * @param atm the method return type
      */
-    public void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
+    public final void standardizeReturnType(MethodTree m, AnnotatedTypeMirror atm) {
+        standardizeReturnType(m, atm, false);
+    }
+
+    /**
+     * Standardizes a method return in a Java expression.
+     *
+     * @param m the method to be standardized
+     * @param atm the method return type
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    public void standardizeReturnType(
+            MethodTree m, AnnotatedTypeMirror atm, boolean removeErroneousExpressions) {
         if (atm.getKind() == TypeKind.NONE) {
             return;
         }
@@ -321,7 +334,7 @@ public class DependentTypesHelper {
         FlowExpressionContext context =
                 FlowExpressionContext.buildContextForMethodDeclaration(
                         m, enclosingType, factory.getContext());
-        standardizeDoNotUseLocals(context, factory.getPath(m), atm);
+        standardizeDoNotUseLocals(context, factory.getPath(m), atm, removeErroneousExpressions);
     }
 
     /**
@@ -339,10 +352,10 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        FlowExpressions.Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
-        FlowExpressionContext classContext =
+        Receiver receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
+        FlowExpressionContext classignmentContext =
                 new FlowExpressionContext(receiverF, null, factory.getContext());
-        standardizeDoNotUseLocals(classContext, path, type);
+        standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
     /**
@@ -393,7 +406,7 @@ public class DependentTypesHelper {
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
-                FlowExpressions.Receiver receiver =
+                Receiver receiver =
                         FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
                 List<Receiver> params =
                         FlowExpressions.getParametersOfEnclosingMethod(factory, path);
@@ -403,14 +416,10 @@ public class DependentTypesHelper {
                 break;
             case FIELD:
             case ENUM_CONSTANT:
-                FlowExpressions.Receiver receiverF;
+                Receiver receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
-                    FlowExpressions.Receiver r =
-                            FlowExpressions.internalReprOf(factory, (IdentifierTree) node);
-                    receiverF =
-                            r instanceof FlowExpressions.FieldAccess
-                                    ? ((FlowExpressions.FieldAccess) r).getReceiver()
-                                    : r;
+                    Receiver r = FlowExpressions.internalReprOf(factory, (IdentifierTree) node);
+                    receiverF = r instanceof FieldAccess ? ((FieldAccess) r).getReceiver() : r;
                 } else {
                     receiverF = FlowExpressions.internalReprOfImplicitReceiver(ele);
                 }
@@ -442,8 +451,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        FlowExpressions.Receiver receiver =
-                FlowExpressions.internalReprOf(factory, node.getExpression());
+        Receiver receiver = FlowExpressions.internalReprOf(factory, node.getExpression());
         FlowExpressionContext context =
                 new FlowExpressionContext(receiver, null, factory.getContext());
         standardizeDoNotUseLocals(context, factory.getPath(node), type);
@@ -463,8 +471,7 @@ public class DependentTypesHelper {
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
-        FlowExpressions.Receiver receiver =
-                FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        Receiver receiver = FlowExpressions.internalReprOfPseudoReceiver(path, enclosingType);
 
         FlowExpressionContext localContext =
                 new FlowExpressionContext(
@@ -515,7 +522,19 @@ public class DependentTypesHelper {
 
     private void standardizeDoNotUseLocals(
             FlowExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
-        standardizeAtm(context, localScope, type, false);
+        standardizeDoNotUseLocals(context, localScope, type, false);
+    }
+
+    /**
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    private void standardizeDoNotUseLocals(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotatedTypeMirror type,
+            boolean removeErroneousExpressions) {
+        standardizeAtm(context, localScope, type, false, removeErroneousExpressions);
     }
 
     private void standardizeAtm(
@@ -523,9 +542,24 @@ public class DependentTypesHelper {
             TreePath localScope,
             AnnotatedTypeMirror type,
             boolean useLocalScope) {
+        standardizeAtm(context, localScope, type, useLocalScope, false);
+    }
+
+    /**
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
+    private void standardizeAtm(
+            FlowExpressionContext context,
+            TreePath localScope,
+            AnnotatedTypeMirror type,
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
         if (localScope != null) {
-            new StandardizeTypeAnnotator(context, localScope, useLocalScope).visit(type);
+            new StandardizeTypeAnnotator(
+                            context, localScope, useLocalScope, removeErroneousExpressions)
+                    .visit(type);
         }
     }
 
@@ -538,7 +572,7 @@ public class DependentTypesHelper {
             return expression;
         }
         try {
-            FlowExpressions.Receiver result =
+            Receiver result =
                     FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
             if (result == null) {
                 return new DependentTypesError(expression, " ").toString();
@@ -572,31 +606,46 @@ public class DependentTypesHelper {
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         if (!isExpressionAnno(anno)) {
             return anno;
         }
-        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(
+                context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
-    /** Standardizes an annotation. If it is not a dependent type annotation, returns null. */
+    /**
+     * Standardizes an annotation. If it is not a dependent type annotation, returns null.
+     *
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private AnnotationMirror standardizeAnnotationIfDependentType(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         if (!isExpressionAnno(anno)) {
             return null;
         }
-        return standardizeDependentTypeAnnotation(context, localScope, anno, useLocalScope);
+        return standardizeDependentTypeAnnotation(
+                context, localScope, anno, useLocalScope, removeErroneousExpressions);
     }
 
-    /** Standardizes a dependent type annotation. */
+    /**
+     * Standardizes a dependent type annotation.
+     *
+     * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+     *     converting them into an explanation of why they are illegal
+     */
     private AnnotationMirror standardizeDependentTypeAnnotation(
             FlowExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
-            boolean useLocalScope) {
+            boolean useLocalScope,
+            boolean removeErroneousExpressions) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
@@ -606,8 +655,14 @@ public class DependentTypesHelper {
                     AnnotationUtils.getElementValueArray(anno, value, String.class, true);
             List<String> standardizedStrings = new ArrayList<>();
             for (String expression : expressionStrings) {
-                standardizedStrings.add(
-                        standardizeString(expression, context, localScope, useLocalScope));
+                String standardized =
+                        standardizeString(expression, context, localScope, useLocalScope);
+                if (removeErroneousExpressions
+                        && DependentTypesError.isExpressionError(standardized)) {
+                    // nothing to do
+                } else {
+                    standardizedStrings.add(standardized);
+                }
             }
             builder.setValue(value, standardizedStrings);
         }
@@ -619,12 +674,25 @@ public class DependentTypesHelper {
         private final TreePath localScope;
         /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
+        /**
+         * If true, remove erroneous expressions. If false, replace them by an explanation of why
+         * they are illegal.
+         */
+        private final boolean removeErroneousExpressions;
 
+        /**
+         * @param removeErroneousExpressions if true, remove erroneous expressions rather than
+         *     converting them into an explanation of why they are illegal
+         */
         private StandardizeTypeAnnotator(
-                FlowExpressionContext context, TreePath localScope, boolean useLocalScope) {
+                FlowExpressionContext context,
+                TreePath localScope,
+                boolean useLocalScope,
+                boolean removeErroneousExpressions) {
             this.context = context;
             this.localScope = localScope;
             this.useLocalScope = useLocalScope;
+            this.removeErroneousExpressions = removeErroneousExpressions;
         }
 
         @Override
@@ -657,7 +725,11 @@ public class DependentTypesHelper {
             for (AnnotationMirror anno : type.getAnnotations()) {
                 AnnotationMirror annotationMirror =
                         standardizeAnnotationIfDependentType(
-                                context, localScope, anno, useLocalScope);
+                                context,
+                                localScope,
+                                anno,
+                                useLocalScope,
+                                removeErroneousExpressions);
                 if (annotationMirror != null) {
                     newAnnos.add(annotationMirror);
                 }
@@ -853,7 +925,10 @@ public class DependentTypesHelper {
         }
     }
 
-    /** Copies annotations that might have been viewpoint adapted from type to the parameter. */
+    /**
+     * Copies annotations that might have been viewpoint adapted from the visited type to the
+     * parameter.
+     */
     private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {

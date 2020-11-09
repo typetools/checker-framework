@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
  * An implementation of the nullness type-system, parameterized by an initialization type-system for
- * safe initialization. It use freedom-before-commitment, augmented by type frames, as its
- * initialization type system.
+ * safe initialization. It uses freedom-before-commitment, augmented by type frames (which are
+ * crucial to obtain acceptable precision), as its initialization type system.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
@@ -41,7 +41,7 @@ public class NullnessChecker extends InitializationChecker {
     public static final boolean LINT_DEFAULT_NOINITFORMONOTONICNONNULL = false;
 
     /**
-     * Warn about redundant comparisons of expressions with {@code null}, if the expressions is
+     * Warn about redundant comparisons of an expression with {@code null}, if the expression is
      * known to be non-null.
      */
     public static final String LINT_REDUNDANTNULLCOMPARISON = "redundantNullComparison";

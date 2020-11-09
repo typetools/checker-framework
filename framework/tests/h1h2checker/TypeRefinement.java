@@ -1,5 +1,5 @@
-import h1h2checker.quals.*;
-import h1h2checker.quals.H1Invalid;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Invalid;
 
 class TypeRefinement {
     // :: warning: (cast.unsafe.constructor.invocation)

@@ -26,7 +26,10 @@ public class MethodInvocationNode extends Node {
 
     /** The tree for the method invocation. */
     protected final @Nullable MethodInvocationTree tree;
-    /** The target of the method invocation. */
+    /**
+     * The target of the method invocation -- that is, the receiver. For a static method, may be a
+     * class name.
+     */
     protected final MethodAccessNode target;
     /** The arguments of the method invocation. */
     protected final List<Node> arguments;

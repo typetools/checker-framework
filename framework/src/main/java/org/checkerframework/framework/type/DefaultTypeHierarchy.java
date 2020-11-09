@@ -493,9 +493,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (!isPrimarySubtype(subtype, supertype)) {
             return false;
         }
-        if (subtype.atypeFactory.ignoreUninferredTypeArguments
-                && (subtype.containsUninferredTypeArguments()
-                        || supertype.containsUninferredTypeArguments())) {
+        AnnotatedTypeFactory factory = subtype.atypeFactory;
+        if (factory.ignoreUninferredTypeArguments
+                && (factory.containsUninferredTypeArguments(subtype)
+                        || factory.containsUninferredTypeArguments(supertype))) {
             // Calling castedAsSuper may cause the uninferredTypeArguments to be lost. So, just
             // return true here.
             return true;
@@ -623,23 +624,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitIntersection_Declared(
             AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, Void p) {
-        Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            if (TypesUtils.isErasedSubtype(
-                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
-                    && isSubtype(subtypeI, supertype, currentTop)) {
-                return true;
-            }
-        }
-        return false;
+        return visitIntersectionSubtype(subtype, supertype);
     }
 
     @Override
     public Boolean visitIntersection_Primitive(
             AnnotatedIntersectionType subtype, AnnotatedPrimitiveType supertype, Void p) {
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            if (TypesUtils.isBoxedPrimitive(subtypeI.getUnderlyingType())
-                    && isSubtype(subtypeI, supertype, currentTop)) {
+        for (AnnotatedTypeMirror subtypeBound : subtype.getBounds()) {
+            if (TypesUtils.isBoxedPrimitive(subtypeBound.getUnderlyingType())
+                    && isSubtype(subtypeBound, supertype, currentTop)) {
                 return true;
             }
         }
@@ -650,11 +643,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Intersection(
             AnnotatedIntersectionType subtype, AnnotatedIntersectionType supertype, Void p) {
         Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            for (AnnotatedDeclaredType supertypeI : supertype.directSuperTypes()) {
+        for (AnnotatedTypeMirror subBound : subtype.getBounds()) {
+            for (AnnotatedTypeMirror superBound : supertype.getBounds()) {
                 if (TypesUtils.isErasedSubtype(
-                                subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType(), types)
-                        && !isSubtype(subtypeI, supertypeI, currentTop)) {
+                                subBound.getUnderlyingType(), superBound.getUnderlyingType(), types)
+                        && !isSubtype(subBound, superBound, currentTop)) {
                     return false;
                 }
             }
@@ -666,8 +659,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     public Boolean visitIntersection_Null(
             AnnotatedIntersectionType subtype, AnnotatedNullType supertype, Void p) {
         // this can occur through capture conversion/comparing bounds
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            if (isPrimarySubtype(subtypeI, supertype)) {
+        for (AnnotatedTypeMirror bound : subtype.getBounds()) {
+            if (isPrimarySubtype(bound, supertype)) {
                 return true;
             }
         }
@@ -677,31 +670,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     @Override
     public Boolean visitIntersection_Typevar(
             AnnotatedIntersectionType subtype, AnnotatedTypeVariable supertype, Void p) {
-        // this can occur through capture conversion/comparing bounds
-        Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            if (TypesUtils.isErasedSubtype(
-                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
-                    && isSubtype(subtypeI, supertype, currentTop)) {
-                return true;
-            }
-        }
-        return false;
+        return visitIntersectionSubtype(subtype, supertype);
     }
 
     @Override
     public Boolean visitIntersection_Wildcard(
             AnnotatedIntersectionType subtype, AnnotatedWildcardType supertype, Void p) {
-        // this can occur through capture conversion/comparing bounds
-        Types types = checker.getTypeUtils();
-        for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
-            if (TypesUtils.isErasedSubtype(
-                            subtypeI.getUnderlyingType(), supertype.getUnderlyingType(), types)
-                    && isSubtype(subtypeI, supertype, currentTop)) {
-                return true;
-            }
-        }
-        return false;
+        return visitIntersectionSubtype(subtype, supertype);
     }
 
     // ------------------------------------------------------------------------
@@ -991,7 +966,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // ------------------------------------------------------------------------
     // These "visit" methods are utility methods that aren't part of the visit
     // interface but that handle cases that more than one visit method shares
-    // in commmon
+    // in common
 
     /** An intersection is a supertype if all of its bounds are a supertype of subtype. */
     protected boolean visitIntersectionSupertype(
@@ -1000,20 +975,42 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             return true;
         }
         boolean result = true;
-        for (AnnotatedTypeMirror aSupertype : supertype.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : supertype.getBounds()) {
             // Only call isSubtype if the Java type is actually a subtype; otherwise,
             // only check primary qualifiers.
             if (TypesUtils.isErasedSubtype(
                             subtype.getUnderlyingType(),
-                            aSupertype.getUnderlyingType(),
+                            bound.getUnderlyingType(),
                             subtype.atypeFactory.types)
-                    && !isSubtype(subtype, aSupertype, currentTop)) {
+                    && !isSubtype(subtype, bound, currentTop)) {
                 result = false;
                 break;
             }
         }
         visitHistory.add(subtype, supertype, currentTop, result);
         return result;
+    }
+
+    /**
+     * An intersection is a subtype if one of its bounds is a subtype of {@code supertype}.
+     *
+     * @param subtype an intersection type
+     * @param supertype an annotated type
+     * @return whether {@code subtype} is a subtype of {@code supertype}
+     */
+    protected boolean visitIntersectionSubtype(
+            AnnotatedIntersectionType subtype, AnnotatedTypeMirror supertype) {
+        Types types = checker.getTypeUtils();
+        // The primary annotations of the bounds should already be the same as the annotations on
+        // the intersection type.
+        for (AnnotatedTypeMirror subtypeBound : subtype.getBounds()) {
+            if (TypesUtils.isErasedSubtype(
+                            subtypeBound.getUnderlyingType(), supertype.getUnderlyingType(), types)
+                    && isSubtype(subtypeBound, supertype, currentTop)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1059,7 +1056,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
                 Types types = checker.getTypeUtils();
                 for (AnnotatedTypeMirror ub :
-                        ((AnnotatedIntersectionType) upperBound).directSuperTypes()) {
+                        ((AnnotatedIntersectionType) upperBound).getBounds()) {
                     if (TypesUtils.isErasedSubtype(
                                     ub.getUnderlyingType(), supertype.getUnderlyingType(), types)
                             && isPrimarySubtype(ub, supertype)) {

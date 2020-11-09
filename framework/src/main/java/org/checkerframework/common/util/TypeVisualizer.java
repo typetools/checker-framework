@@ -306,9 +306,9 @@ public class TypeVisualizer {
 
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
-                final List<AnnotatedDeclaredType> superTypes = type.directSuperTypes();
-                for (int i = 0; i < superTypes.size(); i++) {
-                    lines.add(connect(type, superTypes.get(i)) + " " + makeLabel("&"));
+                final List<AnnotatedTypeMirror> bounds = type.getBounds();
+                for (int i = 0; i < bounds.size(); i++) {
+                    lines.add(connect(type, bounds.get(i)) + " " + makeLabel("&"));
                 }
                 return null;
             }
@@ -467,7 +467,7 @@ public class TypeVisualizer {
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 if (checkOrAdd(type)) {
                     addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=octagon");
-                    visitAll(type.directSuperTypes());
+                    visitAll(type.getBounds());
                 }
 
                 return null;

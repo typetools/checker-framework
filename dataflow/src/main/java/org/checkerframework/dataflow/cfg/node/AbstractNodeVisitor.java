@@ -281,12 +281,12 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     }
 
     @Override
-    public R visitNarrowingConversion(NarrowingConversionNode n, P p) {
+    public R visitWideningConversion(WideningConversionNode n, P p) {
         return visitNode(n, p);
     }
 
     @Override
-    public R visitWideningConversion(WideningConversionNode n, P p) {
+    public R visitNarrowingConversion(NarrowingConversionNode n, P p) {
         return visitNode(n, p);
     }
 

@@ -25,7 +25,7 @@
             <groupId>org.plumelib</groupId>
             <artifactId>plume-util</artifactId>
             <!-- Keep version number in sync with ../../../../framework-test/build.gradle . -->
-            <version>1.1.5</version>
+            <version>1.1.7</version>
             <type>jar</type>
         </dependency>
     </dependencies>

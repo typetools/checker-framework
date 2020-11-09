@@ -215,14 +215,10 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 result.setUpperBound(bounds.get(0));
                 break;
             default:
-                AnnotatedIntersectionType upperBound =
+                AnnotatedIntersectionType intersection =
                         (AnnotatedIntersectionType) result.getUpperBound();
-
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<>(bounds.size());
-                for (AnnotatedTypeMirror b : bounds) {
-                    superBounds.add((AnnotatedDeclaredType) b);
-                }
-                upperBound.setDirectSuperTypes(superBounds);
+                intersection.setBounds(bounds);
+                intersection.copyIntersectionBoundAnnotations();
         }
 
         return result;
@@ -341,12 +337,16 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitIntersectionType(
             IntersectionTypeTree node, AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror type = f.type(node);
-
-        if (type.getKind() == TypeKind.TYPEVAR) {
-            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
+        // This method is only called for IntersectionTypes in casts.  There is no
+        // IntersectionTypeTree for a type variable bound that is an intersection.  See
+        // #visitTypeParameter.
+        AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
+        List<AnnotatedTypeMirror> bounds = new ArrayList<>();
+        for (Tree boundTree : node.getBounds()) {
+            bounds.add(visit(boundTree, f));
         }
-
+        type.setBounds(bounds);
+        type.copyIntersectionBoundAnnotations();
         return type;
     }
 }

@@ -1,6 +1,6 @@
-import h1h2checker.quals.*;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 // Test defaulting behavior, e.g. that local variables, casts, and instanceof
 // propagate the type of the respective sub-expression and that upper bounds

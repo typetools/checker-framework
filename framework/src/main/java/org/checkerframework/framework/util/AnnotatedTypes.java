@@ -35,6 +35,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -397,7 +398,7 @@ public class AnnotatedTypes {
     public static AnnotatedTypeMirror asMemberOf(
             Types types,
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror t,
+            @Nullable AnnotatedTypeMirror t,
             Element elem,
             AnnotatedTypeMirror elemType) {
         // asMemberOf is only for fields, variables, and methods!
@@ -410,11 +411,13 @@ public class AnnotatedTypes {
             case TYPE_PARAMETER:
                 return elemType;
             default:
-                AnnotatedTypeMirror res = asMemberOfImpl(types, atypeFactory, t, elem, elemType);
-                if (!ElementUtils.isStatic(elem)) {
+                if (!ElementUtils.isStatic(elem) && t != null) {
+                    AnnotatedTypeMirror res =
+                            asMemberOfImpl(types, atypeFactory, t, elem, elemType);
                     atypeFactory.postAsMemberOf(res, t, elem);
+                    return res;
                 }
-                return res;
+                return elemType;
         }
     }
 
@@ -436,10 +439,6 @@ public class AnnotatedTypes {
             final AnnotatedTypeMirror of,
             final Element member,
             final AnnotatedTypeMirror memberType) {
-        if (ElementUtils.isStatic(member)) {
-            return memberType;
-        }
-
         switch (of.getKind()) {
             case ARRAY:
                 // Method references like String[]::clone should have a return type of String[]
@@ -467,9 +466,8 @@ public class AnnotatedTypes {
                         memberType);
             case INTERSECTION:
                 AnnotatedTypeMirror iter = memberType;
-                for (AnnotatedDeclaredType superType :
-                        ((AnnotatedIntersectionType) of).directSuperTypes()) {
-                    iter = substituteTypeVariables(types, atypeFactory, superType, member, iter);
+                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) of).getBounds()) {
+                    iter = substituteTypeVariables(types, atypeFactory, bound, member, iter);
                 }
                 return iter;
             case UNION:
@@ -625,12 +623,11 @@ public class AnnotatedTypes {
             throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
         }
 
-        TypeElement iterableElement =
-                processingEnv.getElementUtils().getTypeElement("java.lang.Iterable");
+        TypeElement iterableElement = ElementUtils.getTypeElement(processingEnv, Iterable.class);
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = asSuper(atypeFactory, iterableType, iterableElmType);
         if (dt.getTypeArguments().isEmpty()) {
-            TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
+            TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
             AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
@@ -936,14 +933,16 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             List<AnnotatedTypeMirror> paramTypes,
             List<? extends ExpressionTree> trees) {
-        assert paramTypes.size() == trees.size()
-                : "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
-                        + "Parameter types: "
-                        + paramTypes
-                        + " Arguments: "
-                        + trees;
+        if (paramTypes.size() != trees.size()) {
+            throw new BugInCF(
+                    "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
+                            + "Parameter types: "
+                            + paramTypes
+                            + " Arguments: "
+                            + trees);
+        }
         List<AnnotatedTypeMirror> types = new ArrayList<>();
-        Pair<Tree, AnnotatedTypeMirror> preAssCtxt =
+        Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
                 atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
@@ -954,7 +953,7 @@ public class AnnotatedTypes {
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
         } finally {
-            atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
+            atypeFactory.getVisitorState().setAssignmentContext(preAssignmentContext);
         }
         return types;
     }
@@ -1044,7 +1043,7 @@ public class AnnotatedTypes {
     }
 
     /** java.lang.annotation.Annotation.class canonical name. */
-    private static String annotationClassName =
+    private static @CanonicalName String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
     /**
@@ -1095,7 +1094,7 @@ public class AnnotatedTypes {
     public static boolean isDeclarationOfJavaLangEnum(
             final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
         if (isEnum(typeMirror)) {
-            return elements.getTypeElement("java.lang.Enum")
+            return elements.getTypeElement(Enum.class.getCanonicalName())
                     .equals(((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
         }
 
@@ -1328,11 +1327,11 @@ public class AnnotatedTypes {
             final AnnotationMirror top,
             final QualifierHierarchy qualifierHierarchy) {
         AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
-        for (final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
-            final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-            if (superAnno != null
-                    && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
-                anno = superAnno;
+        for (AnnotatedTypeMirror bound : isect.getBounds()) {
+            AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
+            if (boundAnno != null
+                    && (anno == null || qualifierHierarchy.isSubtype(boundAnno, anno))) {
+                anno = boundAnno;
             }
         }
 

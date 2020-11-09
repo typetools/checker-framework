@@ -26,6 +26,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -43,7 +44,7 @@ public class StubTypes {
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
      * Map keys cannot be Element, because a different Element appears in the stub files than in the
      * real files. So, map keys are the verbose element name, as returned by
-     * ElementUtils.getVerboseName.
+     * ElementUtils.getQualifiedName.
      */
     private final Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
 
@@ -179,7 +180,7 @@ public class StubTypes {
             Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
         }
 
-        // 5. Stub files provided via stubs option
+        // 5. Stub files provided via stubs command-line option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
@@ -201,8 +202,9 @@ public class StubTypes {
                     stubPath = stubPath.substring("checker.jar/".length());
                 }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                // Didn't find the stub file.
                 if (in == null) {
+                    // Didn't find the stub file.
+
                     // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
                     // warning. Currently, only the original checker will try to parse the target
@@ -313,7 +315,7 @@ public class StubTypes {
         }
 
         parseEnclosingClass(elt);
-        String eltName = ElementUtils.getVerboseName(elt);
+        String eltName = ElementUtils.getQualifiedName(elt);
         if (declAnnosFromStubFiles.containsKey(eltName)) {
             return declAnnosFromStubFiles.get(eltName);
         }
@@ -330,8 +332,8 @@ public class StubTypes {
         if (!shouldParseJdk) {
             return;
         }
-        String className = getOuterMostEnclosingClass(e);
-        if (className == null) {
+        String className = getOutermostEnclosingClass(e);
+        if (className == null || className.isEmpty()) {
             return;
         }
         if (jdkStubFiles.containsKey(className)) {
@@ -347,10 +349,11 @@ public class StubTypes {
      * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code
      * null} if no such class exists for {@code e}.
      *
-     * @return the fully qualified name of the outermost enclosing class of {@code e} or {@code
-     *     null} if no such class exists for {@code e}
+     * @param e an element whose outermost enclosing class to return
+     * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if
+     *     no such class exists for {@code e}
      */
-    private String getOuterMostEnclosingClass(Element e) {
+    private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(e);
         if (enclosingClass == null) {
             return null;
@@ -366,7 +369,12 @@ public class StubTypes {
             }
             enclosingClass = t;
         }
-        return enclosingClass.getQualifiedName().toString();
+        @SuppressWarnings(
+                "signature:assignment.type.incompatible" // https://tinyurl.com/cfissue/658:
+        // Name.toString should be @PolySignature
+        )
+        @CanonicalNameOrEmpty String result = enclosingClass.getQualifiedName().toString();
+        return result;
     }
 
     /**

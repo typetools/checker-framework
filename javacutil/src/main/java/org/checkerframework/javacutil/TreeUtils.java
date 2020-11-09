@@ -72,7 +72,9 @@ import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueIdMap;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -82,6 +84,9 @@ public final class TreeUtils {
     private TreeUtils() {
         throw new AssertionError("Class TreeUtils cannot be instantiated.");
     }
+
+    /** Unique IDs for trees. */
+    public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
     /**
      * Checks if the provided method is a constructor method or no.
@@ -631,6 +636,60 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if {@code tree} has a synthetic argument.
+     *
+     * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
+     * synthetic argument to the constructor that is the enclosing expression of the NewClassTree.
+     * Suppose a programmer writes:
+     *
+     * <pre><code>
+     *     class Outer {
+     *         class Inner { }
+     *         void method() {
+     *             this.new Inner(){};
+     *         }
+     *     }
+     * </code></pre>
+     *
+     * Java 9 javac creates the following synthetic tree for {@code this.new Inner(){}}:
+     *
+     * <pre><code>
+     *    new Inner(this) {
+     *         (.Outer x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
+     * Inner(){}}:
+     *
+     * <pre><code>
+     *    this.new Inner() {
+     *         (.Outer x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * @param tree a new class tree
+     * @return true if {@code tree} has a synthetic argument
+     */
+    public static boolean hasSyntheticArgument(NewClassTree tree) {
+        if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
+            return false;
+        }
+        for (Tree member : tree.getClassBody().getMembers()) {
+            if (member.getKind() == Kind.METHOD && isConstructor((MethodTree) member)) {
+                MethodTree methodTree = (MethodTree) member;
+                StatementTree f = methodTree.getBody().getStatements().get(0);
+                return TreeUtils.getReceiverTree(((ExpressionStatementTree) f).getExpression())
+                        != null;
+            }
+        }
+        return false;
+    }
+    /**
      * Returns the name of the invoked method.
      *
      * @return the name of the invoked method
@@ -772,7 +831,12 @@ public final class TreeUtils {
         }
     }
 
-    /** Returns the receiver tree of a field access or a method invocation. */
+    /**
+     * Returns the receiver tree of a field access or a method invocation.
+     *
+     * @param expression a field access or a method invocation
+     * @return the expression's receiver tree, or null if it does not have an explicit receiver
+     */
     public static @Nullable ExpressionTree getReceiverTree(ExpressionTree expression) {
         ExpressionTree receiver;
         switch (expression.getKind()) {
@@ -913,13 +977,21 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for the method declaration of methodName, in class typeName,
-     * with params formal parameters. Errs if there is not exactly one matching method. If more than
-     * one method takes the same number of formal parameters, then use {@link #getMethod(String,
-     * String, ProcessingEnvironment, String...)}.
+     * Returns the ExecutableElement for a method declaration. Errs if there is not exactly one
+     * matching method. If more than one method takes the same number of formal parameters, then use
+     * {@link #getMethod(String, String, ProcessingEnvironment, String...)}.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
         if (methods.size() == 1) {
             return methods.get(0);
@@ -932,9 +1004,18 @@ public final class TreeUtils {
     /**
      * Returns all ExecutableElements for method declarations of methodName, in class typeName, with
      * params formal parameters.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param params the number of formal parameters
+     * @param env the processing environment
+     * @return the ExecutableElements for all matching methods
      */
     public static List<ExecutableElement> getMethods(
-            String typeName, String methodName, int params, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            int params,
+            ProcessingEnvironment env) {
         List<ExecutableElement> methods = new ArrayList<>(1);
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         if (typeElt == null) {
@@ -950,11 +1031,19 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the ExecutableElement for a method declaration of methodName, in class typeName, with
-     * formal parameters of the given types. Errs if there is no matching method.
+     * Returns the ExecutableElement for a method declaration. Errs if there is no matching method.
+     *
+     * @param typeName the class that contains the method
+     * @param methodName the name of the method
+     * @param env the processing environment
+     * @param paramTypes the method's formal parameter types
+     * @return the ExecutableElement for the specified method
      */
     public static ExecutableElement getMethod(
-            String typeName, String methodName, ProcessingEnvironment env, String... paramTypes) {
+            @FullyQualifiedName String typeName,
+            String methodName,
+            ProcessingEnvironment env,
+            String... paramTypes) {
         TypeElement typeElt = env.getElementUtils().getTypeElement(typeName);
         for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             if (exec.getSimpleName().contentEquals(methodName)
@@ -1157,7 +1246,7 @@ public final class TreeUtils {
      * @return the VariableElement for typeName.fieldName
      */
     public static VariableElement getField(
-            String typeName, String fieldName, ProcessingEnvironment env) {
+            @FullyQualifiedName String typeName, String fieldName, ProcessingEnvironment env) {
         TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
         for (VariableElement var : ElementFilter.fieldsIn(mapElt.getEnclosedElements())) {
             if (var.getSimpleName().contentEquals(fieldName)) {
@@ -1174,7 +1263,6 @@ public final class TreeUtils {
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
-        // TODO: is there a nicer way than an instanceof?
         return tree instanceof ExpressionTree;
     }
 
@@ -1361,7 +1449,8 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns the type as a TypeMirror of {@code tree}.
+     * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s
+     * AnnotatedTypeMirror, call {@code AnnotatedTypeFactory.getAnnotatedType()}.
      *
      * @return the type as a TypeMirror of {@code tree}
      */
@@ -1458,5 +1547,98 @@ public final class TreeUtils {
             result = "\"" + result.substring(0, length - 5) + "...\"";
         }
         return result;
+    }
+
+    /**
+     * Returns true if the binary operator may do a widening primitive conversion. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html">JLS chapter 5</a>.
+     *
+     * @param node a binary tree
+     * @return true if the tree's operator does numeric promotion on its arguments
+     */
+    public static boolean isWideningBinary(BinaryTree node) {
+        switch (node.getKind()) {
+            case LEFT_SHIFT:
+            case LEFT_SHIFT_ASSIGNMENT:
+            case RIGHT_SHIFT:
+            case RIGHT_SHIFT_ASSIGNMENT:
+            case UNSIGNED_RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                // Strictly speaking,  these operators do unary promotion on each argument
+                // separately.
+                return true;
+
+            case MULTIPLY:
+            case MULTIPLY_ASSIGNMENT:
+            case DIVIDE:
+            case DIVIDE_ASSIGNMENT:
+            case REMAINDER:
+            case REMAINDER_ASSIGNMENT:
+            case PLUS:
+            case PLUS_ASSIGNMENT:
+            case MINUS:
+            case MINUS_ASSIGNMENT:
+
+            case LESS_THAN:
+            case LESS_THAN_EQUAL:
+            case GREATER_THAN:
+            case GREATER_THAN_EQUAL:
+            case EQUAL_TO:
+            case NOT_EQUAL_TO:
+
+            case AND:
+            case XOR:
+            case OR:
+                // These operators do binary promotion on the two arguments together.
+                return true;
+
+                // TODO: CONDITIONAL_EXPRESSION (?:) sometimes does numeric promotion.
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Returns the annotations explicitly written on the given type.
+     *
+     * @param annoTrees annotations written before a variable/method declaration; null if this type
+     *     is not from such a location
+     * @param typeTree the type whose annotations to return
+     * @return the annotations explicitly written on the given type.
+     */
+    public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
+            List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+        while (true) {
+            switch (typeTree.getKind()) {
+                case IDENTIFIER:
+                case PRIMITIVE_TYPE:
+                    if (annoTrees == null) {
+                        return Collections.emptyList();
+                    }
+                    return annoTrees;
+                case ANNOTATED_TYPE:
+                    return ((AnnotatedTypeTree) typeTree).getAnnotations();
+                case ARRAY_TYPE:
+                case TYPE_PARAMETER:
+                case UNBOUNDED_WILDCARD:
+                case EXTENDS_WILDCARD:
+                case SUPER_WILDCARD:
+                    return Collections.emptyList();
+                case MEMBER_SELECT:
+                    if (annoTrees == null) {
+                        return Collections.emptyList();
+                    }
+                    typeTree = ((MemberSelectTree) typeTree).getExpression();
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeTree = ((ParameterizedTypeTree) typeTree).getType();
+                    break;
+                default:
+                    throw new BugInCF(
+                            "what typeTree? %s %s %s",
+                            typeTree.getKind(), typeTree.getClass(), typeTree);
+            }
+        }
     }
 }
