@@ -16,6 +16,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.TypeTag;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2221,23 +2222,23 @@ public abstract class GenericAnnotatedTypeFactory<
     private LiteralTree getDefaultValueTree(TypeMirror typeMirror) {
         switch (typeMirror.getKind()) {
             case BYTE:
-                return TreeUtils.createLiteral((byte) 0, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.BYTE, (byte) 0, typeMirror, processingEnv);
             case CHAR:
-                return TreeUtils.createLiteral((char) 0, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.CHAR, '\u0000', typeMirror, processingEnv);
             case SHORT:
-                return TreeUtils.createLiteral((short) 0, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.SHORT, (short) 0, typeMirror, processingEnv);
             case LONG:
-                return TreeUtils.createLiteral((long) 0, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.LONG, 0L, typeMirror, processingEnv);
             case FLOAT:
-                return TreeUtils.createLiteral(0.0f, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.FLOAT, 0.0f, typeMirror, processingEnv);
             case INT:
-                return TreeUtils.createLiteral(0, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
             case DOUBLE:
-                return TreeUtils.createLiteral(0.0d, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
             case BOOLEAN:
-                return TreeUtils.createLiteral(false, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
             default:
-                return TreeUtils.createLiteral(null, processingEnv);
+                return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
         }
     }
 }

@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -1647,16 +1648,21 @@ public final class TreeUtils {
     /**
      * Creates a LiteralTree for the given value.
      *
+     * @param typeTag the literal's type tag
      * @param value a wrapped primitive, null, or a String
+     * @param typeMirror the typeMirror for the literal
      * @param processingEnv the processing environment
+     * @return a LiteralTree for the given type tag and value
      */
-    public static LiteralTree createLiteral(Object value, ProcessingEnvironment processingEnv) {
+    public static LiteralTree createLiteral(
+            TypeTag typeTag,
+            Object value,
+            TypeMirror typeMirror,
+            ProcessingEnvironment processingEnv) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         TreeMaker maker = TreeMaker.instance(context);
-        if (value == null) {
-            return maker.Literal(TypeTag.BOT, null);
-        } else {
-            return maker.Literal(value);
-        }
+        LiteralTree result = maker.Literal(TypeTag.BOT, null);
+        ((JCLiteral) result).type = (Type) typeMirror;
+        return result;
     }
 }
