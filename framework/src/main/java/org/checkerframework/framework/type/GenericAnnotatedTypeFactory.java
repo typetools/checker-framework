@@ -2208,6 +2208,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param typeMirror a type
      * @return the annotated type of {@code type}'s default value
      */
+    // TODO: Cache results to avoid recomputation.
     public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
         return getAnnotatedType(getDefaultValueTree(typeMirror));
     }
