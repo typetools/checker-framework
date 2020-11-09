@@ -2231,7 +2231,7 @@ public abstract class GenericAnnotatedTypeFactory<
             case FLOAT:
                 return TreeUtils.createLiteral(0.0f, processingEnv);
             case INT:
-                return TreeUtils.createLiteral((int) 0, processingEnv);
+                return TreeUtils.createLiteral(0, processingEnv);
             case DOUBLE:
                 return TreeUtils.createLiteral(0.0d, processingEnv);
             case BOOLEAN:
