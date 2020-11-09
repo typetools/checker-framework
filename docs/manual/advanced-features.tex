@@ -379,9 +379,16 @@ locations.
 Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
-Exception parameters need to have the top type because
-exceptions of arbitrary qualified types can be thrown and the Checker Framework
-does not provide run-time checks.
+
+Exception parameters default to the top type because they might catch an
+exception thrown anywhere in the program.  If the Checker Framework
+defaulted exception parameters some other type T (instead of the top type),
+then the Checker Framework would need to issue a warning at every \<throw>
+statement whose argument might not be a subtype of T.  (An even more
+precise analysis would be for the Checker Framework to compute the
+feasibility of every pair of $\langle$throw statement, catch
+clauses$\rangle$ in the program, but such an analysis might be expensive or
+non-modular.)
 
 \item
 Cast types are defaulted to the same type as their argument expression.
