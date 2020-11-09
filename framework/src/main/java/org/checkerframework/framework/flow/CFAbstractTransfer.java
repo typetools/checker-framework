@@ -542,9 +542,9 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         FlowExpressionContext flowExprContext = null;
-        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
             String expression = p.expression;
@@ -1096,11 +1096,16 @@ public abstract class CFAbstractTransfer<
     /**
      * Add information based on all postconditions of method {@code n} with tree {@code tree} and
      * element {@code method} to the store {@code store}.
+     *
+     * @param n a method call
+     * @param store a store
+     * @param methodElement the method being called
+     * @param tree the tree for method call {@code n}
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 
@@ -1114,9 +1119,9 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         Set<ConditionalPostcondition> conditionalPostconditions =
-                contracts.getConditionalPostconditions(methodElement);
+                contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
                 n, tree, thenStore, elseStore, conditionalPostconditions);
     }
