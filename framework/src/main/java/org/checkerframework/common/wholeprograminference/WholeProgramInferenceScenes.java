@@ -444,7 +444,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     @Override
     public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
 
-        // do not infer types for code that isn't presented as source
+        // Do not infer types for library code, only for type-checked source code.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
         }
