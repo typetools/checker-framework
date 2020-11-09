@@ -525,7 +525,7 @@ Different arguments to \<javac> are required for JDK 8
 (Section~\ref{java8-install}) and for JDK 9+ (Section~\ref{java11-install}).
 
 
-\subsectionAndLabel{JDK 8}{java8-install}
+\subsectionAndLabel{JDK 8}{javac-jdk8}
 
 This section shows what arguments to pass to javac to run the Checker
 Framework, if you are using JDK 8.
@@ -578,12 +578,16 @@ source code is Java 8 and that Java 8 bytecode is created.
 \end{enumerate}
 
 
-\subsectionAndLabel{JDK 11}{java11-install}
+\subsectionAndLabel{JDK 11}{javac-jdk11}
 
 This section shows what arguments to pass to javac to run the Checker Framework using JDK 11.  These
 instructions should work on JDK 9 or later, but we only test with JDK 11.
 
-For compiling non-modularized code:
+
+\subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
+
+To compile non-modularized code:
+
 \begin{Verbatim}
 javac \
 -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
@@ -607,7 +611,10 @@ WARNING: Use --illegal-access=warn to enable warnings of further illegal reflect
 WARNING: All illegal access operations will be denied in a future release
 \end{Verbatim}
 
-For compiling a module, first add \<requires
+
+\subsubsectionAndLabel{Modularized code}{javac-jdk11-modularized}
+
+To compile a module, first add \<requires
 org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
 Framework inserts inferred annotations into bytecode even if none appear in source code,
 so you must do this even if you write no annotations in your code.
