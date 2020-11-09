@@ -1830,9 +1830,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected void warnUnneededSuppressions(
             Set<Element> elementsSuppress, Set<String> prefixes, Set<String> allErrorKeys) {
-        // It's not clear for which checker "all" is intended, so never report it as unused.
-        prefixes.remove(SourceChecker.SUPPRESS_ALL_PREFIX);
-
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
             // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
