@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -49,6 +50,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1639,6 +1641,22 @@ public final class TreeUtils {
                             "what typeTree? %s %s %s",
                             typeTree.getKind(), typeTree.getClass(), typeTree);
             }
+        }
+    }
+
+    /**
+     * Creates a LiteralTree for the given value.
+     *
+     * @param value a wrapped primitive, null, or a String
+     * @param processingEnv the processing environment
+     */
+    public static LiteralTree createLiteral(Object value, ProcessingEnvironment processingEnv) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        TreeMaker maker = TreeMaker.instance(context);
+        if (value == null) {
+            return maker.Literal(TypeTag.BOT, null);
+        } else {
+            return maker.Literal(value);
         }
     }
 }
