@@ -52,6 +52,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             defaultValueAtypeFactories = null;
         } else {
             defaultValueAtypeFactories = new ArrayList<>();
+            // TODO: The checker would be easier for users to use if it read the java -processor
+            // command-line argument to determine the list of other checkers being run.
             String checkerNames = checker.getOption("checkInitializedFields");
             if (checkerNames == null) {
                 throw new UserError(
