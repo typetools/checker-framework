@@ -1640,7 +1640,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        assert tree instanceof LiteralTree || root != null
+        assert root != null || tree instanceof LiteralTree
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();

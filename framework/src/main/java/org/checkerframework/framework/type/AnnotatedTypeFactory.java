@@ -2875,7 +2875,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Attempt to obtain the type via TreePath (slower).
         TreePath path = this.getPath(node);
-        assert path != null : "No path or type in tree: " + node + " [" + node.getClass() + "]";
+        assert path != null
+                : "No path or type in tree: " + node + " [" + node.getClass().getSimpleName() + "]";
 
         TypeMirror t = trees.getTypeMirror(path);
         assert validType(t) : "Invalid type " + t + " for node " + t;
@@ -3024,9 +3025,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
                         + "): root needs to be set when used on trees; factory: "
-                        + this.getClass().getSimpleName()
-                        + "; node="
-                        + node;
+                        + this.getClass().getSimpleName();
 
         if (node == null) {
             return null;

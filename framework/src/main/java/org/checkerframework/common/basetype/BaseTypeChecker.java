@@ -215,8 +215,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
 
-        // System.out.printf("createSourceVisitor() %s%n", this.getClass().getSimpleName());
-
         while (checkerClass != BaseTypeChecker.class) {
             BaseTypeVisitor<?> result =
                     invokeConstructorFor(
@@ -309,8 +307,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // Invoke the constructor.
         try {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
-            T result = ctor.newInstance(args);
-            return result;
+            return ctor.newInstance(args);
         } catch (Throwable t) {
             if (t instanceof InvocationTargetException) {
                 Throwable err = t.getCause();
@@ -320,8 +317,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 }
             }
             Throwable cause = (t instanceof InvocationTargetException) ? t.getCause() : t;
-
-            cause.printStackTrace(System.out);
             throw new BugInCF(
                     String.format(
                             "Error when invoking constructor for class %s on args %s; parameter types: %s; cause: %s",

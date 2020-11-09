@@ -711,11 +711,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return createArrayLenAnnotation(lengths);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
-            try {
-                builder.setValue("value", values);
-            } catch (Throwable t) {
-                throw new BugInCF(String.format("createStringAnnotation(%s)", values), t);
-            }
+            builder.setValue("value", values);
             return builder.build();
         }
     }
