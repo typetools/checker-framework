@@ -1652,6 +1652,10 @@ public final class TreeUtils {
     public static LiteralTree createLiteral(Object value, ProcessingEnvironment processingEnv) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         TreeMaker maker = TreeMaker.instance(context);
-        return maker.Literal(value);
+        if (value == null) {
+            return maker.Literal(TypeTag.BOT, null);
+        } else {
+            return maker.Literal(value);
+        }
     }
 }
