@@ -16,7 +16,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.TypeTag;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2198,23 +2197,23 @@ public abstract class GenericAnnotatedTypeFactory<
     private LiteralTree getDefaultValueTree(TypeMirror typeMirror) {
         switch (typeMirror.getKind()) {
             case BYTE:
-                return TreeUtils.createLiteral(TypeTag.BYTE, processingEnv);
+                return TreeUtils.createLiteral((byte) 0, processingEnv);
             case CHAR:
-                return TreeUtils.createLiteral(TypeTag.CHAR, processingEnv);
+                return TreeUtils.createLiteral((char) 0, processingEnv);
             case SHORT:
-                return TreeUtils.createLiteral(TypeTag.SHORT, processingEnv);
+                return TreeUtils.createLiteral((short) 0, processingEnv);
             case LONG:
-                return TreeUtils.createLiteral(TypeTag.LONG, processingEnv);
+                return TreeUtils.createLiteral((long) 0, processingEnv);
             case FLOAT:
-                return TreeUtils.createLiteral(TypeTag.FLOAT, processingEnv);
+                return TreeUtils.createLiteral(0.0f, processingEnv);
             case INT:
-                return TreeUtils.createLiteral(TypeTag.INT, processingEnv);
+                return TreeUtils.createLiteral((int) 0, processingEnv);
             case DOUBLE:
-                return TreeUtils.createLiteral(TypeTag.DOUBLE, processingEnv);
+                return TreeUtils.createLiteral(0.0d, processingEnv);
             case BOOLEAN:
-                return TreeUtils.createLiteral(TypeTag.BOOLEAN, processingEnv);
+                return TreeUtils.createLiteral(false, processingEnv);
             default:
-                return TreeUtils.createLiteral(TypeTag.BOT, processingEnv);
+                return TreeUtils.createLiteral(null, processingEnv);
         }
     }
 }
