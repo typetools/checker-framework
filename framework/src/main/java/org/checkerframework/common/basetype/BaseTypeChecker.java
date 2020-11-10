@@ -510,8 +510,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning,
+     * but starts with this checker name (or "allcheckers").
      *
      * <p>Collects needed warning suppressions for all subcheckers.
      */
@@ -524,18 +524,19 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (!hasOption("warnUnneededSuppressions")) {
             return;
         }
-        Set<Element> elementsSuppress = new HashSet<>(this.elementsWithSuppressedWarnings);
+        Set<Element> elementsWithSuppressedWarnings =
+                new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
         Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
         Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
-            elementsSuppress.addAll(subChecker.elementsWithSuppressedWarnings);
+            elementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
             subChecker.elementsWithSuppressedWarnings.clear();
             prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
             errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
             subChecker.getVisitor().treesWithSuppressWarnings.clear();
         }
-        warnUnneededSuppressions(elementsSuppress, prefixes, errorKeys);
+        warnUnneededSuppressions(elementsWithSuppressedWarnings, prefixes, errorKeys);
 
         getVisitor().treesWithSuppressWarnings.clear();
     }

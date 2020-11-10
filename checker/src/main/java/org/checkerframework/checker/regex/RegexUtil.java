@@ -25,7 +25,6 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
  * project.
  */
-@SuppressWarnings("allcheckers:purity")
 @AnnotatedFor("nullness")
 public final class RegexUtil {
 
