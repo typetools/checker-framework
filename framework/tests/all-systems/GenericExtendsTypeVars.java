@@ -16,7 +16,6 @@ class WithWildcard<ZZ extends QQ, QQ extends YY, YY extends MMyMap<QQ, ZZ>> {
     }
 }
 
-@SuppressWarnings("initialization.fields.uninitialized")
 class Test<KK extends FF, FF extends MMyMap<KK, KK>> {
     KK kk;
     FF ff;
@@ -27,7 +26,6 @@ class Test<KK extends FF, FF extends MMyMap<KK, KK>> {
     }
 }
 
-@SuppressWarnings("initialization.fields.uninitialized")
 class RecursiveTypevarClass<T extends RecursiveTypevarClass<T>> {
     T t;
 

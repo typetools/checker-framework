@@ -124,7 +124,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             // Only process methods defined in source code being type-checked.
             if (declarationFromElement(executableElement) != null) {
 
-                if (executableElement.getSimpleName().contentEquals("<init>")) {
+                if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
                     // It's a constructor
 
                     String[] fieldsToInitialize =
@@ -209,7 +209,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     /**
-     * Returns true if the default field value (0, true, or null) is consistent with the field's
+     * Returns true if the default field value (0, false, or null) is consistent with the field's
      * declared type.
      *
      * @param field a field
