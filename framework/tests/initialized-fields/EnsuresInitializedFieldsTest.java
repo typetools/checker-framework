@@ -22,6 +22,12 @@ public class EnsuresInitializedFieldsTest {
         x = 1;
     }
 
+    @EnsuresInitializedFields(fields = {"x", "y"})
+    // :: error: (contracts.postcondition.not.satisfied)
+    void setsX2() {
+        x = 1;
+    }
+
     @EnsuresInitializedFields(
             value = "#1",
             fields = {"x", "y"})
@@ -34,6 +40,12 @@ public class EnsuresInitializedFieldsTest {
             value = "this",
             fields = {"x", "y"})
     void setsXY() {
+        x = 1;
+        y = 1;
+    }
+
+    @EnsuresInitializedFields(fields = {"x", "y"})
+    void setsXY2() {
         x = 1;
         y = 1;
     }

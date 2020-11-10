@@ -13,8 +13,20 @@ public class HelperMethodInitializesFields {
         z = 3;
     }
 
+    HelperMethodInitializesFields(int ignore, String ignore2) {
+        helperMethodXY2();
+        @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
+    }
+
     HelperMethodInitializesFields(long ignore) {
         this.helperMethodXY();
+        @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
+    }
+
+    HelperMethodInitializesFields(long ignore, String ignore2) {
+        this.helperMethodXY2();
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
         z = 3;
     }
@@ -75,6 +87,12 @@ public class HelperMethodInitializesFields {
         @InitializedFields({"x", "y", "z"}) HelperMethodInitializesFields hmif2 = this;
     }
 
+    HelperMethodInitializesFields(boolean ignore1, char ignore) {
+        z = 3;
+        helperMethodXY2();
+        @InitializedFields({"x", "y", "z"}) HelperMethodInitializesFields hmif2 = this;
+    }
+
     HelperMethodInitializesFields(boolean ignore1, float ignore) {
         z = 3;
         staticHelperMethodXY(this);
@@ -115,6 +133,12 @@ public class HelperMethodInitializesFields {
             value = "this",
             fields = {"x", "y"})
     void helperMethodXY() {
+        x = 1;
+        this.y = 1;
+    }
+
+    @EnsuresInitializedFields(fields = {"x", "y"})
+    void helperMethodXY2() {
         x = 1;
         this.y = 1;
     }
