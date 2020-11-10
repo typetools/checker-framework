@@ -14,7 +14,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -59,8 +59,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
                 continue;
             }
-            @SuppressWarnings(
-                    "signature:argument.type.incompatible") // -processor is fully-qualified names
+            @SuppressWarnings("signature:argument.type.incompatible") // -processor is a binary name
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
             if (atf == null) {
                 throw new UserError(
@@ -78,7 +77,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * @param checkerName the fully-qualified class name of a checker
      * @return the type factory for the given checker
      */
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@FullyQualifiedName String checkerName) {
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String checkerName) {
         try {
             Class<?> checkerClass = Class.forName(checkerName);
             @SuppressWarnings("unchecked")
