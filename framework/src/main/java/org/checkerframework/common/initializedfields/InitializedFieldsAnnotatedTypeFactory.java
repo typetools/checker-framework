@@ -75,7 +75,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * Returns the type factory for the given checker.
      *
      * @param checkerName the fully-qualified class name of a checker
-     * @returns the type factory for the given checker
+     * @return the type factory for the given checker
      */
     GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(String checkerName) {
         try {
@@ -214,7 +214,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * declared type.
      *
      * @param field a field
-     * @returns true if the default field value is consistent with the field's declared type
+     * @return true if the default field value is consistent with the field's declared type
      */
     private boolean defaultValueIsOK(VariableElement field) {
         if (defaultValueAtypeFactories == null) {
