@@ -21,7 +21,6 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
-import org.checkerframework.common.initializedfields.qual.InitializedFieldsPredicate;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
@@ -45,11 +44,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * @param checker the checker
      */
     public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(
-                checker,
-                InitializedFields.class,
-                InitializedFieldsBottom.class,
-                InitializedFieldsPredicate.class);
+        super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         String checkerNames = Options.instance(context).get("-processor");
