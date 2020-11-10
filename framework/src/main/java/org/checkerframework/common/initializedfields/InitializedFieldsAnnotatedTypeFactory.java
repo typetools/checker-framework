@@ -1,6 +1,9 @@
 package org.checkerframework.common.initializedfields;
 
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +26,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -32,7 +34,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
 
     /**
      * The type factories that determine whether the default value is consistent with the annotated
-     * type. If null, warn about all uninitialized fields.
+     * type. If empty, warn about all uninitialized fields.
      */
     List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
 
@@ -48,24 +50,20 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                 InitializedFieldsBottom.class,
                 InitializedFieldsPredicate.class);
 
-        if (!checker.hasOption("checkInitializedFields")) {
-            defaultValueAtypeFactories = null;
-        } else {
-            defaultValueAtypeFactories = new ArrayList<>();
-            // TODO: The checker would be easier for users to use if it read the java -processor
-            // command-line argument to determine the list of other checkers being run.
-            String checkerNames = checker.getOption("checkInitializedFields");
-            if (checkerNames == null) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        String checkerNames = Options.instance(context).get("-processor");
+
+        defaultValueAtypeFactories = new ArrayList<>();
+        for (String checkerName : checkerNames.split(",")) {
+            if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
+                continue;
+            }
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
+            if (atf == null) {
                 throw new UserError(
-                        "-AcheckInitializedFields is empty; provide a list of checkers");
+                        "Cannot find %s; check the classpath or processorpath", checkerName);
             }
-            for (String checkerName : checkerNames.split(",")) {
-                GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
-                if (atf == null) {
-                    throw new BugInCF("atf==null for %s, %s", checkerName, checkerName);
-                }
-                defaultValueAtypeFactories.add(atf);
-            }
+            defaultValueAtypeFactories.add(atf);
         }
 
         this.postInit();
@@ -217,7 +215,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * @return true if the default field value is consistent with the field's declared type
      */
     private boolean defaultValueIsOK(VariableElement field) {
-        if (defaultValueAtypeFactories == null) {
+        if (defaultValueAtypeFactories.isEmpty()) {
             return false;
         }
 

@@ -3,22 +3,16 @@
 
 The Initialized Fields Checker warns if a constructor does not initialize a
 field.
-If you supply the \<-AcheckInitializedFields=...> command-line argument,
-then warnings are issued only if the default value assigned by Java (0,
-true, or null) is not consistent with the field's annotation, for the given
-type systems.
+If you run it together with other checkers (by supplying multiple checkers
+to the \<-processor> command-line option), then warnings are issued only if
+the default value assigned by Java (0, true, or null) is not consistent
+with the field's annotation, for the other type systems.
 
 An example invocation is
 
 \begin{Verbatim}
-javac -processor ValueChecker,InitializedFieldsChecker \
-  -AcheckInitializedFields=org.checkerframework.common.value.ValueChecker \
-  MyFile.java
+javac -processor ValueChecker,InitializedFieldsChecker MyFile.java
 \end{Verbatim}
-
-The \<-AcheckInitializedFields> is a comma-separated list of
-fully-qualified names of checkers.  They are used to determine whether a
-field's type is consistent with the Java default value (0, true, or null).
 
 
 \sectionAndLabel{Example}{initialized-fields-example}
@@ -41,14 +35,12 @@ public class ManualConstructor {
 }
 \end{Verbatim}
 
-When run with the
-\<-AcheckInitializedFields=org.checkerframework.common.value.IndexChecker>
-command-line option, the Initialized Fields Checker warns that field \<y>
-is not set.  It does not warn about field \<z>, because its default value
-(0) is consistent with its annotations.
+When run together with the Index Checker, the Initialized Fields Checker
+warns that field \<y> is not set.  It does not warn about field \<z>,
+because its default value (0) is consistent with its annotations.
 
 To warn about the lack of initialization of both field \<y> and field \<z>,
-pass no \<-AcheckInitializedFields> command-line option.
+run only the Initialized Fields Checker.
 
 
 \sectionAndLabel{Annotations}{initialized-fields-annotations}
@@ -112,6 +104,6 @@ the Initialization Checker.
 \end{small}
 
 
-% LocalWords:  AcheckInitializedFields InitializedFields
+% LocalWords:  InitializedFields
 % LocalWords:  InitializedFieldsBottom PolyInitializedFields
 % LocalWords:  EnsuresInitializedFields
