@@ -53,7 +53,6 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         String checkerNames = Options.instance(context).get("-processor");
-
         defaultValueAtypeFactories = new ArrayList<>();
         for (String checkerName : checkerNames.split(",")) {
             if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
@@ -165,7 +164,6 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         }
     }
 
-    // It is a bit wasteful that this is recomputed for each constructor.
     /**
      * Returns the fields that the constructor must initialize. These are the fields F declared in
      * this class that satisfy all of the following conditions:
@@ -174,7 +172,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      *   <li>F is a non-final field (if final, Java will issue a warning, so we don't need to).
      *   <li>F's declaration has no initializer.
      *   <li>No initialization block or static initialization block sets the field. (This seems to
-     *       be handled automagically. There is no code for it in this method, butthet tests pass.)
+     *       be handled automagically. There is no code for it in this method, but the tests pass.)
      *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null)
      * </ul>
      *
@@ -182,6 +180,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * @return the fields whose type is not consistent with the default value, so the constructor
      *     must initialize them
      */
+    // It is a bit wasteful that this is recomputed for each constructor.
     private String[] fieldsToInitialize(TypeElement type) {
         List<String> result = new ArrayList<String>();
 
