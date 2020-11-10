@@ -1681,7 +1681,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Element element = TreeUtils.elementFromTree(tree);
         assert element != null : "Unexpected null element for tree: " + tree;
         // Return null if the element kind has no receiver or if the expression has a receiver.
-        if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) != null) {
+        if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) == null) {
             return null;
         }
 
@@ -1746,13 +1746,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the inner most enclosing method or class tree of {@code tree}. If {@code tree} is
-     * artificial, that is create by dataflow, then {@link #artificialTreeToEnclosingElementMap} is
-     * used to find the enclosing tree;
+     * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
+     * is used to find the enclosing tree;
      *
      * @param tree tree to whose inner most enclosing method or class is returned.
      * @return the inner most enclosing method or class tree of {@code tree}
      */
-    protected Tree getEnclosingClassOrMethod(Tree tree) {
+    protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
         Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
         classAndMethodKinds.add(Kind.METHOD);
@@ -1767,6 +1767,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     && enclosingMethodOrClass.getKind() != ElementKind.METHOD
                     && !enclosingMethodOrClass.getKind().isClass()) {
                 enclosingMethodOrClass = enclosingMethodOrClass.getEnclosingElement();
+            }
+            if (enclosingMethodOrClass == null) {
+                return null;
             }
             return declarationFromElement(enclosingMethodOrClass);
         }
