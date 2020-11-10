@@ -2198,4 +2198,16 @@ public abstract class GenericAnnotatedTypeFactory<
                 throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
         }
     }
+
+    /**
+     * Return the type of the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @return the annotated type of {@code type}'s default value
+     */
+    // TODO: Cache results to avoid recomputation.
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        return getAnnotatedType(TreeUtils.getDefaultValueTree(typeMirror, processingEnv));
+    }
 }
