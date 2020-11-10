@@ -1760,7 +1760,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree tree to whose inner most enclosing method or class is returned.
      * @return the inner most enclosing method or class tree of {@code tree}
      */
-    protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
+    protected Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
         Set<Tree.Kind> classAndMethodKinds = EnumSet.copyOf(TreeUtils.classTreeKinds());
         classAndMethodKinds.add(Kind.METHOD);
@@ -1776,10 +1776,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     && !enclosingMethodOrClass.getKind().isClass()) {
                 enclosingMethodOrClass = enclosingMethodOrClass.getEnclosingElement();
             }
-            if (enclosingMethodOrClass == null) {
-                return null;
+            if (enclosingMethodOrClass != null) {
+                return declarationFromElement(enclosingMethodOrClass);
             }
-            return declarationFromElement(enclosingMethodOrClass);
         }
         return getCurrentClassTree(tree);
     }
