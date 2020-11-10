@@ -1678,10 +1678,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         || tree.getKind() == Tree.Kind.NEW_CLASS)
                 : "Unexpected tree kind: " + tree.getKind();
 
+        // Return null if the element kind has no receiver.
         Element element = TreeUtils.elementFromTree(tree);
         assert element != null : "Unexpected null element for tree: " + tree;
-        // Return null if the element kind has no receiver or if the expression has a receiver.
-        if (!ElementUtils.hasReceiver(element) || TreeUtils.getReceiverTree(tree) == null) {
+        if (!ElementUtils.hasReceiver(element)) {
+            return null;
+        }
+
+        // Return null if the receiver is explicit.
+        if (TreeUtils.getReceiverTree(tree) != null) {
             return null;
         }
 
@@ -1703,6 +1708,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
         AnnotatedDeclaredType thisType = getSelfType(tree);
+        if (thisType == null) {
+            return null;
+        }
 
         // An implicit receiver is the first enclosing type that is a subtype of the type where
         // element is declared.
@@ -1832,7 +1840,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Element element = TreeUtils.elementFromUse(expression);
         if (element != null && ElementUtils.hasReceiver(element)) {
-            // tree references an element that has a receiver, but the tree does not have an
+            // The tree references an element that has a receiver, but the tree does not have an
             // explicit receiver. So, the tree must have an implicit receiver of "this" or
             // "Outer.this".
             return getImplicitReceiverType(expression);
