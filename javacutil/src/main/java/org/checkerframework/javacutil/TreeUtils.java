@@ -1646,27 +1646,6 @@ public final class TreeUtils {
     }
 
     /**
-     * Creates a LiteralTree for the given value.
-     *
-     * @param typeTag the literal's type tag
-     * @param value a wrapped primitive, null, or a String
-     * @param typeMirror the typeMirror for the literal
-     * @param processingEnv the processing environment
-     * @return a LiteralTree for the given type tag and value
-     */
-    public static LiteralTree createLiteral(
-            TypeTag typeTag,
-            Object value,
-            TypeMirror typeMirror,
-            ProcessingEnvironment processingEnv) {
-        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        TreeMaker maker = TreeMaker.instance(context);
-        LiteralTree result = maker.Literal(typeTag, null);
-        ((JCLiteral) result).type = (Type) typeMirror;
-        return result;
-    }
-
-    /**
      * Return a tree for the default value of the given type. The default value is 0, false, or
      * null.
      *
@@ -1696,5 +1675,26 @@ public final class TreeUtils {
             default:
                 return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
         }
+    }
+
+    /**
+     * Creates a LiteralTree for the given value.
+     *
+     * @param typeTag the literal's type tag
+     * @param value a wrapped primitive, null, or a String
+     * @param typeMirror the typeMirror for the literal
+     * @param processingEnv the processing environment
+     * @return a LiteralTree for the given type tag and value
+     */
+    public static LiteralTree createLiteral(
+            TypeTag typeTag,
+            @Nullable Object value,
+            TypeMirror typeMirror,
+            ProcessingEnvironment processingEnv) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        TreeMaker maker = TreeMaker.instance(context);
+        LiteralTree result = maker.Literal(typeTag, null);
+        ((JCLiteral) result).type = (Type) typeMirror;
+        return result;
     }
 }
