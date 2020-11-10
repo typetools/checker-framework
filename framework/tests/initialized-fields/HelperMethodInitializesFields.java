@@ -10,51 +10,61 @@ public class HelperMethodInitializesFields {
     HelperMethodInitializesFields(int ignore) {
         helperMethodXY();
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(long ignore) {
         this.helperMethodXY();
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(float ignore) {
         staticHelperMethodXY(this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(double ignore) {
         this.staticHelperMethodXY(this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(boolean ignore) {
         new OtherClass().helperMethodXY(this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(char ignore) {
         new OtherClass().helperMethodXY2(0, this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(int ignore1, byte ignore2) {
         new OtherClass().staticHelperMethodXY(this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(int ignore1, short ignore2) {
         new OtherClass().staticHelperMethodXY2(0, this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(int ignore1, int ignore2) {
         OtherClass.staticHelperMethodXY(this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     HelperMethodInitializesFields(int ignore1, long ignore2) {
         OtherClass.staticHelperMethodXY2(0, this);
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     // Simple tests of  LUB
@@ -96,6 +106,7 @@ public class HelperMethodInitializesFields {
         y = 2;
         helperMethodXY();
         @InitializedFields({"x", "y"}) HelperMethodInitializesFields hmif2 = this;
+        z = 3;
     }
 
     // The helper methods

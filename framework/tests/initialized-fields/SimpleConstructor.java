@@ -23,5 +23,7 @@ public class SimpleConstructor {
         @InitializedFields({"x", "y", "z"}) SimpleConstructor sc5 = this;
         @InitializedFields({"x", "y"}) SimpleConstructor sc6 = this;
         @InitializedFields({"y", "x"}) SimpleConstructor sc7 = this;
+
+        z = 3;
     }
 }

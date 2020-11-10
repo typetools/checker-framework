@@ -7,4 +7,8 @@ public class Issue1431 {
     }
 
     Outer<Object>.Inner<int[]> ic;
+
+    Issue1431(Outer<Object>.Inner<int[]> ic) {
+        this.ic = ic;
+    }
 }
