@@ -1708,9 +1708,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeMirror typeOfImplicitReceiver = elementOfImplicitReceiver.asType();
         AnnotatedDeclaredType thisType = getSelfType(tree);
-        if (thisType == null) {
-            return null;
-        }
 
         // An implicit receiver is the first enclosing type that is a subtype of the type where
         // element is declared.
@@ -1773,12 +1770,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Element enclosingMethodOrClass = e;
             while (enclosingMethodOrClass != null
                     && enclosingMethodOrClass.getKind() != ElementKind.METHOD
-                    && !enclosingMethodOrClass.getKind().isClass()) {
+                    && !enclosingMethodOrClass.getKind().isClass()
+                    && !enclosingMethodOrClass.getKind().isInterface()) {
                 enclosingMethodOrClass = enclosingMethodOrClass.getEnclosingElement();
             }
-            if (enclosingMethodOrClass != null) {
-                return declarationFromElement(enclosingMethodOrClass);
-            }
+            return declarationFromElement(enclosingMethodOrClass);
         }
         return getCurrentClassTree(tree);
     }
