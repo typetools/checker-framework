@@ -33,13 +33,12 @@ import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -182,7 +181,7 @@ public class LockAnnotatedTypeFactory
                 }
 
                 try {
-                    FlowExpressions.Receiver result =
+                    Receiver result =
                             FlowExpressionParseUtil.parse(
                                     expression, context, localScope, useLocalScope);
                     if (result == null) {
@@ -325,7 +324,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -356,7 +356,8 @@ public class LockAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == GUARDEDBY_KIND && qualifierKind2 == GUARDEDBY_KIND) {
                 List<String> locks1 =
                         AnnotationUtils.getElementValueArray(a1, "value", String.class, true);

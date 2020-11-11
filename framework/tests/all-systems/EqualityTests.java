@@ -1,7 +1,7 @@
 public class EqualityTests {
     // the Interning checker correctly issues an error below, but we would like to keep this test in
     // all-systems.
-    @SuppressWarnings("Interning")
+    @SuppressWarnings("interning")
     public boolean compareLongs(Long v1, Long v2) {
         // This expression used to cause an assertion
         // failure in GLB computation.

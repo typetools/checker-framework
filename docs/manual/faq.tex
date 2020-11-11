@@ -87,7 +87,7 @@ fully-qualified type name?
 
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
-\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs or Error Prone)?
+\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
@@ -1546,7 +1546,7 @@ Here are some reasons that the Checker Framework is so slow.
 \sectionAndLabel{Relationship to other tools}{faq-other-tools-section}
 
 
-\subsectionAndLabel{Why not just use a bug detector (like FindBugs or Error Prone)?}{faq-type-checking-vs-bug-detectors}
+\subsectionAndLabel{Why not just use a bug detector (like FindBugs, SpotBugs, or Error Prone)?}{faq-type-checking-vs-bug-detectors}
 
 A pluggable type-checker
 is a verification tool that prevents or detects all errors of a given
@@ -1557,8 +1557,11 @@ Section~\ref{checker-guarantees}).
 An alternate approach is to use a bug detector such as
 \href{https://errorprone.info/}{Error Prone},
 \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
-\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005}, or the
+\href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001},
+\href{https://github.com/spotbugs/spotbugs}{SpotBugs},
+or
+\href{https://pmd.github.io/}{PMD}~\cite{Copeland2005},
+or the
 tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 
 A pluggable type-checker or verifier

@@ -4,6 +4,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,6 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -66,8 +67,8 @@ public class ForwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
@@ -155,8 +156,6 @@ public class ForwardAnalysisImpl<
                     Block succ = eb.getSuccessor();
                     if (succ != null) {
                         currentInput = new TransferInput<>(node, this, transferResult);
-                        // TODO: Variable wasn't used.
-                        // Store.FlowRule storeFlow = eb.getFlowRule();
                         propagateStoresTo(
                                 succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                     }
@@ -344,30 +343,46 @@ public class ForwardAnalysisImpl<
         worklist.process(cfg);
         Block entry = cfg.getEntryBlock();
         worklist.add(entry);
-        List<LocalVariableNode> parameters = null;
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-        if (underlyingAST.getKind() == Kind.METHOD) {
-            MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-            parameters = new ArrayList<>();
-            for (VariableTree p : tree.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        } else if (underlyingAST.getKind() == Kind.LAMBDA) {
-            LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-            parameters = new ArrayList<>();
-            for (VariableTree p : lambda.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        }
+        List<LocalVariableNode> parameters = getParameters(underlyingAST);
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
         inputs.put(entry, new TransferInput<>(null, this, initialStore));
+    }
+
+    /**
+     * Returns the formal parameters for a method.
+     *
+     * @param underlyingAST the AST for the method
+     * @return the formal parameters for the method
+     */
+    @SideEffectFree
+    private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
+        List<LocalVariableNode> result;
+        switch (underlyingAST.getKind()) {
+            case METHOD:
+                MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
+                result = new ArrayList<>();
+                for (VariableTree p : tree.getParameters()) {
+                    LocalVariableNode var = new LocalVariableNode(p);
+                    result.add(var);
+                    // TODO: document that LocalVariableNode has no block that it belongs to
+                }
+                return result;
+            case LAMBDA:
+                LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
+                result = new ArrayList<>();
+                for (VariableTree p : lambda.getParameters()) {
+                    LocalVariableNode var = new LocalVariableNode(p);
+                    result.add(var);
+                    // TODO: document that LocalVariableNode has no block that it belongs to
+                }
+                return result;
+            default:
+                return Collections.emptyList();
+        }
     }
 
     @Override

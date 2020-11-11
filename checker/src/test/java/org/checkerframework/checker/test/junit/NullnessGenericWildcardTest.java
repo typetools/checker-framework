@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
@@ -19,7 +20,7 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
     public NullnessGenericWildcardTest(List<File> testFiles) {
         super(
                 testFiles,
-                org.checkerframework.checker.nullness.NullnessChecker.class,
+                NullnessChecker.class,
                 "nullness",
                 // This test reads bytecode .class files created by NullnessGenericWildcardLibTest
                 "-cp",
@@ -40,11 +41,11 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
                 TestConfigurationBuilder.buildDefaultConfiguration(
                         "tests/nullness-genericwildcardlib",
                         new File("tests/nullness-genericwildcardlib", "GwiParent.java"),
-                        checkerName,
+                        NullnessChecker.class,
                         customizedOptions1,
                         shouldEmitDebugInfo);
         TypecheckResult testResult1 = new TypecheckExecutor().runTest(config1);
-        TestUtilities.assertResultsAreValid(testResult1);
+        TestUtilities.assertTestDidNotFail(testResult1);
 
         List<String> customizedOptions2 =
                 customizeOptions(Collections.unmodifiableList(checkerOptions));
@@ -52,10 +53,10 @@ public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTes
                 TestConfigurationBuilder.buildDefaultConfiguration(
                         testDir,
                         testFiles,
-                        Collections.singleton(checkerName),
+                        Collections.singleton(NullnessChecker.class.getName()),
                         customizedOptions2,
                         shouldEmitDebugInfo);
         TypecheckResult testResult2 = new TypecheckExecutor().runTest(config2);
-        TestUtilities.assertResultsAreValid(testResult2);
+        TestUtilities.assertTestDidNotFail(testResult2);
     }
 }

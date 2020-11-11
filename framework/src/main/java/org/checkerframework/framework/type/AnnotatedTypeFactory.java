@@ -15,6 +15,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -34,6 +35,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -1569,10 +1571,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
-        if (shouldCache && tree.getKind() != Tree.Kind.NEW_CLASS) {
-            // Don't cache the type of object creations, because incorrect
-            // annotations would be cached during dataflow analysis.
-            // See Issue #602.
+        if (shouldCache
+                && tree.getKind() != Tree.Kind.NEW_CLASS
+                && tree.getKind() != Kind.NEW_ARRAY
+                && tree.getKind() != Kind.CONDITIONAL_EXPRESSION) {
+            // Don't cache the type of some expressions, because incorrect annotations would be
+            // cached during dataflow analysis. See Issue #602.
             fromExpressionTreeCache.put(tree, result.deepCopy());
         }
         return result;
@@ -2327,22 +2331,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     (inferred) type arguments
      */
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-        ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         addComputedTypeAnnotations(tree, type);
+
+        ExecutableElement ctor = TreeUtils.constructor(tree);
         AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
+        if (TreeUtils.hasSyntheticArgument(tree)) {
+            AnnotatedExecutableType t =
+                    (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
+            List<AnnotatedTypeMirror> p = new ArrayList<>();
+            p.add(t.getParameterTypes().get(0));
+            p.addAll(1, con.getParameterTypes());
+            t.setParameterTypes(p);
+            con = t;
+        }
+
         constructorFromUsePreSubstitution(tree, con);
 
         con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
-
-        if (tree.getArguments().size() == con.getParameterTypes().size() + 1
-                && isSyntheticArgument(tree.getArguments().get(0))) {
-            // happens for anonymous constructors of inner classes
-            List<AnnotatedTypeMirror> actualParams = new ArrayList<>();
-            actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
-            actualParams.addAll(con.getParameterTypes());
-            con.setParameterTypes(actualParams);
-        }
 
         List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
 
@@ -2386,10 +2392,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
         return ret;
-    }
-
-    private boolean isSyntheticArgument(Tree tree) {
-        return tree.toString().contains("<*nullchk*>");
     }
 
     /**
@@ -2605,29 +2607,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and with
-     * annotations copied or adapted from {@code type}.
-     *
-     * <p>Currently this method is called only for primitives that are narrowed at assignments from
-     * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
-     * typecasts.
-     *
-     * @param type type to narrow
-     * @param narrowedTypeMirror underlying type for the returned type mirror
-     * @return result of converting {@code type} to {@code narrowedTypeMirror}
-     */
-    public AnnotatedPrimitiveType getNarrowedPrimitive(
-            AnnotatedPrimitiveType type, TypeMirror narrowedTypeMirror) {
-        AnnotatedPrimitiveType narrowed =
-                (AnnotatedPrimitiveType)
-                        AnnotatedTypeMirror.createType(
-                                narrowedTypeMirror, this, type.isDeclaration());
-        narrowed.addAnnotations(type.getAnnotations());
-        return narrowed;
-    }
-
-    /**
-     * Applies widening if applicable, otherwise returns its first argument.
+     * Returns a widened type if applicable, otherwise returns its first argument.
      *
      * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
      *
@@ -2636,7 +2616,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return if widening is applicable, the result of converting {@code type} to the underlying
      *     type of {@code widenedType}; otherwise {@code type}
      */
-    public final AnnotatedTypeMirror applyWidening(
+    public final AnnotatedTypeMirror getWidenedType(
             AnnotatedTypeMirror exprType, AnnotatedTypeMirror widenedType) {
         TypeKind exprKind = exprType.getKind();
         TypeKind widenedKind = widenedType.getKind();
@@ -2655,11 +2635,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return exprType;
         }
 
-        if (TypeKindUtils.isNarrowerIntegral(exprPrimitiveType.getKind(), widenedType.getKind())) {
-            return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+        switch (TypeKindUtils.getPrimitiveConversionKind(
+                exprPrimitiveType.getKind(), widenedType.getKind())) {
+            case WIDENING:
+                return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case NARROWING:
+                return getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+            case SAME:
+                return exprType;
+            default:
+                throw new Error("unhandled PrimitiveConversionKind");
         }
+    }
 
-        return exprType;
+    /**
+     * Applies widening if applicable, otherwise returns its first argument.
+     *
+     * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
+     *
+     * @param exprAnnos annotations to possibly widen
+     * @param exprTypeMirror type to possibly widen
+     * @param widenedType type to possibly widen to; its annotations are ignored
+     * @return if widening is applicable, the result of converting {@code type} to the underlying
+     *     type of {@code widenedType}; otherwise {@code type}
+     */
+    public final AnnotatedTypeMirror getWidenedType(
+            Set<AnnotationMirror> exprAnnos,
+            TypeMirror exprTypeMirror,
+            AnnotatedTypeMirror widenedType) {
+        AnnotatedTypeMirror exprType = toAnnotatedType(exprTypeMirror, false);
+        exprType.replaceAnnotations(exprAnnos);
+        return getWidenedType(exprType, widenedType);
     }
 
     /**
@@ -2683,12 +2689,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns annotations applicable to type {@code narrowedTypeKind}, that are copied or adapted
+     * from {@code annos}.
+     *
+     * @param annos annotations to narrow, from a primitive or boxed primitive
+     * @param typeKind primitive type to narrow
+     * @param narrowedTypeKind target for the returned annotations; a primitive type that is
+     *     narrower than {@code typeKind} (in the sense of JLS 5.1.3).
+     * @return result of converting {@code annos} from {@code typeKind} to {@code narrowedTypeKind}
+     */
+    public Set<AnnotationMirror> getNarrowedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind narrowedTypeKind) {
+        return annos;
+    }
+
+    /**
      * Returns annotations applicable to type {@code widenedTypeKind}, that are copied or adapted
      * from {@code annos}.
      *
      * @param annos annotations to widen, from a primitive or boxed primitive
      * @param typeKind primitive type to widen
-     * @param widenedTypeKind target for the returned annotations; a primitive type
+     * @param widenedTypeKind target for the returned annotations; a primitive type that is wider
+     *     than {@code typeKind} (in the sense of JLS 5.1.2)
      * @return result of converting {@code annos} from {@code typeKind} to {@code widenedTypeKind}
      */
     public Set<AnnotationMirror> getWidenedAnnotations(
@@ -2697,26 +2719,81 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the types of the two arguments to the BinaryTree, accounting for widening if
-     * applicable.
+     * Returns the types of the two arguments to the BinaryTree, accounting for widening and
+     * unboxing if applicable.
      *
      * @param node a binary tree
      * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
-        AnnotatedTypeMirror leftUnwidened = getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror rightUnwidened = getAnnotatedType(node.getRightOperand());
+        return binaryTreeArgTypes(
+                getAnnotatedType(node.getLeftOperand()), getAnnotatedType(node.getRightOperand()));
+    }
+
+    /**
+     * Returns the types of the two arguments to the CompoundAssignmentTree, accounting for widening
+     * and unboxing if applicable.
+     *
+     * @param node a compound assignment tree
+     * @return the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> compoundAssignmentTreeArgTypes(
+            CompoundAssignmentTree node) {
+        return binaryTreeArgTypes(
+                getAnnotatedType(node.getVariable()), getAnnotatedType(node.getExpression()));
+    }
+
+    /**
+     * Returns the types of the two arguments to a binarya operation, accounting for widening and
+     * unboxing if applicable.
+     *
+     * @param left the type of the left argument of a binary operation
+     * @param right the type of the right argument of a binary operation
+     * @return the types of the two arguments
+     */
+    public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(
+            AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         TypeKind resultTypeKind =
                 TypeKindUtils.widenedNumericType(
-                        leftUnwidened.getUnderlyingType(), rightUnwidened.getUnderlyingType());
+                        left.getUnderlyingType(), right.getUnderlyingType());
         if (TypeKindUtils.isNumeric(resultTypeKind)) {
             TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
-            return Pair.of(
-                    getWidenedPrimitive(applyUnboxing(leftUnwidened), resultTypeMirror),
-                    getWidenedPrimitive(applyUnboxing(rightUnwidened), resultTypeMirror));
+            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
+            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);
+            AnnotatedPrimitiveType leftWidened =
+                    (leftUnboxed.getKind() == resultTypeKind
+                            ? leftUnboxed
+                            : getWidenedPrimitive(leftUnboxed, resultTypeMirror));
+            AnnotatedPrimitiveType rightWidened =
+                    (rightUnboxed.getKind() == resultTypeKind
+                            ? rightUnboxed
+                            : getWidenedPrimitive(rightUnboxed, resultTypeMirror));
+            return Pair.of(leftWidened, rightWidened);
         } else {
-            return Pair.of(leftUnwidened, rightUnwidened);
+            return Pair.of(left, right);
         }
+    }
+
+    /**
+     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and with
+     * annotations copied or adapted from {@code type}.
+     *
+     * <p>Currently this method is called only for primitives that are narrowed at assignments from
+     * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
+     * typecasts.
+     *
+     * @param type type to narrow
+     * @param narrowedTypeMirror underlying type for the returned type mirror
+     * @return result of converting {@code type} to {@code narrowedTypeMirror}
+     */
+    public AnnotatedPrimitiveType getNarrowedPrimitive(
+            AnnotatedPrimitiveType type, TypeMirror narrowedTypeMirror) {
+        AnnotatedPrimitiveType narrowed =
+                (AnnotatedPrimitiveType)
+                        AnnotatedTypeMirror.createType(
+                                narrowedTypeMirror, this, type.isDeclaration());
+        narrowed.addAnnotations(type.getAnnotations());
+        return narrowed;
     }
 
     /**
@@ -3209,6 +3286,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         + this.getClass();
 
         if (node == null) {
+            return null;
+        }
+
+        if (artificialTreeToEnclosingElementMap.containsKey(node)) {
             return null;
         }
 
@@ -4544,7 +4625,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
      *
      * <p>This method is faster than {@link AnnotationUtils#areSameByClass(AnnotationMirror, Class)}
-     * because is caches the name of the class rather than computing it each time.
+     * because it caches the name of the class rather than computing it each time.
      *
      * @param am the AnnotationMirror whose class to compare
      * @param annoClass the class to compare

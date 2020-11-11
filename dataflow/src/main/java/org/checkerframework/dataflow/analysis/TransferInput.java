@@ -1,6 +1,8 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.plumelib.util.UniqueId;
@@ -48,11 +50,13 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     /** The corresponding analysis class to get intermediate flow results. */
     protected final Analysis<V, S, ?> analysis;
 
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
     /** The unique ID of this object. */
-    final transient long uid = UniqueId.nextUid.getAndIncrement();
+    final transient long uid = nextUid.getAndIncrement();
 
     @Override
-    public long getUid() {
+    public long getUid(@UnknownInitialization TransferInput<V, S> this) {
         return uid;
     }
 

@@ -20,6 +20,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -250,8 +251,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
     /**
      * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifier kinds.
-     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used by
-     * {@link #createBottomsSet(Map)}, {@link #createTopsSet(Map)}, and {@link
+     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used to
+     * create the bottom set, to create the top set, and by {@link
      * #initializeQualifierKindFields(Map)}.
      *
      * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override
@@ -723,7 +724,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
          * this qualifier kind itself.
          */
         // Set while creating the QualifierKindHierarchy.
-        @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
+        protected @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
         /**
          * Creates a {@link DefaultQualifierKind} for the given annotation class.
@@ -782,6 +783,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             return poly;
         }
 
+        @Pure
         @Override
         public boolean isPoly() {
             return this.poly == this;

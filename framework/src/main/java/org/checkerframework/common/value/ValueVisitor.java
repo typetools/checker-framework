@@ -8,6 +8,8 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -158,8 +160,11 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      *
      * <p>Issues a warning if any @ArrayLen/@ArrayLenRange annotations contain a negative array
      * length.
+     *
+     * <p>Issues a warning if any {@literal @}MatchesRegex annotation contains an invalid regular
+     * expression.
      */
-    /* Implementation note: the ValueAnnotatedTypeFactory replaces such invalid annotations with valid ones.
+    /* Implementation note: the ValueTypeAnnotator replaces such invalid annotations with valid ones.
      * Therefore, the usual validation in #validateType cannot perform this validation.
      * These warnings cannot be issued in the ValueAnnotatedTypeFactory, because the conversions
      * might happen multiple times.
@@ -231,6 +236,16 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 } else if (from < 0) {
                     checker.reportWarning(node, "negative.arraylen", from);
                     return null;
+                }
+                break;
+            case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
+                List<String> regexes = ValueAnnotatedTypeFactory.getStringValues(anno);
+                for (String regex : regexes) {
+                    try {
+                        Pattern.compile(regex);
+                    } catch (PatternSyntaxException pse) {
+                        checker.reportWarning(node, "invalid.matches.regex", pse.getMessage());
+                    }
                 }
                 break;
             default:

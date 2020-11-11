@@ -27,8 +27,8 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -37,10 +37,13 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    private final AnnotationMirror BOTTOM =
+    /** The @LessThanBottom annotation. */
+    private final AnnotationMirror LESS_THAN_BOTTOM =
             AnnotationBuilder.fromClass(elements, LessThanBottom.class);
-    public final AnnotationMirror UNKNOWN =
+    /** The @LessThanUnknown annotation. */
+    public final AnnotationMirror LESS_THAN_UNKNOWN =
             AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
 
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -144,7 +147,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThan(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -258,7 +261,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -291,23 +294,30 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a sorted, modifiable list of expressions that {@code expression} is less than. If the
      * {@code expression} is annotated with {@link LessThanBottom}, null is returned.
+     *
+     * @param expression an expression
+     * @return expressions that {@code expression} is less than
      */
     public List<String> getLessThanExpressions(ExpressionTree expression) {
         AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-        return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(UNKNOWN));
+        return getLessThanExpressions(
+                annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN));
     }
 
     /**
      * Creates a less than qualifier given the expressions.
      *
      * <p>If expressions is null, {@link LessThanBottom} is returned. If expressions is empty,
-     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThan(expressions)} is returned.
+     * {@link LessThanUnknown} is returned. Otherwise, {@code @LessThan(expressions)} is returned.
+     *
+     * @param expressions a list of expressions
+     * @return a @LessThan qualifier with the given arguments
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {
-            return BOTTOM;
+            return LESS_THAN_BOTTOM;
         } else if (expressions.isEmpty()) {
-            return UNKNOWN;
+            return LESS_THAN_UNKNOWN;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, LessThan.class);
             builder.setValue("value", expressions);

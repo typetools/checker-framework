@@ -8,11 +8,13 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.regex.qual.PartialRegex;
 import org.checkerframework.checker.regex.qual.PolyRegex;
@@ -118,18 +120,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TreeUtils.getMethod(
                     java.util.regex.Pattern.class.getCanonicalName(), "compile", 1, processingEnv);
 
-    // TODO use? private TypeMirror[] legalReferenceTypes;
-
     public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-
-        /*
-        legalReferenceTypes = new TypeMirror[] {
-            getTypeMirror("java.lang.CharSequence"),
-            getTypeMirror("java.lang.Character"),
-            getTypeMirror("java.util.regex.Pattern"),
-            getTypeMirror("java.util.regex.MatchResult") };
-         */
 
         this.postInit();
     }
@@ -207,7 +199,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
@@ -235,7 +228,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == REGEX_KIND && qualifierKind2 == REGEX_KIND) {
                 int value1 = getRegexValue(a1);
                 int value2 = getRegexValue(a2);
@@ -284,6 +278,12 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** Returns the number of groups in the given regex String. */
     public static int getGroupCount(@Regex String regexp) {
         return Pattern.compile(regexp).matcher("").groupCount();
+    }
+
+    @Override
+    public Set<AnnotationMirror> getWidenedAnnotations(
+            Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+        return Collections.singleton(UNKNOWNREGEX);
     }
 
     @Override
@@ -480,7 +480,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     case INTERSECTION:
                         Integer maxBound = null;
                         for (final AnnotatedTypeMirror bound :
-                                ((AnnotatedIntersectionType) type).directSuperTypes()) {
+                                ((AnnotatedIntersectionType) type).getBounds()) {
                             Integer boundRegexNum = getMinimumRegexCount(bound);
                             if (boundRegexNum != null) {
                                 if (maxBound == null || boundRegexNum > maxBound) {

@@ -77,6 +77,11 @@ public class KeyForAnnotatedTypeFactory
         addAliasedAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.KeyForType", KeyFor.class, true);
 
+        // While strictly required for soundness, this leads to too many false positives.  Printing
+        // a key or putting it in a map erases all knowledge of what maps it was a key for.
+        // TODO: Revisit when side effect annotations are more precise.
+        // sideEffectsUnrefineAliases = true;
+
         this.postInit();
     }
 
@@ -256,7 +261,8 @@ public class KeyForAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
                 List<String> a1Values = extractValues(a1);
                 List<String> a2Values = extractValues(a2);
@@ -276,7 +282,8 @@ public class KeyForAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
 
                 List<String> a1Values = extractValues(a1);

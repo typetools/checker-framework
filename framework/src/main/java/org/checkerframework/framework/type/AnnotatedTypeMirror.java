@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +57,11 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
      *
-     * @param isDeclaration true if the result should be a type declaration
+     * @param type the underlying type for the resulting AnnotatedTypeMirror
+     * @param atypeFactory the type factory that will build the result
+     * @param isDeclaration true if the result should represent a declaration, rather than a use, of
+     *     a type
+     * @return an AnnotatedTypeMirror whose underlying type is {@code type}
      */
     public static AnnotatedTypeMirror createType(
             TypeMirror type, AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
@@ -1162,8 +1165,8 @@ public abstract class AnnotatedTypeMirror {
                 TypeMirror aret = ((ExecutableType) actualType).getReturnType();
                 if (aret.getKind() == TypeKind.ERROR) {
                     throw new BugInCF(
-                            "Input is not compilable; problem with return type of %s: %s",
-                            element, aret);
+                            "Input is not compilable; problem with return type of %s: %s [%s]",
+                            element, aret, aret.getClass());
                 }
                 if (((MethodSymbol) element).isConstructor()) {
                     // For constructors, the underlying return type is void.
@@ -1575,7 +1578,7 @@ public abstract class AnnotatedTypeMirror {
             if (!this.getAnnotationsField().isEmpty()) {
                 Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (upperBound != null) {
-                    replaceUpperBoundAnnotations(newAnnos);
+                    upperBound.replaceAnnotations(newAnnos);
                 }
 
                 // Note:
@@ -1588,23 +1591,6 @@ public abstract class AnnotatedTypeMirror {
                 if (lowerBound != null) {
                     lowerBound.replaceAnnotations(newAnnos);
                 }
-            }
-        }
-
-        /**
-         * Replaces (or adds if none exist) the primary annotation of all upper bounds of typeVar,
-         * the AnnotatedTypeVariable with the annotations provided. The AnnotatedTypeVariable will
-         * only have multiple upper bounds if the upper bound is an intersection.
-         */
-        private void replaceUpperBoundAnnotations(Collection<? extends AnnotationMirror> newAnnos) {
-            if (upperBound.getKind() == TypeKind.INTERSECTION) {
-                final List<AnnotatedDeclaredType> bounds =
-                        ((AnnotatedIntersectionType) upperBound).directSuperTypes();
-                for (final AnnotatedDeclaredType bound : bounds) {
-                    bound.replaceAnnotations(newAnnos);
-                }
-            } else {
-                upperBound.replaceAnnotations(newAnnos);
             }
         }
 
@@ -2061,14 +2047,18 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * Represents an intersection type.
+     *
+     * <p>For example: {@code MyObject & Serializable & Comparable<MyObject>}
+     */
     public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
+        /** A list of the bounds of this which are also its direct super types. */
+        protected List<AnnotatedTypeMirror> bounds;
+
         /**
-         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;.
-         * For example: {@code <T extends MyObject & Serializable & Comparable<MyObject>>}
-         *
-         * <p>The bound {@code MyObject & Serializable & Comparable} is an intersection type with
-         * direct supertypes [MyObject, Serializable, Comparable]
+         * Creates an {@code AnnotatedIntersectionType} with the underlying type {@code type}.
          *
          * @param type underlying kind of this type
          * @param atypeFactory the factory used to construct this intersection type
@@ -2076,6 +2066,34 @@ public abstract class AnnotatedTypeMirror {
         private AnnotatedIntersectionType(
                 IntersectionType type, AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * <p>Also, copies {@code a} to all the bounds.
+         *
+         * @param a the annotation to add
+         */
+        @Override
+        public void addAnnotation(AnnotationMirror a) {
+            super.addAnnotation(a);
+            fixupBoundAnnotations();
+        }
+
+        /**
+         * Copies {@link #annotations} to all the bounds, replacing any existing annotations in the
+         * same hierarchy.
+         */
+        private void fixupBoundAnnotations() {
+            if (!this.getAnnotationsField().isEmpty()) {
+                Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
+                if (bounds != null) {
+                    for (AnnotatedTypeMirror bound : bounds) {
+                        bound.replaceAnnotations(newAnnos);
+                    }
+                }
+            }
         }
 
         @Override
@@ -2105,7 +2123,7 @@ public abstract class AnnotatedTypeMirror {
             if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
             }
-            type.supertypes = this.supertypes;
+            type.bounds = this.bounds;
             return type;
         }
 
@@ -2114,27 +2132,68 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
-        protected List<AnnotatedDeclaredType> supertypes;
-
+        /**
+         * {@inheritDoc}
+         *
+         * <p>This returns the same types as {@link #getBounds()}.
+         *
+         * @return the direct super types of this
+         */
         @Override
-        public List<AnnotatedDeclaredType> directSuperTypes() {
-            if (supertypes == null) {
+        public List<? extends AnnotatedTypeMirror> directSuperTypes() {
+            return getBounds();
+        }
+
+        /**
+         * This returns the bounds of the intersection type. Although only declared types can appear
+         * in an explicitly written intersections, during capture conversion, intersections with
+         * other kinds of types are created.
+         *
+         * <p>This returns the same types as {@link #directSuperTypes()}.
+         *
+         * @return the bounds of this, which are also the direct super types of this
+         */
+        public List<AnnotatedTypeMirror> getBounds() {
+            if (bounds == null) {
                 List<? extends TypeMirror> ubounds = ((IntersectionType) actualType).getBounds();
-                List<AnnotatedDeclaredType> res = new ArrayList<>(ubounds.size());
+                List<AnnotatedTypeMirror> res = new ArrayList<>(ubounds.size());
                 for (TypeMirror bnd : ubounds) {
-                    res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory, false));
+                    res.add(createType(bnd, atypeFactory, false));
                 }
-                supertypes = Collections.unmodifiableList(res);
+                bounds = Collections.unmodifiableList(res);
+                fixupBoundAnnotations();
             }
-            return supertypes;
+            return bounds;
         }
 
-        public List<AnnotatedDeclaredType> directSuperTypesField() {
-            return supertypes;
+        /**
+         * Sets the bounds.
+         *
+         * @param bounds bounds to use
+         */
+        /*default-visibility*/ void setBounds(List<AnnotatedTypeMirror> bounds) {
+            this.bounds = bounds;
         }
 
-        void setDirectSuperTypes(List<AnnotatedDeclaredType> supertypes) {
-            this.supertypes = new ArrayList<>(supertypes);
+        /**
+         * Copy the first annotation (in each hierarchy) on a bound to the primary annotation
+         * location of the intersection type.
+         *
+         * <p>For example, in the type {@code @NonNull Object & @Initialized @Nullable
+         * Serializable}, {@code @Nullable} and {@code @Initialized} are copied to the primary
+         * annotation location.
+         */
+        public void copyIntersectionBoundAnnotations() {
+            Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+            for (AnnotatedTypeMirror bound : getBounds()) {
+                for (AnnotationMirror a : bound.getAnnotations()) {
+                    if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)
+                            == null) {
+                        annos.add(a);
+                    }
+                }
+            }
+            addAnnotations(annos);
         }
     }
 

@@ -5,7 +5,7 @@ public class StateMatch {
     private double[][] elts = null;
 
     @SuppressWarnings({
-        "Interning",
+        "interning",
         "index"
     }) // This code is inherently unsafe for the index checker, but adding index annotations
     // produces warnings for other checkers (fenum).

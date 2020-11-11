@@ -96,7 +96,7 @@ public class CastsNullness {
     }
 
     void testSafeCasts() {
-        // :: error: (type.invalid.annotations.on.use)
+        // :: error: (nullness.on.primitive)
         Integer x = (@Nullable int) 1;
     }
 }

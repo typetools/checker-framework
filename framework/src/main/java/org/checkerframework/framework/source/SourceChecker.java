@@ -1804,9 +1804,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return null;
             }
             this.suppressWarningsStringsFromOption = swStrings.split(",");
-            Arrays.setAll(
-                    suppressWarningsStringsFromOption,
-                    i -> suppressWarningsStringsFromOption[i].toLowerCase());
         }
 
         return this.suppressWarningsStringsFromOption;
@@ -1853,7 +1850,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
-            Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
             for (String suppressWarningsString : suppressWarningsStrings) {
                 for (String errorKey : allErrorKeys) {
                     if (shouldSuppress(prefixes, new String[] {suppressWarningsString}, errorKey)) {
@@ -2072,8 +2068,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             SuppressWarnings suppressWarningsAnno = elt.getAnnotation(SuppressWarnings.class);
             if (suppressWarningsAnno != null) {
                 String[] suppressWarningsStrings = suppressWarningsAnno.value();
-                Arrays.setAll(
-                        suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
                 if (shouldSuppress(suppressWarningsStrings, errKey)) {
                     if (hasOption("warnUnneededSuppressions")) {
                         elementsWithSuppressedWarnings.add(elt);
