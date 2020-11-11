@@ -87,6 +87,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceSc
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
+import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.HasQualifierParameter;
@@ -760,6 +761,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             try {
                 java.io.InputStream in = root.getSourceFile().openInputStream();
                 com.github.javaparser.ast.CompilationUnit u = StaticJavaParser.parse(in);
+                new StringLiteralCombineVisitor().visit(u, null);
                 new TreeVisitor() {
                     @Override
                     public void process(Node n) {
@@ -847,6 +849,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 com.github.javaparser.ast.CompilationUnit javaParserRoot =
                         StaticJavaParser.parse(reader);
                 reader.close();
+                new StringLiteralCombineVisitor().visit(javaParserRoot, null);
                 new JointVisitorWithDefaultAction() {
                     @Override
                     public void defaultAction(Tree javacTree, Node javaParserNode) {

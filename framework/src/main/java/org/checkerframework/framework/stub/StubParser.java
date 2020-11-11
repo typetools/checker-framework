@@ -80,6 +80,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
+import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -487,6 +488,7 @@ public class StubParser {
                         filename, atypeFactory, processingEnv, atypes, declAnnos, false, false);
         try {
             sp.parseStubUnit(inputStream);
+            sp.combineStringLiterals();
             sp.setRoot(root);
             sp.process();
         } catch (ParseProblemException e) {
@@ -1005,6 +1007,10 @@ public class StubParser {
                 putMerge(atypes, paramElt, paramType);
             }
         }
+    }
+
+    private void combineStringLiterals() {
+        new StringLiteralCombineVisitor().visit(stubUnit, null);
     }
 
     /**

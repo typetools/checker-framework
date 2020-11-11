@@ -374,11 +374,22 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processBlock(javacTree, node);
         }
 
-        Iterator<? extends StatementTree> javacIter = javacTree.getStatements().iterator();
+        processStatements(javacTree.getStatements(), node.getStatements());
+        if (traversalType == TraversalType.POST_ORDER) {
+            processBlock(javacTree, node);
+        }
+
+        return null;
+    }
+
+    private void processStatements(
+            Iterable<? extends StatementTree> javacStatements,
+            Iterable<Statement> javaParserStatements) {
+        Iterator<? extends StatementTree> javacIter = javacStatements.iterator();
         boolean hasNextJavac = javacIter.hasNext();
         StatementTree javacStatement = hasNextJavac ? javacIter.next() : null;
 
-        Iterator<Statement> javaParserIter = node.getStatements().iterator();
+        Iterator<Statement> javaParserIter = javaParserStatements.iterator();
         boolean hasNextJavaParser = javaParserIter.hasNext();
         Statement javaParserStatement = hasNextJavaParser ? javaParserIter.next() : null;
 
@@ -432,11 +443,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         assert !hasNextJavac;
         assert !hasNextJavaParser;
-        if (traversalType == TraversalType.POST_ORDER) {
-            processBlock(javacTree, node);
-        }
-
-        return null;
     }
 
     /**
@@ -518,7 +524,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             javacTree.getExpression().accept(this, expressions.get(0));
         }
 
-        visitLists(javacTree.getStatements(), node.getStatements());
+        processStatements(javacTree.getStatements(), node.getStatements());
         if (traversalType == TraversalType.POST_ORDER) {
             processCase(javacTree, node);
         }
@@ -1739,7 +1745,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processSynchronized(javacTree, node);
         }
 
-        javacTree.getExpression().accept(this, node.getExpression());
+        ((ParenthesizedTree) javacTree.getExpression())
+                .getExpression()
+                .accept(this, node.getExpression());
         javacTree.getBlock().accept(this, node.getBody());
         if (traversalType == TraversalType.POST_ORDER) {
             processSynchronized(javacTree, node);
