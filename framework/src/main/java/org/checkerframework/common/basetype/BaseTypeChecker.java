@@ -232,6 +232,16 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
+     * A public variant of {@link #createSourceVisitor}. Only use this if you know what you are
+     * doing.
+     *
+     * @return the type-checking visitor
+     */
+    public BaseTypeVisitor<?> createSourceVisitorPublic() {
+        return createSourceVisitor();
+    }
+
+    /**
      * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
      * {@code replacement}.
      *

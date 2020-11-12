@@ -187,7 +187,7 @@ public class ContractsUtils {
             }
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(
-                            anno, kind.expressionElementName, String.class, false);
+                            anno, kind.expressionElementName, String.class, true);
             Boolean annoResult =
                     AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {

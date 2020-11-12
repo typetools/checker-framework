@@ -30,6 +30,7 @@ constant-value-checker.tex \
 returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
+initialized-fields-checker.tex \
 aliasing-checker.tex \
 subtyping-checker.tex \
 external-checkers.tex \
