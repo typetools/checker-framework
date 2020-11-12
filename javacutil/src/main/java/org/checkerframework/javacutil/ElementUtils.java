@@ -432,8 +432,11 @@ public class ElementUtils {
             // A constructor can only have a receiver if the class it creates has an outer type.
             TypeMirror t = element.getEnclosingElement().asType();
             return TypesUtils.hasEnclosingType(t);
-        } else if (element.getKind().isField()) {
-            if (ElementUtils.isStatic(element)) {
+        } else if (element.getKind() == ElementKind.FIELD) {
+            if (ElementUtils.isStatic(element)
+                    // Artificial fields in interfaces are not marked as static, so check that
+                    // the field is not declared in an interface.
+                    || element.getEnclosingElement().getKind().isInterface()) {
                 return false;
             } else {
                 // In constructors, the element for "this" is a non-static field, but that field
