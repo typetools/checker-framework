@@ -204,6 +204,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * Compare the primary annotations of {@code subtype} and {@code supertype}. Neither type can be
      * missing annotations.
      *
+     * @param subtype a type that might be a subtype (with respect to primary annotations)
+     * @param supertype a type that might be a supertype (with respect to primary annotations)
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on
      *     supertype for the current top.
      */
