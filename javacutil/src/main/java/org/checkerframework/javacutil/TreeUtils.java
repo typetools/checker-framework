@@ -1693,7 +1693,7 @@ public final class TreeUtils {
             ProcessingEnvironment processingEnv) {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         TreeMaker maker = TreeMaker.instance(context);
-        LiteralTree result = maker.Literal(typeTag, null);
+        LiteralTree result = maker.Literal(typeTag, value);
         ((JCLiteral) result).type = (Type) typeMirror;
         return result;
     }
