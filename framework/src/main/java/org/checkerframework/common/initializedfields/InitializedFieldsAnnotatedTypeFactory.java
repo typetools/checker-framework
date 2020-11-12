@@ -55,25 +55,26 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             }
             @SuppressWarnings("signature:argument.type.incompatible") // -processor is a binary name
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
-            if (atf == null) {
-                throw new UserError(
-                        "Cannot find %s; check the classpath or processorpath", checkerName);
+            if (atf != null) {
+                defaultValueAtypeFactories.add(atf);
             }
-            defaultValueAtypeFactories.add(atf);
         }
 
         this.postInit();
     }
 
     /**
-     * Returns the type factory for the given checker.
+     * Returns the type factory for the given annotation processor, if it is type-checker
      *
-     * @param checkerName the fully-qualified class name of a checker
-     * @return the type factory for the given checker
+     * @param processorName the fully-qualified class name of an annotation processor
+     * @return the type factory for the given annotation processor, or null if it's not a checker
      */
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String checkerName) {
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String processorName) {
         try {
-            Class<?> checkerClass = Class.forName(checkerName);
+            Class<?> checkerClass = Class.forName(processorName);
+            if (!BaseTypeChecker.class.isAssignableFrom(checkerClass)) {
+                return null;
+            }
             @SuppressWarnings("unchecked")
             BaseTypeChecker c =
                     ((Class<? extends BaseTypeChecker>) checkerClass)
@@ -83,13 +84,17 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             c.initChecker();
             BaseTypeVisitor<?> v = c.createSourceVisitorPublic();
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = v.createTypeFactoryPublic();
+            if (atf == null) {
+                throw new UserError(
+                        "Cannot find %s; check the classpath or processorpath", processorName);
+            }
             return atf;
         } catch (ClassNotFoundException
                 | InstantiationException
                 | InvocationTargetException
                 | IllegalAccessException
                 | NoSuchMethodException e) {
-            throw new UserError("Problem instantiating " + checkerName, e);
+            throw new UserError("Problem instantiating " + processorName, e);
         }
     }
 
@@ -166,8 +171,9 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * <ul>
      *   <li>F is a non-final field (if final, Java will issue a warning, so we don't need to).
      *   <li>F's declaration has no initializer.
-     *   <li>No initialization block or static initialization block sets the field. (This seems to
-     *       be handled automagically. There is no code for it in this method, but the tests pass.)
+     *   <li>No initialization block or static initialization block sets the field. (This is handled
+     *       automatically because dataflow visits (static) initialization blocks as part of the
+     *       constructor.)
      *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null)
      * </ul>
      *
@@ -222,7 +228,6 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             AnnotatedTypeMirror defaultValueType =
                     defaultValueAtypeFactory.getDefaultValueAnnotatedType(
                             fieldType.getUnderlyingType());
-            // Could call isPrimarySubtype, but that is only defined in DefaultTypeHierarchy.
             if (!defaultValueAtypeFactory
                     .getTypeHierarchy()
                     .isSubtype(defaultValueType, fieldType)) {

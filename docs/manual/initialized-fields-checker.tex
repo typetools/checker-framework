@@ -118,6 +118,16 @@ The Initialized Fields type system uses the following type annotations:
   Section~\ref{method-qualifier-polymorphism}).
 \end{description}
 
+\begin{figure}
+\includeimage{initializedfields}{4.5cm}
+\caption{The type qualifier hierarchy of the Initialized Fields Checker.
+\<@InitializedFieldsBottom> is rarely written by a programmer.}
+\label{fig-initialized-fields-hierarchy}
+\end{figure}
+
+Figure~\ref{fig-initialized-fields-hierarchy} shows the the subtyping
+relationships among the type qualifiers.
+
 % TODO: draw a diagram of the type hierarchy.
 
 There is also a method declaration annotation:
@@ -161,14 +171,13 @@ The Initialized Fields Checker is a lightweight version of the  Initialization C
 
 \noindent
 * See Section~\ref{initialized-fields-remaining-unsoundness} for an example.
-
-\noindent
+\newline
 ** The Initialization Checker could be made to work with any type system, but
 doing so would require changing the implementation of both the type system and
 the Initialization Checker.
 \end{small}
 
 
-% LocalWords:  InitializedFields
+% LocalWords:  InitializedFields getX
 % LocalWords:  InitializedFieldsBottom PolyInitializedFields
 % LocalWords:  EnsuresInitializedFields
