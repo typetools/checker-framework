@@ -41,13 +41,13 @@ public class EnsuresInitializedFieldsTest {
             fields = {"x", "y"})
     void setsXY() {
         x = 1;
-        y = 1;
+        y = 2;
     }
 
     @EnsuresInitializedFields(fields = {"x", "y"})
     void setsXY2() {
         x = 1;
-        y = 1;
+        y = 2;
     }
 
     @EnsuresInitializedFields(
@@ -55,7 +55,7 @@ public class EnsuresInitializedFieldsTest {
             fields = {"x", "y"})
     void setsXY(EnsuresInitializedFieldsTest eift) {
         eift.x = 1;
-        eift.y = 1;
+        eift.y = 2;
     }
 
     @EnsuresInitializedFields(
@@ -63,5 +63,17 @@ public class EnsuresInitializedFieldsTest {
             fields = {"x", "y"})
     void setsXY2(EnsuresInitializedFieldsTest eift) {
         setsXY(eift);
+    }
+
+    @EnsuresInitializedFields(
+            value = "#1",
+            fields = {"x", "y"})
+    @EnsuresInitializedFields(
+            value = "#2",
+            fields = {"x", "z"})
+    void setsXY2(EnsuresInitializedFieldsTest eift1, EnsuresInitializedFieldsTest eift2) {
+        setsXY(eift1);
+        setsX(eift2);
+        eift2.z = 3;
     }
 }
