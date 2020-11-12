@@ -1,9 +1,11 @@
 package org.checkerframework.common.initializedfields.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 
@@ -12,16 +14,18 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
  */
-@PostconditionAnnotation(qualifier = InitializedFields.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
+@PostconditionAnnotation(qualifier = InitializedFields.class)
+@InheritedAnnotation
 public @interface EnsuresInitializedFields {
     /**
-     * The object(s) whose fields this method initializes.
+     * The object whose fields this method initializes.
      *
-     * @return object(s) whose fields are initialized
+     * @return object whose fields are initialized
      */
-    public String[] value() default {"this"};
+    public String value() default "this";
 
     /**
      * Fields that this method initializes.
@@ -30,4 +34,24 @@ public @interface EnsuresInitializedFields {
      */
     @QualifierArgument("value")
     public String[] fields();
+
+    /**
+     * A wrapper annotation that makes the {@link EnsuresInitializedFields} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link EnsuresInitializedFields} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @PostconditionAnnotation(qualifier = InitializedFields.class)
+    @InheritedAnnotation
+    @interface List {
+        /**
+         * Return the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
+        EnsuresInitializedFields[] value();
+    }
 }

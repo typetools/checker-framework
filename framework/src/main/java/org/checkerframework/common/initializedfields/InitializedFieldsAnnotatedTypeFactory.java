@@ -142,7 +142,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
                                     new AnnotationBuilder(
                                             processingEnv,
                                             EnsuresInitializedFields.class.getCanonicalName());
-                            builder.setValue("value", new String[] {"this"});
+                            builder.setValue("value", "this");
                             builder.setValue("fields", fieldsToInitialize);
                             ensuresAnno = builder.build();
                         }
