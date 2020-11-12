@@ -5,6 +5,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -174,6 +175,14 @@ public interface WholeProgramInference {
             MethodTree methodTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf);
+
+    /**
+     * Updates a method to add a declaration annotation.
+     *
+     * @param methodElt the method to annotate
+     * @param anno the declaration annotation to add to the method
+     */
+    void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
     /**
      * Writes the inferred results to a file. Ideally should be called at the end of the

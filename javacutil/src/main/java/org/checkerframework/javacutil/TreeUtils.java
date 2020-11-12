@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -42,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -49,6 +51,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1640,5 +1643,58 @@ public final class TreeUtils {
                             typeTree.getKind(), typeTree.getClass(), typeTree);
             }
         }
+    }
+
+    /**
+     * Return a tree for the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @param processingEnv the processing environment
+     * @return a tree for {@code type}'s default value
+     */
+    public static LiteralTree getDefaultValueTree(
+            TypeMirror typeMirror, ProcessingEnvironment processingEnv) {
+        switch (typeMirror.getKind()) {
+            case BYTE:
+                return TreeUtils.createLiteral(TypeTag.BYTE, (byte) 0, typeMirror, processingEnv);
+            case CHAR:
+                return TreeUtils.createLiteral(TypeTag.CHAR, '\u0000', typeMirror, processingEnv);
+            case SHORT:
+                return TreeUtils.createLiteral(TypeTag.SHORT, (short) 0, typeMirror, processingEnv);
+            case LONG:
+                return TreeUtils.createLiteral(TypeTag.LONG, 0L, typeMirror, processingEnv);
+            case FLOAT:
+                return TreeUtils.createLiteral(TypeTag.FLOAT, 0.0f, typeMirror, processingEnv);
+            case INT:
+                return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
+            case DOUBLE:
+                return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
+            case BOOLEAN:
+                return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
+            default:
+                return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
+        }
+    }
+
+    /**
+     * Creates a LiteralTree for the given value.
+     *
+     * @param typeTag the literal's type tag
+     * @param value a wrapped primitive, null, or a String
+     * @param typeMirror the typeMirror for the literal
+     * @param processingEnv the processing environment
+     * @return a LiteralTree for the given type tag and value
+     */
+    public static LiteralTree createLiteral(
+            TypeTag typeTag,
+            @Nullable Object value,
+            TypeMirror typeMirror,
+            ProcessingEnvironment processingEnv) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        TreeMaker maker = TreeMaker.instance(context);
+        LiteralTree result = maker.Literal(typeTag, value);
+        ((JCLiteral) result).type = (Type) typeMirror;
+        return result;
     }
 }
