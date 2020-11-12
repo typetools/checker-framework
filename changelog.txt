@@ -11,6 +11,8 @@ Implementation details:
 Added classes `SubtypeIsSubsetQualifierHierarchy` and
 `SubtypeIsSupersetQualifierHierarchy`.
 
+Moved the `contractsUtils` field from the visitor to the type factory.
+
 Method renamings:
   ElementUtils.getVerboseName => ElementUtils.getQualifiedName
   ElementUtils.getSimpleName => ElementUtils.getSimpleSignature
