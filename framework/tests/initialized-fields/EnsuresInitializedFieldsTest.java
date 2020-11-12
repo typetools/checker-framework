@@ -72,7 +72,7 @@ public class EnsuresInitializedFieldsTest {
             value = "#2",
             fields = {"x", "z"})
     void setsXY2(EnsuresInitializedFieldsTest eift1, EnsuresInitializedFieldsTest eift2) {
-        setsXY(eift);
+        setsXY(eift1);
         setsX(eift2);
         eift2.z = 3;
     }

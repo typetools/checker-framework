@@ -2,6 +2,7 @@ package org.checkerframework.common.initializedfields.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -16,9 +17,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PostconditionAnnotation(qualifier = InitializedFields.class)
 @InheritedAnnotation
+@Repeatable(EnsuresInitializedFields.List.class)
 public @interface EnsuresInitializedFields {
     /**
      * The object whose fields this method initializes.
