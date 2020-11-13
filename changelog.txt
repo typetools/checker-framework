@@ -3,6 +3,10 @@ Version 3.8.0, December 1, 2020
 New scripts checker/bin/wpi.sh and checker/bin/wpi-many.sh run whole-program
 inference, without modifying the source code of the target program(s).
 
+The Initialized Fields Checker warns when a field is not initialized by a
+constructor.  This is more general than the Initialization Checker, which
+only checks that `@NonNull` fields are initialized.
+
 The manual describes how to modify an sbt build file to run the Checker
 Framework.
 

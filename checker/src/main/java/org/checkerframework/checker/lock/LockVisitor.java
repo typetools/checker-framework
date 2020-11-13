@@ -585,8 +585,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         node,
                         "method.guarantee.violated",
                         seaOfContainingMethod.getNameOfSideEffectAnnotation(),
-                        enclosingMethodElement.toString(),
-                        methodElement.toString(),
+                        enclosingMethodElement.getSimpleName(),
+                        methodElement.getSimpleName(),
                         seaOfInvokedMethod.getNameOfSideEffectAnnotation());
             }
         }
