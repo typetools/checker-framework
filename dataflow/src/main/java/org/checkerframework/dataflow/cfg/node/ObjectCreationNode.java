@@ -40,9 +40,11 @@ public class ObjectCreationNode extends Node {
         // set assignment contexts for parameters
         int i = 0;
         ExecutableElement elem = TreeUtils.elementFromUse(tree);
-        for (Node arg : arguments) {
-            AssignmentContext ctx = new AssignmentContext.MethodParameterContext(elem, i++);
-            arg.setAssignmentContext(ctx);
+        if (elem != null) {
+            for (Node arg : arguments) {
+                AssignmentContext ctx = new AssignmentContext.MethodParameterContext(elem, i++);
+                arg.setAssignmentContext(ctx);
+            }
         }
     }
 
