@@ -840,8 +840,9 @@ public class AnnotationUtils {
                 if (elementType.getKind() == TypeKind.ARRAY) {
                     return getElementValueArray(anno, elementName, expectedType, useDefaults);
                 } else {
-                    return new ArrayList<>(
-                            getElementValue(anno, elementName, expectedType, useDefaults));
+                    List<T> result = new ArrayList<>(1);
+                    result.add(getElementValue(anno, elementName, expectedType, useDefaults));
+                    return result;
                 }
             }
         }
