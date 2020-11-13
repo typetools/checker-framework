@@ -5,7 +5,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1621,7 +1620,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     @Override
     protected final void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(tree, type, this.useFlow && !(tree instanceof LiteralTree));
+        addComputedTypeAnnotations(tree, type, this.useFlow);
     }
 
     /**
@@ -1634,7 +1633,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        assert root != null || tree instanceof LiteralTree
+        assert root != null
                 : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: "
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
@@ -2209,6 +2208,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     // TODO: Cache results to avoid recomputation.
     public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
-        return getAnnotatedType(TreeUtils.getDefaultValueTree(typeMirror, processingEnv));
+        AnnotatedTypeMirror defaultValue = AnnotatedTypeMirror.createType(typeMirror, this, false);
+        addComputedTypeAnnotations(
+                TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
+        return defaultValue;
     }
 }
