@@ -1,5 +1,9 @@
 Version 3.8.0, December 1, 2020
 
+The Initialized Fields Checker warns when a field is not initialized by a
+constructor.  This is more general than the Initialization Checker, which
+only checks that `@NonNull` fields are initialized.
+
 The manual describes how to modify an sbt build file to run the Checker
 Framework.
 
