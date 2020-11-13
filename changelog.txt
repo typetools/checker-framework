@@ -6,10 +6,15 @@ inference, without modifying the source code of the target program(s).
 The manual describes how to modify an sbt build file to run the Checker
 Framework.
 
+The -AwarnUnneededSuppressions command-line option warns only about
+suppression strings that contain a checker name.
+
 Implementation details:
 
 Added classes `SubtypeIsSubsetQualifierHierarchy` and
 `SubtypeIsSupersetQualifierHierarchy`.
+
+Moved the `contractsUtils` field from the visitor to the type factory.
 
 Method renamings:
   ElementUtils.getVerboseName => ElementUtils.getQualifiedName
