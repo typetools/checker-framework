@@ -3022,10 +3022,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the path for {@code node} under the current root
      */
     public final TreePath getPath(@FindDistinct Tree node) {
-        if (root == null) {
-            return null;
-        }
-
         assert root != null
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
