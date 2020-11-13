@@ -12,7 +12,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -3023,10 +3022,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the path for {@code node} under the current root
      */
     public final TreePath getPath(@FindDistinct Tree node) {
-        if (root == null && node instanceof LiteralTree) {
-            return null;
-        }
-
         assert root != null
                 : "AnnotatedTypeFactory.getPath("
                         + node.getKind()
