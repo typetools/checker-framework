@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -215,10 +216,9 @@ public class WholeProgramInferenceScenesStorage {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
-        AnnotatedTypeMirror atmFromJaif =
-                AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
-        updateAtmFromTypeElement(atmFromJaif, type, atf);
-        updateAtmWithLub(atf, rhsATM, atmFromJaif);
+        AnnotatedTypeMirror atmFromScene =
+                atmFromTypeElement(rhsATM.getUnderlyingType(), type, atf);
+        updateAtmWithLub(rhsATM, atmFromScene, atf);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -397,6 +397,22 @@ public class WholeProgramInferenceScenesStorage {
             }
         }
         return output;
+    }
+
+    /**
+     * Obtain the type from an ATypeElement (which is part of a Scene).
+     *
+     * @param typeMirror the underlying type for the result
+     * @param type the ATypeElement from which to obtain annotations
+     * @param atf the annotated type factory
+     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
+     *     {@code type}
+     */
+    private AnnotatedTypeMirror atmFromTypeElement(
+            TypeMirror typeMirror, ATypeElement type, AnnotatedTypeFactory atf) {
+        AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(typeMirror, atf, false);
+        updateAtmFromTypeElement(result, type, atf);
+        return result;
     }
 
     /**
