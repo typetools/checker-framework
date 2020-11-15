@@ -217,8 +217,8 @@ public class WholeProgramInferenceScenesStorage {
         }
         AnnotatedTypeMirror atmFromJaif =
                 AnnotatedTypeMirror.createType(rhsATM.getUnderlyingType(), atf, false);
-        typeElementToATM(atmFromJaif, type, atf);
-        updatesATMWithLUB(atf, rhsATM, atmFromJaif);
+        updateAtmFromTypeElement(atmFromJaif, type, atf);
+        updateAtmWithLub(atf, rhsATM, atmFromJaif);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -238,42 +238,42 @@ public class WholeProgramInferenceScenesStorage {
      * AnnotationMirrors from jaifATM -- it considers the LUB between an AnnotationMirror am and a
      * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
      *
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param sourceCodeATM the annotated type on the source code
      * @param jaifATM the annotated type on the .jaif file
+     * @param atf the annotated type factory whose type hierarchy will be used
      */
-    private void updatesATMWithLUB(
-            AnnotatedTypeFactory atf,
+    private void updateAtmWithLub(
             AnnotatedTypeMirror sourceCodeATM,
-            AnnotatedTypeMirror jaifATM) {
+            AnnotatedTypeMirror jaifATM,
+            AnnotatedTypeFactory atf) {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
-                updatesATMWithLUB(
-                        atf,
+                updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
-                        ((AnnotatedTypeVariable) jaifATM).getLowerBound());
-                updatesATMWithLUB(
-                        atf,
+                        ((AnnotatedTypeVariable) jaifATM).getLowerBound(),
+                        atf);
+                updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
-                        ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+                        ((AnnotatedTypeVariable) jaifATM).getUpperBound(),
+                        atf);
                 break;
                 //        case WILDCARD:
                 // Because inferring type arguments is not supported, wildcards won't be encoutered
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                //            updateAtmWithLub(((AnnotatedWildcardType)
                 // sourceCodeATM).getExtendsBound(),
                 //                              ((AnnotatedWildcardType)
-                // jaifATM).getExtendsBound());
-                //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
+                // jaifATM).getExtendsBound(), atf);
+                //            updateAtmWithLub(((AnnotatedWildcardType)
                 // sourceCodeATM).getSuperBound(),
-                //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+                //                              ((AnnotatedWildcardType) jaifATM).getSuperBound(),
+                // atf);
                 //            break;
             case ARRAY:
-                updatesATMWithLUB(
-                        atf,
+                updateAtmWithLub(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-                        ((AnnotatedArrayType) jaifATM).getComponentType());
+                        ((AnnotatedArrayType) jaifATM).getComponentType(),
+                        atf);
                 break;
                 // case DECLARED:
                 // inferring annotations on type arguments is not supported, so no need to recur on
@@ -408,7 +408,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      */
-    private void typeElementToATM(
+    private void updateAtmFromTypeElement(
             AnnotatedTypeMirror atm, ATypeElement type, AnnotatedTypeFactory atf) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere, atf);
         for (Annotation anno : annos) {
@@ -419,13 +419,13 @@ public class WholeProgramInferenceScenesStorage {
         if (atm.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                typeElementToATM(aat.getComponentType(), innerType, atf);
+                updateAtmFromTypeElement(aat.getComponentType(), innerType, atf);
             }
         }
         if (atm.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                typeElementToATM(atv.getUpperBound(), innerType, atf);
+                updateAtmFromTypeElement(atv.getUpperBound(), innerType, atf);
             }
         }
     }
