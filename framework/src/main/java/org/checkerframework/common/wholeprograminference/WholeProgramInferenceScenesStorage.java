@@ -217,7 +217,7 @@ public class WholeProgramInferenceScenesStorage {
             return;
         }
         AnnotatedTypeMirror atmFromScene =
-                atmFromTypeElement(rhsATM.getUnderlyingType(), type, atf);
+                atmFromATypeElement(rhsATM.getUnderlyingType(), type, atf);
         updateAtmWithLub(rhsATM, atmFromScene, atf);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
@@ -408,10 +408,10 @@ public class WholeProgramInferenceScenesStorage {
      * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
      *     {@code type}
      */
-    private AnnotatedTypeMirror atmFromTypeElement(
+    private AnnotatedTypeMirror atmFromATypeElement(
             TypeMirror typeMirror, ATypeElement type, AnnotatedTypeFactory atf) {
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(typeMirror, atf, false);
-        updateAtmFromTypeElement(result, type, atf);
+        updateAtmFromATypeElement(result, type, atf);
         return result;
     }
 
@@ -424,7 +424,7 @@ public class WholeProgramInferenceScenesStorage {
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      */
-    private void updateAtmFromTypeElement(
+    private void updateAtmFromATypeElement(
             AnnotatedTypeMirror atm, ATypeElement type, AnnotatedTypeFactory atf) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere, atf);
         for (Annotation anno : annos) {
@@ -435,13 +435,13 @@ public class WholeProgramInferenceScenesStorage {
         if (atm.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                updateAtmFromTypeElement(aat.getComponentType(), innerType, atf);
+                updateAtmFromATypeElement(aat.getComponentType(), innerType, atf);
             }
         }
         if (atm.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                updateAtmFromTypeElement(atv.getUpperBound(), innerType, atf);
+                updateAtmFromATypeElement(atv.getUpperBound(), innerType, atf);
             }
         }
     }
