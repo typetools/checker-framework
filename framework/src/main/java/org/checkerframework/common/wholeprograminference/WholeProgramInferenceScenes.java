@@ -287,21 +287,35 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             + lhs.getClass());
         }
 
+        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
+        // @GuardedBy({}).
+        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
+
+        updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM, atf);
+    }
+
+    public void updateFieldFromType(
+            Tree lhsTree,
+            Element element,
+            String fieldName,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeFactory atf) {
+
         if (ignoreFieldInWPI(element, fieldName, atf)) {
             return;
         }
+
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
         String jaifPath = storage.getJaifPath(className);
         AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
 
-        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhsTree);
         AField field = clazz.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
-        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
-        // @GuardedBy({}).
-        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
+
         storage.updateAnnotationSetInScene(
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
