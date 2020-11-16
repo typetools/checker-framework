@@ -64,7 +64,15 @@ public class WholeProgramInferenceScenesStorage {
     public static final String JAIF_FILES_PATH =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
-    /** Indicates whether assignments where the rhs is null should be ignored. */
+    /**
+     * If true, assignments where the rhs is null are be ignored.
+     *
+     * <p>If all assignments to a variable are null (because inference is being done with respect to
+     * a limited set of uses) then the variable is inferred to have bottom type. That inference is
+     * unlikely to be correct. To avoid that inference, set this variable to true. When the variable
+     * is true, if all assignments are null, then none are recorded, no inference is done, and the
+     * variable remains at its default type.
+     */
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
@@ -85,8 +93,7 @@ public class WholeProgramInferenceScenesStorage {
     /**
      * Default constructor.
      *
-     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
-     *     ignored
+     * @param ignoreNullAssignments if true, assignments where the rhs is null are ignored
      */
     public WholeProgramInferenceScenesStorage(boolean ignoreNullAssignments) {
         this.ignoreNullAssignments = ignoreNullAssignments;
