@@ -69,10 +69,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
      * @return the names of the annotation processors that are being run
      */
     private String[] getCheckerNames() {
-
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         String processorArg = Options.instance(context).get("-processor");
-        String[] checkerNames;
         if (processorArg == null) {
             // TODO: Use a command-line argument such as -AcheckersForInitializedFields
             return new String[0];
