@@ -46,10 +46,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        String checkerNames = Options.instance(context).get("-processor");
+        String[] checkerNames = getCheckerNames();
+
         defaultValueAtypeFactories = new ArrayList<>();
-        for (String checkerName : checkerNames.split(",")) {
+        for (String checkerName : checkerNames) {
             if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
                 continue;
             }
@@ -61,6 +61,24 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         }
 
         this.postInit();
+    }
+
+    /**
+     * Returns the names of the annotation processors that are being run.
+     *
+     * @return the names of the annotation processors that are being run
+     */
+    private String[] getCheckerNames() {
+
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        String processorArg = Options.instance(context).get("-processor");
+        String[] checkerNames;
+        if (processorArg == null) {
+            // TODO: Use a command-line argument such as -AcheckersForInitializedFields
+            return new String[0];
+        } else {
+            return processorArg.split(",");
+        }
     }
 
     /**
