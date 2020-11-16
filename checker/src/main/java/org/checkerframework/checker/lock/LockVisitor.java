@@ -1029,7 +1029,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *     variables
      */
     private TreePath getPathForLocalVariableRetrieval(TreePath path) {
-        assert path.getLeaf().getKind() == Tree.Kind.ANNOTATION;
+        assert path.getLeaf() == null || path.getLeaf().getKind() == Tree.Kind.ANNOTATION;
 
         // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this
         // scenario).
