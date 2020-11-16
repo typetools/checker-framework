@@ -15,7 +15,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -397,14 +396,10 @@ public class InitializationVisitor<
         }
 
         // Remove fields with a relevant @SuppressWarnings annotation.
-        Iterator<VariableTree> itor = violatingFields.iterator();
-        while (itor.hasNext()) {
-            VariableTree f = itor.next();
-            Element e = TreeUtils.elementFromTree(f);
-            if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED_KEY)) {
-                itor.remove();
-            }
-        }
+        violatingFields.removeIf(
+                f ->
+                        checker.shouldSuppressWarnings(
+                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
 
         if (!violatingFields.isEmpty()) {
             StringJoiner fieldsString = new StringJoiner(", ");
