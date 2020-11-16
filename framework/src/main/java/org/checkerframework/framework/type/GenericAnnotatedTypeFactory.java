@@ -1903,7 +1903,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
         super.methodFromUsePreSubstitution(tree, type);
-        if (tree instanceof MethodInvocationTree) {
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             poly.resolve((MethodInvocationTree) tree, type);
         }
     }

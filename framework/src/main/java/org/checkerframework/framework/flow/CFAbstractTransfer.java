@@ -440,7 +440,7 @@ public abstract class CFAbstractTransfer<
             return;
         }
         for (Tree member : classTree.getMembers()) {
-            if (member instanceof VariableTree) {
+            if (member.getKind() == Tree.Kind.VARIABLE) {
                 VariableTree vt = (VariableTree) member;
                 final VariableElement element = TreeUtils.elementFromDeclaration(vt);
                 AnnotatedTypeMirror type =

@@ -36,7 +36,7 @@ public abstract class AssignmentContext {
                 return null;
             } else if (tree instanceof ExpressionTree) {
                 return TreeUtils.elementFromUse((ExpressionTree) tree);
-            } else if (tree instanceof VariableTree) {
+            } else if (tree.getKind() == Tree.Kind.VARIABLE) {
                 return TreeUtils.elementFromDeclaration((VariableTree) tree);
             } else {
                 throw new Error("unexpected tree");

@@ -34,7 +34,7 @@ public class FieldAccessNode extends Node {
         this.receiver = receiver;
         this.field = TreeUtils.getFieldName(tree);
 
-        if (tree instanceof MemberSelectTree) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mstree = (MemberSelectTree) tree;
             assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
             this.element = (VariableElement) TreeUtils.elementFromUse(mstree);

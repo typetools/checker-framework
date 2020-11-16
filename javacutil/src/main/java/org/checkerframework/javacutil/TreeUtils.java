@@ -721,8 +721,8 @@ public final class TreeUtils {
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
-                || !(((ExpressionStatementTree) st).getExpression()
-                        instanceof MethodInvocationTree)) {
+                || !(((ExpressionStatementTree) st).getExpression().getKind()
+                        == Tree.Kind.METHOD_INVOCATION)) {
             return false;
         }
 
@@ -951,7 +951,7 @@ public final class TreeUtils {
      */
     public static boolean isMethodInvocation(
             Tree tree, ExecutableElement method, ProcessingEnvironment env) {
-        if (!(tree instanceof MethodInvocationTree)) {
+        if (!(tree.getKind() == Tree.Kind.METHOD_INVOCATION)) {
             return false;
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
@@ -968,7 +968,7 @@ public final class TreeUtils {
      */
     public static boolean isMethodInvocation(
             Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
-        if (!(methodTree instanceof MethodInvocationTree)) {
+        if (!(methodTree.getKind() == Tree.Kind.METHOD_INVOCATION)) {
             return false;
         }
         for (ExecutableElement Method : methods) {
@@ -1225,12 +1225,12 @@ public final class TreeUtils {
      * {@link VariableElement}.
      */
     public static boolean isSpecificFieldAccess(Tree tree, VariableElement var) {
-        if (tree instanceof MemberSelectTree) {
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree memSel = (MemberSelectTree) tree;
             assert isUseOfElement(memSel) : "@AssumeAssertion(nullness): tree kind";
             Element field = TreeUtils.elementFromUse(memSel);
             return field.equals(var);
-        } else if (tree instanceof IdentifierTree) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             IdentifierTree idTree = (IdentifierTree) tree;
             assert isUseOfElement(idTree) : "@AssumeAssertion(nullness): tree kind";
             Element field = TreeUtils.elementFromUse(idTree);

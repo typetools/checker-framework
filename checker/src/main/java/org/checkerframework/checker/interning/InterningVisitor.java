@@ -418,7 +418,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     private MethodTree equalsImplementation(ClassTree node) {
         List<? extends Tree> members = node.getMembers();
         for (Tree member : members) {
-            if (member instanceof MethodTree) {
+            if (member.getKind() == Tree.Kind.METHOD) {
                 MethodTree mTree = (MethodTree) member;
                 ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
                 if (overrides(enclosing, Object.class, "equals")) {

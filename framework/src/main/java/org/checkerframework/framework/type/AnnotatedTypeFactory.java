@@ -1179,9 +1179,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         } else if (decl instanceof ClassTree) {
             type = fromClass((ClassTree) decl);
-        } else if (decl instanceof VariableTree) {
+        } else if (decl.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(decl);
-        } else if (decl instanceof MethodTree) {
+        } else if (decl.getKind() == Tree.Kind.METHOD) {
             type = fromMember(decl);
         } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
             type = fromTypeTree(decl);
@@ -1225,7 +1225,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedTypeMirror with explicit annotations from {@code tree}.
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
-        if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
+        if (!(tree instanceof MethodTree || tree.getKind() == Tree.Kind.VARIABLE)) {
             throw new BugInCF(
                     "AnnotatedTypeFactory.fromMember: not a method or variable declaration: "
                             + tree);
@@ -1981,7 +1981,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type declared method type before type variable substitution
      */
     protected void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
-        assert tree instanceof MethodInvocationTree || tree instanceof MemberReferenceTree;
+        assert tree.getKind() == Tree.Kind.METHOD_INVOCATION
+                || tree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
 
     /**

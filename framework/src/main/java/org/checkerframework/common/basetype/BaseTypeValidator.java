@@ -2,7 +2,6 @@ package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
@@ -365,7 +364,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         switch (tree.getKind()) {
             case VARIABLE:
                 Tree lt = ((VariableTree) tree).getType();
-                if (lt instanceof ParameterizedTypeTree) {
+                if (lt.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
                     typeargtree = (ParameterizedTypeTree) lt;
                 } else {
                     // System.out.println("Found a: " + lt);
@@ -390,9 +389,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             case ANNOTATED_TYPE:
                 AnnotatedTypeTree tr = (AnnotatedTypeTree) tree;
                 ExpressionTree undtr = tr.getUnderlyingType();
-                if (undtr instanceof ParameterizedTypeTree) {
+                if (undtr.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
                     typeargtree = (ParameterizedTypeTree) undtr;
-                } else if (undtr instanceof IdentifierTree) {
+                } else if (undtr.getKind() == Tree.Kind.IDENTIFIER) {
                     // @Something D -> Nothing to do
                 } else {
                     // TODO: add more test cases to ensure that nested types are

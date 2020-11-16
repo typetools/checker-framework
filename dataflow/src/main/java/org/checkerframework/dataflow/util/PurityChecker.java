@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.util;
 
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -303,7 +302,7 @@ public class PurityChecker {
             if (TreeUtils.isFieldAccess(variable)) {
                 // lhs is a field access
                 purityResult.addNotBothReason(variable, "assign.field");
-            } else if (variable instanceof ArrayAccessTree) {
+            } else if (variable.getKind() == Tree.Kind.ARRAY_ACCESS) {
                 // lhs is array access
                 purityResult.addNotBothReason(variable, "assign.array");
             } else {

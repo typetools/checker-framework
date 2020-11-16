@@ -108,7 +108,7 @@ public class Heuristics {
             assert p.getLeaf() == stmt;
 
             while (p != null && p.getLeaf() instanceof StatementTree) {
-                if (p.getParentPath().getLeaf() instanceof BlockTree) {
+                if (p.getParentPath().getLeaf().getKind() == Tree.Kind.BLOCK) {
                     BlockTree block = (BlockTree) p.getParentPath().getLeaf();
                     for (StatementTree st : block.getStatements()) {
                         if (st == p.getLeaf()) {

@@ -317,11 +317,11 @@ public class NullnessVisitor
         }
 
         ExpressionTree rcvsize = ((MethodInvocationTree) dim).getMethodSelect();
-        if (!(rcvsize instanceof MemberSelectTree)) {
+        if (!(rcvsize.getKind() == Tree.Kind.MEMBER_SELECT)) {
             return false;
         }
         rcvsize = ((MemberSelectTree) rcvsize).getExpression();
-        if (!(rcvsize instanceof IdentifierTree)) {
+        if (!(rcvsize.getKind() == Tree.Kind.IDENTIFIER)) {
             return false;
         }
 
@@ -332,11 +332,11 @@ public class NullnessVisitor
         }
 
         ExpressionTree rcvtoarray = ((MethodInvocationTree) encl).getMethodSelect();
-        if (!(rcvtoarray instanceof MemberSelectTree)) {
+        if (!(rcvtoarray.getKind() == Tree.Kind.MEMBER_SELECT)) {
             return false;
         }
         rcvtoarray = ((MemberSelectTree) rcvtoarray).getExpression();
-        if (!(rcvtoarray instanceof IdentifierTree)) {
+        if (!(rcvtoarray.getKind() == Tree.Kind.IDENTIFIER)) {
             return false;
         }
 
@@ -616,7 +616,7 @@ public class NullnessVisitor
     public Void visitNewClass(NewClassTree node, Void p) {
         AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
         ExpressionTree identifier = node.getIdentifier();
-        if (identifier instanceof AnnotatedTypeTree) {
+        if (identifier.getKind() == Tree.Kind.ANNOTATED_TYPE) {
             AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?

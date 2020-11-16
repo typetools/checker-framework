@@ -54,9 +54,9 @@ public class FunctionalInterfaceNode extends Node {
 
     @Override
     public String toString() {
-        if (tree instanceof LambdaExpressionTree) {
+        if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
             return "FunctionalInterfaceNode:" + ((LambdaExpressionTree) tree).getBodyKind();
-        } else if (tree instanceof MemberReferenceTree) {
+        } else if (tree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
             return "FunctionalInterfaceNode:" + ((MemberReferenceTree) tree).getName();
         } else {
             // This should never happen.

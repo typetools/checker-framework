@@ -33,7 +33,7 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
             boolean isReturnAnnot =
                     grandparent instanceof MethodTree
                             && (parent.equals(((MethodTree) grandparent).getReturnType())
-                                    || parent instanceof ModifiersTree);
+                                    || parent.getKind() == Tree.Kind.MODIFIERS);
             boolean isReceiverAnnot =
                     greatGrandparent instanceof MethodTree
                             && grandparent.equals(

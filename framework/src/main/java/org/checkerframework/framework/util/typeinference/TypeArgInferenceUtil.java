@@ -8,12 +8,9 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,7 +150,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof CompoundAssignmentTree) {
             ExpressionTree variable = ((CompoundAssignmentTree) assignmentContext).getVariable();
             res = atypeFactory.getAnnotatedType(variable);
-        } else if (assignmentContext instanceof MethodInvocationTree) {
+        } else if (assignmentContext.getKind() == Tree.Kind.METHOD_INVOCATION) {
             MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
             // TODO move to getAssignmentContext
             if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
@@ -170,7 +167,7 @@ public class TypeArgInferenceUtil {
                             methodElt,
                             receiver,
                             methodInvocation.getArguments());
-        } else if (assignmentContext instanceof NewArrayTree) {
+        } else if (assignmentContext.getKind() == Tree.Kind.NEW_ARRAY) {
             // TODO: I left the previous implementation below, it definitely caused infinite loops
             // TODO: if you called it from places like the TreeAnnotator.
             res = null;
@@ -181,7 +178,7 @@ public class TypeArgInferenceUtil {
             //            type = AnnotatedTypes.innerMostType(type);
             //            return type;
 
-        } else if (assignmentContext instanceof NewClassTree) {
+        } else if (assignmentContext.getKind() == Tree.Kind.NEW_CLASS) {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
             if (newClassTree.getEnclosingExpression() instanceof NewClassTree
@@ -197,7 +194,7 @@ public class TypeArgInferenceUtil {
                             constructorElt,
                             receiver,
                             newClassTree.getArguments());
-        } else if (assignmentContext instanceof ReturnTree) {
+        } else if (assignmentContext.getKind() == Tree.Kind.RETURN) {
             HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
 
@@ -209,7 +206,7 @@ public class TypeArgInferenceUtil {
                 res = fninf.getReturnType();
             }
 
-        } else if (assignmentContext instanceof VariableTree) {
+        } else if (assignmentContext.getKind() == Tree.Kind.VARIABLE) {
             res = assignedToVariable(atypeFactory, assignmentContext);
         } else {
             throw new BugInCF("AnnotatedTypes.assignedTo: shouldn't be here");

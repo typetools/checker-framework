@@ -747,11 +747,11 @@ public class AnnotatedTypes {
         }
 
         List<? extends Tree> targs;
-        if (expr instanceof MethodInvocationTree) {
+        if (expr.getKind() == Tree.Kind.METHOD_INVOCATION) {
             targs = ((MethodInvocationTree) expr).getTypeArguments();
-        } else if (expr instanceof NewClassTree) {
+        } else if (expr.getKind() == Tree.Kind.NEW_CLASS) {
             targs = ((NewClassTree) expr).getTypeArguments();
-        } else if (expr instanceof MemberReferenceTree) {
+        } else if (expr.getKind() == Tree.Kind.MEMBER_REFERENCE) {
             targs = ((MemberReferenceTree) expr).getTypeArguments();
             if (targs == null) {
                 // TODO: Add type argument inference as part of fix for #979

@@ -47,7 +47,7 @@ public class LocalVariableNode extends Node {
 
     public Element getElement() {
         Element el;
-        if (tree instanceof IdentifierTree) {
+        if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             IdentifierTree itree = (IdentifierTree) tree;
             assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
             el = TreeUtils.elementFromUse(itree);
@@ -64,7 +64,7 @@ public class LocalVariableNode extends Node {
     }
 
     public String getName() {
-        if (tree instanceof IdentifierTree) {
+        if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             return ((IdentifierTree) tree).getName().toString();
         }
         return ((VariableTree) tree).getName().toString();
