@@ -550,7 +550,13 @@ public final class TreeUtils {
         return TreeUtils.elementFromTree(node);
     }
 
-    /** Specialization for return type. Might return null if element wasn't found. */
+    /**
+     * Returns the ExecutableElement for the called method, from a call. Might return null if no
+     * element wasfound.
+     *
+     * @param node a method call
+     * @return the ExecutableElement for the called method
+     */
     public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
@@ -561,8 +567,11 @@ public final class TreeUtils {
     }
 
     /**
-     * Specialization for return type. Might return null if element wasn't found.
+     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
+     * return null if no element was found.
      *
+     * @param node a constructor invocation
+     * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
     public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
