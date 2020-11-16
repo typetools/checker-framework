@@ -950,8 +950,8 @@ public final class TreeUtils {
      * overrides that one.
      */
     public static boolean isMethodInvocation(
-            Tree tree, ExecutableElement method, ProcessingEnvironment env) {
-        if (!(tree.getKind() == Tree.Kind.METHOD_INVOCATION)) {
+            @Nullable Tree tree, ExecutableElement method, ProcessingEnvironment env) {
+        if (tree == null || tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
             return false;
         }
         MethodInvocationTree methInvok = (MethodInvocationTree) tree;
@@ -967,8 +967,10 @@ public final class TreeUtils {
      * that overrides them.
      */
     public static boolean isMethodInvocation(
-            Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
-        if (!(methodTree.getKind() == Tree.Kind.METHOD_INVOCATION)) {
+            @Nullable Tree methodTree,
+            List<ExecutableElement> methods,
+            ProcessingEnvironment processingEnv) {
+        if (methodTree == null || methodTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
             return false;
         }
         for (ExecutableElement Method : methods) {
