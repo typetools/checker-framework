@@ -31,7 +31,10 @@ public enum TypeUseLocation {
     /** Apply default annotations to all unannotated raw types of receiver types. */
     RECEIVER,
 
-    /** Apply default annotations to all unannotated raw types of formal parameter types. */
+    /**
+     * Apply default annotations to all unannotated raw types of formal parameter types, excluding
+     * the receiver.
+     */
     PARAMETER,
 
     /** Apply default annotations to all unannotated raw types of return types. */
