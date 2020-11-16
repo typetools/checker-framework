@@ -7,4 +7,5 @@ import org.checkerframework.common.accumulation.AccumulationChecker;
  *
  * @checker_framework.manual #initialized-fields-checker Initialized Fields Checker
  */
+@SupportedOptions({"checkers"})
 public class InitializedFieldsChecker extends AccumulationChecker {}
