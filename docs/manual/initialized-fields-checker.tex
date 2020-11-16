@@ -12,10 +12,12 @@ with the field's annotation, for the other checkers.
 % The term "subchecker" appears only in the "creating a checker" section of
 % the manual.
 
-An example invocation is
+Example invocations are
 
 \begin{Verbatim}
 javac -processor ValueChecker,InitializedFieldsChecker MyFile.java
+
+javac -processor org.checkerframework.common.initializedfields.InitializedFieldsChecker MyFile.java
 \end{Verbatim}
 
 
