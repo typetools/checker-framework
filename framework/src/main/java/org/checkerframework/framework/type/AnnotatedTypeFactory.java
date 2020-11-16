@@ -1177,7 +1177,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
                 ElementAnnotationApplier.apply(type, elt, this);
             }
-        } else if (decl instanceof ClassTree) {
+        } else if (decl.getKind() == Tree.Kind.CLASS) {
             type = fromClass((ClassTree) decl);
         } else if (decl.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(decl);
@@ -1225,7 +1225,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedTypeMirror with explicit annotations from {@code tree}.
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
-        if (!(tree instanceof MethodTree || tree.getKind() == Tree.Kind.VARIABLE)) {
+        if (!(tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.VARIABLE)) {
             throw new BugInCF(
                     "AnnotatedTypeFactory.fromMember: not a method or variable declaration: "
                             + tree);

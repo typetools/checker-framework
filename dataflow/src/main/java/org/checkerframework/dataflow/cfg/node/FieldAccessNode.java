@@ -39,7 +39,7 @@ public class FieldAccessNode extends Node {
             assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
             this.element = (VariableElement) TreeUtils.elementFromUse(mstree);
         } else {
-            assert tree instanceof IdentifierTree;
+            assert tree.getKind() == Tree.Kind.IDENTIFIER;
             IdentifierTree itree = (IdentifierTree) tree;
             assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
             this.element = (VariableElement) TreeUtils.elementFromUse(itree);

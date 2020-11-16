@@ -31,16 +31,16 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
             Tree grandparent = parentPath.getParentPath().getLeaf();
             Tree greatGrandparent = parentPath.getParentPath().getParentPath().getLeaf();
             boolean isReturnAnnot =
-                    grandparent instanceof MethodTree
+                    grandparent.getKind() == Tree.Kind.METHOD
                             && (parent.equals(((MethodTree) grandparent).getReturnType())
                                     || parent.getKind() == Tree.Kind.MODIFIERS);
             boolean isReceiverAnnot =
-                    greatGrandparent instanceof MethodTree
+                    greatGrandparent.getKind() == Tree.Kind.METHOD
                             && grandparent.equals(
                                     ((MethodTree) greatGrandparent).getReceiverParameter())
                             && parent.equals(((VariableTree) grandparent).getModifiers());
             boolean isCastAnnot =
-                    grandparent instanceof TypeCastTree
+                    grandparent.getKind() == Tree.Kind.TYPE_CAST
                             && parent.equals(((TypeCastTree) grandparent).getType());
             if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
                 checker.reportError(node, "type.invalid.this.location");

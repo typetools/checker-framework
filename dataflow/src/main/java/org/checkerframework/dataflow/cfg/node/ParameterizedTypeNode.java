@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +24,7 @@ public class ParameterizedTypeNode extends Node {
 
     public ParameterizedTypeNode(Tree t) {
         super(TreeUtils.typeOf(t));
-        assert t instanceof ParameterizedTypeTree;
+        assert t.getKind() == Tree.Kind.PARAMETERIZED_TYPE;
         tree = t;
     }
 

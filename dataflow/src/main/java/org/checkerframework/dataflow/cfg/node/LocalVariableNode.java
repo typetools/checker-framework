@@ -40,7 +40,7 @@ public class LocalVariableNode extends Node {
         // IdentifierTree for normal uses of the local variable or parameter,
         // and VariableTree for the translation of an initializer block
         assert t != null;
-        assert t instanceof IdentifierTree || t instanceof VariableTree;
+        assert t.getKind() == Tree.Kind.IDENTIFIER || t.getKind() == Tree.Kind.VARIABLE;
         this.tree = t;
         this.receiver = receiver;
     }
@@ -52,7 +52,7 @@ public class LocalVariableNode extends Node {
             assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
             el = TreeUtils.elementFromUse(itree);
         } else {
-            assert tree instanceof VariableTree;
+            assert tree.getKind() == Tree.Kind.VARIABLE;
             el = TreeUtils.elementFromDeclaration((VariableTree) tree);
         }
         return el;

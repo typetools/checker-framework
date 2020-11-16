@@ -4,7 +4,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -318,7 +317,7 @@ public class PurityChecker {
          * @return true if the argument is a local variable
          */
         protected boolean isLocalVariable(ExpressionTree variable) {
-            return variable instanceof IdentifierTree && !TreeUtils.isFieldAccess(variable);
+            return variable.getKind() == Tree.Kind.IDENTIFIER && !TreeUtils.isFieldAccess(variable);
         }
 
         @Override

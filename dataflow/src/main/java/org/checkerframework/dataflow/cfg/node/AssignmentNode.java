@@ -4,7 +4,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -32,7 +31,7 @@ public class AssignmentNode extends Node {
     public AssignmentNode(Tree tree, Node target, Node expression) {
         super(TreeUtils.typeOf(tree));
         assert tree instanceof AssignmentTree
-                || tree instanceof VariableTree
+                || tree.getKind() == Tree.Kind.VARIABLE
                 || tree instanceof CompoundAssignmentTree
                 || tree instanceof UnaryTree;
         assert target instanceof FieldAccessNode

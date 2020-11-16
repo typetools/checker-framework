@@ -153,7 +153,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext.getKind() == Tree.Kind.METHOD_INVOCATION) {
             MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
             // TODO move to getAssignmentContext
-            if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
+            if (methodInvocation.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT
                     && ((MemberSelectTree) methodInvocation.getMethodSelect()).getExpression()
                             == path.getLeaf()) {
                 return null;

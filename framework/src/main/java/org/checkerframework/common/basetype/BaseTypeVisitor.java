@@ -1954,7 +1954,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             {
                 // Determine and set the new assignment context.
                 ExpressionTree var = at.getVariable();
-                assert var instanceof IdentifierTree
+                assert var.getKind() == Tree.Kind.IDENTIFIER
                         : "Expected IdentifierTree as context. Found: " + var;
                 AnnotatedTypeMirror meth = atypeFactory.getAnnotatedType(var);
                 assert meth instanceof AnnotatedExecutableType
@@ -2607,7 +2607,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
         if (varType.getKind() == TypeKind.ARRAY
-                && valueExp instanceof NewArrayTree
+                && valueExp.getKind() == Tree.Kind.NEW_ARRAY
                 && ((NewArrayTree) valueExp).getType() == null) {
             AnnotatedTypeMirror compType = ((AnnotatedArrayType) varType).getComponentType();
             NewArrayTree arrayTree = (NewArrayTree) valueExp;
@@ -3891,12 +3891,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 List<AnnotatedTypeMirror> overriddenParams) {
             String msgKey = methodReference ? "methodref.param.invalid" : "override.param.invalid";
             long valuePos =
-                    overriderTree instanceof MethodTree
+                    overriderTree.getKind() == Tree.Kind.METHOD
                             ? positions.getStartPosition(
                                     root, ((MethodTree) overriderTree).getParameters().get(index))
                             : positions.getStartPosition(root, overriderTree);
             Tree posTree =
-                    overriderTree instanceof MethodTree
+                    overriderTree.getKind() == Tree.Kind.METHOD
                             ? ((MethodTree) overriderTree).getParameters().get(index)
                             : overriderTree;
 
@@ -3977,12 +3977,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String msgKey =
                     methodReference ? "methodref.return.invalid" : "override.return.invalid";
             long valuePos =
-                    overriderTree instanceof MethodTree
+                    overriderTree.getKind() == Tree.Kind.METHOD
                             ? positions.getStartPosition(
                                     root, ((MethodTree) overriderTree).getReturnType())
                             : positions.getStartPosition(root, overriderTree);
             Tree posTree =
-                    overriderTree instanceof MethodTree
+                    overriderTree.getKind() == Tree.Kind.METHOD
                             ? ((MethodTree) overriderTree).getReturnType()
                             : overriderTree;
             // The return type of a MethodTree is null for a constructor.

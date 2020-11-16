@@ -1485,7 +1485,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /** Translate an assignment where the RHS has already been scanned. */
     protected AssignmentNode translateAssignment(Tree tree, Node target, Node expression) {
-        assert tree instanceof AssignmentTree || tree instanceof VariableTree;
+        assert tree instanceof AssignmentTree || tree.getKind() == Tree.Kind.VARIABLE;
         target.setLValue();
         expression = assignConvert(expression, target.getType());
         AssignmentNode assignmentNode = new AssignmentNode(tree, target, expression);

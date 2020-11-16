@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +24,7 @@ public class ArrayAccessNode extends Node {
 
     public ArrayAccessNode(Tree t, Node array, Node index) {
         super(TreeUtils.typeOf(t));
-        assert t instanceof ArrayAccessTree;
+        assert t.getKind() == Tree.Kind.ARRAY_ACCESS;
         this.tree = t;
         this.array = array;
         this.index = index;
