@@ -1177,7 +1177,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
                 ElementAnnotationApplier.apply(type, elt, this);
             }
-        } else if (decl.getKind() == Tree.Kind.CLASS) {
+        } else if (decl instanceof ClassTree) {
+            // decl.getKind() might be CLASS, INTERFACE, etc.
             type = fromClass((ClassTree) decl);
         } else if (decl.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(decl);

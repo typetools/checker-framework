@@ -1704,7 +1704,8 @@ public abstract class GenericAnnotatedTypeFactory<
         // used TreePath.getPath to find enclosing classes, but that call
         // alone consumed more than 10% of execution time.  See BaseTypeVisitor
         // .visitClass for the call to getAnnotatedType that triggers analysis.
-        if (tree.getKind() == Tree.Kind.CLASS) {
+        if (tree instanceof ClassTree) {
+            // tree.getKind() might be CLASS, INTERFACE, etc.
             ClassTree classTree = (ClassTree) tree;
             if (!scannedClasses.containsKey(classTree)) {
                 performFlowAnalysis(classTree);
