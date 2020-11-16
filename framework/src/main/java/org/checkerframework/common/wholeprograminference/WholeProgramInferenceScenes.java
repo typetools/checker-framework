@@ -287,30 +287,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             + lhs.getClass());
         }
 
-        // Do not attempt to infer types for fields that do not have valid
-        // names. For example, compiler-generated temporary variables will
-        // have invalid names. Recording facts about fields with
-        // invalid names causes jaif-based WPI to crash when reading the .jaif
-        // file, and stub-based WPI to generate unparseable stub files.
-        // See https://github.com/typetools/checker-framework/issues/3442
-        if (!SourceVersion.isIdentifier(fieldName)) {
-            return;
-        }
-
-        // If the inferred field has a declaration annotation with the
-        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
-                || atf.getDeclAnnotationWithMetaAnnotation(
-                                        element, IgnoreInWholeProgramInference.class)
-                                .size()
-                        > 0) {
-            return;
-        }
-
-        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
-
-        // do not infer types for code that isn't presented as source
-        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+        if (ignoreFieldInWPI(element, fieldName, atf)) {
             return;
         }
 
@@ -327,6 +304,45 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         storage.updateAnnotationSetInScene(
                 field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
+    }
+
+    /**
+     * Returns true if an assignment to the given field should be ignored by WPI.
+     *
+     * @param element the field's element
+     * @param fieldName the field's name
+     * @param atf the annotated type factory
+     * @return true if an assignment to the given field should be ignored by WPI
+     */
+    private boolean ignoreFieldInWPI(Element element, String fieldName, AnnotatedTypeFactory atf) {
+        // Do not attempt to infer types for fields that do not have valid
+        // names. For example, compiler-generated temporary variables will
+        // have invalid names. Recording facts about fields with
+        // invalid names causes jaif-based WPI to crash when reading the .jaif
+        // file, and stub-based WPI to generate unparseable stub files.
+        // See https://github.com/typetools/checker-framework/issues/3442
+        if (!SourceVersion.isIdentifier(fieldName)) {
+            return true;
+        }
+
+        // If the inferred field has a declaration annotation with the
+        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
+        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
+                || atf.getDeclAnnotationWithMetaAnnotation(
+                                        element, IgnoreInWholeProgramInference.class)
+                                .size()
+                        > 0) {
+            return true;
+        }
+
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
