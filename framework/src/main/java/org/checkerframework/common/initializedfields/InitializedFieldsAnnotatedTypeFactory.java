@@ -79,23 +79,22 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     private String[] getCheckerNames() {
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         String processorArg = Options.instance(context).get("-processor");
-        if (processorArg == null) {
-            try {
-                String filename = "META-INF/services/javax.annotation.processing.Processor";
-                List<String> lines = new ArrayList<>();
-                Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
-                while (urls.hasMoreElements()) {
-                    URL url = urls.nextElement();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-                    lines.addAll(in.lines().collect(Collectors.toList()));
-                }
-                String[] result = lines.toArray(new String[0]);
-                return result;
-            } catch (IOException e) {
-                throw new BugInCF(e);
-            }
-        } else {
+        if (processorArg != null) {
             return processorArg.split(",");
+        }
+        try {
+            String filename = "META-INF/services/javax.annotation.processing.Processor";
+            List<String> lines = new ArrayList<>();
+            Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                lines.addAll(in.lines().collect(Collectors.toList()));
+            }
+            String[] result = lines.toArray(new String[0]);
+            return result;
+        } catch (IOException e) {
+            throw new BugInCF(e);
         }
     }
 

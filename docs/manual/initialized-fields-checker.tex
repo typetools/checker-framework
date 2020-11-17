@@ -13,8 +13,7 @@ An example invocation is
 javac -processor org.checkerframework.common.initializedfields.InitializedFieldsChecker MyFile.java
 \end{Verbatim}
 
-If you run it together with other checkers (by supplying multiple checkers
--to the \<-processor> command-line option), then it issues warnings only if
+If you run it together with other checkers, then it issues warnings only if
 the default value assigned by Java (0, false, or null) is not consistent
 with the field's annotation, for the other checkers.
 % It's actually the checkers and their subcheckers if any.  Saying that
@@ -25,26 +24,6 @@ An example invocation is
 
 \begin{Verbatim}
 javac -processor ValueChecker,InitializedFieldsChecker MyFile.java
-\end{Verbatim}
-
-
-If you use annotation processor auto-discovery (see
-Section~\ref{checker-auto-discovery}, then there is no \<-processor>
-command-line option.  Or, you might wish to run the Initialized Fields
-Checker in a way that is cognizant of other checkers, but without running
-those checkers.  In this case, you can pass the \<-Acheckers=...>
-command-line option to indicate which other checkers the Initialized Fields
-Checker should use to check whether the default value is consistent with a
-field's annotations.
-
-The argument to the \<-Acheckers=...> option is a comma-separated list of
-fully qualified class names.  Any entry that is not a fully qualified class
-names for a checker is ignored.
-An example invocation is
-
-\begin{Verbatim}
-javac -processor InitializedFieldsChecker -Acheckers=org.checkerframework.common.value.ValueChecker,  org.checkerframework.checker.nullness.NullnessChecker
-  MyFile.java
 \end{Verbatim}
 
 
