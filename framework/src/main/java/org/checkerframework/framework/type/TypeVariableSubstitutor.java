@@ -57,14 +57,14 @@ public class TypeVariableSubstitutor {
     }
 
     /**
-     * Visitor that makes the substitution. This is an inner class so that its methods can cannot be
+     * Visitor that makes the substitution. This is an inner class so that its methods cannot be
      * called by clients of {@link TypeVariableSubstitutor}.
      */
     protected class Visitor extends AnnotatedTypeCopier {
 
         /**
          * A mapping from {@link TypeParameterElement} to the {@link AnnotatedTypeMirror} that
-         * should replace uses of the {@code TypeParameterElement}.
+         * should replace its uses.
          */
         private final Map<TypeParameterElement, AnnotatedTypeMirror> elementToArgMap;
 
@@ -75,7 +75,7 @@ public class TypeVariableSubstitutor {
         private final List<TypeVariable> typeVars;
 
         /**
-         * A list of typeMirrors that should replace the type variable at the same index in {@code
+         * A list of TypeMirrors that should replace the type variable at the same index in {@code
          * typeVars}
          */
         private final List<TypeMirror> typeMirrors;
