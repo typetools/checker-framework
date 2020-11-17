@@ -16,11 +16,7 @@ import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-/**
- * Default relations between SI units.
- *
- * <p>TODO: what relations are missing?
- */
+/** Default relations between SI units. */
 public class UnitsRelationsDefault implements UnitsRelations {
     /** SI units. */
     protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;

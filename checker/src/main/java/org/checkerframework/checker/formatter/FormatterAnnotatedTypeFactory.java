@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -38,6 +39,9 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link FormatBottom} annotation. */
     protected final AnnotationMirror FORMATBOTTOM =
             AnnotationBuilder.fromClass(elements, FormatBottom.class);
+    /** The @{@link FormatMethod} annotation. */
+    protected final AnnotationMirror FORMATMETHOD =
+            AnnotationBuilder.fromClass(elements, FormatMethod.class);
 
     /** The fully-qualified name of the {@link Format} qualifier. */
     protected static final @CanonicalName String FORMAT_NAME = Format.class.getCanonicalName();
@@ -145,7 +149,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return anno2;
             } else if (qualifierKind2.isBottom()) {
@@ -203,7 +208,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror anno1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror anno2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1.isTop()) {
                 return anno2;
             } else if (qualifierKind2.isTop()) {

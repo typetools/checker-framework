@@ -98,7 +98,7 @@ public abstract class CFAbstractTransfer<
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements ForwardTransferFunction<V, S> {
 
-    /** The analysis class this store belongs to. */
+    /** The analysis used by this transfer function. */
     protected final CFAbstractAnalysis<V, S, T> analysis;
 
     /**
@@ -110,16 +110,20 @@ public abstract class CFAbstractTransfer<
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
+    /**
+     * Create a CFAbstractTransfer.
+     *
+     * @param analysis the analysis used by this transfer function
+     */
     protected CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
-        this.analysis = analysis;
-        this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        this.infer = analysis.checker.hasOption("infer");
+        this(analysis, false);
     }
 
     /**
      * Constructor that allows forcing concurrent semantics to be on for this instance of
      * CFAbstractTransfer.
      *
+     * @param analysis the analysis used by this transfer function
      * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
      *     false, concurrent semantics are turned off by default, but the user can still turn them
      *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
@@ -146,24 +150,31 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore,CFAbstractStore)}.
+     *
+     * @param value a value to possibly modify
+     * @param store the store
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S store) {
         return value;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value} as the result of the
-     * transfer function. By default, the value is not changed but subclasses might decide to
-     * implement some functionality. The store at this position is also passed (two stores, as the
-     * result is a {@link ConditionalTransferResult}.
+     * A hook for subclasses to modify the result of the transfer function. This method is called
+     * before returning the abstract value {@code value} as the result of the transfer function.
+     *
+     * <p>If a subclass overrides this method, the subclass should also override {@link
+     * #finishValue(CFAbstractValue,CFAbstractStore)}.
      *
      * @param value the value to finish
      * @param thenStore the "then" store
      * @param elseStore the "else" store
-     * @return the finished value
+     * @return the possibly-modified value
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
@@ -531,9 +542,9 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         FlowExpressionContext flowExprContext = null;
-        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
             String expression = p.expression;
@@ -572,7 +583,7 @@ public abstract class CFAbstractTransfer<
         // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
         if (analysis.dependentTypesHelper != null) {
             return analysis.dependentTypesHelper.standardizeAnnotation(
-                    flowExprContext, path, annoFromContract, false);
+                    flowExprContext, path, annoFromContract, false, false);
             // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
             // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
         } else {
@@ -766,10 +777,11 @@ public abstract class CFAbstractTransfer<
     /**
      * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
      * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression
-     * that is tracked by the store (e.g., a local variable or a field).
+     * that is tracked by the store (e.g., a local variable or a field). Clients usually call this
+     * twice with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
      *
-     * <p>Note that when overriding this method, when a new type is inserted into the store,
-     * splitAssignments should be called, and the new type should be inserted into the store for
+     * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
+     * #splitAssignments} should be called, and the new type should be inserted into the store for
      * each of the resulting nodes.
      *
      * @param res the previous result
@@ -1084,11 +1096,16 @@ public abstract class CFAbstractTransfer<
     /**
      * Add information based on all postconditions of method {@code n} with tree {@code tree} and
      * element {@code method} to the store {@code store}.
+     *
+     * @param n a method call
+     * @param store a store
+     * @param methodElement the method being called
+     * @param tree the tree for method call {@code n}
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 
@@ -1102,9 +1119,9 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         Set<ConditionalPostcondition> conditionalPostconditions =
-                contracts.getConditionalPostconditions(methodElement);
+                contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
                 n, tree, thenStore, elseStore, conditionalPostconditions);
     }
@@ -1152,7 +1169,8 @@ public abstract class CFAbstractTransfer<
                 // report errors here
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
-                    args[0] = ElementUtils.getSimpleName(TreeUtils.elementFromUse(n.getTree()));
+                    args[0] =
+                            ElementUtils.getSimpleSignature(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
                     analysis.checker.reportError(tree, "flowexpr.parse.error.postcondition", args);
                 } else {

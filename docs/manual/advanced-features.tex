@@ -208,7 +208,7 @@ rules are used in order, until one applies.
 
 \begin{enumerate}
 \item
-  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of the \<MyClass>.
+  The qualifier specified via \<@DefaultQualifierForUse> on the declaration of \<MyClass>.
   (Section~\ref{default-for-use})
 \item
   If no \<@NoDefaultQualifierForUse> is written on the declaration of \<MyClass>, the qualifier
@@ -379,9 +379,30 @@ locations.
 Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
-Exception parameters need to have the top type because
-exceptions of arbitrary qualified types can be thrown and the Checker Framework
-does not provide run-time checks.
+
+Exception parameters default to the top type because they might catch an
+exception thrown anywhere in the program.
+
+An alternate design for exception parameters would be to default exception
+parameters some other type T (instead of the top type); then the Checker
+Framework would need to issue a warning at every \<throw> statement whose
+argument might not be a subtype of T\@.  A checker can implement this
+alternate design by overriding a few methods.  The alternative is not
+appropriate for all type systems.  The alternative is unsound for deep type
+systems because the JDK's annotations are trusted rather than checked.  A
+deep type system is one where the type of a field can determine the type of
+its containing instance, such as tainting, Example: a user passes a secret
+regex to the JDK, and the JDK throws a format exception that includes the
+regex.  This could be caught by a \<catch> clause in the program whose
+exception parameter is not annotated as secret.  As another example, the
+user passes a secret integer and the JDK throws a DivideByZeroException
+that reveals the value.
+
+% (An even more precise analysis would be for the Checker Framework to
+% compute the feasibility of every pair of $\langle$throw statement, catch
+% clauses$\rangle$ in the program, but such an analysis might be expensive
+% or non-modular, and it still does not address the issue of unchecked
+% library methods.)
 
 \item
 Cast types are defaulted to the same type as their argument expression.
@@ -409,7 +430,7 @@ upper bound as desired.
 
 This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.
-This may seem confusing, but it is the least bad option.  The
+This is a bit unfortunate, but it is the least bad option.  The
 more confusing alternative would be for ``\code{Object}'' to be defaulted
 differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
@@ -448,17 +469,18 @@ the CLIMB-to-top rule.
 
 In certain situations, it would be convenient for an annotation on a
 superclass member to be automatically inherited by subclasses that override
-it.  Such a feature would reduce annotation effort, but it would also reduce program
+it.  (An example is that programmers must add `@Nullable` to the formal
+parameter type of every implementation of the `equals()` method.)
+Such a feature would reduce annotation effort, but it would also reduce program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.
+feature.  In the future, this feature may be added.
 
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-
 Computation is necessary because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
@@ -466,9 +488,6 @@ annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
 annotations on overridden implementations in supertypes.  In each case, an
 error would be thrown if no such annotations existed.
-
-In the future, this feature may be added optionally, and each type-checker
-implementation can enable it if desired.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -613,7 +632,6 @@ misbehave at run time.
 % external libraries.
 
 
-\newpage
 \sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
 
 \subsectionAndLabel{Annotations on constructor declarations}{annotations-on-constructor-declarations}
@@ -940,11 +958,15 @@ Type systems that cannot support a run-time test are:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  methods have side effects (see \chapterpageref{purity-checker})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
-  methods have side effects (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -1506,7 +1528,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno
+% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno Im
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
@@ -1516,7 +1538,7 @@ class @Marsupial-Animal {
 % LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 % LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode DefaultFor TypeUseLocation
-% LocalWords:  EnsuresKeyFor EnsuresKeyForIf
+% LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
 % LocalWords:  Signedness MonotonicNonNull UpperBoundFor

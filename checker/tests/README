@@ -13,9 +13,9 @@ How to run all the tests for the Checker Framework
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
   # Run from the checker-framework directory:
-  ./gradlew :checker:NullnessFbcTest
+  ./gradlew :checker:NullnessTest
   # Run from the checker directory:
-  ../gradlew NullnessFbcTest
+  ../gradlew NullnessTest
   # To see all tasks
   ./gradlew tasks
 

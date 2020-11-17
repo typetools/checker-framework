@@ -21,15 +21,15 @@ class AllowedTypes {
 
     @Regex MyMatchResult mp;
 
-    // :: error: (type.invalid)
-    @Regex List<String> l; // error
-    // :: error: (type.invalid)
-    ArrayList<@Regex Double> al; // error
-    // :: error: (type.invalid)
-    @Regex int i; // error
-    // :: error: (type.invalid)
-    @Regex boolean b; // error
-    // :: error: (type.invalid)
+    // :: error: (anno.on.irrelevant)
+    @Regex List<String> l;
+    // :: error: (anno.on.irrelevant)
+    ArrayList<@Regex Double> al;
+    // :: error: (anno.on.irrelevant)
+    @Regex int i;
+    // :: error: (anno.on.irrelevant)
+    @Regex boolean b;
+    // :: error: (anno.on.irrelevant)
     @Regex Integer i2;
 
     void testAllowedTypes() {
@@ -40,13 +40,13 @@ class AllowedTypes {
         @Regex char c;
         @Regex Object o;
 
-        // :: error: (type.invalid)
+        // :: error: (anno.on.irrelevant)
         @Regex List<String> l; // error
-        // :: error: (type.invalid)
+        // :: error: (anno.on.irrelevant)
         ArrayList<@Regex Double> al; // error
-        // :: error: (type.invalid)
+        // :: error: (anno.on.irrelevant)
         @Regex int i; // error
-        // :: error: (type.invalid)
+        // :: error: (anno.on.irrelevant)
         @Regex boolean b; // error
 
         @Regex String regex = "a";

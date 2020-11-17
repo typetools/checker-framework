@@ -18,6 +18,7 @@ import org.checkerframework.checker.index.qual.UpperBoundBottom;
 import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -208,6 +209,12 @@ public abstract class UBQualifier {
         return false;
     }
 
+    /**
+     * Return true if this is UBQualifier.PolyQualifier.
+     *
+     * @return true if this is UBQualifier.PolyQualifier
+     */
+    @Pure
     public boolean isPoly() {
         return false;
     }
@@ -1058,6 +1065,7 @@ public abstract class UBQualifier {
         static final UBQualifier POLY = new PolyQualifier();
 
         @Override
+        @Pure
         public boolean isPoly() {
             return true;
         }

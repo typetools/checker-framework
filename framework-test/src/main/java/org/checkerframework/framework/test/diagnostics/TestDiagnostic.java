@@ -106,6 +106,9 @@ public class TestDiagnostic {
      */
     @Override
     public String toString() {
+        if (kind == DiagnosticKind.Jspecify) {
+            return filename + ":" + lineNumber + ": " + message;
+        }
         if (omitParentheses) {
             return filename + ":" + lineNumber + ": " + kind.parseString + ": " + message;
         }

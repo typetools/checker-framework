@@ -6,7 +6,6 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -16,7 +15,6 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
@@ -137,22 +135,7 @@ public class TypeVarUseApplier {
         }
 
         for (final Attribute.TypeCompound annotation : typeVarAnnotations) {
-            typeVariable.removeAnnotationInHierarchy(annotation);
-            typeVariable.addAnnotation(annotation);
-
-            final List<? extends AnnotatedTypeMirror> upperBounds;
-            if (typeVariable.getUpperBound() instanceof AnnotatedIntersectionType) {
-                upperBounds = typeVariable.getUpperBound().directSuperTypes();
-            } else {
-                upperBounds = Arrays.asList(typeVariable.getUpperBound());
-            }
-
-            // TODO: Should we just make primary annotations on annotated intersection types apply
-            // TODO: to all of them?  Que dealio?  What should we do?
-            for (final AnnotatedTypeMirror bound : upperBounds) {
-                bound.removeAnnotationInHierarchy(annotation);
-                bound.addAnnotation(annotation);
-            }
+            typeVariable.replaceAnnotation(annotation);
         }
     }
 

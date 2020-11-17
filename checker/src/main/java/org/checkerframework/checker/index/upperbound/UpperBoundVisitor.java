@@ -114,16 +114,20 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     * Determines if the Java expression named by s is effectively final at the current program
-     * location.
+     * Reports an error if the Java expression named by s is not effectively final at the current
+     * program location.
+     *
+     * @param s a Java expression
+     * @param context the flow expression context
+     * @param tree the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, FlowExpressionContext context, Tree error) {
+            String s, FlowExpressionContext context, Tree tree) {
         Receiver rec;
         try {
             rec = FlowExpressionParseUtil.parse(s, context, getCurrentPath(), false);
         } catch (FlowExpressionParseException e) {
-            checker.report(error, e.getDiagMessage());
+            checker.report(tree, e.getDiagMessage());
             return;
         }
         Element element = null;
@@ -135,7 +139,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return;
         }
         if (element == null || !ElementUtils.isEffectivelyFinal(element)) {
-            checker.reportError(error, NOT_FINAL, rec);
+            checker.reportError(tree, NOT_FINAL, rec);
         }
     }
 

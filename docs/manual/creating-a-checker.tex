@@ -50,6 +50,7 @@ Three choices for creating your own checker are:
   Customize an existing checker.
   Checkers that are designed for extension include
   the Subtyping Checker (\chapterpageref{subtyping-checker}),
+  the Accumulation Checker (\chapterpageref{accumulation-checker}),
   the Fake Enumeration Checker (\chapterpageref{fenum-checker}),
   and the Units Checker (\chapterpageref{units-checker}).
 \item
@@ -1800,12 +1801,7 @@ The testing infrastructure is extensively documented in file \ahref{https://gith
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
-existing type system.  Here are some of the tasks you will perform:
-
-\begin{itemize}
-
-\item Make sure \code{all-tests} tests the new checker.
-\end{itemize}
+existing type system.
 
 
 \sectionAndLabel{Debugging options}{creating-debugging-options}
@@ -2050,8 +2046,9 @@ no arguments.
   there is a bug in its caching code.  Please report that bug.
 
 \item \<-AatfCacheSize>:
-  The size of the Checker Framework's internal caches.  Most users have no
-  need to set this.
+  The size of the Checker Framework's internal caches.
+  Ignored if \<-AatfDoNotCache> is provided.
+  Most users have no need to set this.
 
 \end{itemize}
 

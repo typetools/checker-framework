@@ -620,6 +620,7 @@ public class StubParser {
             return;
         }
 
+        List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
         if (typeElt.getKind() == ElementKind.ENUM) {
             if (!(typeDecl instanceof EnumDeclaration)) {
                 stubWarn(
@@ -629,7 +630,8 @@ public class StubParser {
                                 + "...");
                 return;
             }
-            typeParameters.addAll(processEnum((EnumDeclaration) typeDecl, typeElt));
+            typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
             if (!(typeDecl instanceof AnnotationDeclaration)) {
                 stubWarn(
@@ -649,7 +651,8 @@ public class StubParser {
                                 + "...");
                 return;
             }
-            typeParameters.addAll(processType((ClassOrInterfaceDeclaration) typeDecl, typeElt));
+            typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
+            typeParameters.addAll(typeDeclTypeParameters);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
@@ -682,7 +685,9 @@ public class StubParser {
                     break;
             }
         }
-        typeParameters.clear();
+        if (typeDeclTypeParameters != null) {
+            typeParameters.removeAll(typeDeclTypeParameters);
+        }
     }
 
     /** True if the argument contains {@code @NoStubParserWarning}. */
@@ -893,7 +898,7 @@ public class StubParser {
                             "in file %s at line %s: redundant stub file specification for: %s",
                             filename.substring(filename.lastIndexOf('/') + 1),
                             decl.getBegin().get().line,
-                            ElementUtils.getVerboseName(elt)));
+                            ElementUtils.getQualifiedName(elt)));
         }
 
         // Store the type.
@@ -1260,7 +1265,7 @@ public class StubParser {
                 }
             }
         }
-        String eltName = ElementUtils.getVerboseName(elt);
+        String eltName = ElementUtils.getQualifiedName(elt);
         putOrAddToMap(declAnnos, eltName, annos);
     }
 
@@ -1273,7 +1278,7 @@ public class StubParser {
             return;
         }
         putOrAddToMap(
-                declAnnos, ElementUtils.getVerboseName(elt), Collections.singleton(fromStubFile));
+                declAnnos, ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFile));
     }
 
     private void annotateTypeParameters(
@@ -1515,7 +1520,7 @@ public class StubParser {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
-                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
             }
         }
@@ -1567,7 +1572,7 @@ public class StubParser {
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
-                    && ElementUtils.getSimpleName(method).equals(wantedMethodString)) {
+                    && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
             }
         }

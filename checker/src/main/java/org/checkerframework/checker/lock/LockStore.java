@@ -6,8 +6,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -185,6 +185,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
+        // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
+        // Lockannotatedtypefactory, but it affects only one of the two type hierarchies, so it
+        // cannot use that logic.
         if (!isSideEffectFree(atypeFactory, method)) {
             // After the call to super.updateForMethodCall, only final fields are left in
             // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld

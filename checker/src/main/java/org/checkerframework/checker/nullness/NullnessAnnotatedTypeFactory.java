@@ -17,7 +17,6 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -261,8 +260,8 @@ public class NullnessAnnotatedTypeFactory
 
     /**
      * For types of left-hand side of an assignment, this method replaces {@link PolyNull} with
-     * {@link Nullable} if the org.checkerframework.dataflow analysis has determined that this is
-     * allowed soundly. For example:
+     * {@link Nullable} (or with {@link NonNull} if the org.checkerframework.dataflow analysis has
+     * determined that this is allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -280,8 +279,12 @@ public class NullnessAnnotatedTypeFactory
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)) {
             NullnessValue inferred = getInferredValueFor(context);
-            if (inferred != null && inferred.isPolyNullNull) {
-                lhsType.replaceAnnotation(NULLABLE);
+            if (inferred != null) {
+                if (inferred.isPolyNullNonNull) {
+                    lhsType.replaceAnnotation(NONNULL);
+                } else if (inferred.isPolyNullNull) {
+                    lhsType.replaceAnnotation(NULLABLE);
+                }
             }
         }
     }
@@ -292,17 +295,11 @@ public class NullnessAnnotatedTypeFactory
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates =
+        List<VariableTree> result =
                 super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
-        List<VariableTree> result = new ArrayList<>();
-        for (VariableTree c : candidates) {
-            AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
-            if (!isPrimitive) {
-                // primitives do not need to be initialized
-                result.add(c);
-            }
-        }
+        // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
+        // warning when they are not initialized.
+        result.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
         return result;
     }
 
@@ -625,7 +622,8 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
                 return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
@@ -638,10 +636,12 @@ public class NullnessAnnotatedTypeFactory
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
-                return FBCBOTTOM;
+                return this.greatestLowerBoundInitialization(
+                        a1, qualifierKind1, a2, qualifierKind2);
             }
             throw new BugInCF(
                     "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);

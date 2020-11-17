@@ -26,13 +26,13 @@ dependencies {
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.2'
-    implementation 'org.plumelib:plume-util:1.1.7'
+    implementation 'org.plumelib:plume-util:1.2.0'
 
     // Called Methods Checker AutoValue + Lombok support
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
     testImplementation "com.google.auto.value:auto-value:1.7.4"
     testImplementation "com.ryanharter.auto.value:auto-value-parcel:0.2.8"
-    testImplementation "org.projectlombok:lombok:1.18.14"
+    testImplementation "org.projectlombok:lombok:1.18.16"
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
@@ -181,7 +181,7 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
+                    args = ['clone', '--depth', '1', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {
@@ -246,6 +246,13 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
 
     }
 }
+
+// JSpecify tests are excluded by default.  To run them:
+// ./gradlew NullnessJspecifySamplesTest
+test {
+    exclude '**/org/checkerframework/checker/test/junit/NullnessJspecifySamplesTest.class'
+}
+
 
 task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
     description 'Deploys checker.jar to the local Maven repository'

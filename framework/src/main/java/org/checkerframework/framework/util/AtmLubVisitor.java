@@ -337,9 +337,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedIntersectionType castedLub = castLub(type1, lub);
         lubPrimaryAnnotations(type1, type2, lub);
 
-        for (int i = 0; i < lub.directSuperTypes().size(); i++) {
-            AnnotatedDeclaredType lubST = castedLub.directSuperTypes().get(i);
-            visit(type1.directSuperTypes().get(i), type2.directSuperTypes().get(i), lubST);
+        for (int i = 0; i < castedLub.getBounds().size(); i++) {
+            AnnotatedTypeMirror lubST = castedLub.getBounds().get(i);
+            visit(type1.getBounds().get(i), type2.getBounds().get(i), lubST);
         }
 
         return null;

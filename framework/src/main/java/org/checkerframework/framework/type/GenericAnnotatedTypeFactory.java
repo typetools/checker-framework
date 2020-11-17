@@ -36,14 +36,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -53,6 +52,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FlowExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -88,6 +89,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -101,6 +103,8 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.UtilPlume;
@@ -143,6 +147,21 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to handle dependent type annotations */
     protected DependentTypesHelper dependentTypesHelper;
+
+    /** to handle method pre- and postconditions */
+    protected ContractsUtils contractsUtils;
+
+    /**
+     * The Java types on which users may write this type system's type annotations. null means no
+     * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
+     */
+    public @Nullable Set<TypeMirror> relevantJavaTypes;
+
+    /**
+     * Whether users may write type annotations on arrays. Ignored unless relevantJavaTypes is
+     * non-null.
+     */
+    boolean arraysAreRelevant = false;
 
     // Flow related fields
 
@@ -193,6 +212,17 @@ public abstract class GenericAnnotatedTypeFactory<
      * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
      */
     private Map<Tree, AnnotatedTypeMirror> initializerCache;
+
+    /**
+     * Should the analysis assume that side effects to a value can change the type of aliased
+     * references?
+     *
+     * <p>For many type systems, once a local variable's type is refined, side effects to the
+     * variable's value do not change the variable's type annotations. For some type systems, a side
+     * effect to the value could change them; set this field to true.
+     */
+    // Not final so that subclasses can set it.
+    public boolean sideEffectsUnrefineAliases = false;
 
     /** An empty store. */
     // Set in postInit only
@@ -257,6 +287,31 @@ public abstract class GenericAnnotatedTypeFactory<
             flowResultAnalysisCaches = null;
             initializerCache = null;
         }
+
+        RelevantJavaTypes relevantJavaTypesAnno =
+                checker.getClass().getAnnotation(RelevantJavaTypes.class);
+        if (relevantJavaTypesAnno == null) {
+            this.relevantJavaTypes = null;
+            this.arraysAreRelevant = true;
+        } else {
+            this.relevantJavaTypes = new HashSet<TypeMirror>();
+            this.arraysAreRelevant = false;
+            for (Class<?> clazz : relevantJavaTypesAnno.value()) {
+                if (clazz == Object[].class) {
+                    arraysAreRelevant = true;
+                } else if (clazz.isArray()) {
+                    throw new TypeSystemError(
+                            "Don't use arrays other than Object[] in @RelevantJavaTypes on "
+                                    + this.getClass().getSimpleName());
+                } else {
+                    relevantJavaTypes.add(
+                            TypesUtils.typeFromClass(
+                                    clazz, getContext().getTypeUtils(), getElementUtils()));
+                }
+            }
+        }
+
+        contractsUtils = createContractsUtils();
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -386,7 +441,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * ListTypeAnnotator} of the following:
      *
      * <ol>
-     *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@link
+     *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@code @}{@link
      *       RelevantJavaTypes} annotation on the checker.
      *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
      * </ol>
@@ -395,14 +450,9 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected TypeAnnotator createTypeAnnotator() {
         List<TypeAnnotator> typeAnnotators = new ArrayList<>();
-        RelevantJavaTypes relevantJavaTypes =
-                checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
-            Class<?>[] relevantClasses = relevantJavaTypes.value();
-            // Must be first in order to annotate all irrelevant types.
             typeAnnotators.add(
-                    new IrrelevantTypeAnnotator(
-                            this, getQualifierHierarchy().getTopAnnotations(), relevantClasses));
+                    new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
         }
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         return new ListTypeAnnotator(typeAnnotators);
@@ -520,6 +570,24 @@ public abstract class GenericAnnotatedTypeFactory<
 
     public DependentTypesHelper getDependentTypesHelper() {
         return dependentTypesHelper;
+    }
+
+    /**
+     * Creates an {@link ContractsUtils} and returns it.
+     *
+     * @return a new {@link ContractsUtils}
+     */
+    protected ContractsUtils createContractsUtils() {
+        return new ContractsUtils(this);
+    }
+
+    /**
+     * Returns the helper for method pre- and postconditions.
+     *
+     * @return the helper for method pre- and postconditions
+     */
+    public ContractsUtils getContractsUtils() {
+        return contractsUtils;
     }
 
     @Override
@@ -2050,5 +2118,99 @@ public abstract class GenericAnnotatedTypeFactory<
             UtilPlume.sleep(1); // logging can interleave with typechecker output
             System.out.printf(format, args);
         }
+    }
+
+    /**
+     * Cache of types found that are relevantTypes or subclass of supported types. Used so that
+     * isSubtype doesn't need to be called repeatedly on the same types.
+     */
+    private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+
+    /**
+     * Returns true if users can write type annotations from this type system on the given Java
+     * type.
+     *
+     * @param tm a type
+     * @return true if users can write type annotations from this type system on the given Java type
+     */
+    public boolean isRelevant(TypeMirror tm) {
+        Boolean cachedResult = allFoundRelevantTypes.get(tm);
+        if (cachedResult != null) {
+            return cachedResult;
+        }
+        boolean result = isRelevantHelper(tm);
+        allFoundRelevantTypes.put(tm, result);
+        return result;
+    }
+
+    /**
+     * Returns true if users can write type annotations from this type system on the given Java
+     * type. Does not use a cache. Is a helper method for {@link #isRelevant}.
+     *
+     * @param tm a type
+     * @return true if users can write type annotations from this type system on the given Java type
+     */
+    private boolean isRelevantHelper(TypeMirror tm) {
+
+        if (relevantJavaTypes.contains(tm)) {
+            return true;
+        }
+
+        switch (tm.getKind()) {
+
+                // Primitives have no subtyping relationships, but the lookup might have failed
+                // because tm has metadata such as annotations.
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                for (TypeMirror relevantJavaType : relevantJavaTypes) {
+                    if (types.isSameType(tm, relevantJavaType)) {
+                        return true;
+                    }
+                }
+                return false;
+
+                // Void is never relevant
+            case VOID:
+                return false;
+
+            case ARRAY:
+                return arraysAreRelevant;
+
+            case DECLARED:
+                for (TypeMirror relevantJavaType : relevantJavaTypes) {
+                    if (types.isSubtype(relevantJavaType, tm)
+                            || types.isSubtype(tm, relevantJavaType)) {
+                        return true;
+                    }
+                }
+                return false;
+
+            case TYPEVAR:
+                return isRelevant(((TypeVariable) tm).getUpperBound());
+
+            default:
+                throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+        }
+    }
+
+    /**
+     * Return the type of the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @return the annotated type of {@code type}'s default value
+     */
+    // TODO: Cache results to avoid recomputation.
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        AnnotatedTypeMirror defaultValue = AnnotatedTypeMirror.createType(typeMirror, this, false);
+        addComputedTypeAnnotations(
+                TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
+        return defaultValue;
     }
 }

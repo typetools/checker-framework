@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -42,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLambda.ParameterKind;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -49,6 +51,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +77,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueIdMap;
 
 /** A utility class made for helping to analyze a given {@code Tree}. */
 // TODO: This class needs significant restructuring
@@ -83,6 +87,9 @@ public final class TreeUtils {
     private TreeUtils() {
         throw new AssertionError("Class TreeUtils cannot be instantiated.");
     }
+
+    /** Unique IDs for trees. */
+    public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
     /**
      * Checks if the provided method is a constructor method or no.
@@ -543,7 +550,13 @@ public final class TreeUtils {
         return TreeUtils.elementFromTree(node);
     }
 
-    /** Specialization for return type. Might return null if element wasn't found. */
+    /**
+     * Returns the ExecutableElement for the called method, from a call. Might return null if no
+     * element wasfound.
+     *
+     * @param node a method call
+     * @return the ExecutableElement for the called method
+     */
     public static @Nullable ExecutableElement elementFromUse(MethodInvocationTree node) {
         Element el = TreeUtils.elementFromTree(node);
         if (el instanceof ExecutableElement) {
@@ -554,8 +567,11 @@ public final class TreeUtils {
     }
 
     /**
-     * Specialization for return type. Might return null if element wasn't found.
+     * Gets the ExecutableElement for the called constrctor, from a constructor invocation. Might
+     * return null if no element was found.
      *
+     * @param node a constructor invocation
+     * @return the ExecutableElement for the called constructor
      * @see #constructor(NewClassTree)
      */
     public static @Nullable ExecutableElement elementFromUse(NewClassTree node) {
@@ -631,6 +647,60 @@ public final class TreeUtils {
         }
     }
 
+    /**
+     * Returns true if {@code tree} has a synthetic argument.
+     *
+     * <p>For some anonymous classes with an explicit enclosing expression, javac creates a
+     * synthetic argument to the constructor that is the enclosing expression of the NewClassTree.
+     * Suppose a programmer writes:
+     *
+     * <pre><code>
+     *     class Outer {
+     *         class Inner { }
+     *         void method() {
+     *             this.new Inner(){};
+     *         }
+     *     }
+     * </code></pre>
+     *
+     * Java 9 javac creates the following synthetic tree for {@code this.new Inner(){}}:
+     *
+     * <pre><code>
+     *    new Inner(this) {
+     *         (.Outer x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
+     * Inner(){}}:
+     *
+     * <pre><code>
+     *    this.new Inner() {
+     *         (.Outer x0) {
+     *             x0.super();
+     *         }
+     *    }
+     * </code></pre>
+     *
+     * @param tree a new class tree
+     * @return true if {@code tree} has a synthetic argument
+     */
+    public static boolean hasSyntheticArgument(NewClassTree tree) {
+        if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
+            return false;
+        }
+        for (Tree member : tree.getClassBody().getMembers()) {
+            if (member.getKind() == Kind.METHOD && isConstructor((MethodTree) member)) {
+                MethodTree methodTree = (MethodTree) member;
+                StatementTree f = methodTree.getBody().getStatements().get(0);
+                return TreeUtils.getReceiverTree(((ExpressionStatementTree) f).getExpression())
+                        != null;
+            }
+        }
+        return false;
+    }
     /**
      * Returns the name of the invoked method.
      *
@@ -1582,5 +1652,58 @@ public final class TreeUtils {
                             typeTree.getKind(), typeTree.getClass(), typeTree);
             }
         }
+    }
+
+    /**
+     * Return a tree for the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @param processingEnv the processing environment
+     * @return a tree for {@code type}'s default value
+     */
+    public static LiteralTree getDefaultValueTree(
+            TypeMirror typeMirror, ProcessingEnvironment processingEnv) {
+        switch (typeMirror.getKind()) {
+            case BYTE:
+                return TreeUtils.createLiteral(TypeTag.BYTE, (byte) 0, typeMirror, processingEnv);
+            case CHAR:
+                return TreeUtils.createLiteral(TypeTag.CHAR, '\u0000', typeMirror, processingEnv);
+            case SHORT:
+                return TreeUtils.createLiteral(TypeTag.SHORT, (short) 0, typeMirror, processingEnv);
+            case LONG:
+                return TreeUtils.createLiteral(TypeTag.LONG, 0L, typeMirror, processingEnv);
+            case FLOAT:
+                return TreeUtils.createLiteral(TypeTag.FLOAT, 0.0f, typeMirror, processingEnv);
+            case INT:
+                return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
+            case DOUBLE:
+                return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
+            case BOOLEAN:
+                return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
+            default:
+                return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
+        }
+    }
+
+    /**
+     * Creates a LiteralTree for the given value.
+     *
+     * @param typeTag the literal's type tag
+     * @param value a wrapped primitive, null, or a String
+     * @param typeMirror the typeMirror for the literal
+     * @param processingEnv the processing environment
+     * @return a LiteralTree for the given type tag and value
+     */
+    public static LiteralTree createLiteral(
+            TypeTag typeTag,
+            @Nullable Object value,
+            TypeMirror typeMirror,
+            ProcessingEnvironment processingEnv) {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        TreeMaker maker = TreeMaker.instance(context);
+        LiteralTree result = maker.Literal(typeTag, value);
+        ((JCLiteral) result).type = (Type) typeMirror;
+        return result;
     }
 }

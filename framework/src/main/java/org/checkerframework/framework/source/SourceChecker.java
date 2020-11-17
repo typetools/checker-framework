@@ -1797,17 +1797,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 return null;
             }
             this.suppressWarningsStringsFromOption = swStrings.split(",");
-            Arrays.setAll(
-                    suppressWarningsStringsFromOption,
-                    i -> suppressWarningsStringsFromOption[i].toLowerCase());
         }
 
         return this.suppressWarningsStringsFromOption;
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * Issues a warning about any {@code @SuppressWarnings} that didn't suppress a warning, but
+     * starts with this checker name or "allcheckers".
      */
     protected void warnUnneededSuppressions() {
         if (!hasOption("warnUnneededSuppressions")) {
@@ -1823,8 +1820,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     }
 
     /**
-     * Issues a warning about any {@code @SuppressWarnings} that isn't used by this checker, but
-     * contains a string that would suppress a warning from this checker.
+     * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning,
+     * but starts with one of the given prefixes (checker names).
      *
      * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
      *     warning
@@ -1833,9 +1830,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected void warnUnneededSuppressions(
             Set<Element> elementsSuppress, Set<String> prefixes, Set<String> allErrorKeys) {
-        // It's not clear for which checker "all" is intended, so never report it as unused.
-        prefixes.remove(SourceChecker.SUPPRESS_ALL_PREFIX);
-
         for (Tree tree : getVisitor().treesWithSuppressWarnings) {
             Element elt = TreeUtils.elementFromTree(tree);
             // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
@@ -1846,10 +1840,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
-            Arrays.setAll(suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
             for (String suppressWarningsString : suppressWarningsStrings) {
-                for (String errorKey : allErrorKeys) {
-                    if (shouldSuppress(prefixes, new String[] {suppressWarningsString}, errorKey)) {
+                for (String prefix : prefixes) {
+                    if (suppressWarningsString.equals(prefix)
+                            || suppressWarningsString.startsWith(prefix + ":")) {
                         reportUnneededSuppression(tree, suppressWarningsString);
                         break; // Don't report the same warning string more than once.
                     }
@@ -2065,8 +2059,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             SuppressWarnings suppressWarningsAnno = elt.getAnnotation(SuppressWarnings.class);
             if (suppressWarningsAnno != null) {
                 String[] suppressWarningsStrings = suppressWarningsAnno.value();
-                Arrays.setAll(
-                        suppressWarningsStrings, i -> suppressWarningsStrings[i].toLowerCase());
                 if (shouldSuppress(suppressWarningsStrings, errKey)) {
                     if (hasOption("warnUnneededSuppressions")) {
                         elementsWithSuppressedWarnings.add(elt);

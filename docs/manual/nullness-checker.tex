@@ -575,7 +575,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   Inference of \refqualclass{checker/nullness/qual}{NonNull}:
   %
-  If your code uses the Nullable default, use one of these tools:
+  If your code uses the Nullable default (this is unusual), use one of these tools:
 \begin{itemize}
 % Julia is no longer publicly available.
 % \item
@@ -1012,9 +1012,9 @@ as \<@NonNull>.
 \subsectionAndLabel{Which tool is right for you?}{choosing-nullness-tool}
 
 Different tools are appropriate in different circumstances.  Here is a
-brief comparison with FindBugs, but similar points apply to other tools.
+brief comparison with FindBugs (and its successor SpotBugs), but similar points apply to other tools.
 (For example, the \href{https://github.com/uber/NullAway}{NullAway} and
-\href{https://fbinfer.com/docs/eradicate/}{Eradicate} tools are more
+\href{https://fbinfer.com/docs/next/checker-eradicate/}{Eradicate} tools are more
 like sound type-checking than FindBugs, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.)
@@ -1047,7 +1047,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 \subsectionAndLabel{Incompatibility note about FindBugs \tt{@Nullable}}{findbugs-nullable}
 
-FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
+FindBugs (and its successor SpotBugs) has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
 \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
@@ -1197,6 +1197,12 @@ The Initialization Checker determines whether an object is initialized or
 not.  For any object that is not fully initialized, the Nullness Checker
 treats its fields as possibly-null --- even fields annotated as
 \<@NonNull>.
+(The Initialization Checker focuses on \<@NonNull> fields, to detect null
+pointer exceptions when using them.  It does not
+currently ensure that primitives or \<@Nullable> fields are initialized.
+Use the Initialized Fields Checker
+(\chapterpageref{initialized-fields-checker}) to check initialization with
+respect to properties other than nullness.)
 
 Every object's fields start out as null.  By the time the constructor
 finishes executing, the \<@NonNull> fields have been set to a different
@@ -1528,14 +1534,10 @@ Consider what happens during execution of \<new B()>.
   initialized, and their invariants (such as that field \<a> is non-null) can be
   depended on.  However, because \<B>'s constructor has not yet completed
   executing, the object being constructed is not yet fully initialized.
-  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
-  object is initialized, but when treated as a \<B>, the object
-  is still non-initialized.
-\item \<B>'s constructor completes.  The object is initialized when treated
-  as an \<A> or a \<B>.  (And, the object is fully initialized
-   if \<B>'s constructor was invoked via a \<new B()>.  But the type system
-   cannot assume that --- there might be a \<class C extends B \{
-  ... \}>, and \<B>'s constructor might have been invoked from that.)
+\item \<B>'s constructor completes.  The fields declared in \<A> and \<B>
+  are initialized.  However, the type system cannot assume that the object
+  is fully initialized --- there might be a \<class C extends B \{...\}>,
+  and \<B>'s constructor might have been invoked from that.
 \end{enumerate}
 
 At any moment during initialization, the superclasses of a given class
@@ -1552,7 +1554,7 @@ The \<@UnderInitialization(\emph{classliteral})>
 indicates the first class that is known to be fully initialized.
 When you write \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
 means that variable \<x> is initialized for \<OtherClass> and its
-superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subclasses.
+superclasses, and \<x> is (possibly) uninitialized for subclasses of \<OtherClass>.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
@@ -1569,6 +1571,50 @@ the type of the object being constructed is:
 \item
   \<@UnderInitialization(B.class) B>
 \end{enumerate}
+
+Note that neither \<@UnderInitialization(A.class) A> nor
+\<@UnderInitialization(A.class) B> may be used where <@Initialized A> is
+required.  Permitting that would be unsound.  For example, consider this
+code, where all types are \<@NonNull> because \<@NonNull> is the default annotation:
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+  }
+  Object get() {
+    return aField;
+  }
+}
+class B extends A {
+  Object bField;
+  B() {
+    super();
+    bField = new Object();
+  }
+  @Override
+  Object get() {
+    return bField;
+  }
+}
+\end{Verbatim}
+
+Given these declarations:
+
+\begin{Verbatim}
+@Initialized A w;
+@Initialized B x;
+@UnderInitialization(A.class) A y;
+@UnderInitialization(A.class) B z;
+\end{Verbatim}
+
+\noindent
+the expressions \<w.get()> and \<x.get()> evaluate to a non-null value, but
+\<y.get()> and \<z.get()> might evaluate to \<null>.
+(\<y.get()> might evaluate to \<null> because the run-time type of \<y>
+might be \<B>.  That is, \<y> and \<z> might refer to the same value, just
+as \<w> and \<x> might refer to the same value.)
 
 
 \subsectionAndLabel{Method calls from the constructor}{initialization-constructor}
@@ -1969,10 +2015,12 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-``initialization.''~(note the trailing period) warning suppression string.  You
-can write \<@SuppressWarnings("initialization.")> on a field, constructor, or
+warning suppression string ``initialization.''~(note the trailing period)
+or ``fbc''.  You can write \<@SuppressWarnings("initialization.")> or
+\<@SuppressWarnings("fbc")> on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.>~when running the Nullness Checker.
+\<-AsuppressWarnings=initialization.>~or \<-AsuppressWarnings=fbc> when
+running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
 of no null pointer exceptions, but you can still use the Nullness Checker
@@ -2036,7 +2084,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
-% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
+% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray fbc
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''

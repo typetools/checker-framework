@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
@@ -31,12 +32,16 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
@@ -331,7 +336,7 @@ public class AnnotationUtils {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
         Set<ExecutableElement> sortedElements =
-                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleName));
+                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
         sortedElements.addAll(
                 ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
@@ -807,6 +812,44 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
+     * has type {@code expectedType} or array of {@code expectedType}.
+     *
+     * <p>Parameter useDefaults is used to determine whether default values should be used for
+     * annotation values. Finding defaults requires more computation, so should be false when no
+     * defaulting is needed.
+     *
+     * @param anno the annotation to disassemble
+     * @param elementName the name of the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> List<T> getElementValueArrayOrSingleton(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        for (ExecutableElement annoElement :
+                ElementFilter.methodsIn(
+                        anno.getAnnotationType().asElement().getEnclosedElements())) {
+            if (annoElement.getSimpleName().contentEquals(elementName)) {
+                TypeMirror elementType = annoElement.getReturnType();
+                if (elementType.getKind() == TypeKind.ARRAY) {
+                    return getElementValueArray(anno, elementName, expectedType, useDefaults);
+                } else {
+                    List<T> result = new ArrayList<>(1);
+                    result.add(getElementValue(anno, elementName, expectedType, useDefaults));
+                    return result;
+                }
+            }
+        }
+        throw new BugInCF("no " + elementName + " element in " + anno);
+    }
+
+    /**
      * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
      * default value if no element is present explicitly, where the element has an array type and
      * the elements are {@code Enum}s. One element of the result is expected to have type {@code
@@ -976,5 +1019,22 @@ public class AnnotationUtils {
         }
 
         return hasTypeUse;
+    }
+
+    /**
+     * Returns a string representation of the annotation mirrors, using simple (not fully-qualified)
+     * names.
+     *
+     * @param annos annotations to format
+     * @return the string representation, using simple (not fully-qualified) names
+     */
+    @SideEffectFree
+    public static String toStringSimple(Set<AnnotationMirror> annos) {
+        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
+        StringJoiner result = new StringJoiner(" ");
+        for (AnnotationMirror am : annos) {
+            result.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
+        }
+        return result.toString();
     }
 }

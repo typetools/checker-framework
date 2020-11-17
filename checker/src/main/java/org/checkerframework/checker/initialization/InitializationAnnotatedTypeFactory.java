@@ -28,6 +28,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -851,8 +852,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
                 return anno1;
             }
-            boolean unc1 = isUnknownInitialization(anno1);
-            boolean unc2 = isUnknownInitialization(anno2);
+            boolean unknowninit1 = isUnknownInitialization(anno1);
+            boolean unknowninit2 = isUnknownInitialization(anno2);
             boolean underinit1 = isUnderInitialization(anno1);
             boolean underinit2 = isUnderInitialization(anno2);
 
@@ -872,13 +873,19 @@ public abstract class InitializationAnnotatedTypeFactory<
                                 getTypeFrameFromAnnotation(anno2)));
             }
 
-            assert (unc1 || underinit1) && (unc2 || underinit2);
+            assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
             return createUnknownInitializationAnnotation(
                     lubTypeFrame(
                             getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
         }
 
-        /** Returns the least upper bound of two types. */
+        /**
+         * Returns the least upper bound of two types.
+         *
+         * @param a the first argument
+         * @param b the second argument
+         * @return the lub of the two arguments
+         */
         protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
             if (types.isSubtype(a, b)) {
                 return b;
@@ -887,6 +894,64 @@ public abstract class InitializationAnnotatedTypeFactory<
             }
 
             return TypesUtils.leastUpperBound(a, b, processingEnv);
+        }
+
+        /**
+         * Compute the greatest lower bound of two initialization qualifiers. Returns null if one of
+         * the qualifiers is not in the initialization hierarachy. Subclasses should override
+         * greatestLowerBound and call this method for initialization qualifiers.
+         *
+         * @param anno1 an initialization qualifier
+         * @param qual1 a qualifier kind
+         * @param anno2 an initialization qualifier
+         * @param qual2 a qualifier kind
+         * @return the glb of anno1 and anno2
+         */
+        protected AnnotationMirror greatestLowerBoundInitialization(
+                AnnotationMirror anno1,
+                QualifierKind qual1,
+                AnnotationMirror anno2,
+                QualifierKind qual2) {
+            if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
+                return null;
+            }
+
+            // Handle the case where one is a subtype of the other.
+            if (isSubtypeInitialization(anno1, qual1, anno2, qual2)) {
+                return anno1;
+            } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
+                return anno2;
+            }
+            boolean unknowninit1 = isUnknownInitialization(anno1);
+            boolean unknowninit2 = isUnknownInitialization(anno2);
+            boolean underinit1 = isUnderInitialization(anno1);
+            boolean underinit2 = isUnderInitialization(anno2);
+
+            // Handle @Initialized.
+            if (isInitialized(anno1)) {
+                assert underinit2;
+                return FBCBOTTOM;
+            } else if (isInitialized(anno2)) {
+                assert underinit1;
+                return FBCBOTTOM;
+            }
+
+            TypeMirror typeFrame =
+                    TypesUtils.greatestLowerBound(
+                            getTypeFrameFromAnnotation(anno1),
+                            getTypeFrameFromAnnotation(anno2),
+                            processingEnv);
+            if (typeFrame.getKind() == TypeKind.ERROR
+                    || typeFrame.getKind() == TypeKind.INTERSECTION) {
+                return FBCBOTTOM;
+            }
+
+            if (underinit1 && underinit2) {
+                return createUnderInitializationAnnotation(typeFrame);
+            }
+
+            assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
+            return createUnderInitializationAnnotation(typeFrame);
         }
     }
 }
