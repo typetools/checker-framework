@@ -311,6 +311,20 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns the annotations on this type; mutations affect this object, because the return type
+     * is an alias of the {@code annotations} field. It does not include annotations in deep types
+     * (type arguments, array components, etc).
+     *
+     * <p>The returned set should not be modified, but for efficiency reasons modification is not
+     * prevented. Modifications might break invariants.
+     *
+     * @return the set of the annotations on this; mutations affect this object
+     */
+    protected final Set<AnnotationMirror> getAnnotationsField() {
+        return annotations;
+    }
+
+    /**
      * Returns the single annotation on this type. It does not include annotations in deep types
      * (type arguments, array components, etc).
      *
@@ -330,20 +344,6 @@ public abstract class AnnotatedTypeMirror {
             throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
         }
         return annotations.iterator().next();
-    }
-
-    /**
-     * Returns the annotations on this type.
-     *
-     * <p>It does not include annotations in deep types (type arguments, array components, etc).
-     *
-     * <p>The returned set should not be modified, but for efficiency reasons modification is not
-     * prevented. Modifications might break invariants.
-     *
-     * @return the set of the annotations on this, directly
-     */
-    protected final Set<AnnotationMirror> getAnnotationsField() {
-        return annotations;
     }
 
     /**
