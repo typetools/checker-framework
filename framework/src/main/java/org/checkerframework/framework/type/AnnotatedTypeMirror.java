@@ -2080,7 +2080,9 @@ public abstract class AnnotatedTypeMirror {
                 Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (bounds != null) {
                     for (AnnotatedTypeMirror bound : bounds) {
-                        bound.replaceAnnotations(newAnnos);
+                        if (bound.getKind() != TypeKind.TYPEVAR) {
+                            bound.replaceAnnotations(newAnnos);
+                        }
                     }
                 }
             }
