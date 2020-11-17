@@ -847,6 +847,12 @@ public final class TypesUtils {
      * <p>This is a wrapper around {@link com.sun.tools.javac.code.Types#subst(Type,
      * com.sun.tools.javac.util.List, com.sun.tools.javac.util.List)}
      *
+     * @param type type to substitute
+     * @param typeVariables type variables that should be replaced with the type mirror at the same
+     *     index of {@code typeArgs}
+     * @param typeArgs type mirrors that should replace the type variable at the same index of
+     *     {@code typeVariables}
+     * @param env processing environment
      * @return a new type mirror with the same type as {@code type} where all the type variables in
      *     {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
      */
