@@ -902,9 +902,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         String reason = r.second;
         @SuppressWarnings("compilermessages")
         @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
-        if (reason.equals("call") || reason.equals("call.method")) {
-            MethodInvocationTree mitree = (MethodInvocationTree) r.first;
-            checker.reportError(r.first, msgKey, mitree.getMethodSelect());
+        if (reason.equals("call")) {
+            if (r.first.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+                checker.reportError(r.first, msgKey, mitree.getMethodSelect());
+            } else {
+                NewClassTree nctree = (NewClassTree) r.first;
+                checker.reportError(r.first, msgKey, nctree.getIdentifier());
+            }
         } else {
             checker.reportError(r.first, msgKey);
         }

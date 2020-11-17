@@ -1109,9 +1109,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Sets the parameter types of this executable type.
+         * Sets the parameter types of this executable type, excluding the receiver.
          *
-         * @param params the parameter types
+         * @param params the parameter types, excluding the receiver
          */
         void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
             paramTypes.clear();
@@ -1119,9 +1119,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Returns the parameter types of this executable type.
+         * Returns the parameter types of this executable type, excluding the receiver.
          *
-         * @return the parameter types of this executable type
+         * @return the parameter types of this executable type, excluding the receiver
          */
         public List<AnnotatedTypeMirror> getParameterTypes() {
             if (paramTypes.isEmpty()
