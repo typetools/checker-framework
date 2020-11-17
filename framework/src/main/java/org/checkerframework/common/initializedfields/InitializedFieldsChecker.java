@@ -1,5 +1,6 @@
 package org.checkerframework.common.initializedfields;
 
+import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.accumulation.AccumulationChecker;
 
 /**
