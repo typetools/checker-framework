@@ -560,7 +560,10 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 processClass(javacTree, node);
             }
 
-            visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
+            if (javacTree.getTypeParameters().size() == node.getTypeParameters().size()) {
+                visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
+            }
+
             if (javacTree.getKind() == Kind.CLASS) {
                 if (javacTree.getExtendsClause() == null) {
                     assert node.getExtendedTypes().isEmpty();
@@ -673,6 +676,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 continue;
             }
 
+            if (!hasNextJavac) {
+                System.out.println("Member mismatch");
+                System.out.println("javac members: " + javacMembers);
+                System.out.println("JavaParser members: " + javaParserMembers);
+            }
             assert hasNextJavac;
             assert hasNextJavaParser;
             javacMember.accept(this, javaParserMember);

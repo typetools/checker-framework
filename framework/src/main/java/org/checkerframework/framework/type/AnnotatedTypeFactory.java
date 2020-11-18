@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.Node;
@@ -682,9 +683,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param root the new compilation unit to use
      */
+    public void setRoot(@Nullable CompilationUnitTree root) {
+        setRoot(root, true);
+    }
+
+    /**
+     * Set the CompilationUnitTree that should be used.
+     *
+     * @param root the new compilation unit to use
+     * @param canCheckVisitor true if the visitor that verifies the javac tree can be visited with
+     *     its corresponding JavaParser AST can be run. The check only occurs if
+     *     -AcheckJavaParserVisitor is passed on the command line as well.
+     */
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void setRoot(@Nullable CompilationUnitTree root) {
+    public void setRoot(@Nullable CompilationUnitTree root, boolean canCheckVisitor) {
         if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() != Kind.CLASS) {
@@ -861,7 +874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 e.printStackTrace();
             }
         }
-        if (checker.hasOption("checkJavaParserVisitor") && root != null) {
+        if (canCheckVisitor && checker.hasOption("checkJavaParserVisitor") && root != null) {
             System.out.println("checking root " + root.getSourceFile().getName());
             Map<Tree, Node> treePairs = new HashMap<>();
             try {
@@ -887,6 +900,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
             } catch (IOException e) {
                 throw new BugInCF("Error reading Java source file", e);
+            } catch (ParseProblemException e) {
+                // JavaParser crashes when encountering
+                // https://github.com/javaparser/javaparser/issues/2879
+                // Don't check those files.
+                // TODO: Remove this check when using a JavaParser version with fix
             }
         }
 

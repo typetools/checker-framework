@@ -258,7 +258,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
 
         for (GenericAnnotatedTypeFactory<?, ?, ?, ?> defaultValueAtypeFactory :
                 defaultValueAtypeFactories) {
-            defaultValueAtypeFactory.setRoot(root);
+            defaultValueAtypeFactory.setRoot(root, false);
 
             AnnotatedTypeMirror fieldType = defaultValueAtypeFactory.getAnnotatedType(field);
             AnnotatedTypeMirror defaultValueType =

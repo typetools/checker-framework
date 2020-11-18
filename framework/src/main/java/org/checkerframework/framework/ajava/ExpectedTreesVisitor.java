@@ -302,7 +302,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         ClassTree body = tree.getClassBody();
         visit(body.getModifiers(), p);
         visit(body.getTypeParameters(), p);
-        visit(body.getExtendsClause(), p);
         visit(body.getImplementsClause(), p);
         for (Tree member : body.getMembers()) {
             // Constructors cannot be declared in an anonymous class, so don't add them.
