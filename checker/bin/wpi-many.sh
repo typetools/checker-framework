@@ -82,6 +82,7 @@ if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
+JAVA_HOME_BACKUP="${JAVA_HOME}"
 export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
@@ -193,5 +194,7 @@ if [ -n "${results_available}" ]; then
 
     rm -f "${listpath}"
 fi
+
+export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
 echo "Exiting wpi-many.sh. The output of this script was purely informational. Results were placed in ${OUTDIR}-results/."

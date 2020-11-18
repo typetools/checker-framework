@@ -53,8 +53,6 @@ if [ ! -d "${JAVA11_HOME}" ]; then
     exit 1
 fi
 
-JAVA_HOME="${JAVA11_HOME}"
-
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
@@ -82,6 +80,9 @@ fi
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
+
+JAVA_HOME_BACKUP="${JAVA_HOME}"
+export JAVA_HOME="${JAVA11_HOME}"
 
 function configure_and_exec_dljc {
 
@@ -194,5 +195,7 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
 fi
 
 popd || exit 1
+
+export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
 echo "Exiting wpi.sh. The output of this script was purely informational. Results were placed in ${DIR}/dljc-out/."
