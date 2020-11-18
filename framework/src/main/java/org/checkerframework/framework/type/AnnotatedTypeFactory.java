@@ -3680,9 +3680,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else if (ElementUtils.isTypeDeclaration(elt)) {
                 inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
             }
-
-            // Add the element and its annotations to the cache.
-            cacheDeclAnnos.put(elt, results);
         }
 
         if (currentFileAjavaTypes != null && !ajavaTypes.isParsing()) {
@@ -3697,9 +3694,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else if (ElementUtils.isTypeDeclaration(elt)) {
                 inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
             }
-
-            // Add the element and its annotations to the cache.
-            cacheDeclAnnos.put(elt, results);
         }
 
         // If parsing stub files, return the annotations in the element.
@@ -3715,7 +3709,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else if (ElementUtils.isTypeDeclaration(elt)) {
                 inheritOverriddenDeclAnnosFromTypeDecl(elt.asType(), results);
             }
+        }
 
+        if (!stubTypes.isParsing() && !ajavaTypes.isParsing()) {
             // Add the element and its annotations to the cache.
             cacheDeclAnnos.put(elt, results);
         }
