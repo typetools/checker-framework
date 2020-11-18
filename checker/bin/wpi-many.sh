@@ -26,6 +26,8 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
+echo "Starting wpi-many.sh. The output of this script is purely informational."
+
 # check required arguments and environment variables:
 
 # testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
@@ -84,7 +86,7 @@ export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
-echo "Starting wpi-many.sh. The output of this script is purely informational. Results will be placed in ${OUTDIR}-results/."
+echo "Finished configuring wpi-many.sh. Results will be placed in ${OUTDIR}-results/."
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 

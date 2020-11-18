@@ -25,6 +25,8 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
+echo "Starting wpi.sh. The output of this script is purely informational."
+
 # check required arguments and environment variables:
 
 # Testing for JAVA8_HOME, not a misspelling of JAVA_HOME.
@@ -166,7 +168,7 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
-echo "Starting wpi.sh. The output of this script is purely informational. Results will be placed in ${DIR}/dljc-out/."
+echo "Finished configuring wpi.sh. Results will be placed in ${DIR}/dljc-out/."
 
 pushd "${DIR}" || exit 1
 
