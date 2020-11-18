@@ -32,6 +32,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
@@ -334,7 +336,7 @@ public class AnnotationUtils {
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
         Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
         Set<ExecutableElement> sortedElements =
-                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleName));
+                new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
         sortedElements.addAll(
                 ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
@@ -807,6 +809,44 @@ public class AnnotationUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Get the element with the name {@code elementName} of the annotation {@code anno}. The element
+     * has type {@code expectedType} or array of {@code expectedType}.
+     *
+     * <p>Parameter useDefaults is used to determine whether default values should be used for
+     * annotation values. Finding defaults requires more computation, so should be false when no
+     * defaulting is needed.
+     *
+     * @param anno the annotation to disassemble
+     * @param elementName the name of the element to access
+     * @param expectedType the expected type used to cast the return type
+     * @param <T> the class of the expected type
+     * @param useDefaults whether to apply default values to the element
+     * @return the value of the element with the given name; it is a new list, so it is safe for
+     *     clients to side-effect
+     */
+    public static <T> List<T> getElementValueArrayOrSingleton(
+            AnnotationMirror anno,
+            CharSequence elementName,
+            Class<T> expectedType,
+            boolean useDefaults) {
+        for (ExecutableElement annoElement :
+                ElementFilter.methodsIn(
+                        anno.getAnnotationType().asElement().getEnclosedElements())) {
+            if (annoElement.getSimpleName().contentEquals(elementName)) {
+                TypeMirror elementType = annoElement.getReturnType();
+                if (elementType.getKind() == TypeKind.ARRAY) {
+                    return getElementValueArray(anno, elementName, expectedType, useDefaults);
+                } else {
+                    List<T> result = new ArrayList<>(1);
+                    result.add(getElementValue(anno, elementName, expectedType, useDefaults));
+                    return result;
+                }
+            }
+        }
+        throw new BugInCF("no " + elementName + " element in " + anno);
     }
 
     /**

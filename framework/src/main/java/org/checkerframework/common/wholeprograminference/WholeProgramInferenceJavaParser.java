@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.ajava.AjavaUtils;
+import org.checkerframework.framework.ajava.AnnotationConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -424,6 +426,29 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     rhsATM,
                     overriddenMethodReturnType,
                     TypeUseLocation.RETURN);
+        }
+    }
+
+    @Override
+    public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
+
+        // Do not infer types for library code, only for type-checked source code.
+        if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+            return;
+        }
+
+        String file = addClassesForElement(methodElt);
+        String className = getEnclosingClassName(methodElt);
+        ClassOrInterfaceWrapper clazz = classes.get(className);
+        CallableDeclarationWrapper method =
+                clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+        if (method.declarationAnnotations == null) {
+            method.declarationAnnotations = new LinkedHashSet<AnnotationMirror>();
+        }
+
+        boolean isNewAnnotation = method.declarationAnnotations.add(anno);
+        if (isNewAnnotation) {
+            modifiedFiles.add(file);
         }
     }
 
@@ -1010,6 +1035,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * accessed and each parameter is initialized the first time it's accessed.
          */
         public @Nullable List<@Nullable AnnotatedTypeMirror> parameterTypes;
+        /** Annotations on the callable declaration. */
+        public @Nullable Set<AnnotationMirror> declarationAnnotations;
 
         /**
          * Creates a wrapper for the given method or constructor declaration.
@@ -1021,6 +1048,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             this.returnType = null;
             this.receiverType = null;
             this.parameterTypes = null;
+            this.declarationAnnotations = null;
         }
 
         /**
@@ -1102,6 +1130,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * JavaParser locations.
          */
         public void transferAnnotations() {
+            if (declarationAnnotations != null) {
+                for (AnnotationMirror annotation : declarationAnnotations) {
+                    declaration.addAnnotation(
+                            AnnotationConversion.annotationMirrorToAnnotationExpr(annotation));
+                }
+            }
+
             if (returnType != null) {
                 // If a return type exists, then the declaration must be a method, not a
                 // constructor.

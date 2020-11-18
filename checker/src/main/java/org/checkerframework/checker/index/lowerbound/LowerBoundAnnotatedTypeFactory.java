@@ -2,6 +2,7 @@ package org.checkerframework.checker.index.lowerbound;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -175,7 +176,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // If dataflow shouldn't be used to compute this type, then do not use the result from
         // the Value Checker, because dataflow is used to compute that type.  (Without this,
         // "int i = 1; --i;" fails.)
-        if (iUseFlow && tree != null && TreeUtils.isExpressionTree(tree)) {
+        if (tree != null
+                && TreeUtils.isExpressionTree(tree)
+                && (iUseFlow || tree instanceof LiteralTree)) {
             AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             addLowerBoundTypeFromValueType(valueType, type);
         }

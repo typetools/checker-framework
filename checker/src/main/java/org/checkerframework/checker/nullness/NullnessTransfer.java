@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -202,17 +203,18 @@ public class NullnessTransfer
             if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
+                // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.
+                MethodTree methodTree = analysis.getContainingMethod(secondNode.getTree());
                 ExecutableElement methodElem =
-                        TreeUtils.elementFromDeclaration(
-                                analysis.getContainingMethod(secondNode.getTree()));
+                        methodTree == null ? null : TreeUtils.elementFromDeclaration(methodTree);
                 if (notEqualTo) {
                     elseStore.setPolyNullNull(true);
-                    if (polyNullIsNonNull(methodElem, thenStore)) {
+                    if (methodElem != null && polyNullIsNonNull(methodElem, thenStore)) {
                         thenStore.setPolyNullNonNull(true);
                     }
                 } else {
                     thenStore.setPolyNullNull(true);
-                    if (polyNullIsNonNull(methodElem, elseStore)) {
+                    if (methodElem != null && polyNullIsNonNull(methodElem, elseStore)) {
                         elseStore.setPolyNullNonNull(true);
                     }
                 }

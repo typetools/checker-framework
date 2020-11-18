@@ -77,7 +77,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String pkg = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -110,7 +110,7 @@ public class StubGenerator {
             return;
         }
 
-        String newPackage = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String newPackage = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!newPackage.equals("")) {
             currentPackage = newPackage;
             currentIndention = "    ";
@@ -131,7 +131,7 @@ public class StubGenerator {
         }
 
         String newPackageName =
-                ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
+                ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(typeElement));
         boolean newPackage = !newPackageName.equals(currentPackage);
         currentPackage = newPackageName;
 

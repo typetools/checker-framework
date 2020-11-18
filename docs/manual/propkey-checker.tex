@@ -132,17 +132,19 @@ does not fail at run time.
 
 The Internationalization Checker supports two annotations:
 
-\begin{enumerate}
-\item \refqualclass{checker/i18n/qual}{Localized}: indicates that the qualified
+\begin{description}
+\item[\refqualclass{checker/i18n/qual}{Localized}]
+indicates that the qualified
 \code{CharSequence} is a message that has been localized and/or formatted with
 respect to the used locale.
 
-\item \refqualclass{checker/i18n/qual}{LocalizableKey}: indicates that the
+\item[\refqualclass{checker/i18n/qual}{LocalizableKey}]
+indicates that the
 qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
 gets checked by the general Property Key Checker.
-\end{enumerate}
+\end{description}
 
 You may need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.

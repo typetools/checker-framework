@@ -4,8 +4,8 @@
 This chapter discusses how to run a checker from the command line, from a
 build system, or from an IDE\@.  You can skip to the appropriate section:
 
-% Keep this list up to date with the sections of this chapter and with TWO
-% copies of the list in file introduction.tex .
+% Keep this list up to date with the sections of this chapter and with a
+% copy of the list in file introduction.tex .
 \begin{itemize}
 \item Android (Section~\ref{android})
 \item Android Gradle Plugin (Section~\ref{android-gradle})
@@ -20,6 +20,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
+\item sbt (Section~\ref{sbt})
 \item tIDE (Section~\ref{tide})
 \end{itemize}
 
@@ -524,7 +525,7 @@ Different arguments to \<javac> are required for JDK 8
 (Section~\ref{java8-install}) and for JDK 9+ (Section~\ref{java11-install}).
 
 
-\subsectionAndLabel{JDK 8}{java8-install}
+\subsectionAndLabel{JDK 8}{javac-jdk8}
 
 This section shows what arguments to pass to javac to run the Checker
 Framework, if you are using JDK 8.
@@ -577,12 +578,16 @@ source code is Java 8 and that Java 8 bytecode is created.
 \end{enumerate}
 
 
-\subsectionAndLabel{JDK 11}{java11-install}
+\subsectionAndLabel{JDK 11}{javac-jdk11}
 
 This section shows what arguments to pass to javac to run the Checker Framework using JDK 11.  These
 instructions should work on JDK 9 or later, but we only test with JDK 11.
 
-For compiling non-modularized code:
+
+\subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
+
+To compile non-modularized code:
+
 \begin{Verbatim}
 javac \
 -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
@@ -606,7 +611,10 @@ WARNING: Use --illegal-access=warn to enable warnings of further illegal reflect
 WARNING: All illegal access operations will be denied in a future release
 \end{Verbatim}
 
-For compiling a module, first add \<requires
+
+\subsubsectionAndLabel{Modularized code}{javac-jdk11-modularized}
+
+To compile a module, first add \<requires
 org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
 Framework inserts inferred annotations into bytecode even if none appear in source code,
 so you must do this even if you write no annotations in your code.
@@ -1264,6 +1272,53 @@ now appear in the build console. However, annotation processor output
 will not appear in the editor.
 
 \end{enumerate}
+
+
+\sectionAndLabel{sbt}{sbt}
+
+\ahref{https://www.scala-sbt.org/}{sbt} is a build tool for
+Scala, Java, and more.
+
+Adjust the \<-processor> command-line argument for the processor(s)
+you wish to run (see Section~\ref{running}).
+
+
+\subsectionAndLabel{JDK 8}{sbt-jdk8}
+
+\begin{Verbatim}
+javacOptions ++= Seq(
+    "-J-Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar",
+    "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker",
+    "-source 8", "-target 8"
+  )
+\end{Verbatim}
+
+
+\subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
+
+\begin{Verbatim}
+javacOptions ++= Seq(
+    "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker"
+  )
+\end{Verbatim}
+
+
+\subsectionAndLabel{For modularized code}{sbt-modularized-code}
+
+\begin{Verbatim}
+For compiling modularized code:
+javacOptions ++= Seq(
+    "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
+    "--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
+    "-processor org.checkerframework.checker.nullness.NullnessChecker"
+  )
+\end{Verbatim}
 
 
 \sectionAndLabel{tIDE}{tide}

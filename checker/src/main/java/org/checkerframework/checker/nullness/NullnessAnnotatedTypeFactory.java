@@ -17,7 +17,6 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -296,17 +296,11 @@ public class NullnessAnnotatedTypeFactory
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates =
+        List<VariableTree> result =
                 super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
-        List<VariableTree> result = new ArrayList<>();
-        for (VariableTree c : candidates) {
-            AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
-            if (!isPrimitive) {
-                // primitives do not need to be initialized
-                result.add(c);
-            }
-        }
+        // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
+        // warning when they are not initialized.
+        result.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
         return result;
     }
 
@@ -647,7 +641,8 @@ public class NullnessAnnotatedTypeFactory
                 QualifierKind glbKind) {
             if (!qualifierKind1.isInSameHierarchyAs(NULLABLE)
                     || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
-                return FBCBOTTOM;
+                return this.greatestLowerBoundInitialization(
+                        a1, qualifierKind1, a2, qualifierKind2);
             }
             throw new BugInCF(
                     "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
@@ -717,5 +712,14 @@ public class NullnessAnnotatedTypeFactory
             am = canonical;
         }
         return AnnotationUtils.areSameByName(am, NULLABLE);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
+        if (getAnnotationByClass(result.getAnnotations(), Nullable.class) != null) {
+            result.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+        return result;
     }
 }

@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
@@ -331,7 +332,17 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         public String visitTypeVariable(
                 AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            sb.append(type.actualType);
+            if (TypesUtils.isCaptured(type.actualType)) {
+                String actualType = type.actualType.toString();
+                // actualType has this form: "capture#826 of ? extends java.lang.Object".
+                // We output only the "capture#826" part.
+                // NOTE: The number is the hash code of the captured type, so it's nondeterministic,
+                // but it is still important to print it in order to tell the difference between two
+                // captured types.
+                sb.append(actualType, 0, actualType.indexOf(" of "));
+            } else {
+                sb.append(type.actualType);
+            }
 
             if (!visiting.contains(type)) {
                 if (type.isDeclaration() && currentPrintInvisibleSetting) {

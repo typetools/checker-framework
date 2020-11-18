@@ -98,7 +98,7 @@ public abstract class CFAbstractTransfer<
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements ForwardTransferFunction<V, S> {
 
-    /** The analysis class this store belongs to. */
+    /** The analysis used by this transfer function. */
     protected final CFAbstractAnalysis<V, S, T> analysis;
 
     /**
@@ -110,16 +110,20 @@ public abstract class CFAbstractTransfer<
     /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
+    /**
+     * Create a CFAbstractTransfer.
+     *
+     * @param analysis the analysis used by this transfer function
+     */
     protected CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
-        this.analysis = analysis;
-        this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        this.infer = analysis.checker.hasOption("infer");
+        this(analysis, false);
     }
 
     /**
      * Constructor that allows forcing concurrent semantics to be on for this instance of
      * CFAbstractTransfer.
      *
+     * @param analysis the analysis used by this transfer function
      * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
      *     false, concurrent semantics are turned off by default, but the user can still turn them
      *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
@@ -538,9 +542,9 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         FlowExpressionContext flowExprContext = null;
-        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
             String expression = p.expression;
@@ -579,7 +583,7 @@ public abstract class CFAbstractTransfer<
         // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
         if (analysis.dependentTypesHelper != null) {
             return analysis.dependentTypesHelper.standardizeAnnotation(
-                    flowExprContext, path, annoFromContract, false);
+                    flowExprContext, path, annoFromContract, false, false);
             // BaseTypeVisitor checks the validity of the annotaiton. Errors are reported there
             // when called from BaseTypeVisitor.checkContractsAtMethodDeclaration().
         } else {
@@ -1092,11 +1096,16 @@ public abstract class CFAbstractTransfer<
     /**
      * Add information based on all postconditions of method {@code n} with tree {@code tree} and
      * element {@code method} to the store {@code store}.
+     *
+     * @param n a method call
+     * @param store a store
+     * @param methodElement the method being called
+     * @param tree the tree for method call {@code n}
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
 
@@ -1110,9 +1119,9 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
         Set<ConditionalPostcondition> conditionalPostconditions =
-                contracts.getConditionalPostconditions(methodElement);
+                contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(
                 n, tree, thenStore, elseStore, conditionalPostconditions);
     }
@@ -1160,7 +1169,8 @@ public abstract class CFAbstractTransfer<
                 // report errors here
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];
-                    args[0] = ElementUtils.getSimpleName(TreeUtils.elementFromUse(n.getTree()));
+                    args[0] =
+                            ElementUtils.getSimpleSignature(TreeUtils.elementFromUse(n.getTree()));
                     System.arraycopy(e.args, 0, args, 1, e.args.length);
                     analysis.checker.reportError(tree, "flowexpr.parse.error.postcondition", args);
                 } else {

@@ -89,6 +89,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -146,6 +147,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to handle dependent type annotations */
     protected DependentTypesHelper dependentTypesHelper;
+
+    /** to handle method pre- and postconditions */
+    protected ContractsUtils contractsUtils;
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
@@ -306,6 +310,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 }
             }
         }
+
+        contractsUtils = createContractsUtils();
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -564,6 +570,24 @@ public abstract class GenericAnnotatedTypeFactory<
 
     public DependentTypesHelper getDependentTypesHelper() {
         return dependentTypesHelper;
+    }
+
+    /**
+     * Creates an {@link ContractsUtils} and returns it.
+     *
+     * @return a new {@link ContractsUtils}
+     */
+    protected ContractsUtils createContractsUtils() {
+        return new ContractsUtils(this);
+    }
+
+    /**
+     * Returns the helper for method pre- and postconditions.
+     *
+     * @return the helper for method pre- and postconditions
+     */
+    public ContractsUtils getContractsUtils() {
+        return contractsUtils;
     }
 
     @Override
@@ -2176,5 +2200,20 @@ public abstract class GenericAnnotatedTypeFactory<
             default:
                 throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
         }
+    }
+
+    /**
+     * Return the type of the default value of the given type. The default value is 0, false, or
+     * null.
+     *
+     * @param typeMirror a type
+     * @return the annotated type of {@code type}'s default value
+     */
+    // TODO: Cache results to avoid recomputation.
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        AnnotatedTypeMirror defaultValue = AnnotatedTypeMirror.createType(typeMirror, this, false);
+        addComputedTypeAnnotations(
+                TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
+        return defaultValue;
     }
 }

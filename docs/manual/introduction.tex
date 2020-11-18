@@ -11,13 +11,14 @@ guarantee that those errors do not occur.
 The Checker Framework comes with checkers for specific types of errors:
 
 \begin{enumerate}
+% If you update this list, also update the list in advanced-features.tex .
 
 \item
   \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
-  fields are set in the constructor (see
+  \<@NonNull> fields are set in the constructor (see
   \chapterpageref{initialization-checker})
 \item
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
@@ -81,9 +82,6 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
-  expressions have aliases (see \chapterpageref{aliasing-checker})
-\item
   \ahrefloc{purity-checker}{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
@@ -94,6 +92,13 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{reflection-resolution}{Reflection Checker} to determine
   whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
   (see \chapterpageref{reflection-resolution})
+\item
+  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
@@ -378,8 +383,9 @@ You can also run a checker from within your favorite IDE or build system.  See
 Chapter~\ref{external-tools} for details about build tools such as
 Ant (Section~\ref{ant-task}),
 Buck (Section~\ref{buck}),
-Gradle (Section~\ref{gradle}), and
-Maven (Section~\ref{maven});
+Gradle (Section~\ref{gradle}),
+Maven (Section~\ref{maven}), and
+sbt (Section~\ref{sbt});
 IDEs such as
 Eclipse (Section~\ref{eclipse}),
 IntelliJ IDEA (Section~\ref{intellij}),
@@ -606,6 +612,9 @@ More sound (strict) checking: enable errors that are disabled by default
   Do not ignore subtype tests for type arguments that were inferred for a
   raw type. Must also use \<-AconservativeUninferredTypeArguments>.  See
   Section~\ref{generics-raw-types}.
+\item \<-processor org.checkerframework.common.initializedfields.InitializedFieldsChecker,...>
+  Ensure that all fields are initialized by the constructor.  See
+  \chapterpageref{initialized-fields-checker}.
 \end{itemize}
 
 Type-checking modes:  enable/disable functionality
@@ -634,11 +643,11 @@ Type-checking modes:  enable/disable functionality
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
-  issued by the checker.  This may issue false positive warnings about
-  \<@SuppressWarnings> strings without a \<\emph{checkername}:> prefix
-  (Section~\ref{suppresswarnings-annotation-syntax}).  You can use the
-  \<-ArequirePrefixInWarningSuppressions> command-line argument to ensure
-  your \<@SuppressWarnings> always use a \<\emph{checkername}:> prefix.
+  issued by the checker.  This only warns about
+  \<@SuppressWarnings> strings that contain a checker name
+  (Section~\ref{suppresswarnings-annotation-syntax}).  The
+  \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
+  that all \<@SuppressWarnings> strings contain a checker name.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the string in a warning suppression annotation begin with a checker
   name.  Otherwise, the suppress warning annotation does not
@@ -669,7 +678,7 @@ Partially-annotated libraries
   If both a stub file and a source file for a class are available, trust
   both and use the greatest lower bound of their annotations. The default
   behavior (without this flag) is to ignore types from the stub file if
-  source is available.
+  source is available. See Section~\ref{stub-multiple-specifications}.
   % note to maintainers: GLB of the two types was chosen to support
   % using this flag in combination with \<-Ainfer=stubs>.
 % This item is repeated above:
@@ -827,7 +836,7 @@ annotation processing including all pluggable type-checking.
 % the standard javac. Should this be explained?
 
 Ordinarily, javac's \code{-processor} flag requires fully-qualified class names.
-When running a built-in checker, you may
+When using the Checker Framework javac wrapper (Section~\ref{javac-wrapper}), you may
 omit the package name and the \<Checker> suffix.
 The following three commands are equivalent:
 
@@ -1474,7 +1483,7 @@ same methodology in different words.
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
-% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv
+% LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
@@ -1506,4 +1515,5 @@ same methodology in different words.
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
-%%  LocalWords:  AmergeStubsWithSource MyBatis
+%%  LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
+% LocalWords:  specification''
