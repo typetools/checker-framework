@@ -176,9 +176,9 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
-echo "Finished configuring wpi.sh. Results will be placed in ${DIR}/dljc-out/."
+echo "Finished configuring wpi.sh."
 
-rm -f .cannot-run-wpi
+rm -f "${DIR}/.cannot-run-wpi"
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
 export JAVA_HOME="${JAVA11_HOME}"
@@ -200,8 +200,6 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     touch "${DIR}/.cannot-run-wpi"
 fi
 
-popd || exit 1
-
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
-echo "Exiting wpi.sh. The output of this script was purely informational. Results were placed in ${DIR}/dljc-out/."
+echo "Exiting wpi.sh."
