@@ -133,8 +133,7 @@ function configure_and_exec_dljc {
   # ensure the project is clean before invoking DLJC
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
 
-  tmpfile=$(mktemp /tmp/dljc-output.XXXXXX)
-  echo "About to run dljc with stdout to $tmpfile"
+  tmpfile=$(mktemp "${DIR}/dljc-output/dljc-stdout.XXXXXX")
 
   # This command also includes "clean"; I'm not sure why it is necessary.
   { echo "JAVA_HOME: ${JAVA_HOME}"; \
