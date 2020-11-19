@@ -133,6 +133,7 @@ function configure_and_exec_dljc {
   # ensure the project is clean before invoking DLJC
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
 
+  mkdir -p "${DIR}/dljc-out"
   tmpfile=$(mktemp "${DIR}/dljc-out/dljc-stdout.XXXXXX")
 
   # This command also includes "clean"; I'm not sure why it is necessary.
