@@ -173,11 +173,9 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 echo "Starting wpi.sh. The output of this script is purely informational. Results will be placed in ${DIR}/dljc-out/."
 
-pushd "${DIR}" || exit 1
+rm -f rm -f "${DIR}/.cannot-run-wpi"
 
-rm -f .cannot-run-wpi
-
-configure_and_exec_dljc "$@"
+(cd "${DIR}" && configure_and_exec_dljc "$@")
 
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
       # if running under Java 11 fails, try to run
@@ -193,9 +191,7 @@ fi
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     echo "dljc could not run the build successfully."
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
-    touch .cannot-run-wpi
+    touch "${DIR}/.cannot-run-wpi"
 fi
-
-popd || exit 1
 
 echo "Exiting wpi.sh. The output of this script was purely informational. Results were placed in ${DIR}/dljc-out/."
