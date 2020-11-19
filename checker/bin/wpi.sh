@@ -81,9 +81,6 @@ if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
-JAVA_HOME_BACKUP="${JAVA_HOME}"
-export JAVA_HOME="${JAVA11_HOME}"
-
 function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
@@ -175,6 +172,8 @@ pushd "${DIR}" || exit 1
 
 rm -f .cannot-run-wpi
 
+JAVA_HOME_BACKUP="${JAVA_HOME}"
+export JAVA_HOME="${JAVA11_HOME}"
 configure_and_exec_dljc "$@"
 
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
@@ -183,7 +182,6 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     export JAVA_HOME="${JAVA8_HOME}"
     echo "couldn't build using Java 11; trying Java 8"
     configure_and_exec_dljc "$@"
-    export JAVA_HOME="${JAVA11_HOME}"
 fi
 
 # support wpi-many.sh's ability to delete projects without usable results
