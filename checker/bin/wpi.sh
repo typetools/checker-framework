@@ -120,7 +120,12 @@ function configure_and_exec_dljc {
       return
   fi
 
+  PATH_BACKUP="${PATH}"
+  export PATH="${JAVA_HOME}/bin:${PATH}"
+
   DLJC_CMD="${DLJC} -t wpi $* -- ${BUILD_CMD}"
+
+  export PATH="${PATH_BACKUP}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
