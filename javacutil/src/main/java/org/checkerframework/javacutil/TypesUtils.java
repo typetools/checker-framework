@@ -8,8 +8,10 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -836,5 +838,45 @@ public final class TypesUtils {
     public static TypeKindUtils.PrimitiveConversionKind getPrimitiveConversionKind(
             PrimitiveType from, PrimitiveType to) {
         return TypeKindUtils.getPrimitiveConversionKind(from.getKind(), to.getKind());
+    }
+
+    /**
+     * Returns a new type mirror with the same type as {@code type} where all the type variables in
+     * {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
+     *
+     * <p>This is a wrapper around {@link com.sun.tools.javac.code.Types#subst(Type,
+     * com.sun.tools.javac.util.List, com.sun.tools.javac.util.List)}.
+     *
+     * @param type type to do substitution in
+     * @param typeVariables type variables that should be replaced with the type mirror at the same
+     *     index of {@code typeArgs}
+     * @param typeArgs type mirrors that should replace the type variable at the same index of
+     *     {@code typeVariables}
+     * @param env processing environment
+     * @return a new type mirror with the same type as {@code type} where all the type variables in
+     *     {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}
+     */
+    public static TypeMirror substitute(
+            TypeMirror type,
+            List<? extends TypeMirror> typeVariables,
+            List<? extends TypeMirror> typeArgs,
+            ProcessingEnvironment env) {
+
+        List<Type> newP = new ArrayList<>();
+        for (TypeMirror typeVariable : typeVariables) {
+            newP.add((Type) typeVariable);
+        }
+
+        List<Type> newT = new ArrayList<>();
+        for (TypeMirror typeMirror : typeArgs) {
+            newT.add((Type) typeMirror);
+        }
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        return types.subst(
+                (Type) type,
+                com.sun.tools.javac.util.List.from(newP),
+                com.sun.tools.javac.util.List.from(newT));
     }
 }

@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 public abstract class AnnotatedTypeMirror {
 
     /**
-     * Creates the appropriate AnnotatedTypeMirror specific wrapper for the provided type.
+     * Creates an AnnotatedTypeMirror for the provided type. The result contains no annotations.
      *
      * @param type the underlying type for the resulting AnnotatedTypeMirror
      * @param atypeFactory the type factory that will build the result
@@ -846,7 +846,7 @@ public abstract class AnnotatedTypeMirror {
         private boolean declaration;
 
         /**
-         * Constructor for this type.
+         * Constructor for this type. The result contains no annotations.
          *
          * @param type underlying kind of this type
          * @param atypeFactory the AnnotatedTypeFactory used to create this type
@@ -1439,7 +1439,7 @@ public abstract class AnnotatedTypeMirror {
             String boundDescription, AnnotatedTypeMirror boundType, AnnotatedTypeMirror thisType) {
         if (boundType == null || boundType.isDeclaration()) {
             throw new BugInCF(
-                    "%s bounds should never be null or a declaration.%s  new bound = %s%s  type = %s",
+                    "%s bounds should never be null or a declaration.%n  new bound = %s%n  type = %s",
                     boundDescription, boundType, thisType);
         }
     }
@@ -2048,7 +2048,8 @@ public abstract class AnnotatedTypeMirror {
         protected List<AnnotatedTypeMirror> bounds;
 
         /**
-         * Creates an {@code AnnotatedIntersectionType} with the underlying type {@code type}.
+         * Creates an {@code AnnotatedIntersectionType} with the underlying type {@code type}. The
+         * result contains no annotations.
          *
          * @param type underlying kind of this type
          * @param atypeFactory the factory used to construct this intersection type
@@ -2080,7 +2081,9 @@ public abstract class AnnotatedTypeMirror {
                 Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (bounds != null) {
                     for (AnnotatedTypeMirror bound : bounds) {
-                        bound.replaceAnnotations(newAnnos);
+                        if (bound.getKind() != TypeKind.TYPEVAR) {
+                            bound.replaceAnnotations(newAnnos);
+                        }
                     }
                 }
             }
