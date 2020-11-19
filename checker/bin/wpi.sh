@@ -64,7 +64,7 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
 fi
 
 if [ "x${DIR}" = "x" ]; then
-    echo "wpi.sh: no -d argument supplied, using the current directory."
+    # echo "wpi.sh: no -d argument supplied, using the current directory."
     DIR=$(pwd)
 fi
 
@@ -162,16 +162,16 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
 if [ -d "${SCRIPTDIR}/.do-like-javac" ]; then
-    git -C "${SCRIPTDIR}/.do-like-javac" pull
+    git -C "${SCRIPTDIR}/.do-like-javac" pull --quiet
 else
-    git -C "${SCRIPTDIR}" clone https://github.com/kelloggm/do-like-javac --depth 1 .do-like-javac || (echo "Cannot clone do-like-javac" && exit 1)
+    git -C "${SCRIPTDIR}" clone https://github.com/kelloggm/do-like-javac --depth 1 --quiet .do-like-javac || (echo "Cannot clone do-like-javac" && exit 1)
 fi
 
 DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
-echo "Starting wpi.sh. The output of this script is purely informational. Results will be placed in ${DIR}/dljc-out/."
+echo "Starting wpi.sh. Results will be placed in ${DIR}/dljc-out/."
 
 rm -f rm -f "${DIR}/.cannot-run-wpi"
 
@@ -194,4 +194,4 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     touch "${DIR}/.cannot-run-wpi"
 fi
 
-echo "Exiting wpi.sh. The output of this script was purely informational. Results were placed in ${DIR}/dljc-out/."
+echo "Exiting wpi.sh. Results were placed in ${DIR}/dljc-out/."
