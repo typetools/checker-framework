@@ -64,7 +64,7 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
 fi
 
 if [ "x${DIR}" = "x" ]; then
-    echo "wpi.sh: no -d argument supplied, using the current directory."
+    # echo "wpi.sh: no -d argument supplied, using the current directory."
     DIR=$(pwd)
 fi
 
@@ -136,12 +136,15 @@ function configure_and_exec_dljc {
   rm -rf dljc-out
 
   # ensure the project is clean before invoking DLJC
-  eval "${CLEAN_CMD}" < /dev/null
+  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
 
-  echo "${DLJC_CMD}"
+  mkdir -p "${DIR}/dljc-out/dljc-stdout.XXXXXX"
+  dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout.XXXXXX")
 
   # This command also includes "clean"; I'm not sure why it is necessary.
-  eval "${DLJC_CMD}" < /dev/null
+  { echo "JAVA_HOME: ${JAVA_HOME}"; \
+    echo "DLJC_CMD: ${DLJC_CMD}"; \
+    eval "${DLJC_CMD}" < /dev/null; } > "$dljc_stdout" 2>&1
 
   if [[ $? -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
@@ -150,8 +153,10 @@ function configure_and_exec_dljc {
   fi
 
   if [ -f dljc-out/wpi.log ]; then
+      echo "dljc output is available in ${DIR}/dljc-out/; stdout is in $dljc_stdout"
       WPI_RESULTS_AVAILABLE="yes"
   else
+      echo "dljc output is not available in ${DIR}/dljc-out/; stdout is in $dljc_stdout"
       WPI_RESULTS_AVAILABLE="no"
   fi
 }
@@ -162,9 +167,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clone or update DLJC
 if [ -d "${SCRIPTDIR}/.do-like-javac" ]; then
-    git -C "${SCRIPTDIR}/.do-like-javac" pull
+    git -C "${SCRIPTDIR}/.do-like-javac" pull --quiet
 else
-    git -C "${SCRIPTDIR}" clone https://github.com/kelloggm/do-like-javac --depth 1 .do-like-javac || (echo "Cannot clone do-like-javac" && exit 1)
+    git -C "${SCRIPTDIR}" clone https://github.com/kelloggm/do-like-javac --depth 1 --quiet .do-like-javac || (echo "Cannot clone do-like-javac" && exit 1)
 fi
 
 DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
@@ -172,8 +177,6 @@ DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 #### Main script
 
 echo "Finished configuring wpi.sh. Results will be placed in ${DIR}/dljc-out/."
-
-pushd "${DIR}" || exit 1
 
 rm -f .cannot-run-wpi
 
@@ -194,7 +197,7 @@ fi
 if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     echo "dljc could not run the build successfully."
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
-    touch .cannot-run-wpi
+    touch "${DIR}/.cannot-run-wpi"
 fi
 
 popd || exit 1
