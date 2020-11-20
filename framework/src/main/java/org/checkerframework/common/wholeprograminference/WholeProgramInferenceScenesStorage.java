@@ -208,18 +208,19 @@ public class WholeProgramInferenceScenesStorage {
      * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param jaifPath path to a .jaif file for a Scene
+     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
+     *     (needing to be written to disk)
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param defLoc the location where the annotation will be added
      */
     protected void updateAnnotationSetInScene(
             ATypeElement type,
-            AnnotatedTypeFactory atf,
-            String jaifPath,
+            TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            TypeUseLocation defLoc) {
+            AnnotatedTypeFactory atf,
+            String jaifPath) {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
@@ -236,7 +237,7 @@ public class WholeProgramInferenceScenesStorage {
                 return;
             }
         }
-        updateTypeElementFromATM(rhsATM, lhsATM, atf, type, 1, defLoc);
+        updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, atf);
         modifiedScenes.add(jaifPath);
     }
 
@@ -475,12 +476,12 @@ public class WholeProgramInferenceScenesStorage {
      * @param defLoc the location where the annotation will be added
      */
     private void updateTypeElementFromATM(
-            AnnotatedTypeMirror newATM,
-            AnnotatedTypeMirror curATM,
-            AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate,
             int idx,
-            TypeUseLocation defLoc) {
+            TypeUseLocation defLoc,
+            AnnotatedTypeMirror newATM,
+            AnnotatedTypeMirror curATM,
+            AnnotatedTypeFactory atf) {
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
         if (idx == 1) {
@@ -522,15 +523,15 @@ public class WholeProgramInferenceScenesStorage {
             AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             updateTypeElementFromATM(
-                    newAAT.getComponentType(),
-                    oldAAT.getComponentType(),
-                    atf,
                     typeToUpdate.innerTypes.getVivify(
                             new InnerTypeLocation(
                                     TypeAnnotationPosition.getTypePathFromBinary(
                                             Collections.nCopies(2 * idx, 0)))),
                     idx + 1,
-                    defLoc);
+                    defLoc,
+                    newAAT.getComponentType(),
+                    oldAAT.getComponentType(),
+                    atf);
         }
     }
 
