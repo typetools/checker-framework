@@ -211,7 +211,7 @@ import org.plumelib.util.UtilPlume;
     "warnUnneededSuppressions",
 
     // Exceptions to -AwarnUnneededSuppressions.
-    "noWarnUnneededSuppressions",
+    "warnUnneededSuppressionsExceptions",
 
     // Require that warning suppression annotations contain a checker key as a prefix in order for
     // the warning to be suppressed.
