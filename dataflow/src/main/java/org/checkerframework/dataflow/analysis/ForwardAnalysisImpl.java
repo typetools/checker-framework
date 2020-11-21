@@ -238,7 +238,7 @@ public class ForwardAnalysisImpl<
     @Override
     public S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
+            Analysis.PreOrPost preOrPost,
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
@@ -275,7 +275,7 @@ public class ForwardAnalysisImpl<
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
-                            if (n == node && before) {
+                            if (n == node && preOrPost == Analysis.PreOrPost.BEFORE) {
                                 return store.getRegularStore();
                             }
                             if (cache != null && cache.containsKey(n)) {
@@ -306,7 +306,7 @@ public class ForwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (before) {
+                        if (preOrPost == Analysis.PreOrPost.BEFORE) {
                             return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);

@@ -46,6 +46,17 @@ public interface Store<S extends Store<S>> {
     }
 
     /**
+     * In calls to {@code Analysis#runAnalysisFor}, whether to return the store before or after the
+     * given node.
+     */
+    public static enum PreOrPost {
+        /** Return the pre-store. */
+        BEFORE,
+        /** Return the post-store. */
+        AFTER
+    }
+
+    /**
      * Returns an exact copy of this store.
      *
      * @return an exact copy of this store
