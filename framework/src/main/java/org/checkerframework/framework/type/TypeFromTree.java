@@ -41,8 +41,8 @@ class TypeFromTree {
         } catch (Throwable t) {
             throw new BugInCF(
                     String.format(
-                            "Error in AnnotatedTypeMirror.fromExpression(%s, %s)",
-                            typeFactory.getClass().getSimpleName(), tree),
+                            "Error in AnnotatedTypeMirror.fromExpression(%s, %s): %s",
+                            typeFactory.getClass().getSimpleName(), tree, t.getMessage()),
                     t);
         }
         ifExecutableCheckElement(typeFactory, tree, type);
