@@ -1532,8 +1532,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processNewClass(javacTree, node);
         }
 
-        assert (javacTree.getEnclosingExpression() != null) == node.getScope().isPresent();
-        if (javacTree.getEnclosingExpression() != null) {
+        if (javacTree.getEnclosingExpression() != null && node.getScope().isPresent()) {
             javacTree.getEnclosingExpression().accept(this, node.getScope().get());
         }
 
