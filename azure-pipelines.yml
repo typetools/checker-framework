@@ -17,6 +17,7 @@ jobs:
    - misc_jdk11
    - typecheck_jdk11
   steps:
+  - checkout: none
   - bash: true
 - job: junit_tests_jdk8
   dependsOn:
