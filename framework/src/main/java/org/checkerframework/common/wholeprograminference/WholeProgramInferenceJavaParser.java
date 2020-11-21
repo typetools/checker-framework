@@ -972,7 +972,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        if (methodDeclaration.getParentNode().isEmpty()) {
+        if (!methodDeclaration.getParentNode().isPresent()) {
             return;
         }
 

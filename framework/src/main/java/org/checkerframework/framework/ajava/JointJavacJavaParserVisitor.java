@@ -1423,7 +1423,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             // in JavaParser the type arguments will have the none Optional value.
             // The left side of this assert is checking if the list is empty and the right side is a
             // check on the prescence of an optional.
-            assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
+            assert javacTree.getTypeArguments().isEmpty() != node.getTypeArguments().isPresent();
             if (!javacTree.getTypeArguments().isEmpty()) {
                 visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
             }
@@ -1459,7 +1459,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
             // The left side of this assert is checking if the list is empty and the right side is a
             // check on the prescence of an optional.
-            assert javacTree.getTypeArguments().isEmpty() == node.getTypeArguments().isEmpty();
+            assert javacTree.getTypeArguments().isEmpty() != node.getTypeArguments().isPresent();
             if (!javacTree.getTypeArguments().isEmpty()) {
                 visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
             }
@@ -1539,7 +1539,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
 
         javacTree.getIdentifier().accept(this, node.getType());
         if (javacTree.getTypeArguments().isEmpty()) {
-            assert node.getTypeArguments().isEmpty();
+            assert !node.getTypeArguments().isPresent();
         } else {
             assert node.getTypeArguments().isPresent();
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
@@ -1618,7 +1618,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         javacTree.getType().accept(this, node);
         // TODO: In a parameterized type, will the first branch ever run?
         if (javacTree.getTypeArguments().isEmpty()) {
-            assert node.getTypeArguments().isEmpty() || node.getTypeArguments().get().isEmpty();
+            assert !node.getTypeArguments().isPresent() || node.getTypeArguments().get().isEmpty();
         } else {
             assert node.getTypeArguments().isPresent();
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
