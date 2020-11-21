@@ -113,8 +113,13 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class StubParser {
 
+    /** Whether or not the file being parsed is stub file. If false, then it's an ajava file. */
     private final boolean isParsingStubFile;
 
+    /**
+     * If parsing an ajava file, represents the javac tree for the compilation root of the file
+     * being parse.
+     */
     private CompilationUnitTree root;
 
     /**
@@ -260,6 +265,11 @@ public class StubParser {
         this.isJdkAsStub = isJdkAsStub;
     }
 
+    /**
+     * Sets the root of the file currently being parsed to {@code root}.
+     *
+     * @param root compilation unit for the file being parsed
+     */
     private void setRoot(CompilationUnitTree root) {
         this.root = root;
     }
@@ -475,6 +485,20 @@ public class StubParser {
         parse(filename, inputStream, atypeFactory, processingEnv, atypes, declAnnos, false);
     }
 
+    /**
+     * The main entry point when parsing an ajava file. Parse an ajava file and side-effects the
+     * last two arguments.
+     *
+     * @param filename name of stub file, used only for diagnostic messages
+     * @param inputStream of stub file to parse
+     * @param root javac tree for the file to be parsed
+     * @param atypeFactory AnnotatedTypeFactory to use
+     * @param processingEnv ProcessingEnvironment to use
+     * @param atypes annotated types from this stub file are added to this map
+     * @param declAnnos map from a name (actually declaration element string) to the set of
+     *     declaration annotations on it. Declaration annotations from this stub file are added to
+     *     this map.
+     */
     public static void parseAjavaFile(
             String filename,
             InputStream inputStream,
@@ -614,6 +638,11 @@ public class StubParser {
         }
     }
 
+    /**
+     * Processes the given CompilationUnit.
+     *
+     * @param cu the CompilationUnit to process
+     */
     private void processCompilationUnit(CompilationUnit cu) {
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
@@ -667,7 +696,7 @@ public class StubParser {
             return;
         }
         String innerName;
-        @CanonicalName String fqTypeName;
+        @FullyQualifiedName String fqTypeName;
         TypeElement typeElt;
         if (classTree != null) {
             typeElt = TreeUtils.elementFromDeclaration(classTree);
@@ -913,6 +942,10 @@ public class StubParser {
     /**
      * Adds type and declaration annotations from {@code decl}. Returns type variables for the
      * method.
+     *
+     * @param decl method or constructor declaration to process
+     * @param elt ELement corresponding to {@code decl}
+     * @return type variables for the method
      */
     private List<AnnotatedTypeVariable> processCallableDeclaration(
             CallableDeclaration<?> decl, ExecutableElement elt) {
@@ -1038,6 +1071,10 @@ public class StubParser {
         }
     }
 
+    /**
+     * Combines added String literals into a single String literal containing their concatenation
+     * for the JavaParser unit currently stored. See {@link StringLiteralCombineVisitor}.
+     */
     private void combineStringLiterals() {
         new StringLiteralCombineVisitor().visit(stubUnit, null);
     }
@@ -2307,8 +2344,13 @@ public class StubParser {
         }
     }
 
+    /**
+     * Walks the javac tree for a file, processing the JavaParser node for each program element it
+     * finds.
+     */
     @SuppressWarnings("UnusedNestedClass")
     private class AjavaParserVisitor extends DefaultJointVisitor {
+        /** Constructs an {@code AjavaParserVisitor}. */
         public AjavaParserVisitor() {
             super(TraversalType.PRE_ORDER);
         }

@@ -38,9 +38,12 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Visitor that stores each visited tree that should match with some JavaParser node if the same
- * Java file was parsed with both.
+ * Java file was parsed with both. Adds these trees to a set during traversal. Many trees shouldn't
+ * be matched with a JavaParser node because there isn't a corresponding JavaParser node, so trees
+ * like that are excluded.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
+    /** The set of trees that should be matched to a JavaParser node when visiting both. */
     private Set<Tree> trees;
 
     /** Constructs a visitor with no stored trees. */

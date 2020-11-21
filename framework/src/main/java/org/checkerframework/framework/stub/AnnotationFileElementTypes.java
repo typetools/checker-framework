@@ -209,6 +209,15 @@ public class AnnotationFileElementTypes {
         parsing = false;
     }
 
+    /**
+     * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
+     * unit of that file. Uses {@code root} to get information from javac on specific elements of
+     * {@code ajavaPath}, enabling storage of more detailed annotation information than with just
+     * the ajava file.
+     *
+     * @param ajavaPath path to an ajava file
+     * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+     */
     public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
         parsing = true;
         SourceChecker checker = factory.getContext().getChecker();

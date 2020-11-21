@@ -76,6 +76,14 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.util.JVMNames;
 
+/**
+ * This is an implementation of {@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInference} that reads in the files
+ * it processes using JavaParser and stores annotations directly with the JavaParser nodes they
+ * apply to. As a result, it only outputs to ajava files. This class behaves identically to {@link
+ * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes}. See that class
+ * for documentation on behavior.
+ */
 @SuppressWarnings({"UnusedMethod", "UnusedVariable"})
 public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
@@ -112,6 +120,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Constructs a {@code WholeProgramInferenceJavaParser} which has not yet inferred any
      * annotations.
+     *
+     * @param atypeFactory annotated type factory for type system to use
+     * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
+     *     ignored
      */
     public WholeProgramInferenceJavaParser(
             AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
@@ -690,6 +702,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         sourceCodeATM.replaceAnnotations(annosToReplace);
     }
 
+    /**
+     * Reads in the source file containing {@code tree} and creates a wrapper around {@code tree}.
+     *
+     * @param tree tree for class to add
+     */
     public void addClassTree(ClassTree tree) {
         TypeElement element = TreeUtils.elementFromDeclaration(tree);
         String className = getClassName(element);
@@ -710,6 +727,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
     }
 
+    /**
+     * Reads in the file at {@code path} and creates and stores a wrapper around its compilation
+     * unit.
+     *
+     * @param path path to source file to read
+     */
     private void addSourceFile(String path) {
         if (sourceFiles.containsKey(path)) {
             return;
@@ -725,6 +748,14 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
     }
 
+    /**
+     * Given a javac tree and JavaParser node representing the same class, creates wrappers around
+     * all the classes, fields, and methods in that class.
+     *
+     * @param javacClass javac tree for class
+     * @param javaParserClass JavaParser node corresponding to the same class as {@code javacClass}
+     * @param wrapper compilation unit wrapper to add new wrappers to
+     */
     private void createWrappersForClass(
             ClassTree javacClass,
             TypeDeclaration<?> javaParserClass,
@@ -750,6 +781,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         }
                     }
 
+                    /**
+                     * Creates a wrapper around the class for {@code tree} and stores it.
+                     *
+                     * @param tree tree to add
+                     */
                     private void addClass(ClassTree tree) {
                         TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
                         String className = getClassName(classElt);
@@ -773,6 +809,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                         addCallableDeclaration(javacTree, javaParserNode);
                     }
 
+                    /**
+                     * Creates a wrapper around {@code javacTree} with the corresponding declaration
+                     * {@code javaParserNode} and stores it.
+                     *
+                     * @param javacTree javac tree for declaration to add
+                     * @param javaParserNode JavaParser node for the same class as {@code javacTree}
+                     */
                     private void addCallableDeclaration(
                             MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
                         ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
@@ -815,6 +858,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * Calls {@link #addSourceFile(String)} for the file containing the given element.
      *
      * @param element element for the source file to add
+     * @return path of the file containing {@code element}
      */
     private String addClassesForElement(Element element) {
         if (!ElementUtils.isElementFromSourceCode(element)) {
@@ -838,10 +882,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return path;
     }
 
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getClassName(Element element) {
         return ((ClassSymbol) element).flatName().toString();
     }
 
+    /**
+     * Returns outermost class containing {@code element}.
+     *
+     * @param element element to find enclosing class of
+     * @return an element for a class containing {@code element} that isn't contained in another
+     *     class
+     */
     private TypeElement mostEnclosingClass(Element element) {
         if (ElementUtils.enclosingClass(element) == null) {
             return (TypeElement) element;
@@ -862,10 +914,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
      */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getEnclosingClassName(ExecutableElement executableElement) {
         return ((MethodSymbol) executableElement).enclClass().flatName().toString();
     }
 
+    /**
+     * Returns the "flatname" of the class enclosing {@code variableElement}
+     *
+     * @param variableElement the VariableElement
+     * @return the "flatname" of the class enclosing {@code variableElement}
+     */
     private @BinaryName String getEnclosingClassName(VariableElement variableElement) {
         return getClassName(ElementUtils.enclosingClass(variableElement));
     }
@@ -896,6 +955,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
     }
 
+    /**
+     * Adds an explicit receiver type to a JavaParser method declaration with the same type as the
+     * surrounding class.
+     *
+     * @param methodDeclaration declaration to add a receiver to
+     */
     private static void addExplicitReceiver(MethodDeclaration methodDeclaration) {
         if (methodDeclaration.getReceiverParameter().isPresent()) {
             return;
@@ -964,6 +1029,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
+        /**
+         * Returns the top level type declaration in the compilation unit with {@code name}.
+         *
+         * @param name name of type declaration
+         */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
             return AjavaUtils.getTypeDeclarationByName(declaration, name);
         }
@@ -1217,6 +1287,10 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return this.type;
         }
 
+        /**
+         * Transfers all annotations inferred by whole program inference on this field to the
+         * JavaParser nodes for that field.
+         */
         public void transferAnnotations() {
             if (type == null) {
                 return;

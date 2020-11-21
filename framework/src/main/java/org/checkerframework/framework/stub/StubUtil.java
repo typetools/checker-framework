@@ -38,11 +38,22 @@ import org.checkerframework.javacutil.Pair;
 /** Utility class for stub files. */
 public class StubUtil {
 
+    /** The types of files that can contain annotations. */
     public enum AnnotationFileType {
+        /** Stub file format with files ending in ".astub". */
         STUB,
+        /** Ajava file format with files ending in ".ajava" */
         AJAVA
     }
 
+    /**
+     * Finds the type declaration with the given class name in a stub unit.
+     *
+     * @param className fully qualified name of the type declaration to find
+     * @param indexFile stub unit to search
+     * @return the declaration in {@code indexFile} with {@code className} if it exists, null
+     *     otherwise.
+     */
     /*package-scope*/ static TypeDeclaration<?> findDeclaration(
             String className, StubUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
@@ -300,6 +311,8 @@ public class StubUtil {
      *
      * @param stub a stub file, a jarfile, or a directory. Look for it as an absolute file and
      *     relative to the current directory.
+     * @param fileType file type of files to collect
+     * @return a list of all files found when searching {@code stub} withe the given file type.
      */
     public static List<StubResource> allStubFiles(String stub, AnnotationFileType fileType) {
         List<StubResource> resources = new ArrayList<>();
@@ -319,10 +332,25 @@ public class StubUtil {
         return resources;
     }
 
+    /**
+     * Determines if a file represents a particular type of annotation storage file.
+     *
+     * @param f the file to check
+     * @param fileType the type of file to check against
+     * @return true if {@code f} is a file with file type matching {@code fileType}, false otherwise
+     */
     private static boolean isStub(File f, AnnotationFileType fileType) {
         return f.isFile() && isStub(f.getName(), fileType);
     }
 
+    /**
+     * Determines if a path represents a particular type of annotation storage file.
+     *
+     * @param path the path to check
+     * @param fileType the type of file to check against
+     * @return true if {@code path} represents a file with file type matching {@code fileType},
+     *     false otherwise
+     */
     private static boolean isStub(String path, AnnotationFileType fileType) {
         switch (fileType) {
             case STUB:

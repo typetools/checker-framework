@@ -9,11 +9,26 @@ import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.javacutil.BugInCF;
 
+/** A utility class for working with javac and JavaParser representations of a source file. */
 public class AjavaUtils {
+    /**
+     * Returns the path to the source file containing {@code element}
+     *
+     * @param element the type element to look at
+     * @return path to the source file containing {@code element}
+     */
     public static String getSourceFilePath(TypeElement element) {
         return ((ClassSymbol) element).sourcefile.toUri().getPath();
     }
 
+    /**
+     * Given the compilation unit node for a source file, returns the top level type definition with
+     * the given name.
+     *
+     * @param root compilation unit to search
+     * @param name name of a top level type declaration in {@code root}
+     * @return a top level type declaration in {@code root} named {@code name}
+     */
     public static TypeDeclaration<?> getTypeDeclarationByName(CompilationUnit root, String name) {
         Optional<ClassOrInterfaceDeclaration> classDecl = root.getClassByName(name);
         if (classDecl.isPresent()) {

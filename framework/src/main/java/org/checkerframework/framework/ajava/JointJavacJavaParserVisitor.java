@@ -168,7 +168,9 @@ import org.checkerframework.javacutil.BugInCF;
 public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
     /** Possible traversal orders for the visitor. */
     public enum TraversalType {
+        /** Run process methods for a node before its children. */
         PRE_ORDER,
+        /** Run process methods for a node before its children. */
         POST_ORDER
     }
 
@@ -382,6 +384,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         return null;
     }
 
+    /**
+     * Given a matching sequence of statements for a block, visits each javac statement with its
+     * corresponding JavaParser statememt, excluding synthetic javac trees like no-argument
+     * constructors.
+     *
+     * @param javacStatements sequence of javac trees for statements
+     * @param javaParserStatements sequence of JavaParser statements representing the same block as
+     *     {@code javacStatements}
+     */
     private void processStatements(
             Iterable<? extends StatementTree> javacStatements,
             Iterable<Statement> javaParserStatements) {
@@ -676,11 +687,6 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
                 continue;
             }
 
-            if (!hasNextJavac) {
-                System.out.println("Member mismatch");
-                System.out.println("javac members: " + javacMembers);
-                System.out.println("JavaParser members: " + javaParserMembers);
-            }
             assert hasNextJavac;
             assert hasNextJavaParser;
             javacMember.accept(this, javaParserMember);

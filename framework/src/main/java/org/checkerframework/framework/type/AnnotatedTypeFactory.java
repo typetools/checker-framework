@@ -246,9 +246,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Parses stub files and stores annotations from stub files. */
     public final AnnotationFileElementTypes stubTypes;
 
+    /** Parses ajava files and stores annotations from ajava files. */
     public final AnnotationFileElementTypes ajavaTypes;
 
-    public AnnotationFileElementTypes currentFileAjavaTypes;
+    /**
+     * If processing a file, stores any annotations read from an ajava file for that class. Unlike
+     * {@code ajavaTypes}, which only stores annotations on public elements, this stores annotations
+     * on all element locations such as in anonymous class bodies.
+     */
+    public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -1566,7 +1572,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param tree the tree from which to read stub types
-     * @return type, side-effected to add the stub types
+     * @param source storage for current stub file annotations
+     * @return the type, side-effected to add the stub types
      */
     private AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Tree tree, AnnotationFileElementTypes source) {
@@ -1582,6 +1589,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param elt the element from which to read stub types
+     * @param source storage for current stub file annotations
      * @return the type, side-effected to add the stub types
      */
     protected AnnotatedTypeMirror mergeStubsIntoType(
