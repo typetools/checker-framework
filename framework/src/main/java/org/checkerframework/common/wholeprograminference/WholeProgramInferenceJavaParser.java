@@ -882,6 +882,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         return path;
     }
 
+    /**
+     * Returns the binary name of the type declaration in {@code element}
+     *
+     * @param element Element of a type declaration
+     * @return the binary name of {@code element}
+     */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     private @BinaryName String getClassName(Element element) {
         return ((ClassSymbol) element).flatName().toString();
@@ -1033,6 +1039,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
          * Returns the top level type declaration in the compilation unit with {@code name}.
          *
          * @param name name of type declaration
+         * @return the type declaration with {@code name} in the wrapped compilation unit
          */
         public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
             return AjavaUtils.getTypeDeclarationByName(declaration, name);

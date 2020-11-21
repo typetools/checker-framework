@@ -373,6 +373,7 @@ public class StubUtil {
      *     resources} list. If a jarfile, use all stub files contained in it. If a directory,
      *     recurse on all files contained in it.
      * @param resources the list to add the found stub files to
+     * @param fileType type of annotation files to add
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()
     private static void addAnnotationFilesToList(
