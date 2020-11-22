@@ -1522,7 +1522,6 @@ public class StubParser {
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
                     && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
@@ -1575,7 +1574,6 @@ public class StubParser {
         final String wantedMethodString = StubUtil.toString(constructorDecl);
         for (ExecutableElement method :
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
