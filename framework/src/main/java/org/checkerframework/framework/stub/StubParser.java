@@ -2098,9 +2098,11 @@ public class StubParser {
     /**
      * Just like Map.put, but does not override any existing value in the map.
      *
+     * @param <K> the key type
+     * @param <V> the value type
      * @param m a map
      * @param key a key
-     * @param value a value
+     * @param value the value to associate with the key, if the key isn't already in the map
      */
     private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
         if (key == null) {
