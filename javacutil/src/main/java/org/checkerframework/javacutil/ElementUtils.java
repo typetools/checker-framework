@@ -31,7 +31,10 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 
-/** A Utility class for analyzing {@code Element}s. */
+/**
+ * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
+ * functionality that it does not.
+ */
 public class ElementUtils {
 
     // Class cannot be instantiated.

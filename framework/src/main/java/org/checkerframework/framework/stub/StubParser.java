@@ -272,8 +272,8 @@ public class StubParser {
         Map<String, TypeElement> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
-                putNoOverride(result, typeElm.getSimpleName().toString(), typeElm);
-                putNoOverride(result, typeElm.getQualifiedName().toString(), typeElm);
+                putIfAbsent(result, typeElm.getSimpleName().toString(), typeElm);
+                putIfAbsent(result, typeElm.getQualifiedName().toString(), typeElm);
             }
         }
         return result;
@@ -398,7 +398,7 @@ public class StubParser {
                         // Single annotation or nested annotation
                         TypeElement annoElt = elements.getTypeElement(imported);
                         if (annoElt != null) {
-                            putNoOverride(result, annoElt.getSimpleName().toString(), annoElt);
+                            putIfAbsent(result, annoElt.getSimpleName().toString(), annoElt);
                             importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {
                             stubWarnNotFound("Could not load import: " + imported);
@@ -484,7 +484,7 @@ public class StubParser {
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
-     * @param isJdkAsStub whether or not the stub file is a part of the annotated jdk
+     * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
     private static void parse(
             String filename,
@@ -514,7 +514,9 @@ public class StubParser {
 
     /**
      * Delegate to the Stub Parser to parse the stub file to an AST, and save it in {@link
-     * #stubUnit}. Subsequently, all work uses the AST.
+     * #stubUnit}. Also modifies other fields of this.
+     *
+     * <p>Subsequently, all work uses the AST.
      *
      * @param inputStream the stream from which to read a stub file
      */
@@ -1349,7 +1351,10 @@ public class StubParser {
     }
 
     /**
-     * Add, to result, a mapping from (the element for) typeElt to member.
+     * Add, to {@code result}, a mapping from member's element to member. Member's element is found
+     * in {@code typeElt}.
+     *
+     * <p>Does nothing if it cannot find member's element. Does nothing if a mapping already exists.
      *
      * @param typeDeclName used only for debugging
      */
@@ -1361,35 +1366,35 @@ public class StubParser {
         if (member instanceof MethodDeclaration) {
             Element elt = findElement(typeElt, (MethodDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
             for (VariableDeclarator var : fieldDecl.getVariables()) {
                 Element varelt = findElement(typeElt, var);
                 if (varelt != null) {
-                    putNoOverride(result, varelt, fieldDecl);
+                    putIfAbsent(result, varelt, fieldDecl);
                 }
             }
         } else if (member instanceof EnumConstantDeclaration) {
             Element elt = findElement(typeElt, (EnumConstantDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
             Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof EnumDeclaration) {
             Element elt = findElement(typeElt, (EnumDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else {
             stubDebug(
@@ -2092,10 +2097,16 @@ public class StubParser {
     /// Map utilities
     ///
 
-    /** Just like Map.put, but does not override any existing value in the map. */
-    private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
+    /**
+     * Just like Map.put, but does not override any existing value in the map.
+     *
+     * @param m a map
+     * @param key a key
+     * @param value a value
+     */
+    private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
         if (key == null) {
-            throw new BugInCF("StubParser: key is null");
+            throw new BugInCF("StubParser: key is null for value " + value);
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -2144,7 +2155,7 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.putAll, but modifies existing values using {@link #putNoOverride(Map, Object,
+     * Just like Map.putAll, but modifies existing values using {@link #putIfAbsent(Map, Object,
      * Object)}.
      *
      * @param m the destination map
@@ -2154,7 +2165,7 @@ public class StubParser {
      */
     private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
-            putNoOverride(m, e2.getKey(), e2.getValue());
+            putIfAbsent(m, e2.getKey(), e2.getValue());
         }
     }
 
