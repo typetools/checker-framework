@@ -798,32 +798,34 @@ public class StubParser {
     private void annotateSupertypes(
             ClassOrInterfaceDeclaration typeDecl, AnnotatedDeclaredType type) {
         if (typeDecl.getExtendedTypes() != null) {
-            for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
-                AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                if (foundType == null) {
+            for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
+                AnnotatedDeclaredType annoSupertype =
+                        findAnnotatedType(supertype, type.directSuperTypes());
+                if (annoSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superclass "
-                                    + superType
+                                    + supertype
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(foundType, superType, null);
+                    annotate(annoSupertype, supertype, null);
                 }
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
-            for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
-                AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                if (foundType == null) {
+            for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
+                AnnotatedDeclaredType annoSupertype =
+                        findAnnotatedType(supertype, type.directSuperTypes());
+                if (annoSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superinterface "
-                                    + superType
+                                    + supertype
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(foundType, superType, null);
+                    annotate(annoSupertype, supertype, null);
                 }
             }
         }
@@ -1403,8 +1405,16 @@ public class StubParser {
         }
     }
 
-    /** Return the element of {@code types} whose name matches {@code type}. */
-    private AnnotatedDeclaredType findType(
+    /**
+     * Return the annotated type corresponding to {@code type}, or null if none exists. More
+     * specifically, returns the element of {@code types} whose name matches {@code type}.
+     *
+     * @param type the type to search for
+     * @param types the list of AnnotatedDeclaredTypes to search in
+     * @return the annotated type in {@code types} corresponding to {@code type}, or null if none
+     *     exists
+     */
+    private @Nullable AnnotatedDeclaredType findAnnotatedType(
             ClassOrInterfaceType type, List<AnnotatedDeclaredType> types) {
         String typeString = type.getNameAsString();
         for (AnnotatedDeclaredType superType : types) {
