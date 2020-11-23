@@ -13,6 +13,9 @@ Framework.
 The -AwarnUnneededSuppressions command-line option warns only about
 suppression strings that contain a checker name.
 
+The -AwarnUnneededSuppressionsExceptions=REGEX command-line option
+partially disables -AwarnUnneededSuppressions.  Most users don't need this.
+
 Implementation details:
 
 Added classes `SubtypeIsSubsetQualifierHierarchy` and
@@ -31,6 +34,8 @@ Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
 Removed a formal parameter from methods in `BaseTypeVisitor`:
  * `checkPostcondition`
  * `checkConditionalPostcondition`
+
+In Analysis.runAnalysisFor(), changed boolean parameter to enum BeforeOrAfter.
 
 ---------------------------------------------------------------------------
 

@@ -300,7 +300,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /** The AssertionError type. */
     final TypeMirror assertionErrorType;
 
-    /** The ArrayIndexOutOfBoundsException type */
+    /** The ArrayIndexOutOfBoundsException type. */
     final TypeMirror arrayIndexOutOfBoundsExceptionType;
 
     /** The ClassCastException type . */

@@ -152,7 +152,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new MethodValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /** MethodValQualifierHierarchy */
+    /** MethodValQualifierHierarchy. */
     protected class MethodValQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
