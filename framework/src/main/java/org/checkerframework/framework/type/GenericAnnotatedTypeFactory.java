@@ -39,6 +39,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -1041,7 +1042,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         Store store =
                 AnalysisResult.runAnalysisFor(
-                        node, true, prevStore, analysis.getNodeValues(), flowResultAnalysisCaches);
+                        node,
+                        Analysis.BeforeOrAfter.BEFORE,
+                        prevStore,
+                        analysis.getNodeValues(),
+                        flowResultAnalysisCaches);
         return store;
     }
 
@@ -1089,7 +1094,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
-                        false,
+                        Analysis.BeforeOrAfter.AFTER,
                         analysis.getInput(node.getBlock()),
                         analysis.getNodeValues(),
                         flowResultAnalysisCaches);
