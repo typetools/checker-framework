@@ -1772,7 +1772,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
      * is used to find the enclosing tree;
      *
-     * @param tree tree to whose inner most enclosing method or class is returned.
+     * @param tree tree to whose innermost enclosing method or class is returned
      * @return the inner most enclosing method or class tree of {@code tree}
      */
     protected Tree getEnclosingClassOrMethod(Tree tree) {
@@ -3456,7 +3456,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns all of the declaration annotations on this element including annotations
+     * Returns all of the declaration annotations on this element including annotations:
      *
      * <ul>
      *   <li>on the element
@@ -3470,7 +3470,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param elt the element for which to determine annotations
      * @return all of the declaration annotations on this element, written in stub files, or
-     *     inherited.
+     *     inherited
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         Set<AnnotationMirror> cachedValue = cacheDeclAnnos.get(elt);
@@ -3784,7 +3784,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns whether the {@code HasQualifierParameter} annotation was explicitly written on {@code
      * element} for the hierarchy given by {@code top}.
      *
-     * @param element Element to check
+     * @param element the Element to check
      * @param top the top qualifier for the hierarchy to check
      * @return whether the class given by {@code element} has been explicitly annotated with {@code
      *     HasQualifierParameter} for the given hierarchy
@@ -3799,7 +3799,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns whether the {@code NoQualifierParameter} annotation was explicitly written on {@code
      * element} for the hierarchy given by {@code top}.
      *
-     * @param element Element to check
+     * @param element the Element to check
      * @param top the top qualifier for the hierarchy to check
      * @return whether the class given by {@code element} has been explicitly annotated with {@code
      *     NoQualifierParameter} for the given hierarchy
@@ -3846,7 +3846,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the set of top annotations representing all the hierarchies for which this element
      * has a qualifier parameter.
      *
-     * @param element Element to check
+     * @param element the Element to check
      * @return the set of top annotations representing all the hierarchies for which this element
      *     has a qualifier parameter
      */
@@ -3886,7 +3886,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns a set of supported annotation mirrors corresponding to the annotation classes listed
      * in the value element of an annotation with class {@code annoClass} on {@code element}.
      *
-     * @param element Element to check
+     * @param element the Element to check
      * @param annoClass the class for an annotation that's written on elements, whose value element
      *     is a list of annotation classes
      * @return the set of supported annotations with classes listed in the value element of an
@@ -4302,8 +4302,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * </ul>
      *
      * @param type annotated type to capture
-     * @param typeMirror underlying Java type.
-     * @return true if {@code type} should be captured.
+     * @param typeMirror underlying Java type
+     * @return true if {@code type} should be captured
      */
     private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
         if (type.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.DECLARED) {
@@ -4391,9 +4391,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
             if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())
                     && preCapturedArg.getKind() == TypeKind.WILDCARD) {
-                // If the type argument is a captured type, then use the type argument from the
-                // newly created and yet-to-be annotated captureType. (The annotations are added as
-                // part of capturing the wildcard.
+                // The type argument is a captured type. Use the type argument from the newly
+                // created and yet-to-be annotated captureType. (The annotations are added as part
+                // of capturing the wildcard.)
                 typeVarToTypeArguments.put(typeVar, capturedTypeArg);
                 // Also, add a mapping from the captured type mirror to the annotated captured
                 // type, so that if one captured type refers to another, the correct annotated type
@@ -4402,7 +4402,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         ((AnnotatedTypeVariable) capturedTypeArg).getUnderlyingType(),
                         capturedTypeArg);
             } else {
-                // If the type argument is not a captured type, then use the type argument from
+                // The type argument is not a captured type. Use the type argument from
                 // typeToCapture, which is fully-annotated.
                 typeVarToTypeArguments.put(typeVar, preCapturedArg);
             }
@@ -4415,9 +4415,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
                                 typeVarToTypeArguments, capturedType);
 
-        // Loop through the type arguments and correctly set the annotations of each captured type.
+        // Loop through the type arguments and set the annotations of each captured type.
         List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>(typeToCapture.typeArgs);
-
         List<TypeVariable> orderToCapture =
                 TypesUtils.order(captureToAnnotatedCapture.keySet(), types);
         for (TypeVariable capture : orderToCapture) {
@@ -4436,20 +4435,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             newTypeArgs.add(i, typeArg);
         }
         capturedType.setTypeArguments(newTypeArgs);
+
         capturedType.addAnnotations(typeToCapture.getAnnotations());
         return capturedType;
     }
 
     /**
-     * Given {@code wildcard}, its corresponding {@code typeVariable}, and the substitution {@code
-     * argMapping}, compute the annotated bounds for {@code capturedArg} and set them.
+     * Set the annotated bounds for fresh type variable {@code capturedArg}, so that it is the
+     * capture of {@code wildcard}.
      *
      * @param argMapping substitution
      * @param captureToAnnotatedCapture mapping from captured type mirror to captured annotated type
      *     mirror
      * @param wildcard wildcard to capture
      * @param typeVariable type variable for which {@code wildcard} is a type argument
-     * @param capturedArg the fresh type variable which is sideffected by this method
+     * @param capturedArg the fresh type variable which is side-effected by this method
      */
     private void captureWildcard(
             Map<TypeVariable, AnnotatedTypeMirror> argMapping,

@@ -30,7 +30,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
     /**
      * Returns the unique ID of this object.
      *
-     * @return the unique ID of this object.
+     * @return the unique ID of this object
      */
     @Override
     public long getUid() {

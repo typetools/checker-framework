@@ -217,7 +217,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         }
     }
 
-    /** I18nFormatterQualifierHierarchy */
+    /** I18nFormatterQualifierHierarchy. */
     class I18nFormatterQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link I18nFormat} annotation. */

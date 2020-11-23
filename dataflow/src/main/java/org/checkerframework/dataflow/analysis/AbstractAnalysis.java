@@ -73,7 +73,7 @@ public abstract class AbstractAnalysis<
      * invariant holds:
      *
      * <pre>
-     *   !isRunning ==&gt; (currentNode == null)
+     *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
     protected @InternedDistinct @Nullable Node currentNode;

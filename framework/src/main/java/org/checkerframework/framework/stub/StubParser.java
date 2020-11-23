@@ -587,7 +587,7 @@ public class StubParser {
     }
 
     /**
-     * Process a type declaration
+     * Process a type declaration.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
@@ -1334,6 +1334,9 @@ public class StubParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
+        for (BodyDeclaration<?> member : typeDecl.getMembers()) {
+            putNewElement(result, typeElt, member, typeDecl.getNameAsString());
+        }
         // For an enum type declaration, also add the enum constants
         if (typeDecl instanceof EnumDeclaration) {
             EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
@@ -1341,9 +1344,6 @@ public class StubParser {
             for (BodyDeclaration<?> member : enumDecl.getEntries()) {
                 putNewElement(result, typeElt, member, typeDecl.getNameAsString());
             }
-        }
-        for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(result, typeElt, member, typeDecl.getNameAsString());
         }
         return result;
     }
