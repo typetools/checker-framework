@@ -169,6 +169,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     /**
      * First check visitHistory to see if type1 and type2 have been compared once already. If so
      * return true; otherwise compare them and put them in visitHistory
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @return whether the two types are equal
      */
     protected boolean checkOrAreEqual(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
