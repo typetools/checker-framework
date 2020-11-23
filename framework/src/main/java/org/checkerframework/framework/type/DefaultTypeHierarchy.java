@@ -352,12 +352,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             boolean result = isContainedByBoundType(inside, new BoundType(outside), canBeCovariant);
             typeargVisitHistory.add(inside, outside, currentTop, result);
             return result;
-        } else {
-            if (canBeCovariant) {
-                return isSubtype(inside, outside, currentTop);
-            }
-            return areEqualInHierarchy(inside, outside);
         }
+        if (canBeCovariant) {
+            return isSubtype(inside, outside, currentTop);
+        }
+        return areEqualInHierarchy(inside, outside);
     }
 
     /**
