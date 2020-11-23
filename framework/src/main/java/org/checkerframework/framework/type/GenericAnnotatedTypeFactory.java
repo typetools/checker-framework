@@ -39,6 +39,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -1041,7 +1042,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         Store store =
                 AnalysisResult.runAnalysisFor(
-                        node, true, prevStore, analysis.getNodeValues(), flowResultAnalysisCaches);
+                        node,
+                        Analysis.BeforeOrAfter.BEFORE,
+                        prevStore,
+                        analysis.getNodeValues(),
+                        flowResultAnalysisCaches);
         return store;
     }
 
@@ -1089,7 +1094,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
-                        false,
+                        Analysis.BeforeOrAfter.AFTER,
                         analysis.getInput(node.getBlock()),
                         analysis.getNodeValues(),
                         flowResultAnalysisCaches);
@@ -1748,7 +1753,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param tree Tree whose type is {@code type}
+     * @param tree a Tree whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
@@ -1763,7 +1768,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(
@@ -1817,7 +1822,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializer, if an initializer is present. Does nothing for local variables with no
      * initializer.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     private void applyLocalVariableQualifierParameterDefaults(

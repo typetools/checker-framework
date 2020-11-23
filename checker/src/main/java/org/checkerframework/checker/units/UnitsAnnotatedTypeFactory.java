@@ -617,7 +617,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** UnitsQualifierKindHierarchy */
+    /** UnitsQualifierKindHierarchy. */
     @AnnotatedFor("nullness")
     protected static class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
 
