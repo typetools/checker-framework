@@ -894,7 +894,15 @@ public final class TypesUtils {
                 com.sun.tools.javac.util.List.from(newT));
     }
 
-    public static TypeMirror capturedWildcard(TypeMirror typeMirror, ProcessingEnvironment env) {
+    /**
+     * Returns a fresh type variable, a captued typed, for {@code typeMirror}, if {@code typeMirror}
+     * is a wildcard. If it is not a wildcard, {@code typeMirror} is returned
+     *
+     * @param typeMirror some type
+     * @param env processing environment
+     * @return a fresh type variable if {@code typeMirror} is a wildcard, or {@code type mirror}
+     */
+    public static TypeMirror freshTypeVariable(TypeMirror typeMirror, ProcessingEnvironment env) {
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =
                 com.sun.tools.javac.code.Types.instance(javacEnv.getContext());

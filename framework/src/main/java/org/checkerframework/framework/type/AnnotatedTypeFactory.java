@@ -2022,7 +2022,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             if (originalTypeArg.getKind() == TypeKind.WILDCARD) {
                 TypeMirror cap =
-                        TypesUtils.capturedWildcard(
+                        TypesUtils.freshTypeVariable(
                                 originalTypeArg.getUnderlyingType(), processingEnv);
                 AnnotatedTypeMirror capturedArg = AnnotatedTypeMirror.createType(cap, this, false);
                 newMap.put(typeVariable, capturedArg);
