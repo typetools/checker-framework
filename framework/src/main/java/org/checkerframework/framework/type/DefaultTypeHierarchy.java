@@ -345,13 +345,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             return true;
         }
         if (BoundType.isBoundType(outside)) {
-            Boolean previousResult = typeargVisitHistory.result(inside, outside, currentTop);
+            Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
             if (previousResult != null) {
                 return previousResult;
             }
-            typeargVisitHistory.add(inside, outside, currentTop, true);
+            areEqualVisitHistory.put(inside, outside, currentTop, true);
             boolean result = isContainedByBoundType(inside, new BoundType(outside), canBeCovariant);
-            typeargVisitHistory.add(inside, outside, currentTop, result);
+            areEqualVisitHistory.put(inside, outside, currentTop, result);
             return result;
         }
         if (canBeCovariant) {
