@@ -260,7 +260,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 checker.hasOption("invariantArrays")) {
             @Override
             public StructuralEqualityComparer createEqualityComparer() {
-                return new StructuralEqualityComparer(typeargVisitHistory) {
+                return new StructuralEqualityComparer(areEqualVisitHistory) {
                     @Override
                     protected boolean arePrimeAnnosEqual(
                             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
