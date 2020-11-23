@@ -32,6 +32,8 @@ Removed a formal parameter from methods in `BaseTypeVisitor`:
  * `checkPostcondition`
  * `checkConditionalPostcondition`
 
+In Analysis.runAnalysisFor(), changed boolean parameter to enum BeforeOrAfter.
+
 ---------------------------------------------------------------------------
 
 Version 3.7.1, November 2, 2020
