@@ -428,7 +428,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Exceptions to -AwarnUnneededSuppressions processing. No warning about unneeded suppressions
      * is issued if the SuppressWarnings string matches this pattern.
      */
-    @Nullable Pattern warnUnneededSuppressionsExceptions;
+    private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
     /**
      * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly,
