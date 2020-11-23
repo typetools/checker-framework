@@ -4306,17 +4306,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if {@code type} should be captured
      */
     private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
-        if (type.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.DECLARED) {
+        if (!(type.getKind() == TypeKind.DECLARED && typeMirror.getKind() == TypeKind.DECLARED)) {
             return false;
         }
+
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         AnnotatedDeclaredType typeToCapture = (AnnotatedDeclaredType) type;
+        if (typeToCapture.wasRaw() || typeToCapture.containsUninferredTypeArguments()) {
+            return false;
+        }
+
         if (typeToCapture.getTypeArguments().isEmpty()
-                || typeToCapture.wasRaw()
-                || typeToCapture.containsUninferredTypeArguments()
-                || (capturedTypeMirror != null
-                        && capturedTypeMirror.getTypeArguments().size()
-                                != typeToCapture.getTypeArguments().size())) {
+                || (capturedTypeMirror.getTypeArguments().size()
+                        != typeToCapture.getTypeArguments().size())) {
             return false;
         }
 
@@ -4381,58 +4383,57 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 (AnnotatedDeclaredType)
                         getAnnotatedType(typeToCapture.getUnderlyingType().asElement());
 
-        // Create a mapping from type variables in typeDeclaration to type arguments.
-        Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArguments = new HashMap<>();
-        Map<TypeVariable, AnnotatedTypeMirror> captureToAnnotatedCapture = new HashMap<>();
+        // A mapping from type variable to its type argument in the captured type.
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument = new HashMap<>();
+        // A mapping from the captured type to the annotated captured type.
+        Map<TypeVariable, AnnotatedTypeMirror> typeMirrorToCapture = new HashMap<>();
         for (int i = 0; i < typeDeclaration.getTypeArguments().size(); i++) {
-            TypeVariable typeVar =
+            TypeVariable typeVarTypeMirror =
                     (TypeVariable) typeDeclaration.getTypeArguments().get(i).getUnderlyingType();
-            AnnotatedTypeMirror preCapturedArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeMirror uncapturedTypeArg = typeToCapture.getTypeArguments().get(i);
             AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
             if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())
-                    && preCapturedArg.getKind() == TypeKind.WILDCARD) {
+                    && uncapturedTypeArg.getKind() == TypeKind.WILDCARD) {
                 // The type argument is a captured type. Use the type argument from the newly
                 // created and yet-to-be annotated captureType. (The annotations are added as part
                 // of capturing the wildcard.)
-                typeVarToTypeArguments.put(typeVar, capturedTypeArg);
+                typeVarToTypeArgument.put(typeVarTypeMirror, capturedTypeArg);
                 // Also, add a mapping from the captured type mirror to the annotated captured
                 // type, so that if one captured type refers to another, the correct annotated type
                 // is used.
-                captureToAnnotatedCapture.put(
+                typeMirrorToCapture.put(
                         ((AnnotatedTypeVariable) capturedTypeArg).getUnderlyingType(),
                         capturedTypeArg);
             } else {
                 // The type argument is not a captured type. Use the type argument from
                 // typeToCapture, which is fully-annotated.
-                typeVarToTypeArguments.put(typeVar, preCapturedArg);
+                typeVarToTypeArgument.put(typeVarTypeMirror, uncapturedTypeArg);
             }
         }
 
-        // Use the mapping above to substitute the type variables in capturedType and
-        // typeDeclaration.
+        // Use the mapping above to substitute the type variables in capturedType.
         capturedType =
                 (AnnotatedDeclaredType)
                         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                                typeVarToTypeArguments, capturedType);
+                                typeVarToTypeArgument, capturedType);
 
         // Loop through the type arguments and set the annotations of each captured type.
         List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>(typeToCapture.typeArgs);
-        List<TypeVariable> orderToCapture =
-                TypesUtils.order(captureToAnnotatedCapture.keySet(), types);
+        List<TypeVariable> orderToCapture = TypesUtils.order(typeMirrorToCapture.keySet(), types);
         for (TypeVariable capture : orderToCapture) {
-            AnnotatedTypeMirror typeArg = captureToAnnotatedCapture.get(capture);
+            AnnotatedTypeMirror capturedTypeArg = typeMirrorToCapture.get(capture);
             int i = capturedTypeMirror.getTypeArguments().indexOf(capture);
-            AnnotatedTypeMirror annoTypeArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeMirror uncapturedTypeArg = typeToCapture.getTypeArguments().get(i);
             AnnotatedTypeVariable typeVariable =
                     (AnnotatedTypeVariable) typeDeclaration.getTypeArguments().get(i);
             captureWildcard(
-                    typeVarToTypeArguments,
-                    captureToAnnotatedCapture,
-                    (AnnotatedWildcardType) annoTypeArg,
+                    typeVarToTypeArgument,
+                    typeMirrorToCapture,
+                    (AnnotatedWildcardType) uncapturedTypeArg,
                     typeVariable,
-                    (AnnotatedTypeVariable) typeArg);
+                    (AnnotatedTypeVariable) capturedTypeArg);
             newTypeArgs.remove(i);
-            newTypeArgs.add(i, typeArg);
+            newTypeArgs.add(i, capturedTypeArg);
         }
         capturedType.setTypeArguments(newTypeArgs);
 
@@ -4444,7 +4445,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the annotated bounds for fresh type variable {@code capturedArg}, so that it is the
      * capture of {@code wildcard}.
      *
-     * @param argMapping substitution
+     * @param argMapping mapping from type variable to its type argument
      * @param captureToAnnotatedCapture mapping from captured type mirror to captured annotated type
      *     mirror
      * @param wildcard wildcard to capture

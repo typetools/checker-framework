@@ -923,7 +923,7 @@ public final class TypesUtils {
         List<TypeVariable> list = new ArrayList<>(collection);
         List<TypeVariable> ordered = new ArrayList<>();
         while (!list.isEmpty()) {
-            TypeVariable free = free(list, types);
+            TypeVariable free = doesNotContainOthers(list, types);
             list.remove(free);
             ordered.add(free);
         }
@@ -940,7 +940,8 @@ public final class TypesUtils {
      *     the collection, but maybe its self
      */
     @SuppressWarnings("interning:not.interned") // must be the same object from collection
-    public static TypeVariable free(Collection<? extends TypeVariable> collection, Types types) {
+    private static TypeVariable doesNotContainOthers(
+            Collection<? extends TypeVariable> collection, Types types) {
         for (TypeVariable candidate : collection) {
             boolean doesNotContain = true;
             for (TypeVariable other : collection) {
