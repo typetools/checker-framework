@@ -1393,10 +1393,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(node.getVariable());
-        AnnotatedTypeMirror iterableType = atypeFactory.getAnnotatedType(node.getExpression());
-        AnnotatedTypeMirror iteratedType =
-                AnnotatedTypes.getIteratedType(
-                        checker.getProcessingEnvironment(), atypeFactory, iterableType);
+        AnnotatedTypeMirror iteratedType = atypeFactory.getIteratedType(node.getExpression());
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(
@@ -2933,21 +2930,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
             AnnotatedTypeMirror typeArg = typeargs.get(i);
 
-            if (isIgnoredUninferredWildcard(bounds.getUpperBound())
-                    || isIgnoredUninferredWildcard(typeArg)) {
+            if (typeArg.getKind() == TypeKind.WILDCARD) {
+                // Even if the wildcard is outside the bound, it is made within the bound during
+                // capture conversion.
                 continue;
             }
-
-            if (shouldBeCaptureConverted(typeArg, bounds)) {
+            if (isIgnoredUninferredWildcard(bounds.getUpperBound())) {
                 continue;
             }
 
             AnnotatedTypeMirror paramUpperBound = bounds.getUpperBound();
-            if (typeArg.getKind() == TypeKind.WILDCARD) {
-                paramUpperBound =
-                        atypeFactory.widenToUpperBound(
-                                paramUpperBound, (AnnotatedWildcardType) typeArg);
-            }
 
             Tree reportErrorToTree;
             if (typeargTrees == null || typeargTrees.isEmpty()) {
@@ -3004,19 +2996,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return atypeFactory.ignoreUninferredTypeArguments
                 && type.getKind() == TypeKind.WILDCARD
                 && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
-    }
-
-    // TODO: REMOVE WHEN CAPTURE CONVERSION IS IMPLEMENTED
-    // TODO: This may not occur only in places where capture conversion occurs but in those cases
-    // TODO: The containment check provided by this method should be enough
-    /**
-     * Identifies cases that would not happen if capture conversion were implemented. These special
-     * cases should be removed when capture conversion is implemented.
-     */
-    private boolean shouldBeCaptureConverted(
-            final AnnotatedTypeMirror typeArg, final AnnotatedTypeParameterBounds bounds) {
-        return typeArg.getKind() == TypeKind.WILDCARD
-                && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
     }
 
     /**
@@ -3874,10 +3853,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             boolean result = true;
             for (int i = 0; i < overriderParams.size(); ++i) {
+                AnnotatedTypeMirror capturedParam =
+                        atypeFactory.applyCaptureConversion(overriddenParams.get(i));
                 boolean success =
                         atypeFactory
                                 .getTypeHierarchy()
-                                .isSubtype(overriddenParams.get(i), overriderParams.get(i));
+                                .isSubtype(capturedParam, overriderParams.get(i));
                 if (!success) {
                     success =
                             testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));

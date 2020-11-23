@@ -8,6 +8,7 @@ class Issue1098 {
 
     <T> void cls(Class<T> p1, T p2) {}
 
+    @SuppressWarnings("keyfor:type.argument.type.incompatible")
     void use() {
         opt(Optional.empty(), null);
         // TODO: false positive, because type argument inference does not account for @Covariant.

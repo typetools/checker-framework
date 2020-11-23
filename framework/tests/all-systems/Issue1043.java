@@ -8,6 +8,7 @@ class Issue1043 {
 
     void bar(Object p) {}
 
+    @SuppressWarnings("keyfor:type.argument.type.incompatible")
     void baz() {
         bar(foo(this.getClass()) ? "a" : "b");
     }

@@ -56,6 +56,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -944,7 +945,9 @@ public class DependentTypesHelper {
                 }
             }
             p.replaceAnnotations(replacement);
-            if (type.getKind() != p.getKind()) {
+            if (type.getKind() != p.getKind()
+                    || (type.getKind() == TypeKind.TYPEVAR
+                            && TypesUtils.isCaptured(p.getUnderlyingType()))) {
                 // if the underlying types don't match, then this type has be substituted for a
                 // type variable, so don't recur. The primary annotation was copied because
                 // if the type variable might have had a primary annotation at a use.

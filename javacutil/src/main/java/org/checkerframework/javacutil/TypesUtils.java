@@ -10,6 +10,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.ImmutableTypes;
+import org.plumelib.util.UtilPlume;
 
 /** A utility class that helps with {@link TypeMirror}s. */
 public final class TypesUtils {
@@ -599,6 +601,18 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns the {@code DeclaredType} for java.lang.Object.
+     *
+     * @param env {@link ProcessingEnvironment}
+     * @return the {@code DeclaredType} for java.lang.Object.
+     */
+    public static DeclaredType getObjectTypeMirror(ProcessingEnvironment env) {
+        Context context = ((JavacProcessingEnvironment) env).getContext();
+        Symtab syms = Symtab.instance(context);
+        return (DeclaredType) syms.objectType;
+    }
+
+    /**
      * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
      * (called upperBound there) and jdk8u.
      */
@@ -878,5 +892,58 @@ public final class TypesUtils {
                 (Type) type,
                 com.sun.tools.javac.util.List.from(newP),
                 com.sun.tools.javac.util.List.from(newT));
+    }
+
+    public static TypeMirror capturedWildcard(TypeMirror typeMirror, ProcessingEnvironment env) {
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        return types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) typeMirror)).head;
+    }
+
+    /**
+     * Returns the list of type variables such that a type variable in the list only references type
+     * variables at a lower index than itself.
+     *
+     * @param collection a collection of type variables
+     * @param types types
+     * @return the list of type variables such that a type variable in the list only references type
+     *     variables at a lower index than itself.
+     */
+    public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
+        List<TypeVariable> list = new ArrayList<>(collection);
+        List<TypeVariable> ordered = new ArrayList<>();
+        while (!list.isEmpty()) {
+            TypeVariable free = free(list, types);
+            list.remove(free);
+            ordered.add(free);
+        }
+        return ordered;
+    }
+
+    /**
+     * Returns the first TypeVariable in {@code collection} that does not contain any other type in
+     * the collection, but maybe its self.
+     *
+     * @param collection a collection of type variables
+     * @param types types
+     * @return the first TypeVariable in {@code collection} that does not contain any other type in
+     *     the collection, but maybe its self
+     */
+    @SuppressWarnings("interning:not.interned") // must be the same object from collection
+    public static TypeVariable free(Collection<? extends TypeVariable> collection, Types types) {
+        for (TypeVariable candidate : collection) {
+            boolean doesNotContain = true;
+            for (TypeVariable other : collection) {
+                if (candidate != other && types.contains(candidate, other)) {
+                    doesNotContain = false;
+                    break;
+                }
+            }
+            if (doesNotContain) {
+                return candidate;
+            }
+        }
+        throw new BugInCF("Not found: %s", UtilPlume.join(",", collection));
     }
 }

@@ -579,16 +579,9 @@ public class BoundsInitializer {
             WildcardType javaWildcardType = wildcard.getUnderlyingType();
             TypeMirror javaExtendsBound;
             if (javaWildcardType.getExtendsBound() != null) {
-                // If the wildcard type has an extends bound, use it.
                 javaExtendsBound = javaWildcardType.getExtendsBound();
-            } else if (wildcard.getTypeVariable() != null) {
-                // Otherwise use the upper bound of the type variable associated with this wildcard.
-                javaExtendsBound = wildcard.getTypeVariable().getUpperBound();
             } else {
-                // Otherwise use the upper bound of the java wildcard.
-                javaExtendsBound =
-                        TypesUtils.wildUpperBound(
-                                javaWildcardType, wildcard.atypeFactory.processingEnv);
+                javaExtendsBound = TypesUtils.getObjectTypeMirror(typeFactory.processingEnv);
             }
 
             if (wildcard.isUninferredTypeArgument()) {

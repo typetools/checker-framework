@@ -56,7 +56,6 @@ class UseMyGeneric {
 class MyGenericExactBounds<@NonNull T extends @NonNull Number> {}
 
 class UseMyGenericExactBounds {
-    // :: error: (type.argument.type.incompatible)
     MyGenericExactBounds<? extends @Nullable Object> wildcardOutsideUBError =
             new MyGenericExactBounds<>();
     MyGenericExactBounds<? extends @NonNull Object> wildcardOutside = new MyGenericExactBounds<>();

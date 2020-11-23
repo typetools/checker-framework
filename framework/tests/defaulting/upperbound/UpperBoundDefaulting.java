@@ -19,7 +19,6 @@ public class UpperBoundDefaulting {
         MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom =
                 new MyArrayList<UAL>();
 
-        // :: error: (type.argument.type.incompatible)
         MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom =
                 // :: error: (assignment.type.incompatible)
                 new MyArrayList<UAL>();
@@ -27,13 +26,10 @@ public class UpperBoundDefaulting {
 
     public void implicitsWildcard(MyArrayList<?> myArrayList) {
 
-        // should fail because @LbImplicit is below @UbTop
-        // :: error: (type.argument.type.incompatible)
         @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
 
         @UbTop MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
 
-        // :: error: (type.argument.type.incompatible)
         @UbTop MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
                 // :: error: (assignment.type.incompatible)
                 myArrayList;
@@ -41,22 +37,17 @@ public class UpperBoundDefaulting {
 
     public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
 
-        // should fail because @LbImplicit is below @UbTop
-        // :: error: (type.argument.type.incompatible)
         @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iebLowerBoundIncompatible = iebList;
 
         MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom = iebList;
 
-        // :: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
+        // :: error: (assignment.type.incompatible)
         MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom = iebList;
     }
 
     public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
-        // should fail because @UbExplicit is below UbTop
-        // :: error: (type.argument.type.incompatible)
         @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
-        // :: error: (type.argument.type.incompatible)
         @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible =
                 // :: error: (assignment.type.incompatible)
                 elbList;

@@ -93,6 +93,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
@@ -1910,6 +1911,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // "this" is the receiver.
             receiverType = getSelfType(tree);
         }
+        if (receiverType != null && receiverType.getKind() == TypeKind.DECLARED) {
+            receiverType = applyCaptureConversion(receiverType);
+        }
 
         ParameterizedExecutableType mType = methodFromUse(tree, methodElt, receiverType);
         if (checker.shouldResolveReflection()
@@ -1964,6 +1968,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
+            typeVarMapping = captureMethodTypeArgs(typeVarMapping, memberType.getTypeVariables());
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
                 if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
                     throw new BugInCF(
@@ -1975,6 +1980,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + "Inferred method type arguments: "
                                     + typeVarMapping);
                 }
+
                 typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
             }
             methodType =
@@ -1984,10 +1990,63 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
                 && TreeUtils.isMethodInvocation(tree, objectGetClass, processingEnv)) {
-            adaptGetClassReturnTypeToReceiver(methodType, receiverType);
+            adaptGetClassReturnTypeToReceiver(methodType, receiverType, tree);
         }
 
         return new ParameterizedExecutableType(methodType, typeargs);
+    }
+
+    /**
+     * Apply capture conversion to the type arguments of a method invocation.
+     *
+     * @param typeVarMapping mapping from type variable to its argument
+     * @param declTypeVar list of type variable declationations
+     * @return a mapping form type variable to its captured type argument
+     */
+    private Map<TypeVariable, AnnotatedTypeMirror> captureMethodTypeArgs(
+            Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping,
+            List<AnnotatedTypeVariable> declTypeVar) {
+        // TODO: This should happen as part of Java 8 inference.
+        // See Issue #979.
+        Map<TypeVariable, AnnotatedTypeVariable> typeParameter = new HashMap<>();
+        for (AnnotatedTypeVariable t : declTypeVar) {
+            typeParameter.put(t.getUnderlyingType(), t);
+        }
+        Map<TypeVariable, AnnotatedTypeMirror> newMap = new HashMap<>();
+        Map<TypeVariable, AnnotatedTypeMirror> captureToAnnotatedCapture = new HashMap<>();
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry : typeVarMapping.entrySet()) {
+            AnnotatedTypeMirror originalTypeArg = entry.getValue();
+            TypeVariable typeVariable = entry.getKey();
+            if (originalTypeArg.containsUninferredTypeArguments()) {
+                return typeVarMapping;
+            }
+            if (originalTypeArg.getKind() == TypeKind.WILDCARD) {
+                TypeMirror cap =
+                        TypesUtils.capturedWildcard(
+                                originalTypeArg.getUnderlyingType(), processingEnv);
+                AnnotatedTypeMirror capturedArg = AnnotatedTypeMirror.createType(cap, this, false);
+                newMap.put(typeVariable, capturedArg);
+                captureToAnnotatedCapture.put((TypeVariable) cap, capturedArg);
+            } else {
+                newMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        List<TypeVariable> order = TypesUtils.order(typeVarMapping.keySet(), types);
+        for (TypeVariable typeVariable : order) {
+            AnnotatedTypeMirror originalTypeArg = typeVarMapping.get(typeVariable);
+            AnnotatedTypeMirror newTypeArg = newMap.get(typeVariable);
+            if (TypesUtils.isCaptured(newTypeArg.getUnderlyingType())
+                    && originalTypeArg.getKind() == TypeKind.WILDCARD) {
+                captureWildcard(
+                        newMap,
+                        captureToAnnotatedCapture,
+                        (AnnotatedWildcardType) originalTypeArg,
+                        typeParameter.get(typeVariable),
+                        (AnnotatedTypeVariable) newTypeArg);
+            }
+        }
+        return newMap;
     }
 
     /**
@@ -2014,15 +2073,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param getClassType this must be a type representing a call to Object.getClass otherwise a
      *     runtime exception will be thrown. It is modified by side effect.
      * @param receiverType the receiver type of the method invocation (not the declared receiver
-     *     type)
+     * @param tree getClass method invocation tree
      */
     protected void adaptGetClassReturnTypeToReceiver(
-            final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
-        // TODO: should the receiver type ever be a declaration??
-        // Work on removing the asUse() call.
-        final AnnotatedTypeMirror newBound = receiverType.getErased().asUse();
+            AnnotatedExecutableType getClassType,
+            AnnotatedTypeMirror receiverType,
+            ExpressionTree tree) {
 
-        final AnnotatedTypeMirror returnType = getClassType.getReturnType();
+        TypeMirror type = TreeUtils.typeOf(tree);
+        AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(type, this, false);
+
         if (returnType == null
                 || !(returnType.getKind() == TypeKind.DECLARED)
                 || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1) {
@@ -2032,19 +2092,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     getClassType, receiverType);
         }
 
-        final AnnotatedDeclaredType returnAdt =
-                (AnnotatedDeclaredType) getClassType.getReturnType();
-        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        AnnotatedWildcardType classWildcardArg =
+                (AnnotatedWildcardType)
+                        ((AnnotatedDeclaredType) getClassType.getReturnType())
+                                .getTypeArguments()
+                                .get(0);
+        getClassType.setReturnType(returnType);
 
         // Usually, the only locations that will add annotations to the return type are getClass in
         // stub files defaults and propagation tree annotator.  Since getClass is final they cannot
         // come from source code.  Also, since the newBound is an erased type we have no type
         // arguments.  So, we just copy the annotations from the bound of the declared type to the
         // new bound.
-        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
         Set<AnnotationMirror> newAnnos = AnnotationUtils.createAnnotationSet();
         Set<AnnotationMirror> typeBoundAnnos =
-                getTypeDeclarationBounds(newBound.getUnderlyingType());
+                getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
         Set<AnnotationMirror> wildcardBoundAnnos =
                 classWildcardArg.getExtendsBound().getAnnotations();
         for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
@@ -2056,9 +2118,78 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 newAnnos.add(wildcardAnno);
             }
         }
-        newBound.replaceAnnotations(newAnnos);
+        AnnotatedTypeMirror newTypeArg =
+                ((AnnotatedDeclaredType) getClassType.getReturnType()).getTypeArguments().get(0);
+        ((AnnotatedTypeVariable) newTypeArg).getUpperBound().replaceAnnotations(newAnnos);
+    }
 
-        classWildcardArg.setExtendsBound(newBound);
+    /**
+     * Return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     * the component type of the array.
+     *
+     * @param expression an expression whose type is an array or implements {@link Iterable}
+     * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     *     the component type of the array.
+     */
+    public AnnotatedTypeMirror getIteratedType(ExpressionTree expression) {
+        return getIteratedType(expression, getAnnotatedType(expression));
+    }
+
+    /**
+     * Return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     * the component type of the array.
+     *
+     * @param expression an expression whose type is an array or implements {@link Iterable}
+     * @param iterableType the type of the expression
+     * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     *     the component type of the array.
+     */
+    protected AnnotatedTypeMirror getIteratedType(
+            ExpressionTree expression, AnnotatedTypeMirror iterableType) {
+        switch (iterableType.getKind()) {
+            case ARRAY:
+                return ((AnnotatedArrayType) iterableType).getComponentType();
+            case WILDCARD:
+                return getIteratedType(
+                        expression,
+                        ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
+            case TYPEVAR:
+                return getIteratedType(
+                        expression, ((AnnotatedTypeVariable) iterableType).getUpperBound());
+            case DECLARED:
+                TypeElement iterableElement =
+                        ElementUtils.getTypeElement(processingEnv, Iterable.class);
+                AnnotatedDeclaredType iterableElmType = getAnnotatedType(iterableElement);
+                AnnotatedDeclaredType dt =
+                        AnnotatedTypes.asSuper(this, iterableType, iterableElmType);
+                AnnotatedTypeMirror typeArg;
+                if (dt.getTypeArguments().isEmpty()) {
+                    TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
+                    typeArg = getAnnotatedType(e);
+                } else {
+                    typeArg = dt.getTypeArguments().get(0);
+                }
+                return typeArg;
+
+                // TODO: Properly desugar Iterator.next(). The below doesn't work because
+                // method from use assumes that the expression tree matches the method element.
+                // TypeElement iteratorElement =
+                //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
+                // AnnotatedTypeMirror iteratorType =
+                //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
+                // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+                // mapping.put(
+                //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
+                //          typeArg);
+                // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
+                // ExecutableElement next =
+                //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
+                // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
+                // return m.executableType.getReturnType();
+            default:
+                throw new BugInCF(
+                        "AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+        }
     }
 
     /**
@@ -3846,86 +3977,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror}, this method
-     * returns an AnnotatedTypeMirror with the same qualifiers as {@code annotatedTypeMirror}, but
-     * the underlying Java type is the most specific base type of {@code annotatedTypeMirror} whose
-     * erasure type is equivalent to the upper bound of {@code wildcard}.
-     *
-     * <p>Otherwise, returns {@code annotatedTypeMirror} unmodified.
-     *
-     * <p>For example:
-     *
-     * <pre>
-     * wildcard := @NonNull ? extends @NonNull Object
-     * annotatedTypeMirror := @Nullable String
-     *
-     * widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable Object
-     * </pre>
-     *
-     * This method is needed because, the Java compiler allows wildcards to have upper bounds above
-     * the type variable upper bounds for which they are type arguments. For example, given the
-     * following parametric type:
-     *
-     * <pre>
-     * {@code class MyClass<T extends Number>}
-     * </pre>
-     *
-     * the following is legal:
-     *
-     * <pre>
-     * {@code MyClass<? extends Object>}
-     * </pre>
-     *
-     * This is sound because in Java the wildcard is capture converted to: {@code CAP#1 extends
-     * Number from capture of ? extends Object}.
-     *
-     * <p>Because the Checker Framework does not implement capture conversion, wildcard upper bounds
-     * may cause spurious errors in subtyping checks. This method prevents those errors by widening
-     * the upper bound of the type parameter.
-     *
-     * <p>This method widens the underlying Java type of the upper bound of the type parameter
-     * rather than narrowing the bound of the wildcard in order to avoid issuing an error with an
-     * upper bound that is not in source code.
-     *
-     * <p>The widened type should only be used for typing checks that require it. Using the widened
-     * type elsewhere would cause confusing error messages with types not in the source code.
-     *
-     * @param annotatedTypeMirror AnnotatedTypeMirror to widen
-     * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
-     * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
-     */
-    public AnnotatedTypeMirror widenToUpperBound(
-            final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
-        final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
-        final TypeMirror wildcardUBTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
-        if (TypesUtils.isErasedSubtype(wildcardUBTypeMirror, toModifyTypeMirror, types)) {
-            return annotatedTypeMirror;
-        } else if (TypesUtils.isErasedSubtype(toModifyTypeMirror, wildcardUBTypeMirror, types)) {
-            return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
-        } else if (wildcardUBTypeMirror.getKind() == TypeKind.DECLARED
-                && TypesUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
-            // If the Checker Framework implemented capture conversion, then in this case, then
-            // the upper bound of the capture converted wildcard would be an intersection type.
-            // See JLS 15.1.10
-            // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10)
-
-            // For example:
-            // class MyClass<@A T extends @B Number> {}
-            // MyClass<@C ? extends @D Serializable>
-            // The upper bound of the captured wildcard:
-            // glb(@B Number, @D Serializable) = @B Number & @D Serializable
-            // The about upper bound must be a subtype of the declared upper bound:
-            // @B Number & @D Serializable <: @B Number, which is always true.
-
-            // So, replace the upper bound at the declaration with the wildcard's upper bound so
-            // that the rest of the subtyping test pass.
-            return wildcard.getExtendsBound();
-        }
-
-        return annotatedTypeMirror;
-    }
-
-    /**
      * Returns the function type that this member reference targets.
      *
      * <p>The function type is the type of the single method declared in the functional interface
@@ -4238,6 +4289,202 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // only the main annotations are copied.  Add default annotations in places without
         // annotations.
         addDefaultAnnotations(functionalType);
+    }
+
+    /**
+     * Return true if {@code type} should be captured.
+     *
+     * <ul>
+     *   <li>{@code type} and {@code typeMirror} must both be declared types.
+     *   <li>{@code type} must not be a raw type, must not have an uninferred type argument, and
+     *       must have a wildcard as a type argument.
+     *   <li>{@code typeMirror} must have a captured type as a type argument.
+     * </ul>
+     *
+     * @param type annotated type to capture
+     * @param typeMirror underlying Java type.
+     * @return true if {@code type} should be captured.
+     */
+    private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
+        if (type.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+        DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
+        AnnotatedDeclaredType typeToCapture = (AnnotatedDeclaredType) type;
+        if (typeToCapture.getTypeArguments().isEmpty()
+                || typeToCapture.wasRaw()
+                || typeToCapture.containsUninferredTypeArguments()
+                || (capturedTypeMirror != null
+                        && capturedTypeMirror.getTypeArguments().size()
+                                != typeToCapture.getTypeArguments().size())) {
+            return false;
+        }
+
+        for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
+            if (TypesUtils.isCaptured(capturedTypeMirror.getTypeArguments().get(i))
+                    && typeToCapture.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Apply capture conversion.
+     *
+     * <p>Capture conversion is the process of converting wildcards in a generic type to fresh type
+     * variables. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS
+     * 5.1.10</a> for all the details.
+     *
+     * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
+     * this method returns {@code type}.
+     *
+     * @param typeToCapture type to capture
+     * @return the captured type
+     */
+    public AnnotatedTypeMirror applyCaptureConversion(AnnotatedTypeMirror typeToCapture) {
+        TypeMirror capturedTypeMirror = types.capture(typeToCapture.getUnderlyingType());
+        return applyCaptureConversion(typeToCapture, capturedTypeMirror);
+    }
+
+    /**
+     * Apply capture conversion.
+     *
+     * <p>Capture conversion is the process of converting wildcards in a generic type to fresh type
+     * variables. See <a
+     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS
+     * 5.1.10</a> for all the details.
+     *
+     * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
+     * this method returns {@code type}.
+     *
+     * @param type type to capture
+     * @param typeMirror type from the Java compiler that has captured wildcards, which are used as
+     *     the underlying type of the captured wildcards
+     * @return the captured type
+     */
+    public AnnotatedTypeMirror applyCaptureConversion(
+            AnnotatedTypeMirror type, TypeMirror typeMirror) {
+        if (!shouldCapture(type, typeMirror)) {
+            return type;
+        }
+
+        DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
+        AnnotatedDeclaredType typeToCapture = (AnnotatedDeclaredType) type;
+        AnnotatedDeclaredType capturedType =
+                (AnnotatedDeclaredType)
+                        AnnotatedTypeMirror.createType(capturedTypeMirror, this, false);
+        capturedType.getTypeArguments(); // initialize the type arguments
+
+        AnnotatedDeclaredType typeDeclaration =
+                (AnnotatedDeclaredType)
+                        getAnnotatedType(typeToCapture.getUnderlyingType().asElement());
+
+        // Create a mapping from type variables in typeDeclaration to type arguments.
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArguments = new HashMap<>();
+        Map<TypeVariable, AnnotatedTypeMirror> captureToAnnotatedCapture = new HashMap<>();
+        for (int i = 0; i < typeDeclaration.getTypeArguments().size(); i++) {
+            TypeVariable typeVar =
+                    (TypeVariable) typeDeclaration.getTypeArguments().get(i).getUnderlyingType();
+            AnnotatedTypeMirror preCapturedArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
+            if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())
+                    && preCapturedArg.getKind() == TypeKind.WILDCARD) {
+                // If the type argument is a captured type, then use the type argument from the
+                // newly created and yet-to-be annotated captureType. (The annotations are added as
+                // part of capturing the wildcard.
+                typeVarToTypeArguments.put(typeVar, capturedTypeArg);
+                // Also, add a mapping from the captured type mirror to the annotated captured
+                // type, so that if one captured type refers to another, the correct annotated type
+                // is used.
+                captureToAnnotatedCapture.put(
+                        ((AnnotatedTypeVariable) capturedTypeArg).getUnderlyingType(),
+                        capturedTypeArg);
+            } else {
+                // If the type argument is not a captured type, then use the type argument from
+                // typeToCapture, which is fully-annotated.
+                typeVarToTypeArguments.put(typeVar, preCapturedArg);
+            }
+        }
+
+        // Use the mapping above to substitute the type variables in capturedType and
+        // typeDeclaration.
+        capturedType =
+                (AnnotatedDeclaredType)
+                        typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                                typeVarToTypeArguments, capturedType);
+
+        // Loop through the type arguments and correctly set the annotations of each captured type.
+        List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>(typeToCapture.typeArgs);
+
+        List<TypeVariable> orderToCapture =
+                TypesUtils.order(captureToAnnotatedCapture.keySet(), types);
+        for (TypeVariable capture : orderToCapture) {
+            AnnotatedTypeMirror typeArg = captureToAnnotatedCapture.get(capture);
+            int i = capturedTypeMirror.getTypeArguments().indexOf(capture);
+            AnnotatedTypeMirror annoTypeArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeVariable typeVariable =
+                    (AnnotatedTypeVariable) typeDeclaration.getTypeArguments().get(i);
+            captureWildcard(
+                    typeVarToTypeArguments,
+                    captureToAnnotatedCapture,
+                    (AnnotatedWildcardType) annoTypeArg,
+                    typeVariable,
+                    (AnnotatedTypeVariable) typeArg);
+            newTypeArgs.remove(i);
+            newTypeArgs.add(i, typeArg);
+        }
+        capturedType.setTypeArguments(newTypeArgs);
+        capturedType.addAnnotations(typeToCapture.getAnnotations());
+        return capturedType;
+    }
+
+    /**
+     * Given {@code wildcard}, its corresponding {@code typeVariable}, and the substitution {@code
+     * argMapping}, compute the annotated bounds for {@code capturedArg} and set them.
+     *
+     * @param argMapping substitution
+     * @param captureToAnnotatedCapture mapping from captured type mirror to captured annotated type
+     *     mirror
+     * @param wildcard wildcard to capture
+     * @param typeVariable type variable for which {@code wildcard} is a type argument
+     * @param capturedArg the fresh type variable which is sideffected by this method
+     */
+    private void captureWildcard(
+            Map<TypeVariable, AnnotatedTypeMirror> argMapping,
+            Map<TypeVariable, AnnotatedTypeMirror> captureToAnnotatedCapture,
+            AnnotatedWildcardType wildcard,
+            AnnotatedTypeVariable typeVariable,
+            AnnotatedTypeVariable capturedArg) {
+        AnnotatedTypeMirror typeVarUpperBound =
+                typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                        argMapping, typeVariable.getUpperBound());
+
+        AnnotatedTypeMirror upperBound =
+                AnnotatedTypes.greatestLowerBound(
+                        this, typeVarUpperBound, wildcard.getExtendsBound());
+
+        // The greatestLowerBound method makes a copy of the typeVarUpperBound, so if it
+        // used any captured type, then the copy of the captured type must be substituted with
+        // the exact AnnotatedTypeVariable in captureToAnnotatedCapture.
+        upperBound =
+                typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                        captureToAnnotatedCapture, upperBound);
+
+        capturedArg.setUpperBound(upperBound);
+        AnnotatedTypeMirror lowerBound =
+                AnnotatedTypes.leastUpperBound(
+                        this, typeVariable.getLowerBound(), wildcard.getSuperBound());
+        lowerBound =
+                typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                        captureToAnnotatedCapture, lowerBound);
+        capturedArg.setLowerBound(lowerBound);
+
+        AnnotationMirrorSet p =
+                new AnnotationMirrorSet(capturedArg.getUpperBound().getAnnotations());
+        p.retainAll(capturedArg.getLowerBound().getAnnotations());
+        capturedArg.replaceAnnotations(p);
     }
 
     /**

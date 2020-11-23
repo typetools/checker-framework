@@ -14,7 +14,6 @@ class GroundTargetType {
         return null;
     }
 
-    // :: error: (type.argument.type.incompatible)
     Supplier<? extends @Nullable Object> fn = GroundTargetType::myMethod;
     // :: error: (methodref.return.invalid)
     Supplier<? extends @NonNull Object> fn2 = GroundTargetType::myMethod;

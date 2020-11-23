@@ -17,6 +17,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -91,6 +92,17 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                 + type
                                 + " kind="
                                 + underlyingTree.getKind());
+            }
+        } else if (TypesUtils.isCaptured(type.getUnderlyingType())) {
+            // This happens when a variable declaration is created by
+            // org.checkerframework.javacutil.trees.TreeBuilder.buildVariableDecl(...)
+            List<? extends AnnotationMirror> a =
+                    ((CapturedType) type.getUnderlyingType()).bound.getAnnotationMirrors();
+            AnnotatedTypeVariable capturedType = (AnnotatedTypeVariable) type;
+            if (capturedType.getLowerBound().getKind() != TypeKind.NULL) {
+                capturedType.getLowerBound().addAnnotations(a);
+            } else {
+                capturedType.getUpperBound().addAnnotations(a);
             }
         } else {
             type.addAnnotations(annos);
