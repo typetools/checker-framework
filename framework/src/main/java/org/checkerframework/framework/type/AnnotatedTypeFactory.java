@@ -4302,8 +4302,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * </ul>
      *
      * @param type annotated type to capture
-     * @param typeMirror underlying Java type.
-     * @return true if {@code type} should be captured.
+     * @param typeMirror underlying Java type
+     * @return true if {@code type} should be captured
      */
     private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
         if (type.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.DECLARED) {
