@@ -4306,17 +4306,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if {@code type} should be captured
      */
     private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
-        if (type.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.DECLARED) {
+        if (!(type.getKind() == TypeKind.DECLARED && typeMirror.getKind() == TypeKind.DECLARED)) {
             return false;
         }
+
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         AnnotatedDeclaredType typeToCapture = (AnnotatedDeclaredType) type;
+        if (typeToCapture.wasRaw() || typeToCapture.containsUninferredTypeArguments()) {
+            return false;
+        }
+
         if (typeToCapture.getTypeArguments().isEmpty()
-                || typeToCapture.wasRaw()
-                || typeToCapture.containsUninferredTypeArguments()
-                || (capturedTypeMirror != null
-                        && capturedTypeMirror.getTypeArguments().size()
-                                != typeToCapture.getTypeArguments().size())) {
+                || (capturedTypeMirror.getTypeArguments().size()
+                        != typeToCapture.getTypeArguments().size())) {
             return false;
         }
 
