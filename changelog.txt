@@ -10,6 +10,9 @@ Framework.
 The -AwarnUnneededSuppressions command-line option warns only about
 suppression strings that contain a checker name.
 
+The -AwarnUnneededSuppressionsExceptions=REGEX command-line option
+partially disables -AwarnUnneededSuppressions.  Most users don't need this.
+
 Implementation details:
 
 Added classes `SubtypeIsSubsetQualifierHierarchy` and
