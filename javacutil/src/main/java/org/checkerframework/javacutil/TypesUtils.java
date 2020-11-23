@@ -908,7 +908,7 @@ public final class TypesUtils {
      * @param collection a collection of type variables
      * @param types types
      * @return the list of type variables such that a type variable in the list only references type
-     *     variables at a lower index than itself.
+     *     variables at a lower index than itself
      */
     public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
         List<TypeVariable> list = new ArrayList<>(collection);
