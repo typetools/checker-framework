@@ -407,7 +407,7 @@ public class CheckerMain {
             args.addAll(
                     Arrays.asList(
                             "--illegal-access=warn",
-                            "--put-opens",
+                            "--add-opens",
                             "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
