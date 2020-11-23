@@ -190,20 +190,45 @@ public class StubTypes {
         for (String stubPath : allStubFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
-            String stubPathFull = stubPath;
-            if (base != null) {
-                stubPathFull = base + "/" + stubPath;
-            }
+            String stubPathFull = (base == null) ? stubPath : base + "/" + stubPath;
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
-            if (stubs.isEmpty()) {
+            if (!stubs.isEmpty()) {
+                for (StubResource resource : stubs) {
+                    InputStream stubStream;
+                    try {
+                        stubStream = resource.getInputStream();
+                    } catch (IOException e) {
+                        checker.message(
+                                Kind.NOTE,
+                                "Could not read stub resource: " + resource.getDescription());
+                        continue;
+                    }
+                    StubParser.parse(
+                            resource.getDescription(),
+                            stubStream,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                }
+            } else {
+                // We didn't find the stub files.
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
                 if (stubPath.startsWith("checker.jar/")) {
                     stubPath = stubPath.substring("checker.jar/".length());
                 }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
-                if (in == null) {
-                    // Didn't find the stub file.
+                if (in != null) {
+                    StubParser.parse(
+                            stubPath,
+                            in,
+                            factory,
+                            processingEnv,
+                            typesFromStubFiles,
+                            declAnnosFromStubFiles);
+                } else {
+                    // Didn't find the stub file.  Issue a warning.
 
                     // When using a compound checker, the target stub file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
@@ -228,7 +253,7 @@ public class StubTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
-                    // If there exists one parent checker which can find this stub file, don't
+                    // If there exists one parent checker that can find this stub file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
                         File stubPathParent = new File(stubPath).getParentFile();
@@ -249,33 +274,7 @@ public class StubTypes {
                                                 ? ""
                                                 : (" or at " + stubPathFull)));
                     }
-                } else {
-                    StubParser.parse(
-                            stubPath,
-                            in,
-                            factory,
-                            processingEnv,
-                            typesFromStubFiles,
-                            declAnnosFromStubFiles);
                 }
-            }
-            for (StubResource resource : stubs) {
-                InputStream stubStream;
-                try {
-                    stubStream = resource.getInputStream();
-                } catch (IOException e) {
-                    checker.message(
-                            Kind.NOTE,
-                            "Could not read stub resource: " + resource.getDescription());
-                    continue;
-                }
-                StubParser.parse(
-                        resource.getDescription(),
-                        stubStream,
-                        factory,
-                        processingEnv,
-                        typesFromStubFiles,
-                        declAnnosFromStubFiles);
             }
         }
         parsing = false;
