@@ -917,8 +917,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * @param subtype the possible subtype
      * @param supertype the possible supertype
-     * @return true if an intersection is a supertype if all of its bounds are a supertype of
-     *     subtype
+     * @return true {@code subtype} is a subtype of {@code supertype}
      */
     protected boolean visitIntersectionSupertype(
             AnnotatedTypeMirror subtype, AnnotatedIntersectionType supertype) {
