@@ -898,9 +898,10 @@ public final class TypesUtils {
      * Returns a fresh type variable, a captured type, for {@code typeMirror}, if {@code typeMirror}
      * is a wildcard. If it is not a wildcard, {@code typeMirror} is returned.
      *
-     * @param typeMirror some type
+     * @param typeMirror a type
      * @param env processing environment
-     * @return a fresh type variable if {@code typeMirror} is a wildcard, or {@code type mirror}
+     * @return a fresh type variable if {@code typeMirror} is a wildcard, otherwise {@code
+     *     typeMirror}
      */
     public static TypeMirror freshTypeVariable(TypeMirror typeMirror, ProcessingEnvironment env) {
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
@@ -914,9 +915,9 @@ public final class TypesUtils {
      * variables at a lower index than itself.
      *
      * @param collection a collection of type variables
-     * @param types types
-     * @return the list of type variables such that a type variable in the list only references type
-     *     variables at a lower index than itself
+     * @param types type utilities
+     * @return the type variables ordered so that eachtype variable only references earlier type
+     *     variables
      */
     public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
         List<TypeVariable> list = new ArrayList<>(collection);
@@ -931,7 +932,7 @@ public final class TypesUtils {
 
     /**
      * Returns the first TypeVariable in {@code collection} that does not contain any other type in
-     * the collection, but maybe its self.
+     * the collection.
      *
      * @param collection a collection of type variables
      * @param types types
