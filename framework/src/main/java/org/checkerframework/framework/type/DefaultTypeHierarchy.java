@@ -268,8 +268,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Representation of a wildcard or captured wildcared so that {@link AnnotatedWildcardType} and
-     * {@link AnnotatedTypeVariable} that are captured types, may be used interchangeably.
+     * Represents a wildcard or captured wildcard. Use this to avoid the need for special-case code
+     * for {@link AnnotatedWildcardType} and {@link AnnotatedTypeVariable}.
      */
     protected static class BoundType {
 
@@ -321,16 +321,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if {@code outside} contains {@code inside}.
+     * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
+     * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
      *
      * <p>A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is described in <a
+     * Containment is formally described in <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
-     * @param inside type to check if it is contained by {@code outside}
-     * @param outside type to check if it contains {@code inside}
+     * @param inside a possibly-contained type
+     * @param outside a possibly-containing type
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
      * @return true if inside is contained by outside, or if canBeCovariant == true and {@code
      *     inside <: outside}
@@ -360,8 +361,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Returns true if {@code outside} contains {@code inside}, where {@code outside} is a bound
-     * type.
+     * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
+     * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
      *
      * <p>A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
@@ -369,23 +370,23 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
-     * @param inside type to check if it is contained by {@code outside}
-     * @param outside type to check if it contains {@code inside}
-     * @param covar whether or not type arguments are allowed to be covariant
+     * @param inside a possibly-contained type
+     * @param outside a possibly-containing type
+     * @param canBeCovariant whether or not type arguments are allowed to be covariant
      * @return true if inside is contained by outside, or if canBeCovariant == true and {@code
      *     inside <: outside}
      */
     protected boolean isContainedByBoundType(
-            AnnotatedTypeMirror inside, BoundType outside, boolean covar) {
+            AnnotatedTypeMirror inside, BoundType outside, boolean canBeCovariant) {
         if (BoundType.isBoundType(inside)) {
             BoundType insideBoundType = new BoundType(inside);
             if (!insideBoundType.hasSuperBound && !outside.hasSuperBound) {
-                return (covar || isSubtype(outside.lower, insideBoundType.lower))
-                        && isContainedByBoundType(insideBoundType.upper, outside, covar);
+                return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
+                        && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
             } else if (outside.hasSuperBound
                     || TypesUtils.isObject(outside.upper.getUnderlyingType())) {
-                return (covar || isSubtype(insideBoundType.upper, outside.upper))
-                        && isContainedByBoundType(insideBoundType.lower, outside, covar);
+                return (canBeCovariant || isSubtype(insideBoundType.upper, outside.upper))
+                        && isContainedByBoundType(insideBoundType.lower, outside, canBeCovariant);
             }
         }
 
@@ -400,12 +401,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             Set<? extends AnnotationMirror> glb =
                     qualifierHierarchy.greatestLowerBounds(setA, setB);
             addToLowestBound(outside.lower, glb);
-            return isContainedByBoundType(inside, outsideUpper, covar);
+            return isContainedByBoundType(inside, outsideUpper, canBeCovariant);
         } else if (BoundType.isBoundType(outside.lower)) {
             BoundType outsideLower = new BoundType(outside.lower);
-            return isContainedByBoundType(inside, outsideLower, covar);
+            return isContainedByBoundType(inside, outsideLower, canBeCovariant);
         } else {
-            if (covar) {
+            if (canBeCovariant) {
                 if (outside.hasSuperBound) {
                     return isSubtype(outside.lower, inside);
                 } else {
