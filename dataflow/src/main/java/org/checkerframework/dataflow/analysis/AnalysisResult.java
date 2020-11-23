@@ -281,7 +281,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store immediately before a given {@link Node}
      */
     public @Nullable S getStoreBefore(Node node) {
-        return runAnalysisFor(node, Analysis.PreOrPost.BEFORE);
+        return runAnalysisFor(node, Analysis.BeforeOrAfter.BEFORE);
     }
 
     /**
@@ -316,7 +316,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
                 }
                 return analysis.runAnalysisFor(
                         firstNode,
-                        Analysis.PreOrPost.BEFORE,
+                        Analysis.BeforeOrAfter.BEFORE,
                         transferInput,
                         nodeValues,
                         analysisCaches);
@@ -345,7 +345,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
                 }
                 return analysis.runAnalysisFor(
                         lastNode,
-                        Analysis.PreOrPost.AFTER,
+                        Analysis.BeforeOrAfter.AFTER,
                         transferInput,
                         nodeValues,
                         analysisCaches);
@@ -386,7 +386,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store immediately after a given {@link Node}
      */
     public @Nullable S getStoreAfter(Node node) {
-        return runAnalysisFor(node, Analysis.PreOrPost.AFTER);
+        return runAnalysisFor(node, Analysis.BeforeOrAfter.AFTER);
     }
 
     /**
@@ -403,7 +403,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      * @return the store before or after {@code node} (depends on the value of {@code before}) after
      *     running the analysis
      */
-    protected @Nullable S runAnalysisFor(Node node, Analysis.PreOrPost preOrPost) {
+    protected @Nullable S runAnalysisFor(Node node, Analysis.BeforeOrAfter preOrPost) {
         Block block = node.getBlock();
         assert block != null : "@AssumeAssertion(nullness): invariant";
         TransferInput<V, S> transferInput = stores.get(block);
@@ -436,7 +436,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      */
     public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
             Node node,
-            Analysis.PreOrPost preOrPost,
+            Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> transferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {

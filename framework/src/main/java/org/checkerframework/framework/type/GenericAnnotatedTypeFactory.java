@@ -1043,7 +1043,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Store store =
                 AnalysisResult.runAnalysisFor(
                         node,
-                        Analysis.PreOrPost.BEFORE,
+                        Analysis.BeforeOrAfter.BEFORE,
                         prevStore,
                         analysis.getNodeValues(),
                         flowResultAnalysisCaches);
@@ -1094,7 +1094,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
-                        Analysis.PreOrPost.AFTER,
+                        Analysis.BeforeOrAfter.AFTER,
                         analysis.getInput(node.getBlock()),
                         analysis.getNodeValues(),
                         flowResultAnalysisCaches);

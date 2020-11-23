@@ -29,7 +29,7 @@ Removed a formal parameter from methods in `BaseTypeVisitor`:
  * `checkPostcondition`
  * `checkConditionalPostcondition`
 
-In Analysis.runAnalysisFor(), changed boolean parameter to enum PreOrPost.
+In Analysis.runAnalysisFor(), changed boolean parameter to enum BeforeOrAfter.
 
 ---------------------------------------------------------------------------
 
