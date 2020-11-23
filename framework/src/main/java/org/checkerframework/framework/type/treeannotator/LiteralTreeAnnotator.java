@@ -167,7 +167,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             throw new BugInCF(
-                    "LiteralTreeAnnotator: tried to add mapping %s=%s to %s",
+                    "LiteralTreeAnnotator: tried to put mapping %s=%s to %s",
                     treeKind, theQual, treeKinds);
         }
     }
