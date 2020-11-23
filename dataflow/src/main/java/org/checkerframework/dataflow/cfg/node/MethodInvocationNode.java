@@ -1,10 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -26,17 +28,34 @@ public class MethodInvocationNode extends Node {
 
     /** The tree for the method invocation. */
     protected final @Nullable MethodInvocationTree tree;
+
     /**
      * The target of the method invocation -- that is, the receiver. For a static method, may be a
      * class name.
      */
     protected final MethodAccessNode target;
+
     /** The arguments of the method invocation. */
     protected final List<Node> arguments;
+
     /** The tree path to the method invocation. */
     protected final TreePath treePath;
 
-    /** Create a MethodInvocationNode. */
+    /**
+     * If this is a node for an {@link Iterator#next()} desugared from an enhanced for, then this is
+     * the expression in the for loop, {@code for(Object o: iter}.
+     */
+    protected @Nullable ExpressionTree iterExpression;
+
+    /**
+     * Create a MethodInvocationNode.
+     *
+     * @param tree for the method invocation
+     * @param target of the method invocation -- that is, the receiver. For a static method, may be
+     *     a class name
+     * @param arguments arguments of the method invocation
+     * @param treePath path to the method invocation
+     */
     public MethodInvocationNode(
             @Nullable MethodInvocationTree tree,
             MethodAccessNode target,
@@ -74,6 +93,25 @@ public class MethodInvocationNode extends Node {
 
     public TreePath getTreePath() {
         return treePath;
+    }
+
+    /**
+     * If this is a node for an {@link Iterator#next()} desugared from an enhanced for, then this is
+     * the expression in the for loop, {@code for(Object o: iter}.
+     *
+     * @return the iter expression
+     */
+    public @Nullable ExpressionTree getIterExpression() {
+        return iterExpression;
+    }
+
+    /**
+     * Set iter expression.
+     *
+     * @param iterExpression iter expression
+     */
+    public void setIterExpression(@Nullable ExpressionTree iterExpression) {
+        this.iterExpression = iterExpression;
     }
 
     @Override
