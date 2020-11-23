@@ -23,7 +23,7 @@ class ValueMethodIdentifier {
     private final List<ExecutableElement> copyOfMethod;
 
     /**
-     * Initialize elements with methods that have special handling in the value checker
+     * Initialize elements with methods that have special handling in the value checker.
      *
      * @param processingEnv the processing environment
      */

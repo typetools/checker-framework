@@ -41,6 +41,7 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -208,6 +209,9 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.source.SourceChecker.shouldSuppressWarnings(javax.lang.model.element.Element, java.lang.String)
     // org.checkerframework.framework.source.SourceVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
+
+    // Exceptions to -AwarnUnneededSuppressions.
+    "warnUnneededSuppressionsExceptions",
 
     // Require that warning suppression annotations contain a checker key as a prefix in order for
     // the warning to be suppressed.
@@ -421,6 +425,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected SourceVisitor<?, ?> visitor;
 
     /**
+     * Exceptions to -AwarnUnneededSuppressions processing. No warning about unneeded suppressions
+     * is issued if the SuppressWarnings string matches this pattern.
+     */
+    private @Nullable Pattern warnUnneededSuppressionsExceptions;
+
+    /**
      * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly,
      * call {@link #getSuppressWarningsStringsFromOption()}.
      */
@@ -530,6 +540,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     Kind.WARNING,
                     "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
                     jreVersion);
+        }
+
+        if (!hasOption("warnUnneededSuppressionsExceptions")) {
+            warnUnneededSuppressionsExceptions = null;
+        } else {
+            String warnUnneededSuppressionsExceptionsString =
+                    getOption("warnUnneededSuppressionsExceptions");
+            if (warnUnneededSuppressionsExceptionsString == null) {
+                throw new UserError(
+                        "Must supply an argument to -AwarnUnneededSuppressionsExceptions");
+            }
+            try {
+                warnUnneededSuppressionsExceptions =
+                        Pattern.compile(warnUnneededSuppressionsExceptionsString);
+            } catch (PatternSyntaxException e) {
+                throw new UserError(
+                        "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
+                                + e.getMessage());
+            }
         }
 
         if (hasOption("printGitProperties")) {
@@ -1852,6 +1881,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
             for (String suppressWarningsString : suppressWarningsStrings) {
+                if (warnUnneededSuppressionsExceptions != null
+                        && warnUnneededSuppressionsExceptions
+                                .matcher(suppressWarningsString)
+                                .find(0)) {
+                    continue;
+                }
                 for (String prefix : prefixes) {
                     if (suppressWarningsString.equals(prefix)
                             || suppressWarningsString.startsWith(prefix + ":")) {
@@ -2233,7 +2268,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns a sorted set of SuppressWarnings prefixes read from the {@link
      * SuppressWarningsPrefix} meta-annotation on the checker class. Or if no {@link
      * SuppressWarningsPrefix} is used, the checker name is used. {@link #SUPPRESS_ALL_PREFIX} is
-     * also added, at the end, unless {@link useAllcheckersPrefix} is false.
+     * also added, at the end, unless {@link #useAllcheckersPrefix} is false.
      *
      * @return a sorted set of SuppressWarnings prefixes
      */
@@ -2596,7 +2631,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Returns the version of the Checker Framework.
      *
-     * @return Checker Framework version
+     * @return the Checker Framework version
      */
     private String getCheckerVersion() {
         Properties gitProperties = getProperties(getClass(), "/git.properties");

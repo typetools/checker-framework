@@ -1503,7 +1503,7 @@ public final class TreeUtils {
      * Determine whether an expression {@link ExpressionTree} has the constant value true, according
      * to the compiler logic.
      *
-     * @param node the expression to be checked.
+     * @param node the expression to be checked
      * @return true if {@code node} has the constant value true.
      */
     public static boolean isExprConstTrue(final ExpressionTree node) {
@@ -1617,7 +1617,7 @@ public final class TreeUtils {
      * @param annoTrees annotations written before a variable/method declaration; null if this type
      *     is not from such a location
      * @param typeTree the type whose annotations to return
-     * @return the annotations explicitly written on the given type.
+     * @return the annotations explicitly written on the given type
      */
     public static List<? extends AnnotationTree> getExplicitAnnotationTrees(
             List<? extends AnnotationTree> annoTrees, Tree typeTree) {

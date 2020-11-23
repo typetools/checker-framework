@@ -1748,7 +1748,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param tree Tree whose type is {@code type}
+     * @param tree a Tree whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
@@ -1763,7 +1763,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(
@@ -1817,7 +1817,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializer, if an initializer is present. Does nothing for local variables with no
      * initializer.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     private void applyLocalVariableQualifierParameterDefaults(

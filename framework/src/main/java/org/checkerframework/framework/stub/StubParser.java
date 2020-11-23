@@ -587,7 +587,7 @@ public class StubParser {
     }
 
     /**
-     * Process a type declaration
+     * Process a type declaration.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;

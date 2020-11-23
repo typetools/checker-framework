@@ -594,7 +594,7 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessQualifierHierarchy();
     }
 
-    /** NullnessQualifierHierarchy */
+    /** NullnessQualifierHierarchy. */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
         /** Qualifier kind for the @{@link Nullable} annotation. */

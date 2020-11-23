@@ -347,7 +347,7 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * Add a processor
+     * Add a processor.
      *
      * @param processor a processor to run
      * @return this

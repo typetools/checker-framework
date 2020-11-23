@@ -44,7 +44,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     /**
      * Create a RegexVisitor.
      *
-     * @param checker the associated RegexChecker.
+     * @param checker the associated RegexChecker
      */
     public RegexVisitor(BaseTypeChecker checker) {
         super(checker);

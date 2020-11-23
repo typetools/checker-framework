@@ -100,7 +100,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
      * arguments. Throws a UserError if the user included an unsupported framework in the list of
      * frameworks to be disabled.
      *
-     * @param disabledFrameworks the disabled builder frameworks.
+     * @param disabledFrameworks the disabled builder frameworks
      */
     private void enableFrameworks(String[] disabledFrameworks) {
         boolean enableAutoValueSupport = true;
