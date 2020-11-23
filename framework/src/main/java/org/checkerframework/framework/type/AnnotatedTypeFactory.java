@@ -4383,16 +4383,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 (AnnotatedDeclaredType)
                         getAnnotatedType(typeToCapture.getUnderlyingType().asElement());
 
-        // Create a mapping from type variables in typeDeclaration to type arguments.
+        // A mapping from type variable to its type argument in the captured type.
         Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArguments = new HashMap<>();
+        // A mapping from the captured type to the annotated captured type.
         Map<TypeVariable, AnnotatedTypeMirror> captureToAnnotatedCapture = new HashMap<>();
         for (int i = 0; i < typeDeclaration.getTypeArguments().size(); i++) {
             TypeVariable typeVar =
                     (TypeVariable) typeDeclaration.getTypeArguments().get(i).getUnderlyingType();
-            AnnotatedTypeMirror preCapturedArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeMirror uncapturedTypeArg = typeToCapture.getTypeArguments().get(i);
             AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
             if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())
-                    && preCapturedArg.getKind() == TypeKind.WILDCARD) {
+                    && uncapturedTypeArg.getKind() == TypeKind.WILDCARD) {
                 // The type argument is a captured type. Use the type argument from the newly
                 // created and yet-to-be annotated captureType. (The annotations are added as part
                 // of capturing the wildcard.)
@@ -4406,12 +4407,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             } else {
                 // The type argument is not a captured type. Use the type argument from
                 // typeToCapture, which is fully-annotated.
-                typeVarToTypeArguments.put(typeVar, preCapturedArg);
+                typeVarToTypeArguments.put(typeVar, uncapturedTypeArg);
             }
         }
 
-        // Use the mapping above to substitute the type variables in capturedType and
-        // typeDeclaration.
+        // Use the mapping above to substitute the type variables in capturedType.
         capturedType =
                 (AnnotatedDeclaredType)
                         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
@@ -4422,19 +4422,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<TypeVariable> orderToCapture =
                 TypesUtils.order(captureToAnnotatedCapture.keySet(), types);
         for (TypeVariable capture : orderToCapture) {
-            AnnotatedTypeMirror typeArg = captureToAnnotatedCapture.get(capture);
+            AnnotatedTypeMirror capturedTypeArg = captureToAnnotatedCapture.get(capture);
             int i = capturedTypeMirror.getTypeArguments().indexOf(capture);
-            AnnotatedTypeMirror annoTypeArg = typeToCapture.getTypeArguments().get(i);
+            AnnotatedTypeMirror uncapturedTypeARg = typeToCapture.getTypeArguments().get(i);
             AnnotatedTypeVariable typeVariable =
                     (AnnotatedTypeVariable) typeDeclaration.getTypeArguments().get(i);
             captureWildcard(
                     typeVarToTypeArguments,
                     captureToAnnotatedCapture,
-                    (AnnotatedWildcardType) annoTypeArg,
+                    (AnnotatedWildcardType) uncapturedTypeARg,
                     typeVariable,
-                    (AnnotatedTypeVariable) typeArg);
+                    (AnnotatedTypeVariable) capturedTypeArg);
             newTypeArgs.remove(i);
-            newTypeArgs.add(i, typeArg);
+            newTypeArgs.add(i, capturedTypeArg);
         }
         capturedType.setTypeArguments(newTypeArgs);
 
@@ -4446,7 +4446,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the annotated bounds for fresh type variable {@code capturedArg}, so that it is the
      * capture of {@code wildcard}.
      *
-     * @param argMapping substitution
+     * @param argMapping mapping from type variable to its type argument
      * @param captureToAnnotatedCapture mapping from captured type mirror to captured annotated type
      *     mirror
      * @param wildcard wildcard to capture
