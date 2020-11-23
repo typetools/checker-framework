@@ -427,6 +427,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     private String @Nullable [] suppressWarningsStringsFromOption;
 
     /**
+     * If true, use the "allcheckers:" warning string prefix.
+     *
+     * <p>Checkers that never issue any error messages should set this to false. That prevents
+     * {@code -AwarnUnneededSuppressions} from issuing warnings about
+     * {@code @SuppressWarnings("allcheckers:...")}.
+     */
+    protected boolean useAllcheckersPrefix = true;
+
+    /**
      * Regular expression pattern to specify Java classes that are not annotated, so warnings about
      * uses of them should be suppressed.
      *
@@ -1235,7 +1244,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (hasOption("showSuppressWarningsStrings")) {
             List<String> list = new ArrayList<>(prefixes);
             // Make sure "allcheckers" is at the end of the list.
-            list.add(SUPPRESS_ALL_PREFIX);
+            if (useAllcheckersPrefix) {
+                list.add(SUPPRESS_ALL_PREFIX);
+            }
             return list + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a prefix (a checker name), then add that to
@@ -2222,13 +2233,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns a sorted set of SuppressWarnings prefixes read from the {@link
      * SuppressWarningsPrefix} meta-annotation on the checker class. Or if no {@link
      * SuppressWarningsPrefix} is used, the checker name is used. {@link #SUPPRESS_ALL_PREFIX} is
-     * also added, at the end.
+     * also added, at the end, unless {@link useAllcheckersPrefix} is false.
      *
      * @return a sorted set of SuppressWarnings prefixes
      */
     protected final NavigableSet<String> getStandardSuppressWarningsPrefixes() {
         NavigableSet<String> prefixes = new TreeSet<>();
-        prefixes.add(SUPPRESS_ALL_PREFIX);
+        if (useAllcheckersPrefix) {
+            prefixes.add(SUPPRESS_ALL_PREFIX);
+        }
         SuppressWarningsPrefix prefixMetaAnno =
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
