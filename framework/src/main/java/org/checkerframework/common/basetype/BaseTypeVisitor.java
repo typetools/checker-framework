@@ -2985,7 +2985,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param typeArgument type argument
      * @param typeParameterUpperBound upper bound of the type parameter
-     * @param reportError Tree to which to report the error
+     * @param reportError where to report the error
      */
     private void checkHasQualifierParameterAsTypeArgument(
             AnnotatedTypeMirror typeArgument,

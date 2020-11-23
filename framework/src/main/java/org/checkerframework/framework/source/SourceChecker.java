@@ -2233,7 +2233,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns a sorted set of SuppressWarnings prefixes read from the {@link
      * SuppressWarningsPrefix} meta-annotation on the checker class. Or if no {@link
      * SuppressWarningsPrefix} is used, the checker name is used. {@link #SUPPRESS_ALL_PREFIX} is
-     * also added, at the end, unless {@link useAllcheckersPrefix} is false.
+     * also added, at the end, unless {@link #useAllcheckersPrefix} is false.
      *
      * @return a sorted set of SuppressWarnings prefixes
      */
@@ -2596,7 +2596,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Returns the version of the Checker Framework.
      *
-     * @return Checker Framework version
+     * @return the Checker Framework version
      */
     private String getCheckerVersion() {
         Properties gitProperties = getProperties(getClass(), "/git.properties");
