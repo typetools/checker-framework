@@ -4306,25 +4306,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if {@code type} should be captured
      */
     private boolean shouldCapture(AnnotatedTypeMirror type, TypeMirror typeMirror) {
-        if (!(type.getKind() == TypeKind.DECLARED && typeMirror.getKind() == TypeKind.DECLARED)) {
+        if (type.getKind() != TypeKind.DECLARED) {
             return false;
+        }
+        if (typeMirror.getKind() != TypeKind.DECLARED) {
+            throw new BugInCF("Expected declared type mirror: %s, type: %s", typeMirror, type);
         }
 
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
-        AnnotatedDeclaredType typeToCapture = (AnnotatedDeclaredType) type;
-        if (typeToCapture.wasRaw() || typeToCapture.containsUninferredTypeArguments()) {
+        AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
+        if (uncapturedType.wasRaw() || uncapturedType.containsUninferredTypeArguments()) {
             return false;
         }
 
-        if (typeToCapture.getTypeArguments().isEmpty()
-                || (capturedTypeMirror.getTypeArguments().size()
-                        != typeToCapture.getTypeArguments().size())) {
+        if (uncapturedType.getTypeArguments().isEmpty()) {
             return false;
+        }
+
+        if ((capturedTypeMirror.getTypeArguments().size()
+                != uncapturedType.getTypeArguments().size())) {
+            throw new BugInCF(
+                    "Not the same number of type arguments: capturedTypeMirror: %s uncapturedType: %s",
+                    capturedTypeMirror, uncapturedType);
         }
 
         for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
             if (TypesUtils.isCaptured(capturedTypeMirror.getTypeArguments().get(i))
-                    && typeToCapture.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
+                    && uncapturedType.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
                 return true;
             }
         }
