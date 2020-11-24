@@ -230,7 +230,7 @@ public abstract class CFAbstractTransfer<
         if (node instanceof MethodInvocationNode
                 && ((MethodInvocationNode) node).getIteratorExpression() != null) {
             ExpressionTree iter = ((MethodInvocationNode) node).getIteratorExpression();
-            at = factory.getIteratedType(iter);
+            at = factory.getIteratorElementType(iter);
         } else {
             at = factory.getAnnotatedType(tree);
         }
