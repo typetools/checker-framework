@@ -2435,8 +2435,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
             AssignmentNode assignNode =
                     translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-
-            // Translate assignment scans variable and creates new nodes, so set the expression
+            // translateAssignment() scans variable and creates new nodes, so set the expression
             // there, too.
             ((MethodInvocationNode) assignNode.getExpression()).setIteratorExpression(expression);
 

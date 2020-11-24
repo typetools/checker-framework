@@ -588,14 +588,12 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the iterated type of the passed iterable type, and throws {@link
-     * IllegalArgumentException} if the passed type is not iterable.
-     *
-     * <p>The iterated type is the component type of an array, and the type argument of {@link
-     * Iterable} for declared types.
+     * Returns the element type of the given iterable type. For an array, that is the component
+     * type. For declared types, that is the type argument of {@link Iterable}.
      *
      * @param iterableType the iterable type (either array or declared)
      * @return the types of elements in the iterable type
+     * @throws IllegalArgumentException if the given type is not iterable
      */
     public static AnnotatedTypeMirror getIteratedType(
             ProcessingEnvironment processingEnv,

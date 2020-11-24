@@ -2062,8 +2062,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
-     * the component type of the array.
+     * Return the element type of the given iterator. This is usually the type of {@code
+     * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+     * the array.
      *
      * @param expression an expression whose type is an array or implements {@link Iterable}
      * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
@@ -2074,8 +2075,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
-     * the component type of the array.
+     * Return the element type of the given iterator. This is usually the type of {@code
+     * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+     * the array.
      *
      * @param expression an expression whose type is an array or implements {@link Iterable}
      * @param iterableType the type of the expression
@@ -2100,17 +2102,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedDeclaredType iterableElmType = getAnnotatedType(iterableElement);
                 AnnotatedDeclaredType dt =
                         AnnotatedTypes.asSuper(this, iterableType, iterableElmType);
-                AnnotatedTypeMirror typeArg;
                 if (dt.getTypeArguments().isEmpty()) {
                     TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
-                    typeArg = getAnnotatedType(e);
+                    return getAnnotatedType(e);
                 } else {
-                    typeArg = dt.getTypeArguments().get(0);
+                    return dt.getTypeArguments().get(0);
                 }
-                return typeArg;
 
                 // TODO: Properly desugar Iterator.next(). The below doesn't work because
-                // method from use assumes that the expression tree matches the method element.
+                // methodFromUse() assumes that the expression tree matches the method element.
                 // TypeElement iteratorElement =
                 //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
                 // AnnotatedTypeMirror iteratorType =
@@ -2335,7 +2335,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             case TYPEVAR:
                 // TODO: this should NOT be necessary.
-                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
+                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree,
+                // Node)
                 // Uses an ExecutableElement, which did not substitute type variables.
                 break;
             case WILDCARD:
