@@ -2078,8 +2078,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
      *     the component type of the array.
      */
-    public AnnotatedTypeMirror getIteratorElementType(ExpressionTree expression) {
-        return getIteratorElementType(expression, getAnnotatedType(expression));
+    public AnnotatedTypeMirror getIterableElementType(ExpressionTree expression) {
+        return getIterableElementType(expression, getAnnotatedType(expression));
     }
 
     /**
@@ -2092,17 +2092,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
      *     the component type of the array.
      */
-    protected AnnotatedTypeMirror getIteratorElementType(
+    protected AnnotatedTypeMirror getIterableElementType(
             ExpressionTree expression, AnnotatedTypeMirror iterableType) {
         switch (iterableType.getKind()) {
             case ARRAY:
                 return ((AnnotatedArrayType) iterableType).getComponentType();
             case WILDCARD:
-                return getIteratorElementType(
+                return getIterableElementType(
                         expression,
                         ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
             case TYPEVAR:
-                return getIteratorElementType(
+                return getIterableElementType(
                         expression, ((AnnotatedTypeVariable) iterableType).getUpperBound());
             case DECLARED:
                 AnnotatedDeclaredType dt =
@@ -2133,7 +2133,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // return m.executableType.getReturnType();
             default:
                 throw new BugInCF(
-                        "AnnotatedTypeFactory.getIteratorElementType: not iterable type: "
+                        "AnnotatedTypeFactory.getIterableElementType: not iterable type: "
                                 + iterableType);
         }
     }
