@@ -590,54 +590,6 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the iterated type of the passed iterable type, and throws {@link
-     * IllegalArgumentException} if the passed type is not iterable.
-     *
-     * <p>The iterated type is the component type of an array, and the type argument of {@link
-     * Iterable} for declared types.
-     *
-     * @param iterableType the iterable type (either array or declared)
-     * @return the types of elements in the iterable type
-     */
-    public static AnnotatedTypeMirror getIteratedType(
-            ProcessingEnvironment processingEnv,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror iterableType) {
-        if (iterableType.getKind() == TypeKind.ARRAY) {
-            return ((AnnotatedArrayType) iterableType).getComponentType();
-        }
-
-        // For type variables and wildcards take the effective upper bound.
-        if (iterableType.getKind() == TypeKind.WILDCARD) {
-            return getIteratedType(
-                    processingEnv,
-                    atypeFactory,
-                    ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
-        }
-        if (iterableType.getKind() == TypeKind.TYPEVAR) {
-            return getIteratedType(
-                    processingEnv,
-                    atypeFactory,
-                    ((AnnotatedTypeVariable) iterableType).getUpperBound());
-        }
-
-        if (iterableType.getKind() != TypeKind.DECLARED) {
-            throw new BugInCF("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
-        }
-
-        TypeElement iterableElement = ElementUtils.getTypeElement(processingEnv, Iterable.class);
-        AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
-        AnnotatedDeclaredType dt = asSuper(atypeFactory, iterableType, iterableElmType);
-        if (dt.getTypeArguments().isEmpty()) {
-            TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
-            AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
-            return t;
-        } else {
-            return dt.getTypeArguments().get(0);
-        }
-    }
-
-    /**
      * Returns all the supertypes (direct or indirect) of the given declared type.
      *
      * @param type a declared type
