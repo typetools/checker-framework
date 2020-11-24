@@ -4395,7 +4395,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())
                     && uncapturedTypeArg.getKind() == TypeKind.WILDCARD) {
                 // The type argument is a captured type. Use the type argument from the newly
-                // created and yet-to-be annotated captureType. (The annotations are added as part
+                // created and yet-to-be annotated capturedType. (The annotations are added as part
                 // of capturing the wildcard.)
                 typeVarToTypeArgument.put(typeVarTypeMirror, capturedTypeArg);
                 // Also, add a mapping from the captured type mirror to the annotated captured
@@ -4406,7 +4406,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         capturedTypeArg);
             } else {
                 // The type argument is not a captured type. Use the type argument from
-                // typeToCapture, which is fully-annotated.
+                // typeToCapture, which is fully annotated.
                 typeVarToTypeArgument.put(typeVarTypeMirror, uncapturedTypeArg);
             }
         }
@@ -4465,15 +4465,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror upperBound =
                 AnnotatedTypes.greatestLowerBound(
                         this, typeVarUpperBound, wildcard.getExtendsBound());
-
         // The greatestLowerBound method makes a copy of the typeVarUpperBound, so if it
         // used any captured type, then the copy of the captured type must be substituted with
         // the exact AnnotatedTypeVariable in captureToAnnotatedCapture.
         upperBound =
                 typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
                         captureToAnnotatedCapture, upperBound);
-
         capturedArg.setUpperBound(upperBound);
+
         AnnotatedTypeMirror lowerBound =
                 AnnotatedTypes.leastUpperBound(
                         this, typeVariable.getLowerBound(), wildcard.getSuperBound());
