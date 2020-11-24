@@ -374,6 +374,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
+     * <p>The containment algorithm implemented here is slightly different that what is presented in
+     * the JLS. The Checker Framework checks that method arguments are subtype of the method
+     * parameters that have been view-point-adapted to the call site. Java does not do this check,
+     * instead it checks that the method is applicable and if it is not, then it gives an error with
+     * several possible methods that the user might have meant to call. By checking the arguments
+     * are subtypes of view-point-adapted parameters, the Checker Framework gives better error
+     * messages. However, view-point-adapting parameters leads to types that Java does not account
+     * for in the containment algorithm, namely wildcards with upper or lower bounds that are
+     * captured types. In these cases, the method below recurs on the bounds. (Note, it must recur
+     * rather than call isSubtype because the inside type may be in between the bounds of the upper
+     * or lower bound. For example: outside: ? extends ? extends Object inside: String)
+     *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
