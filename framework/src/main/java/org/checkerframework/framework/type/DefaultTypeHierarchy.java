@@ -138,7 +138,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         this.invariantArrayComponents = invariantArrayComponents;
     }
 
-    /** Create the equality comparer. */
+    /**
+     * Create the equality comparer.
+     *
+     * @return the equality comparer
+     */
     protected StructuralEqualityComparer createEqualityComparer() {
         return new StructuralEqualityComparer(areEqualVisitHistory);
     }
@@ -1027,7 +1031,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // interface but that handle cases that more than one visit method shares
     // in common
 
-    /** An intersection is a supertype if all of its bounds are a supertype of subtype. */
+    /**
+     * An intersection is a supertype if all of its bounds are a supertype of subtype.
+     *
+     * @param subtype the possible subtype
+     * @param supertype the possible supertype
+     * @return true {@code subtype} is a subtype of {@code supertype}
+     */
     protected boolean visitIntersectionSupertype(
             AnnotatedTypeMirror subtype, AnnotatedIntersectionType supertype) {
         if (isSubtypeVisitHistory.contains(subtype, supertype, currentTop)) {
