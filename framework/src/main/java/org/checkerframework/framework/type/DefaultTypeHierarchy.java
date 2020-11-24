@@ -284,8 +284,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         /** Upper bound. */
         protected final AnnotatedTypeMirror upper;
 
-        /** Whether this has a super bound that is not the null type. */
-        protected final boolean hasSuperBound;
+        /** Whether this has an explict lower (super) bound that is not the null type. */
+        protected final boolean hasExplicitLowerBound;
 
         /**
          * Creates a bound type.
@@ -305,7 +305,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             } else {
                 throw new BugInCF("Unexpected: %s", type);
             }
-            this.hasSuperBound = lower.getKind() != TypeKind.NULL;
+            this.hasExplicitLowerBound = lower.getKind() != TypeKind.NULL;
         }
 
         /**
@@ -331,9 +331,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * <p>A declared type is considered a supertype of another declared type only if all of the type
      * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is formally described in <a
+     * Containment is described in <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
+     *
+     * <p>The containment algorithm implemented here is slightly different that what is presented in
+     * the JLS. The Checker Framework checks that method arguments are subtype of the method
+     * parameters that have been view-point-adapted to the call site. Java does not do this check,
+     * instead it checks that the method is applicable and if it is not, then it gives an error with
+     * several possible methods that the user might have meant to call. By checking the arguments
+     * are subtypes of view-point-adapted parameters, the Checker Framework gives better error
+     * messages. However, view-point-adapting parameters leads to types that Java does not account
+     * for in the containment algorithm, namely wildcards with upper or lower bounds that are
+     * captured types. In these cases, the method below recurs on the bounds. (Note, it must recur
+     * rather than call isSubtype because the inside type may be in between the bounds of the upper
+     * or lower bound. For example: outside: ? extends ? extends Object inside: String)
      *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
@@ -367,24 +379,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     /**
      * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
      * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
-     *
-     * <p>A declared type is considered a supertype of another declared type only if all of the type
-     * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is described in <a
-     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
-     * 4.5.1 "Type Arguments of Parameterized Types"</a>.
-     *
-     * <p>The containment algorithm implemented here is slightly different that what is presented in
-     * the JLS. The Checker Framework checks that method arguments are subtype of the method
-     * parameters that have been view-point-adapted to the call site. Java does not do this check,
-     * instead it checks that the method is applicable and if it is not, then it gives an error with
-     * several possible methods that the user might have meant to call. By checking the arguments
-     * are subtypes of view-point-adapted parameters, the Checker Framework gives better error
-     * messages. However, view-point-adapting parameters leads to types that Java does not account
-     * for in the containment algorithm, namely wildcards with upper or lower bounds that are
-     * captured types. In these cases, the method below recurs on the bounds. (Note, it must recur
-     * rather than call isSubtype because the inside type may be in between the bounds of the upper
-     * or lower bound. For example: outside: ? extends ? extends Object inside: String)
+     * See {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} for a full
+     * explanation.
      *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
@@ -396,10 +392,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedTypeMirror inside, BoundType outside, boolean canBeCovariant) {
         if (BoundType.isBoundType(inside)) {
             BoundType insideBoundType = new BoundType(inside);
-            if (!insideBoundType.hasSuperBound && !outside.hasSuperBound) {
+            if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound) {
                 return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
                         && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
-            } else if (outside.hasSuperBound
+            } else if (outside.hasExplicitLowerBound
                     || TypesUtils.isObject(outside.upper.getUnderlyingType())) {
                 return (canBeCovariant || isSubtype(insideBoundType.upper, outside.upper))
                         && isContainedByBoundType(insideBoundType.lower, outside, canBeCovariant);
@@ -423,7 +419,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             return isContainedByBoundType(inside, outsideLower, canBeCovariant);
         } else {
             if (canBeCovariant) {
-                if (outside.hasSuperBound) {
+                if (outside.hasExplicitLowerBound) {
                     return isSubtype(outside.lower, inside);
                 } else {
                     return isSubtype(inside, outside.upper);
@@ -434,7 +430,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     /**
-     * Add {@code glb} to the lowest bound of {@code type}.
+     * Add {@code annos} to the lowest bound of {@code type}.
      *
      * @param type annotated type
      * @param annos annotations
@@ -457,6 +453,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         lowestBound.replaceAnnotations(annos);
     }
 
+    /**
+     * Returns true if {@code type} is an uninferred type argument and if the checker should not
+     * issue warnings about uninferred type arguments.
+     *
+     * @param type type to checker
+     * @return true if {@code type} is an uninferred type argument and if the checker should not
+     *     issue warnings about uninferred type arguments
+     */
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
         if (type.atypeFactory.ignoreUninferredTypeArguments
                 && type.getKind() == TypeKind.WILDCARD) {
