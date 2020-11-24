@@ -42,8 +42,9 @@ public class MethodInvocationNode extends Node {
     protected final TreePath treePath;
 
     /**
-     * If this is a node for an {@link Iterator#next()} desugared from an enhanced for, then this is
-     * the expression in the for loop, {@code for(Object o: iter}.
+     * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
+     * enhanced for loop, then the {@code iterExpression} field is the expression in the for loop,
+     * e.g., {@code iter} in {@code for(Object o: iter}.
      */
     protected @Nullable ExpressionTree iteratorExpression;
 
@@ -52,7 +53,7 @@ public class MethodInvocationNode extends Node {
      *
      * @param tree for the method invocation
      * @param target of the method invocation -- that is, the receiver. For a static method, may be
-     *     a class name
+     *     a class name.
      * @param arguments arguments of the method invocation
      * @param treePath path to the method invocation
      */
@@ -96,19 +97,22 @@ public class MethodInvocationNode extends Node {
     }
 
     /**
-     * If this is a node for an {@link Iterator#next()} desugared from an enhanced for, then this is
-     * the expression in the for loop, {@code for(Object o: iter}.
+     * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
+     * enhanced for loop, then return the expression in the for loop, e.g., {@code iter} in {@code
+     * for(Object o: iter}. Otherwise, return null.
      *
-     * @return the iter expression
+     * @return the iter expression, or null if this is not a {@link Iterator#next()} from an
+     *     enhanced for loop
      */
     public @Nullable ExpressionTree getIteratorExpression() {
         return iteratorExpression;
     }
 
     /**
-     * Set iter expression.
+     * Set the iter expression.
      *
      * @param iteratorExpression iter expression
+     * @see #getIteratorExpression()
      */
     public void setIteratorExpression(@Nullable ExpressionTree iteratorExpression) {
         this.iteratorExpression = iteratorExpression;
