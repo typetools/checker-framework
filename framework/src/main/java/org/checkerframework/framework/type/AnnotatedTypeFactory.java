@@ -2070,7 +2070,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return the element type of the given iterator. This is usually the type of {@code
+     * Return the element type of {@code expression}. This is usually the type of {@code
      * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
      * the array.
      *
@@ -2083,7 +2083,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return the element type of the given iterator. This is usually the type of {@code
+     * Return the element type of {@code iterableType}. This is usually the type of {@code
      * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
      * the array.
      *
@@ -2116,6 +2116,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 // TODO: Properly desugar Iterator.next(). The below doesn't work because
                 // methodFromUse() assumes that the expression tree matches the method element.
+                // This code is only need if an annotated JDK has annotations on Iterator#next.
                 // TypeElement iteratorElement =
                 //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
                 // AnnotatedTypeMirror iteratorType =
