@@ -12,6 +12,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -33,6 +34,17 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public class CFTreeBuilder extends TreeBuilder {
 
+    /**
+     * To avoid infinite recursions, record each wildcard that has been converted to a tree. This
+     * set is cleared each time {@link #buildAnnotatedType(AnnotatedTypeMirror)} is called.
+     */
+    private Set<AnnotatedWildcardType> visitedWildcards = new HashSet<>();
+
+    /**
+     * Creates a {@code CFTreeBuilder}.
+     *
+     * @param env environment
+     */
     public CFTreeBuilder(ProcessingEnvironment env) {
         super(env);
     }
@@ -44,6 +56,7 @@ public class CFTreeBuilder extends TreeBuilder {
      * @return a Tree representing the annotated type
      */
     public Tree buildAnnotatedType(AnnotatedTypeMirror annotatedType) {
+        visitedWildcards.clear();
         return createAnnotatedType(annotatedType);
     }
 
@@ -111,13 +124,15 @@ public class CFTreeBuilder extends TreeBuilder {
             case WILDCARD:
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) annotatedType;
                 WildcardType wildcardType = wildcard.getUnderlyingType();
-                if (wildcardType.getExtendsBound() != null) {
+                boolean visitedBefore = visitedWildcards.contains(wildcard);
+                visitedWildcards.add(wildcard);
+                if (!visitedBefore && wildcardType.getExtendsBound() != null) {
                     Tree annotatedExtendsBound = createAnnotatedType(wildcard.getExtendsBound());
                     underlyingTypeTree =
                             maker.Wildcard(
                                     maker.TypeBoundKind(BoundKind.EXTENDS),
                                     (JCTree) annotatedExtendsBound);
-                } else if (wildcardType.getSuperBound() != null) {
+                } else if (!visitedBefore && wildcardType.getSuperBound() != null) {
                     Tree annotatedSuperBound = createAnnotatedType(wildcard.getSuperBound());
                     underlyingTypeTree =
                             maker.Wildcard(
