@@ -4315,11 +4315,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
-        if (uncapturedType.wasRaw() || uncapturedType.containsUninferredTypeArguments()) {
-            return false;
-        }
-
-        if (uncapturedType.getTypeArguments().isEmpty()) {
+        if (uncapturedType.wasRaw()
+                || capturedTypeMirror.getTypeArguments().isEmpty()
+                || uncapturedType.getTypeArguments().isEmpty()
+                || uncapturedType.containsUninferredTypeArguments()) {
             return false;
         }
 
