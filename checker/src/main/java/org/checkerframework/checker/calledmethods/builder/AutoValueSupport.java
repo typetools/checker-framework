@@ -401,7 +401,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
      */
     public List<ExecutableElement> getAllAbstractMethods(TypeElement classElement) {
         List<TypeElement> supertypes =
-                ElementUtils.closure(classElement, atypeFactory.getProcessingEnv());
+                ElementUtils.getAllSupertypes(classElement, atypeFactory.getProcessingEnv());
         List<ExecutableElement> abstractMethods = new ArrayList<>();
         Set<ExecutableElement> overriddenMethods = new HashSet<>();
         for (Element t : supertypes) {
