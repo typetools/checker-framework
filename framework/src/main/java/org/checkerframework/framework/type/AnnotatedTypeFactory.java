@@ -2342,8 +2342,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             case TYPEVAR:
                 // TODO: this should NOT be necessary.
-                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree,
-                // Node)
+                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
                 // Uses an ExecutableElement, which did not substitute type variables.
                 break;
             case WILDCARD:
