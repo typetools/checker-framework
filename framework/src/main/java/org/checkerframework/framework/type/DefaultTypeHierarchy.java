@@ -337,15 +337,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *
      * <p>The containment algorithm implemented here is slightly different that what is presented in
      * the JLS. The Checker Framework checks that method arguments are subtype of the method
-     * parameters that have been view-point-adapted to the call site. Java does not do this check,
-     * instead it checks that the method is applicable and if it is not, then it gives an error with
-     * several possible methods that the user might have meant to call. By checking the arguments
-     * are subtypes of view-point-adapted parameters, the Checker Framework gives better error
-     * messages. However, view-point-adapting parameters leads to types that Java does not account
-     * for in the containment algorithm, namely wildcards with upper or lower bounds that are
-     * captured types. In these cases, the method below recurs on the bounds. (Note, it must recur
-     * rather than call isSubtype because the inside type may be in between the bounds of the upper
-     * or lower bound. For example: outside: ? extends ? extends Object inside: String)
+     * parameters that have been view-point-adapted to the call site. Java does not do this check;
+     * instead, it checks if an applicable method exist. By checking that method arguments are
+     * subtypes of view-point-adapted parameters, the Checker Framework gives better error messages.
+     * However, view-point-adapting parameters leads to types that Java does not account for in the
+     * containment algorithm, namely wildcards with upper or lower bounds that are captured types.
+     * In these cases, containment is called recursively on captured type bound. (Note, it must
+     * recur rather than call isSubtype because the inside type may be in between the bounds of the
+     * upper or lower bound. For example: outside: ? extends ? extends Object inside: String)
      *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
@@ -465,9 +464,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         if (type.atypeFactory.ignoreUninferredTypeArguments
                 && type.getKind() == TypeKind.WILDCARD) {
             final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
-            if (insideWc.isUninferredTypeArgument()) {
-                return true;
-            }
+            return insideWc.isUninferredTypeArgument();
         }
         return false;
     }

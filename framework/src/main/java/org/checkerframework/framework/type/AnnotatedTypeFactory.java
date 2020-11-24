@@ -4315,16 +4315,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
-        if (uncapturedType.wasRaw()
-                // This checks if caputredTypeMirror is raw.
-                || capturedTypeMirror.getTypeArguments().isEmpty()
-                || uncapturedType.getTypeArguments().isEmpty()
-                || uncapturedType.containsUninferredTypeArguments()) {
+        if (capturedTypeMirror.getTypeArguments().isEmpty()) {
             return false;
         }
 
-        if ((capturedTypeMirror.getTypeArguments().size()
-                != uncapturedType.getTypeArguments().size())) {
+        if (uncapturedType.wasRaw() || uncapturedType.containsUninferredTypeArguments()) {
+            return false;
+        }
+
+        if (capturedTypeMirror.getTypeArguments().size()
+                != uncapturedType.getTypeArguments().size()) {
             throw new BugInCF(
                     "Not the same number of type arguments: capturedTypeMirror: %s uncapturedType: %s",
                     capturedTypeMirror, uncapturedType);
