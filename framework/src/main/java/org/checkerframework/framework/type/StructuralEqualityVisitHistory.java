@@ -30,21 +30,27 @@ public class StructuralEqualityVisitHistory {
     }
 
     /**
-     * Add result of comparing {@code type1} and {@code type2} for structural equality for the given
+     * Put result of comparing {@code type1} and {@code type2} for structural equality for the given
      * hierarchy.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param hierarchy the top of the relevant type hierarchy; only annotations from that hierarchy
+     *     are considered
+     * @param result whether {@code type1} is structurally equal to {@code type2}
      */
-    public void add(
+    public void put(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror hierarchy,
             boolean result) {
         if (result) {
-            trueHistory.add(type1, type2, hierarchy, true);
+            trueHistory.put(type1, type2, hierarchy, true);
             if (falseHistory.contains(type1, type2, hierarchy)) {
                 falseHistory.remove(type1, type2, hierarchy);
             }
         } else {
-            falseHistory.add(type1, type2, hierarchy, true);
+            falseHistory.put(type1, type2, hierarchy, true);
             if (trueHistory.contains(type1, type2, hierarchy)) {
                 trueHistory.remove(type1, type2, hierarchy);
             }
@@ -53,9 +59,16 @@ public class StructuralEqualityVisitHistory {
 
     /**
      * Return whether or not the two types are structurally equal for the given hierarchy or {@code
-     * null} if no result exists for the types.
+     * null} if the types have not been visited for the given hierarchy.
+     *
+     * @param type1 the first type
+     * @param type2 the second type
+     * @param hierarchy the top of the relevant type hierarchy; only annotations from that hierarchy
+     *     are considered
+     * @return whether or not the two types are structurally equal for the given hierarchy or {@code
+     *     null} if the types have not been visited for the given hierarchy
      */
-    public @Nullable Boolean result(
+    public @Nullable Boolean get(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror hierarchy) {
