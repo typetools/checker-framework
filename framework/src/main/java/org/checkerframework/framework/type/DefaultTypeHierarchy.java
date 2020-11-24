@@ -381,6 +381,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * See {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} for a full
      * explanation.
      *
+     * <p>Roughly, the algorithm works as follows (assuming {@code canBeCovariant} is false):
+     *
+     * <ul>
+     *   <li>If inside is a bound type, recur on the explicit bound.
+     *   <li>If one of outside's bounds is itself a bound type, recur on that bound.
+     *   <li>Otherwise, return {@code outside.lower <: inside && inside <: outside.upper}.
+     * </ul>
+     *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
      * @param canBeCovariant whether or not type arguments are allowed to be covariant
