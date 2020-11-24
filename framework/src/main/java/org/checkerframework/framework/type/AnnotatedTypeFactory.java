@@ -2126,7 +2126,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // return m.executableType.getReturnType();
             default:
                 throw new BugInCF(
-                        "AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+                        "AnnotatedTypeFactory.getIteratedType: not iterable type: " + iterableType);
         }
     }
 
