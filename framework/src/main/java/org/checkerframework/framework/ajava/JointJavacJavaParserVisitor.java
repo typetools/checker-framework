@@ -1532,6 +1532,9 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             processNewClass(javacTree, node);
         }
 
+        // When using Java 11, an expression like this.new MyInnerClass() would store "this" as the
+        // enclosing expression. In Java 8, this would be stored as new MyInnerClass(this). So, we
+        // only traverse the enclosing expression if present in both.
         if (javacTree.getEnclosingExpression() != null && node.getScope().isPresent()) {
             javacTree.getEnclosingExpression().accept(this, node.getScope().get());
         }
@@ -1544,7 +1547,16 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
             visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
         }
 
-        visitLists(javacTree.getArguments(), node.getArguments());
+        // Remove synthetic javac argument. When using Java 11, an expression like this.new
+        // MyInnerClass() would store "this" as the enclosing expression. In Java 8, this would be
+        // stored as new MyInnerClass(this). So, for the argument lists to match, we may have to
+        // remove the first argument.
+        List<? extends ExpressionTree> javacArgs = new ArrayList<>(javacTree.getArguments());
+        if (javacArgs.size() > node.getArguments().size()) {
+            javacArgs.remove(0);
+        }
+
+        visitLists(javacArgs, node.getArguments());
         assert (javacTree.getClassBody() != null) == node.getAnonymousClassBody().isPresent();
         if (javacTree.getClassBody() != null) {
             visitAnonymouClassBody(javacTree.getClassBody(), node.getAnonymousClassBody().get());
