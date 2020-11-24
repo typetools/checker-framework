@@ -4316,6 +4316,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
         if (uncapturedType.wasRaw()
+                // This checks if caputredTypeMirror is raw.
                 || capturedTypeMirror.getTypeArguments().isEmpty()
                 || uncapturedType.getTypeArguments().isEmpty()
                 || uncapturedType.containsUninferredTypeArguments()) {
