@@ -30,7 +30,7 @@ public class StructuralEqualityVisitHistory {
     }
 
     /**
-     * Add result of comparing {@code type1} and {@code type2} for structural equality for the given
+     * Put result of comparing {@code type1} and {@code type2} for structural equality for the given
      * hierarchy.
      *
      * @param type1 the first type
