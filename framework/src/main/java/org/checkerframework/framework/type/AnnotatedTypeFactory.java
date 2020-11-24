@@ -2114,9 +2114,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     return dt.getTypeArguments().get(0);
                 }
 
-                // TODO: Properly desugar Iterator.next(). The below doesn't work because
-                // methodFromUse() assumes that the expression tree matches the method element.
-                // This code is only need if an annotated JDK has annotations on Iterator#next.
+                // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
+                // annotations on Iterator#next.
+                // The below doesn't work because methodFromUse() assumes that the expression tree
+                // matches the method element.
                 // TypeElement iteratorElement =
                 //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
                 // AnnotatedTypeMirror iteratorType =
@@ -2342,8 +2343,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 break;
             case TYPEVAR:
                 // TODO: this should NOT be necessary.
-                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree,
-                // Node)
+                // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
                 // Uses an ExecutableElement, which did not substitute type variables.
                 break;
             case WILDCARD:
