@@ -676,7 +676,7 @@ public class ElementUtils {
      * @return list including the type and all its supertypes, with a guarantee that supertypes
      *     (i.e. those that appear in extends clauses) appear before indirect supertypes
      */
-    public static List<TypeElement> closure(TypeElement type, ProcessingEnvironment env) {
+    public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
         return javacTypes.closure(((Symbol) type).type).stream()
