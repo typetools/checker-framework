@@ -92,9 +92,6 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                 + " kind="
                                 + underlyingTree.getKind());
             }
-        } else if (TypesUtils.isCaptured(type.getUnderlyingType())) {
-            // This happens when a variable declaration is created by
-            // org.checkerframework.javacutil.trees.TreeBuilder.buildVariableDecl(...)
         } else {
             type.addAnnotations(annos);
         }
