@@ -259,7 +259,7 @@ public class AnnotationFileElementTypes {
             if (base != null) {
                 stubPathFull = base + "/" + stubPath;
             }
-            List<StubResource> stubs =
+            List<AnnotationFileResource> stubs =
                     AnnotationFileUtil.allAnnotationFiles(stubPathFull, fileType);
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
@@ -325,7 +325,7 @@ public class AnnotationFileElementTypes {
                             declAnnosFromAnnotationFiles);
                 }
             }
-            for (StubResource resource : stubs) {
+            for (AnnotationFileResource resource : stubs) {
                 InputStream stubStream;
                 try {
                     stubStream = resource.getInputStream();

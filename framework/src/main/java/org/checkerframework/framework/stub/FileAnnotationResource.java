@@ -5,16 +5,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/** {@link File}-based implementation of {@link StubResource}. */
-public class FileStubResource implements StubResource {
+/** {@link File}-based implementation of {@link AnnotationFileResource}. */
+public class FileAnnotationResource implements AnnotationFileResource {
     private final File file;
 
     /**
-     * Constructs a {@code StubResource} for the specified stub file.
+     * Constructs a {@code AnnotationFileResource} for the specified stub file.
      *
      * @param file the stub file
      */
-    public FileStubResource(File file) {
+    public FileAnnotationResource(File file) {
         this.file = file;
     }
 

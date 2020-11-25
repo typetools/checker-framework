@@ -311,9 +311,9 @@ public class AnnotationFileUtil {
      * @param fileType file type of files to collect
      * @return a list of all files found when searching {@code stub} withe the given file type.
      */
-    public static List<StubResource> allAnnotationFiles(
+    public static List<AnnotationFileResource> allAnnotationFiles(
             String location, AnnotationFileType fileType) {
-        List<StubResource> resources = new ArrayList<>();
+        List<AnnotationFileResource> resources = new ArrayList<>();
         File file = new File(location);
         if (file.exists()) {
             addAnnotationFilesToList(file, resources, fileType);
@@ -375,9 +375,9 @@ public class AnnotationFileUtil {
      */
     @SuppressWarnings("JdkObsolete") // JarFile.entries()
     private static void addAnnotationFilesToList(
-            File location, List<StubResource> resources, AnnotationFileType fileType) {
+            File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
         if (isAnnotationFile(location, fileType)) {
-            resources.add(new FileStubResource(location));
+            resources.add(new FileAnnotationResource(location));
         } else if (isJar(location)) {
             JarFile file;
             try {
@@ -390,7 +390,7 @@ public class AnnotationFileUtil {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 if (isAnnotationFile(entry.getName(), fileType)) {
-                    resources.add(new JarEntryStubResource(file, entry));
+                    resources.add(new JarEntryAnnotationResource(file, entry));
                 }
             }
         } else if (location.isDirectory()) {
