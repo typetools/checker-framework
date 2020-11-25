@@ -46,7 +46,7 @@ public class MethodInvocationNode extends Node {
      * enhanced for loop, then the {@code iterExpression} field is the expression in the for loop,
      * e.g., {@code iter} in {@code for(Object o: iter}.
      */
-    protected @Nullable ExpressionTree iteratorExpression;
+    protected @Nullable ExpressionTree iterableExpression;
 
     /**
      * Create a MethodInvocationNode.
@@ -104,18 +104,18 @@ public class MethodInvocationNode extends Node {
      * @return the iter expression, or null if this is not a {@link Iterator#next()} from an
      *     enhanced for loop
      */
-    public @Nullable ExpressionTree getIteratorExpression() {
-        return iteratorExpression;
+    public @Nullable ExpressionTree getIterableExpression() {
+        return iterableExpression;
     }
 
     /**
-     * Set the iter expression.
+     * Set the iterable expression from a for loop.
      *
-     * @param iteratorExpression iter expression
-     * @see #getIteratorExpression()
+     * @param iterableExpression iterable expression
+     * @see #getIterableExpression()
      */
-    public void setIteratorExpression(@Nullable ExpressionTree iteratorExpression) {
-        this.iteratorExpression = iteratorExpression;
+    public void setIterableExpression(@Nullable ExpressionTree iterableExpression) {
+        this.iterableExpression = iterableExpression;
     }
 
     @Override
