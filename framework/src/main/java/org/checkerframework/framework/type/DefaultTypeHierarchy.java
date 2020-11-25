@@ -468,7 +468,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * Returns true if {@code type} is an uninferred type argument and if the checker should not
      * issue warnings about uninferred type arguments.
      *
-     * @param type type to checker
+     * @param type type to check
      * @return true if {@code type} is an uninferred type argument and if the checker should not
      *     issue warnings about uninferred type arguments
      */
