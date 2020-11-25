@@ -109,9 +109,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub file. Then,
  * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  *
- * <p>The second main entry point is {@link parseAjavaFile(String, InputStream, CompilationUnitTree,
- * AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}. This behaves the same as {@code parse},
- * but takes an ajava file instead.
+ * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
+ * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}. This behaves the
+ * same as {@code parse}, but takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
