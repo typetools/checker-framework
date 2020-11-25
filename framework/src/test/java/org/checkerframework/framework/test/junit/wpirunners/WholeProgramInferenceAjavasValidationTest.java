@@ -12,17 +12,17 @@ import org.junit.runners.Parameterized.Parameters;
  * that with the ajava files in place, the errors that those annotations remove are no longer
  * issued.
  */
-@Category(WholeProgramInferenceAjavasTest.class)
-public class WholeProgramInferenceAjavasValidationTest extends CheckerFrameworkPerDirectoryTest {
+@Category(WholeProgramInferenceAjavaTest.class)
+public class WholeProgramInferenceAjavaValidationTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceAjavasValidationTest(List<File> testFiles) {
+    public WholeProgramInferenceAjavaValidationTest(List<File> testFiles) {
         super(
                 testFiles,
                 WholeProgramInferenceTestChecker.class,
                 "whole-program-inference/annotated",
                 "-Anomsgtext",
-                "-Aajavas=build/whole-program-inference");
+                "-Aajava=build/whole-program-inference");
     }
 
     @Override
@@ -31,7 +31,7 @@ public class WholeProgramInferenceAjavasValidationTest extends CheckerFrameworkP
         // See wholeProgramInferenceTests task.
         if (!new File("tests/whole-program-inference/annotated/").exists()) {
             throw new RuntimeException(
-                    WholeProgramInferenceAjavasTest.class + " must be run before this test.");
+                    WholeProgramInferenceAjavaTest.class + " must be run before this test.");
         }
         super.run();
     }

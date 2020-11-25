@@ -795,9 +795,9 @@ Checker Framework.  Ajava files are mostly used as
 the output of whole program inference and not for annotating libraries.
 
 
-\subsectionAndLabel{Using an Ajava File}{ajavas-using}
+\subsectionAndLabel{Using an Ajava File}{ajava-using}
 
-The \code{-Aajavas} command argument works like \code{-Astubs} (see
+The \code{-Aajava} command argument works like \code{-Astubs} (see
 Section~\ref{stub-using}). It takes a colon-separated list of
 files and directories containing ajava files, which end in the \code{.ajava}
 extension.
@@ -806,12 +806,12 @@ For example:
 
 \begin{myxsmall}
 \begin{Verbatim}
-  javac -processor org.checkerframework.checker.interning.InterningChecker -Aajavas=String.astub:stubs MyFile.java MyOtherFile.java ...
+  javac -processor org.checkerframework.checker.interning.InterningChecker -Aajava=String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
 \end{myxsmall}
 
 
-\subsectionAndLabel{Contents of an Ajava file}{ajavas-contents}
+\subsectionAndLabel{Contents of an Ajava file}{ajava-contents}
 
 An ajava file must contain valid Java source code. Annotations in that code are
 read. When reading an ajava file for a file that also exists as source code, the
@@ -827,7 +827,7 @@ ajava file and source file must match exactly with the following exceptions:
 \end{itemize}
 
 
-\subsectionAndLabel{Annotations in Ajava Files}{ajavas-annotations}
+\subsectionAndLabel{Annotations in Ajava Files}{ajava-annotations}
 
 Like stub files, annotations on method parameters, method returns, and fields
 are read. Unlike stub files, if there's an annotation in both an ajava file and
