@@ -98,9 +98,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 // From an implementation perspective, this class represents a single stub file or ajava file,
-// notably its
-// annotated types and its declaration annotations.  From a client perspective, it has three static
-// methods as described below in the Javadoc.
+// notably its annotated types and its declaration annotations.  From a client perspective, it has
+// three static methods as described below in the Javadoc.
 /**
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * two maps passed as arguments.
@@ -696,14 +695,16 @@ public class AnnotationFileParser {
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
      * @param classTree The tree corresponding typeDecl if processing an ajava file, null otherwise
+     * @return a list of types variables for {@code typeDecl}. These should be removed after
+     *     processing this type declaration.
      */
-    private void processTypeDecl(
+    private List<AnnotatedTypeVariable> processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
         assert typeName != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
-            return;
+            return null;
         }
         String innerName;
         @FullyQualifiedName String fqTypeName;
@@ -733,7 +734,7 @@ public class AnnotationFileParser {
                             && !warnIfNotFoundIgnoresClasses)) {
                 stubWarnNotFound("Type not found: " + fqTypeName);
             }
-            return;
+            return null;
         }
 
         List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
@@ -744,7 +745,7 @@ public class AnnotationFileParser {
                                 + " is an enum, but stub file declared it as "
                                 + typeDecl.toString().split("\\R", 2)[0]
                                 + "...");
-                return;
+                return null;
             }
             typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
             typeParameters.addAll(typeDeclTypeParameters);
@@ -755,7 +756,7 @@ public class AnnotationFileParser {
                                 + " is an annotation, but stub file declared it as "
                                 + typeDecl.toString().split("\\R", 2)[0]
                                 + "...");
-                return;
+                return null;
             }
             stubWarnNotFound("Skipping annotation type: " + fqTypeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
@@ -765,7 +766,7 @@ public class AnnotationFileParser {
                                 + " is a class or interface, but stub file declared it as "
                                 + typeDecl.toString().split("\\R", 2)[0]
                                 + "...");
-                return;
+                return null;
             }
             typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
             typeParameters.addAll(typeDeclTypeParameters);
@@ -776,7 +777,7 @@ public class AnnotationFileParser {
         // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
         // of this method.
         if (!isParsingStubFile) {
-            return;
+            return typeDeclTypeParameters;
         }
 
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
@@ -810,6 +811,8 @@ public class AnnotationFileParser {
         if (typeDeclTypeParameters != null) {
             typeParameters.removeAll(typeDeclTypeParameters);
         }
+
+        return null;
     }
 
     /** True if the argument contains {@code @NoStubParserWarning}. */
@@ -2387,17 +2390,18 @@ public class AnnotationFileParser {
     private class AjavaParserVisitor extends DefaultJointVisitor {
         @Override
         public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+            List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
             if (javaParserNode instanceof TypeDeclaration<?>
                     && !(javaParserNode instanceof AnnotationDeclaration)) {
-                processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
+                typeDeclTypeParameters =
+                        processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
             }
 
             super.visitClass(javacTree, javaParserNode);
-            // TODO: In theory, I think we would only want to clear the type parameters that were
-            // added to this class because if the prescence of nested and inner classes. This line
-            // is copied from the original implementation, which was supposed to handle inner
-            // classes, so perhaps it was a bug there as well?
-            typeParameters.clear();
+            if (typeDeclTypeParameters != null) {
+                typeParameters.removeAll(typeDeclTypeParameters);
+            }
+
             return null;
         }
 

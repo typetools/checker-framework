@@ -130,7 +130,6 @@ public class AnnotationFileElementTypes {
      */
     public void parseStubFiles() {
         parsing = true;
-        // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         // 1. jdk.astub

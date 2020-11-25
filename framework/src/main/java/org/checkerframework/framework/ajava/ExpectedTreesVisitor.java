@@ -38,9 +38,13 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Visitor that stores each visited tree that should match with some JavaParser node if the same
- * Java file was parsed with both. Adds these trees to a set during traversal. Many trees shouldn't
- * be matched with a JavaParser node because there isn't a corresponding JavaParser node, so trees
- * like that are excluded.
+ * Java file was parsed with both. The primary purpose is to test the {@link
+ * JointJavacJavaParserVisitor} class when the -AcheckJavaParserVisitor flag is used. That classes
+ * traverses a javac tree and JavaParser AST simultaneously, so the trees this class stores can be
+ * used to test if the entirety of the javac tree was visited.
+ *
+ * <p>Adds these trees to a set during traversal. Many trees shouldn't be matched with a JavaParser
+ * node because there isn't a corresponding JavaParser node. These trees are excluded.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     /** The set of trees that should be matched to a JavaParser node when visiting both. */
@@ -77,6 +81,12 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             com.github.javaparser.ast.CompilationUnit compilationUnit = StaticJavaParser.parse(in);
             HasVarTypeVisitor varVisitor = new HasVarTypeVisitor();
             varVisitor.visit(compilationUnit, null);
+            // When using the "var" keyword, javac replaces it with the correct type, meaning the
+            // inserted type has no corresponding javac tree. There is no way of knowing if the
+            // inserted tree is synthetic or not. The only sound solution would be to not add types
+            // on the left hand side of an assignment. This would severely decrease the usefulness
+            // of the -AcheckJavaParserVisitor check. Instead, we simply don't run the check at all
+            // on files that contain "var".
             if (!varVisitor.hasVarType) {
                 return super.visitCompilationUnit(tree, p);
             }
@@ -104,9 +114,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         if (tree.getKind() == Kind.ENUM) {
             // Enum constants expand to a VariableTree like
             // public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
-            // The constructor invocation in the initializer has no corresponding JavaParser node.
-            // Remove these invocations. This is safe because it's illegal to explicitly construct
-            // an instance of an enum anyway.
+            // The constructor invocation in the initializer has no corresponding JavaParser node,
+            // this removes those invocations. It doesn't remove any trees that should be matched to
+            // a JavaParser node because it's illegal to explicitly construct an instance of an
+            // enum.
             for (Tree member : tree.getMembers()) {
                 member.accept(this, p);
                 if (member.getKind() != Kind.VARIABLE) {
@@ -146,7 +157,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             return null;
         }
 
-        // Whereas synthetic constructors should be entirely, regular super() and this() should
+        // Whereas synthetic constructors should be skipped entirely, regular super() and this()
+        // should
         // still be added. However, in JavaParser there's no matching expression statement
         // surrounding these, so remove the expression statement itself.
         Void result = super.visitExpressionStatement(tree, p);
@@ -184,8 +196,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitSwitch(SwitchTree tree, Void p) {
         super.visitSwitch(tree, p);
-        // For some reason, javac surrounds switch expression in a ParenthesizedTree but JavaParser
-        // does not, so don't check the condition tree.
+        // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not, so
+        // don't check the condition tree.
         trees.remove(tree.getExpression());
         return null;
     }
@@ -193,8 +205,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitSynchronized(SynchronizedTree tree, Void p) {
         super.visitSynchronized(tree, p);
-        // For some reason, javac surrounds synchronized expressions in a ParenthesizedTree but
-        // JavaParser does not, so don't check the condition tree.
+        // javac surrounds synchronized expressions in a ParenthesizedTree but JavaParser does not,
+        // so don't check the condition tree.
         trees.remove(tree.getExpression());
         return null;
     }
@@ -226,7 +238,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     @Override
     public Void visitMethod(MethodTree tree, Void p) {
-        // Synthetic default constructors don't have matching JavaParser nodes. Consertaively skip
+        // Synthetic default constructors don't have matching JavaParser nodes. Conservatively skip
         // no argument constructor calls, even if they may not be synthetic.
         if (JointJavacJavaParserVisitor.isNoArgumentConstructor(tree)) {
             return null;
@@ -259,7 +271,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         Void result = super.visitMethodInvocation(tree, p);
         // In a method invocation like myObject.myMethod(), the method invocation stores
         // myObject.myMethod as its own MemberSelectTree which has no corresponding JavaParserNode.
-        // This node should not be checked.
         if (tree.getMethodSelect().getKind() == Kind.MEMBER_SELECT) {
             trees.remove(tree.getMethodSelect());
         }
@@ -325,7 +336,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
         for (VariableTree parameter : tree.getParameters()) {
             // Parameter types might not be specified for lambdas. When not specified, JavaParser
-            // uses UnknownType. Conservatively, don't add parameter types.
+            // uses UnknownType. Conservatively, don't add parameter types for lambda expressions.
             visit(parameter.getModifiers(), p);
             visit(parameter.getNameExpression(), p);
             assert parameter.getInitializer() == null;
@@ -338,8 +349,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitWhileLoop(WhileLoopTree tree, Void p) {
         super.visitWhileLoop(tree, p);
-        // For some reason, javac surrounds while loop conditions in a ParenthesizedTree but
-        // JavaParser does not, so don't check the condition tree.
+        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not, so
+        // don't check the condition tree.
         trees.remove(tree.getCondition());
         return null;
     }
@@ -347,8 +358,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
         super.visitDoWhileLoop(tree, p);
-        // For some reason, javac surrounds while loop conditions in a ParenthesizedTree but
-        // JavaParser does not, so don't check the condition tree.
+        // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not, so
+        // don't check the condition tree.
         trees.remove(tree.getCondition());
         return null;
     }

@@ -64,9 +64,6 @@ public class AnnotationConversion {
         return convertedValues;
     }
 
-    // TODO: The documentation for Name mentions a method "name" that does the same thing as the
-    // method below, but I can't find it. Did find a method called "name" that creates a NameExpr.
-
     /**
      * Given a fully qualified name, creates a JavaParser {@code Name} structure representing the
      * same name.

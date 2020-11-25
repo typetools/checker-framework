@@ -123,7 +123,6 @@ public class AnnotationValueConverterVisitor implements AnnotationValueVisitor<E
 
     @Override
     public Expression visitType(TypeMirror value, Void p) {
-        // TODO: This prints the full qualified name, does that break for anonymous inner classes?
         if (value.getKind() != TypeKind.DECLARED) {
             throw new BugInCF("Unexpected type for class expression: " + value);
         }

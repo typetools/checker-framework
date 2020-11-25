@@ -105,8 +105,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     private Set<String> modifiedFiles;
 
     /**
-     * Mapping of source file paths to the collection of wrappers for compilation units parsed from
-     * that file.
+     * Mapping of source file paths to the wrapper for the compilation unit parsed from that file.
      */
     private Map<String, CompilationUnitWrapper> sourceFiles;
 
@@ -272,7 +271,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         String file = addClassesForElement(methodElt);
         String className = getEnclosingClassName(lhs);
         ClassOrInterfaceWrapper clazz = classes.get(className);
-        // TODO: Could this be a constructor?
         CallableDeclarationWrapper method =
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
         List<? extends VariableTree> params = methodTree.getParameters();
@@ -418,7 +416,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             superclassDecl,
                             overriddenMethodElement);
 
-            // TODO: is it superClass or superclass?
             String superClassFile = addClassesForElement(overriddenMethodElement);
             String superClassName = getEnclosingClassName(overriddenMethodElement);
             ClassOrInterfaceWrapper superClazz = classes.get(superClassName);
@@ -441,7 +438,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     @Override
     public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
-
         // Do not infer types for library code, only for type-checked source code.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -501,7 +497,14 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             String outputPath = packageDir + File.separator + name;
             try {
                 FileWriter writer = new FileWriter(outputPath);
+
+                // JavaParser can output using lexical preserving printing, which writes the file
+                // such that its formatting is close to the original source file it was parsed from
+                // as possible. Currently, this feature is very buggy and crashes when adding
+                // annotations in certain locations. This implementation could be used instead if
+                // it's fixed in JavaParser.
                 // LexicalPreservingPrinter.print(root.declaration, writer);
+
                 PrettyPrinter prettyPrinter = new PrettyPrinter(new PrettyPrinterConfiguration());
                 writer.write(prettyPrinter.print(root.declaration));
                 writer.close();
@@ -719,8 +722,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         TypeDeclaration<?> javaParserNode =
                 wrapper.getClassOrInterfaceDeclarationByName(
                         mostEnclosing.getSimpleName().toString());
-        // ClassTree mostEnclosingTree = (ClassTree)
-        // atypeFactory.declarationFromElement(mostEnclosing);
         ClassTree mostEnclosingTree = atypeFactory.getTreeUtils().getTree(mostEnclosing);
         createWrappersForClass(mostEnclosingTree, javaParserNode, wrapper);
     }
@@ -830,7 +831,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     public void processVariable(
                             VariableTree javacTree, VariableDeclarator javaParserNode) {
                         // This seems to occur when javacTree is a local variable in the second
-                        // class located in a source file. If this check return false, then the
+                        // class located in a source file. If this check returns false, then the
                         // below call to TreeUtils.elementFromDeclaration causes a crash.
                         if (TreeUtils.elementFromTree(javacTree) == null) {
                             return;
@@ -894,7 +895,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Returns outermost class containing {@code element}.
      *
-     * @param element element to find enclosing class of
+     * @param element Element to find enclosing class of
      * @return an element for a class containing {@code element} that isn't contained in another
      *     class
      */
@@ -988,7 +989,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             if (!parentClassDecl.getTypeParameters().isEmpty()) {
                 NodeList<Type> typeArgs = new NodeList<>();
                 for (TypeParameter typeParam : parentClassDecl.getTypeParameters()) {
-                    // TODO: Should this be a ClassOrInterfaceType?
                     ClassOrInterfaceType typeArg = new ClassOrInterfaceType();
                     typeArg.setName(typeParam.getNameAsString());
                     typeArgs.add(typeArg);
@@ -1266,7 +1266,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         /**
          * Creates a wrapper for the given field declaration.
          *
-         * @param declaration methofield declaration to wrap
+         * @param declaration field declaration to wrap
          */
         public FieldWrapper(VariableDeclarator declaration) {
             this.declaration = declaration;

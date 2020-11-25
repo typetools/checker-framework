@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
-import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.Node;
@@ -738,11 +737,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
             } catch (IOException e) {
                 throw new BugInCF("Error reading Java source file", e);
-            } catch (ParseProblemException e) {
-                // JavaParser crashes when encountering
-                // https://github.com/javaparser/javaparser/issues/2879
-                // Don't check those files.
-                // TODO: Remove this check when using a JavaParser version with fix
             }
         }
 
@@ -770,7 +764,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // IdentifierTree. This could be turned into its own method that does this correctly.
             String qualifiedName =
                     root.getPackageName() != null ? root.getPackageName().toString() : "";
-            // TODO: Try to get this by finding primary type declaration in file?
             String className = root.getSourceFile().getName();
             int lastSeparator = className.lastIndexOf(File.separator);
             if (lastSeparator != -1) {
@@ -1412,8 +1405,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Element elt = TreeUtils.elementFromTree(tree);
         return mergeStubsIntoType(type, elt, source);
     }
-
-    // TODO: Update this documentation for new parameter.
 
     /**
      * Merges types from stub files for {@code elt} into {@code type} by taking the greatest lower
@@ -3507,7 +3498,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // TODO: Factor out common code in following if statements.
         if (!ajavaTypes.isParsing()) {
 
             // Retrieving annotations from ajava files.

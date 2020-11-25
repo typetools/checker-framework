@@ -55,15 +55,10 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
     public void visit(TypeParameter target, AnnotatedTypeMirror type) {
         AnnotatedTypeVariable annotatedTypeVar = (AnnotatedTypeVariable) type;
         NodeList<ClassOrInterfaceType> bounds = target.getTypeBound();
-        // TODO: If there's not explicit bound in JavaParser, create the extends declaration and add
-        // the annotations.
-        // TODO: Handle multiple bounds correctly.
         if (bounds.size() == 1) {
             bounds.get(0).accept(this, annotatedTypeVar.getUpperBound());
         }
     }
-
-    // TODO: Handle wildcard types?
 
     /**
      * Transfers annotations from {@code annotatedType} to {@code target}. Does nothing if {@code

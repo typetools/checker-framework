@@ -130,8 +130,8 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 
 /**
- * A visitor that processes a javac tree and JavaParser node simultaneously, but doesn't perform
- * annotations. To use this class, extend it and override a {@code process} method.
+ * An implementatino of JointJavacJavaParserVisitor where {@code process} methdos do nothing. To use
+ * this class, extend it and override a {@code process} method.
  */
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
     @Override

@@ -508,9 +508,6 @@ public final class TreeUtils {
      */
     public static TypeElement elementFromDeclaration(ClassTree node) {
         TypeElement elt = (TypeElement) TreeUtils.elementFromTree(node);
-        if (elt == null) {
-            System.out.println("The elt was null for node: " + node);
-        }
         assert elt != null : "@AssumeAssertion(nullness): tree kind";
         return elt;
     }
