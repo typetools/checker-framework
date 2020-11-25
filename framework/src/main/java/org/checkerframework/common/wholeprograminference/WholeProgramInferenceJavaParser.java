@@ -167,7 +167,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper method =
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        // TODO: Fix this, find a more precise way to test.
         if (method == null && methodElt.getSimpleName().contentEquals("valueOf")) {
             return;
         }
