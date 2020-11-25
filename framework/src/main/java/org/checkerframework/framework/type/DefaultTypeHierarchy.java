@@ -473,12 +473,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      *     issue warnings about uninferred type arguments
      */
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
-        if (type.atypeFactory.ignoreUninferredTypeArguments
-                && type.getKind() == TypeKind.WILDCARD) {
-            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
-            return insideWc.isUninferredTypeArgument();
-        }
-        return false;
+        return type.atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
     }
 
     // ------------------------------------------------------------------------
