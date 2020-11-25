@@ -284,7 +284,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         /** Upper bound. */
         protected final AnnotatedTypeMirror upper;
 
-        /** Whether this has an explict lower (super) bound that is not the null type. */
+        /**
+         * Whether this has an explict lower bound that is not the null type; in other words,
+         * whether the source code syntax of this contains "super".
+         */
         protected final boolean hasExplicitLowerBound;
 
         /**
@@ -297,7 +300,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
                 this.lower = wildcardType.getSuperBound();
                 this.upper = wildcardType.getExtendsBound();
-
             } else if (TypesUtils.isCaptured(type.getUnderlyingType())) {
                 AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) type;
                 this.lower = typeVariable.getLowerBound();
@@ -329,22 +331,23 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
      * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
      *
-     * <p>A declared type is considered a supertype of another declared type only if all of the type
-     * arguments of the declared type "contain" the corresponding type arguments of the subtype.
-     * Containment is described in <a
+     * <p>Containment is described in <a
      * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
-     * 4.5.1 "Type Arguments of Parameterized Types"</a>.
+     * 4.5.1 "Type Arguments of Parameterized Types"</a>. A declared type is considered a supertype
+     * of another declared type only if all of the type arguments of the declared type "contain" the
+     * corresponding type arguments of the subtype.
      *
      * <p>The containment algorithm implemented here is slightly different that what is presented in
      * the JLS. The Checker Framework checks that method arguments are subtype of the method
-     * parameters that have been view-point-adapted to the call site. Java does not do this check;
-     * instead, it checks if an applicable method exist. By checking that method arguments are
-     * subtypes of view-point-adapted parameters, the Checker Framework gives better error messages.
-     * However, view-point-adapting parameters leads to types that Java does not account for in the
+     * parameters that have been viewpoint-adapted to the call site. Java does not do this check;
+     * instead, it checks if an applicable method exists. By checking that method arguments are
+     * subtypes of viewpoint-adapted parameters, the Checker Framework gives better error messages.
+     * However, viewpoint-adapting parameters leads to types that Java does not account for in the
      * containment algorithm, namely wildcards with upper or lower bounds that are captured types.
-     * In these cases, containment is called recursively on captured type bound. (Note, it must
-     * recur rather than call isSubtype because the inside type may be in between the bounds of the
-     * upper or lower bound. For example: outside: ? extends ? extends Object inside: String)
+     * In these cases, our algorithm calls containment recursively on the captured type bound.
+     * (Note, it must recur rather than call isSubtype because the inside type may be in between the
+     * bounds of the upper or lower bound. For example: outside: ? extends ? extends Object inside:
+     * String)
      *
      * @param inside a possibly-contained type
      * @param outside a possibly-containing type
