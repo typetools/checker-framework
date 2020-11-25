@@ -382,7 +382,7 @@ import org.plumelib.util.UtilPlume;
 
     // Whenever processing a source file, parse it with JavaParser and check that a the AST can be
     // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
-    "checkJavaParserVisitor"
+    "checkJavaParserVisitor",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor
         implements CFContext, OptionConfiguration {

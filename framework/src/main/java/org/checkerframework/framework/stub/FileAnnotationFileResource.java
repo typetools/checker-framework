@@ -6,16 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /** {@link File}-based implementation of {@link AnnotationFileResource}. */
-public class FileAnnotationResource implements AnnotationFileResource {
+public class FileAnnotationFileResource implements AnnotationFileResource {
     /** File for the resource. */
     private final File file;
 
     /**
-     * Constructs a {@code AnnotationFileResource} for the specified stub file.
+     * Constructs a {@code AnnotationFileResource} for the specified annotation file.
      *
-     * @param file the stub file
+     * @param file the annotation file
      */
-    public FileAnnotationResource(File file) {
+    public FileAnnotationFileResource(File file) {
         this.file = file;
     }
 

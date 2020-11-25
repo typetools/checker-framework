@@ -99,10 +99,10 @@ import org.checkerframework.javacutil.TreeUtils;
 
 // From an implementation perspective, this class represents a single stub file or ajava file,
 // notably its annotated types and its declaration annotations.  From a client perspective, it has
-// three static methods as described below in the Javadoc.
+//  static methods as described below in the Javadoc.
 /**
- * This class has two static methods. Each method parses an annotation file and adds annotations to
- * two maps passed as arguments.
+ * This class has three static methods. Each method parses an annotation file and adds annotations
+ * to two maps passed as arguments.
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parse(String, InputStream,
  * AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}, which side-effects its last two
@@ -117,7 +117,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AnnotationFileParser {
 
-    /** Whether or not the file being parsed is stub file. If false, then it's an ajava file. */
+    /** Whether or not the file being parsed is a stub file. If false, then it's an ajava file. */
     private final boolean isParsingStubFile;
 
     /**
@@ -135,9 +135,9 @@ public class AnnotationFileParser {
 
     /**
      * Whether to ignore missing classes even when warnIfNotFound is set to true. This allows the
-     * annotation files to contain classes not in the classpath (even if another class in the
-     * classpath has the same package), but still warn if members of the class (methods, fields) are
-     * missing. This option does nothing unless warnIfNotFound is also set.
+     * files to contain classes not in the classpath (even if another class in the classpath has the
+     * same package), but still warn if members of the class (methods, fields) are missing. This
+     * option does nothing unless warnIfNotFound is also set.
      */
     private final boolean warnIfNotFoundIgnoresClasses;
 
@@ -150,14 +150,14 @@ public class AnnotationFileParser {
     private final boolean warnIfStubRedundantWithBytecode;
 
     /** Whether to print verbose debugging messages. */
-    private final boolean debugStubParser;
+    private final boolean debugAnnotationFileParser;
 
     /** The name of the file being processed; used only for diagnostic messages. */
     private final String filename;
 
     /**
-     * The AST of the parsed annotation file that this class is processing. May be null if there was
-     * a problem parsing the stub file. (TODO: Should the Checker Framework just halt in that case?)
+     * The AST of the parsed file that this class is processing. May be null if there was a problem
+     * parsing the file. (TODO: Should the Checker Framework just halt in that case?)
      */
     // Not final in order to accommodate a default value.
     private StubUnit stubUnit;
@@ -167,8 +167,8 @@ public class AnnotationFileParser {
     private final Elements elements;
 
     /**
-     * The set of annotations found in the annotation file. Keys are both fully-qualified and simple
-     * names. There are two entries for each annotation: the annotation's simple name and its
+     * The set of annotations found in the file. Keys are both fully-qualified and simple names.
+     * There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
      * @see #getAllAnnotations
@@ -226,7 +226,7 @@ public class AnnotationFileParser {
 
     /**
      * Create a new AnnotationFileParser object, which will parse and extract annotations from the
-     * given annotation file.
+     * given file.
      *
      * @param filename name of annotation file, used only for diagnostic messages
      * @param atypeFactory AnnotatedTypeFactory to use
@@ -262,7 +262,7 @@ public class AnnotationFileParser {
         this.warnIfStubRedundantWithBytecode =
                 options.containsKey("stubWarnIfRedundantWithBytecode")
                         && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
-        this.debugStubParser = options.containsKey("stubDebug");
+        this.debugAnnotationFileParser = options.containsKey("stubDebug");
 
         this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
@@ -345,11 +345,10 @@ public class AnnotationFileParser {
         return result;
     }
 
-    //  TODO: This method collects only those that are imported, so it will miss ones whose
-    //   fully-qualified name is used in the annotation file. The #getAnnotation method in this
-    // class
-    //   compensates for this deficiency by attempting to add any fully-qualified annotation
-    //   that it encounters.
+    // TODO: This method collects only those that are imported, so it will miss ones whose
+    // fully-qualified name is used in the annotation file. The #getAnnotation method in this class
+    // compensates for this deficiency by attempting to add any fully-qualified annotation that it
+    // encounters.
     /**
      * Returns all annotations imported by the annotation file, as a value for {@link
      * #allAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
@@ -525,7 +524,10 @@ public class AnnotationFileParser {
         } catch (ParseProblemException e) {
             StringJoiner message = new StringJoiner(LINE_SEPARATOR);
             message.add(
-                    e.getProblems().size() + " problems while parsing stub file " + filename + ":");
+                    e.getProblems().size()
+                            + " problems while parsing ajava file "
+                            + filename
+                            + ":");
             // Manually build up the message, to get verbose location information.
             for (Problem p : e.getProblems()) {
                 message.add(p.getVerboseMessage());
@@ -611,7 +613,7 @@ public class AnnotationFileParser {
      * @param inputStream the stream from which to read an annotation file
      */
     private void parseStubUnit(InputStream inputStream) {
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             stubDebug(String.format("parsing stub file %s", filename));
         }
         stubUnit = StaticJavaParser.parseStubUnit(inputStream);
@@ -694,7 +696,8 @@ public class AnnotationFileParser {
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
-     * @param classTree The tree corresponding typeDecl if processing an ajava file, null otherwise
+     * @param classTree the tree corresponding to typeDecl if processing an ajava file, null
+     *     otherwise
      * @return a list of types variables for {@code typeDecl}. These should be removed after
      *     processing this type declaration.
      */
@@ -713,24 +716,18 @@ public class AnnotationFileParser {
             typeElt = TreeUtils.elementFromDeclaration(classTree);
             innerName = typeElt.getQualifiedName().toString();
             typeName = new FqName(typeName.packageName, innerName);
-            // @SuppressWarnings(
-            // "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
-            // // this is its declaration
             fqTypeName = typeName.toString();
         } else {
             innerName =
                     (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
             typeName = new FqName(typeName.packageName, innerName);
-            // @SuppressWarnings(
-            // "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
-            // // this is its declaration
             fqTypeName = typeName.toString();
             typeElt = elements.getTypeElement(fqTypeName);
         }
         if (typeElt == null) {
-            if (debugStubParser
-                    || (!hasNoStubParserWarning(typeDecl.getAnnotations())
-                            && !hasNoStubParserWarning(packageAnnos)
+            if (debugAnnotationFileParser
+                    || (!hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
+                            && !hasNoAnnotationFileParserWarning(packageAnnos)
                             && !warnIfNotFoundIgnoresClasses)) {
                 stubWarnNotFound("Type not found: " + fqTypeName);
             }
@@ -804,7 +801,7 @@ public class AnnotationFileParser {
                     break;
                 default:
                     /* do nothing */
-                    stubWarnNotFound("StubParser ignoring: " + elt);
+                    stubWarnNotFound("AnnotationFileParser ignoring: " + elt);
                     break;
             }
         }
@@ -815,13 +812,13 @@ public class AnnotationFileParser {
         return null;
     }
 
-    /** True if the argument contains {@code @NoStubParserWarning}. */
-    private boolean hasNoStubParserWarning(Iterable<AnnotationExpr> aexprs) {
+    /** True if the argument contains {@code @NoAnnotationFileParserWarning}. */
+    private boolean hasNoAnnotationFileParserWarning(Iterable<AnnotationExpr> aexprs) {
         if (aexprs == null) {
             return false;
         }
         for (AnnotationExpr anno : aexprs) {
-            if (anno.getNameAsString().equals("NoStubParserWarning")) {
+            if (anno.getNameAsString().equals("NoAnnotationFileParserWarning")) {
                 return true;
             }
         }
@@ -850,7 +847,7 @@ public class AnnotationFileParser {
         // params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
         // }
 
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             int numParams = (typeParameters == null ? 0 : typeParameters.size());
             int numArgs = (typeArguments == null ? 0 : typeArguments.size());
             if (numParams != numArgs) {
@@ -967,7 +964,8 @@ public class AnnotationFileParser {
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations());
         if (decl.isMethodDeclaration()) {
-            // StubParser parses all annotations in type annotation position as type annotations
+            // AnnotationFileParser parses all annotations in type annotation position as type
+            // annotations
             recordDeclAnnotation(elt, ((MethodDeclaration) decl).getType().getAnnotations());
         }
         recordDeclAnnotationFromAnnotationFile(elt);
@@ -1312,7 +1310,8 @@ public class AnnotationFileParser {
         }
         recordDeclAnnotationFromAnnotationFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations());
-        // StubParser parses all annotations in type annotation position as type annotations
+        // AnnotationFileParser parses all annotations in type annotation position as type
+        // annotations
         recordDeclAnnotation(elt, decl.getElementType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
@@ -1452,7 +1451,7 @@ public class AnnotationFileParser {
                             decl.toString().replace(LINE_SEPARATOR, " "),
                             elt.toString().replace(LINE_SEPARATOR, " "),
                             elt.getClass());
-            if (!debugStubParser) {
+            if (!debugAnnotationFileParser) {
                 msg = msg + "; for more details, run with -AstubDebug";
             }
             warn(msg);
@@ -1573,7 +1572,7 @@ public class AnnotationFileParser {
             }
         }
         stubWarnNotFound("Supertype " + typeString + " not found");
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             stubDebug("Supertypes that were searched:");
             for (AnnotatedDeclaredType superType : types) {
                 stubDebug(String.format("  %s", superType));
@@ -1603,7 +1602,7 @@ public class AnnotationFileParser {
 
         stubWarnNotFound(
                 "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
             for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
                 stubDebug(String.format("    %s", method));
@@ -1631,7 +1630,7 @@ public class AnnotationFileParser {
         }
 
         stubWarnNotFound("Enum " + wantedEnumName + " not found in type " + typeElt);
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
             for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
                 stubDebug(String.format("    %s", method));
@@ -1694,7 +1693,7 @@ public class AnnotationFileParser {
                             + typeElt);
         } else {
             stubWarnNotFound("Method " + wantedMethodString + " not found in type " + typeElt);
-            if (debugStubParser) {
+            if (debugAnnotationFileParser) {
                 stubDebug(String.format("  Here are the methods of %s:", typeElt));
                 for (ExecutableElement method :
                         ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
@@ -1737,7 +1736,7 @@ public class AnnotationFileParser {
         }
 
         stubWarnNotFound("Constructor " + wantedMethodString + " not found in type " + typeElt);
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             for (ExecutableElement method :
                     ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
                 stubDebug(String.format("  %s", method));
@@ -1768,7 +1767,7 @@ public class AnnotationFileParser {
         }
 
         stubWarnNotFound("Field " + fieldName + " not found in type " + typeElt);
-        if (debugStubParser) {
+        if (debugAnnotationFileParser) {
             for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
                 stubDebug(String.format("  %s", field));
             }
@@ -2333,7 +2332,8 @@ public class AnnotationFileParser {
      * and the -AstubWarnIfNotFound command-line argument was passed.
      */
     private void stubWarnNotFound(String warning) {
-        if (warnings.add(warning) && ((!isJdkAsStub && warnIfNotFound) || debugStubParser)) {
+        if (warnings.add(warning)
+                && ((!isJdkAsStub && warnIfNotFound) || debugAnnotationFileParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(
@@ -2347,7 +2347,7 @@ public class AnnotationFileParser {
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
     private void stubWarnOverwritesBytecode(String warning) {
-        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
+        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugAnnotationFileParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(
@@ -2374,7 +2374,7 @@ public class AnnotationFileParser {
     }
 
     private void stubDebug(String warning) {
-        if (warnings.add(warning) && debugStubParser) {
+        if (warnings.add(warning) && debugAnnotationFileParser) {
             processingEnv
                     .getMessager()
                     .printMessage(
