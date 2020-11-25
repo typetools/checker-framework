@@ -788,6 +788,51 @@ the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
 in the version of the library you are using.
 
 
+\sectionAndLabel{Ajava Files}{ajava-files}
+
+There exists another file format that works similarly to stub files called
+ajava files. Like stub files, these store annotations that can be read in by the
+Checker Framework, but the format is slightly different. They are mostly used as
+the output of whole program inference and not for annotating libraries.
+
+\subsectionAndLabel{Using an Ajava File}{ajavas-using}
+
+The \code{-Aajavas} command argument works the same as \code{-Astubs} but for
+ajava files, see Section~\ref{stub-using}. It takes a colon-separated list of
+files and directories containing ajava files, which end in the \code{.ajava}
+extension.
+
+For example:
+
+\begin{myxsmall}
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.interning.InterningChecker -Aajavas=String.astub:stubs MyFile.java MyOtherFile.java ...
+\end{Verbatim}
+\end{myxsmall}
+
+\subsectionAndLabel{Contents of an Ajava file}{ajavas-contents}
+
+An ajava file must contain valid Java source code. Annotations in that code are
+read. When reading an ajava file for a file that also exists as source code the
+ajava file and source file must match exactly with the following exceptions:
+\begin{itemize}
+  \item The two may differ in annotations.
+  \item The ajava file may have explicit receivers where the source file
+    doesn't. So, if a source file has a method declaration \code{myMethod()},
+    the ajava file might contain \code{myMethod(MyClass this)}.
+\end{itemize}
+
+\subsectionAndLabel{Annotations in Ajava Files}{ajavas-annotations}
+
+Like stub files, annotations on method parameters, method returns, and fields
+are read. Unlike stub files, if there's an annotation in both an ajava file and
+a source file, the greatest lower bound is used as with the
+\code{-AmergeStubsWithSource} option.
+
+Annotations in ajava files take effect in more places than stub files. Stub
+files ignore annotations in anonymous inner classes, but annotations inside
+anonymous classes and local classes are read in ajava files.
+
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
