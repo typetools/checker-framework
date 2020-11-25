@@ -186,7 +186,7 @@ TreeAnnotator
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all</code><br/><br/>
+      <code>python3 release_build.py all</code><br/><br/>
       [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
@@ -198,7 +198,7 @@ TreeAnnotator
   </li>
   <li>
       <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
-      <code>python release_push.py release</code><br/><br/>
+      <code>python3 release_push.py release</code><br/><br/>
       For minimal prompting, use the <code>--auto</code> option.<br/><br/>
       <div class="alert alert-danger">
         <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend

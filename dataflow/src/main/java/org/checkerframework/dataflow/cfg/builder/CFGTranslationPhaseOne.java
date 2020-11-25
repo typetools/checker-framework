@@ -2426,10 +2426,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             MethodInvocationNode nextCallNode =
                     new MethodInvocationNode(
                             nextCall, nextAccessNode, Collections.emptyList(), getCurrentPath());
+            // If the type of iteratorVariable is a capture, its type tree may be missing
+            // annotations, so save the expression in the node so that the full type can be found
+            // later.
+            nextCallNode.setIterableExpression(expression);
             nextCallNode.setInSource(false);
             extendWithNode(nextCallNode);
 
-            translateAssignment(variable, new LocalVariableNode(variable), nextCall);
+            AssignmentNode assignNode =
+                    translateAssignment(variable, new LocalVariableNode(variable), nextCall);
+            // translateAssignment() scans variable and creates new nodes, so set the expression
+            // there, too.
+            ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
 
             assert statement != null;
             scan(statement, p);

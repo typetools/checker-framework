@@ -401,6 +401,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Maps classes representing AnnotationMirrors to their canonical names. */
     private final Map<Class<? extends Annotation>, @CanonicalName String> annotationClassNames;
 
+    /** An annotated type of the declaration of {@link Iterable} without any annotations. */
+    private AnnotatedDeclaredType iterableDeclType;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
@@ -597,6 +600,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (this.getClass() == AnnotatedTypeFactory.class) {
             this.parseStubFiles();
         }
+        TypeMirror iterableTypeMirror =
+                ElementUtils.getTypeElement(processingEnv, Iterable.class).asType();
+        this.iterableDeclType =
+                (AnnotatedDeclaredType)
+                        AnnotatedTypeMirror.createType(iterableTypeMirror, this, true);
     }
 
     /**
@@ -2059,6 +2067,75 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         newBound.replaceAnnotations(newAnnos);
 
         classWildcardArg.setExtendsBound(newBound);
+    }
+
+    /**
+     * Return the element type of {@code expression}. This is usually the type of {@code
+     * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+     * the array.
+     *
+     * @param expression an expression whose type is an array or implements {@link Iterable}
+     * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     *     the component type of the array.
+     */
+    public AnnotatedTypeMirror getIterableElementType(ExpressionTree expression) {
+        return getIterableElementType(expression, getAnnotatedType(expression));
+    }
+
+    /**
+     * Return the element type of {@code iterableType}. This is usually the type of {@code
+     * expression.itertor().next()}. If {@code expression} is an array, it is the component type of
+     * the array.
+     *
+     * @param expression an expression whose type is an array or implements {@link Iterable}
+     * @param iterableType the type of the expression
+     * @return the type of {@code expression.itertor().next()} or if {@code expression} is an array,
+     *     the component type of the array.
+     */
+    protected AnnotatedTypeMirror getIterableElementType(
+            ExpressionTree expression, AnnotatedTypeMirror iterableType) {
+        switch (iterableType.getKind()) {
+            case ARRAY:
+                return ((AnnotatedArrayType) iterableType).getComponentType();
+            case WILDCARD:
+                return getIterableElementType(
+                        expression,
+                        ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
+            case TYPEVAR:
+                return getIterableElementType(
+                        expression, ((AnnotatedTypeVariable) iterableType).getUpperBound());
+            case DECLARED:
+                AnnotatedDeclaredType dt =
+                        AnnotatedTypes.asSuper(this, iterableType, this.iterableDeclType);
+                if (dt.getTypeArguments().isEmpty()) {
+                    TypeElement e = ElementUtils.getTypeElement(processingEnv, Object.class);
+                    return getAnnotatedType(e);
+                } else {
+                    return dt.getTypeArguments().get(0);
+                }
+
+                // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
+                // annotations on Iterator#next.
+                // The below doesn't work because methodFromUse() assumes that the expression tree
+                // matches the method element.
+                // TypeElement iteratorElement =
+                //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
+                // AnnotatedTypeMirror iteratorType =
+                //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
+                // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+                // mapping.put(
+                //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
+                //          typeArg);
+                // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
+                // ExecutableElement next =
+                //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
+                // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
+                // return m.executableType.getReturnType();
+            default:
+                throw new BugInCF(
+                        "AnnotatedTypeFactory.getIterableElementType: not iterable type: "
+                                + iterableType);
+        }
     }
 
     /**

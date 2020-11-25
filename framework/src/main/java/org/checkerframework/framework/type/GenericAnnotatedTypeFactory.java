@@ -40,6 +40,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -242,11 +243,11 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,

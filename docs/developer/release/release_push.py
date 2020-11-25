@@ -146,8 +146,8 @@ def check_all_links(afu_website, checker_website, suffix, test_mode, checker_ver
         if not test_mode:
             release_option = " release"
         raise Exception("The link checker reported errors.  Please fix them by committing changes to the mainline\n" +
-                        "repository and pushing them to GitHub/Bitbucket, running \"python release_build.py all\" again\n" +
-                        "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
+                        "repository and pushing them to GitHub/Bitbucket, running \"python3 release_build.py all\" again\n" +
+                        "(in order to update the development site), and running \"python3 release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
     """Push the release to the GitHub/Bitbucket repositories for
@@ -170,7 +170,7 @@ def validate_args(argv):
 def print_usage():
     """Print instructions on how to use this script, and in particular how to
     set test or release mode."""
-    print ("Usage: python release_build.py [release] [--auto]\n" +
+    print ("Usage: python3 release_build.py [release] [--auto]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
            "steps but will NOT actually perform a release.  This is for testing the script.")

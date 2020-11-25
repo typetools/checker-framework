@@ -37,6 +37,9 @@ Removed a formal parameter from methods in `BaseTypeVisitor`:
 
 In Analysis.runAnalysisFor(), changed boolean parameter to enum BeforeOrAfter.
 
+Removed org.checkerframework.framework.util.AnnotatedTypes#getIteratedType; use
+AnnotatedTypeFactory#getIterableElementType(ExpressionTree) instead.
+
 ---------------------------------------------------------------------------
 
 Version 3.7.1, November 2, 2020

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -52,7 +53,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     /**
      * Caches of the analysis results for each input for the block of the node and each node.
      *
-     * @see #runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
+     * @see #runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
             analysisCaches;
