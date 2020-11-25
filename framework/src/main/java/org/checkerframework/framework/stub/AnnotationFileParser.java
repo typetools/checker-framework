@@ -1959,7 +1959,7 @@ public class AnnotationFileParser {
             }
             TypeElement typeElement = findTypeOfName(className);
             if (typeElement == null) {
-                warn("StubParser: unknown class name " + className);
+                warn("AnnotationFileParser: unknown class name " + className);
                 return null;
             }
 
@@ -2255,7 +2255,7 @@ public class AnnotationFileParser {
      */
     private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
         if (key == null) {
-            throw new BugInCF("StubParser: key is null for value " + value);
+            throw new BugInCF("AnnotationFileParser: key is null for value " + value);
         }
         if (!m.containsKey(key)) {
             m.put(key, value);

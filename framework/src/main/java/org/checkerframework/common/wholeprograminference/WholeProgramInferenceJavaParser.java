@@ -554,7 +554,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
-        updateTypeElementFromATM(rhsATM, lhsATM, atf, typeToUpdate, defLoc);
+        updateAnnotationFromATM(rhsATM, lhsATM, atf, typeToUpdate, defLoc);
         modifiedFiles.add(file);
     }
 
@@ -579,7 +579,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * @param typeToUpdate the {@code AnnotatedTypeMirror} which will be updated
      * @param defLoc the location where the annotation will be added
      */
-    private void updateTypeElementFromATM(
+    private void updateAnnotationFromATM(
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
             AnnotatedTypeFactory atf,
@@ -594,13 +594,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             }
         }
 
-        // This method may be called consecutive times for the same ATypeElement.
+        // This method may be called consecutive times to modify the same AnnotatedTypeMirror.
         // Each time it is called, the AnnotatedTypeMirror has a better type
-        // estimate for the ATypeElement. Therefore, it is not a problem to remove
+        // estimate for the modified AnnotatedTypeMirror. Therefore, it is not a problem to remove
         // all annotations before inserting the new annotations.
         typeToUpdate.removeAnnotations(annosToRemove);
 
-        // Only update the ATypeElement if there are no explicit annotations
+        // Only update the AnnotatedTypeMirror if there are no explicit annotations
         if (curATM.getExplicitAnnotations().isEmpty()) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 typeToUpdate.addAnnotation(am);
@@ -626,7 +626,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
-            updateTypeElementFromATM(
+            updateAnnotationFromATM(
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
                     atf,
@@ -636,46 +636,46 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     }
 
     /**
-     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and jaifATM, ignoring missing
-     * AnnotationMirrors from jaifATM -- it considers the LUB between an AnnotationMirror am and a
+     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
+     * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
      * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
      *
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @param sourceCodeATM the annotated type on the source code
-     * @param jaifATM the annotated type on the .jaif file
+     * @param ajavaATM the annotated type on the ajava file
      */
     private void updateATMWithLUB(
             AnnotatedTypeFactory atf,
             AnnotatedTypeMirror sourceCodeATM,
-            AnnotatedTypeMirror jaifATM) {
+            AnnotatedTypeMirror ajavaATM) {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
                 updateATMWithLUB(
                         atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
-                        ((AnnotatedTypeVariable) jaifATM).getLowerBound());
+                        ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
                 updateATMWithLUB(
                         atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
-                        ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+                        ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
                 break;
                 //        case WILDCARD:
                 // Because inferring type arguments is not supported, wildcards won't be encoutered
                 //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
                 // sourceCodeATM).getExtendsBound(),
                 //                              ((AnnotatedWildcardType)
-                // jaifATM).getExtendsBound());
+                // ajavaATM).getExtendsBound());
                 //            updatesATMWithLUB(atf, ((AnnotatedWildcardType)
                 // sourceCodeATM).getSuperBound(),
-                //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+                //                              ((AnnotatedWildcardType) ajavaATM).getSuperBound());
                 //            break;
             case ARRAY:
                 updateATMWithLUB(
                         atf,
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-                        ((AnnotatedArrayType) jaifATM).getComponentType());
+                        ((AnnotatedArrayType) ajavaATM).getComponentType());
                 break;
                 // case DECLARED:
                 // inferring annotations on type arguments is not supported, so no need to recur on
@@ -689,11 +689,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         // LUB primary annotations
         Set<AnnotationMirror> annosToReplace = new HashSet<>();
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
-            AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
-            // amJaif only contains  annotations from the jaif, so it might be missing
+            AnnotationMirror amAjava = ajavaATM.getAnnotationInHierarchy(amSource);
+            // amAjava only contains  annotations from the ajava file, so it might be missing
             // an annotation in the hierarchy
-            if (amJaif != null) {
-                amSource = atf.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
+            if (amAjava != null) {
+                amSource = atf.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
             }
             annosToReplace.add(amSource);
         }
