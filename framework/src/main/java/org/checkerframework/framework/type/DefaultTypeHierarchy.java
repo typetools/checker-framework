@@ -365,15 +365,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return canBeCovariant || isSubtypeCaching(outsideLowerBound, inside);
     }
 
+    /**
+     * Returns true if {@code type} is an uninferred type argument and if the checker should not
+     * issue warnings about uninferred type arguments.
+     *
+     * @param type type to check
+     * @return true if {@code type} is an uninferred type argument and if the checker should not
+     *     issue warnings about uninferred type arguments
+     */
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
-        if (type.atypeFactory.ignoreUninferredTypeArguments
-                && type.getKind() == TypeKind.WILDCARD) {
-            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
-            if (insideWc.isUninferredTypeArgument()) {
-                return true;
-            }
-        }
-        return false;
+        return type.atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
     }
 
     // ------------------------------------------------------------------------
