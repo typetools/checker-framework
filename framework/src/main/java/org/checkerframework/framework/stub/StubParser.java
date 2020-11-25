@@ -2350,11 +2350,6 @@ public class StubParser {
      */
     @SuppressWarnings("UnusedNestedClass")
     private class AjavaParserVisitor extends DefaultJointVisitor {
-        /** Constructs an {@code AjavaParserVisitor}. */
-        public AjavaParserVisitor() {
-            super(TraversalType.PRE_ORDER);
-        }
-
         @Override
         public Void visitClass(ClassTree javacTree, Node javaParserNode) {
             if (javaParserNode instanceof TypeDeclaration<?>

@@ -761,7 +761,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             TypeDeclaration<?> javaParserClass,
             CompilationUnitWrapper wrapper) {
         JointJavacJavaParserVisitor visitor =
-                new DefaultJointVisitor(JointJavacJavaParserVisitor.TraversalType.PRE_ORDER) {
+                new DefaultJointVisitor() {
                     @Override
                     public void processClass(
                             ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {

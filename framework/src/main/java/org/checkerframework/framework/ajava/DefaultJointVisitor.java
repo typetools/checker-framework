@@ -134,20 +134,6 @@ import com.sun.source.tree.WildcardTree;
  * annotations. To use this class, extend it and override a {@code process} method.
  */
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
-    /**
-     * Constructs a visitor that uses the given traversal type.
-     *
-     * @param traversalType traversal type to use
-     */
-    public DefaultJointVisitor(TraversalType traversalType) {
-        super(traversalType);
-    }
-
-    /** Constructs a visitor that uses a post-order traversal. */
-    public DefaultJointVisitor() {
-        super();
-    }
-
     @Override
     public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {}
 

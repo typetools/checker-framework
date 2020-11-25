@@ -137,20 +137,6 @@ import com.sun.source.tree.WildcardTree;
  */
 public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParserVisitor {
     /**
-     * Constructs a visitor that uses the given traversal type.
-     *
-     * @param traversalType traversal type to use
-     */
-    protected JointVisitorWithDefaultAction(TraversalType traversalType) {
-        super(traversalType);
-    }
-
-    /** Constructs a visitor that uses a post-order traversal. */
-    protected JointVisitorWithDefaultAction() {
-        super();
-    }
-
-    /**
      * Action performed on each javac tree and JavaParser node pair.
      *
      * @param javacTree tree to process
