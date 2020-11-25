@@ -138,7 +138,7 @@ public class AnnotationFileElementTypes {
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub");
             if (jdkStubIn != null) {
-                StubParser.parse(
+                AnnotationFileParser.parse(
                         checker.getClass().getResource("jdk.astub").toString(),
                         jdkStubIn,
                         factory,
@@ -149,7 +149,7 @@ public class AnnotationFileElementTypes {
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
             if (jdkVersionStubIn != null) {
-                StubParser.parse(
+                AnnotationFileParser.parse(
                         checker.getClass().getResource(jdkVersionStub).toString(),
                         jdkVersionStubIn,
                         factory,
@@ -228,7 +228,7 @@ public class AnnotationFileElementTypes {
         InputStream in;
         try {
             in = new FileInputStream(ajavaPath);
-            StubParser.parseAjavaFile(
+            AnnotationFileParser.parseAjavaFile(
                     ajavaPath,
                     in,
                     root,
@@ -272,7 +272,7 @@ public class AnnotationFileElementTypes {
                                 "Could not read stub resource: " + resource.getDescription());
                         continue;
                     }
-                    StubParser.parse(
+                    AnnotationFileParser.parse(
                             resource.getDescription(),
                             stubStream,
                             factory,
@@ -289,7 +289,7 @@ public class AnnotationFileElementTypes {
                 }
                 InputStream in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
-                    StubParser.parse(
+                    AnnotationFileParser.parse(
                             stubPath,
                             in,
                             factory,
@@ -452,7 +452,7 @@ public class AnnotationFileElementTypes {
     private void parseStubFile(Path path) {
         parsing = true;
         try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
-            StubParser.parseJdkFileAsStub(
+            AnnotationFileParser.parseJdkFileAsStub(
                     path.toFile().getName(),
                     jdkStub,
                     factory,
@@ -481,7 +481,7 @@ public class AnnotationFileElementTypes {
             } catch (IOException e) {
                 throw new BugInCF("cannot open the jdk stub file " + jarEntryName, e);
             }
-            StubParser.parseJdkFileAsStub(
+            AnnotationFileParser.parseJdkFileAsStub(
                     jarEntryName,
                     jdkStub,
                     factory,
