@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 /** {@link File}-based implementation of {@link AnnotationFileResource}. */
 public class FileAnnotationResource implements AnnotationFileResource {
+    /** File for the resource. */
     private final File file;
 
     /**

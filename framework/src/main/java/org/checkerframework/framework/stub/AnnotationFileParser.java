@@ -237,6 +237,7 @@ public class AnnotationFileParser {
      *     declaration annotations on it. Declaration annotations from this annotation file are
      *     added to this map.
      * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
+     * @param isParsingStubFile true if parsing a stubfile, false if parsing an ajava file
      */
     private AnnotationFileParser(
             String filename,
@@ -1416,6 +1417,8 @@ public class AnnotationFileParser {
     /**
      * Adds the declaration annotation {@code @FromStubFile} to the given element, unless we are
      * parsing an ajava file or parsing the JDK as a stub file.
+     *
+     * @param elt Elemen to add annotation to
      */
     private void recordDeclAnnotationFromAnnotationFile(Element elt) {
         if (!isParsingStubFile || isJdkAsStub) {
