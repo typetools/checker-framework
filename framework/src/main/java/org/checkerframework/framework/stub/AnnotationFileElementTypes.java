@@ -37,8 +37,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 
 /**
- * Holds information about types parsed from annotations files in the stub file format, which may
- * include ajava files.
+ * Holds information about types parsed from annotations files in the stub file or ajava file
+ * format. When using an ajava file, only holds information on public elements as with stub files.
  */
 public class AnnotationFileElementTypes {
     /** Types read from annotation files (but not those from the annotated JDK jar file). */
@@ -46,8 +46,8 @@ public class AnnotationFileElementTypes {
 
     /**
      * Declaration annotations read from annotation files (but not those from the annotated JDK jar
-     * file). Map keys cannot be Element, because a different Element appears in the stub files than
-     * in the real files. So, map keys are the verbose element name, as returned by
+     * file). Map keys cannot be Element, because a different Element appears in the annotation
+     * files than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
     private final Map<String, Set<AnnotationMirror>> declAnnosFromAnnotationFiles;
@@ -255,63 +255,62 @@ public class AnnotationFileElementTypes {
             List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        for (String stubPath : annotationFiles) {
+        for (String path : annotationFiles) {
             // Special case when running in jtreg.
             String base = System.getProperty("test.src");
-            String stubPathFull = (base == null) ? stubPath : base + "/" + stubPath;
-            List<AnnotationFileResource> stubs =
-                    AnnotationFileUtil.allAnnotationFiles(stubPathFull, fileType);
-            if (!stubs.isEmpty()) {
-                for (AnnotationFileResource resource : stubs) {
-                    InputStream stubStream;
+            String fullPath = (base == null) ? path : base + "/" + path;
+            List<AnnotationFileResource> allFiles =
+                    AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
+            if (!allFiles.isEmpty()) {
+                for (AnnotationFileResource resource : allFiles) {
+                    InputStream annotationStream;
                     try {
-                        stubStream = resource.getInputStream();
+                        annotationStream = resource.getInputStream();
                     } catch (IOException e) {
                         checker.message(
                                 Kind.NOTE,
-                                "Could not read stub resource: " + resource.getDescription());
+                                "Could not read annotation resource: " + resource.getDescription());
                         continue;
                     }
                     AnnotationFileParser.parse(
                             resource.getDescription(),
-                            stubStream,
+                            annotationStream,
                             factory,
                             processingEnv,
                             typesFromAnnotationFiles,
                             declAnnosFromAnnotationFiles);
                 }
             } else {
-                // We didn't find the stub files.
-                // If the stub file has a prefix of "checker.jar/" then look for the file in the top
+                // We didn't find the files.
+                // If the file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
-                if (stubPath.startsWith("checker.jar/")) {
-                    stubPath = stubPath.substring("checker.jar/".length());
+                if (path.startsWith("checker.jar/")) {
+                    path = path.substring("checker.jar/".length());
                 }
-                InputStream in = checker.getClass().getResourceAsStream(stubPath);
+                InputStream in = checker.getClass().getResourceAsStream(path);
                 if (in != null) {
                     AnnotationFileParser.parse(
-                            stubPath,
+                            path,
                             in,
                             factory,
                             processingEnv,
                             typesFromAnnotationFiles,
                             declAnnosFromAnnotationFiles);
                 } else {
-                    // Didn't find the stub file.  Issue a warning.
+                    // Didn't find the file.  Issue a warning.
 
-                    // When using a compound checker, the target stub file may be found by the
+                    // When using a compound checker, the target file may be found by the
                     // current checker's parent checkers. Also check this to avoid a false
                     // warning. Currently, only the original checker will try to parse the target
-                    // stub file, the parent checkers are only used to reduce false warnings.
+                    // file, the parent checkers are only used to reduce false warnings.
                     SourceChecker currentChecker = checker;
                     boolean findByParentCheckers = false;
                     while (currentChecker != null) {
-                        URL topLevelResource =
-                                currentChecker.getClass().getResource("/" + stubPath);
+                        URL topLevelResource = currentChecker.getClass().getResource("/" + path);
                         if (topLevelResource != null) {
                             currentChecker.message(
                                     Kind.WARNING,
-                                    stubPath
+                                    path
                                             + " should be in the same directory as "
                                             + currentChecker.getClass().getSimpleName()
                                             + ".class, but is at the top level of a jar file: "
@@ -322,26 +321,22 @@ public class AnnotationFileElementTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
-                    // If there exists one parent checker that can find this stub file, don't
+                    // If there exists one parent checker that can find this file, don't
                     // report an warning.
                     if (!findByParentCheckers) {
-                        File stubPathParent = new File(stubPath).getParentFile();
-                        String stubPathParentDescription =
-                                (stubPathParent == null
+                        File parentPath = new File(path).getParentFile();
+                        String parentPathDescription =
+                                (parentPath == null
                                         ? "current directory"
                                         : "directory "
-                                                + new File(stubPath)
-                                                        .getParentFile()
-                                                        .getAbsolutePath());
+                                                + new File(path).getParentFile().getAbsolutePath());
                         checker.message(
                                 Kind.WARNING,
                                 "Did not find stub file "
-                                        + stubPath
+                                        + path
                                         + " on classpath or within "
-                                        + stubPathParentDescription
-                                        + (stubPathFull.equals(stubPath)
-                                                ? ""
-                                                : (" or at " + stubPathFull)));
+                                        + parentPathDescription
+                                        + (fullPath.equals(path) ? "" : (" or at " + fullPath)));
                     }
                 }
             }
@@ -390,8 +385,8 @@ public class AnnotationFileElementTypes {
     }
 
     /**
-     * Parses the outermost enclosing class of {@code e} if there exists a stub file for it and it
-     * has not already been parsed.
+     * Parses the outermost enclosing class of {@code e} if there exists an annotation file for it
+     * and it has not already been parsed.
      *
      * @param e element whose outermost enclosing class will be parsed
      */
