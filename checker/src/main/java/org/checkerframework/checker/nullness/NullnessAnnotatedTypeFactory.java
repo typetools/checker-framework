@@ -28,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -591,7 +592,7 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessQualifierHierarchy();
     }
 
-    /** NullnessQualifierHierarchy */
+    /** NullnessQualifierHierarchy. */
     protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
 
         /** Qualifier kind for the @{@link Nullable} annotation. */
@@ -711,5 +712,14 @@ public class NullnessAnnotatedTypeFactory
             am = canonical;
         }
         return AnnotationUtils.areSameByName(am, NULLABLE);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
+        AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
+        if (getAnnotationByClass(result.getAnnotations(), Nullable.class) != null) {
+            result.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+        return result;
     }
 }

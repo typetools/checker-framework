@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -225,7 +226,14 @@ public abstract class CFAbstractTransfer<
                                         assignmentContext));
             }
         }
-        AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror at;
+        if (node instanceof MethodInvocationNode
+                && ((MethodInvocationNode) node).getIterableExpression() != null) {
+            ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+            at = factory.getIterableElementType(iter);
+        } else {
+            at = factory.getAnnotatedType(tree);
+        }
         analysis.setCurrentTree(preTree);
         factory.getVisitorState().setAssignmentContext(preContext);
         return analysis.createAbstractValue(at);

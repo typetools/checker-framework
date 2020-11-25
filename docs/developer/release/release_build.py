@@ -23,7 +23,7 @@ notest = False
 
 def print_usage():
     """Print usage information."""
-    print "Usage:    python release_build.py [projects] [options]"
+    print "Usage:    python3 release_build.py [projects] [options]"
     print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"

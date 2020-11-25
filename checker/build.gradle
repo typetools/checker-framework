@@ -18,11 +18,11 @@ sourceSets {
 }
 
 dependencies {
-    implementation project(':framework')
-    implementation project(':dataflow')
     implementation project(':javacutil')
+    implementation project(':dataflow')
+    implementation project(':framework')
     implementation project(':checker-qual')
-    // As of 2019/12/16, the version of reflection-util in the Annotation
+    // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.2'

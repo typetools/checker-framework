@@ -4,10 +4,16 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -26,6 +32,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -46,10 +53,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        String checkerNames = Options.instance(context).get("-processor");
+        String[] checkerNames = getCheckerNames();
+
         defaultValueAtypeFactories = new ArrayList<>();
-        for (String checkerName : checkerNames.split(",")) {
+        for (String checkerName : checkerNames) {
             if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
                 continue;
             }
@@ -64,7 +71,35 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     /**
-     * Returns the type factory for the given annotation processor, if it is type-checker
+     * Returns the names of the annotation processors that are being run.
+     *
+     * @return the names of the annotation processors that are being run
+     */
+    @SuppressWarnings("JdkObsolete") // ClassLoader.getResources returns an Enumeration
+    private String[] getCheckerNames() {
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+        String processorArg = Options.instance(context).get("-processor");
+        if (processorArg != null) {
+            return processorArg.split(",");
+        }
+        try {
+            String filename = "META-INF/services/javax.annotation.processing.Processor";
+            List<String> lines = new ArrayList<>();
+            Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                lines.addAll(in.lines().collect(Collectors.toList()));
+            }
+            String[] result = lines.toArray(new String[0]);
+            return result;
+        } catch (IOException e) {
+            throw new BugInCF(e);
+        }
+    }
+
+    /**
+     * Returns the type factory for the given annotation processor, if it is type-checker.
      *
      * @param processorName the fully-qualified class name of an annotation processor
      * @return the type factory for the given annotation processor, or null if it's not a checker

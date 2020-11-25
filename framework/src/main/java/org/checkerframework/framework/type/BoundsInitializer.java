@@ -1253,9 +1253,10 @@ public class BoundsInitializer {
         @Override
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
-            throw new BugInCF(
-                    "Type variables cannot be intersection bounds.%nparent=%s%nreplacement=%s",
-                    parent, replacement);
+            AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) parent;
+            List<AnnotatedTypeMirror> bounds = new ArrayList<>(intersection.bounds);
+            bounds.set(boundIndex, replacement);
+            intersection.setBounds(bounds);
         }
 
         @Override
@@ -1265,7 +1266,7 @@ public class BoundsInitializer {
                 throw new BugInCF("Invalid superIndex %d: parent=%s", boundIndex, parent);
             }
 
-            return isect.directSuperTypes().get(boundIndex);
+            return isect.getBounds().get(boundIndex);
         }
 
         @Override

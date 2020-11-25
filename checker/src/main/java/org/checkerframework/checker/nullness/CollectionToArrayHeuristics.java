@@ -104,9 +104,9 @@ public class CollectionToArrayHeuristics {
 
             if (receiverIsNonNull && !argIsHandled) {
                 if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
-                    checker.reportWarning(tree, "toArray.nullable.elements.not.newarray");
+                    checker.reportWarning(tree, "toarray.nullable.elements.not.newarray");
                 } else {
-                    checker.reportWarning(tree, "toArray.nullable.elements.mismatched.size");
+                    checker.reportWarning(tree, "toarray.nullable.elements.mismatched.size");
                 }
             }
         }
