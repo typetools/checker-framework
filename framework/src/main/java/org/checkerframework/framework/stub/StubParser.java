@@ -307,8 +307,8 @@ public class StubParser {
         Map<String, TypeElement> result = new HashMap<>();
         for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
-                putNoOverride(result, typeElm.getSimpleName().toString(), typeElm);
-                putNoOverride(result, typeElm.getQualifiedName().toString(), typeElm);
+                putIfAbsent(result, typeElm.getSimpleName().toString(), typeElm);
+                putIfAbsent(result, typeElm.getQualifiedName().toString(), typeElm);
             }
         }
         return result;
@@ -433,7 +433,7 @@ public class StubParser {
                         // Single annotation or nested annotation
                         TypeElement annoElt = elements.getTypeElement(imported);
                         if (annoElt != null) {
-                            putNoOverride(result, annoElt.getSimpleName().toString(), annoElt);
+                            putIfAbsent(result, annoElt.getSimpleName().toString(), annoElt);
                             importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {
                             stubWarnNotFound("Could not load import: " + imported);
@@ -561,7 +561,7 @@ public class StubParser {
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
-     * @param isJdkAsStub whether or not the stub file is a part of the annotated jdk
+     * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
      */
     private static void parse(
             String filename,
@@ -597,7 +597,9 @@ public class StubParser {
 
     /**
      * Delegate to the Stub Parser to parse the stub file to an AST, and save it in {@link
-     * #stubUnit}. Subsequently, all work uses the AST.
+     * #stubUnit}. Also modifies other fields of this.
+     *
+     * <p>Subsequently, all work uses the AST.
      *
      * @param inputStream the stream from which to read a stub file
      */
@@ -680,7 +682,7 @@ public class StubParser {
     }
 
     /**
-     * Process a type declaration
+     * Process a type declaration.
      *
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
@@ -908,32 +910,34 @@ public class StubParser {
     private void annotateSupertypes(
             ClassOrInterfaceDeclaration typeDecl, AnnotatedDeclaredType type) {
         if (typeDecl.getExtendedTypes() != null) {
-            for (ClassOrInterfaceType superType : typeDecl.getExtendedTypes()) {
-                AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                if (foundType == null) {
+            for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
+                AnnotatedDeclaredType annoSupertype =
+                        findAnnotatedType(supertype, type.directSuperTypes());
+                if (annoSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superclass "
-                                    + superType
+                                    + supertype
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(foundType, superType, null);
+                    annotate(annoSupertype, supertype, null);
                 }
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
-            for (ClassOrInterfaceType superType : typeDecl.getImplementedTypes()) {
-                AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
-                if (foundType == null) {
+            for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
+                AnnotatedDeclaredType annoSupertype =
+                        findAnnotatedType(supertype, type.directSuperTypes());
+                if (annoSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superinterface "
-                                    + superType
+                                    + supertype
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(foundType, superType, null);
+                    annotate(annoSupertype, supertype, null);
                 }
             }
         }
@@ -1466,6 +1470,9 @@ public class StubParser {
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration<?>> result = new LinkedHashMap<>();
+        for (BodyDeclaration<?> member : typeDecl.getMembers()) {
+            putNewElement(result, typeElt, member, typeDecl.getNameAsString());
+        }
         // For an enum type declaration, also add the enum constants
         if (typeDecl instanceof EnumDeclaration) {
             EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
@@ -1474,14 +1481,14 @@ public class StubParser {
                 putNewElement(result, typeElt, member, typeDecl.getNameAsString());
             }
         }
-        for (BodyDeclaration<?> member : typeDecl.getMembers()) {
-            putNewElement(result, typeElt, member, typeDecl.getNameAsString());
-        }
         return result;
     }
 
     /**
-     * Add, to result, a mapping from (the element for) typeElt to member.
+     * Add, to {@code result}, a mapping from member's element to member. Member's element is found
+     * in {@code typeElt}.
+     *
+     * <p>Does nothing if it cannot find member's element. Does nothing if a mapping already exists.
      *
      * @param typeDeclName used only for debugging
      */
@@ -1493,35 +1500,35 @@ public class StubParser {
         if (member instanceof MethodDeclaration) {
             Element elt = findElement(typeElt, (MethodDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
             for (VariableDeclarator var : fieldDecl.getVariables()) {
                 Element varelt = findElement(typeElt, var);
                 if (varelt != null) {
-                    putNoOverride(result, varelt, fieldDecl);
+                    putIfAbsent(result, varelt, fieldDecl);
                 }
             }
         } else if (member instanceof EnumConstantDeclaration) {
             Element elt = findElement(typeElt, (EnumConstantDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
             Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else if (member instanceof EnumDeclaration) {
             Element elt = findElement(typeElt, (EnumDeclaration) member);
             if (elt != null) {
-                putNoOverride(result, elt, member);
+                putIfAbsent(result, elt, member);
             }
         } else {
             stubDebug(
@@ -1530,8 +1537,16 @@ public class StubParser {
         }
     }
 
-    /** Return the element of {@code types} whose name matches {@code type}. */
-    private AnnotatedDeclaredType findType(
+    /**
+     * Return the annotated type corresponding to {@code type}, or null if none exists. More
+     * specifically, returns the element of {@code types} whose name matches {@code type}.
+     *
+     * @param type the type to search for
+     * @param types the list of AnnotatedDeclaredTypes to search in
+     * @return the annotated type in {@code types} corresponding to {@code type}, or null if none
+     *     exists
+     */
+    private @Nullable AnnotatedDeclaredType findAnnotatedType(
             ClassOrInterfaceType type, List<AnnotatedDeclaredType> types) {
         String typeString = type.getNameAsString();
         for (AnnotatedDeclaredType superType : types) {
@@ -1649,7 +1664,6 @@ public class StubParser {
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
         final String wantedMethodString = AnnotationFileUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName().toString())
                     && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
@@ -1702,7 +1716,6 @@ public class StubParser {
         final String wantedMethodString = AnnotationFileUtil.toString(constructorDecl);
         for (ExecutableElement method :
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && ElementUtils.getSimpleSignature(method).equals(wantedMethodString)) {
                 return method;
@@ -2224,10 +2237,18 @@ public class StubParser {
     /// Map utilities
     ///
 
-    /** Just like Map.put, but does not override any existing value in the map. */
-    private static <K, V> void putNoOverride(Map<K, V> m, K key, V value) {
+    /**
+     * Just like Map.put, but does not override any existing value in the map.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @param m a map
+     * @param key a key
+     * @param value the value to associate with the key, if the key isn't already in the map
+     */
+    private static <K, V> void putIfAbsent(Map<K, V> m, K key, V value) {
         if (key == null) {
-            throw new BugInCF("StubParser: key is null");
+            throw new BugInCF("StubParser: key is null for value " + value);
         }
         if (!m.containsKey(key)) {
             m.put(key, value);
@@ -2276,7 +2297,7 @@ public class StubParser {
     }
 
     /**
-     * Just like Map.putAll, but modifies existing values using {@link #putNoOverride(Map, Object,
+     * Just like Map.putAll, but modifies existing values using {@link #putIfAbsent(Map, Object,
      * Object)}.
      *
      * @param m the destination map
@@ -2286,7 +2307,7 @@ public class StubParser {
      */
     private static <K, V> void putAllNew(Map<K, V> m, Map<K, V> m2) {
         for (Map.Entry<K, V> e2 : m2.entrySet()) {
-            putNoOverride(m, e2.getKey(), e2.getValue());
+            putIfAbsent(m, e2.getKey(), e2.getValue());
         }
     }
 

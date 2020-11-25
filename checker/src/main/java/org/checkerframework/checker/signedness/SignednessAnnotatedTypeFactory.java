@@ -329,7 +329,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
      *
      * @param node a tree that might be a cast to a primitive
-     * @return type of a primitive cast, or null if not a cast to a primitive.
+     * @return type of a primitive cast, or null if not a cast to a primitive
      */
     private PrimitiveTypeTree primitiveTypeCast(Tree node) {
         if (node.getKind() != Kind.TYPE_CAST) {
@@ -354,7 +354,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true iff the given tree is a literal
+     * Returns true iff the given tree is a literal.
      *
      * @param expr a tree to test
      * @return true iff expr is a literal

@@ -285,7 +285,7 @@ public class Range {
         return this == NOTHING;
     }
 
-    /** The number of values representable in 32 bits: 2^32 or 1&lt;&lt;32. */
+    /** The number of values representable in 32 bits: 2^32 or {@code 1<<32}. */
     private static final long INT_WIDTH = INT_EVERYTHING.width();
 
     /**

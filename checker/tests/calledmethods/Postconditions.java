@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-/** Test for postcondition support via @EnsureCalledMethods */
+/** Test for postcondition support via @EnsureCalledMethods. */
 class Postconditions {
     void build(@CalledMethods({"a", "b", "c"}) Postconditions this) {}
 
