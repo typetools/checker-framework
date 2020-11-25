@@ -407,7 +407,7 @@ public class StubParser {
                         // static import of field or method.
 
                         Pair<@FullyQualifiedName String, String> typeParts =
-                                StubUtil.partitionQualifiedName(imported);
+                                AnnotationFileUtil.partitionQualifiedName(imported);
                         String type = typeParts.first;
                         String fieldName = typeParts.second;
                         TypeElement enclType =
@@ -1647,7 +1647,7 @@ public class StubParser {
         final String wantedMethodName = methodDecl.getNameAsString();
         final int wantedMethodParams =
                 (methodDecl.getParameters() == null) ? 0 : methodDecl.getParameters().size();
-        final String wantedMethodString = StubUtil.toString(methodDecl);
+        final String wantedMethodString = AnnotationFileUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
@@ -1699,7 +1699,7 @@ public class StubParser {
                 (constructorDecl.getParameters() == null)
                         ? 0
                         : constructorDecl.getParameters().size();
-        final String wantedMethodString = StubUtil.toString(constructorDecl);
+        final String wantedMethodString = AnnotationFileUtil.toString(constructorDecl);
         for (ExecutableElement method :
                 ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
@@ -2142,7 +2142,7 @@ public class StubParser {
         boolean importFound = false;
         for (String imp : importedConstants) {
             Pair<@FullyQualifiedName String, String> partitionedName =
-                    StubUtil.partitionQualifiedName(imp);
+                    AnnotationFileUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
             if (fieldName.equals(nexpr.getNameAsString())) {
@@ -2194,7 +2194,7 @@ public class StubParser {
         if (rcvElt == null) {
             // Search importedConstants for full annotation name.
             for (String imp : importedConstants) {
-                // TODO: should this use StubUtil.partitionQualifiedName?
+                // TODO: should this use AnnotationFileUtil.partitionQualifiedName?
                 String[] importDelimited = imp.split("\\.");
                 if (importDelimited[importDelimited.length - 1].equals(
                         faexpr.getScope().toString())) {

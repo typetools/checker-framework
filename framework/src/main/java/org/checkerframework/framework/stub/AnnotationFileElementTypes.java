@@ -190,7 +190,7 @@ public class AnnotationFileElementTypes {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
-        parseAnnotationFiles(allStubFiles, StubUtil.AnnotationFileType.STUB);
+        parseAnnotationFiles(allStubFiles, AnnotationFileUtil.AnnotationFileType.STUB);
         parsing = false;
     }
 
@@ -205,7 +205,7 @@ public class AnnotationFileElementTypes {
             Collections.addAll(ajavaFiles, ajavasOption.split(File.pathSeparator));
         }
 
-        parseAnnotationFiles(ajavaFiles, StubUtil.AnnotationFileType.AJAVA);
+        parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);
         parsing = false;
     }
 
@@ -249,7 +249,7 @@ public class AnnotationFileElementTypes {
      * @param fileType the file type of files to parse
      */
     private void parseAnnotationFiles(
-            List<String> annotationFiles, StubUtil.AnnotationFileType fileType) {
+            List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
         SourceChecker checker = factory.getContext().getChecker();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         for (String stubPath : annotationFiles) {
@@ -259,7 +259,8 @@ public class AnnotationFileElementTypes {
             if (base != null) {
                 stubPathFull = base + "/" + stubPath;
             }
-            List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull, fileType);
+            List<StubResource> stubs =
+                    AnnotationFileUtil.allAnnotationFiles(stubPathFull, fileType);
             if (stubs.isEmpty()) {
                 // If the stub file has a prefix of "checker.jar/" then look for the file in the top
                 // level directory of the jar that contains the checker.
