@@ -84,7 +84,6 @@ import scenelib.annotations.util.JVMNames;
  * org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes}. See that class
  * for documentation on behavior.
  */
-@SuppressWarnings({"UnusedMethod", "UnusedVariable"})
 public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     /**
      * Directory where .ajava files will be written to and read from. This directory is relative to
@@ -292,7 +291,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AnnotatedTypeMirror param = method.getParameterType(paramATM, atf, i);
                 updateAnnotationSetAtLocation(
                         param, atf, file, argATM, paramATM, TypeUseLocation.PARAMETER);
