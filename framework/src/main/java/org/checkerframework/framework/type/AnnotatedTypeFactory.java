@@ -10,7 +10,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
-import com.github.javaparser.ast.visitor.TreeVisitor;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -21,19 +20,16 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -697,13 +693,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the CompilationUnitTree that should be used.
      *
      * @param root the new compilation unit to use
-     * @param canCheckVisitor true if the visitor that verifies the javac tree can be visited with
-     *     its corresponding JavaParser AST can be run. The check only occurs if
-     *     -AcheckJavaParserVisitor is passed on the command line as well.
+     * @param shouldCheckVisitor true if the visitor that verifies the javac tree can be visited
+     *     with its corresponding JavaParser AST should be run. The check only occurs if
+     *     -AcheckJavaParserVisitor is passed on the command line.
      */
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void setRoot(@Nullable CompilationUnitTree root, boolean canCheckVisitor) {
+    public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
         if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() != Kind.CLASS) {
@@ -717,171 +713,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        boolean shouldPrint = false;
-        if (root != null && shouldPrint) {
-            new TreePathScanner<Void, Void>() {
-                @Override
-                public Void scan(Tree node, Void p) {
-                    if (node != null) {
-                        System.out.println(
-                                "Visiting javac tree class "
-                                        + node.getClass()
-                                        + " of kind "
-                                        + node.getKind());
-                        System.out.println(
-                                "Interfaces: " + Arrays.toString(node.getClass().getInterfaces()));
-                        System.out.println(node);
-                        if (node.getKind() == Kind.MEMBER_REFERENCE) {
-                            System.out.println(
-                                    "Member reference with type arguments: "
-                                            + ((MemberReferenceTree) node).getTypeArguments());
-                        }
-                        if (node.getKind() == Kind.METHOD) {
-                            MethodTree t = (MethodTree) node;
-                            System.out.println(
-                                    "Method with type arguments: \""
-                                            + t.getTypeParameters()
-                                            + "\", is null: "
-                                            + (t.getTypeParameters() == null));
-                            System.out.println("Name: " + t.getName());
-                            System.out.println("Throws: \"" + t.getThrows() + "\"");
-                        }
-                        if (node.getKind() == Kind.METHOD_INVOCATION) {
-                            MethodInvocationTree t = (MethodInvocationTree) node;
-                            System.out.println("Method invocation");
-                            System.out.println(
-                                    "Type arguments: \""
-                                            + t.getTypeArguments()
-                                            + "\", is null: "
-                                            + (t.getTypeArguments() == null));
-                            System.out.println("Method select: \"" + t.getMethodSelect() + "\"");
-                        }
-                        if (node.getKind() == Kind.NEW_ARRAY) {
-                            NewArrayTree t = (NewArrayTree) node;
-                            System.out.println("New array tree");
-                            System.out.println("Type: " + t.getType());
-                            System.out.println("Annotations: " + t.getAnnotations());
-                            System.out.println("Dimension annotations: " + t.getDimAnnotations());
-                            System.out.println("Dimensions: " + t.getDimensions());
-                            System.out.println("Initializers: \"" + t.getInitializers() + "\"");
-                        }
-                        if (node.getKind() == Kind.NEW_CLASS) {
-                            NewClassTree t = (NewClassTree) node;
-                            System.out.println("New class tree");
-                            System.out.println("Type arguments: \"" + t.getTypeArguments() + "\"");
-                        }
-                        if (node.getKind() == Kind.COMPILATION_UNIT) {
-                            CompilationUnitTree t = (CompilationUnitTree) node;
-                            System.out.println("Compilation unit");
-                            System.out.println("getPackage(): " + t.getPackage());
-                            System.out.println("getPackageName(): " + t.getPackageName());
-                        }
-                        if (node.getKind() == Kind.PACKAGE) {
-                            PackageTree t = (PackageTree) node;
-                            System.out.println("PackageTree");
-                            System.out.println("getPackage(): " + t.getPackageName());
-                        }
-                        if (node.getKind() == Kind.VARIABLE) {
-                            VariableTree t = (VariableTree) node;
-                            System.out.println("Variable");
-                            System.out.println("Type: " + t.getType());
-                            System.out.println("Name: " + t.getName());
-                            System.out.println("Name expression: " + t.getNameExpression());
-                        }
-                        if (node.getKind() == Kind.MEMBER_SELECT) {
-                            MemberSelectTree t = (MemberSelectTree) node;
-                            System.out.println("MemberSelect");
-                            System.out.println("Expression: " + t.getExpression());
-                        }
-                    }
-                    return super.scan(node, p);
-                }
-            }.scan(root, null);
-            try {
-                java.io.InputStream in = root.getSourceFile().openInputStream();
-                com.github.javaparser.ast.CompilationUnit u = StaticJavaParser.parse(in);
-                new StringLiteralCombineVisitor().visit(u, null);
-                new TreeVisitor() {
-                    @Override
-                    public void process(Node n) {
-                        System.out.println("Visiting JavaParser node " + n.getClass());
-                        System.out.println(
-                                "Interfaces: " + Arrays.toString(n.getClass().getInterfaces()));
-                        if (n instanceof SwitchStmt) {
-                            System.out.println("In SwitchStmt");
-                            SwitchStmt n2 = (SwitchStmt) n;
-                            System.out.println("Entries: " + n2.getEntries());
-                        }
-                        if (n instanceof SwitchEntry) {
-                            System.out.println("In SwitchEntry");
-                            SwitchEntry n2 = (SwitchEntry) n;
-                            System.out.println("labels:");
-                            System.out.println(n2.getLabels());
-                            System.out.println("statements:");
-                            System.out.println(n2.getStatements());
-                        }
-                        if (n instanceof MethodReferenceExpr) {
-                            System.out.println("In MethodReferenceExpr");
-                            MethodReferenceExpr n2 = (MethodReferenceExpr) n;
-                            System.out.println("type arguments: " + n2.getTypeArguments());
-                        }
-                        if (n instanceof MethodDeclaration) {
-                            System.out.println("In MethodDeclaration");
-                            MethodDeclaration n2 = (MethodDeclaration) n;
-                            System.out.println("Name: " + n2.getName());
-                            System.out.println("Type arguments: " + n2.getTypeParameters());
-                            System.out.println("Throws: \"" + n2.getThrownExceptions() + "\"");
-                        }
-                        if (n instanceof MethodCallExpr) {
-                            System.out.println("In MethodCallExpr");
-                            MethodCallExpr n2 = (MethodCallExpr) n;
-                            System.out.println("Type arguments: " + n2.getTypeArguments());
-                            System.out.println("Scope: " + n2.getScope());
-                        }
-                        if (n instanceof ArrayCreationExpr) {
-                            System.out.println("In ArrayCreationExpr");
-                            ArrayCreationExpr n2 = (ArrayCreationExpr) n;
-                            System.out.println("Type: " + n2.getElementType());
-                            System.out.println("Levels: " + n2.getLevels());
-                            System.out.println("Initializer: " + n2.getInitializer());
-                        }
-                        if (n instanceof ObjectCreationExpr) {
-                            System.out.println("In ObjectCreationExpr");
-                            ObjectCreationExpr n2 = (ObjectCreationExpr) n;
-                            System.out.println("Type arguments: " + n2.getTypeArguments());
-                        }
-                        if (n instanceof com.github.javaparser.ast.expr.Name) {
-                            System.out.println("In Name");
-                            com.github.javaparser.ast.expr.Name n2 =
-                                    (com.github.javaparser.ast.expr.Name) n;
-                            System.out.println("Identifier: " + n2.getIdentifier());
-                            System.out.println("Qualifier: " + n2.getQualifier());
-                        }
-                        if (n instanceof EnumDeclaration) {
-                            System.out.println("In EnumDeclaration");
-                            EnumDeclaration n2 = (EnumDeclaration) n;
-                            System.out.println("members: " + n2.getMembers());
-                        }
-                        System.out.println(n);
-                    }
-                }.visitPreOrder(u);
-                System.out.println("About to run that visitor that prints");
-                new JointVisitorWithDefaultAction() {
-                    @Override
-                    public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        System.out.println("Visiting tree of kind " + javacTree.getKind() + ":");
-                        System.out.println(javacTree);
-                        System.out.println("With node:");
-                        System.out.println(javaParserNode);
-                    }
-                }.visitCompilationUnit(root, u);
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (canCheckVisitor && checker.hasOption("checkJavaParserVisitor") && root != null) {
-            System.out.println("checking root " + root.getSourceFile().getName());
+        if (shouldCheckVisitor && checker.hasOption("checkJavaParserVisitor") && root != null) {
             Map<Tree, Node> treePairs = new HashMap<>();
             try {
                 java.io.InputStream reader = root.getSourceFile().openInputStream();
