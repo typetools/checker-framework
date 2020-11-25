@@ -228,8 +228,8 @@ public abstract class CFAbstractTransfer<
         }
         AnnotatedTypeMirror at;
         if (node instanceof MethodInvocationNode
-                && ((MethodInvocationNode) node).getIteratorExpression() != null) {
-            ExpressionTree iter = ((MethodInvocationNode) node).getIteratorExpression();
+                && ((MethodInvocationNode) node).getIterableExpression() != null) {
+            ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
             at = factory.getIterableElementType(iter);
         } else {
             at = factory.getAnnotatedType(tree);
