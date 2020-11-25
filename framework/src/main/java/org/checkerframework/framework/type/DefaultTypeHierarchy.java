@@ -457,7 +457,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                     lowestBound = ((AnnotatedWildcardType) lowestBound).getSuperBound();
                     break;
                 default:
-                    // not reachable
+                    throw new BugInCF(
+                            "addToLowestBound: bad lowestBound " + lowestBound + " in " + type);
             }
         }
         lowestBound.replaceAnnotations(annos);
