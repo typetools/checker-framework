@@ -1,9 +1,13 @@
 package org.checkerframework.framework.flow;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.AnnotationMirror;
@@ -1081,18 +1085,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (thisValue != null) {
             res.add(viz.visualizeStoreThisVal(thisValue));
         }
-        for (Map.Entry<FieldAccess, V> entry : fieldValues.entrySet()) {
-            res.add(viz.visualizeStoreFieldVal(entry.getKey(), entry.getValue()));
+        List<FieldAccess> fields = new ArrayList<>(fieldValues.keySet());
+        Collections.sort(fields, ToStringComparator.instance);
+        for (FieldAccess fa : fields) {
+            res.add(viz.visualizeStoreFieldVal(fa, fieldValues.get(fa)));
         }
-        for (Map.Entry<ArrayAccess, V> entry : arrayValues.entrySet()) {
-            res.add(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
+        List<ArrayAccess> arrays = new ArrayList<>(arrayValues.keySet());
+        Collections.sort(arrays, ToStringComparator.instance);
+        for (ArrayAccess fa : arrays) {
+            res.add(viz.visualizeStoreArrayVal(fa, arrayValues.get(fa)));
         }
-        for (Map.Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            res.add(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
+        List<MethodCall> methods = new ArrayList<>(methodValues.keySet());
+        Collections.sort(methods, ToStringComparator.instance);
+        for (MethodCall fa : methods) {
+            res.add(viz.visualizeStoreMethodVals(fa, methodValues.get(fa)));
         }
-        for (Map.Entry<ClassName, V> entry : classValues.entrySet()) {
-            res.add(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
+        List<ClassName> classs = new ArrayList<>(classValues.keySet());
+        Collections.sort(classs, ToStringComparator.instance);
+        for (ClassName fa : classs) {
+            res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
         }
         return res.toString();
+    }
+
+    /** A comparator that orders values based on the lexicographic ordering of their toString(). */
+    private static class ToStringComparator implements Comparator<Object> {
+        /** The unique instance (this class is a singleton). */
+        public static ToStringComparator instance = new ToStringComparator();
+
+        /** Creates a ToStringComparator. */
+        private ToStringComparator() {}
+
+        @Override
+        public int compare(Object o1, Object o2) {
+            return Objects.toString(o1).compareTo(Objects.toString(o2));
+        }
     }
 }
