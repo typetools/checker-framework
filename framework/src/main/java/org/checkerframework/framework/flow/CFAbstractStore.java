@@ -2,12 +2,10 @@ package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.AnnotationMirror;
@@ -44,6 +42,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -1106,19 +1105,5 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
         }
         return res.toString();
-    }
-
-    /** A comparator that orders values based on the lexicographic ordering of their toString(). */
-    private static class ToStringComparator implements Comparator<Object> {
-        /** The unique instance (this class is a singleton). */
-        public static ToStringComparator instance = new ToStringComparator();
-
-        /** Creates a ToStringComparator. */
-        private ToStringComparator() {}
-
-        @Override
-        public int compare(Object o1, Object o2) {
-            return Objects.toString(o1).compareTo(Objects.toString(o2));
-        }
     }
 }
