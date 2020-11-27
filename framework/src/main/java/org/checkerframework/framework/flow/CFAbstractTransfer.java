@@ -1010,9 +1010,8 @@ public abstract class CFAbstractTransfer<
                     .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
         }
 
-        V factoryValue = null;
-
         Tree tree = n.getTree();
+        V factoryValue = null;
         if (tree != null) {
             // look up the value from factory
             factoryValue = getValueFromFactory(tree, n);
