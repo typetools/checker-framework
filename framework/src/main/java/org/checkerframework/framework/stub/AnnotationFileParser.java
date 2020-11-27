@@ -2336,6 +2336,8 @@ public class AnnotationFileParser {
     /**
      * Issues the given warning about missing elements, only if it has not been previously issued
      * and the -AstubWarnIfNotFound command-line argument was passed.
+     *
+     * @param warning warning to print
      */
     private void stubWarnNotFound(String warning) {
         if (warnings.add(warning)
@@ -2351,6 +2353,8 @@ public class AnnotationFileParser {
     /**
      * Issues the given warning about overwriting bytecode, only if it has not been previously
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
+     *
+     * @param warning warning to print
      */
     private void stubWarnOverwritesBytecode(String warning) {
         if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugAnnotationFileParser)) {
