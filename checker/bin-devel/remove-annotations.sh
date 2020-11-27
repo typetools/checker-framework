@@ -3,7 +3,7 @@
 
 PREPLACE="$(dirname "$(readlink -f "$0")")"/.plume-scripts/preplace
 
-"$PREPLACE" '^import org.checkerframework.*\n' ''
+"$PREPLACE" '^import org.checkerframework(?!.*InternedDistinct).*\n' ''
 "$PREPLACE" '^ *\@(Deterministic|EnsuresNonNull|FormatMethod|Pure|RequiresNonNull|SideEffectFree)(\([^()]*\))?\n' ''
 "$PREPLACE" '\@A(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
 "$PREPLACE" '\@ACCBottom(\([^()"]*("[^"]*"[^()"]*)*\))? ' ''
