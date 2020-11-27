@@ -99,7 +99,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     /**
-     * Returns the type factory for the given annotation processor, if it is type-checker
+     * Returns the type factory for the given annotation processor, if it is type-checker.
      *
      * @param processorName the fully-qualified class name of an annotation processor
      * @return the type factory for the given annotation processor, or null if it's not a checker

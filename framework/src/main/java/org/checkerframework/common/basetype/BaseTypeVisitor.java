@@ -1393,10 +1393,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(node.getVariable());
-        AnnotatedTypeMirror iterableType = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror iteratedType =
-                AnnotatedTypes.getIteratedType(
-                        checker.getProcessingEnvironment(), atypeFactory, iterableType);
+                atypeFactory.getIterableElementType(node.getExpression());
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(
@@ -2985,7 +2983,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param typeArgument type argument
      * @param typeParameterUpperBound upper bound of the type parameter
-     * @param reportError Tree to which to report the error
+     * @param reportError where to report the error
      */
     private void checkHasQualifierParameterAsTypeArgument(
             AnnotatedTypeMirror typeArgument,

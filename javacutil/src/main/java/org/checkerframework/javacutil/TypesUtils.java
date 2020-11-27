@@ -36,7 +36,7 @@ import org.plumelib.util.ImmutableTypes;
 /** A utility class that helps with {@link TypeMirror}s. */
 public final class TypesUtils {
 
-    /** Class cannot be instantiated */
+    /** Class cannot be instantiated. */
     private TypesUtils() {
         throw new AssertionError("Class TypesUtils cannot be instantiated.");
     }
@@ -315,7 +315,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns true iff the argument is a primitive type or a boxed primitive type
+     * Returns true iff the argument is a primitive type or a boxed primitive type.
      *
      * @param type a type
      * @return true if the argument is a primitive type or a boxed primitive type

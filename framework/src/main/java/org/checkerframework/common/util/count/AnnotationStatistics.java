@@ -64,7 +64,18 @@ import org.checkerframework.javacutil.AnnotationProvider;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {
 
+    /**
+     * Map from annotation name (as the toString() of its Name representation) to number of times
+     * the annotation was written in source code.
+     */
     final Map<String, Integer> annotationCount = new HashMap<>();
+
+    /** Creates an AnnotationStatistics. */
+    public AnnotationStatistics() {
+        // This checker never issues any warnings, so don't warn about
+        // @SuppressWarnings("allcheckers:...").
+        this.useAllcheckersPrefix = false;
+    }
 
     @Override
     public void typeProcessingOver() {

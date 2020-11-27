@@ -273,7 +273,7 @@ public class LockAnnotatedTypeFactory
         return new LockTransfer((LockAnalysis) analysis, (LockChecker) this.checker);
     }
 
-    /** LockQualifierHierarchy */
+    /** LockQualifierHierarchy. */
     class LockQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** Qualifier kind for the @{@link GuardedBy} annotation. */
