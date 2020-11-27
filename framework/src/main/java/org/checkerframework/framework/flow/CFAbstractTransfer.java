@@ -892,12 +892,14 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitReturn(n, p);
+
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             // classTree is null e.g. if this is a return statement in a lambda.
             if (classTree == null) {
-                return super.visitReturn(n, p);
+                return result;
             }
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
 
@@ -920,7 +922,8 @@ public abstract class CFAbstractTransfer<
                             overriddenMethods,
                             analysis.getTypeFactory());
         }
-        return super.visitReturn(n, p);
+
+        return result;
     }
 
     @Override
