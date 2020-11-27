@@ -131,6 +131,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         contractAnnotation, "expression", String.class, false);
+        Collections.sort(expressions);
         Boolean annoResult =
                 AnnotationUtils.getElementValueOrNull(
                         contractAnnotation, "result", Boolean.class, false);
@@ -188,6 +189,7 @@ public class ContractsUtils {
             List<String> expressions =
                     AnnotationUtils.getElementValueArrayOrSingleton(
                             anno, kind.expressionElementName, String.class, true);
+            Collections.sort(expressions);
             Boolean annoResult =
                     AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
