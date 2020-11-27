@@ -25,7 +25,7 @@ public class ToStringComparator implements Comparator<Object> {
      * @param in a set of elements
      * @return the elements, sorted according to {@code toString()}
      */
-    public <T> List<T> sorted(Iterable<T> in) {
+    public static <T> List<T> sorted(Iterable<T> in) {
         List<T> result = new ArrayList<T>();
         for (T object : in) {
             result.add(object);
