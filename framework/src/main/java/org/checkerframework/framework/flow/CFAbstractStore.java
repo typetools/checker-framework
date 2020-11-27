@@ -869,6 +869,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Returns the current abstract value of the current object, or {@code null} if no information
      * is available.
      *
+     * @param n a reference to "this"
      * @return the current abstract value of the current object, or {@code null} if no information
      *     is available
      */
