@@ -578,7 +578,7 @@ public abstract class CFAbstractTransfer<
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
-                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
         }
     }
@@ -896,7 +896,7 @@ public abstract class CFAbstractTransfer<
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             // classTree is null e.g. if this is a return statement in a lambda.
-            if (classTree == null) {
+            if (classTree != null) {
                 return super.visitReturn(n, p);
             }
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
@@ -993,14 +993,12 @@ public abstract class CFAbstractTransfer<
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
-        V factoryValue = null;
-
         Tree tree = n.getTree();
-        if (tree != null) {
-            // look up the value from factory
-            factoryValue = getValueFromFactory(tree, n);
-        }
-        // look up the value in the store (if possible)
+
+        // Determine the abstract value for the method call.
+        // look up the call's value from factory
+        V factoryValue = (tree == null) ? null : getValueFromFactory(tree, n);
+        // look up the call's value in the store (if possible)
         V storeValue = store.getValue(n);
         V resValue = moreSpecificValue(factoryValue, storeValue);
 

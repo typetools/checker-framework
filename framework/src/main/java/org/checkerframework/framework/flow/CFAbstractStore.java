@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.Pair;
 import org.plumelib.util.UniqueId;
 
 /**
- * A store for the checker framework analysis tracks the annotations of memory locations such as
+ * A store for the Checker Framework analysis. It tracks the annotations of memory locations such as
  * local variables and fields.
  *
  * <p>When adding a new field to track values for a code construct (similar to {@code
