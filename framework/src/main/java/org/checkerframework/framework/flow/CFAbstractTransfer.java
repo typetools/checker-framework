@@ -993,6 +993,23 @@ public abstract class CFAbstractTransfer<
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
+        // Perform WPI before the store has been side-effected.
+        if (shouldPerformWholeProgramInference(n.getTree(), method)) {
+            // Finds the receiver's type
+            Tree receiverTree = n.getTarget().getReceiver().getTree();
+            if (receiverTree == null) {
+                // If there is no receiver, then get the class being visited.
+                // This happens when the receiver corresponds to "this".
+                receiverTree = analysis.getContainingClass(n.getTree());
+                // receiverTree could still be null after the call above. That
+                // happens when the method is called from a static context.
+            }
+            // Updates the inferred parameter type of the invoked method
+            analysis.atypeFactory
+                    .getWholeProgramInference()
+                    .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
+        }
+
         V factoryValue = null;
 
         Tree tree = n.getTree();
@@ -1014,22 +1031,6 @@ public abstract class CFAbstractTransfer<
 
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
-
-        if (shouldPerformWholeProgramInference(n.getTree(), method)) {
-            // Finds the receiver's type
-            Tree receiverTree = n.getTarget().getReceiver().getTree();
-            if (receiverTree == null) {
-                // If there is no receiver, then get the class being visited.
-                // This happens when the receiver corresponds to "this".
-                receiverTree = analysis.getContainingClass(n.getTree());
-                // receiverTree could still be null after the call above. That
-                // happens when the method is called from a static context.
-            }
-            // Updates the inferred parameter type of the invoked method
-            analysis.atypeFactory
-                    .getWholeProgramInference()
-                    .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
-        }
 
         return new ConditionalTransferResult<>(
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
