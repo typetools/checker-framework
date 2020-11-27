@@ -812,7 +812,13 @@ public class AnnotationFileParser {
         return null;
     }
 
-    /** True if the argument contains {@code @NoAnnotationFileParserWarning}. */
+    /**
+     * Returns whether the argument contains {@code @NoAnnotationFileParserWarning}.
+     *
+     * @param aexprs collection of annotation expressions
+     * @return true if {@code aexprs} contains {@code @NoAnnotationFileParserWarning}, false
+     *     otherwise
+     */
     private boolean hasNoAnnotationFileParserWarning(Iterable<AnnotationExpr> aexprs) {
         if (aexprs == null) {
             return false;
@@ -2324,7 +2330,7 @@ public class AnnotationFileParser {
     /// Issue warnings
     ///
 
-    // The warnings that have been issued so far.
+    /** The warnings that have been issued so far. */
     private static final Set<String> warnings = new HashSet<>();
 
     /**
@@ -2373,6 +2379,12 @@ public class AnnotationFileParser {
         }
     }
 
+    /**
+     * If {@code warning} hasn't been printed yet, and {@code debugAnnotationFileParser} is true,
+     * prints the given warning as a diagnostic message.
+     *
+     * @param warning warning to print
+     */
     private void stubDebug(String warning) {
         if (warnings.add(warning) && debugAnnotationFileParser) {
             processingEnv
