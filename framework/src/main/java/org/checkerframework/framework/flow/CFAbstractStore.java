@@ -1,7 +1,5 @@
 package org.checkerframework.framework.flow;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1084,24 +1082,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (thisValue != null) {
             res.add(viz.visualizeStoreThisVal(thisValue));
         }
-        List<FieldAccess> fields = new ArrayList<>(fieldValues.keySet());
-        Collections.sort(fields, ToStringComparator.instance);
-        for (FieldAccess fa : fields) {
+        for (FieldAccess fa : ToStringComparator.sorted(fieldValues.keySet())) {
             res.add(viz.visualizeStoreFieldVal(fa, fieldValues.get(fa)));
         }
-        List<ArrayAccess> arrays = new ArrayList<>(arrayValues.keySet());
-        Collections.sort(arrays, ToStringComparator.instance);
-        for (ArrayAccess fa : arrays) {
+        for (ArrayAccess fa : ToStringComparator.sorted(arrayValues.keySet())) {
             res.add(viz.visualizeStoreArrayVal(fa, arrayValues.get(fa)));
         }
-        List<MethodCall> methods = new ArrayList<>(methodValues.keySet());
-        Collections.sort(methods, ToStringComparator.instance);
-        for (MethodCall fa : methods) {
+        for (MethodCall fa : ToStringComparator.sorted(methodValues.keySet())) {
             res.add(viz.visualizeStoreMethodVals(fa, methodValues.get(fa)));
         }
-        List<ClassName> classs = new ArrayList<>(classValues.keySet());
-        Collections.sort(classs, ToStringComparator.instance);
-        for (ClassName fa : classs) {
+        for (ClassName fa : ToStringComparator.sorted(classValues.keySet())) {
             res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
         }
         return res.toString();
