@@ -1561,8 +1561,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * returned.
      *
      * @param annoTrees trees to look
-     * @return returns the AnnotationTree which is a use of one of the field invariant annotations
-     *     or null if one isn't found
+     * @return the AnnotationTree that is a use of one of the field invariant annotations, or null
+     *     if one isn't found
      */
     public AnnotationTree getFieldInvariantAnnotationTree(
             List<? extends AnnotationTree> annoTrees) {
