@@ -22,6 +22,7 @@ public class ToStringComparator implements Comparator<Object> {
     /**
      * Returns a copy of the input, sorted according to the elements' {@code toString()}.
      *
+     * @param <T> the type of the elements
      * @param in a set of elements
      * @return the elements, sorted according to {@code toString()}
      */
