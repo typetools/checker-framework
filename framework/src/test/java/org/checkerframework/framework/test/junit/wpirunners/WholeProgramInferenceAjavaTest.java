@@ -15,17 +15,17 @@ import org.junit.runners.Parameterized.Parameters;
  * relevant. The meaning of this test class is to test if the generated ajava files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(WholeProgramInferenceAjavasTest.class)
-public class WholeProgramInferenceAjavasTest extends CheckerFrameworkPerDirectoryTest {
+@Category(WholeProgramInferenceAjavaTest.class)
+public class WholeProgramInferenceAjavaTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
-    public WholeProgramInferenceAjavasTest(List<File> testFiles) {
+    public WholeProgramInferenceAjavaTest(List<File> testFiles) {
         super(
                 testFiles,
                 WholeProgramInferenceTestChecker.class,
                 "whole-program-inference/non-annotated",
                 "-Anomsgtext",
-                "-Ainfer=ajavas");
+                "-Ainfer=ajava");
     }
 
     @Parameters

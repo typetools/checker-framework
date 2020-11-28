@@ -6,7 +6,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /** {@link JarEntry}-based implementation of {@link AnnotationFileResource}. */
-public class JarEntryAnnotationResource implements AnnotationFileResource {
+public class JarEntryAnnotationFileResource implements AnnotationFileResource {
     /** Jar file for the resource. */
     private final JarFile file;
     /** Jar entry for the resource. */
@@ -19,7 +19,7 @@ public class JarEntryAnnotationResource implements AnnotationFileResource {
      * @param file the JAR file
      * @param entry the JAR entry
      */
-    public JarEntryAnnotationResource(JarFile file, JarEntry entry) {
+    public JarEntryAnnotationFileResource(JarFile file, JarEntry entry) {
         this.file = file;
         this.entry = entry;
     }

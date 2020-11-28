@@ -196,15 +196,15 @@ public class AnnotationFileElementTypes {
         parsing = false;
     }
 
-    /** Parser the ajava files passed through the -Aajavas option. */
+    /** Parser the ajava files passed through the -Aajava option. */
     public void parseAjavaFiles() {
         parsing = true;
         // TODO: Error if this is called more than once?
         SourceChecker checker = factory.getContext().getChecker();
         List<String> ajavaFiles = new ArrayList<>();
-        String ajavasOption = checker.getOption("ajavas");
-        if (ajavasOption != null) {
-            Collections.addAll(ajavaFiles, ajavasOption.split(File.pathSeparator));
+        String ajavaOption = checker.getOption("ajava");
+        if (ajavaOption != null) {
+            Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
         }
 
         parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);

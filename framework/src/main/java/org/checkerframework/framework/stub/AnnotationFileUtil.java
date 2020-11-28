@@ -377,7 +377,7 @@ public class AnnotationFileUtil {
     private static void addAnnotationFilesToList(
             File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
         if (isAnnotationFile(location, fileType)) {
-            resources.add(new FileAnnotationResource(location));
+            resources.add(new FileAnnotationFileResource(location));
         } else if (isJar(location)) {
             JarFile file;
             try {
@@ -390,7 +390,7 @@ public class AnnotationFileUtil {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 if (isAnnotationFile(entry.getName(), fileType)) {
-                    resources.add(new JarEntryAnnotationResource(file, entry));
+                    resources.add(new JarEntryAnnotationFileResource(file, entry));
                 }
             }
         } else if (location.isDirectory()) {

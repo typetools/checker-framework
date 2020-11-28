@@ -501,7 +501,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
                     wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
                     break;
-                case "ajavas":
+                case "ajava":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
                     wholeProgramInference =
                             new WholeProgramInferenceJavaParser(this, !isNullnessChecker);
@@ -759,7 +759,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // elementCache.clear();
         }
 
-        if (root != null && checker.hasOption("ajavas")) {
+        if (root != null && checker.hasOption("ajava")) {
             // TODO: This relies on the toString implementations of MemberSelectTree and
             // IdentifierTree. This could be turned into its own method that does this correctly.
             String qualifiedName =
@@ -777,7 +777,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
 
             String ajavaPath =
-                    checker.getOption("ajavas")
+                    checker.getOption("ajava")
                             + File.separator
                             + qualifiedName.replaceAll("\\.", "/");
             ajavaPath += "-" + checker.getClass().getCanonicalName() + ".ajava";
