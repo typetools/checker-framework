@@ -440,6 +440,16 @@ public class AnnotatedTypes {
             final Element member,
             final AnnotatedTypeMirror memberType) {
         switch (of.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                return memberType;
+
             case ARRAY:
                 // Method references like String[]::clone should have a return type of String[]
                 // rather than Object
