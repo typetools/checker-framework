@@ -658,6 +658,8 @@ public class StubParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
+        // This loops over the members of the Element, finding the matching stub declaration if any.
+        // It ignores any stub declaration that does not match some member of the element.
         Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
@@ -706,7 +708,8 @@ public class StubParser {
     }
 
     /**
-     * Returns the type's type parameter declarations.
+     * Processes the type's declaration but not any of its members. Returns the type's type
+     * parameter declarations.
      *
      * @param decl a type declaration
      * @param elt the type's element
@@ -799,9 +802,9 @@ public class StubParser {
             ClassOrInterfaceDeclaration typeDecl, AnnotatedDeclaredType type) {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
-                AnnotatedDeclaredType annoSupertype =
+                AnnotatedDeclaredType annotatedSupertype =
                         findAnnotatedType(supertype, type.directSuperTypes());
-                if (annoSupertype == null) {
+                if (annotatedSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superclass "
@@ -809,15 +812,15 @@ public class StubParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annoSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null);
                 }
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
-                AnnotatedDeclaredType annoSupertype =
+                AnnotatedDeclaredType annotatedSupertype =
                         findAnnotatedType(supertype, type.directSuperTypes());
-                if (annoSupertype == null) {
+                if (annotatedSupertype == null) {
                     stubWarn(
                             "stub file does not match bytecode: "
                                     + "could not find superinterface "
@@ -825,7 +828,7 @@ public class StubParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annoSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null);
                 }
             }
         }
@@ -1417,20 +1420,20 @@ public class StubParser {
     private @Nullable AnnotatedDeclaredType findAnnotatedType(
             ClassOrInterfaceType type, List<AnnotatedDeclaredType> types) {
         String typeString = type.getNameAsString();
-        for (AnnotatedDeclaredType superType : types) {
-            if (superType
+        for (AnnotatedDeclaredType supertype : types) {
+            if (supertype
                     .getUnderlyingType()
                     .asElement()
                     .getSimpleName()
                     .contentEquals(typeString)) {
-                return superType;
+                return supertype;
             }
         }
         stubWarnNotFound("Supertype " + typeString + " not found");
         if (debugStubParser) {
             stubDebug("Supertypes that were searched:");
-            for (AnnotatedDeclaredType superType : types) {
-                stubDebug(String.format("  %s", superType));
+            for (AnnotatedDeclaredType supertype : types) {
+                stubDebug(String.format("  %s", supertype));
             }
         }
         return null;
