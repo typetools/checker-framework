@@ -464,12 +464,12 @@ public class AnnotatedTypes {
                         member,
                         memberType);
             case INTERSECTION:
+                AnnotatedTypeMirror result = memberType;
                 for (AnnotatedTypeMirror bound :
                         ((AnnotatedIntersectionType) receiverType).getBounds()) {
-                    memberType =
-                            substituteTypeVariables(types, atypeFactory, bound, member, memberType);
+                    result = substituteTypeVariables(types, atypeFactory, bound, member, result);
                 }
-                return memberType;
+                return result;
             case UNION:
             case DECLARED:
                 return substituteTypeVariables(
