@@ -332,16 +332,16 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         public String visitTypeVariable(
                 AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            if (TypesUtils.isCaptured(type.actualType)) {
-                String actualType = type.actualType.toString();
-                // actualType has this form: "capture#826 of ? extends java.lang.Object".
+            if (TypesUtils.isCaptured(type.underlyingType)) {
+                String underlyingType = type.underlyingType.toString();
+                // underlyingType has this form: "capture#826 of ? extends java.lang.Object".
                 // We output only the "capture#826" part.
                 // NOTE: The number is the hash code of the captured type, so it's nondeterministic,
                 // but it is still important to print it in order to tell the difference between two
                 // captured types.
-                sb.append(actualType, 0, actualType.indexOf(" of "));
+                sb.append(underlyingType, 0, underlyingType.indexOf(" of "));
             } else {
-                sb.append(type.actualType);
+                sb.append(type.underlyingType);
             }
 
             if (!visiting.contains(type)) {
