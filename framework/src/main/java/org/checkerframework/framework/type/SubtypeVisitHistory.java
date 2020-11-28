@@ -37,21 +37,23 @@ public class SubtypeVisitHistory {
     }
 
     /**
-     * Add a visit for type1 and type2. Has no effect if b is false.
+     * Put a visit for {@code type1}, {@code type2}, and {@code top} in the history. Has no effect
+     * if isSubtype is false.
      *
      * @param type1 the first type
      * @param type2 the second type
      * @param currentTop the top of the relevant type hierarchy; only annotations from that
      *     hierarchy are considered
-     * @param b true if type1 is a subtype of type2; if false, this method does nothing
+     * @param isSubtype whether {@code type1} is a subtype of {@code type2}; if false, this method
+     *     does nothing
      */
-    public void add(
+    public void put(
             final AnnotatedTypeMirror type1,
             final AnnotatedTypeMirror type2,
             AnnotationMirror currentTop,
-            boolean b) {
-        if (!b) {
-            // We only store information about subtype relations that hold.
+            boolean isSubtype) {
+        if (!isSubtype) {
+            // Only store information about subtype relations that hold.
             return;
         }
         Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
@@ -82,7 +84,7 @@ public class SubtypeVisitHistory {
     }
 
     /**
-     * Returns true if type1 and type2 (or an equivalent pair) have been passed to the add method
+     * Returns true if type1 and type2 (or an equivalent pair) have been passed to the put method
      * previously.
      *
      * @return true if an equivalent pair has already been added to the history
