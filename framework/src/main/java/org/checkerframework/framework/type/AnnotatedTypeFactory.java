@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -1295,15 +1296,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt) {
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-        if (stubType != null) {
-            if (type == null) {
-                type = stubType;
-            } else {
-                // Must merge (rather than only take the stub type if it is a subtype)
-                // to support WPI.
-                AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
-            }
+        if (stubType == null) {
+            return type;
         }
+        if (type == null) {
+            return stubType;
+        }
+        // Must merge (rather than only take the stub type if it is a subtype)
+        // to support WPI.
+        AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
         return type;
     }
 
@@ -1881,6 +1882,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.executableType = executableType;
             this.typeArgs = typeArgs;
         }
+
+        @Override
+        public String toString() {
+            if (typeArgs.isEmpty()) {
+                return executableType.toString();
+            } else {
+                StringJoiner typeArgsString = new StringJoiner(",", "<", ">");
+                for (AnnotatedTypeMirror atm : typeArgs) {
+                    typeArgsString.add(atm.toString());
+                }
+                return typeArgsString + " " + executableType.toString();
+            }
+        }
     }
 
     /**
@@ -1919,13 +1933,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             receiverType = getSelfType(tree);
         }
 
-        ParameterizedExecutableType mType = methodFromUse(tree, methodElt, receiverType);
+        ParameterizedExecutableType result = methodFromUse(tree, methodElt, receiverType);
         if (checker.shouldResolveReflection()
                 && reflectionResolver.isReflectiveMethodInvocation(tree)) {
-            mType = reflectionResolver.resolveReflectiveCall(this, tree, mType);
+            result = reflectionResolver.resolveReflectiveCall(this, tree, result);
         }
 
-        AnnotatedExecutableType method = mType.executableType;
+        AnnotatedExecutableType method = result.executableType;
         if (method.getReturnType().getKind() == TypeKind.WILDCARD
                 && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
             // Get the correct Java type from the tree and use it as the upper bound of the
@@ -1935,7 +1949,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
             if (ignoreUninferredTypeArguments) {
-                // remove the annotations so that default annotations are used instead.
+                // Remove the annotations so that default annotations are used instead.
                 // (See call to addDefaultAnnotations below.)
                 t.clearAnnotations();
             } else {
@@ -1945,7 +1959,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             addDefaultAnnotations(wildcard);
         }
 
-        return mType;
+        return result;
     }
 
     /**
