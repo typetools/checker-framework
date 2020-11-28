@@ -464,7 +464,8 @@ public class AnnotatedTypes {
                         member,
                         memberType);
             case INTERSECTION:
-                for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) of).getBounds()) {
+                for (AnnotatedTypeMirror bound :
+                        ((AnnotatedIntersectionType) receiverType).getBounds()) {
                     memberType =
                             substituteTypeVariables(types, atypeFactory, bound, member, memberType);
                 }
