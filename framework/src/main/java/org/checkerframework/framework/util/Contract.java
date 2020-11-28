@@ -31,14 +31,14 @@ public abstract class Contract {
      */
     public final String expression;
 
-    /** The annotation that must be on the type of expression, according to this contract. */
+    /** The annotation on the type of expression, according to this contract. */
     public final AnnotationMirror annotation;
 
     /** The annotation that expressed this contract; used for diagnostic messages. */
     public final AnnotationMirror contractAnnotation;
 
-    // This is redundant with the contract's class  and is not used in this file, but the field
-    // is used by clients.
+    // This is redundant with the contract's class and is not used in this file, but the field
+    // is used by clients, for its fields.
     /** The kind of contract: precondition, postcondition, or conditional postcondition. */
     public final Kind kind;
 
@@ -165,15 +165,18 @@ public abstract class Contract {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
             return false;
         }
 
-        Contract contract = (Contract) o;
+        Contract otherContract = (Contract) o;
 
-        return kind == contract.kind
-                && Objects.equals(expression, contract.expression)
-                && Objects.equals(annotation, contract.annotation);
+        return kind == otherContract.kind
+                && Objects.equals(expression, otherContract.expression)
+                && Objects.equals(annotation, otherContract.annotation);
     }
 
     @Override
@@ -233,10 +236,14 @@ public abstract class Contract {
 
         /**
          * The return value for the annotated method that ensures that the conditional postcondition
-         * holds. For example, given<br>
-         * {@code @EnsuresNonNullIf(expression="foo", result=false) boolean method()}<br>
-         * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} if that
-         * call returns {@code false}.
+         * holds. For example, given
+         *
+         * <pre>
+         * {@code @EnsuresNonNullIf(expression="foo", result=false) boolean method()}
+         * </pre>
+         *
+         * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} that
+         * returns {@code false}.
          */
         public final boolean resultValue;
 
@@ -260,18 +267,7 @@ public abstract class Contract {
 
         @Override
         public boolean equals(@Nullable Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            if (!super.equals(o)) {
-                return false;
-            }
-
-            ConditionalPostcondition that = (ConditionalPostcondition) o;
-            return resultValue == that.resultValue;
+            return super.equals(o) && resultValue == ((ConditionalPostcondition) o).resultValue;
         }
 
         @Override
