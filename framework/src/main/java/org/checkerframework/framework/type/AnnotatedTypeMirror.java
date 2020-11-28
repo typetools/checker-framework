@@ -2243,8 +2243,14 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
+        /** The types that are unioned to form this AnnotatedUnionType. */
         protected List<AnnotatedDeclaredType> alternatives;
 
+        /**
+         * Returns the types that are unioned to form this AnnotatedUnionType.
+         *
+         * @return the types that are unioned to form this AnnotatedUnionType
+         */
         public List<AnnotatedDeclaredType> getAlternatives() {
             if (alternatives == null) {
                 List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
