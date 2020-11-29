@@ -428,7 +428,7 @@ public class AnnotatedTypes {
      * @param atypeFactory the type factory to use
      * @param receiverType the receiver type
      * @param member the element that should be viewed as member of receiverType
-     * @param memberType unsubstituted type of member; may be side-effected
+     * @param memberType unsubstituted type of member
      * @return the type of member as a member of receiverType; can be an alias to memberType
      */
     private static AnnotatedTypeMirror asMemberOfImpl(
