@@ -181,12 +181,12 @@ public class StubParser {
      */
     private FqName typeName;
 
-    /** Output variable: .... */
+    /** Output variable: map from element to its type as declared in the stub file. */
     private final Map<Element, AnnotatedTypeMirror> atypes;
 
     /**
-     * Map from a name (actually declaration element string) to the set of declaration annotations
-     * on it.
+     * Output variable: map from a name (actually declaration element string) to the set of
+     * declaration annotations on it, as written in the stub file.
      */
     private final Map<String, Set<AnnotationMirror>> declAnnos;
 
@@ -858,7 +858,7 @@ public class StubParser {
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
 
-        // Type annotations
+        // Return type, from declaration annotations on the method or constructor
         if (decl.isMethodDeclaration()) {
             annotate(
                     methodType.getReturnType(),
@@ -1356,50 +1356,50 @@ public class StubParser {
     }
 
     /**
-     * Add, to {@code result}, a mapping from member's element to member. Member's element is found
-     * in {@code typeElt}.
+     * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
+     * mapping from member's element to member. Does nothing if a mapping already exists.
      *
-     * <p>Does nothing if it cannot find member's element. Does nothing if a mapping already exists.
+     * <p>Does nothing if it cannot find member's element.
      *
      * @param typeDeclName used only for debugging
      */
     private void putNewElement(
-            Map<Element, BodyDeclaration<?>> result,
+            Map<Element, BodyDeclaration<?>> elementsToDecl,
             TypeElement typeElt,
             BodyDeclaration<?> member,
             String typeDeclName) {
         if (member instanceof MethodDeclaration) {
             Element elt = findElement(typeElt, (MethodDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
             for (VariableDeclarator var : fieldDecl.getVariables()) {
                 Element varelt = findElement(typeElt, var);
                 if (varelt != null) {
-                    putIfAbsent(result, varelt, fieldDecl);
+                    putIfAbsent(elementsToDecl, varelt, fieldDecl);
                 }
             }
         } else if (member instanceof EnumConstantDeclaration) {
             Element elt = findElement(typeElt, (EnumConstantDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
             Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof EnumDeclaration) {
             Element elt = findElement(typeElt, (EnumDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else {
             stubDebug(
