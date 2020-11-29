@@ -284,7 +284,7 @@ public class StubParser {
      * enums, or compile time constants.
      *
      * @param typeElement the type whose members to return
-     * @return a list fully-qualified member names
+     * @return a list of fully-qualified member names
      */
     private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
         List<@FullyQualifiedName String> result = new ArrayList<>();
@@ -1683,7 +1683,7 @@ public class StubParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allStubAnnotations map from simple nawe to annotation definition
+     * @param allStubAnnotations map from simple name to annotation definition
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
