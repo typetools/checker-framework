@@ -1361,6 +1361,9 @@ public class StubParser {
      *
      * <p>Does nothing if it cannot find member's element.
      *
+     * @param elementsToDecl the mapping that is side-effected by this method
+     * @param typeElt the class in which {@code member} is declared
+     * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
      */
     private void putNewElement(
