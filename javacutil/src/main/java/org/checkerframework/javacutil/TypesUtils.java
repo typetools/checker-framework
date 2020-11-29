@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
@@ -878,5 +879,20 @@ public final class TypesUtils {
                 (Type) type,
                 com.sun.tools.javac.util.List.from(newP),
                 com.sun.tools.javac.util.List.from(newT));
+    }
+
+    // This logically belongs in ElementUtils because it maps from ExecutableElement to
+    // ExecutableElement, but javac's implementation uses a Types object.
+    /**
+     * Returns the methods that are overriden or implemented by a given method.
+     *
+     * @param m a method
+     * @param types the type utilities
+     * @return the methods that {@code m} overrides or implements
+     */
+    public static Set<? extends ExecutableElement> getOverriddenMethods(
+            ExecutableElement m, Types types) {
+        JavacTypes t = (JavacTypes) types;
+        return t.getOverriddenMethods(m);
     }
 }
