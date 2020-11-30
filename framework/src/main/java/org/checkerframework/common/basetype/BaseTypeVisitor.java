@@ -333,7 +333,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
 
-        // Don't use atypeFactory.getPath, b/c that depends on the visitorState path.
+        // Don't use atypeFactory.getPath, because that depends on the visitorState path.
         visitorState.setPath(TreePath.getPath(root, classTree));
         visitorState.setClassType(
                 atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
@@ -1015,7 +1015,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Integer idx : parameterIndices) {
             if (idx > method.getParameters().size()) {
                 // If the index is too big, a parse error was issued in
-                // checkContractsAtMethodDeclaration
+                // checkContractsAtMethodDeclaration.
                 continue;
             }
             VariableElement parameter = method.getParameters().get(idx - 1);
@@ -1081,23 +1081,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
      * that returns {@code result}.
      *
-     * @param method tree of method with the postcondition
+     * @param methodTree tree of method with the postcondition
      * @param annotation expression's type must have this annotation
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree method, AnnotationMirror annotation, Receiver expression, boolean result) {
+            MethodTree methodTree,
+            AnnotationMirror annotation,
+            Receiver expression,
+            boolean result) {
         boolean booleanReturnType =
-                TypesUtils.isBooleanType(TreeUtils.typeOf(method.getReturnType()));
+                TypesUtils.isBooleanType(TreeUtils.typeOf(methodTree.getReturnType()));
         if (!booleanReturnType) {
-            checker.reportError(method, "contracts.conditional.postcondition.invalid.returntype");
+            checker.reportError(
+                    methodTree, "contracts.conditional.postcondition.invalid.returntype");
             // No reason to go ahead with further checking. The
             // annotation is invalid.
             return;
         }
 
-        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(method)) {
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(methodTree)) {
             ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();
@@ -1134,7 +1138,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         returnStmt.getTree(),
                         "contracts.conditional.postcondition.not.satisfied",
-                        method.getName(),
+                        methodTree.getName(),
                         result,
                         contractExpressionAndType(expression.toString(), inferredAnno),
                         contractExpressionAndType(expression.toString(), annotation));

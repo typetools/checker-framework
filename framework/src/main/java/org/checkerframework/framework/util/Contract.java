@@ -42,6 +42,69 @@ public abstract class Contract {
     /** The kind of contract: precondition, postcondition, or conditional postcondition. */
     public final Kind kind;
 
+    /** Enumerates the kinds of contracts. */
+    public enum Kind {
+        /** A precondition. */
+        PRECONDITION(
+                "precondition",
+                PreconditionAnnotation.class,
+                RequiresQualifier.class,
+                RequiresQualifier.List.class,
+                "value"),
+        /** A postcondition. */
+        POSTCONDITION(
+                "postcondition",
+                PostconditionAnnotation.class,
+                EnsuresQualifier.class,
+                EnsuresQualifier.List.class,
+                "value"),
+        /** A conditional postcondition. */
+        CONDITIONALPOSTCONDITION(
+                "conditional.postcondition",
+                ConditionalPostconditionAnnotation.class,
+                EnsuresQualifierIf.class,
+                EnsuresQualifierIf.List.class,
+                "expression");
+        /** Used for constructing error messages. */
+        public final String errorKey;
+
+        /** The meta-annotation identifying annotations of this kind. */
+        public final Class<? extends Annotation> metaAnnotation;
+        /** The built-in framework qualifier for this contract. */
+        public final Class<? extends Annotation> frameworkContractClass;
+        /** The built-in framework qualifier for repeated occurrences of this contract. */
+        public final Class<? extends Annotation> frameworkContractsClass;
+        /**
+         * The name of the element that contains the Java expressions on which a contract is
+         * enforced.
+         */
+        public final String expressionElementName;
+
+        /**
+         * Create a new Kind.
+         *
+         * @param errorKey used for constructing error messages
+         * @param metaAnnotation the meta-annotation identifying annotations of this kind
+         * @param frameworkContractClass the built-in framework qualifier for this contract
+         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
+         *     of this contract
+         * @param expressionElementName the name of the element that contains the Java expressions
+         *     on which a contract is enforced
+         */
+        Kind(
+                String errorKey,
+                Class<? extends Annotation> metaAnnotation,
+                Class<? extends Annotation> frameworkContractClass,
+                Class<? extends Annotation> frameworkContractsClass,
+                String expressionElementName) {
+            this.errorKey = errorKey;
+            this.metaAnnotation = metaAnnotation;
+            this.frameworkContractClass = frameworkContractClass;
+            this.frameworkContractsClass = frameworkContractsClass;
+            this.expressionElementName = expressionElementName;
+        }
+    }
+
     /**
      * Creates a new Contract.
      *
@@ -65,11 +128,11 @@ public abstract class Contract {
     /**
      * Creates a new Contract.
      *
+     * @param kind precondition, postcondition, or conditional postcondition
      * @param expression the Java expression that should have a type qualifier
      * @param annotation the type qualifier that {@code expression} should have
      * @param contractAnnotation the pre- or post-condition annotation that the programmer wrote;
      *     used for diagnostic messages
-     * @param kind precondition, postcondition, or conditional postcondition
      * @param ensuresQualifierIf the ensuresQualifierIf field, for a conditional postcondition
      * @return a new contract
      */
@@ -140,69 +203,6 @@ public abstract class Contract {
                 AnnotationMirror annotation,
                 AnnotationMirror contractAnnotation) {
             super(Kind.PRECONDITION, expression, annotation, contractAnnotation);
-        }
-    }
-
-    /** Enumerates the kinds of contracts. */
-    public enum Kind {
-        /** A precondition. */
-        PRECONDITION(
-                "precondition",
-                PreconditionAnnotation.class,
-                RequiresQualifier.class,
-                RequiresQualifier.List.class,
-                "value"),
-        /** A postcondition. */
-        POSTCONDITION(
-                "postcondition",
-                PostconditionAnnotation.class,
-                EnsuresQualifier.class,
-                EnsuresQualifier.List.class,
-                "value"),
-        /** A conditional postcondition. */
-        CONDITIONALPOSTCONDITION(
-                "conditional.postcondition",
-                ConditionalPostconditionAnnotation.class,
-                EnsuresQualifierIf.class,
-                EnsuresQualifierIf.List.class,
-                "expression");
-        /** Used for constructing error messages. */
-        public final String errorKey;
-
-        /** The meta-annotation identifying annotations of this kind. */
-        public final Class<? extends Annotation> metaAnnotation;
-        /** The built-in framework qualifier for this contract. */
-        public final Class<? extends Annotation> frameworkContractClass;
-        /** The built-in framework qualifier for repeated occurrences of this contract. */
-        public final Class<? extends Annotation> frameworkContractsClass;
-        /**
-         * The name of the element that contains the Java expressions on which a contract is
-         * enforced.
-         */
-        public final String expressionElementName;
-
-        /**
-         * Create a new Kind.
-         *
-         * @param errorKey used for constructing error messages
-         * @param metaAnnotation the meta-annotation identifying annotations of this kind
-         * @param frameworkContractClass the built-in framework qualifier for this contract
-         * @param frameworkContractsClass the built-in framework qualifier for repeated occurrences
-         *     of this contract
-         * @param expressionElementName the name of the element that contains the Java expressions
-         *     on which a contract is enforced
-         */
-        Kind(
-                String errorKey,
-                Class<? extends Annotation> metaAnnotation,
-                Class<? extends Annotation> frameworkContractClass,
-                Class<? extends Annotation> frameworkContractsClass,
-                String expressionElementName) {
-            this.errorKey = errorKey;
-            this.metaAnnotation = metaAnnotation;
-            this.frameworkContractClass = frameworkContractClass;
-            this.frameworkContractsClass = frameworkContractsClass;
-            this.expressionElementName = expressionElementName;
         }
     }
 

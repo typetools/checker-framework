@@ -57,14 +57,14 @@ public class BoundsInitializer {
      * @param declaredType type whose arguments are initialized
      */
     public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
-        final DeclaredType actualType = (DeclaredType) declaredType.actualType;
-        if (actualType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+        final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
+        if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
             // No type arguments to infer.
             return;
         }
 
         final TypeElement typeElement =
-                (TypeElement) declaredType.atypeFactory.types.asElement(actualType);
+                (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
         final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
 
         // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
@@ -605,12 +605,12 @@ public class BoundsInitializer {
          * @param declaredType declared type whose type arguments are initialized
          */
         private void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
-            DeclaredType actualType = (DeclaredType) declaredType.actualType;
-            if (actualType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+            DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
+            if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
                 return;
             }
             TypeElement typeElement =
-                    (TypeElement) declaredType.atypeFactory.types.asElement(actualType);
+                    (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
             List<AnnotatedTypeMirror> typeArgs;
             if (declaredType.typeArgs == null) {
                 typeArgs = new ArrayList<>();
