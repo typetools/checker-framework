@@ -120,12 +120,8 @@ function configure_and_exec_dljc {
       return
   fi
 
-  PATH_BACKUP="${PATH}"
-  export PATH="${JAVA_HOME}/bin:${PATH}"
-
+  # This command also includes "clean"; I'm not sure why it is necessary.
   DLJC_CMD="${DLJC} -t wpi $* -- ${BUILD_CMD}"
-
-  export PATH="${PATH_BACKUP}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
@@ -141,12 +137,17 @@ function configure_and_exec_dljc {
   mkdir -p "${DIR}/dljc-out/"
   dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout.XXXXXX")
 
-  # This command also includes "clean"; I'm not sure why it is necessary.
+  PATH_BACKUP="${PATH}"
+  export PATH="${JAVA_HOME}/bin:${PATH}"
+
   { echo "JAVA_HOME: ${JAVA_HOME}"; \
     echo "DLJC_CMD: ${DLJC_CMD}"; \
     eval "${DLJC_CMD}" < /dev/null; } > "$dljc_stdout" 2>&1
+  DLJC_STATUS=$?
 
-  if [[ $? -eq 124 ]]; then
+  export PATH="${PATH_BACKUP}"
+
+  if [[ $DLJC_STATUS -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
       WPI_RESULTS_AVAILABLE="no"
       return
