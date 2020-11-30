@@ -71,7 +71,9 @@ public final class SceneToStubWriter {
      *
      * <p>This is a utility class with only static methods. It is not instantiable.
      */
-    private SceneToStubWriter() {}
+    private SceneToStubWriter() {
+        throw new Error("Do not instantiate");
+    }
 
     /**
      * A pattern matching the name of an anonymous inner class, a local class, or a class nested
