@@ -40,6 +40,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -1082,17 +1083,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (thisValue != null) {
             res.add(viz.visualizeStoreThisVal(thisValue));
         }
-        for (Map.Entry<FieldAccess, V> entry : fieldValues.entrySet()) {
-            res.add(viz.visualizeStoreFieldVal(entry.getKey(), entry.getValue()));
+        for (FieldAccess fa : ToStringComparator.sorted(fieldValues.keySet())) {
+            res.add(viz.visualizeStoreFieldVal(fa, fieldValues.get(fa)));
         }
-        for (Map.Entry<ArrayAccess, V> entry : arrayValues.entrySet()) {
-            res.add(viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue()));
+        for (ArrayAccess fa : ToStringComparator.sorted(arrayValues.keySet())) {
+            res.add(viz.visualizeStoreArrayVal(fa, arrayValues.get(fa)));
         }
-        for (Map.Entry<MethodCall, V> entry : methodValues.entrySet()) {
-            res.add(viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue()));
+        for (MethodCall fa : ToStringComparator.sorted(methodValues.keySet())) {
+            res.add(viz.visualizeStoreMethodVals(fa, methodValues.get(fa)));
         }
-        for (Map.Entry<ClassName, V> entry : classValues.entrySet()) {
-            res.add(viz.visualizeStoreClassVals(entry.getKey(), entry.getValue()));
+        for (ClassName fa : ToStringComparator.sorted(classValues.keySet())) {
+            res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
         }
         return res.toString();
     }
