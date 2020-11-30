@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.Pair;
 import org.plumelib.util.UniqueId;
 
 /**
- * A store for the checker framework analysis tracks the annotations of memory locations such as
+ * A store for the Checker Framework analysis. It tracks the annotations of memory locations such as
  * local variables and fields.
  *
  * <p>When adding a new field to track values for a code construct (similar to {@code
@@ -55,8 +55,8 @@ import org.plumelib.util.UniqueId;
  * BaseTypeVisitor#getFlowExpressionContextFromNode(Node) needs to be updated. Failing to do so may
  * result in silent failures that are time consuming to debug.
  */
-// TODO: this class should be split into parts that are reusable generally, and
-// parts specific to the checker framework
+// TODO: Split this class into two parts: one that is reusable generally and
+// one that is specific to the Checker Framework.
 public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
         implements Store<S>, UniqueId {
 
@@ -532,10 +532,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a flow expression, or {@code null} if no information is
+     * Returns the current abstract value of a flow expression, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a flow expression, or {@code null} if no information is
+     * @return the current abstract value of a flow expression, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(Receiver expr) {
@@ -562,10 +562,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a field access, or {@code null} if no information is
+     * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a field access, or {@code null} if no information is
+     * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(FieldAccessNode n) {
@@ -575,10 +575,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a method call, or {@code null} if no information is
+     * Returns the current abstract value of a method call, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a method call, or {@code null} if no information is
+     * @return the current abstract value of a method call, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
@@ -590,10 +590,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns current abstract value of a field access, or {@code null} if no information is
+     * Returns the current abstract value of a field access, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a field access, or {@code null} if no information is
+     * @return the current abstract value of a field access, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(ArrayAccessNode n) {
@@ -850,10 +850,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * Returns current abstract value of a local variable, or {@code null} if no information is
+     * Returns the current abstract value of a local variable, or {@code null} if no information is
      * available.
      *
-     * @return current abstract value of a local variable, or {@code null} if no information is
+     * @return the current abstract value of a local variable, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(LocalVariableNode n) {
@@ -866,11 +866,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * Returns current abstract value of the current object, or {@code null} if no information is
-     * available.
+     * Returns the current abstract value of the current object, or {@code null} if no information
+     * is available.
      *
-     * @return current abstract value of the current object, or {@code null} if no information is
-     *     available
+     * @param n a reference to "this"
+     * @return the current abstract value of the current object, or {@code null} if no information
+     *     is available
      */
     public @Nullable V getValue(ThisLiteralNode n) {
         return thisValue;

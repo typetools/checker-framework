@@ -133,7 +133,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * <p>To get the single annotation in a particular hierarchy, use {@link
      * QualifierHierarchy#findAnnotationInHierarchy}.
      *
-     * @return returns a set of annotations
+     * @return a set of annotations
      */
     @Pure
     public Set<AnnotationMirror> getAnnotations() {
