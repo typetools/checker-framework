@@ -451,7 +451,8 @@ public class AnnotatedTypes {
                 return asMemberOf(
                         types,
                         atypeFactory,
-                        ((AnnotatedTypeVariable) receiverType).getUpperBound(),
+                        atypeFactory.applyCaptureConversion(
+                                ((AnnotatedTypeVariable) receiverType).getUpperBound()),
                         member,
                         memberType);
             case WILDCARD:
