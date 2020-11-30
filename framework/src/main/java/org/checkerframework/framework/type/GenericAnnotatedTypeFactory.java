@@ -243,7 +243,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
@@ -1182,7 +1182,7 @@ public abstract class GenericAnnotatedTypeFactory<
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            // Don't use getPath, b/c that depends on the visitorState path.
+            // Don't use getPath, because that depends on the visitorState path.
             visitorState.setPath(TreePath.getPath(this.root, ct));
             visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);
