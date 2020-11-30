@@ -141,6 +141,7 @@ function configure_and_exec_dljc {
   export PATH="${JAVA_HOME}/bin:${PATH}"
 
   { echo "JAVA_HOME: ${JAVA_HOME}"; \
+    echo "PATH: ${PATH}"; \
     echo "DLJC_CMD: ${DLJC_CMD}"; \
     eval "${DLJC_CMD}" < /dev/null; } > "$dljc_stdout" 2>&1
   DLJC_STATUS=$?
