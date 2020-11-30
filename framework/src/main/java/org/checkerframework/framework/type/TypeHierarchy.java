@@ -26,7 +26,7 @@ public interface TypeHierarchy {
      *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
      *       AnnotatedTypeFactory#getUnboxedType}
      *   <li>Capture conversions: Wildcards are treated as though they were converted to type
-     *       variables
+     *       variables // TODO: Update.
      *   <li>String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
      *       which calls {@link AnnotatedTypeFactory#getStringType(AnnotatedTypeMirror)}
      * </ul>

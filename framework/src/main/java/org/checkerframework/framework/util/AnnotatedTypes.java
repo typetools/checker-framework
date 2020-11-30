@@ -361,6 +361,8 @@ public class AnnotatedTypes {
      * <p>Before returning the result, this method adjusts it by calling {@link
      * AnnotatedTypeFactory#postAsMemberOf(AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
      *
+     * <p>TODO: This needs to be update.
+     *
      * <p>Note that this method does not currently return (top level) captured types for type
      * parameters, parameters, and return types. Instead, the original wildcard is returned, or
      * sometimes inferring type arguments will create a wildcard type which is returned. The bounds

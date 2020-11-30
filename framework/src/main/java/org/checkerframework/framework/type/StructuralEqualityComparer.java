@@ -24,7 +24,9 @@ import org.plumelib.util.UtilPlume;
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
  * that, for two objects, all fields are also structurally equal and for primitives their values are
- * equal. One reason this class is necessary is that at the moment we compare wildcards and type
+ * equal.
+ *
+ * <p>TODO: One reason this class is necessary is that at the moment we compare wildcards and type
  * variables for "equality". This occurs because we do not employ capture conversion.
  *
  * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
@@ -322,6 +324,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         }
 
         // TODO: Remove this code when capture conversion is implemented
+        // TODO: Can this be removed?
         if (TypesUtils.isCaptured(type1.getUnderlyingType())
                 || TypesUtils.isCaptured(type2.getUnderlyingType())) {
             if (!boundsMatch(type1, type2)) {
@@ -348,6 +351,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * on with the equality comparison. If neither of the type args can be converted to the other
      * than we just compare the effective annotations on the two types for equality.
      */
+    // TODO: can this be removed?
     boolean subtypeAndCompare(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         final Types types = type1.atypeFactory.types;
         final AnnotatedTypeMirror t1;
@@ -464,6 +468,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted
     // wildcards.
     // TODO: REMOVE THE METHOD BELOW WHEN CAPTURE CONVERSION IS IMPLEMENTED
+    // TODO: Can this be removed?
     /**
      * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type
      * variables are "inferred" to be wildcards, this method allows the comparison of a wildcard to

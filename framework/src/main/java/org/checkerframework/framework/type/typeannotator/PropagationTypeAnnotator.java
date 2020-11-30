@@ -189,6 +189,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {
+            // TODO: Can is this fixed?
             // the only cases in which the wildcard is not one of the type arguments are cases in
             // which they should have been replaced by capture
             if (typeArg == wildcard) {

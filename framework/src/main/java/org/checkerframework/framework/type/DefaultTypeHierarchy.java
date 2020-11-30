@@ -1208,6 +1208,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                     && !supertypeHasAnno
                     && areEqualInHierarchy(subtype, supertype)) {
                 // TODO: wildcard capture conversion
+                // TODO: can this be removed?
                 // Two unannotated uses of wildcard types are the same type
                 return true;
             }
