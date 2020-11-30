@@ -2405,13 +2405,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Returns a new list containing only the supported annotations from its argument -- that is,
      * those that are part of the current type system.
      *
+     * <p>This method ignores aliases of supported annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
      * @param annoTrees annotation trees
      * @return a new list containing only the supported annotations from its argument
      */
     private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
         List<AnnotationTree> result = new ArrayList<>(1);
         for (AnnotationTree at : annoTrees) {
-            if (atypeFactory.isSupportedQualifier(TreeUtils.annotationFromAnnotationTree(at))) {
+            AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(at);
+            if (!AnnotationUtils.isDeclarationAnnotation(anno)
+                    && atypeFactory.isSupportedQualifier(anno)) {
                 result.add(at);
             }
         }
