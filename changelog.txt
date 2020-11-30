@@ -27,6 +27,9 @@ Method renamings:
   ElementUtils.getVerboseName => ElementUtils.getQualifiedName
   ElementUtils.getSimpleName => ElementUtils.getSimpleSignature
 
+Field renamings:
+ * `AnnotatedTypeMirror.actualType` => `AnnotatedTypeMirror.underlyingType`
+
 Added a formal parameter to methods in `MostlyNoElementQualifierHierarchy`:
  * `leastUpperBoundWithElements`
  * `greatestLowerBoundWithElements`
