@@ -49,8 +49,7 @@ class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType type, AnnotatedDeclaredType useType, Tree tree) {
-        // TODO: super would result in error, b/c of
-        // default on classes.
+        // TODO: super would result in error, because of default on classes.
         return true;
     }
 }

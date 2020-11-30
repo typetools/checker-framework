@@ -535,7 +535,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns fields that are not yet initialized in a given store. The result is a pair of lists:
+     * Returns the fields that are not yet initialized in a given store. The result is a pair of
+     * lists:
      *
      * <ul>
      *   <li>fields that are not yet initialized and have the invariant annotation
