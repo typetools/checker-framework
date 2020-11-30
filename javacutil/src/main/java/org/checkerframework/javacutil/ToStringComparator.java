@@ -6,7 +6,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-/** A comparator that orders values based on the lexicographic ordering of their toString(). */
+/**
+ * A comparator that orders values based on the lexicographic ordering of their toString().
+ *
+ * <p>It handles null values, sorting them according to their printed representation "null".
+ */
+// Once https://github.com/typetools/checker-framework/issues/1970 is fixed, Comparator's type
+// argument should be marked as @Covariant and this should be declared as "extends
+// Comparator<@Nullable Object>".
 public class ToStringComparator implements Comparator<Object> {
     /** The unique instance (this class is a singleton). */
     public static ToStringComparator instance = new ToStringComparator();
