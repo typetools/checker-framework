@@ -578,7 +578,7 @@ public abstract class CFAbstractTransfer<
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
-                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration()
+                // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
         }
     }
@@ -892,12 +892,14 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitReturn(n, p);
+
         if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             // classTree is null e.g. if this is a return statement in a lambda.
             if (classTree == null) {
-                return super.visitReturn(n, p);
+                return result;
             }
             ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
 
@@ -920,7 +922,8 @@ public abstract class CFAbstractTransfer<
                             overriddenMethods,
                             analysis.getTypeFactory());
         }
-        return super.visitReturn(n, p);
+
+        return result;
     }
 
     @Override
@@ -993,27 +996,7 @@ public abstract class CFAbstractTransfer<
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
-        Tree tree = n.getTree();
-        V factoryValue = null;
-        if (tree != null) {
-            // look up the value from factory
-            factoryValue = getValueFromFactory(tree, n);
-        }
-        // look up the value in the store (if possible)
-        V storeValue = store.getValue(n);
-        V resValue = moreSpecificValue(factoryValue, storeValue);
-
-        store.updateForMethodCall(n, analysis.atypeFactory, resValue);
-
-        // add new information based on postcondition
-        processPostconditions(n, store, method, tree);
-
-        S thenStore = store;
-        S elseStore = thenStore.copy();
-
-        // add new information based on conditional postcondition
-        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
-
+        // Perform WPI before the store has been side-effected.
         if (shouldPerformWholeProgramInference(n.getTree(), method)) {
             // Finds the receiver's type
             Tree receiverTree = n.getTarget().getReceiver().getTree();
@@ -1029,6 +1012,26 @@ public abstract class CFAbstractTransfer<
                     .getWholeProgramInference()
                     .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
         }
+
+        Tree tree = n.getTree();
+
+        // Determine the abstract value for the method call.
+        // look up the call's value from factory
+        V factoryValue = (tree == null) ? null : getValueFromFactory(tree, n);
+        // look up the call's value in the store (if possible)
+        V storeValue = store.getValue(n);
+        V resValue = moreSpecificValue(factoryValue, storeValue);
+
+        store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+
+        // add new information based on postcondition
+        processPostconditions(n, store, method, tree);
+
+        S thenStore = store;
+        S elseStore = thenStore.copy();
+
+        // add new information based on conditional postcondition
+        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
         return new ConditionalTransferResult<>(
                 finishValue(resValue, thenStore, elseStore), thenStore, elseStore);

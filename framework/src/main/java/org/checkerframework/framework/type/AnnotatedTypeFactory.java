@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -1091,6 +1092,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (wholeProgramInference != null) {
             // Write out the results of whole-program inference, just once for each class.
+            // As soon as any class is finished processing, all modified scenes are written to
+            // files, in case this was the last class to be processed.  Post-processing of
+            // subsequent classes might result in re-writing some of the scenes if new information
+            // has been written to them.
             wholeProgramInference.writeResultsToFile(wpiOutputFormat, this.checker);
         }
     }
@@ -1295,15 +1300,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotatedTypeMirror mergeStubsIntoType(
             @Nullable AnnotatedTypeMirror type, Element elt) {
         AnnotatedTypeMirror stubType = stubTypes.getAnnotatedTypeMirror(elt);
-        if (stubType != null) {
-            if (type == null) {
-                type = stubType;
-            } else {
-                // Must merge (rather than only take the stub type if it is a subtype)
-                // to support WPI.
-                AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
-            }
+        if (stubType == null) {
+            return type;
         }
+        if (type == null) {
+            return stubType;
+        }
+        // Must merge (rather than only take the stub type if it is a subtype)
+        // to support WPI.
+        AnnotatedTypeCombiner.combine(stubType, type, this.getQualifierHierarchy());
         return type;
     }
 
@@ -1557,8 +1562,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * returned.
      *
      * @param annoTrees trees to look
-     * @return returns the AnnotationTree which is a use of one of the field invariant annotations
-     *     or null if one isn't found
+     * @return the AnnotationTree that is a use of one of the field invariant annotations, or null
+     *     if one isn't found
      */
     public AnnotationTree getFieldInvariantAnnotationTree(
             List<? extends AnnotationTree> annoTrees) {
@@ -1881,6 +1886,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.executableType = executableType;
             this.typeArgs = typeArgs;
         }
+
+        @Override
+        public String toString() {
+            if (typeArgs.isEmpty()) {
+                return executableType.toString();
+            } else {
+                StringJoiner typeArgsString = new StringJoiner(",", "<", ">");
+                for (AnnotatedTypeMirror atm : typeArgs) {
+                    typeArgsString.add(atm.toString());
+                }
+                return typeArgsString + " " + executableType.toString();
+            }
+        }
     }
 
     /**
@@ -1919,13 +1937,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             receiverType = getSelfType(tree);
         }
 
-        ParameterizedExecutableType mType = methodFromUse(tree, methodElt, receiverType);
+        ParameterizedExecutableType result = methodFromUse(tree, methodElt, receiverType);
         if (checker.shouldResolveReflection()
                 && reflectionResolver.isReflectiveMethodInvocation(tree)) {
-            mType = reflectionResolver.resolveReflectiveCall(this, tree, mType);
+            result = reflectionResolver.resolveReflectiveCall(this, tree, result);
         }
 
-        AnnotatedExecutableType method = mType.executableType;
+        AnnotatedExecutableType method = result.executableType;
         if (method.getReturnType().getKind() == TypeKind.WILDCARD
                 && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
             // Get the correct Java type from the tree and use it as the upper bound of the
@@ -1935,7 +1953,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
             AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
             if (ignoreUninferredTypeArguments) {
-                // remove the annotations so that default annotations are used instead.
+                // Remove the annotations so that default annotations are used instead.
                 // (See call to addDefaultAnnotations below.)
                 t.clearAnnotations();
             } else {
@@ -1945,7 +1963,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             addDefaultAnnotations(wildcard);
         }
 
-        return mType;
+        return result;
     }
 
     /**
@@ -2248,7 +2266,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-            if (((com.sun.tools.javac.code.Type) type.actualType)
+            if (((com.sun.tools.javac.code.Type) type.underlyingType)
                     .tsym
                     .getTypeParameters()
                     .nonEmpty()) {
@@ -2312,7 +2330,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
                     for (int i = 0; i < type.getTypeArguments().size(); ++i) {
                         if (!types.isSubtype(
-                                newArgs.get(i).actualType, oldArgs.get(i).actualType)) {
+                                newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
                             // One of the underlying types doesn't match. Give up.
                             return;
                         }
@@ -3569,7 +3587,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a list of all declaration annotations used to annotate this element, which have a
+     * Returns a list of all declaration annotations used to annotate the element, which have a
      * meta-annotation (i.e., an annotation on that annotation) with class {@code
      * metaAnnotationClass}.
      *

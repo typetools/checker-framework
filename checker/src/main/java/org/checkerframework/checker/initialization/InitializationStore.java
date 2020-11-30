@@ -244,10 +244,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         }
     }
 
-    public Map<FieldAccess, V> getFieldValues() {
-        return fieldValues;
-    }
-
+    /**
+     * Returns the analysis associated with this store.
+     *
+     * @return the analysis associated with this store
+     */
     public CFAbstractAnalysis<V, S, ?> getAnalysis() {
         return analysis;
     }

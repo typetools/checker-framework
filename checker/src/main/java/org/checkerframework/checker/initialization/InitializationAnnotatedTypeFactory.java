@@ -536,6 +536,12 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Returns the (non-static) fields that have the invariant annotation and are not yet
      * initialized in a given store.
+     *
+     * @param store a store
+     * @param path the current path, used to determine the current class
+     * @param isStatic whether to report static fields or instance fields
+     * @param receiverAnnotations the annotations on the receiver
+     * @return the fields that are not yet initialized in a given store (a pair of lists)
      */
     public List<VariableTree> getUninitializedInvariantFields(
             Store store,
@@ -566,6 +572,10 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Returns the (non-static) fields that have the invariant annotation and are initialized in a
      * given store.
+     *
+     * @param store a store
+     * @param path the current path; used to compute the current class
+     * @return the fields that have the invariant annotation and are initialized in a given store
      */
     public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
         // TODO: Instead of passing the TreePath around, can we use
