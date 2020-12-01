@@ -1330,11 +1330,8 @@ public class StubParser {
         }
     }
 
-    // Side-effects elementsToDecl
     private Map<Element, BodyDeclaration<?>> getMembers(
-            Map<Element, BodyDeclaration<?>> elementsToDecl,
-            TypeElement typeElt,
-            TypeDeclaration<?> typeDecl) {
+            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
