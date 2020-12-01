@@ -91,7 +91,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -151,7 +151,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected DependentTypesHelper dependentTypesHelper;
 
     /** to handle method pre- and postconditions */
-    protected ContractsUtils contractsUtils;
+    protected ContractsFromMethod contractsUtils;
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
@@ -243,7 +243,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
@@ -313,7 +313,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        contractsUtils = createContractsUtils();
+        contractsUtils = createContractsFromMethod();
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -575,12 +575,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link ContractsUtils} and returns it.
+     * Creates an {@link ContractsFromMethod} and returns it.
      *
-     * @return a new {@link ContractsUtils}
+     * @return a new {@link ContractsFromMethod}
      */
-    protected ContractsUtils createContractsUtils() {
-        return new ContractsUtils(this);
+    protected ContractsFromMethod createContractsFromMethod() {
+        return new ContractsFromMethod(this);
     }
 
     /**
@@ -588,7 +588,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return the helper for method pre- and postconditions
      */
-    public ContractsUtils getContractsUtils() {
+    public ContractsFromMethod getContractsFromMethod() {
         return contractsUtils;
     }
 
@@ -1182,7 +1182,7 @@ public abstract class GenericAnnotatedTypeFactory<
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            // Don't use getPath, b/c that depends on the visitorState path.
+            // Don't use getPath, because that depends on the visitorState path.
             visitorState.setPath(TreePath.getPath(this.root, ct));
             visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);

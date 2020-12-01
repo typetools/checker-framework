@@ -137,7 +137,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = storage.getJaifPath(className);
         AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
-
         AMethod method = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
         method.setFieldsFromMethodElement(methodElt);
 
@@ -158,8 +157,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
             Node arg = arguments.get(i);
-            Tree treeNode = arg.getTree();
-            if (treeNode == null) {
+            Tree argTree = arg.getTree();
+            if (argTree == null) {
                 // TODO: Handle variable-length list as parameter.
                 // An ArrayCreationNode with a null tree is created when the
                 // parameter is a variable-length list. We are ignoring it for now.
@@ -167,7 +166,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 // https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
-            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+            AnnotatedTypeMirror argATM = atf.getAnnotatedType(argTree);
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
@@ -247,8 +246,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         for (int i = 0; i < params.size(); i++) {
             VariableTree vt = params.get(i);
             if (vt.getName().contentEquals(lhs.getName())) {
-                Tree treeNode = rhs.getTree();
-                if (treeNode == null) {
+                Tree rhsTree = rhs.getTree();
+                if (rhsTree == null) {
                     // TODO: Handle variable-length list as parameter.
                     // An ArrayCreationNode with a null tree is created when the
                     // parameter is a variable-length list. We are ignoring it for now.
@@ -257,7 +256,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     continue;
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
-                AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+                AnnotatedTypeMirror argATM = atf.getAnnotatedType(rhsTree);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
@@ -500,14 +499,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         method.tlAnnotationsHere.add(sceneAnno);
     }
 
-    /** Write all modified scenes into .jaif files or stub files. */
     @Override
     public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
         storage.writeScenes(outputFormat, checker);
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code localVariableNode}
+     * Returns the "flatname" of the class enclosing {@code localVariableNode}.
      *
      * @param localVariableNode the {@link LocalVariableNode}
      * @return the "flatname" of the class enclosing {@code localVariableNode}
@@ -520,7 +518,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Returns the "flatname" of the class enclosing {@code executableElement}
+     * Returns the "flatname" of the class enclosing {@code executableElement}.
      *
      * @param executableElement the ExecutableElement
      * @return the "flatname" of the class enclosing {@code executableElement}
