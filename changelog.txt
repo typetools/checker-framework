@@ -1,3 +1,10 @@
+Version 3.8.1
+
+The `-Ainfer` command-line argument now infers `@MonotonicNonNull`,
+`@EnsuresNonNull`, and `@RequiresNonNull` annotations.
+
+---------------------------------------------------------------------------
+
 Version 3.8.0, December 1, 2020
 
 The Initialized Fields Checker warns when a field is not initialized by a
