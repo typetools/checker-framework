@@ -8,11 +8,13 @@ import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -54,7 +56,8 @@ public interface WholeProgramInference {
     void updateFromObjectCreation(
             ObjectCreationNode objectCreationNode,
             ExecutableElement constructorElt,
-            AnnotatedTypeFactory atf);
+            AnnotatedTypeFactory atf,
+            CFAbstractStore<?, ?> store);
 
     /**
      * Updates the parameter types of the method {@code methodElt} based on the arguments in the
@@ -75,12 +78,14 @@ public interface WholeProgramInference {
      * @param methodElt the element of the method being invoked
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used to update the method parameters' types
+     * @param store the store before the method call, used for inferring method preconditions
      */
     void updateFromMethodInvocation(
             MethodInvocationNode methodInvNode,
             Tree receiverTree,
             ExecutableElement methodElt,
-            AnnotatedTypeFactory atf);
+            AnnotatedTypeFactory atf,
+            CFAbstractStore<?, ?> store);
 
     /**
      * Updates the parameter types (including the receiver) of the method {@code methodTree} based
@@ -175,6 +180,21 @@ public interface WholeProgramInference {
             MethodTree methodTree,
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
             AnnotatedTypeFactory atf);
+
+    /**
+     * Updates the preconditions or postconditions of the current method, from a store.
+     *
+     * @param methodElement the method or constructor whose preconditions or postconditions to
+     *     update
+     * @param preOrPost whether to update preconditions or postconditions
+     * @param atf the annotated type factory of a given type system, which is used to obtain types
+     * @param store the store at the method's entry or normal exit, for reading types of expressions
+     */
+    void updateContracts(
+            Analysis.BeforeOrAfter preOrPost,
+            ExecutableElement methodElement,
+            AnnotatedTypeFactory atf,
+            CFAbstractStore<?, ?> store);
 
     /**
      * Updates a method to add a declaration annotation.

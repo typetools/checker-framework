@@ -16,6 +16,8 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +69,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import scenelib.annotations.el.AField;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -727,5 +730,94 @@ public class NullnessAnnotatedTypeFactory
             result.replaceAnnotation(MONOTONIC_NONNULL);
         }
         return result;
+    }
+
+    // If
+    //  1. rhs is @Nullable
+    //  2. lhs is a field of this
+    //  3. in a constructor
+    // then change rhs to @MonotonicNonNull.
+    @Override
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        if (getAnnotationByClass(rhsATM.getAnnotations(), Nullable.class) != null
+                && isField(element)
+                && TreeUtils.inConstructor(getPath(lhsTree))) {
+            rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
+        }
+    }
+
+    // If
+    //  1. rhs is @MonotonicNonNull
+    // then change rhs to @Nullable
+    @Override
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        if (getAnnotationByClass(rhsATM.getAnnotations(), MonotonicNonNull.class) != null) {
+            rhsATM.replaceAnnotation(NULLABLE);
+        }
+    }
+
+    /**
+     * Returns true if the argument is a field.
+     *
+     * @param element a lhs that might be a field
+     * @return true if the argument is a field
+     */
+    private boolean isField(Element element) {
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+        return enclosingClass.getEnclosedElements().contains(element);
+    }
+
+    @Override
+    public String getPreconditionAnnotation(VariableElement elt, AField f) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        if (!(declaredType.getAnnotations().contains(NULLABLE)
+                || declaredType.getAnnotations().contains(POLYNULL)
+                || declaredType.getAnnotations().contains(MONOTONIC_NONNULL))) {
+            return null;
+        }
+
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                return requiresNonNullAnno(elt);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a {@code RequiresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code RequiresNonNull("...")} annotation for the given field
+     */
+    private String requiresNonNullAnno(VariableElement fieldElement) {
+        return "@org.checkerframework.checker.nullness.qual.RequiresNonNull(\""
+                + fieldElement.getSimpleName()
+                + "\")";
+    }
+
+    @Override
+    public String getPostconditionAnnotation(VariableElement elt, AField f, List<String> preconds) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        if (!(declaredType.getAnnotations().contains(NULLABLE)
+                || declaredType.getAnnotations().contains(POLYNULL)
+                || declaredType.getAnnotations().contains(MONOTONIC_NONNULL))) {
+            return null;
+        }
+        if (declaredType.getAnnotations().contains(MONOTONIC_NONNULL)
+                && preconds.contains(requiresNonNullAnno(elt))) {
+            // The postcondition is implied by the precondition and the field being
+            // @MonotonicNonNull.
+            return null;
+        }
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                return "@org.checkerframework.checker.nullness.qual.EnsuresNonNull(\""
+                        + elt.getSimpleName()
+                        + "\")";
+            }
+        }
+        return null;
     }
 }

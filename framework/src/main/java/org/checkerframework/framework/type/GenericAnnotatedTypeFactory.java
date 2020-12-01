@@ -110,6 +110,8 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.UtilPlume;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -2218,5 +2220,120 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
         return defaultValue;
+    }
+
+    /**
+     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
+     * inference. This implementation does nothing, but subclasses can override it.
+     *
+     * @param lhsTree the tree for the field whose type will be changed
+     * @param element the element for the field whose type will be changed
+     * @param fieldName the name of the field whose type will be changed
+     * @param rhsATM the type of the expression being assigned to the field
+     */
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        // This implementation does nothing
+    }
+
+    /**
+     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
+     * use by whole-program inference. This implementation does nothing, but subclasses can override
+     * it.
+     *
+     * @param rhsATM the type of the rhs of the pseudo-assignment
+     */
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+        // This implementation does nothing
+    }
+
+    /**
+     * Return the string representation of contract annotations (that is, pre- and post-conditions)
+     * for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<String> getContractAnnotations(AMethod m) {
+        List<String> preconds = getPreconditionAnnotations(m);
+        List<String> postconds = getPostconditionAnnotations(m, preconds);
+        List<String> result = preconds;
+        result.addAll(postconds);
+        return result;
+    }
+
+    /**
+     * Return the string representation of precondition annotations for the given AMethod. Does not
+     * modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<String> getPreconditionAnnotations(AMethod m) {
+        List<String> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
+            VariableElement elt = entry.getKey();
+            AField afield = entry.getValue();
+
+            String precondAnno = getPreconditionAnnotation(elt, afield);
+            if (precondAnno != null) {
+                result.add(precondAnno);
+            }
+        }
+        return result;
+    }
+
+    // TODO: Implement this here in this class, reading @PreconditionAnnotation meta-annotations.
+    // That would be more general and would eliminate most but not all of the code in overriding
+    // implementations.
+    /**
+     * Return the string representation of a precondition annotation for the given field.
+     *
+     * @param elt element for a field
+     * @param f AFU representation of a field's precondition annotations
+     * @return a precondition annotation for the element, or null if none is appropriate
+     */
+    public @Nullable String getPreconditionAnnotation(VariableElement elt, AField f) {
+        return null;
+    }
+
+    /**
+     * Return the string representation of postcondition annotations for the given AMethod. Does not
+     * modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the method
+     */
+    public List<String> getPostconditionAnnotations(AMethod m, List<String> preconds) {
+        List<String> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
+            VariableElement elt = entry.getKey();
+            AField afield = entry.getValue();
+
+            String postcondAnno = getPostconditionAnnotation(elt, afield, preconds);
+            if (postcondAnno != null) {
+                result.add(postcondAnno);
+            }
+        }
+        return result;
+    }
+
+    // TODO: Implement this here in this class, reading @PreconditionAnnotation meta-annotations.
+    // That would be more general and would eliminate most but not all of the code in overriding
+    // implementations.
+    /**
+     * Return the string representation of a postcondition annotation for the given field.
+     *
+     * @param elt element for a field
+     * @param f AFU representation of a field's postcondition annotations
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return a postcondition annotation for the element, or null if none is appropriate
+     */
+    public @Nullable String getPostconditionAnnotation(
+            VariableElement elt, AField f, List<String> preconds) {
+        return null;
     }
 }

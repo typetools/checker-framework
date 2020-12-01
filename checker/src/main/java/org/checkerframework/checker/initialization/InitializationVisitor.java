@@ -26,6 +26,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -33,9 +35,11 @@ import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -385,6 +389,7 @@ public class InitializationVisitor<
                 atypeFactory.getUninitializedFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
         List<VariableTree> violatingFields = uninitializedFields.first;
+        List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
         if (staticFields) {
             // TODO: Why is nothing done for static fields?
@@ -394,10 +399,15 @@ public class InitializationVisitor<
             // remove fields that have already been initialized by an
             // initializer block
             violatingFields.removeAll(initializedFields);
+            nonviolatingFields.removeAll(initializedFields);
         }
 
         // Remove fields with a relevant @SuppressWarnings annotation.
         violatingFields.removeIf(
+                f ->
+                        checker.shouldSuppressWarnings(
+                                TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
+        nonviolatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
                                 TreeUtils.elementFromTree(f), COMMITMENT_FIELDS_UNINITIALIZED_KEY));
@@ -408,6 +418,25 @@ public class InitializationVisitor<
                 fieldsString.add(f.getName());
             }
             checker.reportError(blockNode, COMMITMENT_FIELDS_UNINITIALIZED_KEY, fieldsString);
+        }
+
+        // Support -Ainfer command-line argument.
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        if (wpi != null) {
+            // For each uninitialized field, treat it as if the default value is assigned to it.
+            List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
+            uninitFields.addAll(nonviolatingFields);
+            for (VariableTree fieldTree : uninitFields) {
+                Element elt = TreeUtils.elementFromTree(fieldTree);
+                ((WholeProgramInferenceScenes) wpi)
+                        .updateFieldFromType(
+                                fieldTree,
+                                elt,
+                                fieldTree.getName().toString(),
+                                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                                        .getDefaultValueAnnotatedType(elt.asType()),
+                                (AnnotatedTypeFactory) atypeFactory);
+            }
         }
     }
 }

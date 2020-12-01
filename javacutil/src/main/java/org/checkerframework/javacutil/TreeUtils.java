@@ -344,6 +344,18 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns true if the tree is in a constructor or an initializer block.
+     *
+     * @param path the path to test
+     * @return true if the path is in a constructor or an initializer block
+     */
+    public static boolean inConstructor(TreePath path) {
+        MethodTree method = enclosingMethod(path);
+        // If method is null, this is an initializer block.
+        return method == null || isConstructor(method);
+    }
+
+    /**
      * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
      * Otherwise, return the same tree.
      *
