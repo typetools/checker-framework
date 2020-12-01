@@ -286,6 +286,58 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                             + lhs.getClass());
         }
 
+        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
+        // @GuardedBy({}).
+        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
+
+        updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM, atf);
+    }
+
+    /**
+     * Updates the type of {@code field} based on an assignment whose right-hand side has type
+     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
+     *
+     * @param lhsTree the tree for the field whose type will be refined
+     * @param element the element for the field whose type will be refined
+     * @param fieldName the name of the field whose type will be refined
+     * @param rhsATM the type of the expression being assigned to the field
+     * @param atf the annotated type factory
+     */
+    public void updateFieldFromType(
+            Tree lhsTree,
+            Element element,
+            String fieldName,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeFactory atf) {
+
+        if (ignoreFieldInWPI(element, fieldName, atf)) {
+            return;
+        }
+
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @BinaryName String className = enclosingClass.flatname.toString();
+        String jaifPath = storage.getJaifPath(className);
+        AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
+
+        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhsTree);
+        AField field = clazz.fields.getVivify(fieldName);
+        field.setTypeMirror(lhsATM.getUnderlyingType());
+
+        storage.updateAnnotationSetInScene(
+                field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, atf, jaifPath);
+    }
+
+    /**
+     * Returns true if an assignment to the given field should be ignored by WPI.
+     *
+     * @param element the field's element
+     * @param fieldName the field's name
+     * @param atf the annotated type factory
+     * @return true if an assignment to the given field should be ignored by WPI
+     */
+    private boolean ignoreFieldInWPI(Element element, String fieldName, AnnotatedTypeFactory atf) {
         // Do not attempt to infer types for fields that do not have valid
         // names. For example, compiler-generated temporary variables will
         // have invalid names. Recording facts about fields with
@@ -293,7 +345,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // file, and stub-based WPI to generate unparseable stub files.
         // See https://github.com/typetools/checker-framework/issues/3442
         if (!SourceVersion.isIdentifier(fieldName)) {
-            return;
+            return true;
         }
 
         // If the inferred field has a declaration annotation with the
@@ -303,29 +355,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                                         element, IgnoreInWholeProgramInference.class)
                                 .size()
                         > 0) {
-            return;
+            return true;
         }
 
         ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
 
         // do not infer types for code that isn't presented as source
         if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
-            return;
+            return true;
         }
 
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-        @BinaryName String className = enclosingClass.flatname.toString();
-        String jaifPath = storage.getJaifPath(className);
-        AClass clazz = storage.getAClass(className, jaifPath, enclosingClass);
-
-        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AField field = clazz.fields.getVivify(fieldName);
-        field.setTypeMirror(lhsATM.getUnderlyingType());
-        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
-        // @GuardedBy({}).
-        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
-        storage.updateAnnotationSetInScene(
-                field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, atf, jaifPath);
+        return false;
     }
 
     /**
