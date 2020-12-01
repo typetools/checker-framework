@@ -150,6 +150,9 @@ public class StubParser {
      * names. There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
+     * <p>The map is populated from import statements and also by {@link #getAnnotation(
+     * AnnotationExpr, Map)} for annotations that are used fully-qualified.
+     *
      * @see #getAllStubAnnotations
      */
     private Map<String, TypeElement> allStubAnnotations;
@@ -304,14 +307,13 @@ public class StubParser {
         return result;
     }
 
-    //  TODO: This method collects only those that are imported, so it will miss ones whose
-    //   fully-qualified name is used in the stub file. The #getAnnotation method in this class
-    //   compensates for this deficiency by attempting to add any fully-qualified annotation
-    //   that it encounters.
     /**
      * Returns all annotations imported by the stub file, as a value for {@link
      * #allStubAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
      * #importedTypes}.
+     *
+     * <p>This method misses annotations that are not imported. The {@link #getAnnotation} method
+     * compensates for this deficiency by adding any fully-qualified annotation that it encounters.
      *
      * @return a map from names to TypeElement, for all annotations imported by the stub file. Two
      *     entries for each annotation: one for the simple name and another for the fully-qualified
@@ -549,14 +551,19 @@ public class StubParser {
     /**
      * Process the given StubUnit.
      *
-     * @param index the StubUnit to process
+     * @param su the StubUnit to process
      */
-    private void processStubUnit(StubUnit index) {
-        for (CompilationUnit cu : index.getCompilationUnits()) {
+    private void processStubUnit(StubUnit su) {
+        for (CompilationUnit cu : su.getCompilationUnits()) {
             processCompilationUnit(cu);
         }
     }
 
+    /**
+     * Process the given CompilationUnit.
+     *
+     * @param cu the StubUnit to process
+     */
     private void processCompilationUnit(CompilationUnit cu) {
         final List<AnnotationExpr> packageAnnos;
 
@@ -575,6 +582,11 @@ public class StubParser {
         }
     }
 
+    /**
+     * Process the given package declaration
+     *
+     * @param packDecl the package declaration to process
+     */
     private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
@@ -834,7 +846,12 @@ public class StubParser {
         }
     }
 
-    /** Adds type and declaration annotations from {@code decl}. */
+    /**
+     * Adds type and declaration annotations from {@code decl}.
+     *
+     * @param decl a method or constructor declaration
+     * @param elt the method or constructor's element
+     */
     private void processCallableDeclaration(CallableDeclaration<?> decl, ExecutableElement elt) {
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations());
@@ -968,6 +985,7 @@ public class StubParser {
         if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation isn't the top and default
             // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+            /*
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -976,6 +994,7 @@ public class StubParser {
                                 typeDef.getBegin().get().line,
                                 atype.toString(true)));
             }
+            */
             // Clear existing annotations, which only makes a difference for
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
@@ -1030,7 +1049,7 @@ public class StubParser {
     }
 
     /**
-     * Add to {@code atype}:
+     * Add to formal parameter {@code atype}:
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
@@ -1242,9 +1261,9 @@ public class StubParser {
     }
 
     /**
-     * Adds, to the {@link #declAnnos} map, all the annotations in {@code annotations} that are
-     * applicable to {@code elt}'s location. For example, if an annotation is a type annotation but
-     * {@code elt} is a field declaration, the type annotation will be ignored.
+     * Adds {@link #declAnnos} all the annotations in {@code annotations} that are applicable to
+     * {@code elt}'s location. For example, if an annotation is a type annotation but {@code elt} is
+     * a field declaration, the type annotation will be ignored.
      *
      * @param elt the element to be annotated
      * @param annotations set of annotations that may be applicable to elt
@@ -1274,6 +1293,8 @@ public class StubParser {
     /**
      * Adds the declaration annotation {@code @FromStubFile} to the given element, unless we are
      * parsing the JDK as a stub file.
+     *
+     * @param elt an element to be annotated as {@code @FromStubFile}
      */
     private void recordDeclAnnotationFromStubFile(Element elt) {
         if (isJdkAsStub) {
@@ -1352,6 +1373,7 @@ public class StubParser {
         return result;
     }
 
+    // Used only by getMembers
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
@@ -1683,7 +1705,8 @@ public class StubParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allStubAnnotations map from simple name to annotation definition
+     * @param allStubAnnotations map from simple name to annotation definition; side-effected by
+     *     this method
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
