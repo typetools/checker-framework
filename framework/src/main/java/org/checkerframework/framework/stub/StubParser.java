@@ -164,7 +164,7 @@ public class StubParser {
     private final Map<String, TypeElement> importedTypes = new HashMap<>();
 
     /** The annotation {@code @FromStubFile}. */
-    private final AnnotationMirror fromStubFile;
+    private final AnnotationMirror fromStubFileAnno;
 
     /**
      * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
@@ -232,7 +232,7 @@ public class StubParser {
                         && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
-        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
+        this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.atypes = atypes;
         this.declAnnos = declAnnos;
@@ -1280,7 +1280,9 @@ public class StubParser {
             return;
         }
         putOrAddToMap(
-                declAnnos, ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFile));
+                declAnnos,
+                ElementUtils.getQualifiedName(elt),
+                Collections.singleton(fromStubFileAnno));
     }
 
     private void annotateTypeParameters(
