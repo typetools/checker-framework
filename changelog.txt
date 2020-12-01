@@ -23,9 +23,12 @@ Added classes `SubtypeIsSubsetQualifierHierarchy` and
 
 Moved the `contractsUtils` field from the visitor to the type factory.
 
+Class renamings:
+ * `ContractsUtils` => `ContractsFromMethod`
+
 Method renamings:
-  ElementUtils.getVerboseName => ElementUtils.getQualifiedName
-  ElementUtils.getSimpleName => ElementUtils.getSimpleSignature
+ * `ElementUtils.getVerboseName` => `ElementUtils.getQualifiedName`
+ * `ElementUtils.getSimpleName` => `ElementUtils.getSimpleSignature`
 
 Field renamings:
  * `AnnotatedTypeMirror.actualType` => `AnnotatedTypeMirror.underlyingType`
@@ -38,10 +41,10 @@ Removed a formal parameter from methods in `BaseTypeVisitor`:
  * `checkPostcondition`
  * `checkConditionalPostcondition`
 
-In Analysis.runAnalysisFor(), changed boolean parameter to enum BeforeOrAfter.
+In `Analysis.runAnalysisFor()`, changed `boolean` parameter to enum `BeforeOrAfter`.
 
-Removed org.checkerframework.framework.util.AnnotatedTypes#getIteratedType; use
-AnnotatedTypeFactory#getIterableElementType(ExpressionTree) instead.
+Removed `org.checkerframework.framework.util.AnnotatedTypes#getIteratedType`; use
+`AnnotatedTypeFactory#getIterableElementType(ExpressionTree)` instead.
 
 ---------------------------------------------------------------------------
 
