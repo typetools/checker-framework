@@ -163,7 +163,7 @@ public class StubParser {
     private final Map<String, TypeElement> importedTypes = new HashMap<>();
 
     /** The annotation {@code @FromStubFile}. */
-    private final AnnotationMirror fromStubFile;
+    private final AnnotationMirror fromStubFileAnno;
 
     /**
      * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
@@ -236,7 +236,7 @@ public class StubParser {
                         && atypeFactory.shouldWarnIfStubRedundantWithBytecode();
         this.debugStubParser = options.containsKey("stubDebug");
 
-        this.fromStubFile = AnnotationBuilder.fromClass(elements, FromStubFile.class);
+        this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
         this.isJdkAsStub = isJdkAsStub;
     }
@@ -550,7 +550,12 @@ public class StubParser {
         }
     }
 
-    /** @param stubAnnos annotations from the stub file; side-effected by this method */
+    /**
+     * Process the given CompilationUnit.
+     *
+     * @param cu the StubUnit to process
+     * @param stubAnnos annotations from the stub file; side-effected by this method
+     */
     private void processCompilationUnit(CompilationUnit cu, StubAnnotations stubAnnos) {
         final List<AnnotationExpr> packageAnnos;
 
@@ -569,7 +574,12 @@ public class StubParser {
         }
     }
 
-    /** @param stubAnnos annotations from the stub file; side-effected by this method */
+    /**
+     * Process the given package declaration
+     *
+     * @param packDecl the package declaration to process
+     * @param stubAnnos annotations from the stub file; side-effected by this method
+     */
     private void processPackage(PackageDeclaration packDecl, StubAnnotations stubAnnos) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
@@ -843,6 +853,8 @@ public class StubParser {
     /**
      * Adds type and declaration annotations from {@code decl}.
      *
+     * @param decl a method or constructor declaration
+     * @param elt the method or constructor's element
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void processCallableDeclaration(
@@ -1295,6 +1307,7 @@ public class StubParser {
      * Adds the declaration annotation {@code @FromStubFile} to the given element, unless we are
      * parsing the JDK as a stub file.
      *
+     * @param elt an element to be annotated as {@code @FromStubFile}
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void recordDeclAnnotationFromStubFile(Element elt, StubAnnotations stubAnnos) {
@@ -1304,7 +1317,7 @@ public class StubParser {
         putOrAddToMap(
                 stubAnnos.declAnnos,
                 ElementUtils.getQualifiedName(elt),
-                Collections.singleton(fromStubFile));
+                Collections.singleton(fromStubFileAnno));
     }
 
     private void annotateTypeParameters(
