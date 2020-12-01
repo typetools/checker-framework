@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -661,8 +660,7 @@ public class StubParser {
 
         // This loops over the members of the Element, finding the matching stub declaration if any.
         // It ignores any stub declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
-        getMembers(elementsToDecl, typeElt, typeDecl);
+        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
@@ -1355,11 +1353,10 @@ public class StubParser {
         }
     }
 
-    // Side-effects elementsToDecl
-    private void getMembers(
-            Map<Element, BodyDeclaration<?>> elementsToDecl,
-            TypeElement typeElt,
-            TypeDeclaration<?> typeDecl) {
+    private Map<Element, BodyDeclaration<?>> getMembers(
+            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
+        Map<Element, BodyDeclaration<?>> elementsToDecl = new HashMap<>();
+
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
@@ -1375,6 +1372,8 @@ public class StubParser {
                 putNewElement(elementsToDecl, typeElt, member, typeDecl.getNameAsString());
             }
         }
+
+        return elementsToDecl;
     }
 
     /**
