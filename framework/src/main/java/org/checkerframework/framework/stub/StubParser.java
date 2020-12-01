@@ -435,7 +435,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from this stub file are added to this map
+     * @param atypes annotated types from {@code inputStream} are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -458,7 +458,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from this stub file are added to this map
+     * @param atypes annotated types from {@code inputStream} are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -480,7 +480,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from this stub file are added to this map
+     * @param atypes annotated types from {@code inputStream} are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -660,7 +660,8 @@ public class StubParser {
 
         // This loops over the members of the Element, finding the matching stub declaration if any.
         // It ignores any stub declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
+        Map<Element, BodyDeclaration<?>> elementsToDecl = new LinkedHashMap<>();
+        getMembers(elementsToDecl, typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
@@ -845,13 +846,8 @@ public class StubParser {
         recordDeclAnnotationFromStubFile(elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        AnnotatedExecutableType origMethodType;
-
-        if (warnIfStubRedundantWithBytecode) {
-            origMethodType = methodType.deepCopy();
-        } else {
-            origMethodType = null;
-        }
+        AnnotatedExecutableType origMethodType =
+                warnIfStubRedundantWithBytecode ? methodType.deepCopy() : null;
 
         // Type Parameters
         annotateTypeParameters(
@@ -1334,8 +1330,11 @@ public class StubParser {
         }
     }
 
+    // Side-effects elementsToDecl
     private Map<Element, BodyDeclaration<?>> getMembers(
-            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
+            Map<Element, BodyDeclaration<?>> elementsToDecl,
+            TypeElement typeElt,
+            TypeDeclaration<?> typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
