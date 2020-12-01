@@ -381,9 +381,10 @@ public class InitializationVisitor<
                         ? COMMITMENT_STATIC_FIELDS_UNINITIALIZED
                         : COMMITMENT_FIELDS_UNINITIALIZED);
 
-        List<VariableTree> violatingFields =
-                atypeFactory.getUninitializedInvariantFields(
+        Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
+                atypeFactory.getUninitializedFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);
+        List<VariableTree> violatingFields = uninitializedFields.first;
 
         if (staticFields) {
             // TODO: Why is nothing done for static fields?
