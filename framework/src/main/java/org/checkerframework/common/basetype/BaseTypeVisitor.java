@@ -115,7 +115,7 @@ import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -920,7 +920,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExecutableElement methodElement,
             List<String> formalParamNames,
             boolean abstractMethod) {
-        Set<Contract> contracts = atypeFactory.getContractsUtils().getContracts(methodElement);
+        Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
 
         if (contracts.isEmpty()) {
             return;
@@ -1481,7 +1481,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // check precondition annotations
         checkPreconditions(
-                node, atypeFactory.getContractsUtils().getPreconditions(invokedMethodElement));
+                node, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
         if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
@@ -3637,7 +3637,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
-            ContractsUtils contractsUtils = atypeFactory.getContractsUtils();
+            ContractsFromMethod contractsUtils = atypeFactory.getContractsFromMethod();
 
             // Check postconditions
             Set<Postcondition> superPost =
