@@ -1455,13 +1455,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
-        checkTypeArguments(
-                node,
-                paramBounds,
-                typeargs,
-                node.getTypeArguments(),
-                methodName,
-                invokedMethod.getTypeVariables());
+        try {
+            checkTypeArguments(
+                    node,
+                    paramBounds,
+                    typeargs,
+                    node.getTypeArguments(),
+                    methodName,
+                    invokedMethod.getTypeVariables());
+        } catch (BugInCF ex) {
+            if (!node.getTypeArguments().isEmpty()) {
+                throw ex;
+            }
+            // TODO: warn if warning about inference failures is a
+        }
 
         List<AnnotatedTypeMirror> params =
                 AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());

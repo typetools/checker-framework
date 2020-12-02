@@ -964,7 +964,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
         if (TypesUtils.isCaptured(subtype.getUnderlyingType())
                 && TypesUtils.isCaptured(supertype.getUnderlyingType())) {
-            return areEqualInHierarchy(subtype, supertype);
+            return isContainedByBoundType(subtype, new BoundType(supertype), false);
         }
 
         if (supertype.getLowerBound().getKind() != TypeKind.NULL) {
