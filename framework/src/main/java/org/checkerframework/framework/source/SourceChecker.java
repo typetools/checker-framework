@@ -233,12 +233,12 @@ import org.plumelib.util.UtilPlume;
     "stubs",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
-    // org.checkerframework.framework.stub.StubParser.warnIfNotFound
+    // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
     "stubWarnIfNotFound",
     // Whether to ignore missing classes even when warnIfNotFound is set to true and
     // other classes from the same package are present (useful if a package spans more than one
     // jar).
-    // org.checkerframework.framework.stub.StubParser.warnIfNotFoundIgnoresClasses
+    // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses
     "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
@@ -307,7 +307,7 @@ import org.plumelib.util.UtilPlume;
     "parseAllJdk",
 
     // Whether to print debugging messages while processing the stub files
-    // org.checkerframework.framework.stub.StubParser.debugStubParser
+    // org.checkerframework.framework.stub.AnnotationFileParser.debugAnnotationFileParser
     "stubDebug",
 
     /// Progress tracing
