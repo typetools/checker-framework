@@ -178,6 +178,8 @@ public class StubParser {
     /**
      * The name of the type that is currently being parsed. After processing a package declaration
      * but before processing a type declaration, the type part of this may be null.
+     *
+     * <p>It is used both for resolving symbols and for error messages.
      */
     private FqName typeBeingParsed;
 
