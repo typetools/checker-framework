@@ -179,7 +179,7 @@ public class StubParser {
      * The name of the type that is currently being parsed. After processing a package declaration
      * but before processing a type declaration, the type part of this may be null.
      */
-    private FqName typeName;
+    private FqName typeBeingParsed;
 
     /** Output variable: map from element to its type as declared in the stub file. */
     private final Map<Element, AnnotatedTypeMirror> atypes;
@@ -562,7 +562,7 @@ public class StubParser {
 
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
-            typeName = new FqName(null, null);
+            typeBeingParsed = new FqName(null, null);
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
             packageAnnos = pDecl.getAnnotations();
@@ -578,7 +578,7 @@ public class StubParser {
     private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
-        typeName = new FqName(packageName, null);
+        typeBeingParsed = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
@@ -598,7 +598,7 @@ public class StubParser {
      */
     private void processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, List<AnnotationExpr> packageAnnos) {
-        assert typeName != null;
+        assert typeBeingParsed != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
@@ -606,11 +606,11 @@ public class StubParser {
         }
         String innerName =
                 (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
-        typeName = new FqName(typeName.packageName, innerName);
+        typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
         @SuppressWarnings(
                 "signature") // FqName.toString : @FullyQualifiedName; and @CanonicalName because
         // this is its declaration
-        @CanonicalName String fqTypeName = typeName.toString();
+        @CanonicalName String fqTypeName = typeBeingParsed.toString();
         TypeElement typeElt = elements.getTypeElement(fqTypeName);
         if (typeElt == null) {
             if (debugStubParser
@@ -736,7 +736,7 @@ public class StubParser {
             if (numParams != numArgs) {
                 stubDebug(
                         String.format(
-                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeName=%s",
+                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
                                 typeParameters,
                                 numParams,
                                 typeArguments,
@@ -746,7 +746,7 @@ public class StubParser {
                                 elt.getClass(),
                                 type,
                                 type.getClass(),
-                                typeName));
+                                typeBeingParsed));
                 stubDebug("Proceeding despite mismatched sizes");
             }
         }
@@ -1120,7 +1120,7 @@ public class StubParser {
                                     + typeDef
                                     + ">"
                                     + " while parsing "
-                                    + typeName);
+                                    + typeBeingParsed);
                     return;
                 }
                 WildcardType wildcardDef = (WildcardType) typeDef;
@@ -1838,24 +1838,24 @@ public class StubParser {
 
     /**
      * Returns the TypeElement with the name {@code name}, if one exists. Otherwise, checks the
-     * class and package of {@code typeName} for a class named {@code name}.
+     * class and package of {@code typeBeingParsed} for a class named {@code name}.
      *
      * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
     @SuppressWarnings("signature:argument.type.incompatible") // string concatenation
     private @Nullable TypeElement findTypeOfName(@FullyQualifiedName String name) {
-        String packageName = typeName.packageName;
+        String packageName = typeBeingParsed.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
-        // stubWarn("findTypeOfName(%s), typeName %s %s", name, packageName, enclosingClass);
+        // stubWarn("findTypeOfName(%s), typeBeingParsed %s %s", name, packageName, enclosingClass);
 
         // As soon as typeElement is set to a non-null value, it will be returned.
         TypeElement typeElement = getTypeElementOrNull(name);
         if (typeElement == null && packageName != null) {
             typeElement = getTypeElementOrNull(packagePrefix + name);
         }
-        String enclosingClass = typeName.className;
+        String enclosingClass = typeBeingParsed.className;
         while (typeElement == null && enclosingClass != null) {
             typeElement = getTypeElementOrNull(packagePrefix + enclosingClass + "." + name);
             int lastDot = enclosingClass.lastIndexOf('.');
