@@ -133,7 +133,7 @@ infer_and_annotate() {
         # Runs CF's javac
         command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
         echo "About to run: ${command}"
-        if [ $interactive ]; then
+        if [ "$interactive" ]; then
             echo "Press any key to run command... "
             IFS="" read -r _
         fi
@@ -158,7 +158,7 @@ infer_and_annotate() {
         # in its header. To avoid this problem, we add the "|| true" below.
         DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
     done
-    if [ ! $debug ]; then
+    if [ ! "$debug" ]; then
         clean
     fi
 }

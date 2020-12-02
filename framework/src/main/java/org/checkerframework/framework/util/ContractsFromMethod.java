@@ -36,17 +36,17 @@ import org.checkerframework.javacutil.Pair;
  */
 // TODO: This class assumes that most annotations have a field named "expression". If not, issue a
 // more helpful error message.
-public class ContractsUtils {
+public class ContractsFromMethod {
 
-    /** The factory that this ContractsUtils is associated with. */
+    /** The factory that this ContractsFromMethod is associated with. */
     protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
     /**
-     * Creates a ContractsUtils for the given factory.
+     * Creates a ContractsFromMethod for the given factory.
      *
-     * @param factory the type factory associated with the newly-created ContractsUtils
+     * @param factory the type factory associated with the newly-created ContractsFromMethod
      */
-    public ContractsUtils(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+    public ContractsFromMethod(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         this.factory = factory;
     }
 
@@ -64,37 +64,31 @@ public class ContractsUtils {
         return contracts;
     }
 
-    /// Precondition methods (keep in sync with other two types)
-
     /**
-     * Returns the contracts on method or constructor {@code executableElement}.
+     * Returns the precondition contracts on method or constructor {@code executableElement}.
      *
      * @param executableElement the method whose contracts to return
-     * @return the contracts on {@code executableElement}
+     * @return the precondition contracts on {@code executableElement}
      */
     public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
         return getContracts(executableElement, Kind.PRECONDITION, Contract.Precondition.class);
     }
 
-    /// Postcondition methods (keep in sync with other two types)
-
     /**
-     * Returns the contracts on {@code executableElement}.
+     * Returns the postcondition contracts on {@code executableElement}.
      *
      * @param executableElement the method whose contracts to return
-     * @return the contracts on {@code executableElement}
+     * @return the postcondition contracts on {@code executableElement}
      */
     public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
         return getContracts(executableElement, Kind.POSTCONDITION, Contract.Postcondition.class);
     }
 
-    /// Conditional postcondition methods (keep in sync with other two types)
-
     /**
-     * Returns the contracts on method {@code methodElement}.
+     * Returns the conditional postcondition contracts on method {@code methodElement}.
      *
      * @param methodElement the method whose contracts to return
-     * @return the contracts on {@code methodElement}
+     * @return the conditional postcondition contracts on {@code methodElement}
      */
     public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
@@ -109,7 +103,7 @@ public class ContractsUtils {
     /**
      * Returns the contracts on method or constructor {@code executableElement}.
      *
-     * @param <T> the specific type of {@link Contract} to use
+     * @param <T> the type of {@link Contract} to return
      * @param executableElement the method whose contracts to return
      * @param kind the kind of contracts to retrieve
      * @param clazz the class to determine the return type
@@ -150,6 +144,7 @@ public class ContractsUtils {
             List<String> expressions =
                     AnnotationUtils.getElementValueArrayOrSingleton(
                             anno, kind.expressionElementName, String.class, true);
+            Collections.sort(expressions);
             Boolean annoResult =
                     AnnotationUtils.getElementValueOrNull(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
@@ -165,7 +160,7 @@ public class ContractsUtils {
     /**
      * Returns the contracts expressed by the given framework contract annotation.
      *
-     * @param <T> the specific type of {@link Contract} to use
+     * @param <T> the type of {@link Contract} to return
      * @param kind the kind of {@code contractAnnotation}
      * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
      *     EnsuresQualifierIf}, or null
@@ -187,6 +182,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         contractAnnotation, "expression", String.class, false);
+        Collections.sort(expressions);
         Boolean annoResult =
                 AnnotationUtils.getElementValueOrNull(
                         contractAnnotation, "result", Boolean.class, false);

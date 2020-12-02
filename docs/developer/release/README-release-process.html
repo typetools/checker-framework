@@ -111,10 +111,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>Update the Checker Framework source code:
     <ul>
       <li>
-        <b>Update the list of contributors</b> by running
-        <code>make contributors.tex</code>
-        in <code>checker-framework/docs/manual/</code>.  Double-check the edits
-        with <code>git diff</code>; update the <code>plume-scripts/git-authors.sed</code> script if
+        <b>Update the list of contributors</b>.
+        <pre><code>cd docs/manual
+make contributors.tex
+git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributors.tex
+</code></pre>
+        Update the <code>plume-scripts/git-authors.sed</code> script if
         any customizations are necessary.
       </li>
       <li>
@@ -186,7 +188,7 @@ TreeAnnotator
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python3 release_build.py all</code><br/><br/>
+      <code>python release_build.py all</code><br/><br/>
       [TODO: Add <code>--auto</code> here, or not?]<br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.

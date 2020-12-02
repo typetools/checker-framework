@@ -291,16 +291,19 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public List<VariableTree> getUninitializedInvariantFields(
+    public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
             NullnessStore store,
             TreePath path,
             boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> result =
-                super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
+        Pair<List<VariableTree>, List<VariableTree>> result =
+                super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
         // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
         // warning when they are not initialized.
-        result.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+        result.first.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+        result.second.removeIf(
+                vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
         return result;
     }
 
@@ -655,6 +658,9 @@ public class NullnessAnnotatedTypeFactory
      * Returns true if some annotation in the given list is a nullness annotation such
      * as @NonNull, @Nullable, @MonotonicNonNull, etc.
      *
+     * <p>This method ignores aliases of nullness annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
      * @param annoTrees a list of annotations on a variable/method declaration; null if this type is
      *     not from such a location
      * @param typeTree the type whose annotations to test
@@ -667,7 +673,7 @@ public class NullnessAnnotatedTypeFactory
 
         for (AnnotationTree annoTree : annos) {
             AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(annoTree);
-            if (isNullnessAnnotation(am)) {
+            if (isNullnessAnnotation(am) && !AnnotationUtils.isDeclarationAnnotation(am)) {
                 return true;
             }
         }
