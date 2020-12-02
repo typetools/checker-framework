@@ -150,6 +150,9 @@ public class StubParser {
      * names. There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
+     * <p>The map is populated from import statements and also by {@link #getAnnotation(
+     * AnnotationExpr, Map)} for annotations that are used fully-qualified.
+     *
      * @see #getAllStubAnnotations
      */
     private Map<String, TypeElement> allStubAnnotations;
@@ -307,14 +310,13 @@ public class StubParser {
         return result;
     }
 
-    //  TODO: This method collects only those that are imported, so it will miss ones whose
-    //   fully-qualified name is used in the stub file. The #getAnnotation method in this class
-    //   compensates for this deficiency by attempting to add any fully-qualified annotation
-    //   that it encounters.
     /**
      * Returns all annotations imported by the stub file, as a value for {@link
      * #allStubAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
      * #importedTypes}.
+     *
+     * <p>This method misses annotations that are not imported. The {@link #getAnnotation} method
+     * compensates for this deficiency by adding any fully-qualified annotation that it encounters.
      *
      * @return a map from names to TypeElement, for all annotations imported by the stub file. Two
      *     entries for each annotation: one for the simple name and another for the fully-qualified
@@ -669,9 +671,10 @@ public class StubParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
-        // This loops over the members of the Element, finding the matching stub declaration if any.
-        // It ignores any stub declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
+        // `elementsToDecl` is for members of a single type.  It does not contain any stub
+        // declaration that does not match some member of the element.
+        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeDecl, typeElt);
+        // This loop converts each JavaParser declaration into an AnnotatedTypeMirror.
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
@@ -870,13 +873,8 @@ public class StubParser {
         recordDeclAnnotationFromStubFile(elt, stubAnnos);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        AnnotatedExecutableType origMethodType;
-
-        if (warnIfStubRedundantWithBytecode) {
-            origMethodType = methodType.deepCopy();
-        } else {
-            origMethodType = null;
-        }
+        AnnotatedExecutableType origMethodType =
+                warnIfStubRedundantWithBytecode ? methodType.deepCopy() : null;
 
         // Type Parameters
         annotateTypeParameters(
@@ -1000,6 +998,7 @@ public class StubParser {
         if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation isn't the top and default
             // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+            /*
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1008,6 +1007,7 @@ public class StubParser {
                                 typeDef.getBegin().get().line,
                                 atype.toString(true)));
             }
+            */
             // Clear existing annotations, which only makes a difference for
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
@@ -1062,7 +1062,7 @@ public class StubParser {
     }
 
     /**
-     * Add to {@code atype}:
+     * Add to formal parameter {@code atype}:
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
@@ -1372,8 +1372,21 @@ public class StubParser {
         }
     }
 
+    /**
+     * For each member of the JavaParser type declaration {@code typeDecl}:
+     *
+     * <ul>
+     *   <li>If {@code typeElt} contains a member element for it, returns a mapping from the member
+     *       element to it.
+     *   <li>Otherwise, does nothing.
+     * </ul>
+     *
+     * @param typeDecl a JavaParser type declaration
+     * @param typeElt the element for {@code typeDecl}
+     * @return a mapping from elements to their declaration in a stub file
+     */
     private Map<Element, BodyDeclaration<?>> getMembers(
-            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
+            TypeDeclaration<?> typeDecl, TypeElement typeElt) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
@@ -1393,6 +1406,7 @@ public class StubParser {
         return result;
     }
 
+    // Used only by getMembers
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
@@ -1724,7 +1738,8 @@ public class StubParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allStubAnnotations map from simple name to annotation definition
+     * @param allStubAnnotations map from simple name to annotation definition; side-effected by
+     *     this method
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
@@ -2245,12 +2260,15 @@ public class StubParser {
     /**
      * Issues the given warning about overwriting bytecode, only if it has not been previously
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
+     *
+     * @param message the warning message
      */
-    private void stubWarnOverwritesBytecode(String warning) {
-        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
+    @SuppressWarnings("UnusedMethod") // not currently used
+    private void stubWarnOverwritesBytecode(String message) {
+        if (warnings.add(message) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
-                    .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);
+                    .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + message);
         }
     }
 
