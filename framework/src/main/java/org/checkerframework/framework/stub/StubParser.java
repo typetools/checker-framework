@@ -1384,6 +1384,7 @@ public class StubParser {
      *
      * @param typeDecl a JavaParser type declaration
      * @param typeElt the element for {@code typeDecl}
+     * @return a mapping from elements to their declaration in a stub file
      */
     private Map<Element, BodyDeclaration<?>> getMembers(
             TypeDeclaration<?> typeDecl, TypeElement typeElt) {
