@@ -144,7 +144,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getMembers(), node2.getMembers());
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -155,7 +154,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
         node1.getType().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -164,7 +162,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getIndex().accept(this, node2.getIndex());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -172,9 +169,8 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ArrayCreationExpr node2 = (ArrayCreationExpr) other;
         defaultAction(node1, node2);
         node1.getElementType().accept(this, node2.getElementType());
-        node1.getInitializer().ifPresent(l -> l.accept(this, node2.getElementType()));
+        node1.getInitializer().ifPresent(l -> l.accept(this, node2.getInitializer().get()));
         visitLists(node1.getLevels(), node2.getLevels());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -182,7 +178,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ArrayInitializerExpr node2 = (ArrayInitializerExpr) other;
         defaultAction(node1, node2);
         visitLists(node1.getValues(), node2.getValues());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -191,7 +186,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getCheck().accept(this, node2.getCheck());
         node1.getMessage().ifPresent(l -> l.accept(this, node2.getMessage().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getMessage().get()));
     }
 
     @Override
@@ -200,7 +194,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getTarget().accept(this, node2.getTarget());
         node1.getValue().accept(this, node2.getValue());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -209,13 +202,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getLeft().accept(this, node2.getLeft());
         node1.getRight().accept(this, node2.getRight());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final BlockComment node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -223,13 +214,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         BlockStmt node2 = (BlockStmt) other;
         defaultAction(node1, node2);
         visitLists(node1.getStatements(), node2.getStatements());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final BooleanLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -237,7 +226,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         BreakStmt node2 = (BreakStmt) other;
         defaultAction(node1, node2);
         node1.getLabel().ifPresent(l -> l.accept(this, node2.getLabel().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -246,7 +234,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -255,13 +242,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
         node1.getParameter().accept(this, node2.getParameter());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final CharLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -269,7 +254,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ClassExpr node2 = (ClassExpr) other;
         defaultAction(node1, node2);
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -282,7 +266,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getMembers(), node2.getMembers());
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -292,7 +275,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getName().accept(this, node2.getName());
         node1.getScope().ifPresent(l -> l.accept(this, node2.getScope().get()));
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -304,7 +286,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getPackageDeclaration()
                 .ifPresent(l -> l.accept(this, node2.getPackageDeclaration().get()));
         visitLists(node1.getTypes(), node2.getTypes());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -314,14 +295,13 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getCondition().accept(this, node2.getCondition());
         node1.getElseExpr().accept(this, node2.getElseExpr());
         node1.getThenExpr().accept(this, node2.getThenExpr());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final ConstructorDeclaration node1, final Node other) {
         ConstructorDeclaration node2 = (ConstructorDeclaration) other;
         defaultAction(node1, node2);
-        node1.getBody().accept(this, node1.getBody());
+        node1.getBody().accept(this, node2.getBody());
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
         visitLists(node1.getParameters(), node2.getParameters());
@@ -331,7 +311,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
         visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
         visitLists(node1.getTypeParameters(), node2.getTypeParameters());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -339,7 +318,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ContinueStmt node2 = (ContinueStmt) other;
         defaultAction(node1, node2);
         node1.getLabel().ifPresent(l -> l.accept(this, node2.getLabel().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -348,19 +326,16 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
         node1.getCondition().accept(this, node2.getCondition());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final DoubleLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
     public void visit(final EmptyStmt node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -368,7 +343,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         EnclosedExpr node2 = (EnclosedExpr) other;
         defaultAction(node1, node2);
         node1.getInner().accept(this, node2.getInner());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -378,7 +352,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getArguments(), node2.getArguments());
         visitLists(node1.getClassBody(), node2.getClassBody());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -390,7 +363,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getMembers(), node2.getMembers());
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -400,7 +372,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         visitLists(node1.getArguments(), node2.getArguments());
         node1.getExpression().ifPresent(l -> l.accept(this, node2.getExpression().get()));
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -408,7 +379,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ExpressionStmt node2 = (ExpressionStmt) other;
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -418,7 +388,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getName().accept(this, node2.getName());
         node1.getScope().accept(this, node2.getScope());
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -427,7 +396,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getModifiers(), node2.getModifiers());
         visitLists(node1.getVariables(), node2.getVariables());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -437,7 +405,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getBody().accept(this, node2.getBody());
         node1.getIterable().accept(this, node2.getIterable());
         node1.getVariable().accept(this, node2.getVariable());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -448,7 +415,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getCompare().ifPresent(l -> l.accept(this, node2.getCompare().get()));
         visitLists(node1.getInitialization(), node2.getInitialization());
         visitLists(node1.getUpdate(), node2.getUpdate());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -458,7 +424,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getCondition().accept(this, node2.getCondition());
         node1.getElseStmt().ifPresent(l -> l.accept(this, node2.getElseStmt().get()));
         node1.getThenStmt().accept(this, node2.getThenStmt());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -466,7 +431,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         InitializerDeclaration node2 = (InitializerDeclaration) other;
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -475,19 +439,16 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final IntegerLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
     public void visit(final JavadocComment node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -496,19 +457,16 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getLabel().accept(this, node2.getLabel());
         node1.getStatement().accept(this, node2.getStatement());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final LineComment node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
     public void visit(final LongLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -516,7 +474,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         MarkerAnnotationExpr node2 = (MarkerAnnotationExpr) other;
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -525,7 +482,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
         node1.getValue().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -536,7 +492,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getName().accept(this, node2.getName());
         node1.getScope().ifPresent(l -> l.accept(this, node2.getScope().get()));
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -554,7 +509,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
         visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
         visitLists(node1.getTypeParameters(), node2.getTypeParameters());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -562,7 +516,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         NameExpr node2 = (NameExpr) other;
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -571,13 +524,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getPairs(), node2.getPairs());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final NullLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -590,7 +541,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getScope().ifPresent(l -> l.accept(this, node2.getScope().get()));
         node1.getType().accept(this, node2.getType());
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -598,7 +548,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         PackageDeclaration node2 = (PackageDeclaration) other;
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -609,13 +558,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getName().accept(this, node2.getName());
         node1.getType().accept(this, node2.getType());
         visitLists(node1.getVarArgsAnnotations(), node2.getVarArgsAnnotations());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final PrimitiveType node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -623,13 +570,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         Name node2 = (Name) other;
         defaultAction(node1, node2);
         node1.getQualifier().ifPresent(l -> l.accept(this, node2.getQualifier().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final SimpleName node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -637,7 +582,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ArrayType node2 = (ArrayType) other;
         defaultAction(node1, node2);
         node1.getComponentType().accept(this, node2.getComponentType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -645,7 +589,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ArrayCreationLevel node2 = (ArrayCreationLevel) other;
         defaultAction(node1, node2);
         node1.getDimension().ifPresent(l -> l.accept(this, node2.getDimension().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -653,7 +596,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         IntersectionType node2 = (IntersectionType) other;
         defaultAction(node1, node2);
         visitLists(node1.getElements(), node2.getElements());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -661,7 +603,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         UnionType node2 = (UnionType) other;
         defaultAction(node1, node2);
         visitLists(node1.getElements(), node2.getElements());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -669,7 +610,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ReturnStmt node2 = (ReturnStmt) other;
         defaultAction(node1, node2);
         node1.getExpression().ifPresent(l -> l.accept(this, node2.getExpression().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -678,13 +618,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getMemberValue().accept(this, node2.getMemberValue());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final StringLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -692,7 +630,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         SuperExpr node2 = (SuperExpr) other;
         defaultAction(node1, node2);
         node1.getTypeName().ifPresent(l -> l.accept(this, node2.getTypeName().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -701,7 +638,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getLabels(), node2.getLabels());
         visitLists(node1.getStatements(), node2.getStatements());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -710,7 +646,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getEntries(), node2.getEntries());
         node1.getSelector().accept(this, node2.getSelector());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -719,7 +654,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
         node1.getExpression().accept(this, node2.getExpression());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -727,7 +661,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ThisExpr node2 = (ThisExpr) other;
         defaultAction(node1, node2);
         node1.getTypeName().ifPresent(l -> l.accept(this, node2.getTypeName().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -735,7 +668,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ThrowStmt node2 = (ThrowStmt) other;
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -746,7 +678,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getFinallyBlock().ifPresent(l -> l.accept(this, node2.getFinallyBlock().get()));
         visitLists(node1.getResources(), node2.getResources());
         node1.getTryBlock().accept(this, node2.getTryBlock());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -754,7 +685,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         LocalClassDeclarationStmt node2 = (LocalClassDeclarationStmt) other;
         defaultAction(node1, node2);
         node1.getClassDeclaration().accept(this, node2.getClassDeclaration());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -763,7 +693,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
         visitLists(node1.getTypeBound(), node2.getTypeBound());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -771,13 +700,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         UnaryExpr node2 = (UnaryExpr) other;
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final UnknownType node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -786,7 +713,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getModifiers(), node2.getModifiers());
         visitLists(node1.getVariables(), node2.getVariables());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -796,13 +722,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         node1.getInitializer().ifPresent(l -> l.accept(this, node2.getInitializer().get()));
         node1.getName().accept(this, node2.getName());
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final VoidType node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -811,7 +735,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
         node1.getCondition().accept(this, node2.getCondition());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -820,7 +743,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getExtendedType().ifPresent(l -> l.accept(this, node2.getExtendedType().get()));
         node1.getSuperType().ifPresent(l -> l.accept(this, node2.getSuperType().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -829,7 +751,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getBody().accept(this, node2.getBody());
         visitLists(node1.getParameters(), node2.getParameters());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -838,7 +759,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getScope().accept(this, node2.getScope());
         node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -846,7 +766,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         TypeExpr node2 = (TypeExpr) other;
         defaultAction(node1, node2);
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -854,7 +773,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ImportDeclaration node2 = (ImportDeclaration) other;
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -863,7 +781,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getDirectives(), node2.getDirectives());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -872,7 +789,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getModifiers(), node2.getModifiers());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -881,7 +797,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getModuleNames(), node2.getModuleNames());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -890,7 +805,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
         visitLists(node1.getWith(), node2.getWith());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -898,7 +812,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         ModuleUsesDirective node2 = (ModuleUsesDirective) other;
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
@@ -907,13 +820,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getModuleNames(), node2.getModuleNames());
         node1.getName().accept(this, node2.getName());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final UnparsableStmt node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -922,19 +833,16 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         node1.getName().accept(this, node2.getName());
         node1.getType().accept(this, node2.getType());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final VarType node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
     public void visit(final Modifier node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -943,13 +851,11 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         defaultAction(node1, node2);
         visitLists(node1.getEntries(), node2.getEntries());
         node1.getSelector().accept(this, node2.getSelector());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 
     @Override
     public void visit(final TextBlockLiteralExpr node1, final Node other) {
         defaultAction(node1, other);
-        node1.getComment().ifPresent(l -> l.accept(this, other.getComment().get()));
     }
 
     @Override
@@ -957,6 +863,5 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
         YieldStmt node2 = (YieldStmt) other;
         defaultAction(node1, node2);
         node1.getExpression().accept(this, node2.getExpression());
-        node1.getComment().ifPresent(l -> l.accept(this, node2.getComment().get()));
     }
 }

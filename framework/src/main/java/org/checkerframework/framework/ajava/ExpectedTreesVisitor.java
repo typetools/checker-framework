@@ -39,9 +39,9 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Visitor that stores each visited tree that should match with some JavaParser node if the same
  * Java file was parsed with both. The primary purpose is to test the {@link
- * JointJavacJavaParserVisitor} class when the -AcheckJavaParserVisitor flag is used. That classes
- * traverses a javac tree and JavaParser AST simultaneously, so the trees this class stores can be
- * used to test if the entirety of the javac tree was visited.
+ * JointJavacJavaParserVisitor} class when the -AajavaChecks flag is used. That classes traverses a
+ * javac tree and JavaParser AST simultaneously, so the trees this class stores can be used to test
+ * if the entirety of the javac tree was visited.
  *
  * <p>Adds these trees to a set during traversal. Many trees shouldn't be matched with a JavaParser
  * node because there isn't a corresponding JavaParser node. These trees are excluded.
@@ -85,7 +85,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
             // inserted type has no corresponding javac tree. There is no way of knowing if the
             // inserted tree is synthetic or not. The only sound solution would be to not add types
             // on the left hand side of an assignment. This would severely decrease the usefulness
-            // of the -AcheckJavaParserVisitor check. Instead, we simply don't run the check at all
+            // of the -AajavaChecks flag. Instead, we simply don't run the check at all
             // on files that contain "var".
             if (!varVisitor.hasVarType) {
                 return super.visitCompilationUnit(tree, p);

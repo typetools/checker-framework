@@ -9,6 +9,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.printer.PrettyPrinter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -34,6 +35,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -83,7 +85,10 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
+import org.checkerframework.framework.ajava.ClearAnnotationsVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
+import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.ajava.StringLiteralCombineVisitor;
 import org.checkerframework.framework.qual.FieldInvariant;
@@ -692,13 +697,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Set the CompilationUnitTree that should be used.
      *
      * @param root the new compilation unit to use
-     * @param shouldCheckVisitor true if the visitor that verifies the javac tree can be visited
+     * @param shouldRunAjavaChecks true if the visitor that verifies the javac tree can be visited
      *     with its corresponding JavaParser AST should be run. The check only occurs if
-     *     -AcheckJavaParserVisitor is passed on the command line.
+     *     -AajavaChecks is passed on the command line.
      */
     // What's a better name? Maybe "reset" or "restart"?
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void setRoot(@Nullable CompilationUnitTree root, boolean shouldCheckVisitor) {
+    public void setRoot(@Nullable CompilationUnitTree root, boolean shouldRunAjavaChecks) {
         if (root != null && wholeProgramInference instanceof WholeProgramInferenceJavaParser) {
             for (Tree typeDecl : root.getTypeDecls()) {
                 if (typeDecl.getKind() != Kind.CLASS) {
@@ -712,32 +717,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        if (shouldCheckVisitor && checker.hasOption("checkJavaParserVisitor") && root != null) {
-            Map<Tree, Node> treePairs = new HashMap<>();
-            try {
-                java.io.InputStream reader = root.getSourceFile().openInputStream();
-                com.github.javaparser.ast.CompilationUnit javaParserRoot =
-                        StaticJavaParser.parse(reader);
-                reader.close();
-                new StringLiteralCombineVisitor().visit(javaParserRoot, null);
-                new JointVisitorWithDefaultAction() {
-                    @Override
-                    public void defaultAction(Tree javacTree, Node javaParserNode) {
-                        treePairs.put(javacTree, javaParserNode);
-                    }
-                }.visitCompilationUnit(root, javaParserRoot);
-                ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
-                expectedTreesVisitor.visitCompilationUnit(root, null);
-                for (Tree expected : expectedTreesVisitor.getTrees()) {
-                    if (!treePairs.containsKey(expected)) {
-                        throw new BugInCF(
-                                "Javac tree not matched to JavaParser node: %s, in file: %s",
-                                expected, root.getSourceFile().getName());
-                    }
-                }
-            } catch (IOException e) {
-                throw new BugInCF("Error reading Java source file", e);
-            }
+        if (shouldRunAjavaChecks && checker.hasOption("ajavaChecks") && root != null) {
+            System.out.println("Checking root: " + root.getSourceFile().toUri());
+            checkJointJavacJavaParserVisitor(root);
+            checkAnnotationInsertion(root);
         }
 
         this.root = root;
@@ -788,6 +771,75 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         } else {
             currentFileAjavaTypes = null;
+        }
+    }
+
+    private void checkJointJavacJavaParserVisitor(CompilationUnitTree root) {
+        Map<Tree, Node> treePairs = new HashMap<>();
+        try {
+            java.io.InputStream reader = root.getSourceFile().openInputStream();
+            com.github.javaparser.ast.CompilationUnit javaParserRoot =
+                    StaticJavaParser.parse(reader);
+            reader.close();
+            new StringLiteralCombineVisitor().visit(javaParserRoot, null);
+            new JointVisitorWithDefaultAction() {
+                @Override
+                public void defaultAction(Tree javacTree, Node javaParserNode) {
+                    treePairs.put(javacTree, javaParserNode);
+                }
+            }.visitCompilationUnit(root, javaParserRoot);
+            ExpectedTreesVisitor expectedTreesVisitor = new ExpectedTreesVisitor();
+            expectedTreesVisitor.visitCompilationUnit(root, null);
+            for (Tree expected : expectedTreesVisitor.getTrees()) {
+                if (!treePairs.containsKey(expected)) {
+                    throw new BugInCF(
+                            "Javac tree not matched to JavaParser node: %s, in file: %s",
+                            expected, root.getSourceFile().getName());
+                }
+            }
+        } catch (IOException e) {
+            throw new BugInCF("Error reading Java source file", e);
+        }
+    }
+
+    private void checkAnnotationInsertion(CompilationUnitTree root) {
+        CompilationUnit originalAst;
+        try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
+            originalAst = StaticJavaParser.parse(originalInputStream);
+        } catch (IOException e) {
+            throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
+        }
+
+        CompilationUnit astWithoutAnnotations = originalAst.clone();
+        new ClearAnnotationsVisitor().visit(astWithoutAnnotations, null);
+        PrettyPrinter printer = new PrettyPrinter();
+        String withoutAnnotations = printer.print(astWithoutAnnotations);
+        String withAnnotations;
+        try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
+            withAnnotations =
+                    InsertAjavaAnnotations.insertAnnotations(
+                            annotationInputStream, withoutAnnotations);
+        } catch (IOException e) {
+            throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
+        }
+
+        CompilationUnit modifiedAst = StaticJavaParser.parse(withAnnotations);
+        AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
+        originalAst.accept(visitor, modifiedAst);
+        if (!visitor.getAnnotationsMatch()) {
+            throw new BugInCF(
+                    "Reinserting annotations produced different AST.\n"
+                            + "Original node: "
+                            + visitor.getMismatchedNode1()
+                            + "\n"
+                            + "Node with annotations re-inserted: "
+                            + visitor.getMismatchedNode2()
+                            + "\n"
+                            + "Original AST:\n"
+                            + originalAst
+                            + "\n"
+                            + "Ast with annotationi re-inserted: "
+                            + modifiedAst);
         }
     }
 
