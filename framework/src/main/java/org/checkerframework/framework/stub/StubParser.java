@@ -149,6 +149,9 @@ public class StubParser {
      * names. There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
+     * <p>The map is populated from import statements and also by {@link #getAnnotation(
+     * AnnotationExpr, Map)} for annotations that are used fully-qualified.
+     *
      * @see #getAllStubAnnotations
      */
     private Map<String, TypeElement> allStubAnnotations;
@@ -306,14 +309,13 @@ public class StubParser {
         return result;
     }
 
-    //  TODO: This method collects only those that are imported, so it will miss ones whose
-    //   fully-qualified name is used in the stub file. The #getAnnotation method in this class
-    //   compensates for this deficiency by attempting to add any fully-qualified annotation
-    //   that it encounters.
     /**
      * Returns all annotations imported by the stub file, as a value for {@link
      * #allStubAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
      * #importedTypes}.
+     *
+     * <p>This method misses annotations that are not imported. The {@link #getAnnotation} method
+     * compensates for this deficiency by adding any fully-qualified annotation that it encounters.
      *
      * @return a map from names to TypeElement, for all annotations imported by the stub file. Two
      *     entries for each annotation: one for the simple name and another for the fully-qualified
@@ -994,6 +996,7 @@ public class StubParser {
         if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation isn't the top and default
             // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+            /*
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1002,6 +1005,7 @@ public class StubParser {
                                 typeDef.getBegin().get().line,
                                 atype.toString(true)));
             }
+            */
             // Clear existing annotations, which only makes a difference for
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
@@ -1056,7 +1060,7 @@ public class StubParser {
     }
 
     /**
-     * Add to {@code atype}:
+     * Add to formal parameter {@code atype}:
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
@@ -1390,6 +1394,7 @@ public class StubParser {
         return elementsToDecl;
     }
 
+    // Used only by getMembers
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
@@ -1721,7 +1726,8 @@ public class StubParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allStubAnnotations map from simple name to annotation definition
+     * @param allStubAnnotations map from simple name to annotation definition; side-effected by
+     *     this method
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
