@@ -1378,7 +1378,7 @@ public class StubParser {
      *
      * <ul>
      *   <li>If {@code typeElt} contains a member element for it, returns a mapping from the member
-     *       declaration to the member element.
+     *       element to it.
      *   <li>Otherwise, does nothing.
      * </ul>
      *
