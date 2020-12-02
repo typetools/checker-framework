@@ -35,11 +35,9 @@ import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -433,9 +431,8 @@ public class InitializationVisitor<
                                 fieldTree,
                                 elt,
                                 fieldTree.getName().toString(),
-                                ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                                        .getDefaultValueAnnotatedType(elt.asType()),
-                                (AnnotatedTypeFactory) atypeFactory);
+                                atypeFactory.getDefaultValueAnnotatedType(elt.asType()),
+                                atypeFactory);
             }
         }
     }
