@@ -1261,7 +1261,7 @@ public class StubParser {
     }
 
     /**
-     * Adds {@link #declAnnos} all the annotations in {@code annotations} that are applicable to
+     * Adds to {@link #declAnnos} all the annotations in {@code annotations} that are applicable to
      * {@code elt}'s location. For example, if an annotation is a type annotation but {@code elt} is
      * a field declaration, the type annotation will be ignored.
      *
