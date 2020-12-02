@@ -2255,10 +2255,10 @@ public class StubParser {
      */
     @SuppressWarnings("UnusedMethod") // not currently used
     private void stubWarnOverwritesBytecode(String message) {
-        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
+        if (warnings.add(message) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
                     .getMessager()
-                    .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + warning);
+                    .printMessage(javax.tools.Diagnostic.Kind.WARNING, "StubParser: " + message);
         }
     }
 
