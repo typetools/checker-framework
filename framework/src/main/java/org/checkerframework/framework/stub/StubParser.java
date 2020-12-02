@@ -437,7 +437,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from {@code inputStream} are added to this map
+     * @param atypes annotated types from this stub file are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -460,7 +460,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from {@code inputStream} are added to this map
+     * @param atypes annotated types from this stub file are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
@@ -482,7 +482,7 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from {@code inputStream} are added to this map
+     * @param atypes annotated types from this stub file are added to this map
      * @param declAnnos map from a name (actually declaration element string) to the set of
      *     declaration annotations on it. Declaration annotations from this stub file are added to
      *     this map.
