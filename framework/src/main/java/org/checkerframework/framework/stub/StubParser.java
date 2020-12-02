@@ -2228,6 +2228,7 @@ public class StubParser {
      * Issues the given warning about overwriting bytecode, only if it has not been previously
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      */
+    @SuppressWarnings("UnusedMethod") // not currently used
     private void stubWarnOverwritesBytecode(String warning) {
         if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugStubParser)) {
             processingEnv
