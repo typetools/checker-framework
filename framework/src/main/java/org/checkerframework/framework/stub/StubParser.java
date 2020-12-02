@@ -1374,7 +1374,6 @@ public class StubParser {
 
     private Map<Element, BodyDeclaration<?>> getMembers(
             TypeElement typeElt, TypeDeclaration<?> typeDecl) {
-
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
