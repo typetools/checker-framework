@@ -8,6 +8,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -98,6 +99,19 @@ public class PurityUtils {
         return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
+    public static boolean isSideEffectsOnly(AnnotationProvider provider, MethodTree methodTree) {
+        Element methodElement = TreeUtils.elementFromTree(methodTree);
+        if (methodElement == null) {
+            throw new BugInCF("Could not find element for tree: " + methodTree);
+        }
+        return isSideEffectsOnly(provider, methodElement);
+    }
+
+    public static boolean isSideEffectsOnly(AnnotationProvider provider, Element methodElement) {
+        EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
+        return kinds.contains(Kind.SIDE_EFFECTS_ONLY);
+    }
+
     /**
      * Returns the types of purity of the method {@code methodTree}.
      *
@@ -129,9 +143,11 @@ public class PurityUtils {
                 provider.getDeclAnnotation(methodElement, SideEffectFree.class);
         AnnotationMirror detAnnotation =
                 provider.getDeclAnnotation(methodElement, Deterministic.class);
+        AnnotationMirror sefOnlyAnnotation =
+                provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
 
         if (pureAnnotation != null) {
-            return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+            return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE, Kind.SIDE_EFFECTS_ONLY);
         }
         EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
         if (sefAnnotation != null) {
@@ -139,6 +155,9 @@ public class PurityUtils {
         }
         if (detAnnotation != null) {
             result.add(Kind.DETERMINISTIC);
+        }
+        if (sefOnlyAnnotation != null) {
+            result.add(Kind.SIDE_EFFECTS_ONLY);
         }
         return result;
     }
