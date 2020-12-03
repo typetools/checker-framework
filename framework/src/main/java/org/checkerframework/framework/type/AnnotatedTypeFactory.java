@@ -483,7 +483,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + inferArg
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            wholeProgramInference = getWholeProgramInference();
+            wholeProgramInference = createWholeProgramInference();
         } else {
             wholeProgramInference = null;
         }
