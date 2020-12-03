@@ -27,7 +27,6 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -426,12 +425,11 @@ public class InitializationVisitor<
             uninitFields.addAll(nonviolatingFields);
             for (VariableTree fieldTree : uninitFields) {
                 Element elt = TreeUtils.elementFromTree(fieldTree);
-                ((WholeProgramInferenceScenes) wpi)
-                        .updateFieldFromType(
-                                fieldTree,
-                                elt,
-                                fieldTree.getName().toString(),
-                                atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
+                wpi.updateFieldFromType(
+                        fieldTree,
+                        elt,
+                        fieldTree.getName().toString(),
+                        atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
             }
         }
     }

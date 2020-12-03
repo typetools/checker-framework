@@ -144,6 +144,18 @@ public interface WholeProgramInference {
             Node field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
 
     /**
+     * Updates the type of {@code field} based on an assignment whose right-hand side has type
+     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
+     *
+     * @param lhsTree the tree for the field whose type will be refined
+     * @param element the element for the field whose type will be refined
+     * @param fieldName the name of the field whose type will be refined
+     * @param rhsATM the type of the expression being assigned to the field
+     */
+    void updateFieldFromType(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
+
+    /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
      * Also updates the return types of any methods that this method overrides that are available as
      * source code.
@@ -187,7 +199,7 @@ public interface WholeProgramInference {
      * @param fieldName the name of the field whose type will be changed
      * @param rhsATM the type of the expression being assigned to the field
      */
-    public void wpiAdjustForUpdateField(
+    void wpiAdjustForUpdateField(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
 
     /**
@@ -196,7 +208,7 @@ public interface WholeProgramInference {
      *
      * @param rhsATM the type of the rhs of the pseudo-assignment
      */
-    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
+    void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates a method to add a declaration annotation.

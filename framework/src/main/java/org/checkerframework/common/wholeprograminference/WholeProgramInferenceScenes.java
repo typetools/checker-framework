@@ -437,15 +437,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
     }
 
-    /**
-     * Updates the type of {@code field} based on an assignment whose right-hand side has type
-     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
-     *
-     * @param lhsTree the tree for the field whose type will be refined
-     * @param element the element for the field whose type will be refined
-     * @param fieldName the name of the field whose type will be refined
-     * @param rhsATM the type of the expression being assigned to the field
-     */
+    @Override
     public void updateFieldFromType(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 
