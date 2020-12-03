@@ -97,7 +97,7 @@ import org.checkerframework.javacutil.Pair;
  * two maps passed as arguments.
  *
  * <p>The main entry point is {@link AnnotationFileParser#parse(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}, which side-effects its last two
+ * AnnotatedTypeFactory, ProcessingEnvironment, StubAnnotations)}, which side-effects its last two
  * arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub file. Then,
  * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  *
@@ -153,7 +153,7 @@ public class AnnotationFileParser {
      * <p>The map is populated from import statements and also by {@link #getAnnotation(
      * AnnotationExpr, Map)} for annotations that are used fully-qualified.
      *
-     * @see #getallAnnotations
+     * @see #getAllAnnotations
      */
     private Map<String, TypeElement> allAnnotations;
 

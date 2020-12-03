@@ -301,6 +301,7 @@ public class AnnotationFileUtil {
      *
      * @param location a stub file, a jarfile, or a directory. Look for it as an absolute file and
      *     relative to the current directory.
+     * @return annotation files found in the file system (does not look on classpath)
      */
     public static List<AnnotationFileResource> allAnnotationFiles(String location) {
         List<AnnotationFileResource> resources = new ArrayList<>();
@@ -320,10 +321,22 @@ public class AnnotationFileUtil {
         return resources;
     }
 
+    /**
+     * Returns true if the given file is an annotation file.
+     *
+     * @param f a file
+     * @return true if the given file is an annotation file
+     */
     private static boolean isAnnotationFile(File f) {
         return f.isFile() && isAnnotationFile(f.getName());
     }
 
+    /**
+     * Returns true if the given file is an annotation file.
+     *
+     * @param path a file
+     * @return true if the given file is an annotation file
+     */
     private static boolean isAnnotationFile(String path) {
         return path.endsWith(".astub");
     }

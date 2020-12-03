@@ -7,7 +7,9 @@ import java.util.jar.JarFile;
 
 /** {@link JarEntry}-based implementation of {@link AnnotationFileResource}. */
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
+    /** The underlying JarFile. */
     private final JarFile file;
+    /** The entry in the jar file. */
     private final JarEntry entry;
 
     /**
