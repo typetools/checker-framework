@@ -57,14 +57,17 @@ def promote_release(path_to_releases, release_version):
 
 def copy_htaccess():
     "Copy the .htaccess file from the dev site to the live site."
-    execute("rsync --times %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
+    LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
+    execute("rsync --times %s %s" % (os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess"), LIVE_HTACCESS))
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site(checker_version, afu_version):
     """Copy the new releases of the AFU and the Checker
     Framework from the dev site to the live site."""
+    CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     promote_release(CHECKER_LIVE_RELEASES_DIR, checker_version)
+    AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
     promote_release(AFU_LIVE_RELEASES_DIR, afu_version)
 
@@ -335,6 +338,7 @@ def main(argv):
     if not test_mode:
         if auto or prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_checker_version)
+            SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
             if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
                 execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
             sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
