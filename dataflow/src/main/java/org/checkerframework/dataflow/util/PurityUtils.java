@@ -2,8 +2,11 @@ package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
@@ -110,6 +113,15 @@ public class PurityUtils {
     public static boolean isSideEffectsOnly(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(Kind.SIDE_EFFECTS_ONLY);
+    }
+
+    public static Map<? extends ExecutableElement, ? extends AnnotationValue>
+            getSideEffectsOnlyValues(AnnotationProvider provider, Element methodElement) {
+        AnnotationMirror sefOnlyAnnotation =
+                provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
+                sefOnlyAnnotation.getElementValues();
+        return elementValues;
     }
 
     /**

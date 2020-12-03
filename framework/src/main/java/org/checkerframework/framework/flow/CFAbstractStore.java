@@ -1,15 +1,8 @@
 package org.checkerframework.framework.flow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -171,6 +164,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return PurityUtils.isSideEffectFree(atypeFactory, method);
     }
 
+    protected boolean isSideEffectsOnly(
+            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+        return PurityUtils.isSideEffectsOnly(atypeFactory, method);
+    }
+
+    protected Map<? extends ExecutableElement, ? extends AnnotationValue> getSideEffectsOnlyValues(
+            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+        return PurityUtils.getSideEffectsOnlyValues(atypeFactory, method);
+    }
+
     /* --------------------------------------------------------- */
     /* Handling of fields */
     /* --------------------------------------------------------- */
@@ -196,6 +199,29 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
+        List<String> sideEffectExpressions = null;
+        if (isSideEffectsOnly(atypeFactory, method)) {
+            Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
+                    getSideEffectsOnlyValues(atypeFactory, method);
+            Object value = null;
+            for (ExecutableElement elem : valmap.keySet()) {
+                if (elem.getSimpleName().contentEquals("value")) {
+                    value = valmap.get(elem).getValue();
+                    break;
+                }
+            }
+            if (value instanceof List) {
+                AnnotationMirror sefOnlyAnnotation =
+                        atypeFactory.getDeclAnnotation(
+                                method, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
+                sideEffectExpressions =
+                        AnnotationUtils.getElementValueArray(
+                                sefOnlyAnnotation, "value", String.class, true);
+            } else if (value instanceof String) {
+                sideEffectExpressions = Collections.singletonList((String) value);
+            }
+        }
+
         // case 1: remove information if necessary
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
                 || analysis.checker.hasOption("assumePure")
@@ -208,9 +234,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // TODO: Also remove if any element/argument to the annotation is not
             // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
             if (sideEffectsUnrefineAliases) {
-                localVariableValues
-                        .entrySet()
-                        .removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                if (sideEffectExpressions != null) {
+                    final List<String> expressionsToRemove = sideEffectExpressions;
+                    localVariableValues
+                            .entrySet()
+                            .removeIf(
+                                    e ->
+                                            expressionsToRemove.contains(e.getKey().toString())
+                                                    && !e.getKey().isUnmodifiableByOtherCode());
+                } else {
+                    localVariableValues
+                            .entrySet()
+                            .removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                }
             }
 
             // update this value
