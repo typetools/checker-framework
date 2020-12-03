@@ -81,7 +81,7 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.StubTypes;
+import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -228,7 +228,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Set<@CanonicalName String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
-    public final StubTypes stubTypes;
+    public final AnnotationFileElementTypes stubTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -430,7 +430,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.supportedQuals = new HashSet<>();
         this.supportedQualNames = new HashSet<>();
-        this.stubTypes = new StubTypes(this);
+        this.stubTypes = new AnnotationFileElementTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -1280,7 +1280,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param tree the tree from which to read stub types
-     * @return type, side-effected to add the stub types
+     * @return the given type, side-effected to add the stub types
      */
     private AnnotatedTypeMirror mergeStubsIntoType(@Nullable AnnotatedTypeMirror type, Tree tree) {
         Element elt = TreeUtils.elementFromTree(tree);

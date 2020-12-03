@@ -1,7 +1,11 @@
-Version 3.8.1
+Version 3.9.0
 
 The `-Ainfer` command-line argument now infers `@MonotonicNonNull`,
 `@EnsuresNonNull`, and `@RequiresNonNull` annotations.
+
+Implementation details:
+
+Renamed StubParser to AnnotationFileParser
 
 ---------------------------------------------------------------------------
 
@@ -49,6 +53,10 @@ In `Analysis.runAnalysisFor()`, changed `boolean` parameter to enum `BeforeOrAft
 
 Removed `org.checkerframework.framework.util.AnnotatedTypes#getIteratedType`; use
 `AnnotatedTypeFactory#getIterableElementType(ExpressionTree)` instead.
+
+Closed issues:
+#3287, #3390, #3681, #3839, #3850, #3851, #3862, #3871, #3884, #3888, #3908,
+#3929, #3932, #3935.
 
 ---------------------------------------------------------------------------
 

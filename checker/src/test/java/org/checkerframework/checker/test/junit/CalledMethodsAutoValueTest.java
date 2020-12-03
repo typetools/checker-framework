@@ -1,16 +1,17 @@
-package tests;
+package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.*;
 import org.junit.runners.Parameterized.Parameters;
 
-public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirectoryTest {
+/** Test case for Called Methods Checker's AutoValue support. */
+public class CalledMethodsAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
-    public CalledMethodsDisableframeworksTest(List<File> testFiles) {
+    public CalledMethodsAutoValueTest(List<File> testFiles) {
         super(
                 testFiles,
                 Arrays.asList(
@@ -20,18 +21,14 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
                         "com.google.auto.value.processor.AutoValueBuilderProcessor",
                         "com.google.auto.value.processor.AutoValueProcessor",
                         CalledMethodsChecker.class.getName()),
-                "calledmethods-disableframeworks",
+                "calledmethods-autovalue",
                 Collections.emptyList(),
                 "-Anomsgtext",
-                "-AdisableBuilderFrameworkSupports=autovalue,lombok",
-                // The next option is so that we can run the usevaluechecker tests under this
-                // configuration.
-                "-ACalledMethodsChecker_useValueChecker",
                 "-nowarn");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"calledmethods-disableframeworks", "calledmethods-usevaluechecker"};
+        return new String[] {"calledmethods-autovalue"};
     }
 }
