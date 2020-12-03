@@ -755,7 +755,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Infer postconditions
             if (atypeFactory.getWholeProgramInference() != null
-                    && ElementUtils.isElementFromSourceCode(methodElement)) {
+            // No need to check; methodElement is always from source.
+            // && ElementUtils.isElementFromSourceCode(methodElement)
+            ) {
                 // TODO: Infer conditional postconditions too.
                 CFAbstractStore<?, ?> store = atypeFactory.getRegularExitStore(node);
                 // The store is null if the method has no normal exit, for example if its body is a

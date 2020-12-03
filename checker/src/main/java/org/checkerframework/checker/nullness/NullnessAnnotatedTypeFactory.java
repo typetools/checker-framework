@@ -16,7 +16,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -740,9 +739,12 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public void wpiAdjustForUpdateField(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
-        if (getAnnotationByClass(rhsATM.getAnnotations(), Nullable.class) != null
-                && isField(element)
-                && TreeUtils.inConstructor(getPath(lhsTree))) {
+        if (!rhsATM.hasAnnotation(Nullable.class)) {
+            return;
+        }
+        TreePath lhsPath = getPath(lhsTree);
+        if (TreeUtils.enclosingClass(lhsPath) == ((VarSymbol) element).enclClass()
+                && TreeUtils.inConstructor(lhsPath)) {
             rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
         }
     }
@@ -752,28 +754,17 @@ public class NullnessAnnotatedTypeFactory
     // then change rhs to @Nullable
     @Override
     public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
-        if (getAnnotationByClass(rhsATM.getAnnotations(), MonotonicNonNull.class) != null) {
+        if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
             rhsATM.replaceAnnotation(NULLABLE);
         }
-    }
-
-    /**
-     * Returns true if the argument is a field.
-     *
-     * @param element a lhs that might be a field
-     * @return true if the argument is a field
-     */
-    private boolean isField(Element element) {
-        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
-        return enclosingClass.getEnclosedElements().contains(element);
     }
 
     @Override
     public String getPreconditionAnnotation(VariableElement elt, AField f) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
-        if (!(declaredType.getAnnotations().contains(NULLABLE)
-                || declaredType.getAnnotations().contains(POLYNULL)
-                || declaredType.getAnnotations().contains(MONOTONIC_NONNULL))) {
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
             return null;
         }
 
@@ -800,12 +791,12 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public String getPostconditionAnnotation(VariableElement elt, AField f, List<String> preconds) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
-        if (!(declaredType.getAnnotations().contains(NULLABLE)
-                || declaredType.getAnnotations().contains(POLYNULL)
-                || declaredType.getAnnotations().contains(MONOTONIC_NONNULL))) {
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
             return null;
         }
-        if (declaredType.getAnnotations().contains(MONOTONIC_NONNULL)
+        if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
                 && preconds.contains(requiresNonNullAnno(elt))) {
             // The postcondition is implied by the precondition and the field being
             // @MonotonicNonNull.

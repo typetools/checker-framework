@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -219,7 +220,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             VariableElement fieldElement = fa.getField();
             AnnotatedTypeMirror fieldType = atf.getAnnotatedType(fieldElement);
 
-            AnnotatedTypeMirror atm = convertCFAbstractValueToAnnotatedTypeMirror(v, atf);
+            AnnotatedTypeMirror atm = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldType);
             ((GenericAnnotatedTypeFactory) atf).wpiAdjustForUpdateNonField(atm);
 
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
@@ -231,29 +232,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
         ThisReference thisReference = new ThisReference(containingClass.asType());
         ClassName classNameReceiver = new ClassName(containingClass.asType());
-        for (Element member : containingClass.getEnclosedElements()) {
-            if (member instanceof VariableElement) {
-                VariableElement fieldElement = (VariableElement) member;
-                FieldAccess fa =
-                        new FieldAccess(
-                                (ElementUtils.isStatic(fieldElement)
-                                        ? classNameReceiver
-                                        : thisReference),
-                                fieldElement.asType(),
-                                fieldElement);
-                if (store.getFieldValue(fa) == null) {
-                    // This field is not in the store. Add its declared type.
-                    AnnotatedTypeMirror fieldType = atf.getAnnotatedType(fieldElement);
-                    AField afield =
-                            vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-                    storage.updateAnnotationSetInScene(
-                            afield.type,
-                            TypeUseLocation.FIELD,
-                            fieldType,
-                            fieldType,
-                            atf,
-                            jaifPath);
-                }
+        for (VariableElement fieldElement :
+                ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+            FieldAccess fa =
+                    new FieldAccess(
+                            (ElementUtils.isStatic(fieldElement)
+                                    ? classNameReceiver
+                                    : thisReference),
+                            fieldElement.asType(),
+                            fieldElement);
+            if (store.getFieldValue(fa) == null) {
+                // This field is not in the store. Add its declared type.
+                AnnotatedTypeMirror fieldType = atf.getAnnotatedType(fieldElement);
+                AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
+                storage.updateAnnotationSetInScene(
+                        afield.type, TypeUseLocation.FIELD, fieldType, fieldType, atf, jaifPath);
             }
         }
     }
@@ -285,14 +278,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * Converts a CFAbstractValue to an AnnotatedTypeMirror.
      *
      * @param v a value to convert to an AnnotatedTypeMirror
-     * @param atf the annotated type factory that will build the result
-     * @return an AnnotatedTypeMirror corresponding to the given CFAbstractValue
+     * @param fieldType a type that is copied, then updated to use {@code v}'s annotations
+     * @return a copy of {@code fieldType} with {@code v}'s annotations
      */
     private AnnotatedTypeMirror convertCFAbstractValueToAnnotatedTypeMirror(
-            CFAbstractValue<?> v, AnnotatedTypeFactory atf) {
-        AnnotatedTypeMirror result =
-                AnnotatedTypeMirror.createType(v.getUnderlyingType(), atf, false);
-        result.addAnnotations(v.getAnnotations());
+            CFAbstractValue<?> v, AnnotatedTypeMirror fieldType) {
+        AnnotatedTypeMirror result = fieldType.deepCopy();
+        result.replaceAnnotations(v.getAnnotations());
         return result;
     }
 
