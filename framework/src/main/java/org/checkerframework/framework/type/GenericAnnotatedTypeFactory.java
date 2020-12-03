@@ -243,7 +243,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
