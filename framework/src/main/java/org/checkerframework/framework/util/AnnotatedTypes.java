@@ -1072,7 +1072,7 @@ public class AnnotatedTypes {
      * the two methods overrides the other Within their method declaration, both types have the same
      * type parameter index
      *
-     * @return returns true if type1 and type2 are corresponding type variables (that is, either one
+     * @return true if type1 and type2 are corresponding type variables (that is, either one
      *     "overrides" the other)
      */
     public static boolean areCorrespondingTypeVariables(

@@ -185,8 +185,9 @@ public interface WholeProgramInference {
     void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
     /**
-     * Writes the inferred results to a file. Ideally should be called at the end of the
-     * type-checking process.
+     * Writes the inferred results to a file. Ideally, it should be called at the end of the
+     * type-checking process. In practice, it is called after each class, because we don't know
+     * which class will be the last one in the type-checking process.
      *
      * @param format the file format in which to write the results
      * @param checker the checker from which this method is called, for naming stub files
