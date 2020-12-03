@@ -324,11 +324,7 @@ public abstract class CFAbstractTransfer<
                     // on the overridden method.
                     analysis.atypeFactory
                             .getWholeProgramInference()
-                            .updateFromOverride(
-                                    methodTree,
-                                    methodElem,
-                                    overriddenMethod,
-                                    analysis.getTypeFactory());
+                            .updateFromOverride(methodTree, methodElem, overriddenMethod);
                 }
             }
 
@@ -880,8 +876,7 @@ public abstract class CFAbstractTransfer<
                                 (LocalVariableNode) lhs,
                                 rhs,
                                 analysis.getContainingClass(n.getTree()),
-                                analysis.getContainingMethod(n.getTree()),
-                                analysis.getTypeFactory());
+                                analysis.getContainingMethod(n.getTree()));
             }
         }
 
@@ -919,8 +914,7 @@ public abstract class CFAbstractTransfer<
                             n,
                             classSymbol,
                             analysis.getContainingMethod(n.getTree()),
-                            overriddenMethods,
-                            analysis.getTypeFactory());
+                            overriddenMethods);
         }
 
         return result;
@@ -984,7 +978,7 @@ public abstract class CFAbstractTransfer<
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromObjectCreation(n, constructorElt, analysis.getTypeFactory());
+                    .updateFromObjectCreation(n, constructorElt);
         }
         return super.visitObjectCreation(n, p);
     }
@@ -1010,7 +1004,7 @@ public abstract class CFAbstractTransfer<
             // Updates the inferred parameter type of the invoked method
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromMethodInvocation(n, receiverTree, method, analysis.getTypeFactory());
+                    .updateFromMethodInvocation(n, receiverTree, method);
         }
 
         Tree tree = n.getTree();

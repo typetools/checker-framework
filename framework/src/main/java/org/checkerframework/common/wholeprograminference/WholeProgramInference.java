@@ -48,13 +48,9 @@ public interface WholeProgramInference {
      *
      * @param objectCreationNode the Node that invokes the constructor
      * @param constructorElt the Element of the constructor
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types
      */
     void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode,
-            ExecutableElement constructorElt,
-            AnnotatedTypeFactory atf);
+            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt);
 
     /**
      * Updates the parameter types of the method {@code methodElt} based on the arguments in the
@@ -73,14 +69,9 @@ public interface WholeProgramInference {
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
      * @param methodElt the element of the method being invoked
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types
      */
     void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode,
-            Tree receiverTree,
-            ExecutableElement methodElt,
-            AnnotatedTypeFactory atf);
+            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt);
 
     /**
      * Updates the parameter types (including the receiver) of the method {@code methodTree} based
@@ -99,14 +90,11 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method that contains the parameter(s)
      * @param methodElt the element of the method
      * @param overriddenMethod the AnnotatedExecutableType of the overridden method
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromOverride(
             MethodTree methodTree,
             ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf);
+            AnnotatedExecutableType overriddenMethod);
 
     /**
      * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
@@ -122,15 +110,9 @@ public interface WholeProgramInference {
      * @param rhs the node being assigned to the parameter in the method body
      * @param classTree the tree of the class that contains the parameter
      * @param methodTree the tree of the method that contains the parameter
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromLocalAssignment(
-            LocalVariableNode lhs,
-            Node rhs,
-            ClassTree classTree,
-            MethodTree methodTree,
-            AnnotatedTypeFactory atf);
+            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
 
     /**
      * Updates the type of {@code field} based on an assignment of {@code rhs} to {@code field}. If
@@ -166,15 +148,12 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, indexed by the
      *     annotated type of the superclass in which each method is defined
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method's return type
      */
     void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
-            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
-            AnnotatedTypeFactory atf);
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods);
 
     /**
      * Updates a method to add a declaration annotation.
