@@ -11,9 +11,14 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** A WholeProgramInferenceScenes customized for the Nullness Checker. */
 public class NullnessWholeProgramInferenceScenes extends WholeProgramInferenceScenes {
 
-    /** Create a NullnessWholeProgramInferenceScenes. */
+    /**
+     * Create a NullnessWholeProgramInferenceScenes.
+     *
+     * @param atypeFactory the associated type factory
+     */
     public NullnessWholeProgramInferenceScenes(AnnotatedTypeFactory atypeFactory) {
         // "false" argument means don't ignore null assignments.
         super(atypeFactory, false);

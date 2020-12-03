@@ -104,7 +104,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Create a WholeProgramInferenceScenes.
      *
-     * @parom atypeFactory the associated type factory
+     * @param atypeFactory the associated type factory
      */
     public WholeProgramInferenceScenes(AnnotatedTypeFactory atypeFactory) {
         this(atypeFactory, true);
@@ -113,7 +113,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Create a WholeProgramInferenceScenes.
      *
-     * @parom atypeFactory the associated type factory
+     * @param atypeFactory the associated type factory
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
      *     ignored
      */
@@ -170,7 +170,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
-    /** Helper method for updating parameter types based on calls to a method or constructor. */
+    /**
+     * Helper method for updating parameter types based on calls to a method or constructor.
+     *
+     * @param methodElt the element of the method or constructor being invoked
+     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
+     *     (needing to be written to disk)
+     * @param method the AFU representation of a method's annotations
+     * @param arguments the arguments to the method or constructor
+     */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt, String jaifPath, AMethod method, List<Node> arguments) {
 
