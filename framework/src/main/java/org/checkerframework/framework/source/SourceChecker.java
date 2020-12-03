@@ -303,7 +303,7 @@ import org.plumelib.util.UtilPlume;
     "nocheckjdk", // temporary, for backward compatibility
 
     // Parse all JDK files at startup rather than as needed.
-    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    // org.checkerframework.framework.stub.AnnotationFileElementTypes.AnnotationFileElementTypes
     "parseAllJdk",
 
     // Whether to print debugging messages while processing the stub files

@@ -81,7 +81,7 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.StubTypes;
+import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -149,7 +149,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Whether to print verbose debugging messages about stub files. */
-    private final boolean debugAnnotationFileParser;
+    private final boolean debugStubParser;
 
     /** The {@link Trees} instance to use for tree node path finding. */
     protected final Trees trees;
@@ -228,7 +228,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Set<@CanonicalName String> supportedQualNames;
 
     /** Parses stub files and stores annotations from stub files. */
-    public final StubTypes stubTypes;
+    public final AnnotationFileElementTypes stubTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -430,7 +430,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.supportedQuals = new HashSet<>();
         this.supportedQualNames = new HashSet<>();
-        this.stubTypes = new StubTypes(this);
+        this.stubTypes = new AnnotationFileElementTypes(this);
 
         this.cacheDeclAnnos = new HashMap<>();
 
@@ -493,7 +493,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
 
-        this.debugAnnotationFileParser = checker.hasOption("stubDebug");
+        this.debugStubParser = checker.hasOption("stubDebug");
     }
 
     /**
@@ -1212,11 +1212,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            if (debugAnnotationFileParser) {
+            if (debugStubParser) {
                 System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
             }
             type = mergeStubsIntoType(type, elt);
-            if (debugAnnotationFileParser) {
+            if (debugStubParser) {
                 System.out.printf(" => %s%n", type);
             }
         }
@@ -1260,11 +1260,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
 
         if (checker.hasOption("mergeStubsWithSource")) {
-            if (debugAnnotationFileParser) {
+            if (debugStubParser) {
                 System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
             }
             result = mergeStubsIntoType(result, tree);
-            if (debugAnnotationFileParser) {
+            if (debugStubParser) {
                 System.out.printf(" => %s%n", result);
             }
         }
@@ -1282,7 +1282,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type the type to apply stub types to
      * @param tree the tree from which to read stub types
-     * @return type, side-effected to add the stub types
+     * @return the given type, side-effected to add the stub types
      */
     private AnnotatedTypeMirror mergeStubsIntoType(@Nullable AnnotatedTypeMirror type, Tree tree) {
         Element elt = TreeUtils.elementFromTree(tree);

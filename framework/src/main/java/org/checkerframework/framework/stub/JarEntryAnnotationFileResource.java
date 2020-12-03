@@ -5,18 +5,18 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-/** {@link JarEntry}-based implementation of {@link StubResource}. */
-public class JarEntryStubResource implements StubResource {
+/** {@link JarEntry}-based implementation of {@link AnnotationFileResource}. */
+public class JarEntryAnnotationFileResource implements AnnotationFileResource {
     private final JarFile file;
     private final JarEntry entry;
 
     /**
-     * Constructs a {@code StubResource} for the specified entry in the specified JAR file.
+     * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR file.
      *
      * @param file the JAR file
      * @param entry the JAR entry
      */
-    public JarEntryStubResource(JarFile file, JarEntry entry) {
+    public JarEntryAnnotationFileResource(JarFile file, JarEntry entry) {
         this.file = file;
         this.entry = entry;
     }
