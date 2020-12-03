@@ -1843,26 +1843,26 @@ public class AnnotationFileParser {
     private AnnotationMirror getAnnotation(
             AnnotationExpr annotation, Map<String, TypeElement> allAnnotations) {
 
-        TypeElement annoTypeElm = allAnnotations.get(annotation.getNameAsString());
-        if (annoTypeElm == null) {
-            // If the annotation was not imported, then #getAllAnnotations does
-            // not add it to the allAnnotations field. This code compensates for
-            // that deficiency by adding the annotation when it is encountered (i.e. here).
-            // Note that this goes not call #getTypeElement to avoid a spurious diagnostic
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
+        @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
+        TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
+        if (annoTypeElt == null) {
+            // If the annotation was not imported, then #getAllAnnotations did not add it to the
+            // allAnnotations field. This code adds the annotation when it is encountered
+            // (i.e. here).
+            // Note that this goes not call StubParser#getTypeElement to avoid a spurious diagnostic
             // if the annotation is actually unknown.
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
-            TypeElement annoTypeElt = elements.getTypeElement(annotation.getNameAsString());
-            if (annoTypeElt != null) {
-                putAllNew(
-                        allAnnotations,
-                        createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
-                return getAnnotation(annotation, allAnnotations);
+            annoTypeElt = elements.getTypeElement(annoNameFq);
+            if (annoTypeElt == null) {
+                // Not a supported annotation -> ignore
+                return null;
             }
-            // Not a supported annotation -> ignore
-            return null;
+            putAllNew(
+                    allAnnotations,
+                    createNameToAnnotationMap(Collections.singletonList(annoTypeElt)));
         }
         @SuppressWarnings("signature") // not anonymous, so name is not empty
-        @CanonicalName String annoName = annoTypeElm.getQualifiedName().toString();
+        @CanonicalName String annoName = annoTypeElt.getQualifiedName().toString();
 
         if (annotation instanceof MarkerAnnotationExpr) {
             return AnnotationBuilder.fromName(elements, annoName);
