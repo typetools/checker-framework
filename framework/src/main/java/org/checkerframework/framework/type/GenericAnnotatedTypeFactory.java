@@ -2223,31 +2223,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
-     * inference. This implementation does nothing, but subclasses can override it.
-     *
-     * @param lhsTree the tree for the field whose type will be changed
-     * @param element the element for the field whose type will be changed
-     * @param fieldName the name of the field whose type will be changed
-     * @param rhsATM the type of the expression being assigned to the field
-     */
-    public void wpiAdjustForUpdateField(
-            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
-        // This implementation does nothing
-    }
-
-    /**
-     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
-     * use by whole-program inference. This implementation does nothing, but subclasses can override
-     * it.
-     *
-     * @param rhsATM the type of the rhs of the pseudo-assignment
-     */
-    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
-        // This implementation does nothing
-    }
-
-    /**
      * Return the string representation of contract annotations (that is, pre- and post-conditions)
      * for the given AMethod. Does not modify the AMethod.
      *

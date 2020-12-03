@@ -483,9 +483,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + inferArg
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
-            boolean isNullnessChecker =
-                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
-            wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
+            wholeProgramInference = getWholeProgramInference();
         } else {
             wholeProgramInference = null;
         }
@@ -3124,8 +3122,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Gets the path for the given {@link Tree} under the current root by checking from the
-     * visitor's current path, and only using {@link Trees#getPath(CompilationUnitTree, Tree)}
-     * (which is much slower) only if {@code node} is not found on the current path.
+     * visitor's current path, and using {@link Trees#getPath(CompilationUnitTree, Tree)} (which is
+     * much slower) only if {@code node} is not found on the current path.
      *
      * <p>Note that the given Tree has to be within the current compilation unit, otherwise null
      * will be returned.
@@ -4519,5 +4517,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a WholeProgramInference for use by this type factory.
+     *
+     * @return a WholeProgramInference for use by this type factory
+     */
+    public WholeProgramInference createWholeProgramInference() {
+        return new WholeProgramInferenceScenes(this);
     }
 }

@@ -431,8 +431,7 @@ public class InitializationVisitor<
                                 fieldTree,
                                 elt,
                                 fieldTree.getName().toString(),
-                                atypeFactory.getDefaultValueAnnotatedType(elt.asType()),
-                                atypeFactory);
+                                atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
             }
         }
     }

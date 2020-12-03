@@ -765,11 +765,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (store != null) {
                     atypeFactory
                             .getWholeProgramInference()
-                            .updateContracts(
-                                    Analysis.BeforeOrAfter.AFTER,
-                                    methodElement,
-                                    atypeFactory,
-                                    store);
+                            .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
                 }
             }
 

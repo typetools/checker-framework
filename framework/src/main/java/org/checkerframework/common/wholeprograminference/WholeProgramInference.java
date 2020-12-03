@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -17,6 +18,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
@@ -50,13 +52,10 @@ public interface WholeProgramInference {
      *
      * @param objectCreationNode the Node that invokes the constructor
      * @param constructorElt the Element of the constructor
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types
      */
     void updateFromObjectCreation(
             ObjectCreationNode objectCreationNode,
             ExecutableElement constructorElt,
-            AnnotatedTypeFactory atf,
             CFAbstractStore<?, ?> store);
 
     /**
@@ -76,15 +75,12 @@ public interface WholeProgramInference {
      * @param methodInvNode the node representing a method invocation
      * @param receiverTree the Tree of the class that contains the method being invoked
      * @param methodElt the element of the method being invoked
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types
      * @param store the store before the method call, used for inferring method preconditions
      */
     void updateFromMethodInvocation(
             MethodInvocationNode methodInvNode,
             Tree receiverTree,
             ExecutableElement methodElt,
-            AnnotatedTypeFactory atf,
             CFAbstractStore<?, ?> store);
 
     /**
@@ -104,14 +100,11 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method that contains the parameter(s)
      * @param methodElt the element of the method
      * @param overriddenMethod the AnnotatedExecutableType of the overridden method
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromOverride(
             MethodTree methodTree,
             ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf);
+            AnnotatedExecutableType overriddenMethod);
 
     /**
      * Updates the type of {@code lhs} based on an assignment of {@code rhs} to {@code lhs}.
@@ -127,15 +120,9 @@ public interface WholeProgramInference {
      * @param rhs the node being assigned to the parameter in the method body
      * @param classTree the tree of the class that contains the parameter
      * @param methodTree the tree of the method that contains the parameter
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type
      */
     void updateFromLocalAssignment(
-            LocalVariableNode lhs,
-            Node rhs,
-            ClassTree classTree,
-            MethodTree methodTree,
-            AnnotatedTypeFactory atf);
+            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree);
 
     /**
      * Updates the type of {@code field} based on an assignment of {@code rhs} to {@code field}. If
@@ -171,15 +158,12 @@ public interface WholeProgramInference {
      * @param methodTree the tree of the method whose return type may be updated
      * @param overriddenMethods the methods that the given method return overrides, indexed by the
      *     annotated type of the superclass in which each method is defined
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method's return type
      */
     void updateFromReturn(
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
-            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
-            AnnotatedTypeFactory atf);
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods);
 
     /**
      * Updates the preconditions or postconditions of the current method, from a store.
@@ -187,14 +171,32 @@ public interface WholeProgramInference {
      * @param methodElement the method or constructor whose preconditions or postconditions to
      *     update
      * @param preOrPost whether to update preconditions or postconditions
-     * @param atf the annotated type factory of a given type system, which is used to obtain types
      * @param store the store at the method's entry or normal exit, for reading types of expressions
      */
     void updateContracts(
             Analysis.BeforeOrAfter preOrPost,
             ExecutableElement methodElement,
-            AnnotatedTypeFactory atf,
             CFAbstractStore<?, ?> store);
+
+    /**
+     * Changes the type of {@code rhsATM} when being assigned to a field, for use by whole-program
+     * inference. The default implementation does nothing.
+     *
+     * @param lhsTree the tree for the field whose type will be changed
+     * @param element the element for the field whose type will be changed
+     * @param fieldName the name of the field whose type will be changed
+     * @param rhsATM the type of the expression being assigned to the field
+     */
+    public void wpiAdjustForUpdateField(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
+
+    /**
+     * Changes the type of {@code rhsATM} when being assigned to anything other than a field, for
+     * use by whole-program inference. The default implementation does nothing.
+     *
+     * @param rhsATM the type of the rhs of the pseudo-assignment
+     */
+    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates a method to add a declaration annotation.
