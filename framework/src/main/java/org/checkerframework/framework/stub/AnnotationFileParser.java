@@ -89,9 +89,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
-// From an implementation perspective, this class represents a single annotation file (a stub file
-// or ajava file), notably its annotated types and its declaration annotations.  From a client
-// perspective, it has static methods as described below in the Javadoc.
+// From an implementation perspective, this class represents a single annotation file (a stub file),
+// notably its annotated types and its declaration annotations.  From a client perspective, it has
+// static methods as described below in the Javadoc.
 /**
  * This class has two static methods. Each method parses an annotation file and adds annotations to
  * two maps passed as arguments.
@@ -490,11 +490,11 @@ public class AnnotationFileParser {
             ProcessingEnvironment processingEnv,
             StubAnnotations stubAnnos,
             boolean isJdkAsStub) {
-        AnnotationFileParser sp =
+        AnnotationFileParser afp =
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub);
         try {
-            sp.parseStubUnit(inputStream);
-            sp.process(stubAnnos);
+            afp.parseStubUnit(inputStream);
+            afp.process(stubAnnos);
         } catch (ParseProblemException e) {
             StringJoiner message = new StringJoiner(LINE_SEPARATOR);
             message.add(
@@ -503,7 +503,7 @@ public class AnnotationFileParser {
             for (Problem p : e.getProblems()) {
                 message.add(p.getVerboseMessage());
             }
-            sp.warn(message.toString());
+            afp.warn(message.toString());
         }
     }
 
