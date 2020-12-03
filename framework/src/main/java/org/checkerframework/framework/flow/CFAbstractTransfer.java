@@ -993,9 +993,8 @@ public abstract class CFAbstractTransfer<
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
-        V factoryValue = null;
-
         Tree tree = n.getTree();
+        V factoryValue = null;
         if (tree != null) {
             // look up the value from factory
             factoryValue = getValueFromFactory(tree, n);
