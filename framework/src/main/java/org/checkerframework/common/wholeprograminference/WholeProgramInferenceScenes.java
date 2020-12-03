@@ -45,6 +45,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -112,6 +113,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Create a WholeProgramInferenceScenes.
      *
+     * @parom atypeFactory the associated type factory
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
      *     ignored
      */
@@ -191,13 +193,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
-            storage.updateAnnotationSetInScene(
-                    param.type,
-                    TypeUseLocation.PARAMETER,
-                    argATM,
-                    paramATM,
-                    atypeFactory,
-                    jaifPath);
+            updateAnnotationSetInScene(
+                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
         }
     }
 
@@ -236,8 +233,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             wpiAdjustForUpdateNonField(atm);
 
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-            storage.updateAnnotationSetInScene(
-                    afield.type, TypeUseLocation.FIELD, atm, fieldType, atypeFactory, jaifPath);
+            updateAnnotationSetInScene(
+                    afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath);
         }
 
         // Process fields that are not in the store.
@@ -257,13 +254,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 // This field is not in the store. Add its declared type.
                 AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
                 AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-                storage.updateAnnotationSetInScene(
-                        afield.type,
-                        TypeUseLocation.FIELD,
-                        fieldType,
-                        fieldType,
-                        atypeFactory,
-                        jaifPath);
+                updateAnnotationSetInScene(
+                        afield.type, TypeUseLocation.FIELD, fieldType, fieldType, jaifPath);
             }
         }
     }
@@ -332,13 +324,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
-            storage.updateAnnotationSetInScene(
-                    param.type,
-                    TypeUseLocation.PARAMETER,
-                    argATM,
-                    paramATM,
-                    atypeFactory,
-                    jaifPath);
+            updateAnnotationSetInScene(
+                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -347,13 +334,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
                 AField receiver = method.receiver;
-                storage.updateAnnotationSetInScene(
-                        receiver.type,
-                        TypeUseLocation.RECEIVER,
-                        argADT,
-                        paramATM,
-                        atypeFactory,
-                        jaifPath);
+                updateAnnotationSetInScene(
+                        receiver.type, TypeUseLocation.RECEIVER, argADT, paramATM, jaifPath);
             }
         }
     }
@@ -399,13 +381,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
                                 i, argATM.getUnderlyingType(), ve.getSimpleName());
-                storage.updateAnnotationSetInScene(
-                        param.type,
-                        TypeUseLocation.PARAMETER,
-                        argATM,
-                        paramATM,
-                        atypeFactory,
-                        jaifPath);
+                updateAnnotationSetInScene(
+                        param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
+
                 break;
             }
         }
@@ -441,7 +419,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateFieldFromType(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 
-        if (ignoreFieldInWPI(element, fieldName, atypeFactory)) {
+        if (ignoreFieldInWPI(element, fieldName)) {
             return;
         }
 
@@ -456,8 +434,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AField field = clazz.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
 
-        storage.updateAnnotationSetInScene(
-                field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, atypeFactory, jaifPath);
+        updateAnnotationSetInScene(field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, jaifPath);
     }
 
     /**
@@ -557,8 +534,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             dependentTypesHelper.standardizeReturnType(
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
-        storage.updateAnnotationSetInScene(
-                method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, atypeFactory, jaifPath);
+        updateAnnotationSetInScene(
+                method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, jaifPath);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -600,12 +577,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             overriddenMethodInSuperclass.setFieldsFromMethodElement(overriddenMethodElement);
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
 
-            storage.updateAnnotationSetInScene(
+            updateAnnotationSetInScene(
                     overriddenMethodInSuperclass.returnType,
                     TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
-                    atypeFactory,
                     superJaifPath);
         }
     }
@@ -680,5 +656,27 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private boolean isElementFromSourceCode(LocalVariableNode localVariableNode) {
         return ElementUtils.isElementFromSourceCode(localVariableNode.getElement());
+    }
+
+    /**
+     * Calls {@link WholeProgramInferenceScenesStorage#updateAnnotationSetInScene}, forwarding the
+     * arguments.
+     *
+     * <p>Exists so that subclasses can customize it.
+     *
+     * @param type ATypeElement of the Scene which will be modified
+     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
+     *     (needing to be written to disk)
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param defLoc the location where the annotation will be added
+     */
+    protected void updateAnnotationSetInScene(
+            ATypeElement type,
+            TypeUseLocation defLoc,
+            AnnotatedTypeMirror rhsATM,
+            AnnotatedTypeMirror lhsATM,
+            String jaifPath) {
+        storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, atypeFactory, jaifPath);
     }
 }
