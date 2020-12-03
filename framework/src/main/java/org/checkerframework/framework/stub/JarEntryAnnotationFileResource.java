@@ -11,7 +11,8 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
     private final JarEntry entry;
 
     /**
-     * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR file.
+     * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR
+     * file.
      *
      * @param file the JAR file
      * @param entry the JAR entry
