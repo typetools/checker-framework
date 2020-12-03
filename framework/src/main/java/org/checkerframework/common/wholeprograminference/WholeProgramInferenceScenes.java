@@ -96,7 +96,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Create a WholeProgramInferenceScenes.
      *
-     * @parom atypeFactory the associated type factory
+     * @param atypeFactory the associated type factory
      */
     public WholeProgramInferenceScenes(AnnotatedTypeFactory atypeFactory) {
         this(atypeFactory, true);
@@ -105,7 +105,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     /**
      * Create a WholeProgramInferenceScenes.
      *
-     * @parom atypeFactory the associated type factory
+     * @param atypeFactory the associated type factory
      * @param ignoreNullAssignments indicates whether assignments where the rhs is null should be
      *     ignored
      */
@@ -155,7 +155,15 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         updateInferredExecutableParameterTypes(methodElt, jaifPath, method, arguments);
     }
 
-    /** Helper method for updating parameter types based on calls to a method or constructor. */
+    /**
+     * Helper method for updating parameter types based on calls to a method or constructor.
+     *
+     * @param methodElt the element of the method or constructor being invoked
+     * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
+     *     (needing to be written to disk)
+     * @param method the AFU representation of a method's annotations
+     * @param arguments the arguments to the method or constructor
+     */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt, String jaifPath, AMethod method, List<Node> arguments) {
 
@@ -316,15 +324,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
     }
 
-    /**
-     * Updates the type of {@code field} based on an assignment whose right-hand side has type
-     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
-     *
-     * @param lhsTree the tree for the field whose type will be refined
-     * @param element the element for the field whose type will be refined
-     * @param fieldName the name of the field whose type will be refined
-     * @param rhsATM the type of the expression being assigned to the field
-     */
+    @Override
     public void updateFieldFromType(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
 

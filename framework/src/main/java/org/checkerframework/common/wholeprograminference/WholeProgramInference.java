@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -15,6 +16,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
@@ -132,6 +134,18 @@ public interface WholeProgramInference {
      */
     void updateFromFieldAssignment(
             Node field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
+
+    /**
+     * Updates the type of {@code field} based on an assignment whose right-hand side has type
+     * {@code rhsATM}. See more details at {@link #updateFromFieldAssignment}.
+     *
+     * @param lhsTree the tree for the field whose type will be refined
+     * @param element the element for the field whose type will be refined
+     * @param fieldName the name of the field whose type will be refined
+     * @param rhsATM the type of the expression being assigned to the field
+     */
+    void updateFieldFromType(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates the return type of the method {@code methodTree} based on {@code returnedExpression}.
