@@ -31,7 +31,7 @@ public class NullnessWholeProgramInferenceScenes extends WholeProgramInferenceSc
             return;
         }
         TreePath lhsPath = atypeFactory.getPath(lhsTree);
-        if (TreeUtils.enclosingClass(lhsPath) == ((VarSymbol) element).enclClass()
+        if (TreeUtils.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
                 && TreeUtils.inConstructor(lhsPath)) {
             rhsATM.replaceAnnotation(
                     ((NullnessAnnotatedTypeFactory) atypeFactory).MONOTONIC_NONNULL);
