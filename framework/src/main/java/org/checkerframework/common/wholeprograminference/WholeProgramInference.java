@@ -52,6 +52,7 @@ public interface WholeProgramInference {
      *
      * @param objectCreationNode the Node that invokes the constructor
      * @param constructorElt the Element of the constructor
+     * @param store the store just before the call
      */
     void updateFromObjectCreation(
             ObjectCreationNode objectCreationNode,
