@@ -72,7 +72,7 @@ import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -550,7 +550,7 @@ public abstract class CFAbstractTransfer<
             CFGMethod method,
             MethodTree methodTree,
             ExecutableElement methodElement) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         FlowExpressionContext flowExprContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
@@ -1114,7 +1114,7 @@ public abstract class CFAbstractTransfer<
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(n, tree, store, null, postconditions);
     }
@@ -1129,7 +1129,7 @@ public abstract class CFAbstractTransfer<
             Tree tree,
             S thenStore,
             S elseStore) {
-        ContractsUtils contractsUtils = analysis.atypeFactory.getContractsUtils();
+        ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
         Set<ConditionalPostcondition> conditionalPostconditions =
                 contractsUtils.getConditionalPostconditions(methodElement);
         processPostconditionsAndConditionalPostconditions(

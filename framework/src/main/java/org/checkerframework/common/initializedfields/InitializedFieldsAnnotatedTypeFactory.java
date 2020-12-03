@@ -30,7 +30,7 @@ import org.checkerframework.common.initializedfields.qual.InitializedFieldsBotto
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -134,21 +134,22 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     @Override
-    public InitializedFieldsContractsUtils getContractsUtils() {
-        return new InitializedFieldsContractsUtils(this);
+    public InitializedFieldsContractsFromMethod getContractsFromMethod() {
+        return new InitializedFieldsContractsFromMethod(this);
     }
 
     /**
-     * A subclass of ContractsUtils that adds a postcondition contract to each constructor,
+     * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
      * requiring that it initializes all fields.
      */
-    private class InitializedFieldsContractsUtils extends ContractsUtils {
+    private class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
         /**
-         * Creates an InitializedFieldsContractsUtils for the given factory.
+         * Creates an InitializedFieldsContractsFromMethod for the given factory.
          *
-         * @param factory the type factory associated with the newly-created ContractsUtils
+         * @param factory the type factory associated with the newly-created ContractsFromMethod
          */
-        public InitializedFieldsContractsUtils(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+        public InitializedFieldsContractsFromMethod(
+                GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
             super(factory);
         }
 
