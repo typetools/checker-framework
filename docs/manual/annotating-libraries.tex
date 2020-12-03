@@ -753,7 +753,7 @@ Some command-line options make the stub parser issue more warnings:
 Finally,
 use command-line option {\bf\<-AstubDebug>} to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
-annotations.  This overrides the \<@NoStubParserWarning> annotation.
+annotations.  This overrides the \<@NoAnnotationFileParserWarning> annotation.
 
 
 
@@ -765,7 +765,7 @@ exist.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+AnnotationFileParser: Method isLLowerCase(char) not found in type java.lang.Character
 \end{Verbatim}
 
 \noindent
@@ -773,7 +773,7 @@ by removing the extra ``L'' in the method name.
 
 Fix an error of the form
 \begin{Verbatim}
-StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
+AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
 
@@ -808,7 +808,7 @@ read whether the library's annotations are parsed.
 % LocalWords:  Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
-%%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
+%%  LocalWords:  NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
