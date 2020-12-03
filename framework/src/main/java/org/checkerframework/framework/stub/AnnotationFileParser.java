@@ -209,12 +209,12 @@ public class AnnotationFileParser {
      */
     private FqName typeName;
 
-    /** Output variable: .... */
+    /** Output variable: map from element to its type as declared in the stub file. */
     private final Map<Element, AnnotatedTypeMirror> atypes;
 
     /**
-     * Map from a name (actually declaration element string) to the set of declaration annotations
-     * on it.
+     * Output variable: map from a name (actually declaration element string) to the set of
+     * declaration annotations on it, as written in the stub file.
      */
     private final Map<String, Set<AnnotationMirror>> declAnnos;
 
@@ -325,7 +325,7 @@ public class AnnotationFileParser {
      * values of enums, or compile time constants.
      *
      * @param typeElement the type whose members to return
-     * @return a list fully-qualified member names
+     * @return a list of fully-qualified member names
      */
     private static List<@FullyQualifiedName String> getImportableMembers(TypeElement typeElement) {
         List<@FullyQualifiedName String> result = new ArrayList<>();
@@ -770,6 +770,8 @@ public class AnnotationFileParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
+        // This loops over the members of the Element, finding the matching stub declaration if any.
+        // It ignores any stub declaration that does not match some member of the element.
         Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
         // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
         // of this method.
@@ -832,7 +834,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns the type's type parameter declarations.
+     * Processes the type's declaration but not any of its members. Returns the type's type
+     * parameter declarations.
      *
      * @param decl a type declaration
      * @param elt the type's element
@@ -925,9 +928,9 @@ public class AnnotationFileParser {
             ClassOrInterfaceDeclaration typeDecl, AnnotatedDeclaredType type) {
         if (typeDecl.getExtendedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getExtendedTypes()) {
-                AnnotatedDeclaredType annoSupertype =
+                AnnotatedDeclaredType annotatedSupertype =
                         findAnnotatedType(supertype, type.directSuperTypes());
-                if (annoSupertype == null) {
+                if (annotatedSupertype == null) {
                     warn(
                             "stub file does not match bytecode: "
                                     + "could not find superclass "
@@ -935,15 +938,15 @@ public class AnnotationFileParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annoSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null);
                 }
             }
         }
         if (typeDecl.getImplementedTypes() != null) {
             for (ClassOrInterfaceType supertype : typeDecl.getImplementedTypes()) {
-                AnnotatedDeclaredType annoSupertype =
+                AnnotatedDeclaredType annotatedSupertype =
                         findAnnotatedType(supertype, type.directSuperTypes());
-                if (annoSupertype == null) {
+                if (annotatedSupertype == null) {
                     warn(
                             "stub file does not match bytecode: "
                                     + "could not find superinterface "
@@ -951,7 +954,7 @@ public class AnnotationFileParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annoSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null);
                 }
             }
         }
@@ -990,7 +993,7 @@ public class AnnotationFileParser {
                 decl, elt, atypes, methodType.getTypeVariables(), decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
 
-        // Type annotations
+        // Return type, from declaration annotations on the method or constructor
         if (decl.isMethodDeclaration()) {
             annotate(
                     methodType.getReturnType(),
@@ -1504,50 +1507,53 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Add, to {@code result}, a mapping from member's element to member. Member's element is found
-     * in {@code typeElt}.
+     * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
+     * mapping from member's element to member. Does nothing if a mapping already exists.
      *
-     * <p>Does nothing if it cannot find member's element. Does nothing if a mapping already exists.
+     * <p>Does nothing if it cannot find member's element.
      *
+     * @param elementsToDecl the mapping that is side-effected by this method
+     * @param typeElt the class in which {@code member} is declared
+     * @param member the stub file declaration of a method
      * @param typeDeclName used only for debugging
      */
     private void putNewElement(
-            Map<Element, BodyDeclaration<?>> result,
+            Map<Element, BodyDeclaration<?>> elementsToDecl,
             TypeElement typeElt,
             BodyDeclaration<?> member,
             String typeDeclName) {
         if (member instanceof MethodDeclaration) {
             Element elt = findElement(typeElt, (MethodDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof ConstructorDeclaration) {
             Element elt = findElement(typeElt, (ConstructorDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof FieldDeclaration) {
             FieldDeclaration fieldDecl = (FieldDeclaration) member;
             for (VariableDeclarator var : fieldDecl.getVariables()) {
                 Element varelt = findElement(typeElt, var);
                 if (varelt != null) {
-                    putIfAbsent(result, varelt, fieldDecl);
+                    putIfAbsent(elementsToDecl, varelt, fieldDecl);
                 }
             }
         } else if (member instanceof EnumConstantDeclaration) {
             Element elt = findElement(typeElt, (EnumConstantDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof ClassOrInterfaceDeclaration) {
             Element elt = findElement(typeElt, (ClassOrInterfaceDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else if (member instanceof EnumDeclaration) {
             Element elt = findElement(typeElt, (EnumDeclaration) member);
             if (elt != null) {
-                putIfAbsent(result, elt, member);
+                putIfAbsent(elementsToDecl, elt, member);
             }
         } else {
             stubDebug(
@@ -1568,20 +1574,20 @@ public class AnnotationFileParser {
     private @Nullable AnnotatedDeclaredType findAnnotatedType(
             ClassOrInterfaceType type, List<AnnotatedDeclaredType> types) {
         String typeString = type.getNameAsString();
-        for (AnnotatedDeclaredType superType : types) {
-            if (superType
+        for (AnnotatedDeclaredType supertype : types) {
+            if (supertype
                     .getUnderlyingType()
                     .asElement()
                     .getSimpleName()
                     .contentEquals(typeString)) {
-                return superType;
+                return supertype;
             }
         }
         stubWarnNotFound("Supertype " + typeString + " not found");
         if (debugAnnotationFileParser) {
             stubDebug("Supertypes that were searched:");
-            for (AnnotatedDeclaredType superType : types) {
-                stubDebug(String.format("  %s", superType));
+            for (AnnotatedDeclaredType supertype : types) {
+                stubDebug(String.format("  %s", supertype));
             }
         }
         return null;
@@ -1831,7 +1837,7 @@ public class AnnotationFileParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allAnnotations map from simple nawe to annotation definition
+     * @param allAnnotations map from simple name to annotation definition
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
