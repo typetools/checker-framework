@@ -112,13 +112,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     protected AnnotationMirror currentTop;
 
     /** Stores the result of isSubtype, if that result is true. */
-    protected final SubtypeVisitHistory visitHistory;
+    protected final SubtypeVisitHistory isSubtypeVisitHistory;
 
     /**
-     * Stores the result of isSubtype for type arguments. Prevents infinite recursion on types that
-     * refer to themselves. (Stores both true and false results.)
+     * Stores the result of {@link #areEqualInHierarchy(AnnotatedTypeMirror, AnnotatedTypeMirror)}
+     * for type arguments. Prevents infinite recursion on types that refer to themselves. (Stores
+     * both true and false results.)
      */
-    protected final StructuralEqualityVisitHistory typeargVisitHistory;
+    protected final StructuralEqualityVisitHistory areEqualVisitHistory;
 
     /** Creates a DefaultTypeHierarchy. */
     public DefaultTypeHierarchy(
@@ -128,17 +129,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             boolean invariantArrayComponents) {
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
-        this.visitHistory = new SubtypeVisitHistory();
-        this.typeargVisitHistory = new StructuralEqualityVisitHistory();
+        this.isSubtypeVisitHistory = new SubtypeVisitHistory();
+        this.areEqualVisitHistory = new StructuralEqualityVisitHistory();
         this.equalityComparer = createEqualityComparer();
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
     }
 
-    /** Create the equality comparer. */
+    /**
+     * Create the equality comparer.
+     *
+     * @return the equality comparer
+     */
     protected StructuralEqualityComparer createEqualityComparer() {
-        return new StructuralEqualityComparer(typeargVisitHistory);
+        return new StructuralEqualityComparer(areEqualVisitHistory);
     }
 
     /**
@@ -172,8 +177,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @param top the top of the hierarchy for which we want to make a comparison
-     * @return returns true if {@code subtype} is a subtype of, or equal to, {@code supertype} in
-     *     the qualifier hierarchy whose top is {@code top}
+     * @return true if {@code subtype} is a subtype of, or equal to, {@code supertype} in the
+     *     qualifier hierarchy whose top is {@code top}
      */
     protected boolean isSubtype(
             final AnnotatedTypeMirror subtype,
@@ -197,7 +202,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 + ", "
                 + supertype
                 + ") visitHistory = "
-                + visitHistory;
+                + isSubtypeVisitHistory;
     }
 
     /**
@@ -232,14 +237,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      */
     protected boolean isSubtypeCaching(
             final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
-        if (visitHistory.contains(subtype, supertype, currentTop)) {
+        if (isSubtypeVisitHistory.contains(subtype, supertype, currentTop)) {
             // visitHistory only contains pairs in a subtype relationship.
             return true;
         }
 
         boolean result = isSubtype(subtype, supertype, currentTop);
-        // The call to add has no effect if result is false.
-        visitHistory.add(subtype, supertype, currentTop, result);
+        // The call to put has no effect if result is false.
+        isSubtypeVisitHistory.put(subtype, supertype, currentTop, result);
         return result;
     }
 
@@ -285,7 +290,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             boolean canBeCovariant) {
 
         if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
-            typeargVisitHistory.add(inside, outside, currentTop, true);
+            areEqualVisitHistory.put(inside, outside, currentTop, true);
             return true;
         }
 
@@ -309,16 +314,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             throw new BugInCF(
                     "Expected a wildcard or captured type variable, but found " + outside);
         }
-        Boolean previousResult = typeargVisitHistory.result(inside, outside, currentTop);
+        Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
         if (previousResult != null) {
             return previousResult;
         }
 
-        typeargVisitHistory.add(inside, outside, currentTop, true);
+        areEqualVisitHistory.put(inside, outside, currentTop, true);
         boolean result =
                 isContainedWildcard(
                         inside, outside, outsideUpperBound, outsideLowerBound, canBeCovariant);
-        typeargVisitHistory.add(inside, outside, currentTop, result);
+        areEqualVisitHistory.put(inside, outside, currentTop, result);
         return result;
     }
 
@@ -360,15 +365,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return canBeCovariant || isSubtypeCaching(outsideLowerBound, inside);
     }
 
+    /**
+     * Returns true if {@code type} is an uninferred type argument and if the checker should not
+     * issue warnings about uninferred type arguments.
+     *
+     * @param type type to check
+     * @return true if {@code type} is an uninferred type argument and if the checker should not
+     *     issue warnings about uninferred type arguments
+     */
     private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
-        if (type.atypeFactory.ignoreUninferredTypeArguments
-                && type.getKind() == TypeKind.WILDCARD) {
-            final AnnotatedWildcardType insideWc = (AnnotatedWildcardType) type;
-            if (insideWc.isUninferredTypeArgument()) {
-                return true;
-            }
-        }
-        return false;
+        return type.atypeFactory.ignoreUninferredTypeArguments
+                && type.getKind() == TypeKind.WILDCARD
+                && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
     }
 
     // ------------------------------------------------------------------------
@@ -443,13 +451,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         AnnotatedDeclaredType subtypeAsSuper =
                 AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
 
-        if (visitHistory.contains(subtypeAsSuper, supertype, currentTop)) {
+        if (isSubtypeVisitHistory.contains(subtypeAsSuper, supertype, currentTop)) {
             return true;
         }
 
         final boolean result =
                 visitTypeArgs(subtypeAsSuper, supertype, subtype.wasRaw(), supertype.wasRaw());
-        visitHistory.add(subtypeAsSuper, supertype, currentTop, result);
+        isSubtypeVisitHistory.put(subtypeAsSuper, supertype, currentTop, result);
 
         return result;
     }
@@ -907,10 +915,16 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     // interface but that handle cases that more than one visit method shares
     // in common
 
-    /** An intersection is a supertype if all of its bounds are a supertype of subtype. */
+    /**
+     * An intersection is a supertype if all of its bounds are a supertype of subtype.
+     *
+     * @param subtype the possible subtype
+     * @param supertype the possible supertype
+     * @return true {@code subtype} is a subtype of {@code supertype}
+     */
     protected boolean visitIntersectionSupertype(
             AnnotatedTypeMirror subtype, AnnotatedIntersectionType supertype) {
-        if (visitHistory.contains(subtype, supertype, currentTop)) {
+        if (isSubtypeVisitHistory.contains(subtype, supertype, currentTop)) {
             return true;
         }
         boolean result = true;
@@ -926,7 +940,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 break;
             }
         }
-        visitHistory.add(subtype, supertype, currentTop, result);
+        isSubtypeVisitHistory.put(subtype, supertype, currentTop, result);
         return result;
     }
 

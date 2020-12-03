@@ -111,10 +111,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>Update the Checker Framework source code:
     <ul>
       <li>
-        <b>Update the list of contributors</b> by running
-        <code>make contributors.tex</code>
-        in <code>checker-framework/docs/manual/</code>.  Double-check the edits
-        with <code>git diff</code>; update the <code>plume-scripts/git-authors.sed</code> script if
+        <b>Update the list of contributors</b>.
+        <pre><code>cd docs/manual
+make contributors.tex
+git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributors.tex
+</code></pre>
+        Update the <code>plume-scripts/git-authors.sed</code> script if
         any customizations are necessary.
       </li>
       <li>
@@ -198,7 +200,7 @@ TreeAnnotator
   </li>
   <li>
       <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
-      <code>python release_push.py release</code><br/><br/>
+      <code>python3 release_push.py release</code><br/><br/>
       For minimal prompting, use the <code>--auto</code> option.<br/><br/>
       <div class="alert alert-danger">
         <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend

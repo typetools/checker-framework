@@ -2,6 +2,9 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -27,11 +31,15 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 
-/** A Utility class for analyzing {@code Element}s. */
+/**
+ * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
+ * functionality that it does not.
+ */
 public class ElementUtils {
 
     // Class cannot be instantiated.
@@ -660,5 +668,34 @@ public class ElementUtils {
             throw new Error("Anonymous class " + clazz + " has no canonical name");
         }
         return processingEnv.getElementUtils().getTypeElement(className);
+    }
+
+    /**
+     * Get all the supertypes of a given type, including the type itself.
+     *
+     * @param type a type
+     * @param env the processing environment
+     * @return list including the type and all its supertypes, with a guarantee that supertypes
+     *     (i.e. those that appear in extends clauses) appear before indirect supertypes
+     */
+    public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
+        Context ctx = ((JavacProcessingEnvironment) env).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        return javacTypes.closure(((Symbol) type).type).stream()
+                .map(t -> (TypeElement) t.tsym)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the methods that are overriden or implemented by a given method.
+     *
+     * @param m a method
+     * @param types the type utilities
+     * @return the methods that {@code m} overrides or implements
+     */
+    public static Set<? extends ExecutableElement> getOverriddenMethods(
+            ExecutableElement m, Types types) {
+        JavacTypes t = (JavacTypes) types;
+        return t.getOverriddenMethods(m);
     }
 }

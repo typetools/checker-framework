@@ -102,7 +102,7 @@ allprojects {
     //   * any new checkers have been added,
     //   * the patch level is 9 (keep the patch level as a single digit), or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.8.0-SNAPSHOT'
+    version '3.8.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -544,8 +544,8 @@ task getPlumeScripts() {
 }
 
 task pythonIsInstalled(type: Exec) {
-  description "Check that the python executable is installed."
-  executable = "python"
+  description "Check that the python3 executable is installed."
+  executable = "python3"
   args "--version"
 }
 
@@ -581,7 +581,7 @@ subprojects {
         description 'Check whether the source code is properly formatted'
         // checker-qual* projects have no source, so skip
         onlyIf {!project.name.startsWith('checker-qual') }
-        executable 'python'
+        executable 'python3'
 
         doFirst {
             args += "${formatScriptsHome}/check-google-java-format.py"
@@ -600,7 +600,7 @@ subprojects {
         description 'Format the Java source code'
         // checker-qual* projects have no source, so skip
         onlyIf { !project.name.startsWith('checker-qual') }
-        executable 'python'
+        executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
             args += "--aosp" // 4 space indentation
@@ -819,7 +819,7 @@ subprojects {
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
             if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
+                dependsOn('jtregTests')
             }
             if (project.name.is('framework')) {
                 dependsOn('wholeProgramInferenceTests', 'loaderTests')
@@ -844,7 +844,7 @@ subprojects {
             description 'Run the Checker Framework on itself'
             dependsOn('checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessOnlyAnnotatedFor')
+                dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {
                 dependsOn('checkNullness')
             }

@@ -197,7 +197,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.7.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.8.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -648,6 +648,9 @@ Type-checking modes:  enable/disable functionality
   (Section~\ref{suppresswarnings-annotation-syntax}).  The
   \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
   that all \<@SuppressWarnings> strings contain a checker name.
+\item \<-AwarnUnneededSuppressionsExceptions=\emph{regex}> disables
+  \<-AwarnUnneededSuppressions> for \<@SuppressWarnings> strings that
+  contain a match for the regular expression.  Most users don't need this.
 \item \<-ArequirePrefixInWarningSuppressions>
   Require that the string in a warning suppression annotation begin with a checker
   name.  Otherwise, the suppress warning annotation does not

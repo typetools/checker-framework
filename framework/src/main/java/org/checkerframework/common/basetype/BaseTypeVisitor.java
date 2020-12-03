@@ -115,7 +115,7 @@ import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -333,7 +333,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
 
-        // Don't use atypeFactory.getPath, b/c that depends on the visitorState path.
+        // Don't use atypeFactory.getPath, because that depends on the visitorState path.
         visitorState.setPath(TreePath.getPath(root, classTree));
         visitorState.setClassType(
                 atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
@@ -920,7 +920,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ExecutableElement methodElement,
             List<String> formalParamNames,
             boolean abstractMethod) {
-        Set<Contract> contracts = atypeFactory.getContractsUtils().getContracts(methodElement);
+        Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
 
         if (contracts.isEmpty()) {
             return;
@@ -1015,7 +1015,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (Integer idx : parameterIndices) {
             if (idx > method.getParameters().size()) {
                 // If the index is too big, a parse error was issued in
-                // checkContractsAtMethodDeclaration
+                // checkContractsAtMethodDeclaration.
                 continue;
             }
             VariableElement parameter = method.getParameters().get(idx - 1);
@@ -1081,23 +1081,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at every regular exit
      * that returns {@code result}.
      *
-     * @param method tree of method with the postcondition
+     * @param methodTree tree of method with the postcondition
      * @param annotation expression's type must have this annotation
      * @param expression the expression that the postcondition concerns
      * @param result result for which the postcondition is valid
      */
     protected void checkConditionalPostcondition(
-            MethodTree method, AnnotationMirror annotation, Receiver expression, boolean result) {
+            MethodTree methodTree,
+            AnnotationMirror annotation,
+            Receiver expression,
+            boolean result) {
         boolean booleanReturnType =
-                TypesUtils.isBooleanType(TreeUtils.typeOf(method.getReturnType()));
+                TypesUtils.isBooleanType(TreeUtils.typeOf(methodTree.getReturnType()));
         if (!booleanReturnType) {
-            checker.reportError(method, "contracts.conditional.postcondition.invalid.returntype");
+            checker.reportError(
+                    methodTree, "contracts.conditional.postcondition.invalid.returntype");
             // No reason to go ahead with further checking. The
             // annotation is invalid.
             return;
         }
 
-        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(method)) {
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(methodTree)) {
             ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();
@@ -1134,7 +1138,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         returnStmt.getTree(),
                         "contracts.conditional.postcondition.not.satisfied",
-                        method.getName(),
+                        methodTree.getName(),
                         result,
                         contractExpressionAndType(expression.toString(), inferredAnno),
                         contractExpressionAndType(expression.toString(), annotation));
@@ -1393,10 +1397,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(node.getVariable());
-        AnnotatedTypeMirror iterableType = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror iteratedType =
-                AnnotatedTypes.getIteratedType(
-                        checker.getProcessingEnvironment(), atypeFactory, iterableType);
+                atypeFactory.getIterableElementType(node.getExpression());
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(
@@ -1479,7 +1481,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // check precondition annotations
         checkPreconditions(
-                node, atypeFactory.getContractsUtils().getPreconditions(invokedMethodElement));
+                node, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
         if (TreeUtils.isSuperConstructorCall(node)) {
             checkSuperConstructorCall(node);
@@ -2403,13 +2405,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Returns a new list containing only the supported annotations from its argument -- that is,
      * those that are part of the current type system.
      *
+     * <p>This method ignores aliases of supported annotations that are declaration annotations,
+     * because they may apply to inner types.
+     *
      * @param annoTrees annotation trees
      * @return a new list containing only the supported annotations from its argument
      */
     private List<AnnotationTree> supportedAnnoTrees(List<? extends AnnotationTree> annoTrees) {
         List<AnnotationTree> result = new ArrayList<>(1);
         for (AnnotationTree at : annoTrees) {
-            if (atypeFactory.isSupportedQualifier(TreeUtils.annotationFromAnnotationTree(at))) {
+            AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(at);
+            if (!AnnotationUtils.isDeclarationAnnotation(anno)
+                    && atypeFactory.isSupportedQualifier(anno)) {
                 result.add(at);
             }
         }
@@ -2985,7 +2992,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * @param typeArgument type argument
      * @param typeParameterUpperBound upper bound of the type parameter
-     * @param reportError Tree to which to report the error
+     * @param reportError where to report the error
      */
     private void checkHasQualifierParameterAsTypeArgument(
             AnnotatedTypeMirror typeArgument,
@@ -3635,7 +3642,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
-            ContractsUtils contractsUtils = atypeFactory.getContractsUtils();
+            ContractsFromMethod contractsUtils = atypeFactory.getContractsFromMethod();
 
             // Check postconditions
             Set<Postcondition> superPost =

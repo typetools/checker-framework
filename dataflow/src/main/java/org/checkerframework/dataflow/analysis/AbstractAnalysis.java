@@ -73,7 +73,7 @@ public abstract class AbstractAnalysis<
      * invariant holds:
      *
      * <pre>
-     *   !isRunning ==&gt; (currentNode == null)
+     *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
     protected @InternedDistinct @Nullable Node currentNode;
@@ -366,8 +366,8 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Initialize class fields based on a given control flow graph. Sub-class may override this
-     * method to initialize customized fields.
+     * Initialize fields of this object based on a given control flow graph. Sub-class may override
+     * this method to initialize customized fields.
      *
      * @param cfg a given control flow graph
      */

@@ -2,8 +2,10 @@ package org.checkerframework.checker.initialization;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -19,6 +21,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ToStringComparator;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
@@ -222,24 +225,30 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
         String superVisualize = super.internalVisualize(viz);
+        String initializedVisualize =
+                viz.visualizeStoreKeyVal(
+                        "initialized fields", ToStringComparator.sorted(initializedFields));
+        List<VariableElement> invariantVars =
+                invariantFields.keySet().stream()
+                        .map(FieldAccess::getField)
+                        .collect(Collectors.toList());
+        String invariantVisualize =
+                viz.visualizeStoreKeyVal(
+                        "invariant fields", ToStringComparator.sorted(invariantVars));
+
         if (superVisualize.isEmpty()) {
-            return String.join(
-                    viz.getSeparator(),
-                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
-                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+            return String.join(viz.getSeparator(), initializedVisualize, invariantVisualize);
         } else {
             return String.join(
-                    viz.getSeparator(),
-                    super.internalVisualize(viz),
-                    viz.visualizeStoreKeyVal("initialized fields", initializedFields),
-                    viz.visualizeStoreKeyVal("invariant fields", invariantFields));
+                    viz.getSeparator(), superVisualize, initializedVisualize, invariantVisualize);
         }
     }
 
-    public Map<FieldAccess, V> getFieldValues() {
-        return fieldValues;
-    }
-
+    /**
+     * Returns the analysis associated with this store.
+     *
+     * @return the analysis associated with this store
+     */
     public CFAbstractAnalysis<V, S, ?> getAnalysis() {
         return analysis;
     }

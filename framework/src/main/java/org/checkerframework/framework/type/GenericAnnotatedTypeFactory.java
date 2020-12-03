@@ -39,6 +39,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -89,7 +91,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -149,7 +151,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected DependentTypesHelper dependentTypesHelper;
 
     /** to handle method pre- and postconditions */
-    protected ContractsUtils contractsUtils;
+    protected ContractsFromMethod contractsUtils;
 
     /**
      * The Java types on which users may write this type system's type annotations. null means no
@@ -241,11 +243,11 @@ public abstract class GenericAnnotatedTypeFactory<
     protected Store initializationStaticStore;
 
     /**
-     * Caches for {@link AnalysisResult#runAnalysisFor(Node, boolean, TransferInput,
+     * Caches for {@link AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
      * IdentityHashMap, Map)}. This cache is enabled if {@link #shouldCache} is true. The cache size
      * is derived from {@link #getCacheSize()}.
      *
-     * @see AnalysisResult#runAnalysisFor(Node, boolean, TransferInput, IdentityHashMap, Map)
+     * @see AnalysisResult#runAnalysisFor(Node, BeforeOrAfter, TransferInput, IdentityHashMap, Map)
      */
     protected final Map<
                     TransferInput<Value, Store>,
@@ -311,7 +313,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        contractsUtils = createContractsUtils();
+        contractsUtils = createContractsFromMethod();
 
         // Every subclass must call postInit, but it must be called after
         // all other initialization is finished.
@@ -573,12 +575,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Creates an {@link ContractsUtils} and returns it.
+     * Creates an {@link ContractsFromMethod} and returns it.
      *
-     * @return a new {@link ContractsUtils}
+     * @return a new {@link ContractsFromMethod}
      */
-    protected ContractsUtils createContractsUtils() {
-        return new ContractsUtils(this);
+    protected ContractsFromMethod createContractsFromMethod() {
+        return new ContractsFromMethod(this);
     }
 
     /**
@@ -586,7 +588,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return the helper for method pre- and postconditions
      */
-    public ContractsUtils getContractsUtils() {
+    public ContractsFromMethod getContractsFromMethod() {
         return contractsUtils;
     }
 
@@ -1041,7 +1043,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         Store store =
                 AnalysisResult.runAnalysisFor(
-                        node, true, prevStore, analysis.getNodeValues(), flowResultAnalysisCaches);
+                        node,
+                        Analysis.BeforeOrAfter.BEFORE,
+                        prevStore,
+                        analysis.getNodeValues(),
+                        flowResultAnalysisCaches);
         return store;
     }
 
@@ -1089,7 +1095,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Store res =
                 AnalysisResult.runAnalysisFor(
                         node,
-                        false,
+                        Analysis.BeforeOrAfter.AFTER,
                         analysis.getInput(node.getBlock()),
                         analysis.getNodeValues(),
                         flowResultAnalysisCaches);
@@ -1176,7 +1182,7 @@ public abstract class GenericAnnotatedTypeFactory<
             AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
             MethodTree preMT = visitorState.getMethodTree();
 
-            // Don't use getPath, b/c that depends on the visitorState path.
+            // Don't use getPath, because that depends on the visitorState path.
             visitorState.setPath(TreePath.getPath(this.root, ct));
             visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
             visitorState.setClassTree(ct);
@@ -1748,7 +1754,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param tree Tree whose type is {@code type}
+     * @param tree a Tree whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(Tree tree, AnnotatedTypeMirror type) {
@@ -1763,7 +1769,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * qualifier parameter are initialized to the type of their initializer, rather than the default
      * for local variables.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     protected void applyQualifierParameterDefaults(
@@ -1817,7 +1823,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * initializer, if an initializer is present. Does nothing for local variables with no
      * initializer.
      *
-     * @param elt Element whose type is {@code type}
+     * @param elt an Element whose type is {@code type}
      * @param type where the defaults are applied
      */
     private void applyLocalVariableQualifierParameterDefaults(

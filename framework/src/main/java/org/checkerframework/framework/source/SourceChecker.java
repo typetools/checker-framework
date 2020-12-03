@@ -41,6 +41,7 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -209,6 +210,9 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.framework.source.SourceVisitor.checkForSuppressWarningsAnno
     "warnUnneededSuppressions",
 
+    // Exceptions to -AwarnUnneededSuppressions.
+    "warnUnneededSuppressionsExceptions",
+
     // Require that warning suppression annotations contain a checker key as a prefix in order for
     // the warning to be suppressed.
     // org.checkerframework.framework.source.SourceChecker.checkSuppressWarnings(java.lang.String[],
@@ -229,12 +233,12 @@ import org.plumelib.util.UtilPlume;
     "stubs",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
-    // org.checkerframework.framework.stub.StubParser.warnIfNotFound
+    // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
     "stubWarnIfNotFound",
     // Whether to ignore missing classes even when warnIfNotFound is set to true and
     // other classes from the same package are present (useful if a package spans more than one
     // jar).
-    // org.checkerframework.framework.stub.StubParser.warnIfNotFoundIgnoresClasses
+    // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses
     "stubWarnIfNotFoundIgnoresClasses",
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
@@ -299,11 +303,11 @@ import org.plumelib.util.UtilPlume;
     "nocheckjdk", // temporary, for backward compatibility
 
     // Parse all JDK files at startup rather than as needed.
-    // org.checkerframework.framework.stub.StubTypes.StubTypes
+    // org.checkerframework.framework.stub.AnnotationFileElementTypes.AnnotationFileElementTypes
     "parseAllJdk",
 
     // Whether to print debugging messages while processing the stub files
-    // org.checkerframework.framework.stub.StubParser.debugStubParser
+    // org.checkerframework.framework.stub.AnnotationFileParser.debugAnnotationFileParser
     "stubDebug",
 
     /// Progress tracing
@@ -421,10 +425,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected SourceVisitor<?, ?> visitor;
 
     /**
+     * Exceptions to -AwarnUnneededSuppressions processing. No warning about unneeded suppressions
+     * is issued if the SuppressWarnings string matches this pattern.
+     */
+    private @Nullable Pattern warnUnneededSuppressionsExceptions;
+
+    /**
      * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly,
      * call {@link #getSuppressWarningsStringsFromOption()}.
      */
     private String @Nullable [] suppressWarningsStringsFromOption;
+
+    /**
+     * If true, use the "allcheckers:" warning string prefix.
+     *
+     * <p>Checkers that never issue any error messages should set this to false. That prevents
+     * {@code -AwarnUnneededSuppressions} from issuing warnings about
+     * {@code @SuppressWarnings("allcheckers:...")}.
+     */
+    protected boolean useAllcheckersPrefix = true;
 
     /**
      * Regular expression pattern to specify Java classes that are not annotated, so warnings about
@@ -521,6 +540,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                     Kind.WARNING,
                     "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
                     jreVersion);
+        }
+
+        if (!hasOption("warnUnneededSuppressionsExceptions")) {
+            warnUnneededSuppressionsExceptions = null;
+        } else {
+            String warnUnneededSuppressionsExceptionsString =
+                    getOption("warnUnneededSuppressionsExceptions");
+            if (warnUnneededSuppressionsExceptionsString == null) {
+                throw new UserError(
+                        "Must supply an argument to -AwarnUnneededSuppressionsExceptions");
+            }
+            try {
+                warnUnneededSuppressionsExceptions =
+                        Pattern.compile(warnUnneededSuppressionsExceptionsString);
+            } catch (PatternSyntaxException e) {
+                throw new UserError(
+                        "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
+                                + e.getMessage());
+            }
         }
 
         if (hasOption("printGitProperties")) {
@@ -1235,7 +1273,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         if (hasOption("showSuppressWarningsStrings")) {
             List<String> list = new ArrayList<>(prefixes);
             // Make sure "allcheckers" is at the end of the list.
-            list.add(SUPPRESS_ALL_PREFIX);
+            if (useAllcheckersPrefix) {
+                list.add(SUPPRESS_ALL_PREFIX);
+            }
             return list + ":" + messageKey;
         } else if (hasOption("requirePrefixInWarningSuppressions")) {
             // If the warning key must be prefixed with a prefix (a checker name), then add that to
@@ -1841,6 +1881,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
             String[] suppressWarningsStrings = suppressAnno.value();
             for (String suppressWarningsString : suppressWarningsStrings) {
+                if (warnUnneededSuppressionsExceptions != null
+                        && warnUnneededSuppressionsExceptions
+                                .matcher(suppressWarningsString)
+                                .find(0)) {
+                    continue;
+                }
                 for (String prefix : prefixes) {
                     if (suppressWarningsString.equals(prefix)
                             || suppressWarningsString.startsWith(prefix + ":")) {
@@ -2222,13 +2268,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Returns a sorted set of SuppressWarnings prefixes read from the {@link
      * SuppressWarningsPrefix} meta-annotation on the checker class. Or if no {@link
      * SuppressWarningsPrefix} is used, the checker name is used. {@link #SUPPRESS_ALL_PREFIX} is
-     * also added, at the end.
+     * also added, at the end, unless {@link #useAllcheckersPrefix} is false.
      *
      * @return a sorted set of SuppressWarnings prefixes
      */
     protected final NavigableSet<String> getStandardSuppressWarningsPrefixes() {
         NavigableSet<String> prefixes = new TreeSet<>();
-        prefixes.add(SUPPRESS_ALL_PREFIX);
+        if (useAllcheckersPrefix) {
+            prefixes.add(SUPPRESS_ALL_PREFIX);
+        }
         SuppressWarningsPrefix prefixMetaAnno =
                 this.getClass().getAnnotation(SuppressWarningsPrefix.class);
         if (prefixMetaAnno != null) {
@@ -2583,7 +2631,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Returns the version of the Checker Framework.
      *
-     * @return Checker Framework version
+     * @return the Checker Framework version
      */
     private String getCheckerVersion() {
         Properties gitProperties = getProperties(getClass(), "/git.properties");
