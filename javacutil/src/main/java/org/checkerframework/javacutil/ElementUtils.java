@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayDeque;
@@ -30,6 +31,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -682,5 +684,18 @@ public class ElementUtils {
         return javacTypes.closure(((Symbol) type).type).stream()
                 .map(t -> (TypeElement) t.tsym)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the methods that are overriden or implemented by a given method.
+     *
+     * @param m a method
+     * @param types the type utilities
+     * @return the methods that {@code m} overrides or implements
+     */
+    public static Set<? extends ExecutableElement> getOverriddenMethods(
+            ExecutableElement m, Types types) {
+        JavacTypes t = (JavacTypes) types;
+        return t.getOverriddenMethods(m);
     }
 }
