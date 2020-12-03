@@ -503,6 +503,7 @@ public final class TreeUtils {
     /**
      * Gets the element for a class corresponding to a declaration.
      *
+     * @param node class declaration
      * @return the element for the given class
      */
     public static TypeElement elementFromDeclaration(ClassTree node) {
