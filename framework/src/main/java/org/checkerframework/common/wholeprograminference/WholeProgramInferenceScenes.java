@@ -465,11 +465,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * @param element the field's element
      * @param fieldName the field's name
-     * @param atypeFactory the annotated type factory
      * @return true if an assignment to the given field should be ignored by WPI
      */
-    protected boolean ignoreFieldInWPI(
-            Element element, String fieldName, AnnotatedTypeFactory atypeFactory) {
+    protected boolean ignoreFieldInWPI(Element element, String fieldName) {
         // Do not attempt to infer types for fields that do not have valid
         // names. For example, compiler-generated temporary variables will
         // have invalid names. Recording facts about fields with
