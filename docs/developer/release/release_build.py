@@ -150,7 +150,7 @@ def update_project_dev_website(project_name, release_version):
 
 def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
-    return CURRENT_DATE.strftime("%d %b %Y")
+    return datetime.date.today().strftime("%d %b %Y")
 
 def build_annotation_tools_release(version, afu_interm_dir):
     """Build the Annotation File Utilities project's artifacts and place them
@@ -356,6 +356,7 @@ def main(argv):
               "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n")
         prompt_to_continue()
 
+    AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
     old_afu_version = get_afu_version_from_html(AFU_MANUAL)
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
 
@@ -409,6 +410,7 @@ def main(argv):
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .") # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
+    CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
     # Each project has a set of files that are updated for release. Usually these updates include new
