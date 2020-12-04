@@ -119,6 +119,9 @@ public class PurityUtils {
             getSideEffectsOnlyValues(AnnotationProvider provider, Element methodElement) {
         AnnotationMirror sefOnlyAnnotation =
                 provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
+        if (sefOnlyAnnotation == null) {
+            return null;
+        }
         Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
                 sefOnlyAnnotation.getElementValues();
         return elementValues;

@@ -203,22 +203,25 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (isSideEffectsOnly(atypeFactory, method)) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> valmap =
                     getSideEffectsOnlyValues(atypeFactory, method);
-            Object value = null;
-            for (ExecutableElement elem : valmap.keySet()) {
-                if (elem.getSimpleName().contentEquals("value")) {
-                    value = valmap.get(elem).getValue();
-                    break;
+            if (valmap != null) {
+                Object value = null;
+                for (ExecutableElement elem : valmap.keySet()) {
+                    if (elem.getSimpleName().contentEquals("value")) {
+                        value = valmap.get(elem).getValue();
+                        break;
+                    }
                 }
-            }
-            if (value instanceof List) {
-                AnnotationMirror sefOnlyAnnotation =
-                        atypeFactory.getDeclAnnotation(
-                                method, org.checkerframework.dataflow.qual.SideEffectsOnly.class);
-                sideEffectExpressions =
-                        AnnotationUtils.getElementValueArray(
-                                sefOnlyAnnotation, "value", String.class, true);
-            } else if (value instanceof String) {
-                sideEffectExpressions = Collections.singletonList((String) value);
+                if (value instanceof List) {
+                    AnnotationMirror sefOnlyAnnotation =
+                            atypeFactory.getDeclAnnotation(
+                                    method,
+                                    org.checkerframework.dataflow.qual.SideEffectsOnly.class);
+                    sideEffectExpressions =
+                            AnnotationUtils.getElementValueArray(
+                                    sefOnlyAnnotation, "value", String.class, true);
+                } else if (value instanceof String) {
+                    sideEffectExpressions = Collections.singletonList((String) value);
+                }
             }
         }
 
