@@ -361,17 +361,6 @@ public class AnnotatedTypes {
      * <p>Before returning the result, this method adjusts it by calling {@link
      * AnnotatedTypeFactory#postAsMemberOf(AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
      *
-     * <p>TODO: This needs to be update.
-     *
-     * <p>Note that this method does not currently return (top level) captured types for type
-     * parameters, parameters, and return types. Instead, the original wildcard is returned, or
-     * sometimes inferring type arguments will create a wildcard type which is returned. The bounds
-     * of an inferred wildcard may itself have captures.
-     *
-     * <p>To prevent unsoundness, the rest of the Checker Framework must handle wildcards in places
-     * where captures should appear (like type arguments). This should just involve the bounds of
-     * the wildcard where the bounds of the capture would have been used.
-     *
      * @param types the Types instance to use
      * @param atypeFactory the type factory to use
      * @param t the receiver type
