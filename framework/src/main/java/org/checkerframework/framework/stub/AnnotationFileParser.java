@@ -175,6 +175,12 @@ public class AnnotationFileParser {
      */
     private final List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
 
+    /**
+     * The annotations on the declared package of the complation unit being processed. Contains null
+     * if not processing a compilation unit or if the file has no declared package.
+     */
+    @Nullable List<AnnotationExpr> packageAnnos;
+
     // The following variables are stored in the AnnotationFileParser because otherwise they would
     // need to be
     // passed through everywhere, which would be verbose.
@@ -564,7 +570,6 @@ public class AnnotationFileParser {
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void processCompilationUnit(CompilationUnit cu, StubAnnotations stubAnnos) {
-        final List<AnnotationExpr> packageAnnos;
 
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
@@ -576,7 +581,7 @@ public class AnnotationFileParser {
         }
         if (cu.getTypes() != null) {
             for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
-                processTypeDecl(typeDeclaration, null, packageAnnos, stubAnnos);
+                processTypeDecl(typeDeclaration, null, stubAnnos);
             }
         }
     }
@@ -606,14 +611,10 @@ public class AnnotationFileParser {
      * @param typeDecl the type declaration to process
      * @param outertypeName the name of the containing class, when processing a nested class;
      *     otherwise null
-     * @param packageAnnos the annotation declared in the package
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void processTypeDecl(
-            TypeDeclaration<?> typeDecl,
-            String outertypeName,
-            List<AnnotationExpr> packageAnnos,
-            StubAnnotations stubAnnos) {
+            TypeDeclaration<?> typeDecl, String outertypeName, StubAnnotations stubAnnos) {
         assert typeBeingParsed != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
@@ -697,11 +698,10 @@ public class AnnotationFileParser {
                     break;
                 case CLASS:
                 case INTERFACE:
-                    processTypeDecl(
-                            (ClassOrInterfaceDeclaration) decl, innerName, packageAnnos, stubAnnos);
+                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, stubAnnos);
                     break;
                 case ENUM:
-                    processTypeDecl((EnumDeclaration) decl, innerName, packageAnnos, stubAnnos);
+                    processTypeDecl((EnumDeclaration) decl, innerName, stubAnnos);
                     break;
                 default:
                     /* do nothing */
