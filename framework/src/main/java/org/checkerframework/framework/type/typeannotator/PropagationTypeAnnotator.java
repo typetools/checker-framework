@@ -186,30 +186,19 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     private Element getTypeParamFromEnclosingClass(
             final @FindDistinct AnnotatedWildcardType wildcard,
             final AnnotatedDeclaredType parent) {
-        Integer wildcardIndex = null;
-        int currentIndex = 0;
-        for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {
-            // TODO: Can is this fixed?
-            // the only cases in which the wildcard is not one of the type arguments are cases in
-            // which they should have been replaced by capture
+        for (int i = 0; i < parent.getTypeArguments().size(); i++) {
+            AnnotatedTypeMirror typeArg = parent.getTypeArguments().get(i);
             if (typeArg == wildcard) {
-                wildcardIndex = currentIndex;
-                break;
+                final TypeElement typeElement =
+                        (TypeElement)
+                                typeFactory
+                                        .getProcessingEnv()
+                                        .getTypeUtils()
+                                        .asElement(parent.getUnderlyingType());
+
+                return typeElement.getTypeParameters().get(i);
             }
-            currentIndex += 1;
         }
-
-        if (wildcardIndex != null) {
-            final TypeElement typeElement =
-                    (TypeElement)
-                            typeFactory
-                                    .getProcessingEnv()
-                                    .getTypeUtils()
-                                    .asElement(parent.getUnderlyingType());
-
-            return typeElement.getTypeParameters().get(wildcardIndex);
-        }
-
-        return null;
+        throw new BugInCF("Wildcard %s not a type argument of %s", wildcard, parent);
     }
 }
