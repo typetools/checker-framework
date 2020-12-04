@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -138,11 +137,8 @@ public interface WholeProgramInference {
      *     LocalVariableNode whose element kind is FIELD.
      * @param rhs the expression being assigned to the field
      * @param classTree the ClassTree for the enclosing class of the assignment
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the field's type
      */
-    void updateFromFieldAssignment(
-            Node field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
+    void updateFromFieldAssignment(Node field, Node rhs, ClassTree classTree);
 
     /**
      * Updates the type of {@code field} based on an assignment whose right-hand side has type

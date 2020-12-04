@@ -389,17 +389,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
                                 i, argATM.getUnderlyingType(), ve.getSimpleName());
+
                 updateAnnotationSetInScene(
                         param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
-
                 break;
             }
         }
     }
 
     @Override
-    public void updateFromFieldAssignment(
-            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atypeFactory) {
+    public void updateFromFieldAssignment(Node lhs, Node rhs, ClassTree classTree) {
 
         Element element;
         String fieldName;

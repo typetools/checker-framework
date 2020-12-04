@@ -864,10 +864,7 @@ public abstract class CFAbstractTransfer<
                 analysis.atypeFactory
                         .getWholeProgramInference()
                         .updateFromFieldAssignment(
-                                lhs,
-                                rhs,
-                                analysis.getContainingClass(n.getTree()),
-                                analysis.getTypeFactory());
+                                lhs, rhs, analysis.getContainingClass(n.getTree()));
             } else if (lhs instanceof LocalVariableNode
                     && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
                 analysis.atypeFactory
@@ -946,10 +943,7 @@ public abstract class CFAbstractTransfer<
             analysis.atypeFactory
                     .getWholeProgramInference()
                     .updateFromFieldAssignment(
-                            (FieldAccessNode) lhs,
-                            rhs,
-                            analysis.getContainingClass(n.getTree()),
-                            analysis.getTypeFactory());
+                            (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()));
         }
 
         processCommonAssignment(in, lhs, rhs, info, resultValue);

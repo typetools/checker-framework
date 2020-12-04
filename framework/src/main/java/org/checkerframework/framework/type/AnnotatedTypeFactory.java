@@ -4520,11 +4520,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a WholeProgramInference for use by this type factory.
+     * Creates a WholeProgramInference for use by this type factory.
      *
      * @return a WholeProgramInference for use by this type factory
      */
-    public WholeProgramInference createWholeProgramInference() {
+    protected WholeProgramInference createWholeProgramInference() {
         return new WholeProgramInferenceScenes(this);
     }
 }
