@@ -102,6 +102,13 @@ public class PurityUtils {
         return kinds.contains(Kind.SIDE_EFFECT_FREE);
     }
 
+    /**
+     * Is the method annotated with the declaration annotation {@code @SideEffectsOnly}.
+     *
+     * @param provider how to get annotations
+     * @param methodTree a method to test
+     * @return whether the method has the declaration annotation {@code @SideEffectsOnly}
+     */
     public static boolean isSideEffectsOnly(AnnotationProvider provider, MethodTree methodTree) {
         Element methodElement = TreeUtils.elementFromTree(methodTree);
         if (methodElement == null) {
@@ -110,11 +117,26 @@ public class PurityUtils {
         return isSideEffectsOnly(provider, methodElement);
     }
 
+    /**
+     * Is the method annotated with the declaration annotation {@code @SideEffectsOnly}.
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return whether the method has the declaration annotation {@code @SideEffectsOnly}
+     */
     public static boolean isSideEffectsOnly(AnnotationProvider provider, Element methodElement) {
         EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
         return kinds.contains(Kind.SIDE_EFFECTS_ONLY);
     }
 
+    /**
+     * Returns the annotation values of {@code @SideEffectsOnly}.
+     *
+     * @param provider how to get annotations
+     * @param methodElement a method to test
+     * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
+     *     annotation, null otherwise
+     */
     public static Map<? extends ExecutableElement, ? extends AnnotationValue>
             getSideEffectsOnlyValues(AnnotationProvider provider, Element methodElement) {
         AnnotationMirror sefOnlyAnnotation =

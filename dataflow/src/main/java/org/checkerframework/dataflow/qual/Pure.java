@@ -31,6 +31,10 @@ public @interface Pure {
         /** The method returns exactly the same value when called in the same environment. */
         DETERMINISTIC,
 
+        /**
+         * The method only side effects the expressions specified as annotation values of
+         * {@code @SideEffectsOnly}.
+         */
         SIDE_EFFECTS_ONLY
     }
 }

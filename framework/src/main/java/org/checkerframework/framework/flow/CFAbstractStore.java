@@ -164,11 +164,26 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return PurityUtils.isSideEffectFree(atypeFactory, method);
     }
 
+    /**
+     * Indicates whether the method has the declaration annotation {@code @SideEffectsOnly}.
+     *
+     * @param atypeFactory the type factory used to retrieve annotations on the method element
+     * @param method the method element
+     * @return whether the method is annotated with {@code @SideEffectsOnly}
+     */
     protected boolean isSideEffectsOnly(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         return PurityUtils.isSideEffectsOnly(atypeFactory, method);
     }
 
+    /**
+     * Returns the annotation values of {@code @SideEffectsOnly}.
+     *
+     * @param atypeFactory the type factory used to retrieve annotations on the method element
+     * @param method the method element
+     * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
+     *     annotation
+     */
     protected Map<? extends ExecutableElement, ? extends AnnotationValue> getSideEffectsOnlyValues(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         return PurityUtils.getSideEffectsOnlyValues(atypeFactory, method);
