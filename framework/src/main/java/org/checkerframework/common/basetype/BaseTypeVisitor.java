@@ -816,12 +816,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 additionalKinds.remove(Pure.Kind.DETERMINISTIC);
             }
             if (!additionalKinds.isEmpty()) {
-                if (additionalKinds.size() == 2) {
+                if (additionalKinds.size() == 3) {
                     checker.reportWarning(node, "purity.more.pure", node.getName());
                 } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                     checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
                 } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
                     checker.reportWarning(node, "purity.more.deterministic", node.getName());
+                } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECTS_ONLY)) {
+                    // Cannot suggest side effects only
                 } else {
                     assert false : "BaseTypeVisitor reached undesirable state";
                 }
