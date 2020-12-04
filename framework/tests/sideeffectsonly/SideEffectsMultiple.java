@@ -4,14 +4,12 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.testchecker.sideeffectsonly.qual.Refined;
 
-public class SideEffectsOnlyTest {
+public class SideEffectsMultiple {
     void test(Object x) {
         method(x);
         method1(x);
-        method3(x);
-        method2(x);
         // :: error: argument.type.incompatible
-        method3(x);
+        method2(x);
     }
 
     @EnsuresQualifier(
@@ -21,12 +19,8 @@ public class SideEffectsOnlyTest {
     // :: error: contracts.postcondition.not.satisfied
     void method(Object x) {}
 
-    @SideEffectsOnly({"this"})
+    @SideEffectsOnly({"this", "x"})
     void method1(@Refined Object x) {}
 
-    @SideEffectsOnly({"x"})
     void method2(@Refined Object x) {}
-
-    @SideEffectsOnly({"this"})
-    void method3(@Refined Object x) {}
 }
