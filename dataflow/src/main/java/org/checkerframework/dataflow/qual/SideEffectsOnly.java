@@ -18,7 +18,11 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface SideEffectsOnly {
-    /** The expressions that this method side effects. */
+    /**
+     * The expressions that this method side effects.
+     *
+     * @return Java expressions that are side-effected by this method
+     */
     @JavaExpression
     public String[] value();
 }
