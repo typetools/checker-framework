@@ -186,12 +186,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
             updateAnnotationSetInScene(
-                    param.type,
-                    TypeUseLocation.PARAMETER,
-                    argATM,
-                    paramATM,
-                    atypeFactory,
-                    jaifPath);
+                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
         }
     }
 
@@ -222,12 +217,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
             updateAnnotationSetInScene(
-                    param.type,
-                    TypeUseLocation.PARAMETER,
-                    argATM,
-                    paramATM,
-                    atypeFactory,
-                    jaifPath);
+                    param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -237,12 +227,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             if (paramATM != null) {
                 AField receiver = method.receiver;
                 updateAnnotationSetInScene(
-                        receiver.type,
-                        TypeUseLocation.RECEIVER,
-                        argADT,
-                        paramATM,
-                        atypeFactory,
-                        jaifPath);
+                        receiver.type, TypeUseLocation.RECEIVER, argADT, paramATM, jaifPath);
             }
         }
     }
@@ -287,21 +272,16 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
                                 i, argATM.getUnderlyingType(), ve.getSimpleName());
+
                 updateAnnotationSetInScene(
-                        param.type,
-                        TypeUseLocation.PARAMETER,
-                        argATM,
-                        paramATM,
-                        atypeFactory,
-                        jaifPath);
+                        param.type, TypeUseLocation.PARAMETER, argATM, paramATM, jaifPath);
                 break;
             }
         }
     }
 
     @Override
-    public void updateFromFieldAssignment(
-            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atypeFactory) {
+    public void updateFromFieldAssignment(Node lhs, Node rhs, ClassTree classTree) {
 
         Element element;
         String fieldName;
@@ -343,8 +323,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         AField field = clazz.fields.getVivify(fieldName);
         field.setTypeMirror(lhsATM.getUnderlyingType());
 
-        updateAnnotationSetInScene(
-                field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, atypeFactory, jaifPath);
+        updateAnnotationSetInScene(field.type, TypeUseLocation.FIELD, rhsATM, lhsATM, jaifPath);
     }
 
     /**
@@ -444,7 +423,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     methodTree, rhsATM, /*removeErroneousExpressions=*/ true);
         }
         updateAnnotationSetInScene(
-                method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, atypeFactory, jaifPath);
+                method.returnType, TypeUseLocation.RETURN, rhsATM, lhsATM, jaifPath);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -491,7 +470,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     TypeUseLocation.RETURN,
                     rhsATM,
                     overriddenMethodReturnType,
-                    atypeFactory,
                     superJaifPath);
         }
     }
@@ -564,8 +542,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * <p>Exists so that subclasses can customize it.
      *
      * @param type ATypeElement of the Scene which will be modified
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param jaifPath path to a .jaif file for a Scene; used for marking the scene as modified
      *     (needing to be written to disk)
      * @param rhsATM the RHS of the annotated type on the source code
@@ -577,8 +553,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             TypeUseLocation defLoc,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
-            AnnotatedTypeFactory atf,
             String jaifPath) {
-        storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, atf, jaifPath);
+        storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, atypeFactory, jaifPath);
     }
 }
