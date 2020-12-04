@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
@@ -137,7 +138,7 @@ public class PurityUtils {
      * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
      *     annotation, null otherwise
      */
-    public static Map<? extends ExecutableElement, ? extends AnnotationValue>
+    public static @Nullable Map<? extends ExecutableElement, ? extends AnnotationValue>
             getSideEffectsOnlyValues(AnnotationProvider provider, Element methodElement) {
         AnnotationMirror sefOnlyAnnotation =
                 provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
