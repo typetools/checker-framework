@@ -110,8 +110,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * it walks the Stub Parser's AST to create/collect types and declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
- * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}. This behaves the
- * same as {@code parse}, but takes an ajava file instead.
+ * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
+ * This behaves the same as {@code parse}, but takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
@@ -195,7 +195,7 @@ public class AnnotationFileParser {
 
     /**
      * The annotations on the declared package of the complation unit being processed. Contains null
-     * if not processing a compilation unit or if the file has no declared package.
+     * when not parsing a file.
      */
     @Nullable List<AnnotationExpr> packageAnnos;
 
@@ -209,6 +209,12 @@ public class AnnotationFileParser {
      */
     private FqName typeName;
 
+    /**
+     * Contains the annotations of the file currently being processed, which is the output of the
+     * parsing process. Contains null if not currently processing a file.
+     */
+    @Nullable AnnotationFileAnnotations annotationFileAnnos;
+
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
@@ -219,17 +225,17 @@ public class AnnotationFileParser {
      * The result of calling AnnotationFileParser.parse: the annotated types and declaration
      * annotations from the file.
      */
-    public static class StubAnnotations {
+    public static class AnnotationFileAnnotations {
 
-        /** Map from element to its type as declared in the stub file. */
+        /** Map from element to its type as declared in the annotation file. */
         public final Map<Element, AnnotatedTypeMirror> atypes = new HashMap<>();
 
         /**
          * Map from a name (actually declaration element string) to the set of declaration
-         * annotations on it, as written in the stub file.
+         * annotations on it, as written in the annotation file.
          *
-         * <p>Map keys cannot be Element, because a different Element appears in the stub files than
-         * in the real files. So, map keys are the verbose element name, as returned by
+         * <p>Map keys cannot be Element, because a different Element appears in the annotation
+         * files than in the real files. So, map keys are the verbose element name, as returned by
          * ElementUtils.getQualifiedName.
          */
         public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>();
@@ -486,7 +492,7 @@ public class AnnotationFileParser {
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            StubAnnotations stubAnnos) {
+            AnnotationFileAnnotations stubAnnos) {
         parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, false);
     }
 
@@ -499,10 +505,7 @@ public class AnnotationFileParser {
      * @param root javac tree for the file to be parsed
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param atypes annotated types from this ajava file are added to this map
-     * @param declAnnos map from a name (actually declaration element string) to the set of
-     *     declaration annotations on it. Declaration annotations from this ajava file are added to
-     *     this map.
+     * @param ajavaAnnos annotations from the ajava file; side-effected by this method
      */
     public static void parseAjavaFile(
             String filename,
@@ -510,16 +513,14 @@ public class AnnotationFileParser {
             CompilationUnitTree root,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            Map<Element, AnnotatedTypeMirror> atypes,
-            Map<String, Set<AnnotationMirror>> declAnnos) {
+            AnnotationFileAnnotations ajavaAnnos) {
         AnnotationFileParser sp =
-                new AnnotationFileParser(
-                        filename, atypeFactory, processingEnv, atypes, declAnnos, false, false);
+                new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
         try {
             sp.parseStubUnit(inputStream);
             sp.combineStringLiterals();
             sp.setRoot(root);
-            sp.process();
+            sp.process(ajavaAnnos);
         } catch (ParseProblemException e) {
             StringJoiner message = new StringJoiner(LINE_SEPARATOR);
             message.add(
@@ -550,7 +551,7 @@ public class AnnotationFileParser {
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            StubAnnotations stubAnnos) {
+            AnnotationFileAnnotations stubAnnos) {
         parse(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
     }
 
@@ -569,7 +570,7 @@ public class AnnotationFileParser {
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            StubAnnotations stubAnnos,
+            AnnotationFileAnnotations stubAnnos,
             boolean isJdkAsStub) {
         AnnotationFileParser sp =
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub, true);
@@ -620,21 +621,22 @@ public class AnnotationFileParser {
     /**
      * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}.
      *
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the file; side-effected by this method
      */
-    private void process(StubAnnotations stubAnnos) {
-        processStubUnit(this.stubUnit, stubAnnos);
+    private void process(AnnotationFileAnnotations annotationFileAnnos) {
+        this.annotationFileAnnos = annotationFileAnnos;
+        processStubUnit(this.stubUnit);
+        this.annotationFileAnnos = null;
     }
 
     /**
      * Process the given StubUnit.
      *
      * @param su the StubUnit to process
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void processStubUnit(StubUnit su, StubAnnotations stubAnnos) {
+    private void processStubUnit(StubUnit su) {
         for (CompilationUnit cu : su.getCompilationUnits()) {
-            processCompilationUnit(cu, stubAnnos);
+            processCompilationUnit(cu);
         }
     }
 
@@ -642,9 +644,8 @@ public class AnnotationFileParser {
      * Process the given CompilationUnit.
      *
      * @param cu the CompilationUnit to process
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void processCompilationUnit(CompilationUnit cu, StubAnnotations stubAnnos) {
+    private void processCompilationUnit(CompilationUnit cu) {
 
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
@@ -652,13 +653,13 @@ public class AnnotationFileParser {
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
             packageAnnos = pDecl.getAnnotations();
-            processPackage(pDecl, stubAnnos);
+            processPackage(pDecl);
         }
 
         if (isParsingStubFile) {
             if (cu.getTypes() != null) {
                 for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
-                    processTypeDecl(typeDeclaration, null, null, stubAnnos);
+                    processTypeDecl(typeDeclaration, null, null);
                 }
             }
         } else {
@@ -672,9 +673,8 @@ public class AnnotationFileParser {
      * Process the given package declaration
      *
      * @param packDecl the package declaration to process
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void processPackage(PackageDeclaration packDecl, StubAnnotations stubAnnos) {
+    private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
         typeName = new FqName(packageName, null);
@@ -682,7 +682,7 @@ public class AnnotationFileParser {
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
         if (elem != null) {
-            recordDeclAnnotation(elem, packDecl.getAnnotations(), stubAnnos);
+            recordDeclAnnotation(elem, packDecl.getAnnotations(), annotationFileAnnos);
         }
         // TODO: Handle atypes???
     }
@@ -695,15 +695,11 @@ public class AnnotationFileParser {
      *     otherwise null
      * @param classTree the tree corresponding to typeDecl if processing an ajava file, null
      *     otherwise
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      * @return a list of types variables for {@code typeDecl}. These should be removed after
      *     processing this type declaration.
      */
     private List<AnnotatedTypeVariable> processTypeDecl(
-            TypeDeclaration<?> typeDecl,
-            String outertypeName,
-            @Nullable ClassTree classTree,
-            StubAnnotations stubAnnos) {
+            TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
         assert typeName != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
@@ -745,7 +741,7 @@ public class AnnotationFileParser {
                                 + "...");
                 return null;
             }
-            typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt, stubAnnos);
+            typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
             typeParameters.addAll(typeDeclTypeParameters);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
             if (!(typeDecl instanceof AnnotationDeclaration)) {
@@ -766,8 +762,7 @@ public class AnnotationFileParser {
                                 + "...");
                 return null;
             }
-            typeDeclTypeParameters =
-                    processType((ClassOrInterfaceDeclaration) typeDecl, typeElt, stubAnnos);
+            typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
             typeParameters.addAll(typeDeclTypeParameters);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
@@ -786,23 +781,22 @@ public class AnnotationFileParser {
             final BodyDeclaration<?> decl = entry.getValue();
             switch (elt.getKind()) {
                 case FIELD:
-                    processField((FieldDeclaration) decl, (VariableElement) elt, stubAnnos);
+                    processField((FieldDeclaration) decl, (VariableElement) elt);
                     break;
                 case ENUM_CONSTANT:
-                    processEnumConstant(
-                            (EnumConstantDeclaration) decl, (VariableElement) elt, stubAnnos);
+                    processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
                     processCallableDeclaration(
-                            (CallableDeclaration<?>) decl, (ExecutableElement) elt, stubAnnos);
+                            (CallableDeclaration<?>) decl, (ExecutableElement) elt);
                     break;
                 case CLASS:
                 case INTERFACE:
-                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null, stubAnnos);
+                    processTypeDecl((ClassOrInterfaceDeclaration) decl, innerName, null);
                     break;
                 case ENUM:
-                    processTypeDecl((EnumDeclaration) decl, innerName, null, stubAnnos);
+                    processTypeDecl((EnumDeclaration) decl, innerName, null);
                     break;
                 default:
                     /* do nothing */
@@ -842,13 +836,12 @@ public class AnnotationFileParser {
      *
      * @param decl a type declaration
      * @param elt the type's element
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      * @return the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> processType(
-            ClassOrInterfaceDeclaration decl, TypeElement elt, StubAnnotations stubAnnos) {
+            ClassOrInterfaceDeclaration decl, TypeElement elt) {
 
-        recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
+        recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos);
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
@@ -882,9 +875,9 @@ public class AnnotationFileParser {
             }
         }
 
-        annotateTypeParameters(decl, elt, stubAnnos, typeArguments, typeParameters);
+        annotateTypeParameters(decl, elt, annotationFileAnnos, typeArguments, typeParameters);
         annotateSupertypes(decl, type);
-        putMerge(stubAnnos.atypes, elt, type);
+        putMerge(annotationFileAnnos.atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -905,17 +898,15 @@ public class AnnotationFileParser {
      *
      * @param decl enum declaration
      * @param elt element representing enum
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      * @return the enum's type parameter declarations
      */
-    private List<AnnotatedTypeVariable> processEnum(
-            EnumDeclaration decl, TypeElement elt, StubAnnotations stubAnnos) {
+    private List<AnnotatedTypeVariable> processEnum(EnumDeclaration decl, TypeElement elt) {
 
-        recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
+        recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos);
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
-        putMerge(stubAnnos.atypes, elt, type);
+        putMerge(annotationFileAnnos.atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
@@ -973,19 +964,21 @@ public class AnnotationFileParser {
      *
      * @param decl a method or constructor declaration
      * @param elt the method or constructor's element
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @return type variables for the method
      */
-    private void processCallableDeclaration(
-            CallableDeclaration<?> decl, ExecutableElement elt, StubAnnotations stubAnnos) {
+    private List<AnnotatedTypeVariable> processCallableDeclaration(
+            CallableDeclaration<?> decl, ExecutableElement elt) {
         // Declaration annotations
-        recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
+        recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos);
         if (decl.isMethodDeclaration()) {
             // AnnotationFileParser parses all annotations in type annotation position as type
             // annotations
             recordDeclAnnotation(
-                    elt, ((MethodDeclaration) decl).getType().getAnnotations(), stubAnnos);
+                    elt,
+                    ((MethodDeclaration) decl).getType().getAnnotations(),
+                    annotationFileAnnos);
         }
-        recordDeclAnnotationFromAnnotationFile(elt, stubAnnos);
+        recordDeclAnnotationFromAnnotationFile(elt, annotationFileAnnos);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         AnnotatedExecutableType origMethodType;
@@ -998,7 +991,11 @@ public class AnnotationFileParser {
 
         // Type Parameters
         annotateTypeParameters(
-                decl, elt, stubAnnos, methodType.getTypeVariables(), decl.getTypeParameters());
+                decl,
+                elt,
+                annotationFileAnnos,
+                methodType.getTypeVariables(),
+                decl.getTypeParameters());
         typeParameters.addAll(methodType.getTypeVariables());
 
         // Return type, from declaration annotations on the method or constructor
@@ -1013,7 +1010,7 @@ public class AnnotationFileParser {
         }
 
         // Parameters
-        processParameters(decl, elt, methodType, stubAnnos);
+        processParameters(decl, elt, methodType);
 
         // Receiver
         if (decl.getReceiverParameter().isPresent()) {
@@ -1052,7 +1049,7 @@ public class AnnotationFileParser {
         }
 
         // Store the type.
-        putMerge(stubAnnos.atypes, elt, methodType);
+        putMerge(annotationFileAnnos.atypes, elt, methodType);
         if (isParsingStubFile) {
             typeParameters.removeAll(methodType.getTypeVariables());
         }
@@ -1067,13 +1064,11 @@ public class AnnotationFileParser {
      * @param method a Method or Constructor declaration
      * @param elt ExecutableElement of {@code method}
      * @param methodType annotated type of {@code method}
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void processParameters(
             CallableDeclaration<?> method,
             ExecutableElement elt,
-            AnnotatedExecutableType methodType,
-            StubAnnotations stubAnnos) {
+            AnnotatedExecutableType methodType) {
         List<Parameter> params = method.getParameters();
         List<? extends VariableElement> paramElts = elt.getParameters();
         List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
@@ -1083,8 +1078,8 @@ public class AnnotationFileParser {
             AnnotatedTypeMirror paramType = paramTypes.get(i);
             Parameter param = params.get(i);
 
-            recordDeclAnnotation(paramElt, param.getAnnotations(), stubAnnos);
-            recordDeclAnnotation(paramElt, param.getType().getAnnotations(), stubAnnos);
+            recordDeclAnnotation(paramElt, param.getAnnotations(), annotationFileAnnos);
+            recordDeclAnnotation(paramElt, param.getType().getAnnotations(), annotationFileAnnos);
 
             if (param.isVarArgs()) {
                 assert paramType.getKind() == TypeKind.ARRAY;
@@ -1098,7 +1093,7 @@ public class AnnotationFileParser {
                 annotate(paramType, param.getVarArgsAnnotations());
             } else {
                 annotate(paramType, param.getType(), param.getAnnotations());
-                putMerge(stubAnnos.atypes, paramElt, paramType);
+                putMerge(annotationFileAnnos.atypes, paramElt, paramType);
             }
         }
     }
@@ -1320,20 +1315,18 @@ public class AnnotationFileParser {
      *
      * @param decl the declaration in the annotation file
      * @param elt the element representing that same declaration
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void processField(
-            FieldDeclaration decl, VariableElement elt, StubAnnotations stubAnnos) {
+    private void processField(FieldDeclaration decl, VariableElement elt) {
         if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
             // and might refer to types that are not accessible.
             return;
         }
-        recordDeclAnnotationFromAnnotationFile(elt, stubAnnos);
-        recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
+        recordDeclAnnotationFromAnnotationFile(elt, annotationFileAnnos);
+        recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos);
         // AnnotationFileParser parses all annotations in type annotation position as type
         // annotations
-        recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), stubAnnos);
+        recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), annotationFileAnnos);
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
         VariableDeclarator fieldVarDecl = null;
@@ -1346,7 +1339,7 @@ public class AnnotationFileParser {
         }
         assert fieldVarDecl != null;
         annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations());
-        putMerge(stubAnnos.atypes, elt, fieldType);
+        putMerge(annotationFileAnnos.atypes, elt, fieldType);
     }
 
     /**
@@ -1355,15 +1348,13 @@ public class AnnotationFileParser {
      *
      * @param decl the enum constant, in Javaparser AST form (the source of annotations)
      * @param elt the enum constant declaration, as an element (the destination for annotations)
-     * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void processEnumConstant(
-            EnumConstantDeclaration decl, VariableElement elt, StubAnnotations stubAnnos) {
-        recordDeclAnnotationFromAnnotationFile(elt, stubAnnos);
-        recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
+    private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
+        recordDeclAnnotationFromAnnotationFile(elt, annotationFileAnnos);
+        recordDeclAnnotation(elt, decl.getAnnotations(), annotationFileAnnos);
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations());
-        putMerge(stubAnnos.atypes, elt, enumConstType);
+        putMerge(annotationFileAnnos.atypes, elt, enumConstType);
     }
 
     /**
@@ -1419,7 +1410,7 @@ public class AnnotationFileParser {
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
     private void recordDeclAnnotation(
-            Element elt, List<AnnotationExpr> annotations, StubAnnotations stubAnnos) {
+            Element elt, List<AnnotationExpr> annotations, AnnotationFileAnnotations stubAnnos) {
         if (annotations == null) {
             return;
         }
@@ -1448,7 +1439,8 @@ public class AnnotationFileParser {
      * @param elt an element to be annotated as {@code @FromStubFile}
      * @param stubAnnos annotations from the stub file; side-effected by this method
      */
-    private void recordDeclAnnotationFromAnnotationFile(Element elt, StubAnnotations stubAnnos) {
+    private void recordDeclAnnotationFromAnnotationFile(
+            Element elt, AnnotationFileAnnotations stubAnnos) {
         if (!isParsingStubFile || isJdkAsStub) {
             return;
         }
@@ -1461,7 +1453,7 @@ public class AnnotationFileParser {
     private void annotateTypeParameters(
             BodyDeclaration<?> decl, // for debugging
             Object elt, // for debugging; TypeElement or ExecutableElement
-            StubAnnotations stubAnnos,
+            AnnotationFileAnnotations stubAnnos,
             List<? extends AnnotatedTypeMirror> typeArguments,
             List<TypeParameter> typeParameters) {
         if (typeParameters == null) {
