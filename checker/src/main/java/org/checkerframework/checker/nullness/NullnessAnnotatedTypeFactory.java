@@ -785,7 +785,7 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public WholeProgramInference createWholeProgramInference() {
+    protected WholeProgramInference createWholeProgramInference() {
         return new NullnessWholeProgramInferenceScenes(this);
     }
 }
