@@ -251,12 +251,28 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
             // update this value
             if (sideEffectsUnrefineAliases) {
-                thisValue = null;
+                if (sideEffectExpressions != null) {
+                    if (sideEffectExpressions.contains("this")) {
+                        thisValue = null;
+                    }
+                } else {
+                    thisValue = null;
+                }
             }
 
             // update field values
             if (sideEffectsUnrefineAliases) {
-                fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                if (sideEffectExpressions != null) {
+                    final List<String> expressionsToRemove = sideEffectExpressions;
+                    fieldValues
+                            .entrySet()
+                            .removeIf(
+                                    e ->
+                                            expressionsToRemove.contains(e.getKey().toString())
+                                                    && !e.getKey().isUnmodifiableByOtherCode());
+                } else {
+                    fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+                }
             } else {
                 Map<FieldAccess, V> newFieldValues = new HashMap<>();
                 for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
