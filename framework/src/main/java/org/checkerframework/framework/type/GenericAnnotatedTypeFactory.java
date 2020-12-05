@@ -2303,6 +2303,10 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Return the string representation of a postcondition annotation for the given field.
      *
+     * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
      * @param elt element for a field
      * @param f AFU representation of a field's postcondition annotations
      * @param preconds the precondition annotations for the method; used to suppress redundant
@@ -2311,6 +2315,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public @Nullable String getPostconditionAnnotation(
             VariableElement elt, AField f, List<String> preconds) {
+        // TODO: implement outputting "@EnsuresQualifier".
         return null;
     }
 }
