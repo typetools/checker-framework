@@ -237,7 +237,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             VariableElement fieldElement = fa.getField();
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
 
-            if (!Elements.inSameClass(methodElt, fieldElement)) {
+            if (!ElementUtils.inSameClass(methodElt, fieldElement)) {
                 continue;
             }
 
