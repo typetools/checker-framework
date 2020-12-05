@@ -2258,17 +2258,19 @@ public abstract class GenericAnnotatedTypeFactory<
         return result;
     }
 
-    // TODO: Implement this here in this class, reading @PreconditionAnnotation meta-annotations.
-    // That would be more general and would eliminate most but not all of the code in overriding
-    // implementations.
     /**
      * Return the string representation of a precondition annotation for the given field.
      *
-     * @param elt element for a field
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field, which is declared in the same class as the method
      * @param f AFU representation of a field's precondition annotations
      * @return a precondition annotation for the element, or null if none is appropriate
      */
     public @Nullable String getPreconditionAnnotation(VariableElement elt, AField f) {
+        // TODO: implement outputting "@RequiresQualifier".
         return null;
     }
 

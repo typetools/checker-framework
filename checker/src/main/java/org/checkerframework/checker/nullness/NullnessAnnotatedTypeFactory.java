@@ -731,6 +731,9 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    // This implementation overrides the superclass implementation to:
+    //  * check for @MonotonicNonNull
+    //  * output @RequiresNonNull rather than @RequiresQualifier.
     @Override
     public String getPreconditionAnnotation(VariableElement elt, AField f) {
         AnnotatedTypeMirror declaredType = fromElement(elt);
@@ -755,7 +758,7 @@ public class NullnessAnnotatedTypeFactory
      * @return a {@code RequiresNonNull("...")} annotation for the given field
      */
     private String requiresNonNullAnno(VariableElement fieldElement) {
-        return "@org.checkerframework.checker.nullness.qual.RequiresNonNull(\""
+        return "@org.checkerframework.checker.nullness.qual.RequiresNonNull(\"this."
                 + fieldElement.getSimpleName()
                 + "\")";
     }
@@ -776,7 +779,7 @@ public class NullnessAnnotatedTypeFactory
         }
         for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
             if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                return "@org.checkerframework.checker.nullness.qual.EnsuresNonNull(\""
+                return "@org.checkerframework.checker.nullness.qual.EnsuresNonNull(\"this."
                         + elt.getSimpleName()
                         + "\")";
             }

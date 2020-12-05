@@ -196,7 +196,7 @@ public interface WholeProgramInference {
      * @param fieldName the name of the field whose type will be changed
      * @param rhsATM the type of the expression being assigned to the field
      */
-    void wpiAdjustForUpdateField(
+    void adjustForUpdateField(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM);
 
     /**
@@ -205,7 +205,7 @@ public interface WholeProgramInference {
      *
      * @param rhsATM the type of the rhs of the pseudo-assignment
      */
-    void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
+    void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM);
 
     /**
      * Updates a method to add a declaration annotation.

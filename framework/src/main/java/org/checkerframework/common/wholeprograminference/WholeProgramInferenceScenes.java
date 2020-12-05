@@ -197,7 +197,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 continue;
             }
             AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
-            wpiAdjustForUpdateNonField(argATM);
+            adjustForUpdateNonField(argATM);
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
@@ -237,8 +237,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             VariableElement fieldElement = fa.getField();
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
 
+            if (!Elements.inSameClass(methodElt, fieldElement)) {
+                continue;
+            }
+
             AnnotatedTypeMirror atm = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldType);
-            wpiAdjustForUpdateNonField(atm);
+            adjustForUpdateNonField(atm);
 
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
             updateAnnotationSetInScene(
@@ -328,7 +332,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            wpiAdjustForUpdateNonField(argATM);
+            adjustForUpdateNonField(argATM);
             AField param =
                     method.vivifyAndAddTypeMirrorToParameter(
                             i, argATM.getUnderlyingType(), ve.getSimpleName());
@@ -384,7 +388,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 }
                 AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(vt);
                 AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
-                wpiAdjustForUpdateNonField(argATM);
+                adjustForUpdateNonField(argATM);
                 VariableElement ve = TreeUtils.elementFromDeclaration(vt);
                 AField param =
                         method.vivifyAndAddTypeMirrorToParameter(
@@ -417,7 +421,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
         // @GuardedBy({}).
         AnnotatedTypeMirror rhsATM = atypeFactory.getAnnotatedType(rhs.getTree());
-        wpiAdjustForUpdateField(lhs.getTree(), element, fieldName, rhsATM);
+        adjustForUpdateField(lhs.getTree(), element, fieldName, rhsATM);
 
         updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
     }
@@ -534,7 +538,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM =
                 atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
-        wpiAdjustForUpdateNonField(rhsATM);
+        adjustForUpdateNonField(rhsATM);
         DependentTypesHelper dependentTypesHelper =
                 ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
         if (dependentTypesHelper != null) {
@@ -594,13 +598,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     @Override
-    public void wpiAdjustForUpdateField(
+    public void adjustForUpdateField(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
         // This implementation does nothing
     }
 
     @Override
-    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+    public void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
         // This implementation does nothing
     }
 

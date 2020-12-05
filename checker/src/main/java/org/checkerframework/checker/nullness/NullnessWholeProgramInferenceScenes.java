@@ -30,7 +30,7 @@ public class NullnessWholeProgramInferenceScenes extends WholeProgramInferenceSc
     //  3. in a constructor
     // then change rhs to @MonotonicNonNull.
     @Override
-    public void wpiAdjustForUpdateField(
+    public void adjustForUpdateField(
             Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
         if (!rhsATM.hasAnnotation(Nullable.class)) {
             return;
@@ -47,7 +47,7 @@ public class NullnessWholeProgramInferenceScenes extends WholeProgramInferenceSc
     //  1. rhs is @MonotonicNonNull
     // then change rhs to @Nullable
     @Override
-    public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+    public void adjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
         if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
             rhsATM.replaceAnnotation(((NullnessAnnotatedTypeFactory) atypeFactory).NULLABLE);
         }
