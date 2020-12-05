@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -173,7 +174,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected boolean isSideEffectsOnly(
             AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-        return PurityUtils.isSideEffectsOnly(atypeFactory, method);
+        AnnotationMirror sefOnlyAnnotation =
+                atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+        if (sefOnlyAnnotation != null) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -184,9 +190,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
      *     annotation
      */
-    protected Map<? extends ExecutableElement, ? extends AnnotationValue> getSideEffectsOnlyValues(
-            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-        return PurityUtils.getSideEffectsOnlyValues(atypeFactory, method);
+    protected @Nullable Map<? extends ExecutableElement, ? extends AnnotationValue>
+            getSideEffectsOnlyValues(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+        AnnotationMirror sefOnlyAnnotation =
+                atypeFactory.getDeclAnnotation(method, SideEffectsOnly.class);
+        if (sefOnlyAnnotation == null) {
+            return null;
+        }
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
+                sefOnlyAnnotation.getElementValues();
+        return elementValues;
     }
 
     /* --------------------------------------------------------- */

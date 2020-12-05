@@ -2,17 +2,12 @@ package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
-import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -104,53 +99,6 @@ public class PurityUtils {
     }
 
     /**
-     * Is the method annotated with the declaration annotation {@code @SideEffectsOnly}.
-     *
-     * @param provider how to get annotations
-     * @param methodTree a method to test
-     * @return whether the method has the declaration annotation {@code @SideEffectsOnly}
-     */
-    public static boolean isSideEffectsOnly(AnnotationProvider provider, MethodTree methodTree) {
-        Element methodElement = TreeUtils.elementFromTree(methodTree);
-        if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + methodTree);
-        }
-        return isSideEffectsOnly(provider, methodElement);
-    }
-
-    /**
-     * Is the method annotated with the declaration annotation {@code @SideEffectsOnly}.
-     *
-     * @param provider how to get annotations
-     * @param methodElement a method to test
-     * @return whether the method has the declaration annotation {@code @SideEffectsOnly}
-     */
-    public static boolean isSideEffectsOnly(AnnotationProvider provider, Element methodElement) {
-        EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
-        return kinds.contains(Kind.SIDE_EFFECTS_ONLY);
-    }
-
-    /**
-     * Returns the annotation values of {@code @SideEffectsOnly}.
-     *
-     * @param provider how to get annotations
-     * @param methodElement a method to test
-     * @return values of annotation elements of {@code @SideEffectsOnly} if the method has this
-     *     annotation, null otherwise
-     */
-    public static @Nullable Map<? extends ExecutableElement, ? extends AnnotationValue>
-            getSideEffectsOnlyValues(AnnotationProvider provider, Element methodElement) {
-        AnnotationMirror sefOnlyAnnotation =
-                provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
-        if (sefOnlyAnnotation == null) {
-            return null;
-        }
-        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues =
-                sefOnlyAnnotation.getElementValues();
-        return elementValues;
-    }
-
-    /**
      * Returns the types of purity of the method {@code methodTree}.
      *
      * @param provider how to get annotations
@@ -181,11 +129,9 @@ public class PurityUtils {
                 provider.getDeclAnnotation(methodElement, SideEffectFree.class);
         AnnotationMirror detAnnotation =
                 provider.getDeclAnnotation(methodElement, Deterministic.class);
-        AnnotationMirror sefOnlyAnnotation =
-                provider.getDeclAnnotation(methodElement, SideEffectsOnly.class);
 
         if (pureAnnotation != null) {
-            return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE, Kind.SIDE_EFFECTS_ONLY);
+            return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
         }
         EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
         if (sefAnnotation != null) {
@@ -193,9 +139,6 @@ public class PurityUtils {
         }
         if (detAnnotation != null) {
             result.add(Kind.DETERMINISTIC);
-        }
-        if (sefOnlyAnnotation != null) {
-            result.add(Kind.SIDE_EFFECTS_ONLY);
         }
         return result;
     }
