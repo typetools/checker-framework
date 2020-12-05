@@ -105,9 +105,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * to two maps passed as arguments.
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parse(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, Map, Map)}, which side-effects its last two
- * arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub file. Then,
- * it walks the Stub Parser's AST to create/collect types and declaration annotations.
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
+ * last two arguments. It operates in two steps. First, it calls the Stub Parser to parse a stub
+ * file. Then, it walks the Stub Parser's AST to create/collect types and declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
