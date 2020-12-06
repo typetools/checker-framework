@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -689,5 +690,19 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror lhsATM,
             String jaifPath) {
         storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, atypeFactory, jaifPath);
+    }
+
+    /**
+     * Obtain the type from an ATypeElement (which is part of a Scene).
+     *
+     * @param typeMirror the underlying type for the result
+     * @param type the ATypeElement from which to obtain annotations
+     * @param atf the annotated type factory
+     * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
+     *     {@code type}
+     */
+    public AnnotatedTypeMirror atmFromATypeElement(
+            TypeMirror typeMirror, ATypeElement type, AnnotatedTypeFactory atf) {
+        return storage.atmFromATypeElement(typeMirror, type, atf);
     }
 }

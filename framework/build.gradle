@@ -191,7 +191,7 @@ task testWPIStubs(type: Test) {
     }
 
     doLast {
-        commonWPIlogic()
+        wpiCopyNonannotatedToAnnotated()
         // The stub file format doesn't support annotations on anonymous inner classes, so
         // this test also expects errors on UsesAnonymous.java.
         delete('tests/whole-program-inference/annotated/UsesAnonymous.java')
@@ -219,7 +219,7 @@ task testWPIStubsValidate(type: Test) {
 }
 
 // Common logic for copying and deleting whole-program inference tests.
-void commonWPIlogic() {
+void wpiCopyNonannotatedToAnnotated() {
     // Copying all test files to another directory, removing all expected errors that should not
     // occur after inserting inferred annotations from .jaif files.
     copy {
@@ -264,8 +264,10 @@ task testWPIJaifs(type: Test) {
         events "passed", "skipped", "failed"
     }
 
+    testLogging.showStandardStreams = true
+
     doLast {
-        commonWPIlogic()
+        wpiCopyNonannotatedToAnnotated()
 
         // JAIF-based WPI fails these tests, which was added for stub-based WPI.
         // See issue here: https://github.com/typetools/checker-framework/issues/3009

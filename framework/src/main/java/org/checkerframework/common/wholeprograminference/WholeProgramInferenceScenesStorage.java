@@ -416,7 +416,7 @@ public class WholeProgramInferenceScenesStorage {
      * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
      *     {@code type}
      */
-    private AnnotatedTypeMirror atmFromATypeElement(
+    public AnnotatedTypeMirror atmFromATypeElement(
             TypeMirror typeMirror, ATypeElement type, AnnotatedTypeFactory atf) {
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(typeMirror, atf, false);
         updateAtmFromATypeElement(result, type, atf);

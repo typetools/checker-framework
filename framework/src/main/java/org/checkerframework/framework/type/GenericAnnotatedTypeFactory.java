@@ -18,6 +18,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -2245,6 +2247,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<String> getPreconditionAnnotations(AMethod m) {
+        System.out.printf("getPreconditionAnnotations(%s)%n", m.getMethodName());
         List<String> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             VariableElement elt = entry.getKey();
@@ -2271,8 +2274,76 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a precondition annotation for the element, or null if none is appropriate
      */
     public @Nullable String getPreconditionAnnotation(VariableElement elt, AField f) {
-        // TODO: implement outputting "@RequiresQualifier".
-        return null;
+        WholeProgramInferenceScenes wholeProgramInference =
+                (WholeProgramInferenceScenes) getWholeProgramInference();
+        if (wholeProgramInference == null) {
+            return null;
+        }
+
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+
+        TypeMirror typeMirror = elt.asType();
+        AnnotatedTypeMirror inferredType =
+                wholeProgramInference.atmFromATypeElement(typeMirror, f.type, this);
+
+        // TODO: should this only check the top-level annotations?
+        if (declaredType.equals(inferredType)) {
+            System.out.printf(
+                    "  getPreconditionAnnotation(%s) => null; declaredType.equals(inferredType): %s%n",
+                    elt, declaredType);
+            return null;
+        }
+
+        System.out.printf("getPreconditionAnnotation(%s, %s)%n", elt, f);
+        System.out.printf("  declaredType = %s%n", declaredType.toString(true));
+        System.out.printf("  inferredType = %s%n", inferredType.toString(true));
+
+        StringJoiner result = new StringJoiner(System.lineSeparator());
+        for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
+            AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+            if (declaredAm == null) {
+                // There is no explicitly-written annotation for the given qualifier hierarchy.
+                // Determine the default.
+                addComputedTypeAnnotations(elt, declaredType);
+                declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+                if (declaredAm == null) {
+                    throw new BugInCF(
+                            "getPreconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s%n  inferredType=%s%n",
+                            elt, f, declaredType.toString(true), inferredType.toString(true));
+                }
+            }
+
+            System.out.printf("  declaredAm = %s%n", declaredAm);
+            System.out.printf("  inferredAm = %s%n", inferredAm);
+            if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
+                continue;
+            }
+            System.out.printf(
+                    "Annotation mirrors differ:%n  %s [%s]%n  %s [%s]%n",
+                    declaredAm, declaredAm.getClass(), inferredAm, inferredAm.getClass());
+            // inferredAm must be a subtype of declaredAm (since they are not equal)
+            result.add(requiresQualifierAnno(elt, inferredAm));
+        }
+
+        String resultString = result.toString();
+        System.out.printf("getPreconditionAnnotation(%s) => %s%n", elt, resultString);
+        return resultString.equals("") ? null : resultString;
+    }
+
+    /**
+     * Returns a {@code RequiresQualifier("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @param qualifier the qualifier that must be present
+     * @return a {@code RequiresQualifier("...")} annotation for the given field
+     */
+    protected String requiresQualifierAnno(
+            VariableElement fieldElement, AnnotationMirror qualifier) {
+        return "@org.checkerframework.checker.nullness.qual.RequiresQualifier("
+                + ("expression = \"this." + fieldElement.getSimpleName() + "\"")
+                + ", "
+                + ("qualifier = " + AnnotationUtils.annotationName(qualifier) + ".class")
+                + ")";
     }
 
     /**
