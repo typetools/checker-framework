@@ -60,36 +60,28 @@ If capture_output is not true, return the return code of the subprocess call."""
 
 #---------------------------------------------------------------------------------
 
-# Maximum allowable size of files when downloading, 2gi
-MAX_DOWNLOAD_SIZE = 2000000000
-
 # The location the test site is built in
 HTTP_PATH_TO_DEV_SITE = "https://checkerframework.org/dev"
 FILE_PATH_TO_DEV_SITE = "/cse/www2/types/checker-framework/dev"
-DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
 # The location the test site is pushed to when it is ready
 HTTP_PATH_TO_LIVE_SITE = "https://checkerframework.org"
 FILE_PATH_TO_LIVE_SITE = "/cse/www2/types/checker-framework"
-LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
 SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_RELEASE_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
-# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
-# Another alternative is: USER = os.getenv('USER')
-USER = pwd.getpwuid(os.geteuid())[0]
-
 # Per-user directory for the temporary files created by the release process
-TMP_DIR = "/scratch/" + USER + "/jsr308-release"
+# ("USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566.
+# Another alternative is: USER = os.getenv('USER').)
+TMP_DIR = "/scratch/" + pwd.getpwuid(os.geteuid())[0] + "/jsr308-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"
 
 # Location in which we will download files to run sanity checks
 SANITY_DIR = TMP_DIR + "/sanity"
-SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
 
 # The existence of this file indicates that release_build completed.
 # It is deleted at the beginning of a release_build run, and at the
@@ -110,18 +102,11 @@ LIVE_CHECKLINK = "https://github.com/plume-lib/checklink"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
 LIVE_STUBPARSER = "https://github.com/typetools/stubparser"
 
-OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
-
-EMAIL_TO = 'checker-framework-discuss@googlegroups.com'
-
 # Location of the project directories in which we will build the actual projects.
 # When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'docs/developer/release')
-CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
-CHECKER_BIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
-CFLOGO = os.path.join(CHECKER_FRAMEWORK, 'docs', 'logo', 'Logo', 'CFLogo.png')
 CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 
 # If a new Gradle wrapper was recently installed, the first ./gradlew command outputs:
@@ -129,13 +114,8 @@ CHECKER_TAG_PREFIXES = ["checker-framework-", "checkers-", "new release "]
 CF_VERSION_WARMUP = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework")
 CF_VERSION = execute("./gradlew version -q", True, True, TMP_DIR + "/checker-framework").strip()
 
-CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
-
 ANNO_TOOLS = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, 'annotation-file-utilities')
-AFU_CHANGELOG = os.path.join(ANNO_FILE_UTILITIES, 'changelog.html')
-AFU_TAG_PREFIXES = [""]
-AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, 'annotation-file-utilities.html')
 
 PLUME_SCRIPTS = os.path.join(BUILD_DIR, 'plume-scripts')
 CHECKLINK = os.path.join(BUILD_DIR, 'checklink')
@@ -156,17 +136,8 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO)
 )
 
-AFU_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases")
-CHECKER_INTERM_RELEASES_DIR = os.path.join(FILE_PATH_TO_DEV_SITE, "releases")
-
-AFU_LIVE_SITE = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities")
-AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
-
 CHECKER_LIVE_SITE = FILE_PATH_TO_LIVE_SITE
 CHECKER_LIVE_RELEASES_DIR = os.path.join(CHECKER_LIVE_SITE, "releases")
-LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
-
-CURRENT_DATE = datetime.date.today()
 
 os.environ['PARENT_DIR'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
