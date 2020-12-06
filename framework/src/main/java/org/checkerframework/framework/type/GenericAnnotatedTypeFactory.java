@@ -2255,6 +2255,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 result.add(precondAnno);
             }
         }
+        Collections.sort(result);
         return result;
     }
 
