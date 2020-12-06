@@ -983,7 +983,11 @@ Calling a method typically causes the checker to discard its knowledge of
 the refined type, because the method might assign a field.
 The \refqualclass{dataflow/qual}{SideEffectFree} annotation indicates that
 the method has no side effects, so calling it does not invalidate any
-dataflow facts.
+dataflow facts. The \refqualclass{dataflow/qual}{SideEffectsOnly} annotation
+specifies the expressions that the method side effects. So expressions
+that are not specified as annotation values of
+\refqualclass{dataflow/qual}{SideEffectsOnly} have thier dataflow facts
+unaffected.
 
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
