@@ -219,6 +219,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
+        System.out.printf("updateContracts(%s, %s)%nstore = %s%n", preOrPost, methodElt, store);
+
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz =
@@ -246,6 +248,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             adjustForUpdateNonField(atm);
 
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
+            System.out.printf(
+                    "about to call updateAnnotationSetInScene(%s, %s, %s, %s, %s)%n",
+                    afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath);
+
             updateAnnotationSetInScene(
                     afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath);
         }

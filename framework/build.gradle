@@ -190,6 +190,8 @@ task testWPIStubs(type: Test) {
         events "passed", "skipped", "failed"
     }
 
+    testLogging.showStandardStreams = true
+
     doLast {
         wpiCopyNonannotatedToAnnotated()
         // The stub file format doesn't support annotations on anonymous inner classes, so
@@ -216,6 +218,8 @@ task testWPIStubsValidate(type: Test) {
         exceptionFormat "full"
         events "passed", "skipped", "failed"
     }
+
+    testLogging.showStandardStreams = true
 }
 
 // Common logic for copying and deleting whole-program inference tests.
