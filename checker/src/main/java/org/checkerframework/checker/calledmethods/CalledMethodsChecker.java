@@ -74,7 +74,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
      */
     private boolean isRRDisabled() {
         if (rrDisabled == null) {
-            // BaseTypeChecker#hasOption calls this getImmediateSubcheckerClasses (so that all
+            // BaseTypeChecker#hasOption calls getImmediateSubcheckerClasses (so that all
             // subcheckers' options are
             // considered), so the processingEnvironment must be checked for options directly,
             // because this method
