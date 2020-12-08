@@ -56,7 +56,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
      * those cases disabling the Returns Receiver Checker using this flag will make the Called
      * Methods Checker run much faster.
      */
-    public static final String DISABLE_RETURNS_RECEIVER_CHECKER = "disableReturnsReceiver";
+    public static final String DISABLE_RETURNS_RECEIVER = "disableReturnsReceiver";
 
     /**
      * The number of calls to build frameworks supported by this invocation. Incremented only if the
@@ -80,13 +80,13 @@ public class CalledMethodsChecker extends AccumulationChecker {
             // because this method
             // is called from there.
             rrDisabled =
-                    this.processingEnv.getOptions().containsKey(DISABLE_RETURNS_RECEIVER_CHECKER)
+                    this.processingEnv.getOptions().containsKey(DISABLE_RETURNS_RECEIVER)
                             || this.processingEnv
                                     .getOptions()
                                     .containsKey(
                                             this.getClass().getSimpleName()
                                                     + "_"
-                                                    + DISABLE_RETURNS_RECEIVER_CHECKER);
+                                                    + DISABLE_RETURNS_RECEIVER);
         }
         return rrDisabled;
     }
