@@ -903,10 +903,11 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a {@link FlowExpressionContext} for the method {@code methodInvocation}
-         * (represented as a {@link MethodInvocationTree} as seen at the method use (i.e., at a
-         * method call site).
+         * Returns a {@link FlowExpressionContext} for the method called by {@code methodInvocation}
+         * as seen at the method use (i.e., at a method call site).
          *
+         * @param methodInvocation a method invocation
+         * @param checkerContext the javac components to use
          * @return a {@link FlowExpressionContext} for the method {@code methodInvocation}
          */
         public static FlowExpressionContext buildContextForMethodUse(

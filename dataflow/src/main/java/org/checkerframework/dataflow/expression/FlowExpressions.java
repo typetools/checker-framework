@@ -343,7 +343,7 @@ public class FlowExpressions {
      * Returns the receiver of ele, whether explicit or implicit.
      *
      * @param accessTree method or constructor invocation
-     * @aram provider an AnnotationProvider
+     * @param provider an AnnotationProvider
      * @return the receiver of ele, whether explicit or implicit
      */
     public static Receiver internalReprOfReceiver(
@@ -354,7 +354,11 @@ public class FlowExpressions {
         if (receiverTree != null) {
             return internalReprOf(provider, receiverTree);
         } else {
-            return internalReprOfImplicitReceiver(TreeUtils.elementFromUse(accessTree));
+            Element ele = TreeUtils.elementFromUse(accessTree);
+            if (ele == null) {
+                throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
+            }
+            return internalReprOfImplicitReceiver(ele);
         }
     }
 
