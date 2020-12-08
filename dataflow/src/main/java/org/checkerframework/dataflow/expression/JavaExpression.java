@@ -23,16 +23,16 @@ import org.checkerframework.dataflow.analysis.Store;
  * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax of
  *     Java expressions supported by the Checker Framework</a>
  */
-public abstract class Receiver {
+public abstract class JavaExpression {
     /** The type of this expression. */
     protected final TypeMirror type;
 
     /**
-     * Create a Receiver (a Java AST node representing an expression).
+     * Create a JavaExpression.
      *
      * @param type the type of the expression
      */
-    protected Receiver(TypeMirror type) {
+    protected JavaExpression(TypeMirror type) {
         assert type != null;
         this.type = type;
     }
@@ -41,7 +41,7 @@ public abstract class Receiver {
         return type;
     }
 
-    public abstract boolean containsOfClass(Class<? extends Receiver> clazz);
+    public abstract boolean containsOfClass(Class<? extends JavaExpression> clazz);
 
     public boolean containsUnknown() {
         return containsOfClass(Unknown.class);
@@ -75,7 +75,7 @@ public abstract class Receiver {
      * @return true if and only if the two receivers are syntactically identical
      */
     @EqualsMethod
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         return other == this;
     }
 
@@ -86,7 +86,7 @@ public abstract class Receiver {
      * @return true if and only if this receiver contains a receiver that is syntactically equal to
      *     {@code other}
      */
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other);
     }
 
@@ -98,7 +98,7 @@ public abstract class Receiver {
      * <p>This is always true, except for cases where the Java type information prevents aliasing
      * and none of the subexpressions can alias 'other'.
      */
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return this.equals(other) || store.canAlias(this, other);
     }
 
@@ -109,6 +109,6 @@ public abstract class Receiver {
      */
     public String toStringDebug() {
         return String.format(
-                "Receiver (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
+                "JavaExpression (%s) %s type=%s", getClass().getSimpleName(), toString(), type);
     }
 }

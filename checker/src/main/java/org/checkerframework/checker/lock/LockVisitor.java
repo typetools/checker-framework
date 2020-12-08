@@ -43,8 +43,8 @@ import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -55,9 +55,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -929,7 +929,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     private void ensureExpressionIsEffectivelyFinal(
-            final Receiver lockExpr,
+            final JavaExpression lockExpr,
             String expressionForErrorReporting,
             Tree treeForErrorReporting) {
         if (!atypeFactory.isExpressionEffectivelyFinal(lockExpr)) {
@@ -1207,11 +1207,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-    private boolean isLockHeld(Receiver lock, LockStore store) {
+    private boolean isLockHeld(JavaExpression lockExpr, LockStore store) {
         if (store == null) {
             return false;
         }
-        CFAbstractValue<?> value = store.getValue(lock);
+        CFAbstractValue<?> value = store.getValue(lockExpr);
         if (value == null) {
             return false;
         }
@@ -1233,19 +1233,19 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         TreePath currentPath = getCurrentPath();
-        List<Receiver> params =
-                FlowExpressions.getParametersOfEnclosingMethod(atypeFactory, currentPath);
+        List<JavaExpression> params =
+                JavaExpressions.getParametersOfEnclosingMethod(atypeFactory, currentPath);
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
-        Receiver pseudoReceiver =
-                FlowExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
+        JavaExpression pseudoReceiver =
+                JavaExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
         FlowExpressionContext exprContext =
                 new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
-        Receiver self;
+        JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
         } else {
             self = new Unknown(TreeUtils.typeOf(tree));
         }
@@ -1261,7 +1261,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             String expression,
             FlowExpressionContext flowExprContext,
             TreePath path,
-            Receiver itself) {
+            JavaExpression itself) {
 
         LockExpression lockExpression = new LockExpression(expression);
         if (DependentTypesError.isExpressionError(expression)) {
@@ -1285,9 +1285,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 } else {
                     // TODO: The proper way to do this is to call
                     // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
-                    // the <self> expression, and then call FlowExpressionParseUtil.parse on the
+                    // the <self> expression, and then call JavaExpressionParseUtil.parse on the
                     // remaining expression string with the new flow expression context. However,
-                    // this currently results in a Receiver that has a different
+                    // this currently results in a JavaExpression that has a different
                     // hash code than if the following flow expression is parsed directly, which
                     // results in our inability to check that a lock expression is held as it does
                     // not match anything in the store due to the hash code mismatch.  For now,
@@ -1295,7 +1295,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // the entire string:
 
                     lockExpression.lockExpression =
-                            FlowExpressionParseUtil.parse(
+                            JavaExpressionParseUtil.parse(
                                     itself.toString() + "." + remainingExpression,
                                     flowExprContext,
                                     path,
@@ -1310,7 +1310,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             } else {
                 lockExpression.lockExpression =
-                        FlowExpressionParseUtil.parse(expression, flowExprContext, path, true);
+                        JavaExpressionParseUtil.parse(expression, flowExprContext, path, true);
                 return lockExpression;
             }
         } catch (FlowExpressionParseException ex) {
@@ -1321,7 +1321,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     private static class LockExpression {
         final String expressionString;
-        Receiver lockExpression = null;
+        JavaExpression lockExpression = null;
         DependentTypesError error = null;
 
         LockExpression(String expression) {

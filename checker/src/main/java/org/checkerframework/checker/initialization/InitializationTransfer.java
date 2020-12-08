@@ -22,8 +22,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -43,9 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *       can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
- *       InitializationStore#insertValue(Receiver, CFAbstractValue)}).
+ *       InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
  *   <li>All non-null fields with an initializer can be considered initialized (this is done in
- *       {@link InitializationStore#insertValue(Receiver, CFAbstractValue)}).
+ *       {@link InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
  *   <li>After the call to a super constructor ("super()" call), all non-null fields of the super
  *       class can safely be considered initialized.
  * </ol>
@@ -150,7 +150,8 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n.getTarget());
+        JavaExpression expr =
+                JavaExpressions.internalReprOf(analysis.getTypeFactory(), n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
         // initialized.

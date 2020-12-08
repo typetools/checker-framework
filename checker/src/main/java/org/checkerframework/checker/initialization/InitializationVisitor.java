@@ -28,8 +28,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -171,7 +171,7 @@ public class InitializationVisitor<
 
     @Override
     protected boolean checkContract(
-            Receiver expr,
+            JavaExpression expr,
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation,
             CFAbstractStore<?, ?> store) {

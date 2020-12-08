@@ -57,9 +57,9 @@ import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FlowExpressions;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.Receiver;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -73,9 +73,9 @@ import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
 import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -424,14 +424,14 @@ public abstract class CFAbstractTransfer<
             VariableElement element = p.first;
             V value = p.second;
             if (ElementUtils.isFinal(element) || TreeUtils.isConstructor(methodTree)) {
-                Receiver receiver;
+                JavaExpression receiver;
                 if (ElementUtils.isStatic(element)) {
                     receiver = new ClassName(classType);
                 } else {
                     receiver = new ThisReference(classType);
                 }
                 TypeMirror fieldType = ElementUtils.getType(element);
-                Receiver field = new FieldAccess(receiver, fieldType, element);
+                JavaExpression field = new FieldAccess(receiver, fieldType, element);
                 info.insertValue(field, value);
             }
         }
@@ -450,7 +450,7 @@ public abstract class CFAbstractTransfer<
                 AnnotatedTypeMirror type =
                         ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
                 TypeMirror fieldType = ElementUtils.getType(element);
-                Receiver receiver;
+                JavaExpression receiver;
                 if (ElementUtils.isStatic(element)) {
                     receiver = new ClassName(classType);
                 } else {
@@ -478,7 +478,7 @@ public abstract class CFAbstractTransfer<
                         continue;
                     }
                 }
-                Receiver field = new FieldAccess(receiver, fieldType, element);
+                JavaExpression field = new FieldAccess(receiver, fieldType, element);
                 info.insertValue(field, value);
             }
         }
@@ -569,8 +569,8 @@ public abstract class CFAbstractTransfer<
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                Receiver expr =
-                        FlowExpressionParseUtil.parse(
+                JavaExpression expr =
+                        JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
@@ -806,9 +806,9 @@ public abstract class CFAbstractTransfer<
             if (!firstValue.equals(secondValue)) {
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
-                    Receiver secondInternal =
-                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), secondPart);
-                    if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                    JavaExpression secondInternal =
+                            JavaExpressions.internalReprOf(analysis.getTypeFactory(), secondPart);
+                    if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
                         if (notEqualTo) {
@@ -1037,11 +1037,11 @@ public abstract class CFAbstractTransfer<
             if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
                     && !refType.getAnnotations().equals(expType.getAnnotations())
                     && !expType.getAnnotations().isEmpty()) {
-                Receiver receiver =
-                        FlowExpressions.internalReprOf(
+                JavaExpression expr =
+                        JavaExpressions.internalReprOf(
                                 analysis.getTypeFactory(), node.getTree().getExpression());
                 for (AnnotationMirror anno : refType.getAnnotations()) {
-                    in.getRegularStore().insertOrRefine(receiver, anno);
+                    in.getRegularStore().insertOrRefine(expr, anno);
                 }
                 return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
             }
@@ -1147,8 +1147,8 @@ public abstract class CFAbstractTransfer<
             anno = standardizeAnnotationFromContract(anno, flowExprContext, localScope);
 
             try {
-                Receiver r =
-                        FlowExpressionParseUtil.parse(
+                JavaExpression je =
+                        JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 // "insertOrRefine" is called so that the postcondition information is added to any
                 // existing information rather than replacing it.  If the called method is not
@@ -1156,12 +1156,12 @@ public abstract class CFAbstractTransfer<
                 // are removed from the store before this method is called.
                 if (p.kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
                     if (((ConditionalPostcondition) p).resultValue) {
-                        thenStore.insertOrRefine(r, anno);
+                        thenStore.insertOrRefine(je, anno);
                     } else {
-                        elseStore.insertOrRefine(r, anno);
+                        elseStore.insertOrRefine(je, anno);
                     }
                 } else {
-                    thenStore.insertOrRefine(r, anno);
+                    thenStore.insertOrRefine(je, anno);
                 }
             } catch (FlowExpressionParseException e) {
                 // report errors here
@@ -1193,7 +1193,7 @@ public abstract class CFAbstractTransfer<
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         V switchValue =
                 store.getValue(
-                        FlowExpressions.internalReprOf(
+                        JavaExpressions.internalReprOf(
                                 analysis.getTypeFactory(), assign.getTarget()));
         result =
                 strengthenAnnotationOfEqualTo(

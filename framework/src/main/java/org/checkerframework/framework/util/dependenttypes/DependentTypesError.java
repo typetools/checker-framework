@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
 /**

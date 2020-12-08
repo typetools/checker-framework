@@ -223,22 +223,22 @@ package org.checkerframework.dataflow.cfg;
 class CFGVisualizeLauncher
 \end{verbatim}
 
-\subsubsection{FlowExpressions}
+\subsubsection{JavaExpressions}
 \label{sec:flow_expressions_class}
 
 The Dataflow Framework records the abstract values of certain
-expressions, called FlowExpressions: local variables, field accesses,
+expressions, called JavaExpressions: local variables, field accesses,
 array accesses, references to \code{this}, and pure method calls.
-FlowExpressions are keys in the store of abstract values.
+JavaExpressions are keys in the store of abstract values.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class FlowExpressions
+class JavaExpressions
 \end{verbatim}
 
 Java expressions that appear in method pre- and postconditions are
-parsed into FlowExpressions using helper routines in
-\code{org.checkerframework.framework.util.FlowExpressionParseUtil}.
+parsed into JavaExpressions using helper routines in
+\code{org.checkerframework.framework.util.JavaExpressionParseUtil}.
 
 
 \subsubsection{AbstractValue}
@@ -284,7 +284,7 @@ class NullnessValue extends CFAbstractValue<NullnessValue>
 \label{sec:store_classes}
 
 A Store is a set of dataflow facts computed by an analysis, so it is a
-mapping from FlowExpressions to AbstractValues.  As with
+mapping from JavaExpressions to AbstractValues.  As with
 AbstractValues, one can take the least upper bound of two Stores.
 
 \begin{verbatim}
@@ -1944,7 +1944,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl
 %  LocalWords:  ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
 %  LocalWords:  ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue
-%  LocalWords:  FlowExpressions AbstractValue AbstractValues PolyNull Poly
+%  LocalWords:  JavaExpressions AbstractValue AbstractValues PolyNull Poly
 %  LocalWords:  AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
 %  LocalWords:  NullnessCheckers CFAbstractStore InitializationStore Regex
 %  LocalWords:  NullnessStore TransferInput TransferResult TransferInputs

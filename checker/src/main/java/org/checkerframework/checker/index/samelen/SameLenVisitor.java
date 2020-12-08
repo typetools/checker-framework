@@ -13,8 +13,8 @@ import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.expression.FlowExpressions;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -41,7 +41,8 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {
 
-            Receiver rhs = FlowExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
+            JavaExpression rhs =
+                    JavaExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
             if (rhs != null && SameLenAnnotatedTypeFactory.mayAppearInSameLen(rhs)) {
                 String rhsExpr = rhs.toString();
                 AnnotationMirror am = valueType.getAnnotation(SameLen.class);
