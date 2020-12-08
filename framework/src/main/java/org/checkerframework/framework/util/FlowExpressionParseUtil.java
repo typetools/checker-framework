@@ -911,17 +911,9 @@ public class FlowExpressionParseUtil {
          */
         public static FlowExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, BaseContext checkerContext) {
-            ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocation);
-            Receiver receiver;
-            if (receiverTree == null) {
-                receiver =
-                        FlowExpressions.internalReprOfImplicitReceiver(
-                                TreeUtils.elementFromUse(methodInvocation));
-            } else {
-                receiver =
-                        FlowExpressions.internalReprOf(
-                                checkerContext.getAnnotationProvider(), receiverTree);
-            }
+            Receiver receiver =
+                    FlowExpressions.internalReprOfReceiver(
+                            methodInvocation, checkerContext.getAnnotationProvider());
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<Receiver> argReceivers = new ArrayList<>(args.size());

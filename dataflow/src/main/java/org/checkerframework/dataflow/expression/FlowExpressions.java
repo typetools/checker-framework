@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -271,12 +272,7 @@ public class FlowExpressions {
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        ExpressionTree methodReceiverTree = TreeUtils.getReceiverTree(mn);
-                        if (methodReceiverTree != null) {
-                            methodReceiver = internalReprOf(provider, methodReceiverTree);
-                        } else {
-                            methodReceiver = internalReprOfImplicitReceiver(invokedMethod);
-                        }
+                        methodReceiver = internalReprOfReceiver(mn, provider);
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
                     receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
@@ -341,6 +337,25 @@ public class FlowExpressions {
             receiver = new Unknown(TreeUtils.typeOf(receiverTree));
         }
         return receiver;
+    }
+
+    /**
+     * Returns the receiver of ele, whether explicit or implicit.
+     *
+     * @param accessTree method or constructor invocation
+     * @aram provider an AnnotationProvider
+     * @return the receiver of ele, whether explicit or implicit
+     */
+    public static Receiver internalReprOfReceiver(
+            ExpressionTree accessTree, AnnotationProvider provider) {
+        // TODO: Handle field accesses too?
+        assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
+        ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
+        if (receiverTree != null) {
+            return internalReprOf(provider, receiverTree);
+        } else {
+            return internalReprOfImplicitReceiver(TreeUtils.elementFromUse(accessTree));
+        }
     }
 
     /**
