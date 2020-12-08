@@ -8,6 +8,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -331,13 +332,26 @@ public class JavaExpressions {
         return result;
     }
 
+    /**
+     * Returns the receiver of ele, whether explicit or implicit.
+     *
+     * @param accessTree method or constructor invocation
+     * @param provider an AnnotationProvider
+     * @return the receiver of ele, whether explicit or implicit
+     */
     public static JavaExpression internalReprOfReceiver(
-            ExpressionTree invocTree, AnnotationProvider provider) {
-        ExpressionTree methodReceiverTree = TreeUtils.getReceiverTree(invocTree);
-        if (methodReceiverTree != null) {
-            return internalReprOf(provider, methodReceiverTree);
+            ExpressionTree accessTree, AnnotationProvider provider) {
+        // TODO: Handle field accesses too?
+        assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
+        ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
+        if (receiverTree != null) {
+            return internalReprOf(provider, receiverTree);
         } else {
-            return internalReprOfImplicitReceiver(TreeUtils.elementFromUse(invocTree));
+            Element ele = TreeUtils.elementFromUse(accessTree);
+            if (ele == null) {
+                throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
+            }
+            return internalReprOfImplicitReceiver(ele);
         }
     }
 

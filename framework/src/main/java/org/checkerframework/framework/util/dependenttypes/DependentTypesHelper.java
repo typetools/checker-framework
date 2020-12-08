@@ -177,6 +177,13 @@ public class DependentTypesHelper {
         viewpointAdaptExecutable(newClassTree, constructorType, args);
     }
 
+    /**
+     * Viewpoint-adapts a method or constructor invocation.
+     *
+     * @param tree invocation of the method or constructor
+     * @param typeFromUse type of the method or constructor; is side-effected by this method
+     * @param args the arguments to the method or constructor
+     */
     private void viewpointAdaptExecutable(
             ExpressionTree tree,
             AnnotatedExecutableType typeFromUse,
