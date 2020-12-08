@@ -19,6 +19,7 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
@@ -277,13 +278,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
             if (sideEffectsUnrefineAliases) {
                 if (sideEffectExpressions != null) {
+                    MethodAccessNode methodTarget = n.getTarget();
+                    Node receiver = methodTarget.getReceiver();
+
                     final List<String> expressionsToRemove = sideEffectExpressions;
                     localVariableValues
                             .entrySet()
                             .removeIf(
                                     e ->
-                                            expressionsToRemove.contains(e.getKey().toString())
-                                                    && !e.getKey().isUnmodifiableByOtherCode());
+                                            (expressionsToRemove.contains(e.getKey().toString())
+                                                            && !e.getKey()
+                                                                    .isUnmodifiableByOtherCode())
+                                                    || (expressionsToRemove.contains("this")
+                                                            && e.getKey()
+                                                                    .toString()
+                                                                    .equals(receiver.toString())
+                                                            && !e.getKey()
+                                                                    .isUnmodifiableByOtherCode()));
                 } else {
                     localVariableValues
                             .entrySet()
