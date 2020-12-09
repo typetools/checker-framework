@@ -205,11 +205,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (isInvocationOfEquals(node)) {
-            AnnotatedTypeMirror recv = atypeFactory.getReceiverType(node);
+            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(node);
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
-                    && recv.hasEffectiveAnnotation(INTERNED)
+                    && receiverType.hasEffectiveAnnotation(INTERNED)
                     && comp.hasEffectiveAnnotation(INTERNED)) {
                 checker.reportWarning(node, "unnecessary.equals");
             }

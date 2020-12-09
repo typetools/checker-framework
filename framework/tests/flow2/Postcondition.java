@@ -88,7 +88,7 @@ class Postcondition {
         param3();
     }
 
-    // postcondition with more complex flow expression
+    // postcondition with more complex expression
     void tn1(boolean b) {
         // :: error: (assignment.type.incompatible)
         @Odd String l1 = p.f1;
@@ -96,7 +96,7 @@ class Postcondition {
         @Odd String l2 = p.f1;
     }
 
-    // postcondition with more complex flow expression
+    // postcondition with more complex expression
     void tn2(boolean b) {
         Postcondition param = null;
         // :: error: (assignment.type.incompatible)
@@ -105,7 +105,7 @@ class Postcondition {
         @Odd String l2 = param.f1;
     }
 
-    // postcondition with more complex flow expression
+    // postcondition with more complex expression
     void tn3(boolean b) {
         // :: error: (assignment.type.incompatible)
         @Odd String l1 = p.p1();

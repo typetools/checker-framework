@@ -11,17 +11,17 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.plumelib.util.UtilPlume;
 
 /** A call to a @Deterministic method. */
-public class MethodCall extends Receiver {
+public class MethodCall extends JavaExpression {
 
-    protected final Receiver receiver;
-    protected final List<Receiver> parameters;
+    protected final JavaExpression receiver;
+    protected final List<JavaExpression> parameters;
     protected final ExecutableElement method;
 
     public MethodCall(
             TypeMirror type,
             ExecutableElement method,
-            Receiver receiver,
-            List<Receiver> parameters) {
+            JavaExpression receiver,
+            List<JavaExpression> parameters) {
         super(type);
         this.receiver = receiver;
         this.parameters = parameters;
@@ -29,14 +29,14 @@ public class MethodCall extends Receiver {
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         if (getClass() == clazz) {
             return true;
         }
         if (receiver.containsOfClass(clazz)) {
             return true;
         }
-        for (Receiver p : parameters) {
+        for (JavaExpression p : parameters) {
             if (p.containsOfClass(clazz)) {
                 return true;
             }
@@ -49,7 +49,7 @@ public class MethodCall extends Receiver {
      *
      * @return the method call receiver (for inspection only - do not modify)
      */
-    public Receiver getReceiver() {
+    public JavaExpression getReceiver() {
         return receiver;
     }
 
@@ -60,7 +60,7 @@ public class MethodCall extends Receiver {
      * @return the method call parameters (for inspection only - do not modify any of the
      *     parameters)
      */
-    public List<Receiver> getParameters() {
+    public List<JavaExpression> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
@@ -78,7 +78,7 @@ public class MethodCall extends Receiver {
         // There is no need to check that the method is deterministic, because a MethodCall is
         // only created for deterministic methods.
         return receiver.isUnmodifiableByOtherCode()
-                && parameters.stream().allMatch(Receiver::isUnmodifiableByOtherCode);
+                && parameters.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
     }
 
     @Override
@@ -87,12 +87,12 @@ public class MethodCall extends Receiver {
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other) || receiver.syntacticEquals(other);
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         if (!(other instanceof MethodCall)) {
             return false;
         }
@@ -104,7 +104,7 @@ public class MethodCall extends Receiver {
             return false;
         }
         int i = 0;
-        for (Receiver p : parameters) {
+        for (JavaExpression p : parameters) {
             if (!p.syntacticEquals(otherMethod.parameters.get(i))) {
                 return false;
             }
@@ -114,8 +114,8 @@ public class MethodCall extends Receiver {
     }
 
     public boolean containsSyntacticEqualParameter(LocalVariable var) {
-        for (Receiver p : parameters) {
-            if (p.containsSyntacticEqualReceiver(var)) {
+        for (JavaExpression p : parameters) {
+            if (p.containsSyntacticEqualJavaExpression(var)) {
                 return true;
             }
         }
@@ -123,11 +123,11 @@ public class MethodCall extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         if (receiver.containsModifiableAliasOf(store, other)) {
             return true;
         }
-        for (Receiver p : parameters) {
+        for (JavaExpression p : parameters) {
             if (p.containsModifiableAliasOf(store, other)) {
                 return true;
             }
