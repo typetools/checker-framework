@@ -300,7 +300,7 @@ public class SameLenTransfer extends CFTransfer {
                 JavaExpression otherParamRec = null;
                 try {
                     otherParamRec =
-                            JavaExpressionParseUtil.fromNodeVariable(
+                            JavaExpressionParseUtil.fromVariableTree(
                                     aTypeFactory, paramTrees.get(otherParamIndex));
                 } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     // do nothing

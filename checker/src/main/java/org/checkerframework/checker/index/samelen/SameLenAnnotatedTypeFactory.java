@@ -122,7 +122,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 JavaExpression je;
                 try {
-                    je = JavaExpressionParseUtil.fromNodeVariable(this, (VariableTree) tree);
+                    je = JavaExpressionParseUtil.fromVariableTree(this, (VariableTree) tree);
                 } catch (JavaExpressionParseException ex) {
                     je = null;
                 }

@@ -1026,11 +1026,11 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Returns the type of the inner most enclosing class.Type.noType is returned if no enclosing
-     * class is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which returns
-     * the type of the inner most instance. If the inner most enclosing class is static this method
-     * will return the type of that class where as {@link DeclaredType#getEnclosingType()} will
-     * return the type of the inner most enclosing class that is not static.
+     * Returns the type of the innermost enclosing class. Returns Type.noType if no enclosing class
+     * is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which returns the
+     * type of the inner most instance. If the inner most enclosing class is static this method will
+     * return the type of that class where as {@link DeclaredType#getEnclosingType()} will return
+     * the type of the inner most enclosing class that is not static.
      *
      * @param type a DeclaredType
      * @return the type of the innermost enclosing class or Type.noType
@@ -1057,7 +1057,7 @@ public class JavaExpressionParseUtil {
         }
     }
 
-    public static JavaExpression fromNodeVariable(AnnotatedTypeFactory provider, VariableTree tree)
+    public static JavaExpression fromVariableTree(AnnotatedTypeFactory provider, VariableTree tree)
             throws JavaExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);
 
