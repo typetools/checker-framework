@@ -64,22 +64,22 @@ public class CalledMethodsChecker extends AccumulationChecker {
      */
     int numBuildCalls = 0;
 
-    /** Never access this boolean directly. Call {@link #isRRDisabled()} instead. */
-    private @MonotonicNonNull Boolean rrDisabled = null;
+    /** Never access this boolean directly. Call {@link #isReturnsReceiverDisabled()} instead. */
+    private @MonotonicNonNull Boolean returnsReceiverDisabled = null;
 
     /**
      * Was the returns receiver checker disabled on the command line?
      *
      * @return whether the -AdisableReturnsReceiver option was specified on the command line.
      */
-    private boolean isRRDisabled() {
-        if (rrDisabled == null) {
+    private boolean isReturnsReceiverDisabled() {
+        if (returnsReceiverDisabled == null) {
             // BaseTypeChecker#hasOption calls getImmediateSubcheckerClasses (so that all
             // subcheckers' options are
             // considered), so the processingEnvironment must be checked for options directly,
             // because this method
             // is called from there.
-            rrDisabled =
+            returnsReceiverDisabled =
                     this.processingEnv.getOptions().containsKey(DISABLE_RETURNS_RECEIVER)
                             || this.processingEnv
                                     .getOptions()
@@ -88,14 +88,14 @@ public class CalledMethodsChecker extends AccumulationChecker {
                                                     + "_"
                                                     + DISABLE_RETURNS_RECEIVER);
         }
-        return rrDisabled;
+        return returnsReceiverDisabled;
     }
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
-        if (!isRRDisabled()) {
+        if (!isReturnsReceiverDisabled()) {
             checkers.add(ReturnsReceiverChecker.class);
         }
         // BaseTypeChecker#hasOption calls this method (so that all subcheckers' options are
@@ -118,7 +118,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
     @Override
     public boolean isEnabled(AliasAnalysis aliasAnalysis) {
         if (aliasAnalysis == AliasAnalysis.RETURNS_RECEIVER) {
-            return !isRRDisabled();
+            return !isReturnsReceiverDisabled();
         }
         return super.isEnabled(aliasAnalysis);
     }
