@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 // The imports from com.sun are all @jdk.Exported and therefore somewhat safe to use.
 // Try to avoid using non-@jdk.Exported classes.
 
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.Node;
@@ -823,7 +824,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
         }
 
-        CompilationUnit modifiedAst = StaticJavaParser.parse(withAnnotations);
+        CompilationUnit modifiedAst = null;
+        try {
+            modifiedAst = StaticJavaParser.parse(withAnnotations);
+        } catch (ParseProblemException e) {
+            throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
+        }
         AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
         originalAst.accept(visitor, modifiedAst);
         if (!visitor.getAnnotationsMatch()) {
@@ -835,10 +841,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             + "Node with annotations re-inserted: "
                             + visitor.getMismatchedNode2()
                             + "\n"
+                            + "Original annotations: "
+                            + visitor.getMismatchedNode1().getAnnotations()
+                            + "\n"
+                            + "Re-inserted annotations: "
+                            + visitor.getMismatchedNode2().getAnnotations()
+                            + "\n"
                             + "Original AST:\n"
                             + originalAst
                             + "\n"
-                            + "Ast with annotationi re-inserted: "
+                            + "Ast with annotations re-inserted: "
                             + modifiedAst);
         }
     }

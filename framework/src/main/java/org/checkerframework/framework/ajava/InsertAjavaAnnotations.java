@@ -7,8 +7,11 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.utils.Pair;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -61,25 +64,65 @@ public class InsertAjavaAnnotations {
             }
 
             NodeWithAnnotations<?> node1Annos = (NodeWithAnnotations<?>) node1;
-            if (node1Annos.getAnnotations().isEmpty()) {
-                return;
-            }
-
-            StringBuilder insertionContent = new StringBuilder();
-            for (AnnotationExpr annotation : node1Annos.getAnnotations()) {
-                insertionContent.append(printer.print(annotation));
-                insertionContent.append(" ");
-            }
-
             Position position;
             if (node2 instanceof ClassOrInterfaceType) {
+                // In a multi-part name like my.package.MyClass, annotations go directly in front of
+                // MyClass instead of the full name.
                 position = ((ClassOrInterfaceType) node2).getName().getBegin().get();
             } else {
                 position = node2.getBegin().get();
             }
-            int absolutePositition =
+
+            addAnnotations(position, node1Annos.getAnnotations(), 0, false);
+        }
+
+        @Override
+        public void visit(ArrayType node1, Node other) {
+            ArrayType node2 = (ArrayType) other;
+            // The second component of this pair contains a list of ArrayBracketPairs from left to
+            // right. For example, if node1 contains String[][], then the list will contain the
+            // types String[] and String[][]. To insert array annotations in the correct location,
+            // we insert them directly to the right of the end of the previous element.
+            Pair<Type, List<ArrayType.ArrayBracketPair>> node1ArrayTypes =
+                    ArrayType.unwrapArrayTypes(node1);
+            Pair<Type, List<ArrayType.ArrayBracketPair>> node2ArrayTypes =
+                    ArrayType.unwrapArrayTypes(node2);
+            // The first annotations go directly after the element type.
+            Position firstPosition = node2ArrayTypes.a.getEnd().get();
+            addAnnotations(firstPosition, node1ArrayTypes.b.get(0).getAnnotations(), 1, false);
+            for (int i = 1; i < node1ArrayTypes.b.size(); i++) {
+                Position position =
+                        node2ArrayTypes.b.get(i - 1).getTokenRange().get().toRange().get().end;
+                addAnnotations(position, node1ArrayTypes.b.get(i).getAnnotations(), 1, true);
+            }
+
+            // Visit the component type.
+            node1ArrayTypes.a.accept(this, node2ArrayTypes.a);
+        }
+
+        private void addAnnotations(
+                Position position,
+                Iterable<AnnotationExpr> annotations,
+                int offset,
+                boolean addSpaceBefore) {
+            StringBuilder insertionContent = new StringBuilder();
+            for (AnnotationExpr annotation : annotations) {
+                insertionContent.append(printer.print(annotation));
+                insertionContent.append(" ");
+            }
+
+            if (insertionContent.length() == 0) {
+                return;
+            }
+
+            if (addSpaceBefore) {
+                insertionContent.insert(0, " ");
+            }
+
+            int absolutePosition =
                     cumulativeLineSizes.get(position.line - 1) + (position.column - 1);
-            insertions.add(new Insertion(absolutePositition, insertionContent.toString()));
+            absolutePosition += offset;
+            insertions.add(new Insertion(absolutePosition, insertionContent.toString()));
         }
     }
 

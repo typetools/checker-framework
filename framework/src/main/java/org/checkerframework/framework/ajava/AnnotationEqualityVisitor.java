@@ -1,20 +1,13 @@
 package org.checkerframework.framework.ajava;
 
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.JavadocComment;
-import com.github.javaparser.ast.comments.LineComment;
-import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
-import com.github.javaparser.ast.visitor.VoidVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
     private boolean annotationsMatch;
-    private Node mismatchedNode1;
-    private Node mismatchedNode2;
+    private NodeWithAnnotations<?> mismatchedNode1;
+    private NodeWithAnnotations<?> mismatchedNode2;
 
     public AnnotationEqualityVisitor() {
         annotationsMatch = true;
@@ -26,11 +19,11 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
         return annotationsMatch;
     }
 
-    public Node getMismatchedNode1() {
+    public NodeWithAnnotations<?> getMismatchedNode1() {
         return mismatchedNode1;
     }
 
-    public Node getMismatchedNode2() {
+    public NodeWithAnnotations<?> getMismatchedNode2() {
         return mismatchedNode2;
     }
 
@@ -41,44 +34,25 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
             return;
         }
 
-        List<AnnotationExpr> node1Annos = readAnnotations((NodeWithAnnotations<?>) node1);
-        List<AnnotationExpr> node2Annos = readAnnotations((NodeWithAnnotations<?>) node2);
-        if (!node1Annos.equals(node2Annos)) {
+        Node node1Copy = node1.clone();
+        Node node2Copy = node2.clone();
+        for (Comment comment : node1Copy.getAllContainedComments()) {
+            comment.remove();
+        }
+
+        for (Comment comment : node2Copy.getAllContainedComments()) {
+            comment.remove();
+        }
+
+        if (!((NodeWithAnnotations<?>) node1Copy)
+                .getAnnotations()
+                .equals(((NodeWithAnnotations<?>) node2Copy).getAnnotations())) {
+            System.out.println("Sizes: ");
+            System.out.println(((NodeWithAnnotations<?>) node1Copy).getAnnotations().size());
+            System.out.println(((NodeWithAnnotations<?>) node2Copy).getAnnotations().size());
             annotationsMatch = false;
-            System.out.println("Got mismatch:");
-            System.out.println(node1Annos);
-            System.out.println(node2Annos);
-            mismatchedNode1 = node1;
-            mismatchedNode2 = node2;
+            mismatchedNode1 = (NodeWithAnnotations<?>) node1;
+            mismatchedNode2 = (NodeWithAnnotations<?>) node2;
         }
-    }
-
-    private List<AnnotationExpr> readAnnotations(NodeWithAnnotations<?> node) {
-        List<AnnotationExpr> result = new ArrayList<>();
-        VoidVisitor<Void> visitor =
-                new VoidVisitorAdapter<Void>() {
-                    @Override
-                    public void visit(LineComment node, Void p) {
-                        node.remove();
-                    }
-
-                    @Override
-                    public void visit(BlockComment node, Void p) {
-                        node.remove();
-                    }
-
-                    @Override
-                    public void visit(JavadocComment node, Void p) {
-                        node.remove();
-                    }
-                };
-
-        for (AnnotationExpr annotation : node.getAnnotations()) {
-            AnnotationExpr annotationCopy = annotation.clone();
-            annotationCopy.accept(visitor, null);
-            result.add(annotationCopy);
-        }
-
-        return result;
     }
 }
