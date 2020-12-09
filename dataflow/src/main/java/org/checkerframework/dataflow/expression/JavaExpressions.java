@@ -62,14 +62,14 @@ public class JavaExpressions {
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
-    public static FieldAccess internalReprOfFieldAccess(
+    public static FieldAccess fromNodeFieldAccess(
             AnnotationProvider provider, FieldAccessNode node) {
         Node receiverNode = node.getReceiver();
         JavaExpression receiver;
         if (node.isStatic()) {
             receiver = new ClassName(receiverNode.getType());
         } else {
-            receiver = internalReprOf(provider, receiverNode);
+            receiver = fromNode(provider, receiverNode);
         }
         return new FieldAccess(receiver, node);
     }
@@ -81,10 +81,9 @@ public class JavaExpressions {
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
-    public static ArrayAccess internalReprOfArrayAccess(
-            AnnotationProvider provider, ArrayAccessNode node) {
-        JavaExpression array = internalReprOf(provider, node.getArray());
-        JavaExpression index = internalReprOf(provider, node.getIndex());
+    public static ArrayAccess fromArrayAccess(AnnotationProvider provider, ArrayAccessNode node) {
+        JavaExpression array = fromNode(provider, node.getArray());
+        JavaExpression index = fromNode(provider, node.getIndex());
         return new ArrayAccess(node.getType(), array, index);
     }
 
@@ -94,8 +93,8 @@ public class JavaExpressions {
      *
      * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
      */
-    public static JavaExpression internalReprOf(AnnotationProvider provider, Node node) {
-        return internalReprOf(provider, node, false);
+    public static JavaExpression fromNode(AnnotationProvider provider, Node node) {
+        return fromNode(provider, node, false);
     }
 
     /**
@@ -104,7 +103,7 @@ public class JavaExpressions {
      *
      * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
      */
-    public static JavaExpression internalReprOf(
+    public static JavaExpression fromNode(
             AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
         JavaExpression result = null;
         if (receiverNode instanceof FieldAccessNode) {
@@ -121,7 +120,7 @@ public class JavaExpressions {
                 // analysis, and value stores, this is the equivalent of a ClassNameNode.
                 result = new ClassName(fan.getReceiver().getType());
             } else {
-                result = internalReprOfFieldAccess(provider, fan);
+                result = fromNodeFieldAccess(provider, fan);
             }
         } else if (receiverNode instanceof ExplicitThisLiteralNode) {
             result = new ThisReference(receiverNode.getType());
@@ -134,22 +133,22 @@ public class JavaExpressions {
             result = new LocalVariable(lv);
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
-            result = internalReprOfArrayAccess(provider, a);
+            result = fromArrayAccess(provider, a);
         } else if (receiverNode instanceof StringConversionNode) {
             // ignore string conversion
-            return internalReprOf(provider, ((StringConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((StringConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof WideningConversionNode) {
             // ignore widening
-            return internalReprOf(provider, ((WideningConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((WideningConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
-            return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
             return new BinaryOperation(
                     bopn,
-                    internalReprOf(provider, bopn.getLeftOperand(), allowNonDeterministic),
-                    internalReprOf(provider, bopn.getRightOperand(), allowNonDeterministic));
+                    fromNode(provider, bopn.getLeftOperand(), allowNonDeterministic),
+                    fromNode(provider, bopn.getRightOperand(), allowNonDeterministic));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             result = new ClassName(cn.getType());
@@ -160,11 +159,11 @@ public class JavaExpressions {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
             List<JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
-                dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+                dimensions.add(fromNode(provider, dimension, allowNonDeterministic));
             }
             List<JavaExpression> initializers = new ArrayList<>();
             for (Node initializer : an.getInitializers()) {
-                initializers.add(internalReprOf(provider, initializer, allowNonDeterministic));
+                initializers.add(fromNode(provider, initializer, allowNonDeterministic));
             }
             result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
@@ -179,13 +178,13 @@ public class JavaExpressions {
             if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<JavaExpression> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
-                    parameters.add(internalReprOf(provider, p));
+                    parameters.add(fromNode(provider, p));
                 }
                 JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
                 } else {
-                    methodReceiver = internalReprOf(provider, mn.getTarget().getReceiver());
+                    methodReceiver = fromNode(provider, mn.getTarget().getReceiver());
                 }
                 result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
             }
@@ -204,9 +203,9 @@ public class JavaExpressions {
      * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
      *     Unknown}.
      */
-    public static JavaExpression internalReprOf(
+    public static JavaExpression fromTree(
             AnnotationProvider provider, ExpressionTree receiverTree) {
-        return internalReprOf(provider, receiverTree, true);
+        return fromTree(provider, receiverTree, true);
     }
     /**
      * We ignore operations such as widening and narrowing when computing the internal
@@ -215,14 +214,14 @@ public class JavaExpressions {
      * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
      *     Unknown}.
      */
-    public static JavaExpression internalReprOf(
+    public static JavaExpression fromTree(
             AnnotationProvider provider, ExpressionTree tree, boolean allowNonDeterministic) {
         JavaExpression result;
         switch (tree.getKind()) {
             case ARRAY_ACCESS:
                 ArrayAccessTree a = (ArrayAccessTree) tree;
-                JavaExpression arrayAccessExpression = internalReprOf(provider, a.getExpression());
-                JavaExpression index = internalReprOf(provider, a.getIndex());
+                JavaExpression arrayAccessExpression = fromTree(provider, a.getExpression());
+                JavaExpression index = fromTree(provider, a.getIndex());
                 result = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
                 break;
             case BOOLEAN_LITERAL:
@@ -241,14 +240,13 @@ public class JavaExpressions {
                 List<JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
-                        dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+                        dimensions.add(fromTree(provider, dimension, allowNonDeterministic));
                     }
                 }
                 List<JavaExpression> initializers = new ArrayList<>();
                 if (newArrayTree.getInitializers() != null) {
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
-                        initializers.add(
-                                internalReprOf(provider, initializer, allowNonDeterministic));
+                        initializers.add(fromTree(provider, initializer, allowNonDeterministic));
                     }
                 }
 
@@ -261,13 +259,13 @@ public class JavaExpressions {
                 if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
                     List<JavaExpression> parameters = new ArrayList<>();
                     for (ExpressionTree p : mn.getArguments()) {
-                        parameters.add(internalReprOf(provider, p));
+                        parameters.add(fromTree(provider, p));
                     }
                     JavaExpression methodReceiver;
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        methodReceiver = internalReprOfReceiver(mn, provider);
+                        methodReceiver = getReceiver(mn, provider);
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
                     result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
@@ -276,7 +274,7 @@ public class JavaExpressions {
                 }
                 break;
             case MEMBER_SELECT:
-                result = internalReprOfMemberSelect(provider, (MemberSelectTree) tree);
+                result = fromMemberSelect(provider, (MemberSelectTree) tree);
                 break;
             case IDENTIFIER:
                 IdentifierTree identifierTree = (IdentifierTree) tree;
@@ -320,7 +318,7 @@ public class JavaExpressions {
                 }
                 break;
             case UNARY_PLUS:
-                return internalReprOf(
+                return fromTree(
                         provider, ((UnaryTree) tree).getExpression(), allowNonDeterministic);
             default:
                 result = null;
@@ -339,19 +337,19 @@ public class JavaExpressions {
      * @param provider an AnnotationProvider
      * @return the receiver of ele, whether explicit or implicit
      */
-    public static JavaExpression internalReprOfReceiver(
+    public static JavaExpression getReceiver(
             ExpressionTree accessTree, AnnotationProvider provider) {
         // TODO: Handle field accesses too?
         assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
         ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
         if (receiverTree != null) {
-            return internalReprOf(provider, receiverTree);
+            return fromTree(provider, receiverTree);
         } else {
             Element ele = TreeUtils.elementFromUse(accessTree);
             if (ele == null) {
                 throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
             }
-            return internalReprOfImplicitReceiver(ele);
+            return getImplicitReceiver(ele);
         }
     }
 
@@ -365,11 +363,10 @@ public class JavaExpressions {
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
      *     not
      */
-    public static JavaExpression internalReprOfImplicitReceiver(Element ele) {
+    public static JavaExpression getImplicitReceiver(Element ele) {
         TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
         if (enclosingClass == null) {
-            throw new BugInCF(
-                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
+            throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
         }
         TypeMirror enclosingType = enclosingClass.asType();
         if (ElementUtils.isStatic(ele)) {
@@ -390,8 +387,7 @@ public class JavaExpressions {
      * @return a new ClassName or ThisReference that is a JavaExpression object for the
      *     enclosingType
      */
-    public static JavaExpression internalReprOfPseudoReceiver(
-            TreePath path, TypeMirror enclosingType) {
+    public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreeUtils.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
@@ -399,7 +395,7 @@ public class JavaExpressions {
         }
     }
 
-    private static JavaExpression internalReprOfMemberSelect(
+    private static JavaExpression fromMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -416,11 +412,11 @@ public class JavaExpressions {
         switch (ele.getKind()) {
             case METHOD:
             case CONSTRUCTOR:
-                return internalReprOf(provider, memberSelectTree.getExpression());
+                return fromTree(provider, memberSelectTree.getExpression());
             case ENUM_CONSTANT:
             case FIELD:
                 TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
-                JavaExpression je = internalReprOf(provider, memberSelectTree.getExpression());
+                JavaExpression je = fromTree(provider, memberSelectTree.getExpression());
                 return new FieldAccess(je, fieldType, (VariableElement) ele);
             default:
                 throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
@@ -442,7 +438,7 @@ public class JavaExpressions {
         }
         List<JavaExpression> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(internalReprOf(annotationProvider, new LocalVariableNode(arg)));
+            internalArguments.add(fromNode(annotationProvider, new LocalVariableNode(arg)));
         }
         return internalArguments;
     }

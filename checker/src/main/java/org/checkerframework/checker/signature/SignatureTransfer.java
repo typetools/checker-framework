@@ -55,7 +55,7 @@ public class SignatureTransfer extends CFTransfer {
                                 superResult.getResultValue(), thenStore, elseStore);
                 // The refined expression is the receive of the method call.
                 JavaExpression refinedExpr =
-                        JavaExpressions.internalReprOf(
+                        JavaExpressions.fromNode(
                                 aTypeFactory.getContext().getAnnotationProvider(), receiver);
 
                 elseStore.insertValue(refinedExpr, aTypeFactory.CANONICAL_NAME);

@@ -594,9 +594,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (methodElement != null) {
             // Handle releasing of explicit locks. Verify that the lock expression is effectively
             // final.
-            ExpressionTree recvTree = TreeUtils.getReceiverTree(node);
+            ExpressionTree receiverTree = TreeUtils.getReceiverTree(node);
 
-            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, recvTree);
+            ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(methodElement, receiverTree);
 
             // Handle acquiring of explicit locks. Verify that the lock expression is effectively
             // final.
@@ -628,10 +628,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             for (String expr : expressions) {
                 if (expr.equals("this")) {
-                    // recvTree will be null for implicit this, or class name receivers. But they
+                    // receiverTree will be null for implicit this, or class name receivers. But
+                    // they
                     // are also final. So nothing to be checked for them.
-                    if (recvTree != null) {
-                        ensureExpressionIsEffectivelyFinal(recvTree);
+                    if (receiverTree != null) {
+                        ensureExpressionIsEffectivelyFinal(receiverTree);
                     }
                 } else if (expr.equals("#1")) {
                     ExpressionTree firstParameter = node.getArguments().get(0);
@@ -1238,14 +1239,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
-                JavaExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
+                JavaExpressions.getPseudoReceiver(currentPath, enclosingType);
         JavaExpressionContext exprContext =
                 new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = JavaExpressions.internalReprOf(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpressions.fromTree(atypeFactory, (ExpressionTree) tree);
         } else {
             self = new Unknown(TreeUtils.typeOf(tree));
         }

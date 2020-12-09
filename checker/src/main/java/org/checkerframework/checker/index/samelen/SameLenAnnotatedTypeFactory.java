@@ -122,7 +122,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 JavaExpression je;
                 try {
-                    je = JavaExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
+                    je = JavaExpressionParseUtil.fromNodeVariable(this, (VariableTree) tree);
                 } catch (JavaExpressionParseException ex) {
                     je = null;
                 }
@@ -304,7 +304,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
                     JavaExpression sequenceExpr =
-                            JavaExpressions.internalReprOf(this.atypeFactory, sequenceTree);
+                            JavaExpressions.fromTree(this.atypeFactory, sequenceTree);
                     if (mayAppearInSameLen(sequenceExpr)) {
                         String recString = sequenceExpr.toString();
                         if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {

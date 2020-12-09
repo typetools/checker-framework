@@ -41,8 +41,7 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
                 && !(valueType.hasAnnotation(PolySameLen.class)
                         && varType.hasAnnotation(PolySameLen.class))) {
 
-            JavaExpression rhs =
-                    JavaExpressions.internalReprOf(atypeFactory, (ExpressionTree) valueTree);
+            JavaExpression rhs = JavaExpressions.fromTree(atypeFactory, (ExpressionTree) valueTree);
             if (rhs != null && SameLenAnnotatedTypeFactory.mayAppearInSameLen(rhs)) {
                 String rhsExpr = rhs.toString();
                 AnnotationMirror am = valueType.getAnnotation(SameLen.class);

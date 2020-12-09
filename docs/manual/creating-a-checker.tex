@@ -814,9 +814,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
+\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{fromNode(AnnotationProvider,
 ExpressionTree)} or
-\refmethodanchortext{dataflow/analysis}{JavaExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
+\refmethodanchortext{dataflow/analysis}{JavaExpressions}{fromNode}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -2476,7 +2476,7 @@ without warnings or errors.
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
 %%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
-%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper internalReprOf
+%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper fromNode
 %%  LocalWords:  ExpressionAnnotationHelper JavaExpressions CFTransfer LSP
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir

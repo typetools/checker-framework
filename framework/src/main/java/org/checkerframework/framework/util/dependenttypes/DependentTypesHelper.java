@@ -143,7 +143,7 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
-        JavaExpression r = JavaExpressions.internalReprOfImplicitReceiver(classDecl);
+        JavaExpression r = JavaExpressions.getImplicitReceiver(classDecl);
         JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
@@ -196,7 +196,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpressions.internalReprOfReceiver(tree, factory);
+        JavaExpression receiver = JavaExpressions.getReceiver(tree, factory);
 
         List<JavaExpression> argReceivers = new ArrayList<>();
         boolean isVarargs = false;
@@ -205,11 +205,11 @@ public class DependentTypesHelper {
             if (isVarArgsMethodInvocation(methodCalled, typeFromUse, args)) {
                 isVarargs = true;
                 for (int i = 0; i < methodCalled.getParameters().size() - 1; i++) {
-                    argReceivers.add(JavaExpressions.internalReprOf(factory, args.get(i)));
+                    argReceivers.add(JavaExpressions.fromTree(factory, args.get(i)));
                 }
                 List<JavaExpression> varargArgs = new ArrayList<>();
                 for (int i = methodCalled.getParameters().size() - 1; i < args.size(); i++) {
-                    varargArgs.add(JavaExpressions.internalReprOf(factory, args.get(i)));
+                    varargArgs.add(JavaExpressions.fromTree(factory, args.get(i)));
                 }
                 Element varargsElement =
                         methodCalled.getParameters().get(methodCalled.getParameters().size() - 1);
@@ -220,7 +220,7 @@ public class DependentTypesHelper {
 
         if (!isVarargs) {
             for (ExpressionTree argTree : args) {
-                argReceivers.add(JavaExpressions.internalReprOf(factory, argTree));
+                argReceivers.add(JavaExpressions.fromTree(factory, argTree));
             }
         }
 
@@ -290,7 +290,7 @@ public class DependentTypesHelper {
             return;
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
-        JavaExpression r = JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        JavaExpression r = JavaExpressions.getPseudoReceiver(path, enclosingType);
         JavaExpressionContext context =
                 new JavaExpressionContext(
                         r,
@@ -350,7 +350,7 @@ public class DependentTypesHelper {
         if (path == null) {
             return;
         }
-        JavaExpression receiverF = JavaExpressions.internalReprOfImplicitReceiver(ele);
+        JavaExpression receiverF = JavaExpressions.getImplicitReceiver(ele);
         JavaExpressionContext classignmentContext =
                 new JavaExpressionContext(receiverF, null, factory.getContext());
         standardizeDoNotUseLocals(classignmentContext, path, type);
@@ -404,8 +404,7 @@ public class DependentTypesHelper {
             case RESOURCE_VARIABLE:
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
-                JavaExpression receiver =
-                        JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+                JavaExpression receiver = JavaExpressions.getPseudoReceiver(path, enclosingType);
                 List<JavaExpression> params =
                         JavaExpressions.getParametersOfEnclosingMethod(factory, path);
                 JavaExpressionContext localContext =
@@ -417,13 +416,13 @@ public class DependentTypesHelper {
                 JavaExpression receiverF;
                 if (node.getKind() == Tree.Kind.IDENTIFIER) {
                     JavaExpression nodeJe =
-                            JavaExpressions.internalReprOf(factory, (IdentifierTree) node);
+                            JavaExpressions.fromTree(factory, (IdentifierTree) node);
                     receiverF =
                             nodeJe instanceof FieldAccess
                                     ? ((FieldAccess) nodeJe).getReceiver()
                                     : nodeJe;
                 } else {
-                    receiverF = JavaExpressions.internalReprOfImplicitReceiver(ele);
+                    receiverF = JavaExpressions.getImplicitReceiver(ele);
                 }
                 JavaExpressionContext fieldContext =
                         new JavaExpressionContext(receiverF, null, factory.getContext());
@@ -453,7 +452,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        JavaExpression receiver = JavaExpressions.internalReprOf(factory, node.getExpression());
+        JavaExpression receiver = JavaExpressions.fromTree(factory, node.getExpression());
         JavaExpressionContext context =
                 new JavaExpressionContext(receiver, null, factory.getContext());
         standardizeDoNotUseLocals(context, factory.getPath(node), type);
@@ -473,7 +472,7 @@ public class DependentTypesHelper {
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
 
-        JavaExpression receiver = JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
+        JavaExpression receiver = JavaExpressions.getPseudoReceiver(path, enclosingType);
 
         JavaExpressionContext localContext =
                 new JavaExpressionContext(

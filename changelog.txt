@@ -4,7 +4,8 @@ Implementation details:
 
 Class renamings:
  * `StubParser` => `AnnotationFileParser`
- * `Receiver` => `JavaExpression` (and related class and method renamings)
+ * `Receiver` => `JavaExpression`
+     *  also related class and method renamings
 
 ---------------------------------------------------------------------------
 

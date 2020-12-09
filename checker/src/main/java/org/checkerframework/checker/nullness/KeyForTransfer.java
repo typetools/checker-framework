@@ -39,9 +39,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
-            JavaExpression receiverJe = JavaExpressions.internalReprOf(factory, receiver);
+            JavaExpression receiverJe = JavaExpressions.fromNode(factory, receiver);
             String mapName = receiverJe.toString();
-            JavaExpression keyExpr = JavaExpressions.internalReprOf(factory, node.getArgument(0));
+            JavaExpression keyExpr = JavaExpressions.fromNode(factory, node.getArgument(0));
 
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);

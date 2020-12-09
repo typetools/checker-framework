@@ -195,32 +195,32 @@ public class InitializationVisitor<
                 }
             }
         } else {
-            Set<AnnotationMirror> recvAnnoSet;
             @SuppressWarnings("unchecked")
             Value value = (Value) store.getValue(fa.getReceiver());
 
+            Set<AnnotationMirror> receiverAnnoSet;
             if (value != null) {
-                recvAnnoSet = value.getAnnotations();
+                receiverAnnoSet = value.getAnnotations();
             } else if (fa.getReceiver() instanceof LocalVariable) {
                 Element elem = ((LocalVariable) fa.getReceiver()).getElement();
-                AnnotatedTypeMirror recvType = atypeFactory.getAnnotatedType(elem);
-                recvAnnoSet = recvType.getAnnotations();
+                AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(elem);
+                receiverAnnoSet = receiverType.getAnnotations();
             } else {
                 // Is there anything better we could do?
                 return false;
             }
 
-            boolean isRecvInitialized = false;
-            for (AnnotationMirror anno : recvAnnoSet) {
+            boolean isReceiverInitialized = false;
+            for (AnnotationMirror anno : receiverAnnoSet) {
                 if (atypeFactory.isInitialized(anno)) {
-                    isRecvInitialized = true;
+                    isReceiverInitialized = true;
                 }
             }
 
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
             // The receiver is fully initialized and the field type
             // has the invariant type.
-            if (isRecvInitialized
+            if (isReceiverInitialized
                     && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
                 return true;
             }

@@ -47,7 +47,7 @@ public class I18nFormatterTransfer extends CFTransfer {
                 tu.failure(cats, "i18nformat.indirect.arguments");
             } else {
                 JavaExpression firstParam =
-                        JavaExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+                        JavaExpressions.fromNode(atypeFactory, node.getArgument(0));
                 AnnotationMirror anno =
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 thenStore.insertValue(firstParam, anno);
@@ -61,8 +61,7 @@ public class I18nFormatterTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            JavaExpression firstParam =
-                    JavaExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+            JavaExpression firstParam = JavaExpressions.fromNode(atypeFactory, node.getArgument(0));
             AnnotationBuilder builder =
                     new AnnotationBuilder(
                             tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());

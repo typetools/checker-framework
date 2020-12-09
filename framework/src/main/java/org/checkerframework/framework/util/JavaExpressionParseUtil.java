@@ -649,7 +649,7 @@ public class JavaExpressionParseUtil {
                 locationOfField = context.receiver;
             } else {
                 locationOfField =
-                        JavaExpressions.internalReprOf(
+                        JavaExpressions.fromNode(
                                 context.checkerContext.getAnnotationProvider(),
                                 new ImplicitThisLiteralNode(receiverType));
             }
@@ -814,12 +814,11 @@ public class JavaExpressionParseUtil {
                 receiver = new ImplicitThisLiteralNode(enclosingType);
             }
             JavaExpression internalReceiver =
-                    JavaExpressions.internalReprOf(
-                            checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), receiver);
             List<JavaExpression> internalArguments = new ArrayList<>();
             for (VariableTree arg : methodDeclaration.getParameters()) {
                 internalArguments.add(
-                        JavaExpressions.internalReprOf(
+                        JavaExpressions.fromNode(
                                 checkerContext.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
@@ -833,12 +832,11 @@ public class JavaExpressionParseUtil {
             TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(path));
             Node receiver = new ImplicitThisLiteralNode(enclosingType);
             JavaExpression internalReceiver =
-                    JavaExpressions.internalReprOf(
-                            checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), receiver);
             List<JavaExpression> internalArguments = new ArrayList<>();
             for (VariableTree arg : lambdaTree.getParameters()) {
                 internalArguments.add(
-                        JavaExpressions.internalReprOf(
+                        JavaExpressions.fromNode(
                                 checkerContext.getAnnotationProvider(),
                                 new LocalVariableNode(arg, receiver)));
             }
@@ -876,8 +874,7 @@ public class JavaExpressionParseUtil {
             Node receiver = new ImplicitThisLiteralNode(TreeUtils.typeOf(classTree));
 
             JavaExpression internalReceiver =
-                    JavaExpressions.internalReprOf(
-                            checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), receiver);
             List<JavaExpression> internalArguments = new ArrayList<>();
             JavaExpressionContext flowExprContext =
                     new JavaExpressionContext(internalReceiver, internalArguments, checkerContext);
@@ -894,13 +891,11 @@ public class JavaExpressionParseUtil {
                 MethodInvocationNode methodInvocation, BaseContext checkerContext) {
             Node receiver = methodInvocation.getTarget().getReceiver();
             JavaExpression internalReceiver =
-                    JavaExpressions.internalReprOf(
-                            checkerContext.getAnnotationProvider(), receiver);
+                    JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), receiver);
             List<JavaExpression> internalArguments = new ArrayList<>();
             for (Node arg : methodInvocation.getArguments()) {
                 internalArguments.add(
-                        JavaExpressions.internalReprOf(
-                                checkerContext.getAnnotationProvider(), arg));
+                        JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), arg));
             }
             JavaExpressionContext flowExprContext =
                     new JavaExpressionContext(internalReceiver, internalArguments, checkerContext);
@@ -918,15 +913,14 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, BaseContext checkerContext) {
             JavaExpression receiver =
-                    JavaExpressions.internalReprOfReceiver(
+                    JavaExpressions.getReceiver(
                             methodInvocation, checkerContext.getAnnotationProvider());
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<JavaExpression> argExprs = new ArrayList<>(args.size());
             for (ExpressionTree argTree : args) {
                 argExprs.add(
-                        JavaExpressions.internalReprOf(
-                                checkerContext.getAnnotationProvider(), argTree));
+                        JavaExpressions.fromTree(checkerContext.getAnnotationProvider(), argTree));
             }
 
             return new JavaExpressionContext(receiver, argExprs, checkerContext);
@@ -945,13 +939,12 @@ public class JavaExpressionParseUtil {
             // This returns an Unknown with the type set to the class in which the
             // constructor is declared
             JavaExpression internalReceiver =
-                    JavaExpressions.internalReprOf(checkerContext.getAnnotationProvider(), n);
+                    JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), n);
 
             List<JavaExpression> internalArguments = new ArrayList<>();
             for (Node arg : n.getArguments()) {
                 internalArguments.add(
-                        JavaExpressions.internalReprOf(
-                                checkerContext.getAnnotationProvider(), arg));
+                        JavaExpressions.fromNode(checkerContext.getAnnotationProvider(), arg));
             }
 
             JavaExpressionContext flowExprContext =
@@ -1064,8 +1057,8 @@ public class JavaExpressionParseUtil {
         }
     }
 
-    public static JavaExpression internalReprOfVariable(
-            AnnotatedTypeFactory provider, VariableTree tree) throws JavaExpressionParseException {
+    public static JavaExpression fromNodeVariable(AnnotatedTypeFactory provider, VariableTree tree)
+            throws JavaExpressionParseException {
         Element elt = TreeUtils.elementFromDeclaration(tree);
 
         if (elt.getKind() == ElementKind.LOCAL_VARIABLE
@@ -1074,7 +1067,7 @@ public class JavaExpressionParseUtil {
                 || elt.getKind() == ElementKind.PARAMETER) {
             return new LocalVariable(elt);
         }
-        JavaExpression je = JavaExpressions.internalReprOfImplicitReceiver(elt);
+        JavaExpression je = JavaExpressions.getImplicitReceiver(elt);
         JavaExpressionContext context = new JavaExpressionContext(je, null, provider.getContext());
         return parse(tree.getName().toString(), context, provider.getPath(tree), false);
     }

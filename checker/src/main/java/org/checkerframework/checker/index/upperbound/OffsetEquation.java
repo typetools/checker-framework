@@ -554,7 +554,7 @@ public class OffsetEquation {
 
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
-        JavaExpression je = JavaExpressions.internalReprOf(factory, node);
+        JavaExpression je = JavaExpressions.fromNode(factory, node);
         if (je instanceof Unknown || je == null) {
             if (node instanceof NumericalAdditionNode) {
                 createOffsetFromNode(

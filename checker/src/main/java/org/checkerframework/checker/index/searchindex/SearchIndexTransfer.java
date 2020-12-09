@@ -65,8 +65,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                 List<String> arrays =
                         ValueCheckerUtils.getValueOfAnnotationWithStringArgument(rightSI);
                 AnnotationMirror nif = aTypeFactory.createNegativeIndexFor(arrays);
-                store.insertValue(
-                        JavaExpressions.internalReprOf(analysis.getTypeFactory(), right), nif);
+                store.insertValue(JavaExpressions.fromNode(analysis.getTypeFactory(), right), nif);
             }
         }
     }

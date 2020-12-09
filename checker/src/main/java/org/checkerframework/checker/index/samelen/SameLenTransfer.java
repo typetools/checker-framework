@@ -92,11 +92,9 @@ public class SameLenTransfer extends CFTransfer {
 
                     // targetRec is the receiver for the left hand side of the assignment.
                     JavaExpression targetRec =
-                            JavaExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), node.getTarget());
+                            JavaExpressions.fromNode(analysis.getTypeFactory(), node.getTarget());
                     JavaExpression otherRec =
-                            JavaExpressions.internalReprOf(
-                                    analysis.getTypeFactory(), lengthNodeReceiver);
+                            JavaExpressions.fromNode(analysis.getTypeFactory(), lengthNodeReceiver);
 
                     AnnotationMirror lengthNodeAnnotation =
                             aTypeFactory
@@ -125,10 +123,10 @@ public class SameLenTransfer extends CFTransfer {
         // left side be SameLen of each other.
 
         JavaExpression targetRec =
-                JavaExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget());
+                JavaExpressions.fromNode(analysis.getTypeFactory(), node.getTarget());
 
         JavaExpression exprRec =
-                JavaExpressions.internalReprOf(analysis.getTypeFactory(), node.getExpression());
+                JavaExpressions.fromNode(analysis.getTypeFactory(), node.getExpression());
 
         if (IndexUtil.isSequenceType(node.getTarget().getType())
                 || (rightAnno != null && aTypeFactory.areSameByClass(rightAnno, SameLen.class))) {
@@ -189,11 +187,11 @@ public class SameLenTransfer extends CFTransfer {
         List<JavaExpression> exprs = new ArrayList<>();
         List<AnnotationMirror> annos = new ArrayList<>();
         for (Node internal : splitAssignments(left)) {
-            exprs.add(JavaExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpressions.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
         for (Node internal : splitAssignments(right)) {
-            exprs.add(JavaExpressions.internalReprOf(analysis.getTypeFactory(), internal));
+            exprs.add(JavaExpressions.fromNode(analysis.getTypeFactory(), internal));
             annos.add(getAnno(internal));
         }
 
@@ -302,7 +300,7 @@ public class SameLenTransfer extends CFTransfer {
                 JavaExpression otherParamRec = null;
                 try {
                     otherParamRec =
-                            JavaExpressionParseUtil.internalReprOfVariable(
+                            JavaExpressionParseUtil.fromNodeVariable(
                                     aTypeFactory, paramTrees.get(otherParamIndex));
                 } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     // do nothing
