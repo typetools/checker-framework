@@ -94,7 +94,7 @@ public class TypeAnnotationUtils {
      * lenient than {@code List.equals}, which uses {@code Object.equals} on list elements.
      *
      * @param values1 the first {@code values} field
-     * @param values1 the second {@code values} field
+     * @param values2 the second {@code values} field
      * @return true if the two {@code values} fields represent the same name-to-value mapping, in
      *     the same order
      */
