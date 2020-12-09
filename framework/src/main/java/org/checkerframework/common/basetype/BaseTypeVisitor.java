@@ -118,8 +118,8 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -926,8 +926,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        FlowExpressionContext flowExprContext =
-                FlowExpressionContext.buildContextForMethodDeclaration(
+        JavaExpressionContext flowExprContext =
+                JavaExpressionContext.buildContextForMethodDeclaration(
                         node, getCurrentPath(), checker.getContext());
 
         for (Contract contract : contracts) {
@@ -943,7 +943,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 expr =
                         JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 checker.report(node, e.getDiagMessage());
             }
             // If expr is null, then an error was issued above.
@@ -989,7 +989,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** Standardize a type qualifier annotation obtained from a contract. */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract,
-            FlowExpressionContext flowExprContext,
+            JavaExpressionContext flowExprContext,
             TreePath path) {
         DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
         if (dependentTypesHelper != null) {
@@ -1632,8 +1632,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (preconditions.isEmpty()) {
             return;
         }
-        FlowExpressionContext flowExprContext =
-                FlowExpressionContext.buildContextForMethodUse(tree, checker.getContext());
+        JavaExpressionContext flowExprContext =
+                JavaExpressionContext.buildContextForMethodUse(tree, checker.getContext());
 
         if (flowExprContext == null) {
             checker.reportError(tree, "flowexpr.parse.context.not.determined", tree);
@@ -1652,7 +1652,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 expr =
                         JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(tree, e.getDiagMessage());
                 return;
@@ -4110,13 +4110,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Pair<JavaExpression, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
-        FlowExpressionContext flowExprContext = null;
+        JavaExpressionContext flowExprContext = null;
         for (Contract p : contractSet) {
             String expression = p.expression;
             AnnotationMirror annotation = p.annotation;
             if (flowExprContext == null) {
                 flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
+                        JavaExpressionContext.buildContextForMethodDeclaration(
                                 methodTree,
                                 method.getReceiverType().getUnderlyingType(),
                                 checker.getContext());
@@ -4131,7 +4131,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 JavaExpression expr =
                         JavaExpressionParseUtil.parse(expression, flowExprContext, path, false);
                 result.add(Pair.of(expr, annotation));
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 // report errors here
                 checker.report(methodTree, e.getDiagMessage());
             }

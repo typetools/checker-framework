@@ -2,7 +2,9 @@ Version 3.9.0
 
 Implementation details:
 
-Renamed StubParser to AnnotationFileParser
+Class renamings:
+ * `StubParser` => `AnnotationFileParser`
+ * `Receiver` => `JavaExpression`
 
 ---------------------------------------------------------------------------
 

@@ -23,8 +23,8 @@ import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
@@ -300,11 +300,11 @@ public class OffsetEquation {
     private void standardizeAndViewpointAdaptExpressions(
             List<String> terms,
             boolean subtract,
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath scope,
             boolean useLocalScope,
             AnnotatedTypeFactory factory)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
         // Standardize all terms and remove constants
         int length = terms.size(), j = 0;
         for (int i = 0; i < length; ++i) {
@@ -328,19 +328,19 @@ public class OffsetEquation {
     /**
      * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
-     * @param context a FlowExpressionContext
+     * @param context a JavaExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
      * @param factory an AnnotatedTypeFactory used for annotation accessing. It can be null.
-     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
+     * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
     public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath scope,
             boolean useLocalScope,
             AnnotatedTypeFactory factory)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
 
         standardizeAndViewpointAdaptExpressions(
                 addedTerms, false, context, scope, useLocalScope, factory);
@@ -351,15 +351,15 @@ public class OffsetEquation {
     /**
      * Standardizes and viewpoint-adapts the string terms based us the supplied context.
      *
-     * @param context a FlowExpressionContext
+     * @param context a JavaExpressionContext
      * @param scope local scope
      * @param useLocalScope whether or not local scope is used
-     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
+     * @throws JavaExpressionParseException if any term isn't able to be parsed this exception is
      *     thrown. If this happens, no string terms are changed.
      */
     public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context, TreePath scope, boolean useLocalScope)
-            throws FlowExpressionParseException {
+            JavaExpressionContext context, TreePath scope, boolean useLocalScope)
+            throws JavaExpressionParseException {
 
         standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
     }

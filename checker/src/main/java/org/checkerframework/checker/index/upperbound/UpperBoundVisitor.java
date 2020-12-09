@@ -32,8 +32,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -95,7 +95,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 }
             }
         } else if (atypeFactory.areSameByClass(anno, HasSubsequence.class)) {
-            // Check that the arguments to a HasSubsequence annotation are valid flow expressions,
+            // Check that the arguments to a HasSubsequence annotation are valid JavaExpressions,
             // and issue an error if one of them is not.
 
             String seq = AnnotationUtils.getElementValue(anno, "subsequence", String.class, true);
@@ -104,8 +104,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
             // check that each expression is parseable in this context
             ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
-            FlowExpressionContext context =
-                    FlowExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
+            JavaExpressionContext context =
+                    JavaExpressionContext.buildContextForClassDeclaration(enclosingClass, checker);
             checkEffectivelyFinalAndParsable(seq, context, node);
             checkEffectivelyFinalAndParsable(from, context, node);
             checkEffectivelyFinalAndParsable(to, context, node);
@@ -118,15 +118,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * program location.
      *
      * @param s a Java expression
-     * @param context the flow expression context
+     * @param context the JavaExpression context
      * @param tree the tree at which to possibly report an error
      */
     private void checkEffectivelyFinalAndParsable(
-            String s, FlowExpressionContext context, Tree tree) {
+            String s, JavaExpressionContext context, Tree tree) {
         JavaExpression je;
         try {
             je = JavaExpressionParseUtil.parse(s, context, getCurrentPath(), false);
-        } catch (FlowExpressionParseException e) {
+        } catch (JavaExpressionParseException e) {
             checker.report(tree, e.getDiagMessage());
             return;
         }
@@ -209,7 +209,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 anm =
                         atypeFactory.getAnnotationMirrorFromJavaExpressionString(
                                 subSeq.to, varTree, getCurrentPath());
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 anm = null;
             }
 
@@ -354,7 +354,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         JavaExpression result;
         try {
             result = atypeFactory.parseJavaExpressionString(s, currentPath);
-        } catch (FlowExpressionParseException e) {
+        } catch (JavaExpressionParseException e) {
             result = null;
         }
         return result;
@@ -364,7 +364,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
      * Given a Java expression, returns the additive inverse, as a String. Assumes that
      * JavaExpressions do not contain multiplication.
      */
-    private String negateString(String s, FlowExpressionContext context) {
+    private String negateString(String s, JavaExpressionContext context) {
         return Subsequence.negateString(s, getCurrentPath(), context);
     }
 
@@ -475,7 +475,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
                 JavaExpression lhsSeqExpr =
                         parseJavaExpressionString(lhsSeq, atypeFactory, getCurrentPath());
-                FlowExpressionContext context =
+                JavaExpressionContext context =
                         Subsequence.getContextFromJavaExpression(lhsSeqExpr, checker);
                 Subsequence subSeq =
                         Subsequence.getSubsequenceFromReceiver(

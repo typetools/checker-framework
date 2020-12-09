@@ -53,7 +53,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -168,7 +168,7 @@ public class LockAnnotatedTypeFactory
             @Override
             protected String standardizeString(
                     String expression,
-                    FlowExpressionContext context,
+                    JavaExpressionContext context,
                     TreePath localScope,
                     boolean useLocalScope) {
                 if (DependentTypesError.isExpressionError(expression)) {
@@ -194,7 +194,7 @@ public class LockAnnotatedTypeFactory
                                 .toString();
                     }
                     return result.toString();
-                } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     return new DependentTypesError(expression, e).toString();
                 }
             }

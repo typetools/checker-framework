@@ -93,7 +93,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -800,11 +800,11 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param path location at which expression is evaluated
      * @param clazz class of the annotation
      * @return the annotation on expression or null if one does not exist
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public AnnotationMirror getAnnotationFromJavaExpressionString(
             String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
 
         JavaExpression expressionObj = parseJavaExpressionString(expression, path);
         return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
@@ -851,16 +851,16 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @param expression a Java expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
         JavaExpression r =
                 JavaExpressions.internalReprOfPseudoReceiver(currentPath, enclosingClass);
-        JavaExpressionParseUtil.FlowExpressionContext context =
-                new JavaExpressionParseUtil.FlowExpressionContext(
+        JavaExpressionParseUtil.JavaExpressionContext context =
+                new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
                         JavaExpressions.getParametersOfEnclosingMethod(this, currentPath),
                         this.getContext());
@@ -876,10 +876,10 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param expression a Java expression, possibly with a constant offset
      * @param currentPath location at which expression is evaluated
      * @return the JavaExpression and offset for the given expression
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      */
     public Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
-            String expression, TreePath currentPath) throws FlowExpressionParseException {
+            String expression, TreePath currentPath) throws JavaExpressionParseException {
         Pair<String, String> p = getExpressionAndOffset(expression);
         JavaExpression r = parseJavaExpressionString(p.first, currentPath);
         return Pair.of(r, p.second);
@@ -895,13 +895,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param expression a Java expression
      * @param tree the tree at the location to parse the expression
      * @param currentPath location at which expression is evaluated
-     * @throws FlowExpressionParseException thrown if the expression cannot be parsed
+     * @throws JavaExpressionParseException thrown if the expression cannot be parsed
      * @return an AnnotationMirror representing the type in the store at the given location from
      *     this type factory's type system, or null if one is not available
      */
     public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
             String expression, Tree tree, TreePath currentPath)
-            throws FlowExpressionParseException {
+            throws JavaExpressionParseException {
         JavaExpression je = parseJavaExpressionString(expression, currentPath);
         if (je == null || !CFAbstractStore.canInsertJavaExpression(je)) {
             return null;

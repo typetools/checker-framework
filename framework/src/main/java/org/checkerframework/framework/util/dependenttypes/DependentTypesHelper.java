@@ -49,7 +49,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -144,7 +144,7 @@ public class DependentTypesHelper {
     public void viewpointAdaptTypeVariableBounds(
             TypeElement classDecl, List<AnnotatedTypeParameterBounds> bounds, TreePath pathToUse) {
         JavaExpression r = JavaExpressions.internalReprOfImplicitReceiver(classDecl);
-        FlowExpressionContext context = new FlowExpressionContext(r, null, factory.getContext());
+        JavaExpressionContext context = new JavaExpressionContext(r, null, factory.getContext());
         for (AnnotatedTypeParameterBounds bound : bounds) {
             standardizeDoNotUseLocals(context, pathToUse, bound.getUpperBound());
             standardizeDoNotUseLocals(context, pathToUse, bound.getLowerBound());
@@ -226,8 +226,8 @@ public class DependentTypesHelper {
 
         TreePath currentPath = factory.getPath(tree);
 
-        FlowExpressionContext context =
-                new FlowExpressionContext(receiver, argReceivers, factory.getContext());
+        JavaExpressionContext context =
+                new JavaExpressionContext(receiver, argReceivers, factory.getContext());
 
         // typeForUse cannot be viewpoint adapted directly because it is the type post type variable
         // substitution.  Dependent type annotations on type arguments do not (and cannot) be
@@ -291,8 +291,8 @@ public class DependentTypesHelper {
         }
         TypeMirror enclosingType = TreeUtils.typeOf(enclosingClass);
         JavaExpression r = JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
-        FlowExpressionContext context =
-                new FlowExpressionContext(
+        JavaExpressionContext context =
+                new JavaExpressionContext(
                         r,
                         JavaExpressions.getParametersOfEnclosingMethod(factory, path),
                         factory.getContext());
@@ -329,8 +329,8 @@ public class DependentTypesHelper {
         Element ele = TreeUtils.elementFromDeclaration(m);
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
 
-        FlowExpressionContext context =
-                FlowExpressionContext.buildContextForMethodDeclaration(
+        JavaExpressionContext context =
+                JavaExpressionContext.buildContextForMethodDeclaration(
                         m, enclosingType, factory.getContext());
         standardizeDoNotUseLocals(context, factory.getPath(m), atm, removeErroneousExpressions);
     }
@@ -351,8 +351,8 @@ public class DependentTypesHelper {
             return;
         }
         JavaExpression receiverF = JavaExpressions.internalReprOfImplicitReceiver(ele);
-        FlowExpressionContext classignmentContext =
-                new FlowExpressionContext(receiverF, null, factory.getContext());
+        JavaExpressionContext classignmentContext =
+                new JavaExpressionContext(receiverF, null, factory.getContext());
         standardizeDoNotUseLocals(classignmentContext, path, type);
     }
 
@@ -383,15 +383,15 @@ public class DependentTypesHelper {
                     // If the most enclosing tree is a method, the parameter is a method parameter
                     MethodTree methodTree = (MethodTree) enclTree;
                     TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
-                    FlowExpressionContext parameterContext =
-                            FlowExpressionContext.buildContextForMethodDeclaration(
+                    JavaExpressionContext parameterContext =
+                            JavaExpressionContext.buildContextForMethodDeclaration(
                                     methodTree, enclosingType, factory.getContext());
                     standardizeDoNotUseLocals(parameterContext, path, type);
                 } else {
                     // Otherwise, the parameter is a lambda parameter
                     LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclTree;
-                    FlowExpressionContext parameterContext =
-                            FlowExpressionContext.buildContextForLambda(
+                    JavaExpressionContext parameterContext =
+                            JavaExpressionContext.buildContextForLambda(
                                     lambdaTree, path, factory.getContext());
                     // TODO: test this.
                     // TODO: use path.getParentPath to prevent a StackOverflowError, see Issue
@@ -408,8 +408,8 @@ public class DependentTypesHelper {
                         JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
                 List<JavaExpression> params =
                         JavaExpressions.getParametersOfEnclosingMethod(factory, path);
-                FlowExpressionContext localContext =
-                        new FlowExpressionContext(receiver, params, factory.getContext());
+                JavaExpressionContext localContext =
+                        new JavaExpressionContext(receiver, params, factory.getContext());
                 standardizeUseLocals(localContext, path, type);
                 break;
             case FIELD:
@@ -425,8 +425,8 @@ public class DependentTypesHelper {
                 } else {
                     receiverF = JavaExpressions.internalReprOfImplicitReceiver(ele);
                 }
-                FlowExpressionContext fieldContext =
-                        new FlowExpressionContext(receiverF, null, factory.getContext());
+                JavaExpressionContext fieldContext =
+                        new JavaExpressionContext(receiverF, null, factory.getContext());
                 standardizeDoNotUseLocals(fieldContext, path, type);
                 break;
             default:
@@ -454,8 +454,8 @@ public class DependentTypesHelper {
         }
 
         JavaExpression receiver = JavaExpressions.internalReprOf(factory, node.getExpression());
-        FlowExpressionContext context =
-                new FlowExpressionContext(receiver, null, factory.getContext());
+        JavaExpressionContext context =
+                new JavaExpressionContext(receiver, null, factory.getContext());
         standardizeDoNotUseLocals(context, factory.getPath(node), type);
     }
 
@@ -475,8 +475,8 @@ public class DependentTypesHelper {
 
         JavaExpression receiver = JavaExpressions.internalReprOfPseudoReceiver(path, enclosingType);
 
-        FlowExpressionContext localContext =
-                new FlowExpressionContext(
+        JavaExpressionContext localContext =
+                new JavaExpressionContext(
                         receiver,
                         JavaExpressions.getParametersOfEnclosingMethod(factory, path),
                         factory.getContext());
@@ -518,12 +518,12 @@ public class DependentTypesHelper {
     }
 
     private void standardizeUseLocals(
-            FlowExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
+            JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
         standardizeAtm(context, localScope, type, true);
     }
 
     private void standardizeDoNotUseLocals(
-            FlowExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
+            JavaExpressionContext context, TreePath localScope, AnnotatedTypeMirror type) {
         standardizeDoNotUseLocals(context, localScope, type, false);
     }
 
@@ -532,7 +532,7 @@ public class DependentTypesHelper {
      *     converting them into an explanation of why they are illegal
      */
     private void standardizeDoNotUseLocals(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotatedTypeMirror type,
             boolean removeErroneousExpressions) {
@@ -540,7 +540,7 @@ public class DependentTypesHelper {
     }
 
     private void standardizeAtm(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotatedTypeMirror type,
             boolean useLocalScope) {
@@ -552,7 +552,7 @@ public class DependentTypesHelper {
      *     converting them into an explanation of why they are illegal
      */
     private void standardizeAtm(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotatedTypeMirror type,
             boolean useLocalScope,
@@ -567,7 +567,7 @@ public class DependentTypesHelper {
 
     protected String standardizeString(
             String expression,
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
@@ -580,7 +580,7 @@ public class DependentTypesHelper {
                 return new DependentTypesError(expression, " ").toString();
             }
             return result.toString();
-        } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
     }
@@ -605,7 +605,7 @@ public class DependentTypesHelper {
      * @return the standardized annotation
      */
     public AnnotationMirror standardizeAnnotation(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
             boolean useLocalScope,
@@ -624,7 +624,7 @@ public class DependentTypesHelper {
      *     converting them into an explanation of why they are illegal
      */
     private AnnotationMirror standardizeAnnotationIfDependentType(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
             boolean useLocalScope,
@@ -643,7 +643,7 @@ public class DependentTypesHelper {
      *     converting them into an explanation of why they are illegal
      */
     private AnnotationMirror standardizeDependentTypeAnnotation(
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             AnnotationMirror anno,
             boolean useLocalScope,
@@ -672,7 +672,7 @@ public class DependentTypesHelper {
     }
 
     private class StandardizeTypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
-        private final FlowExpressionContext context;
+        private final JavaExpressionContext context;
         private final TreePath localScope;
         /** Whether or not the expression might contain a variable declared in local scope. */
         private final boolean useLocalScope;
@@ -687,7 +687,7 @@ public class DependentTypesHelper {
          *     converting them into an explanation of why they are illegal
          */
         private StandardizeTypeAnnotator(
-                FlowExpressionContext context,
+                JavaExpressionContext context,
                 TreePath localScope,
                 boolean useLocalScope,
                 boolean removeErroneousExpressions) {
@@ -706,7 +706,7 @@ public class DependentTypesHelper {
 
             // If the type variable has a primary annotation, then it is viewpoint adapted then
             // copied to the upper and lower bounds.  Attempting to viewpoint adapt again, could
-            // cause the flow expression parser to fail.  So, remove the primary annotations from
+            // cause the JavaExpression parser to fail.  So, remove the primary annotations from
             // the upper and lower bound before they are recursively visited.  Then add them back.
             Set<AnnotationMirror> primarys = type.getAnnotations();
             type.getLowerBound().removeAnnotations(primarys);
@@ -871,8 +871,8 @@ public class DependentTypesHelper {
         Element ele = TreeUtils.elementFromDeclaration(node);
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
 
-        FlowExpressionContext context =
-                FlowExpressionContext.buildContextForMethodDeclaration(
+        JavaExpressionContext context =
+                JavaExpressionContext.buildContextForMethodDeclaration(
                         node, enclosingType, factory.getContext());
         for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
             AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);

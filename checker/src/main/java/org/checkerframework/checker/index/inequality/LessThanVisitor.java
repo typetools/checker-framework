@@ -39,7 +39,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 anm =
                         atypeFactory.getAnnotationMirrorFromJavaExpressionString(
                                 subSeq.from, varTree, getCurrentPath());
-            } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                 anm = null;
             }
 

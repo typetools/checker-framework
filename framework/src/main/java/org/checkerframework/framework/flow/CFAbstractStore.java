@@ -53,7 +53,7 @@ import org.plumelib.util.UniqueId;
  * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {code
  * CFAbstractStore}. Note that this includes not only overridden methods in the subclasses, but new
  * methods in the subclasses as well. Also check if
- * BaseTypeVisitor#getFlowExpressionContextFromNode(Node) needs to be updated. Failing to do so may
+ * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so may
  * result in silent failures that are time consuming to debug.
  */
 // TODO: Split this class into two parts: one that is reusable generally and
@@ -533,10 +533,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Returns the current abstract value of a flow expression, or {@code null} if no information is
+     * Returns the current abstract value of a Java expression, or {@code null} if no information is
      * available.
      *
-     * @return the current abstract value of a flow expression, or {@code null} if no information is
+     * @return the current abstract value of a Java expression, or {@code null} if no information is
      *     available
      */
     public @Nullable V getValue(JavaExpression expr) {

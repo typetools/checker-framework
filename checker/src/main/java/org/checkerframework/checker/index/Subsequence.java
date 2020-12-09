@@ -10,8 +10,8 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -60,7 +60,7 @@ public class Subsequence {
      * @return a new Subsequence object representing {@code hasSub} or null
      */
     private static Subsequence createSubsequence(
-            AnnotationMirror hasSub, TreePath currentPath, FlowExpressionContext context) {
+            AnnotationMirror hasSub, TreePath currentPath, JavaExpressionContext context) {
         if (hasSub == null) {
             return null;
         }
@@ -91,7 +91,7 @@ public class Subsequence {
             JavaExpression expr,
             AnnotatedTypeFactory factory,
             TreePath currentPath,
-            FlowExpressionContext context) {
+            JavaExpressionContext context) {
         if (expr == null) {
             return null;
         }
@@ -112,10 +112,10 @@ public class Subsequence {
      * its argument.
      */
     private static String standardizeAndViewpointAdapt(
-            String s, TreePath currentPath, FlowExpressionContext context) {
+            String s, TreePath currentPath, JavaExpressionContext context) {
         try {
             return JavaExpressionParseUtil.parse(s, context, currentPath, false).toString();
-        } catch (FlowExpressionParseException e) {
+        } catch (JavaExpressionParseException e) {
             return s;
         }
     }
@@ -126,14 +126,14 @@ public class Subsequence {
      *
      * <p>Used to standardize and viewpoint adapt arguments to HasSubsequence annotations.
      */
-    public static FlowExpressionContext getContextFromJavaExpression(
+    public static JavaExpressionContext getContextFromJavaExpression(
             JavaExpression expr, BaseContext checker) {
         if (expr == null) {
             return null;
         }
         if (expr instanceof FieldAccess) {
             FieldAccess fa = (FieldAccess) expr;
-            return new JavaExpressionParseUtil.FlowExpressionContext(
+            return new JavaExpressionParseUtil.JavaExpressionContext(
                     fa.getReceiver(), null, checker);
 
         } else {
@@ -144,14 +144,14 @@ public class Subsequence {
     /**
      * Returns the additive inverse of the given String. That is, if the result of this method is
      * some String s', then s + s' == 0 will evaluate to true. Note that this relies on the fact
-     * that the Flow Expression Parser cannot parse multiplication, so it naively just changes '-'
-     * to '+' and vice-versa.
+     * that the JavaExpression parser cannot parse multiplication, so it naively just changes '-' to
+     * '+' and vice-versa.
      *
      * <p>The passed String is standardized and viewpoint adapted before this transformation is
      * applied.
      */
     public static String negateString(
-            String s, TreePath currentPath, FlowExpressionContext context) {
+            String s, TreePath currentPath, JavaExpressionContext context) {
         String original = standardizeAndViewpointAdapt(s, currentPath, context);
         String result = "";
         if (!original.startsWith("-")) {

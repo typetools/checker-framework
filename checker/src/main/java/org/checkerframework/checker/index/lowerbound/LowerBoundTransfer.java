@@ -722,7 +722,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
                 JavaExpression je = null;
                 try {
                     je = JavaExpressionParseUtil.internalReprOfVariable(aTypeFactory, variableTree);
-                } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     // do nothing
                 }
 

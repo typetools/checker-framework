@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
@@ -27,7 +27,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
     @Override
     protected String standardizeString(
             final String expression,
-            FlowExpressionContext context,
+            JavaExpressionContext context,
             TreePath localScope,
             boolean useLocalScope) {
         if (DependentTypesError.isExpressionError(expression)) {
@@ -40,7 +40,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
                 result =
                         JavaExpressionParseUtil.parse(
                                 expression, context, localScope, useLocalScope);
-            } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                 return new DependentTypesError(expression, e).toString();
             }
             if (result == null) {
@@ -65,7 +65,7 @@ public class OffsetDependentTypesHelper extends DependentTypesHelper {
             // Standardize individual terms of the expression.
             equation.standardizeAndViewpointAdaptExpressions(
                     context, localScope, useLocalScope, factory);
-        } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             return new DependentTypesError(expression, e).toString();
         }
 

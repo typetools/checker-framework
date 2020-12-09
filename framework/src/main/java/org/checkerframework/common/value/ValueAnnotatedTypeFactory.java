@@ -63,7 +63,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1294,7 +1294,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the minimum length of an array expression or 0 if the min length is unknown.
      *
-     * @param sequenceExpression flow expression
+     * @param sequenceExpression Java expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
      * @return min length of sequenceExpression or 0
@@ -1304,7 +1304,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         JavaExpression expressionObj;
         try {
             expressionObj = parseJavaExpressionString(sequenceExpression, currentPath);
-        } catch (FlowExpressionParseException e) {
+        } catch (JavaExpressionParseException e) {
             // ignore parse errors and return 0.
             return 0;
         }

@@ -36,7 +36,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -123,7 +123,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 JavaExpression je;
                 try {
                     je = JavaExpressionParseUtil.internalReprOfVariable(this, (VariableTree) tree);
-                } catch (FlowExpressionParseException ex) {
+                } catch (JavaExpressionParseException ex) {
                     je = null;
                 }
 
@@ -339,7 +339,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             sameLenAnno =
                     getAnnotationFromJavaExpressionString(
                             sequenceExpression, tree, currentPath, SameLen.class);
-        } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             // ignore parse errors
             sameLenAnno = null;
         }

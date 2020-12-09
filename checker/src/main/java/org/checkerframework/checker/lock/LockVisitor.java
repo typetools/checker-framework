@@ -56,8 +56,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1009,7 +1009,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * The flow expression parser requires a path for retrieving the scope that will be used to
+     * The JavaExpression parser requires a path for retrieving the scope that will be used to
      * resolve local variables. One would expect that simply providing the path to an AnnotationTree
      * would work, since the compiler (as called by the org.checkerframework.javacutil.Resolver
      * class) could walk up the path from the AnnotationTree to determine the scope. Unfortunately
@@ -1239,8 +1239,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
                 JavaExpressions.internalReprOfPseudoReceiver(currentPath, enclosingType);
-        FlowExpressionContext exprContext =
-                new FlowExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
+        JavaExpressionContext exprContext =
+                new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
@@ -1259,7 +1259,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     private LockExpression parseExpressionString(
             String expression,
-            FlowExpressionContext flowExprContext,
+            JavaExpressionContext flowExprContext,
             TreePath path,
             JavaExpression itself) {
 
@@ -1286,9 +1286,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // TODO: The proper way to do this is to call
                     // flowExprContext.copyChangeToParsingMemberOfReceiver to set the receiver to
                     // the <self> expression, and then call JavaExpressionParseUtil.parse on the
-                    // remaining expression string with the new flow expression context. However,
+                    // remaining expression string with the new JavaExpressionContext. However,
                     // this currently results in a JavaExpression that has a different
-                    // hash code than if the following flow expression is parsed directly, which
+                    // hash code than if the following JavaExpression is parsed directly, which
                     // results in our inability to check that a lock expression is held as it does
                     // not match anything in the store due to the hash code mismatch.  For now,
                     // convert the "<self>" portion to the node's string representation, and parse
@@ -1313,7 +1313,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         JavaExpressionParseUtil.parse(expression, flowExprContext, path, true);
                 return lockExpression;
             }
-        } catch (FlowExpressionParseException ex) {
+        } catch (JavaExpressionParseException ex) {
             lockExpression.error = new DependentTypesError(expression, ex);
             return lockExpression;
         }

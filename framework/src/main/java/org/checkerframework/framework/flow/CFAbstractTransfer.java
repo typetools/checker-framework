@@ -74,8 +74,8 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -547,7 +547,7 @@ public abstract class CFAbstractTransfer<
             MethodTree methodTree,
             ExecutableElement methodElement) {
         ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-        FlowExpressionContext flowExprContext = null;
+        JavaExpressionContext flowExprContext = null;
         Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
         for (Precondition p : preconditions) {
@@ -556,7 +556,7 @@ public abstract class CFAbstractTransfer<
 
             if (flowExprContext == null) {
                 flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
+                        JavaExpressionContext.buildContextForMethodDeclaration(
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
@@ -573,7 +573,7 @@ public abstract class CFAbstractTransfer<
                         JavaExpressionParseUtil.parse(
                                 expression, flowExprContext, localScope, false);
                 info.insertValue(expr, annotation);
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 // Errors are reported by BaseTypeVisitor.checkContractsAtMethodDeclaration().
             }
         }
@@ -582,7 +582,7 @@ public abstract class CFAbstractTransfer<
     /** Standardize a type qualifier annotation obtained from a contract. */
     private AnnotationMirror standardizeAnnotationFromContract(
             AnnotationMirror annoFromContract,
-            FlowExpressionContext flowExprContext,
+            JavaExpressionContext flowExprContext,
             TreePath path) {
         // TODO: common implementation with BaseTypeVisitor.standardizeAnnotationFromContract
         if (analysis.dependentTypesHelper != null) {
@@ -1130,7 +1130,7 @@ public abstract class CFAbstractTransfer<
             S thenStore,
             S elseStore,
             Set<? extends Contract> postconditions) {
-        FlowExpressionContext flowExprContext = null;
+        JavaExpressionContext flowExprContext = null;
 
         for (Contract p : postconditions) {
             String expression = p.expression;
@@ -1138,7 +1138,7 @@ public abstract class CFAbstractTransfer<
 
             if (flowExprContext == null) {
                 flowExprContext =
-                        FlowExpressionContext.buildContextForMethodUse(
+                        JavaExpressionContext.buildContextForMethodUse(
                                 n, analysis.checker.getContext());
             }
 
@@ -1163,7 +1163,7 @@ public abstract class CFAbstractTransfer<
                 } else {
                     thenStore.insertOrRefine(je, anno);
                 }
-            } catch (FlowExpressionParseException e) {
+            } catch (JavaExpressionParseException e) {
                 // report errors here
                 if (e.isFlowParseError()) {
                     Object[] args = new Object[e.args.length + 1];

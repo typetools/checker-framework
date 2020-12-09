@@ -42,8 +42,8 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -301,8 +301,8 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return;
                     }
-                    FlowExpressionContext flowExprContext =
-                            FlowExpressionContext.buildContextForMethodUse(
+                    JavaExpressionContext flowExprContext =
+                            JavaExpressionContext.buildContextForMethodUse(
                                     node, checker.getContext());
                     String formatforArg =
                             AnnotationUtils.getElementValue(
@@ -319,7 +319,7 @@ public class I18nFormatterTreeUtil {
                                             atypeFactory.getPath(tree),
                                             true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
-                        } catch (FlowExpressionParseException e) {
+                        } catch (JavaExpressionParseException e) {
                             // report errors here
                             checker.reportError(tree, "i18nformat.invalid.formatfor");
                         }

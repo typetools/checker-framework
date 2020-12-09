@@ -166,7 +166,7 @@ public class SameLenTransfer extends CFTransfer {
             JavaExpression je;
             try {
                 je = aTypeFactory.parseJavaExpressionString(exprString, currentPath);
-            } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+            } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                 continue;
             }
             store.clearValue(je);
@@ -304,7 +304,7 @@ public class SameLenTransfer extends CFTransfer {
                     otherParamRec =
                             JavaExpressionParseUtil.internalReprOfVariable(
                                     aTypeFactory, paramTrees.get(otherParamIndex));
-                } catch (JavaExpressionParseUtil.FlowExpressionParseException e) {
+                } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
                     // do nothing
                 }
                 if (otherParamRec != null) {
