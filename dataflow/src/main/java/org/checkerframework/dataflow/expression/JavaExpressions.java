@@ -330,6 +330,58 @@ public class JavaExpressions {
         return result;
     }
 
+    private static JavaExpression fromMemberSelect(
+            AnnotationProvider provider, MemberSelectTree memberSelectTree) {
+        TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
+        if (TreeUtils.isClassLiteral(memberSelectTree)) {
+            return new ClassName(expressionType);
+        }
+        assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
+        Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        if (ElementUtils.isClassElement(ele)) {
+            // o instanceof MyClass.InnerClass
+            // o instanceof MyClass.InnerInterface
+            TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
+            return new ClassName(selectType);
+        }
+        switch (ele.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                return fromTree(provider, memberSelectTree.getExpression());
+            case ENUM_CONSTANT:
+            case FIELD:
+                TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
+                JavaExpression je = fromTree(provider, memberSelectTree.getExpression());
+                return new FieldAccess(je, fieldType, (VariableElement) ele);
+            default:
+                throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
+        }
+    }
+
+    /**
+     * Returns the formal parameters of the method in which path is enclosed.
+     *
+     * @param annotationProvider annotationProvider
+     * @param path TreePath that is enclosed by the method
+     * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
+     */
+    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
+            AnnotationProvider annotationProvider, TreePath path) {
+        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        if (methodTree == null) {
+            return null;
+        }
+        List<JavaExpression> internalArguments = new ArrayList<>();
+        for (VariableTree arg : methodTree.getParameters()) {
+            internalArguments.add(fromNode(annotationProvider, new LocalVariableNode(arg)));
+        }
+        return internalArguments;
+    }
+
+    ///
+    /// Obtaining the receiver
+    ///
+
     /**
      * Returns the receiver of ele, whether explicit or implicit.
      *
@@ -393,53 +445,5 @@ public class JavaExpressions {
         } else {
             return new ThisReference(enclosingType);
         }
-    }
-
-    private static JavaExpression fromMemberSelect(
-            AnnotationProvider provider, MemberSelectTree memberSelectTree) {
-        TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
-        if (TreeUtils.isClassLiteral(memberSelectTree)) {
-            return new ClassName(expressionType);
-        }
-        assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
-        Element ele = TreeUtils.elementFromUse(memberSelectTree);
-        if (ElementUtils.isClassElement(ele)) {
-            // o instanceof MyClass.InnerClass
-            // o instanceof MyClass.InnerInterface
-            TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
-            return new ClassName(selectType);
-        }
-        switch (ele.getKind()) {
-            case METHOD:
-            case CONSTRUCTOR:
-                return fromTree(provider, memberSelectTree.getExpression());
-            case ENUM_CONSTANT:
-            case FIELD:
-                TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
-                JavaExpression je = fromTree(provider, memberSelectTree.getExpression());
-                return new FieldAccess(je, fieldType, (VariableElement) ele);
-            default:
-                throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
-        }
-    }
-
-    /**
-     * Returns the formal parameters of the method in which path is enclosed.
-     *
-     * @param annotationProvider annotationProvider
-     * @param path TreePath that is enclosed by the method
-     * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
-     */
-    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
-            AnnotationProvider annotationProvider, TreePath path) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
-        if (methodTree == null) {
-            return null;
-        }
-        List<JavaExpression> internalArguments = new ArrayList<>();
-        for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(fromNode(annotationProvider, new LocalVariableNode(arg)));
-        }
-        return internalArguments;
     }
 }
