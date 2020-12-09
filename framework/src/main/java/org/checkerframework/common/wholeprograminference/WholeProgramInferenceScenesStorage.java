@@ -77,7 +77,7 @@ public class WholeProgramInferenceScenesStorage {
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
-    private final Map<String, ASceneWrapper> scenes = new HashMap<>();
+    public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
      * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
@@ -176,6 +176,8 @@ public class WholeProgramInferenceScenesStorage {
         ASceneWrapper scene = getScene(jaifPath);
         AClass aClass = scene.getAScene().classes.getVivify(className);
         scene.updateSymbolInformation(aClass, classSymbol);
+        System.out.printf(
+                "getAClass(%s) => %s %s%n", className, System.identityHashCode(aClass), aClass);
         return aClass;
     }
 
@@ -213,6 +215,8 @@ public class WholeProgramInferenceScenesStorage {
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
      * @param defLoc the location where the annotation will be added
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     protected void updateAnnotationSetInScene(
             ATypeElement type,
@@ -220,13 +224,17 @@ public class WholeProgramInferenceScenesStorage {
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atf,
-            String jaifPath) {
+            String jaifPath,
+            boolean ignoreIfAnnotated) {
         if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
         AnnotatedTypeMirror atmFromScene =
                 atmFromATypeElement(rhsATM.getUnderlyingType(), type, atf);
+        System.out.printf("atmFromScene = %s%n", atmFromScene);
+        System.out.printf("rhsATM = %s%n", rhsATM);
         updateAtmWithLub(rhsATM, atmFromScene, atf);
+        System.out.printf("rhsATM = %s (updated)%n", rhsATM);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -234,10 +242,16 @@ public class WholeProgramInferenceScenesStorage {
             // current type on the source code, halt.
             if (upperAnnos.size() == rhsATM.getAnnotations().size()
                     && atf.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+                System.out.printf("updateAnnotationSetInScene did nothing%n");
                 return;
             }
         }
-        updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, atf);
+        // System.out.printf("about to call updateTypeElementFromATM(%s)%n", type);
+        System.out.printf(
+                "about to call updateTypeElementFromATM(%s, %s, %s, %s, %s, %s, %s)%n",
+                type, 1, defLoc, rhsATM, lhsATM, atf, ignoreIfAnnotated);
+        updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, atf, ignoreIfAnnotated);
+        System.out.printf("called updateTypeElementFromATM(%s)%n", type);
         modifiedScenes.add(jaifPath);
     }
 
@@ -466,14 +480,16 @@ public class WholeProgramInferenceScenesStorage {
      * AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore, it is not a
      * problem to remove all annotations before inserting the new annotations.
      *
+     * @param typeToUpdate the ATypeElement that will be updated
+     * @param idx used to write annotations on compound types of an ATypeElement
+     * @param defLoc the location where the annotation will be added
      * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
      * @param curATM used to check if the element which will be updated has explicit annotations in
      *     source code
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param typeToUpdate the ATypeElement which will be updated
-     * @param idx used to write annotations on compound types of an ATypeElement
-     * @param defLoc the location where the annotation will be added
+     * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
+     *     source code
      */
     private void updateTypeElementFromATM(
             ATypeElement typeToUpdate,
@@ -481,7 +497,9 @@ public class WholeProgramInferenceScenesStorage {
             TypeUseLocation defLoc,
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
-            AnnotatedTypeFactory atf) {
+            AnnotatedTypeFactory atf,
+            boolean ignoreIfAnnotated) {
+
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
         if (idx == 1) {
@@ -496,12 +514,20 @@ public class WholeProgramInferenceScenesStorage {
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
         }
 
+        // PROBLEM:  This causes pre- and post-conditions to be ignored, though they might be
+        // stronger.  Add a formal parameter.
         // Only update the ATypeElement if there are no explicit annotations
-        if (curATM.getExplicitAnnotations().isEmpty()) {
+        if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
+            System.out.printf(
+                    "about to loop over addAnnotationsToATypeElement. newATM=%s, typeToUpdate=%s%n",
+                    newATM, typeToUpdate);
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
                         newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
+            System.out.printf(
+                    "looped over addAnnotationsToATypeElement. typeToUpdate=%s%n", typeToUpdate);
+
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
             // annotated.  So instead, only insert the annotation if there is not primary annotation
@@ -531,7 +557,8 @@ public class WholeProgramInferenceScenesStorage {
                     defLoc,
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
-                    atf);
+                    atf,
+                    ignoreIfAnnotated);
         }
     }
 

@@ -2252,6 +2252,9 @@ public abstract class GenericAnnotatedTypeFactory<
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             VariableElement elt = entry.getKey();
             AField afield = entry.getValue();
+            System.out.printf(
+                    "getPreconditionAnnotations(%s) considering %s %s%n",
+                    m.getMethodName(), elt, afield);
 
             String precondAnno = getPreconditionAnnotation(elt, afield);
             if (precondAnno != null) {
@@ -2259,6 +2262,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
         Collections.sort(result);
+        System.out.printf("getPreconditionAnnotations(%s) => %s%n", m.getMethodName(), result);
         return result;
     }
 
