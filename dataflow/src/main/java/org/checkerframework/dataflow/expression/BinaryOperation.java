@@ -8,17 +8,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 
-/** FlowExpression.Receiver for binary operations. */
-public class BinaryOperation extends Receiver {
+/** JavaExpression for binary operations. */
+public class BinaryOperation extends JavaExpression {
 
     /** The binary operation kind. */
     protected final Kind operationKind;
     /** The binary operation kind for pretty printing. */
     protected final JCTree.Tag tag;
     /** The left operand. */
-    protected final Receiver left;
+    protected final JavaExpression left;
     /** The right operand. */
-    protected final Receiver right;
+    protected final JavaExpression right;
 
     /**
      * Create a binary operation.
@@ -27,7 +27,7 @@ public class BinaryOperation extends Receiver {
      * @param left the left operand
      * @param right the right operand
      */
-    public BinaryOperation(BinaryOperationNode node, Receiver left, Receiver right) {
+    public BinaryOperation(BinaryOperationNode node, JavaExpression left, JavaExpression right) {
         super(node.getType());
         this.operationKind = node.getTree().getKind();
         this.tag = ((JCTree) node.getTree()).getTag();
@@ -49,7 +49,7 @@ public class BinaryOperation extends Receiver {
      *
      * @return the left operand
      */
-    public Receiver getLeft() {
+    public JavaExpression getLeft() {
         return left;
     }
 
@@ -58,12 +58,12 @@ public class BinaryOperation extends Receiver {
      *
      * @return the right operand
      */
-    public Receiver getRight() {
+    public JavaExpression getRight() {
         return right;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         if (getClass() == clazz) {
             return true;
         }
@@ -81,7 +81,7 @@ public class BinaryOperation extends Receiver {
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         if (!(other instanceof BinaryOperation)) {
             return false;
         }
@@ -93,7 +93,7 @@ public class BinaryOperation extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return left.containsModifiableAliasOf(store, other)
                 || right.containsModifiableAliasOf(store, other);
     }

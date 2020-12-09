@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.analysis.Store;
 
 /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
 @UsesObjectEquals
-public class Unknown extends Receiver {
+public class Unknown extends JavaExpression {
     /**
      * Create a new Unknown receiver.
      *
@@ -34,12 +34,12 @@ public class Unknown extends Receiver {
     }
 
     @Override
-    public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+    public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
         return true;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
         return getClass() == clazz;
     }
 

@@ -7,7 +7,10 @@ The Called Methods Checker supports the -AdisableReturnsReceiver command-line op
 
 Implementation details:
 
-Renamed StubParser to AnnotationFileParser
+Class renamings:
+ * `StubParser` => `AnnotationFileParser`
+ * `Receiver` => `JavaExpression`
+     *  also related class and method renamings
 
 ---------------------------------------------------------------------------
 
