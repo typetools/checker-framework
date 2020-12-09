@@ -903,25 +903,18 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a {@link FlowExpressionContext} for the method {@code methodInvocation}
-         * (represented as a {@link MethodInvocationTree} as seen at the method use (i.e., at a
-         * method call site).
+         * Returns a {@link FlowExpressionContext} for the method called by {@code methodInvocation}
+         * as seen at the method use (i.e., at a method call site).
          *
+         * @param methodInvocation a method invocation
+         * @param checkerContext the javac components to use
          * @return a {@link FlowExpressionContext} for the method {@code methodInvocation}
          */
         public static FlowExpressionContext buildContextForMethodUse(
                 MethodInvocationTree methodInvocation, BaseContext checkerContext) {
-            ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocation);
-            Receiver receiver;
-            if (receiverTree == null) {
-                receiver =
-                        FlowExpressions.internalReprOfImplicitReceiver(
-                                TreeUtils.elementFromUse(methodInvocation));
-            } else {
-                receiver =
-                        FlowExpressions.internalReprOf(
-                                checkerContext.getAnnotationProvider(), receiverTree);
-            }
+            Receiver receiver =
+                    FlowExpressions.internalReprOfReceiver(
+                            methodInvocation, checkerContext.getAnnotationProvider());
 
             List<? extends ExpressionTree> args = methodInvocation.getArguments();
             List<Receiver> argReceivers = new ArrayList<>(args.size());

@@ -160,9 +160,8 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptMethod(
             MethodInvocationTree methodInvocationTree, AnnotatedExecutableType methodDeclType) {
-        ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvocationTree);
         List<? extends ExpressionTree> args = methodInvocationTree.getArguments();
-        viewpointAdaptExecutable(methodInvocationTree, receiverTree, methodDeclType, args);
+        viewpointAdaptExecutable(methodInvocationTree, methodDeclType, args);
     }
 
     /**
@@ -174,14 +173,19 @@ public class DependentTypesHelper {
      */
     public void viewpointAdaptConstructor(
             NewClassTree newClassTree, AnnotatedExecutableType constructorType) {
-        ExpressionTree receiverTree = newClassTree.getEnclosingExpression();
         List<? extends ExpressionTree> args = newClassTree.getArguments();
-        viewpointAdaptExecutable(newClassTree, receiverTree, constructorType, args);
+        viewpointAdaptExecutable(newClassTree, constructorType, args);
     }
 
+    /**
+     * Viewpoint-adapts a method or constructor invocation.
+     *
+     * @param tree invocation of the method or constructor
+     * @param typeFromUse type of the method or constructor; is side-effected by this method
+     * @param args the arguments to the method or constructor
+     */
     private void viewpointAdaptExecutable(
             ExpressionTree tree,
-            ExpressionTree receiverTree,
             AnnotatedExecutableType typeFromUse,
             List<? extends ExpressionTree> args) {
 
@@ -192,13 +196,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        Receiver receiver;
-        if (receiverTree == null) {
-            receiver =
-                    FlowExpressions.internalReprOfImplicitReceiver(TreeUtils.elementFromUse(tree));
-        } else {
-            receiver = FlowExpressions.internalReprOf(factory, receiverTree);
-        }
+        Receiver receiver = FlowExpressions.internalReprOfReceiver(tree, factory);
 
         List<Receiver> argReceivers = new ArrayList<>();
         boolean isVarargs = false;
