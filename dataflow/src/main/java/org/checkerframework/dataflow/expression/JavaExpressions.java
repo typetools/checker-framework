@@ -53,7 +53,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>Unknown other expressions to mark that something else was present.
  * </ul>
  */
-public class FlowExpressions {
+public class JavaExpressions {
 
     /**
      * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
@@ -62,14 +62,14 @@ public class FlowExpressions {
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
-    public static FieldAccess internalReprOfFieldAccess(
+    public static FieldAccess fromNodeFieldAccess(
             AnnotationProvider provider, FieldAccessNode node) {
-        Receiver receiver;
         Node receiverNode = node.getReceiver();
+        JavaExpression receiver;
         if (node.isStatic()) {
             receiver = new ClassName(receiverNode.getType());
         } else {
-            receiver = internalReprOf(provider, receiverNode);
+            receiver = fromNode(provider, receiverNode);
         }
         return new FieldAccess(receiver, node);
     }
@@ -81,94 +81,91 @@ public class FlowExpressions {
      * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
      *     Can contain {@link Unknown} as receiver.
      */
-    public static ArrayAccess internalReprOfArrayAccess(
-            AnnotationProvider provider, ArrayAccessNode node) {
-        Receiver receiver = internalReprOf(provider, node.getArray());
-        Receiver index = internalReprOf(provider, node.getIndex());
-        return new ArrayAccess(node.getType(), receiver, index);
+    public static ArrayAccess fromArrayAccess(AnnotationProvider provider, ArrayAccessNode node) {
+        JavaExpression array = fromNode(provider, node.getArray());
+        JavaExpression index = fromNode(provider, node.getIndex());
+        return new ArrayAccess(node.getType(), array, index);
     }
 
     /**
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
-     *     {@link Unknown}.
+     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
      */
-    public static Receiver internalReprOf(AnnotationProvider provider, Node receiverNode) {
-        return internalReprOf(provider, receiverNode, false);
+    public static JavaExpression fromNode(AnnotationProvider provider, Node node) {
+        return fromNode(provider, node, false);
     }
 
     /**
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
-     *     {@link Unknown}.
+     * @return the internal representation of any {@link Node}. Might contain {@link Unknown}.
      */
-    public static Receiver internalReprOf(
+    public static JavaExpression fromNode(
             AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
-        Receiver receiver = null;
+        JavaExpression result = null;
         if (receiverNode instanceof FieldAccessNode) {
             FieldAccessNode fan = (FieldAccessNode) receiverNode;
 
             if (fan.getFieldName().equals("this")) {
                 // For some reason, "className.this" is considered a field access.
                 // We right this wrong here.
-                receiver = new ThisReference(fan.getReceiver().getType());
+                result = new ThisReference(fan.getReceiver().getType());
             } else if (fan.getFieldName().equals("class")) {
                 // "className.class" is considered a field access. This makes sense,
                 // since .class is similar to a field access which is the equivalent
                 // of a call to getClass(). However for the purposes of dataflow
                 // analysis, and value stores, this is the equivalent of a ClassNameNode.
-                receiver = new ClassName(fan.getReceiver().getType());
+                result = new ClassName(fan.getReceiver().getType());
             } else {
-                receiver = internalReprOfFieldAccess(provider, fan);
+                result = fromNodeFieldAccess(provider, fan);
             }
         } else if (receiverNode instanceof ExplicitThisLiteralNode) {
-            receiver = new ThisReference(receiverNode.getType());
+            result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof ThisLiteralNode) {
-            receiver = new ThisReference(receiverNode.getType());
+            result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof SuperNode) {
-            receiver = new ThisReference(receiverNode.getType());
+            result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
-            receiver = new LocalVariable(lv);
+            result = new LocalVariable(lv);
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
-            receiver = internalReprOfArrayAccess(provider, a);
+            result = fromArrayAccess(provider, a);
         } else if (receiverNode instanceof StringConversionNode) {
             // ignore string conversion
-            return internalReprOf(provider, ((StringConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((StringConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof WideningConversionNode) {
             // ignore widening
-            return internalReprOf(provider, ((WideningConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((WideningConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
-            return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
+            return fromNode(provider, ((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof BinaryOperationNode) {
             BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
             return new BinaryOperation(
                     bopn,
-                    internalReprOf(provider, bopn.getLeftOperand(), allowNonDeterministic),
-                    internalReprOf(provider, bopn.getRightOperand(), allowNonDeterministic));
+                    fromNode(provider, bopn.getLeftOperand(), allowNonDeterministic),
+                    fromNode(provider, bopn.getRightOperand(), allowNonDeterministic));
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
-            receiver = new ClassName(cn.getType());
+            result = new ClassName(cn.getType());
         } else if (receiverNode instanceof ValueLiteralNode) {
             ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
-            receiver = new ValueLiteral(vn.getType(), vn);
+            result = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
             ArrayCreationNode an = (ArrayCreationNode) receiverNode;
-            List<Receiver> dimensions = new ArrayList<>();
+            List<JavaExpression> dimensions = new ArrayList<>();
             for (Node dimension : an.getDimensions()) {
-                dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+                dimensions.add(fromNode(provider, dimension, allowNonDeterministic));
             }
-            List<Receiver> initializers = new ArrayList<>();
+            List<JavaExpression> initializers = new ArrayList<>();
             for (Node initializer : an.getInitializers()) {
-                initializers.add(internalReprOf(provider, initializer, allowNonDeterministic));
+                initializers.add(fromNode(provider, initializer, allowNonDeterministic));
             }
-            receiver = new ArrayCreation(an.getType(), dimensions, initializers);
+            result = new ArrayCreation(an.getType(), dimensions, initializers);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             MethodInvocationTree t = mn.getTree();
@@ -179,55 +176,53 @@ public class FlowExpressions {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
             if (allowNonDeterministic || PurityUtils.isDeterministic(provider, invokedMethod)) {
-                List<Receiver> parameters = new ArrayList<>();
+                List<JavaExpression> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
-                    parameters.add(internalReprOf(provider, p));
+                    parameters.add(fromNode(provider, p));
                 }
-                Receiver methodReceiver;
+                JavaExpression methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
                     methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
                 } else {
-                    methodReceiver = internalReprOf(provider, mn.getTarget().getReceiver());
+                    methodReceiver = fromNode(provider, mn.getTarget().getReceiver());
                 }
-                receiver = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
+                result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
             }
         }
 
-        if (receiver == null) {
-            receiver = new Unknown(receiverNode.getType());
+        if (result == null) {
+            result = new Unknown(receiverNode.getType());
         }
-        return receiver;
+        return result;
     }
 
     /**
-     * Returns the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
-     * Might contain {@link Unknown}.
+     * Returns the internal representation of any {@link ExpressionTree}. Might contain {@link
+     * Unknown}.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
-     *     Might contain {@link Unknown}.
+     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
+     *     Unknown}.
      */
-    public static Receiver internalReprOf(
+    public static JavaExpression fromTree(
             AnnotationProvider provider, ExpressionTree receiverTree) {
-        return internalReprOf(provider, receiverTree, true);
+        return fromTree(provider, receiverTree, true);
     }
     /**
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
-     *     Might contain {@link Unknown}.
+     * @return the internal representation of any {@link ExpressionTree}. Might contain {@link
+     *     Unknown}.
      */
-    public static Receiver internalReprOf(
-            AnnotationProvider provider,
-            ExpressionTree receiverTree,
-            boolean allowNonDeterministic) {
-        Receiver receiver;
-        switch (receiverTree.getKind()) {
+    public static JavaExpression fromTree(
+            AnnotationProvider provider, ExpressionTree tree, boolean allowNonDeterministic) {
+        JavaExpression result;
+        switch (tree.getKind()) {
             case ARRAY_ACCESS:
-                ArrayAccessTree a = (ArrayAccessTree) receiverTree;
-                Receiver arrayAccessExpression = internalReprOf(provider, a.getExpression());
-                Receiver index = internalReprOf(provider, a.getIndex());
-                receiver = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
+                ArrayAccessTree a = (ArrayAccessTree) tree;
+                JavaExpression arrayAccessExpression = fromTree(provider, a.getExpression());
+                JavaExpression index = fromTree(provider, a.getIndex());
+                result = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
                 break;
             case BOOLEAN_LITERAL:
             case CHAR_LITERAL:
@@ -237,65 +232,63 @@ public class FlowExpressions {
             case LONG_LITERAL:
             case NULL_LITERAL:
             case STRING_LITERAL:
-                LiteralTree vn = (LiteralTree) receiverTree;
-                receiver = new ValueLiteral(TreeUtils.typeOf(receiverTree), vn.getValue());
+                LiteralTree vn = (LiteralTree) tree;
+                result = new ValueLiteral(TreeUtils.typeOf(tree), vn.getValue());
                 break;
             case NEW_ARRAY:
-                NewArrayTree newArrayTree = (NewArrayTree) receiverTree;
-                List<Receiver> dimensions = new ArrayList<>();
+                NewArrayTree newArrayTree = (NewArrayTree) tree;
+                List<JavaExpression> dimensions = new ArrayList<>();
                 if (newArrayTree.getDimensions() != null) {
                     for (ExpressionTree dimension : newArrayTree.getDimensions()) {
-                        dimensions.add(internalReprOf(provider, dimension, allowNonDeterministic));
+                        dimensions.add(fromTree(provider, dimension, allowNonDeterministic));
                     }
                 }
-                List<Receiver> initializers = new ArrayList<>();
+                List<JavaExpression> initializers = new ArrayList<>();
                 if (newArrayTree.getInitializers() != null) {
                     for (ExpressionTree initializer : newArrayTree.getInitializers()) {
-                        initializers.add(
-                                internalReprOf(provider, initializer, allowNonDeterministic));
+                        initializers.add(fromTree(provider, initializer, allowNonDeterministic));
                     }
                 }
 
-                receiver =
-                        new ArrayCreation(TreeUtils.typeOf(receiverTree), dimensions, initializers);
+                result = new ArrayCreation(TreeUtils.typeOf(tree), dimensions, initializers);
                 break;
             case METHOD_INVOCATION:
-                MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
+                MethodInvocationTree mn = (MethodInvocationTree) tree;
                 assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
                 ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
                 if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
-                    List<Receiver> parameters = new ArrayList<>();
+                    List<JavaExpression> parameters = new ArrayList<>();
                     for (ExpressionTree p : mn.getArguments()) {
-                        parameters.add(internalReprOf(provider, p));
+                        parameters.add(fromTree(provider, p));
                     }
-                    Receiver methodReceiver;
+                    JavaExpression methodReceiver;
                     if (ElementUtils.isStatic(invokedMethod)) {
                         methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
                     } else {
-                        methodReceiver = internalReprOfReceiver(mn, provider);
+                        methodReceiver = getReceiver(mn, provider);
                     }
                     TypeMirror type = TreeUtils.typeOf(mn);
-                    receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                    result = new MethodCall(type, invokedMethod, methodReceiver, parameters);
                 } else {
-                    receiver = null;
+                    result = null;
                 }
                 break;
             case MEMBER_SELECT:
-                receiver = internalReprOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                result = fromMemberSelect(provider, (MemberSelectTree) tree);
                 break;
             case IDENTIFIER:
-                IdentifierTree identifierTree = (IdentifierTree) receiverTree;
+                IdentifierTree identifierTree = (IdentifierTree) tree;
                 TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
                 if (identifierTree.getName().contentEquals("this")
                         || identifierTree.getName().contentEquals("super")) {
-                    receiver = new ThisReference(typeOfId);
+                    result = new ThisReference(typeOfId);
                     break;
                 }
                 assert TreeUtils.isUseOfElement(identifierTree)
                         : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
                 if (ElementUtils.isClassElement(ele)) {
-                    receiver = new ClassName(ele.asType());
+                    result = new ClassName(ele.asType());
                     break;
                 }
                 switch (ele.getKind()) {
@@ -303,11 +296,11 @@ public class FlowExpressions {
                     case RESOURCE_VARIABLE:
                     case EXCEPTION_PARAMETER:
                     case PARAMETER:
-                        receiver = new LocalVariable(ele);
+                        result = new LocalVariable(ele);
                         break;
                     case FIELD:
                         // Implicit access expression, such as "this" or a class name
-                        Receiver fieldAccessExpression;
+                        JavaExpression fieldAccessExpression;
                         @SuppressWarnings(
                                 "nullness:dereference.of.nullable") // a field has enclosing class
                         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
@@ -316,95 +309,28 @@ public class FlowExpressions {
                         } else {
                             fieldAccessExpression = new ThisReference(enclosingType);
                         }
-                        receiver =
+                        result =
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
                     default:
-                        receiver = null;
+                        result = null;
                 }
                 break;
             case UNARY_PLUS:
-                return internalReprOf(
-                        provider,
-                        ((UnaryTree) receiverTree).getExpression(),
-                        allowNonDeterministic);
+                return fromTree(
+                        provider, ((UnaryTree) tree).getExpression(), allowNonDeterministic);
             default:
-                receiver = null;
+                result = null;
         }
 
-        if (receiver == null) {
-            receiver = new Unknown(TreeUtils.typeOf(receiverTree));
+        if (result == null) {
+            result = new Unknown(TreeUtils.typeOf(tree));
         }
-        return receiver;
+        return result;
     }
 
-    /**
-     * Returns the receiver of ele, whether explicit or implicit.
-     *
-     * @param accessTree method or constructor invocation
-     * @param provider an AnnotationProvider
-     * @return the receiver of ele, whether explicit or implicit
-     */
-    public static Receiver internalReprOfReceiver(
-            ExpressionTree accessTree, AnnotationProvider provider) {
-        // TODO: Handle field accesses too?
-        assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
-        ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
-        if (receiverTree != null) {
-            return internalReprOf(provider, receiverTree);
-        } else {
-            Element ele = TreeUtils.elementFromUse(accessTree);
-            if (ele == null) {
-                throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
-            }
-            return internalReprOfImplicitReceiver(ele);
-        }
-    }
-
-    /**
-     * Returns the implicit receiver of ele.
-     *
-     * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
-     * or not. The passed element must be a field, method, or class.
-     *
-     * @param ele field, method, or class
-     * @return either a new ClassName or a new ThisReference depending on whether ele is static or
-     *     not
-     */
-    public static Receiver internalReprOfImplicitReceiver(Element ele) {
-        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
-        if (enclosingClass == null) {
-            throw new BugInCF(
-                    "internalReprOfImplicitReceiver's arg has no enclosing class: " + ele);
-        }
-        TypeMirror enclosingType = enclosingClass.asType();
-        if (ElementUtils.isStatic(ele)) {
-            return new ClassName(enclosingType);
-        } else {
-            return new ThisReference(enclosingType);
-        }
-    }
-
-    /**
-     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType.
-     *
-     * <p>The Tree should be an expression or a statement that does not have a receiver or an
-     * implicit receiver. For example, a local variable declaration.
-     *
-     * @param path TreePath to tree
-     * @param enclosingType type of the enclosing type
-     * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
-     */
-    public static Receiver internalReprOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
-        if (TreeUtils.isTreeInStaticScope(path)) {
-            return new ClassName(enclosingType);
-        } else {
-            return new ThisReference(enclosingType);
-        }
-    }
-
-    private static Receiver internalReprOfMemberSelect(
+    private static JavaExpression fromMemberSelect(
             AnnotationProvider provider, MemberSelectTree memberSelectTree) {
         TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
         if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -421,35 +347,103 @@ public class FlowExpressions {
         switch (ele.getKind()) {
             case METHOD:
             case CONSTRUCTOR:
-                return internalReprOf(provider, memberSelectTree.getExpression());
+                return fromTree(provider, memberSelectTree.getExpression());
             case ENUM_CONSTANT:
             case FIELD:
                 TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
-                Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
-                return new FieldAccess(r, fieldType, (VariableElement) ele);
+                JavaExpression je = fromTree(provider, memberSelectTree.getExpression());
+                return new FieldAccess(je, fieldType, (VariableElement) ele);
             default:
                 throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
         }
     }
 
     /**
-     * Returns Receiver objects for the formal parameters of the method in which path is enclosed.
+     * Returns the formal parameters of the method in which path is enclosed.
      *
      * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
-     * @return list of Receiver objects for the formal parameters of the method in which path is
-     *     enclosed, {@code null} otherwise
+     * @return the formal parameters of the method in which path is enclosed, {@code null} otherwise
      */
-    public static @Nullable List<Receiver> getParametersOfEnclosingMethod(
+    public static @Nullable List<JavaExpression> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {
         MethodTree methodTree = TreeUtils.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
-        List<Receiver> internalArguments = new ArrayList<>();
+        List<JavaExpression> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(internalReprOf(annotationProvider, new LocalVariableNode(arg)));
+            internalArguments.add(fromNode(annotationProvider, new LocalVariableNode(arg)));
         }
         return internalArguments;
+    }
+
+    ///
+    /// Obtaining the receiver
+    ///
+
+    /**
+     * Returns the receiver of ele, whether explicit or implicit.
+     *
+     * @param accessTree method or constructor invocation
+     * @param provider an AnnotationProvider
+     * @return the receiver of ele, whether explicit or implicit
+     */
+    public static JavaExpression getReceiver(
+            ExpressionTree accessTree, AnnotationProvider provider) {
+        // TODO: Handle field accesses too?
+        assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
+        ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
+        if (receiverTree != null) {
+            return fromTree(provider, receiverTree);
+        } else {
+            Element ele = TreeUtils.elementFromUse(accessTree);
+            if (ele == null) {
+                throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
+            }
+            return getImplicitReceiver(ele);
+        }
+    }
+
+    /**
+     * Returns the implicit receiver of ele.
+     *
+     * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
+     * or not. The passed element must be a field, method, or class.
+     *
+     * @param ele field, method, or class
+     * @return either a new ClassName or a new ThisReference depending on whether ele is static or
+     *     not
+     */
+    public static JavaExpression getImplicitReceiver(Element ele) {
+        TypeElement enclosingClass = ElementUtils.enclosingClass(ele);
+        if (enclosingClass == null) {
+            throw new BugInCF("getImplicitReceiver's arg has no enclosing class: " + ele);
+        }
+        TypeMirror enclosingType = enclosingClass.asType();
+        if (ElementUtils.isStatic(ele)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
+    }
+
+    /**
+     * Returns either a new ClassName or ThisReference JavaExpression object for the enclosingType.
+     *
+     * <p>The Tree should be an expression or a statement that does not have a receiver or an
+     * implicit receiver. For example, a local variable declaration.
+     *
+     * @param path TreePath to tree
+     * @param enclosingType type of the enclosing type
+     * @return a new ClassName or ThisReference that is a JavaExpression object for the
+     *     enclosingType
+     */
+    public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+        if (TreeUtils.isTreeInStaticScope(path)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
     }
 }

@@ -45,7 +45,7 @@ import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -63,7 +63,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1294,17 +1294,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the minimum length of an array expression or 0 if the min length is unknown.
      *
-     * @param sequenceExpression flow expression
+     * @param sequenceExpression Java expression
      * @param tree expression tree or variable declaration
      * @param currentPath path to local scope
      * @return min length of sequenceExpression or 0
      */
     public int getMinLenFromString(String sequenceExpression, Tree tree, TreePath currentPath) {
         AnnotationMirror lengthAnno;
-        Receiver expressionObj;
+        JavaExpression expressionObj;
         try {
-            expressionObj = getReceiverFromJavaExpressionString(sequenceExpression, currentPath);
-        } catch (FlowExpressionParseException e) {
+            expressionObj = parseJavaExpressionString(sequenceExpression, currentPath);
+        } catch (JavaExpressionParseException e) {
             // ignore parse errors and return 0.
             return 0;
         }
@@ -1333,12 +1333,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLenRange.class);
+        lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLenRange.class);
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, ArrayLen.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, ArrayLen.class);
         }
         if (lengthAnno == null) {
-            lengthAnno = getAnnotationFromReceiver(expressionObj, tree, StringVal.class);
+            lengthAnno = getAnnotationFromJavaExpression(expressionObj, tree, StringVal.class);
         }
 
         if (lengthAnno == null) {

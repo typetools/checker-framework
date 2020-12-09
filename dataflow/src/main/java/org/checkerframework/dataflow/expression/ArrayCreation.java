@@ -7,12 +7,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.UtilPlume;
 
 /** FlowExpression for array creations. {@code new String[]()}. */
-public class ArrayCreation extends Receiver {
+public class ArrayCreation extends JavaExpression {
 
     /** List of dimensions expressions. {code null} means that there is no dimension expression. */
-    protected final List<? extends @Nullable Receiver> dimensions;
+    protected final List<? extends @Nullable JavaExpression> dimensions;
     /** List of initializers. */
-    protected final List<Receiver> initializers;
+    protected final List<JavaExpression> initializers;
 
     /**
      * Creates an ArrayCreation object.
@@ -24,8 +24,8 @@ public class ArrayCreation extends Receiver {
      */
     public ArrayCreation(
             TypeMirror type,
-            List<? extends @Nullable Receiver> dimensions,
-            List<Receiver> initializers) {
+            List<? extends @Nullable JavaExpression> dimensions,
+            List<JavaExpression> initializers) {
         super(type);
         this.dimensions = dimensions;
         this.initializers = initializers;
@@ -36,22 +36,22 @@ public class ArrayCreation extends Receiver {
      *
      * @return a list of receivers representing the dimension of this array creation
      */
-    public List<? extends @Nullable Receiver> getDimensions() {
+    public List<? extends @Nullable JavaExpression> getDimensions() {
         return dimensions;
     }
 
-    public List<Receiver> getInitializers() {
+    public List<JavaExpression> getInitializers() {
         return initializers;
     }
 
     @Override
-    public boolean containsOfClass(Class<? extends Receiver> clazz) {
-        for (Receiver n : dimensions) {
+    public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+        for (JavaExpression n : dimensions) {
             if (n != null && n.getClass() == clazz) {
                 return true;
             }
         }
-        for (Receiver n : initializers) {
+        for (JavaExpression n : initializers) {
             if (n.getClass() == clazz) {
                 return true;
             }
@@ -88,12 +88,12 @@ public class ArrayCreation extends Receiver {
     }
 
     @Override
-    public boolean syntacticEquals(Receiver other) {
+    public boolean syntacticEquals(JavaExpression other) {
         return this.equals(other);
     }
 
     @Override
-    public boolean containsSyntacticEqualReceiver(Receiver other) {
+    public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
         return syntacticEquals(other);
     }
 
@@ -102,7 +102,7 @@ public class ArrayCreation extends Receiver {
         StringBuilder sb = new StringBuilder();
         sb.append("new " + type);
         if (!dimensions.isEmpty()) {
-            for (Receiver dim : dimensions) {
+            for (JavaExpression dim : dimensions) {
                 sb.append("[");
                 sb.append(dim == null ? "" : dim);
                 sb.append("]");
