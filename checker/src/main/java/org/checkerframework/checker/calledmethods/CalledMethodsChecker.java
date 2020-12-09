@@ -68,17 +68,15 @@ public class CalledMethodsChecker extends AccumulationChecker {
     private @MonotonicNonNull Boolean returnsReceiverDisabled = null;
 
     /**
-     * Was the returns receiver checker disabled on the command line?
+     * Was the Returns Receiver Checker disabled on the command line?
      *
-     * @return whether the -AdisableReturnsReceiver option was specified on the command line.
+     * @return whether the -AdisableReturnsReceiver option was specified on the command line
      */
     private boolean isReturnsReceiverDisabled() {
         if (returnsReceiverDisabled == null) {
             // BaseTypeChecker#hasOption calls getImmediateSubcheckerClasses (so that all
-            // subcheckers' options are
-            // considered), so the processingEnvironment must be checked for options directly,
-            // because this method
-            // is called from there.
+            // subcheckers' options are considered), so the processingEnvironment must be checked
+            // for options directly, because this method is called from there.
             returnsReceiverDisabled =
                     this.processingEnv.getOptions().containsKey(DISABLE_RETURNS_RECEIVER)
                             || this.processingEnv
