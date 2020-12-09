@@ -1,3 +1,11 @@
+Version 3.9.0
+
+Implementation details:
+
+Renamed StubParser to AnnotationFileParser
+
+---------------------------------------------------------------------------
+
 Version 3.8.0, December 1, 2020
 
 The Initialized Fields Checker warns when a field is not initialized by a

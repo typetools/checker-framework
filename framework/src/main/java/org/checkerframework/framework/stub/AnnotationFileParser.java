@@ -171,6 +171,9 @@ public class AnnotationFileParser {
      * There are two entries for each annotation: the annotation's simple name and its
      * fully-qualified name.
      *
+     * <p>The map is populated from import statements and also by {@link #getAnnotation(
+     * AnnotationExpr, Map)} for annotations that are used fully-qualified.
+     *
      * @see #getAllAnnotations
      */
     private Map<String, TypeElement> allAnnotations;
@@ -195,7 +198,7 @@ public class AnnotationFileParser {
 
     /**
      * The annotations on the declared package of the complation unit being processed. Contains null
-     * when not parsing a file.
+     * if not processing a compilation unit or if the file has no declared package.
      */
     @Nullable List<AnnotationExpr> packageAnnos;
 
@@ -206,8 +209,10 @@ public class AnnotationFileParser {
     /**
      * The name of the type that is currently being parsed. After processing a package declaration
      * but before processing a type declaration, the type part of this may be null.
+     *
+     * <p>It is used both for resolving symbols and for error messages.
      */
-    private FqName typeName;
+    private FqName typeBeingParsed;
 
     /**
      * Contains the annotations of the file currently being processed, which is the output of the
@@ -354,14 +359,13 @@ public class AnnotationFileParser {
         return result;
     }
 
-    // TODO: This method collects only those that are imported, so it will miss ones whose
-    // fully-qualified name is used in the annotation file. The #getAnnotation method in this class
-    // compensates for this deficiency by attempting to add any fully-qualified annotation that it
-    // encounters.
     /**
      * Returns all annotations imported by the annotation file, as a value for {@link
      * #allAnnotations}. Note that this also modifies {@link #importedConstants} and {@link
      * #importedTypes}.
+     *
+     * <p>This method misses annotations that are not imported. The {@link #getAnnotation} method
+     * compensates for this deficiency by adding any fully-qualified annotation that it encounters.
      *
      * @return a map from names to TypeElement, for all annotations imported by the annotation file.
      *     Two entries for each annotation: one for the simple name and another for the
@@ -572,11 +576,11 @@ public class AnnotationFileParser {
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations stubAnnos,
             boolean isJdkAsStub) {
-        AnnotationFileParser sp =
+        AnnotationFileParser afp =
                 new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub, true);
         try {
-            sp.parseStubUnit(inputStream);
-            sp.process(stubAnnos);
+            afp.parseStubUnit(inputStream);
+            afp.process(stubAnnos);
         } catch (ParseProblemException e) {
             StringJoiner message = new StringJoiner(LINE_SEPARATOR);
             message.add(
@@ -585,7 +589,7 @@ public class AnnotationFileParser {
             for (Problem p : e.getProblems()) {
                 message.add(p.getVerboseMessage());
             }
-            sp.warn(message.toString());
+            afp.warn(message.toString());
         }
     }
 
@@ -649,7 +653,7 @@ public class AnnotationFileParser {
 
         if (!cu.getPackageDeclaration().isPresent()) {
             packageAnnos = null;
-            typeName = new FqName(null, null);
+            typeBeingParsed = new FqName(null, null);
         } else {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
             packageAnnos = pDecl.getAnnotations();
@@ -677,7 +681,7 @@ public class AnnotationFileParser {
     private void processPackage(PackageDeclaration packDecl) {
         assert (packDecl != null);
         String packageName = packDecl.getNameAsString();
-        typeName = new FqName(packageName, null);
+        typeBeingParsed = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
         // If the element lookup fails, it's because we have an annotation for a
         // package that isn't on the classpath, which is fine.
@@ -700,7 +704,7 @@ public class AnnotationFileParser {
      */
     private List<AnnotatedTypeVariable> processTypeDecl(
             TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
-        assert typeName != null;
+        assert typeBeingParsed != null;
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
@@ -712,13 +716,13 @@ public class AnnotationFileParser {
         if (classTree != null) {
             typeElt = TreeUtils.elementFromDeclaration(classTree);
             innerName = typeElt.getQualifiedName().toString();
-            typeName = new FqName(typeName.packageName, innerName);
-            fqTypeName = typeName.toString();
+            typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
+            fqTypeName = typeBeingParsed.toString();
         } else {
             innerName =
                     (outertypeName == null ? "" : outertypeName + ".") + typeDecl.getNameAsString();
-            typeName = new FqName(typeName.packageName, innerName);
-            fqTypeName = typeName.toString();
+            typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
+            fqTypeName = typeBeingParsed.toString();
             typeElt = elements.getTypeElement(fqTypeName);
         }
         if (typeElt == null) {
@@ -767,15 +771,16 @@ public class AnnotationFileParser {
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
         // annotations, right?
 
-        // This loops over the members of the Element, finding the matching stub declaration if any.
-        // It ignores any stub declaration that does not match some member of the element.
-        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeElt, typeDecl);
+        // `elementsToDecl` is for members of a single type.  It does not contain any stub
+        // declaration that does not match some member of the element.
+        Map<Element, BodyDeclaration<?>> elementsToDecl = getMembers(typeDecl, typeElt);
         // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
         // of this method.
         if (!isParsingStubFile) {
             return typeDeclTypeParameters;
         }
 
+        // This loop converts each JavaParser declaration into an AnnotatedTypeMirror.
         for (Map.Entry<Element, BodyDeclaration<?>> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration<?> decl = entry.getValue();
@@ -812,11 +817,10 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns whether the argument contains {@code @NoAnnotationFileParserWarning}.
+     * Returns true if the argument contains {@code @NoAnnotationFileParserWarning}.
      *
      * @param aexprs collection of annotation expressions
-     * @return true if {@code aexprs} contains {@code @NoAnnotationFileParserWarning}, false
-     *     otherwise
+     * @return true if {@code aexprs} contains {@code @NoAnnotationFileParserWarning}
      */
     private boolean hasNoAnnotationFileParserWarning(Iterable<AnnotationExpr> aexprs) {
         if (aexprs == null) {
@@ -860,7 +864,7 @@ public class AnnotationFileParser {
             if (numParams != numArgs) {
                 stubDebug(
                         String.format(
-                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeName=%s",
+                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
                                 typeParameters,
                                 numParams,
                                 typeArguments,
@@ -870,7 +874,7 @@ public class AnnotationFileParser {
                                 elt.getClass(),
                                 type,
                                 type.getClass(),
-                                typeName));
+                                typeBeingParsed));
                 stubDebug("Proceeding despite mismatched sizes");
             }
         }
@@ -981,13 +985,8 @@ public class AnnotationFileParser {
         recordDeclAnnotationFromAnnotationFile(elt, annotationFileAnnos);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        AnnotatedExecutableType origMethodType;
-
-        if (warnIfStubRedundantWithBytecode) {
-            origMethodType = methodType.deepCopy();
-        } else {
-            origMethodType = null;
-        }
+        AnnotatedExecutableType origMethodType =
+                warnIfStubRedundantWithBytecode ? methodType.deepCopy() : null;
 
         // Type Parameters
         annotateTypeParameters(
@@ -1126,6 +1125,7 @@ public class AnnotationFileParser {
         if (annos != null && !annos.isEmpty()) {
             // TODO: only produce output if the removed annotation isn't the top and default
             // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+            /*
             if (false) {
                 stubWarnOverwritesBytecode(
                         String.format(
@@ -1134,6 +1134,7 @@ public class AnnotationFileParser {
                                 typeDef.getBegin().get().line,
                                 atype.toString(true)));
             }
+            */
             // Clear existing annotations, which only makes a difference for
             // type variables, but doesn't hurt in other cases.
             atype.clearAnnotations();
@@ -1188,7 +1189,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Add to {@code atype}:
+     * Add to formal parameter {@code atype}:
      *
      * <ol>
      *   <li>the annotations from {@code typeDef}, and
@@ -1273,7 +1274,7 @@ public class AnnotationFileParser {
                                     + typeDef
                                     + ">"
                                     + " while parsing "
-                                    + typeName);
+                                    + typeBeingParsed);
                     return;
                 }
                 WildcardType wildcardDef = (WildcardType) typeDef;
@@ -1437,15 +1438,15 @@ public class AnnotationFileParser {
      * parsing an ajava file or parsing the JDK as a stub file.
      *
      * @param elt an element to be annotated as {@code @FromStubFile}
-     * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
      */
     private void recordDeclAnnotationFromAnnotationFile(
-            Element elt, AnnotationFileAnnotations stubAnnos) {
+            Element elt, AnnotationFileAnnotations annotationFileAnnos) {
         if (!isParsingStubFile || isJdkAsStub) {
             return;
         }
         putOrAddToMap(
-                stubAnnos.declAnnos,
+                annotationFileAnnos.declAnnos,
                 ElementUtils.getQualifiedName(elt),
                 Collections.singleton(fromStubFileAnno));
     }
@@ -1496,8 +1497,21 @@ public class AnnotationFileParser {
         }
     }
 
+    /**
+     * For each member of the JavaParser type declaration {@code typeDecl}:
+     *
+     * <ul>
+     *   <li>If {@code typeElt} contains a member element for it, returns a mapping from the member
+     *       element to it.
+     *   <li>Otherwise, does nothing.
+     * </ul>
+     *
+     * @param typeDecl a JavaParser type declaration
+     * @param typeElt the element for {@code typeDecl}
+     * @return a mapping from elements to their declaration in a stub file
+     */
     private Map<Element, BodyDeclaration<?>> getMembers(
-            TypeElement typeElt, TypeDeclaration<?> typeDecl) {
+            TypeDeclaration<?> typeDecl, TypeElement typeElt) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
                         || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
                 : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
@@ -1517,6 +1531,7 @@ public class AnnotationFileParser {
         return result;
     }
 
+    // Used only by getMembers
     /**
      * If {@code typeElt} contains an element for {@code member}, adds to {@code elementsToDecl} a
      * mapping from member's element to member. Does nothing if a mapping already exists.
@@ -1848,7 +1863,8 @@ public class AnnotationFileParser {
      * supported by the checker or if some error occurred while converting it.
      *
      * @param annotation syntax tree for an annotation
-     * @param allAnnotations map from simple name to annotation definition
+     * @param allAnnotations map from simple name to annotation definition; side-effected by this
+     *     method
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
@@ -2001,24 +2017,24 @@ public class AnnotationFileParser {
 
     /**
      * Returns the TypeElement with the name {@code name}, if one exists. Otherwise, checks the
-     * class and package of {@code typeName} for a class named {@code name}.
+     * class and package of {@code typeBeingParsed} for a class named {@code name}.
      *
      * @param name classname (simple, or Outer.Inner, or fully-qualified)
      * @return the TypeElement for {@code name}, or null if not found
      */
     @SuppressWarnings("signature:argument.type.incompatible") // string concatenation
     private @Nullable TypeElement findTypeOfName(@FullyQualifiedName String name) {
-        String packageName = typeName.packageName;
+        String packageName = typeBeingParsed.packageName;
         String packagePrefix = (packageName == null) ? "" : packageName + ".";
 
-        // warn("findTypeOfName(%s), typeName %s %s", name, packageName, enclosingClass);
+        // warn("findTypeOfName(%s), typeBeingParsed %s %s", name, packageName, enclosingClass);
 
         // As soon as typeElement is set to a non-null value, it will be returned.
         TypeElement typeElement = getTypeElementOrNull(name);
         if (typeElement == null && packageName != null) {
             typeElement = getTypeElementOrNull(packagePrefix + name);
         }
-        String enclosingClass = typeName.className;
+        String enclosingClass = typeBeingParsed.className;
         while (typeElement == null && enclosingClass != null) {
             typeElement = getTypeElementOrNull(packagePrefix + enclosingClass + "." + name);
             int lastDot = enclosingClass.lastIndexOf('.');
@@ -2372,15 +2388,16 @@ public class AnnotationFileParser {
      * Issues the given warning about overwriting bytecode, only if it has not been previously
      * issued and the -AstubWarnIfOverwritesBytecode command-line argument was passed.
      *
-     * @param warning warning to print
+     * @param message the warning message to print
      */
-    private void stubWarnOverwritesBytecode(String warning) {
-        if (warnings.add(warning) && (warnIfStubOverwritesBytecode || debugAnnotationFileParser)) {
+    @SuppressWarnings("UnusedMethod") // not currently used
+    private void stubWarnOverwritesBytecode(String message) {
+        if (warnings.add(message) && (warnIfStubOverwritesBytecode || debugAnnotationFileParser)) {
             processingEnv
                     .getMessager()
                     .printMessage(
                             javax.tools.Diagnostic.Kind.WARNING,
-                            "AnnotationFileParser: " + warning);
+                            "AnnotationFileParser: " + message);
         }
     }
 

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * If a method is annotated with this declaration annotation, then its signature was read from a
- * stub file. It is added by the StubParser and is not visible to the end user.
+ * stub file. It is added by the AnnotationFileParser and is not visible to the end user.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

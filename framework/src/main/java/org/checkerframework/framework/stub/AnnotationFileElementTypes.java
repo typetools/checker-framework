@@ -156,33 +156,33 @@ public class AnnotationFileElementTypes {
 
         // Stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @StubFiles
-        List<String> allStubFiles = new ArrayList<>();
+        List<String> allAnnotationFiles = new ArrayList<>();
 
         // 3. Stub files listed in @StubFiles annotation on the checker
         StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
         if (stubFilesAnnotation != null) {
-            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
+            Collections.addAll(allAnnotationFiles, stubFilesAnnotation.value());
         }
 
         // 4. Stub files provided via stubs system property
         String stubsProperty = System.getProperty("stubs");
         if (stubsProperty != null) {
-            Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
+            Collections.addAll(allAnnotationFiles, stubsProperty.split(File.pathSeparator));
         }
 
         // 5. Stub files provided via stubs environment variable
         String stubEnvVar = System.getenv("stubs");
         if (stubEnvVar != null) {
-            Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
+            Collections.addAll(allAnnotationFiles, stubEnvVar.split(File.pathSeparator));
         }
 
         // 6. Stub files provided via stubs command-line option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
-            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
+            Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
         }
 
-        parseAnnotationFiles(allStubFiles, AnnotationFileUtil.AnnotationFileType.STUB);
+        parseAnnotationFiles(allAnnotationFiles, AnnotationFileUtil.AnnotationFileType.STUB);
         parsing = false;
     }
 
@@ -246,9 +246,9 @@ public class AnnotationFileElementTypes {
                     AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
             if (!allFiles.isEmpty()) {
                 for (AnnotationFileResource resource : allFiles) {
-                    InputStream annotationStream;
+                    InputStream annotationFileStream;
                     try {
-                        annotationStream = resource.getInputStream();
+                        annotationFileStream = resource.getInputStream();
                     } catch (IOException e) {
                         checker.message(
                                 Kind.NOTE,
@@ -257,7 +257,7 @@ public class AnnotationFileElementTypes {
                     }
                     AnnotationFileParser.parse(
                             resource.getDescription(),
-                            annotationStream,
+                            annotationFileStream,
                             factory,
                             processingEnv,
                             annotationFileAnnos);
