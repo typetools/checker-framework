@@ -98,6 +98,7 @@ public class TypeAnnotationUtils {
      * @return true if the two {@code values} fields represent the same name-to-value mapping, in
      *     the same order
      */
+    @SuppressWarnings("InvalidParam") // Error Prone tries to be clever, but it is not
     private static boolean typeCompoundValuesEquals(
             List<Pair<MethodSymbol, Attribute>> values1,
             List<Pair<MethodSymbol, Attribute>> values2) {
