@@ -431,7 +431,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     private void refineNeqSequenceLength(
             Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
 
-        // If lengthAccess is "receiver.length - c" where c is a integer constant,
+        // If lengthAccess is "receiver.length - c" where c is an integer constant,
         // then lengthOffset is "c".
         int lengthOffset = 0;
         if (lengthAccess instanceof NumericalSubtractionNode) {
