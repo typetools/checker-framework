@@ -361,7 +361,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Which whole-program inference output format to use, if doing whole-program inference. This
      * variable would be final, but it is not set unless WPI is enabled.
      */
-    private WholeProgramInference.OutputFormat wpiOutputFormat;
+    protected WholeProgramInference.OutputFormat wpiOutputFormat;
 
     /**
      * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
@@ -494,21 +494,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (inferArg == null) {
                 inferArg = "jaifs";
             }
-            boolean isNullnessChecker =
-                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName());
             switch (inferArg) {
                 case "stubs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
-                    wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
                     break;
                 case "jaifs":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
-                    wholeProgramInference = new WholeProgramInferenceScenes(!isNullnessChecker);
                     break;
                 case "ajava":
                     wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
-                    wholeProgramInference =
-                            new WholeProgramInferenceJavaParser(this, !isNullnessChecker);
                     break;
                 default:
                     throw new UserError(
@@ -516,6 +510,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                     + inferArg
                                     + " should be one of: -Ainfer=jaifs, -Ainfer=stubs");
             }
+            wholeProgramInference = createWholeProgramInference();
         } else {
             wholeProgramInference = null;
         }
@@ -3255,8 +3250,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Gets the path for the given {@link Tree} under the current root by checking from the
-     * visitor's current path, and only using {@link Trees#getPath(CompilationUnitTree, Tree)}
-     * (which is much slower) only if {@code node} is not found on the current path.
+     * visitor's current path, and using {@link Trees#getPath(CompilationUnitTree, Tree)} (which is
+     * much slower) only if {@code node} is not found on the current path.
      *
      * <p>Note that the given Tree has to be within the current compilation unit, otherwise null
      * will be returned.
@@ -4681,5 +4676,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates a WholeProgramInference for use by this type factory.
+     *
+     * @return a WholeProgramInference for use by this type factory
+     */
+    protected WholeProgramInference createWholeProgramInference() {
+        if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
+            return new WholeProgramInferenceJavaParser(this, true);
+        }
+
+        return new WholeProgramInferenceScenes(this);
     }
 }

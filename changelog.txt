@@ -1,5 +1,7 @@
 Version 3.9.0
 
+The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
+
 Implementation details:
 
 Renamed StubParser to AnnotationFileParser

@@ -40,6 +40,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParser;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -727,5 +729,14 @@ public class NullnessAnnotatedTypeFactory
             result.replaceAnnotation(MONOTONIC_NONNULL);
         }
         return result;
+    }
+
+    @Override
+    public WholeProgramInference createWholeProgramInference() {
+        if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
+            return new WholeProgramInferenceJavaParser(this, false);
+        }
+
+        return new NullnessWholeProgramInferenceScenes(this);
     }
 }

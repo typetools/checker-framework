@@ -134,9 +134,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
     @Override
     public void updateFromObjectCreation(
-            ObjectCreationNode objectCreationNode,
-            ExecutableElement constructorElt,
-            AnnotatedTypeFactory atf) {
+            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(constructorElt)) {
             return;
@@ -148,15 +146,12 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         CallableDeclarationWrapper constructor =
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(constructorElt));
         List<Node> arguments = objectCreationNode.getArguments();
-        updateInferredExecutableParameterTypes(constructorElt, atf, file, constructor, arguments);
+        updateInferredExecutableParameterTypes(constructorElt, file, constructor, arguments);
     }
 
     @Override
     public void updateFromMethodInvocation(
-            MethodInvocationNode methodInvNode,
-            Tree receiverTree,
-            ExecutableElement methodElt,
-            AnnotatedTypeFactory atf) {
+            MethodInvocationNode methodInvNode, Tree receiverTree, ExecutableElement methodElt) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -172,7 +167,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         }
 
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, atf, file, method, arguments);
+        updateInferredExecutableParameterTypes(methodElt, file, method, arguments);
     }
 
     /**
@@ -180,21 +175,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * arguments, updates the inferred types of each parameter.
      *
      * @param methodElt element for the executable that was called
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param file path to the source file containing the executable
      * @param executable the wrapper containing the currently stored annotations for the executable
      * @param arguments arguments of the invocation
      */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt,
-            AnnotatedTypeFactory atf,
             String file,
             CallableDeclarationWrapper executable,
             List<Node> arguments) {
         for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+            AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             Node arg = arguments.get(i);
             Tree treeNode = arg.getTree();
@@ -206,10 +198,9 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 // https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
-            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+            AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(treeNode);
             updateAnnotationSetAtLocation(
-                    executable.getParameterType(argATM, atf, i),
-                    atf,
+                    executable.getParameterType(argATM, atypeFactory, i),
                     file,
                     argATM,
                     paramATM,
@@ -221,8 +212,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
     public void updateFromOverride(
             MethodTree methodTree,
             ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod,
-            AnnotatedTypeFactory atf) {
+            AnnotatedExecutableType overriddenMethod) {
         // Don't infer types for code that isn't presented as source.
         if (!ElementUtils.isElementFromSourceCode(methodElt)) {
             return;
@@ -235,32 +225,28 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
         for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+            AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
 
             AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
-            AnnotatedTypeMirror param = method.getParameterType(argATM, atf, i);
-            updateAnnotationSetAtLocation(
-                    param, atf, file, argATM, paramATM, TypeUseLocation.PARAMETER);
+            AnnotatedTypeMirror param = method.getParameterType(argATM, atypeFactory, i);
+            updateAnnotationSetAtLocation(param, file, argATM, paramATM, TypeUseLocation.PARAMETER);
         }
 
         AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
         if (argADT != null) {
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
+            AnnotatedTypeMirror paramATM =
+                    atypeFactory.getAnnotatedType(methodTree).getReceiverType();
             if (paramATM != null) {
-                AnnotatedTypeMirror receiver = method.getReceiverType(paramATM, atf);
+                AnnotatedTypeMirror receiver = method.getReceiverType(paramATM, atypeFactory);
                 updateAnnotationSetAtLocation(
-                        receiver, atf, file, argADT, paramATM, TypeUseLocation.RECEIVER);
+                        receiver, file, argADT, paramATM, TypeUseLocation.RECEIVER);
             }
         }
     }
 
     @Override
     public void updateFromLocalAssignment(
-            LocalVariableNode lhs,
-            Node rhs,
-            ClassTree classTree,
-            MethodTree methodTree,
-            AnnotatedTypeFactory atf) {
+            LocalVariableNode lhs, Node rhs, ClassTree classTree, MethodTree methodTree) {
         // Don't infer types for code that isn't presented as source.
         if (!isElementFromSourceCode(lhs)) {
             return;
@@ -286,19 +272,18 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                     // https://github.com/typetools/checker-framework/issues/682
                     continue;
                 }
-                AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
-                AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-                AnnotatedTypeMirror param = method.getParameterType(paramATM, atf, i);
+                AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(vt);
+                AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(treeNode);
+                AnnotatedTypeMirror param = method.getParameterType(paramATM, atypeFactory, i);
                 updateAnnotationSetAtLocation(
-                        param, atf, file, argATM, paramATM, TypeUseLocation.PARAMETER);
+                        param, file, argATM, paramATM, TypeUseLocation.PARAMETER);
                 break;
             }
         }
     }
 
     @Override
-    public void updateFromFieldAssignment(
-            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+    public void updateFromFieldAssignment(Node lhs, Node rhs, ClassTree classTree) {
         Element element;
         String fieldName;
         if (lhs instanceof FieldAccessNode) {
@@ -313,23 +298,16 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             + lhs.getClass());
         }
 
-        // Do not attempt to infer types for fields that do not have valid
-        // names. For example, compiler-generated temporary variables will
-        // have invalid names. Recording facts about fields with
-        // invalid names causes jaif-based WPI to crash when reading the .jaif
-        // file, and stub-based WPI to generate unparseable stub files.
-        // See https://github.com/typetools/checker-framework/issues/3442
-        if (!SourceVersion.isIdentifier(fieldName)) {
-            return;
-        }
+        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
+        // @GuardedBy({}).
+        AnnotatedTypeMirror rhsATM = atypeFactory.getAnnotatedType(rhs.getTree());
+        updateFieldFromType(lhs.getTree(), element, fieldName, rhsATM);
+    }
 
-        // If the inferred field has a declaration annotation with the
-        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
-        if (atf.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
-                || atf.getDeclAnnotationWithMetaAnnotation(
-                                        element, IgnoreInWholeProgramInference.class)
-                                .size()
-                        > 0) {
+    @Override
+    public void updateFieldFromType(
+            Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+        if (ignoreFieldInWPI(element, fieldName)) {
             return;
         }
 
@@ -345,12 +323,48 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         @BinaryName String className = enclosingClass.flatname.toString();
         ClassOrInterfaceWrapper clazz = classes.get(className);
 
-        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
-        AnnotatedTypeMirror field = clazz.fields.get(fieldName).getType(lhsATM, atf);
-        // TODO: For a primitive such as long, this is yielding just @GuardedBy rather than
-        // @GuardedBy({}).
-        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
-        updateAnnotationSetAtLocation(field, atf, file, rhsATM, lhsATM, TypeUseLocation.FIELD);
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
+        AnnotatedTypeMirror field = clazz.fields.get(fieldName).getType(lhsATM, atypeFactory);
+        updateAnnotationSetAtLocation(field, file, rhsATM, lhsATM, TypeUseLocation.FIELD);
+    }
+
+    /**
+     * Returns true if an assignment to the given field should be ignored by WPI.
+     *
+     * @param element the field's element
+     * @param fieldName the field's name
+     * @return true if an assignment to the given field should be ignored by WPI
+     */
+    private boolean ignoreFieldInWPI(Element element, String fieldName) {
+        // Do not attempt to infer types for fields that do not have valid
+        // names. For example, compiler-generated temporary variables will
+        // have invalid names. Recording facts about fields with
+        // invalid names causes jaif-based WPI to crash when reading the .jaif
+        // file, and stub-based WPI to generate unparseable stub files.
+        // See https://github.com/typetools/checker-framework/issues/3442
+        if (!SourceVersion.isIdentifier(fieldName)) {
+            return true;
+        }
+
+        // If the inferred field has a declaration annotation with the
+        // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
+        if (atypeFactory.getDeclAnnotation(element, IgnoreInWholeProgramInference.class) != null
+                || atypeFactory
+                                .getDeclAnnotationWithMetaAnnotation(
+                                        element, IgnoreInWholeProgramInference.class)
+                                .size()
+                        > 0) {
+            return true;
+        }
+
+        ClassSymbol enclosingClass = ((VarSymbol) element).enclClass();
+
+        // do not infer types for code that isn't presented as source
+        if (!ElementUtils.isElementFromSourceCode(enclosingClass)) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -358,8 +372,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             ReturnNode retNode,
             ClassSymbol classSymbol,
             MethodTree methodTree,
-            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods,
-            AnnotatedTypeFactory atf) {
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods) {
         // Don't infer types for code that isn't presented as source.
         if (methodTree == null
                 || !ElementUtils.isElementFromSourceCode(
@@ -380,13 +393,13 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
         ClassOrInterfaceWrapper clazz = classes.get(className);
         CallableDeclarationWrapper method =
                 clazz.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
-        AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(methodTree).getReturnType();
+        AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(methodTree).getReturnType();
 
         // Type of the expression returned
-        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
-        AnnotatedTypeMirror returnType = method.getReturnType(lhsATM, atf);
-        updateAnnotationSetAtLocation(
-                returnType, atf, file, rhsATM, lhsATM, TypeUseLocation.RETURN);
+        AnnotatedTypeMirror rhsATM =
+                atypeFactory.getAnnotatedType(retNode.getTree().getExpression());
+        AnnotatedTypeMirror returnType = method.getReturnType(lhsATM, atypeFactory);
+        updateAnnotationSetAtLocation(returnType, file, rhsATM, lhsATM, TypeUseLocation.RETURN);
 
         // Now, update return types of overridden methods based on the implementation we just saw.
         // This inference is similar to the inference procedure for method parameters: both are
@@ -410,8 +423,8 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
 
             AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(
-                            atf.getProcessingEnv().getTypeUtils(),
-                            atf,
+                            atypeFactory.getProcessingEnv().getTypeUtils(),
+                            atypeFactory,
                             superclassDecl,
                             overriddenMethodElement);
 
@@ -423,11 +436,11 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                             JVMNames.getJVMMethodSignature(overriddenMethodElement));
             AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
             AnnotatedTypeMirror storedOverriddenMethodReturnType =
-                    overriddenMethodInSuperclass.getReturnType(overriddenMethodReturnType, atf);
+                    overriddenMethodInSuperclass.getReturnType(
+                            overriddenMethodReturnType, atypeFactory);
 
             updateAnnotationSetAtLocation(
                     storedOverriddenMethodReturnType,
-                    atf,
                     superClassFile,
                     rhsATM,
                     overriddenMethodReturnType,
@@ -526,8 +539,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * </ul>
      *
      * @param typeToUpdate the {@code AnnotatedTypeMirror} for the location which will be modified
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param file path to the source file containing the executable
      * @param rhsATM the RHS of the annotated type on the source code
      * @param lhsATM the LHS of the annotated type on the source code
@@ -535,7 +546,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      */
     protected void updateAnnotationSetAtLocation(
             AnnotatedTypeMirror typeToUpdate,
-            AnnotatedTypeFactory atf,
             String file,
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
@@ -544,19 +554,21 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             return;
         }
 
-        updateATMWithLUB(atf, rhsATM, typeToUpdate);
+        updateATMWithLUB(rhsATM, typeToUpdate);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
             // current type on the source code, halt.
             if (upperAnnos.size() == rhsATM.getAnnotations().size()
-                    && atf.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+                    && atypeFactory
+                            .getQualifierHierarchy()
+                            .isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
                 return;
             }
         }
 
-        updateAnnotationFromATM(rhsATM, lhsATM, atf, typeToUpdate, defLoc);
+        updateAnnotationFromATM(rhsATM, lhsATM, typeToUpdate, defLoc);
         modifiedFiles.add(file);
     }
 
@@ -567,31 +579,28 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * This method also checks if the AnnotatedTypeMirror has explicit annotations in source code,
      * and if that is the case no annotations are added for that location.
      *
-     * <p>This method removes from the {@code AnnotatedTypeMirror} all annotations supported by
-     * {@code atf} before inserting new ones. It is assumed that every time this method is called,
-     * the new {@code AnnotatedTypeMirror} has a better type estimate for the given location.
-     * Therefore, it is not a problem to remove all annotations before inserting the new
+     * <p>This method removes from the {@code AnnotatedTypeMirror} all annotations supported by the
+     * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is
+     * called, the new {@code AnnotatedTypeMirror} has a better type estimate for the given
+     * location. Therefore, it is not a problem to remove all annotations before inserting the new
      * annotations.
      *
      * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
      * @param curATM used to check if the element which will be updated has explicit annotations in
      *     source code
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param typeToUpdate the {@code AnnotatedTypeMirror} which will be updated
      * @param defLoc the location where the annotation will be added
      */
     private void updateAnnotationFromATM(
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
-            AnnotatedTypeFactory atf,
             AnnotatedTypeMirror typeToUpdate,
             TypeUseLocation defLoc) {
-        // Clears only the annotations that are supported by atf.
+        // Clears only the annotations that are supported by atypeFactory.
         // The others stay intact.
         Set<AnnotationMirror> annosToRemove = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : typeToUpdate.getAnnotations()) {
-            if (atf.isSupportedQualifier(anno)) {
+            if (atypeFactory.isSupportedQualifier(anno)) {
                 annosToRemove.add(anno);
             }
         }
@@ -631,7 +640,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             updateAnnotationFromATM(
                     newAAT.getComponentType(),
                     oldAAT.getComponentType(),
-                    atf,
                     aatToUpdate.getComponentType(),
                     defLoc);
         }
@@ -642,24 +650,17 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
      * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
      * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
      *
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
      * @param sourceCodeATM the annotated type on the source code
      * @param ajavaATM the annotated type on the ajava file
      */
-    private void updateATMWithLUB(
-            AnnotatedTypeFactory atf,
-            AnnotatedTypeMirror sourceCodeATM,
-            AnnotatedTypeMirror ajavaATM) {
+    private void updateATMWithLUB(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
                 updateATMWithLUB(
-                        atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                         ((AnnotatedTypeVariable) ajavaATM).getLowerBound());
                 updateATMWithLUB(
-                        atf,
                         ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
                         ((AnnotatedTypeVariable) ajavaATM).getUpperBound());
                 break;
@@ -675,7 +676,6 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
                 //            break;
             case ARRAY:
                 updateATMWithLUB(
-                        atf,
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                         ((AnnotatedArrayType) ajavaATM).getComponentType());
                 break;
@@ -695,7 +695,7 @@ public class WholeProgramInferenceJavaParser implements WholeProgramInference {
             // amAjava only contains  annotations from the ajava file, so it might be missing
             // an annotation in the hierarchy
             if (amAjava != null) {
-                amSource = atf.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
+                amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
             }
             annosToReplace.add(amSource);
         }
