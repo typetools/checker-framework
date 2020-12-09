@@ -354,29 +354,6 @@ public class JavaExpressions {
     }
 
     /**
-     * Returns the receiver of ele, whether explicit or implicit.
-     *
-     * @param accessTree method or constructor invocation
-     * @param provider an AnnotationProvider
-     * @return the receiver of ele, whether explicit or implicit
-     */
-    public static Receiver internalReprOfReceiver(
-            ExpressionTree accessTree, AnnotationProvider provider) {
-        // TODO: Handle field accesses too?
-        assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
-        ExpressionTree receiverTree = TreeUtils.getReceiverTree(accessTree);
-        if (receiverTree != null) {
-            return internalReprOf(provider, receiverTree);
-        } else {
-            Element ele = TreeUtils.elementFromUse(accessTree);
-            if (ele == null) {
-                throw new BugInCF("TreeUtils.elementFromUse(" + accessTree + ") => null");
-            }
-            return internalReprOfImplicitReceiver(ele);
-        }
-    }
-
-    /**
      * Returns the implicit receiver of ele.
      *
      * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
