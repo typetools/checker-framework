@@ -2965,17 +2965,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             } else {
                 reportErrorToTree = typeargTrees.get(i);
             }
-
+            AnnotatedTypeMirror capturedTypeArg = atypeFactory.applyCaptureConversion(typeArg);
             checkHasQualifierParameterAsTypeArgument(typeArg, paramUpperBound, toptree);
             commonAssignmentCheck(
                     paramUpperBound,
-                    typeArg,
+                    capturedTypeArg,
                     reportErrorToTree,
                     "type.argument.type.incompatible",
                     paramNames.get(i),
                     typeOrMethodName);
 
-            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
+            if (!atypeFactory
+                    .getTypeHierarchy()
+                    .isSubtype(bounds.getLowerBound(), capturedTypeArg)) {
                 FoundRequired fr = FoundRequired.of(typeArg, bounds);
                 checker.reportError(
                         reportErrorToTree,

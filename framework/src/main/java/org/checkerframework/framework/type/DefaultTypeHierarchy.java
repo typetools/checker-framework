@@ -400,43 +400,59 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      */
     protected boolean isContainedByBoundType(
             AnnotatedTypeMirror inside, BoundType outside, boolean canBeCovariant) {
+        AnnotatedTypeMirror insideUpperBound;
+        AnnotatedTypeMirror insideLowerBound;
         if (BoundType.isBoundType(inside)) {
             BoundType insideBoundType = new BoundType(inside);
-            if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound) {
-                return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
-                        && isContainedByBoundType(insideBoundType.upper, outside, canBeCovariant);
-            } else if (outside.hasExplicitLowerBound
-                    || TypesUtils.isObject(outside.upper.getUnderlyingType())) {
-                return (canBeCovariant || isSubtype(insideBoundType.upper, outside.upper))
-                        && isContainedByBoundType(insideBoundType.lower, outside, canBeCovariant);
-            }
-        }
-
-        if (BoundType.isBoundType(outside.upper)) {
-            BoundType outsideUpper = new BoundType(outside.upper);
-            Set<AnnotationMirror> setA =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(
-                            qualifierHierarchy, outsideUpper.lower);
-            Set<AnnotationMirror> setB =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(
-                            qualifierHierarchy, outside.lower);
-            Set<? extends AnnotationMirror> glb =
-                    qualifierHierarchy.greatestLowerBounds(setA, setB);
-            addToLowestBound(outside.lower, glb);
-            return isContainedByBoundType(inside, outsideUpper, canBeCovariant);
-        } else if (BoundType.isBoundType(outside.lower)) {
-            BoundType outsideLower = new BoundType(outside.lower);
-            return isContainedByBoundType(inside, outsideLower, canBeCovariant);
+            insideLowerBound = insideBoundType.lower;
+            insideUpperBound = insideBoundType.upper;
         } else {
-            if (canBeCovariant) {
-                if (outside.hasExplicitLowerBound) {
-                    return isSubtype(outside.lower, inside);
-                } else {
-                    return isSubtype(inside, outside.upper);
-                }
-            }
-            return isSubtype(outside.lower, inside) && isSubtype(inside, outside.upper);
+            insideLowerBound = inside;
+            insideUpperBound = inside;
         }
+        return isSubtype(insideUpperBound, outside.upper)
+                && isSubtype(outside.lower, insideLowerBound);
+        //            BoundType insideBoundType = new BoundType(inside);
+        //        if (BoundType.isBoundType(inside)) {
+        //            BoundType insideBoundType = new BoundType(inside);
+        //            if (!insideBoundType.hasExplicitLowerBound && !outside.hasExplicitLowerBound)
+        // {
+        //                return (canBeCovariant || isSubtype(outside.lower, insideBoundType.lower))
+        //                        && isContainedByBoundType(insideBoundType.upper, outside,
+        // canBeCovariant);
+        //            } else if (outside.hasExplicitLowerBound
+        //                    || TypesUtils.isObject(outside.upper.getUnderlyingType())) {
+        //                return (canBeCovariant || isSubtype(insideBoundType.upper, outside.upper))
+        //                        && isContainedByBoundType(insideBoundType.lower, outside,
+        // canBeCovariant);
+        //            }
+        //        }
+        //
+        //        if (BoundType.isBoundType(outside.upper)) {
+        //            BoundType outsideUpper = new BoundType(outside.upper);
+        //            Set<AnnotationMirror> setA =
+        //                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+        //                            qualifierHierarchy, outsideUpper.lower);
+        //            Set<AnnotationMirror> setB =
+        //                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+        //                            qualifierHierarchy, outside.lower);
+        //            Set<? extends AnnotationMirror> glb =
+        //                    qualifierHierarchy.greatestLowerBounds(setA, setB);
+        //            addToLowestBound(outside.lower, glb);
+        //            return isContainedByBoundType(inside, outsideUpper, canBeCovariant);
+        //        } else if (BoundType.isBoundType(outside.lower)) {
+        //            BoundType outsideLower = new BoundType(outside.lower);
+        //            return isContainedByBoundType(inside, outsideLower, canBeCovariant);
+        //        } else {
+        //            if (canBeCovariant) {
+        //                if (outside.hasExplicitLowerBound) {
+        //                    return isSubtype(outside.lower, inside);
+        //                } else {
+        //                    return isSubtype(inside, outside.upper);
+        //                }
+        //            }
+        //            return isSubtype(outside.lower, inside) && isSubtype(inside, outside.upper);
+        //        }
     }
 
     /**
@@ -445,6 +461,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * @param type annotated type
      * @param annos annotations
      */
+    @SuppressWarnings("UnusedMethod")
     private void addToLowestBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
         AnnotatedTypeMirror lowestBound = type;
         while (lowestBound.getKind() == TypeKind.TYPEVAR
@@ -1113,6 +1130,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      */
     protected boolean visitTypevarSupertype(
             AnnotatedTypeMirror subtype, AnnotatedTypeVariable supertype) {
+        if (TypesUtils.isCaptured(supertype.getUnderlyingType())) {
+            return isContainedByBoundType(subtype, new BoundType(supertype), false);
+        }
         return isSubtypeCaching(subtype, supertype.getLowerBound());
     }
 
