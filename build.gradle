@@ -822,14 +822,14 @@ subprojects {
                 dependsOn('jtregTests')
             }
             if (project.name.is('framework')) {
-                dependsOn('wholeProgramInferenceTests', 'loaderTests')
+                dependsOn('loaderTests')
             }
 
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests', 'wholeProgramInferenceTests')
             }
 
             if (project.name.is('dataflow')) {
