@@ -4535,8 +4535,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * "a - 5" => <"a", "-5">
      * }</pre>
      *
-     * There are methods that can only take as input an expression that represents a Receiver. The
-     * purpose of this is to pre-process expressions to make those methods more likely to succeed.
+     * There are methods that can only take as input an expression that represents a JavaExpression.
+     * The purpose of this is to pre-process expressions to make those methods more likely to
+     * succeed.
      *
      * @param expression an expression to remove a constant offset from
      * @return a sub-expression and a constant offset. The offset is "0" if this routine is unable

@@ -37,13 +37,13 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
-import org.checkerframework.dataflow.expression.Receiver;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionContext;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -290,7 +290,7 @@ public class I18nFormatterTreeUtil {
                 MethodInvocationNode node,
                 AnnotatedExecutableType methodAnno) {
             int paramIndex = -1;
-            Receiver paramArg = null;
+            JavaExpression paramArg = null;
             int i = 0;
             for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
                 if (paramType.getAnnotation(I18nFormatFor.class) != null) {
@@ -301,8 +301,8 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return;
                     }
-                    FlowExpressionContext flowExprContext =
-                            FlowExpressionContext.buildContextForMethodUse(
+                    JavaExpressionContext flowExprContext =
+                            JavaExpressionContext.buildContextForMethodUse(
                                     node, checker.getContext());
                     String formatforArg =
                             AnnotationUtils.getElementValue(
@@ -313,13 +313,13 @@ public class I18nFormatterTreeUtil {
                     if (flowExprContext != null) {
                         try {
                             paramArg =
-                                    FlowExpressionParseUtil.parse(
+                                    JavaExpressionParseUtil.parse(
                                             formatforArg,
                                             flowExprContext,
                                             atypeFactory.getPath(tree),
                                             true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
-                        } catch (FlowExpressionParseException e) {
+                        } catch (JavaExpressionParseException e) {
                             // report errors here
                             checker.reportError(tree, "i18nformat.invalid.formatfor");
                         }
