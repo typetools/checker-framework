@@ -2289,7 +2289,7 @@ fields.  \<Element> represents elements found in both source
 code and bytecode.
 
 There is an \code{Element} interface to represent each construct, e.g.,
-\code{TypeElement} for class/interfaces, \code{ExecutableElement} for
+\code{TypeElement} for classes/interfaces, \code{ExecutableElement} for
 methods/constructors, and \code{VariableElement} for local variables and
 method parameters.
 
@@ -2307,7 +2307,7 @@ modifiers (e.g., \code{strictfp}, \code{synchronized})
 \subsubsectionAndLabel{Trees --- Compiler Tree API}{creating-javac-trees}
 
 A \refTreeclass{tree}{Tree} represents a syntactic unit in the source code,
-like a method declaration, statement, block, \<for> loop, etc. Trees only
+such as a method declaration, statement, block, \<for> loop, etc. Trees only
 represent source code to be compiled (or found in \code{-sourcepath});
 no tree is available for classes read from bytecode.
 
@@ -2327,12 +2327,14 @@ The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
 
 \emph{Type-checking}:
-Do not use \code{instanceof} to determine the class of the object,
+Do not use \code{instanceof} to determine the class of a \<TypeMirror> or \<Element>,
 because you cannot necessarily predict the run-time type of the object that
-implements an interface.  Instead, use the \code{getKind()} method.  The
-method returns \refModelclass{type}{TypeKind},
-\refModelclass{element}{ElementKind}, and \refTreeclass{tree}{Tree.Kind}
-for the three interfaces, respectively.
+implements an interface.  Instead, use the
+\sunjavadoc{java.compiler/javax/lang/model/type/TypeMirror.html\#getKind()}{TypeMirror.getKind()}
+or
+\sunjavadoc{java.compiler/javax/lang/model/element/Element.html\#getKind()}{Element.getKind()}
+method.
+For \<Tree>s, you can use either \<Tree.getKind()> or \<instanceof>.
 
 \emph{Visitors and Scanners}:
 The compiler and the Checker Framework use the visitor pattern
