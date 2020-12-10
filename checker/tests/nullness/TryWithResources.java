@@ -18,8 +18,8 @@ class TryWithResources {
         }
     }
 
-    // Checking that catch blocks and code after try-catch is part of CFG (and flow-sensitive
-    // type-refinements work there)
+    // Check that catch blocks and code after try-catch are part of CFG (and flow-sensitive
+    // type-refinements work there).
     boolean m3(@Nullable Object x) {
         try (ZipFile f = openZipFile()) {
             return true;

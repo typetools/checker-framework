@@ -3060,8 +3060,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
-        // This needs to happen /after/ we push frame to tryStack. Otherwise we can
-        // loose catch blocks.
+        // Must scan the resources *after* we push frame to tryStack. Otherwise we can
+        // lose catch blocks.
         // TODO: Should we handle try-with-resources blocks by also generating code
         // for automatically closing the resources?
         List<? extends Tree> resources = tree.getResources();
