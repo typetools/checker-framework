@@ -80,8 +80,10 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes an invalid formatter string and returns a syntax trees element that represents a {@link
-     * I18nInvalidFormat} annotation with the invalid formatter string as value.
+     * Creates an {@link I18nInvalidFormat} annotation with the given string as its value.
+     *
+     * @param invalidFormatString an invalid formatter string
+     * @return an {@link I18nInvalidFormat} annotation with the given string as its value
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
@@ -99,8 +101,10 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
-     * represents a {@link I18nFormat} annotation with the list as value.
+     * Creates a {@code @}{@link I18nFormat} annotation with the given list as its value.
+     *
+     * @param args conversion categories for the {@code @Format} annotation
+     * @return a {@code @}{@link I18nFormat} annotation with the given list as its value
      */
     public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nFormat.class);
