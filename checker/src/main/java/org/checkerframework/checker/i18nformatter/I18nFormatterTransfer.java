@@ -10,7 +10,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -47,7 +46,7 @@ public class I18nFormatterTransfer extends CFTransfer {
                 tu.failure(cats, "i18nformat.indirect.arguments");
             } else {
                 JavaExpression firstParam =
-                        JavaExpressions.fromNode(atypeFactory, node.getArgument(0));
+                        JavaExpression.fromNode(atypeFactory, node.getArgument(0));
                 AnnotationMirror anno =
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 thenStore.insertValue(firstParam, anno);
@@ -61,7 +60,7 @@ public class I18nFormatterTransfer extends CFTransfer {
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-            JavaExpression firstParam = JavaExpressions.fromNode(atypeFactory, node.getArgument(0));
+            JavaExpression firstParam = JavaExpression.fromNode(atypeFactory, node.getArgument(0));
             AnnotationBuilder builder =
                     new AnnotationBuilder(
                             tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());

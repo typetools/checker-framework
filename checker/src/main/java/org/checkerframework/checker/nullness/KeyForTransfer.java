@@ -9,7 +9,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -39,9 +38,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
-            JavaExpression receiverJe = JavaExpressions.fromNode(factory, receiver);
+            JavaExpression receiverJe = JavaExpression.fromNode(factory, receiver);
             String mapName = receiverJe.toString();
-            JavaExpression keyExpr = JavaExpressions.fromNode(factory, node.getArgument(0));
+            JavaExpression keyExpr = JavaExpression.fromNode(factory, node.getArgument(0));
 
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);

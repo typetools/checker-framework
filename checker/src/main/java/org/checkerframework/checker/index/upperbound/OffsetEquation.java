@@ -16,7 +16,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -554,7 +553,7 @@ public class OffsetEquation {
 
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
-        JavaExpression je = JavaExpressions.fromNode(factory, node);
+        JavaExpression je = JavaExpression.fromNode(factory, node);
         if (je instanceof Unknown || je == null) {
             if (node instanceof NumericalAdditionNode) {
                 createOffsetFromNode(
