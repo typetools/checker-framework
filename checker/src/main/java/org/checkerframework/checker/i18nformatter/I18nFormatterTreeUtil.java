@@ -85,8 +85,7 @@ public class I18nFormatterTreeUtil {
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", invalidFormatString);
         return builder.build();
     }
@@ -104,8 +103,7 @@ public class I18nFormatterTreeUtil {
      * represents a {@link I18nFormat} annotation with the list as value.
      */
     public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, I18nFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nFormat.class);
         builder.setValue("value", args);
         return builder.build();
     }

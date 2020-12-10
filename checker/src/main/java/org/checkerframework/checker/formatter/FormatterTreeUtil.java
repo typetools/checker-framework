@@ -390,8 +390,7 @@ public class FormatterTreeUtil {
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", invalidFormatString);
         return builder.build();
     }
@@ -409,8 +408,7 @@ public class FormatterTreeUtil {
      * represents a {@link Format} annotation with the list as value.
      */
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, Format.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Format.class);
         builder.setValue("value", args);
         return builder.build();
     }
