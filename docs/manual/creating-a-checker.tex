@@ -2357,10 +2357,14 @@ notable exception: \refclass{framework/util}{AnnotatedTypes}.
 \subsubsectionAndLabel{Equality for annotations}{equality-for-annotations}
 
 \<AnnotationMirror> is an interface that is implemented both by javac and
-the Checker Framework. Using \<equals> with one object created by the
-Checker Framework and one by javac will always return false even if they
-represent the same annotation. Therefore, never use any method that
-compares \<AnnotationMirror>s using equals. \refclass{javacutil}{AnnotationUtils} has various
+the Checker Framework. The documentation of
+\refModelclass{element}{AnnotationMirror} says, ``Annotations should be
+compared using the equals method. There is no guarantee that any particular
+annotation will always be represented by the same object.''  The second
+sentence is true, but the first sentence is wrong.  You should never
+compare \<AnnotationMirror>s using \<equals()>, which (for some
+implementations) is reference equality.
+\refclass{javacutil}{AnnotationUtils} has various
 methods that should be used instead. Also,
 \refclass{framework/util}{AnnotationMirrorMap} and
 \refclass{framework/util}{AnnotationMirrorSet} can be used.
