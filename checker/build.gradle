@@ -21,6 +21,11 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
     implementation project(':framework')
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
     implementation project(':checker-qual')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
@@ -408,12 +413,21 @@ task testWPIJaifs(type: Test) {
         List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
             include '*.jaif'
         }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${buildDir}/whole-program-inference/")
+        }
         List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
             include '*.java'
         }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in tests/whole-program-inference/annotated/")
+        }
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
-            args = ['-i']
+            // Script argument -cp must precede Java program argument -i.
+            // TODO: There must be a variable that holds this value
+            args = ['-cp', "${buildDir}/classes/java/test"]
+            args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
             }

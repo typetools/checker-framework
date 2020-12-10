@@ -101,7 +101,8 @@ public class ContractsFromMethod {
     /// Helper methods
 
     /**
-     * Returns the contracts on method or constructor {@code executableElement}.
+     * Returns the contracts (of a particular kind) on method or constructor {@code
+     * executableElement}.
      *
      * @param <T> the type of {@link Contract} to return
      * @param executableElement the method whose contracts to return

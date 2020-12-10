@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import com.google.common.collect.Ordering;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -18,6 +19,7 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -75,6 +78,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -110,6 +114,8 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.UtilPlume;
+import scenelib.annotations.el.AField;
+import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -2218,5 +2224,179 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(
                 TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
         return defaultValue;
+    }
+
+    /**
+     * Return the string representation of contract annotations (that is, pre- and post-conditions)
+     * for the given AMethod. Does not modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<AnnotationMirror> getContractAnnotations(AMethod m) {
+        List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
+        List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+        List<AnnotationMirror> result = preconds;
+        result.addAll(postconds);
+        return result;
+    }
+
+    /**
+     * Return the string representation of precondition annotations for the given AMethod. Does not
+     * modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @return precondition annotations for the method
+     */
+    public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
+        System.out.printf("getPreconditionAnnotations(%s)%n", m.getMethodName());
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
+            VariableElement elt = entry.getKey();
+            AField afield = entry.getValue();
+            System.out.printf(
+                    "getPreconditionAnnotations(%s) considering %s %s%n",
+                    m.getMethodName(), elt, afield);
+            result.addAll(getPreconditionAnnotation(elt, afield));
+        }
+        Collections.sort(result, Ordering.usingToString());
+        System.out.printf("getPreconditionAnnotations(%s) => %s%n", m.getMethodName(), result);
+        return result;
+    }
+
+    /**
+     * Return a list of precondition annotations for the given field.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field, which is declared in the same class as the method
+     * @param f AFU representation of a field's precondition annotations
+     * @return a precondition annotation for the element, or null if none is appropriate
+     */
+    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
+        WholeProgramInferenceScenes wholeProgramInference =
+                (WholeProgramInferenceScenes) getWholeProgramInference();
+        if (wholeProgramInference == null) {
+            return Collections.emptyList();
+        }
+
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+
+        TypeMirror typeMirror = elt.asType();
+        AnnotatedTypeMirror inferredType =
+                wholeProgramInference.atmFromATypeElement(typeMirror, f.type, this);
+
+        // TODO: should this only check the top-level annotations?
+        if (declaredType.equals(inferredType)) {
+            System.out.printf(
+                    "  getPreconditionAnnotation(%s) => null; declaredType.equals(inferredType): %s%n",
+                    elt, declaredType);
+            return Collections.emptyList();
+        }
+
+        System.out.printf("getPreconditionAnnotation(%s, %s)%n", elt, f);
+        System.out.printf("  declaredType = %s%n", declaredType.toString(true));
+        System.out.printf("  inferredType = %s%n", inferredType.toString(true));
+
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
+            AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+            if (declaredAm == null) {
+                // There is no explicitly-written annotation for the given qualifier hierarchy.
+                // Determine the default.
+                addComputedTypeAnnotations(elt, declaredType);
+                declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+                if (declaredAm == null) {
+                    throw new BugInCF(
+                            "getPreconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s%n  inferredType=%s%n",
+                            elt, f, declaredType.toString(true), inferredType.toString(true));
+                }
+            }
+
+            System.out.printf("  declaredAm = %s%n", declaredAm);
+            System.out.printf("  inferredAm = %s%n", inferredAm);
+            if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
+                continue;
+            }
+            System.out.printf(
+                    "Annotation mirrors differ:%n  %s [%s]%n  %s [%s]%n",
+                    declaredAm, declaredAm.getClass(), inferredAm, inferredAm.getClass());
+            // inferredAm must be a subtype of declaredAm (since they are not equal)
+            result.add(requiresQualifierAnno(elt, inferredAm));
+        }
+
+        System.out.printf("getPreconditionAnnotation(%s) => %s%n", elt, result);
+        return result;
+    }
+
+    /**
+     * Returns a {@code RequiresQualifier("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @param qualifier the qualifier that must be present
+     * @return a {@code RequiresQualifier("...")} annotation for the given field
+     */
+    protected AnnotationMirror requiresQualifierAnno(
+            VariableElement fieldElement, AnnotationMirror qualifier) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresQualifier.class);
+        builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
+        builder.setValue("qualifier", AnnotationMirrorToClass(qualifier));
+        return builder.build();
+    }
+
+    /**
+     * Converts an AnnotationMirror to a Class.
+     *
+     * @param am an AnnotationMirror
+     * @return the Class corresponding to the given AnnotationMirror
+     */
+    protected Class<?> AnnotationMirrorToClass(AnnotationMirror am) {
+        try {
+            return Class.forName(AnnotationUtils.annotationName(am));
+        } catch (ClassNotFoundException e) {
+            throw new BugInCF(e);
+        }
+    }
+
+    /**
+     * Return the string representation of postcondition annotations for the given AMethod. Does not
+     * modify the AMethod.
+     *
+     * @param m AFU representation of a method
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return postcondition annotations for the method
+     */
+    public List<AnnotationMirror> getPostconditionAnnotations(
+            AMethod m, List<AnnotationMirror> preconds) {
+        List<AnnotationMirror> result = new ArrayList<>();
+        for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
+            result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
+        }
+        return result;
+    }
+
+    // TODO: Implement this here in this class, reading @PreconditionAnnotation meta-annotations.
+    // That would be more general and would eliminate most but not all of the code in overriding
+    // implementations.
+    /**
+     * Return the string representation of a postcondition annotation for the given field.
+     *
+     * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
+     *
+     * @param elt element for a field
+     * @param f AFU representation of a field's postcondition annotations
+     * @param preconds the precondition annotations for the method; used to suppress redundant
+     *     postconditions
+     * @return a postcondition annotation for the element, or null if none is appropriate
+     */
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AField f, List<AnnotationMirror> preconds) {
+        // TODO: implement outputting "@EnsuresQualifier".
+        return Collections.emptyList();
     }
 }

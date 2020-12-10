@@ -5,15 +5,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.AnnotationConverter;
 import org.checkerframework.common.wholeprograminference.SceneToStubWriter;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
@@ -144,9 +150,43 @@ public class ASceneWrapper {
             try {
                 switch (outputFormat) {
                     case STUB:
-                        SceneToStubWriter.write(this, filepath);
+                        SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
+                        // First, create strings from contract annotations.
+                        System.out.println(
+                                "Creating strings for wrapper "
+                                        + System.identityHashCode(this)
+                                        + " around "
+                                        + System.identityHashCode(scene));
+                        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+                            AClass aClass = classEntry.getValue();
+                            System.out.println(
+                                    "Creating strings for "
+                                            + System.identityHashCode(aClass)
+                                            + " "
+                                            + aClass);
+                            for (Map.Entry<String, AMethod> methodEntry :
+                                    aClass.getMethods().entrySet()) {
+                                AMethod aMethod = methodEntry.getValue();
+                                System.out.println(
+                                        "Creating strings for "
+                                                + System.identityHashCode(aMethod)
+                                                + " "
+                                                + aMethod.getMethodName());
+                                System.out.println("  preconditions = " + aMethod.preconditions);
+                                List<AnnotationMirror> contractAnnotationMirrors =
+                                        checker.getTypeFactory().getContractAnnotations(aMethod);
+                                List<Annotation> contractAnnotations =
+                                        mapList(
+                                                AnnotationConverter::annotationMirrorToAnnotation,
+                                                contractAnnotationMirrors);
+                                aMethod.contracts = contractAnnotations;
+                                System.out.printf(
+                                        "contractsAsStrings for %s = %s%n",
+                                        aMethod.getMethodName(), aMethod.contracts);
+                            }
+                        }
                         IndexFileWriter.write(scene, new FileWriter(filepath));
                         break;
                     default:
@@ -158,6 +198,23 @@ public class ASceneWrapper {
                 throw new BugInCF(e);
             }
         }
+    }
+
+    // TODO: Move to plume-lib.
+    /**
+     * Applies the function to each element of the given collection, producing a list of the
+     * results.
+     *
+     * <p>The point of this method is to make mapping operations more concise.
+     *
+     * @param <FROM> the type of elements of the given collection
+     * @param <TO> the type of elements of the result list
+     * @param f a function
+     * @param c a collection
+     * @return a list of the results of applying {@code f} to the elements of {@code list}
+     */
+    private static <FROM, TO> List<TO> mapList(Function<? super FROM, TO> f, Collection<FROM> c) {
+        return c.stream().map(f).collect(Collectors.toList());
     }
 
     /**

@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
+import com.sun.tools.javac.code.TypeMetadata;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -878,5 +879,25 @@ public final class TypesUtils {
                 (Type) type,
                 com.sun.tools.javac.util.List.from(newP),
                 com.sun.tools.javac.util.List.from(newT));
+    }
+
+    // This method is necessary because Type.stripMetadata does no work for primitive types.
+    /**
+     * Returns a copy of a type without annotations. May return tm itself if it has no annotations.
+     *
+     * @param tm a TypeMirror
+     * @return a copy of the given type without annotations
+     */
+    public static TypeMirror unannotatedType(TypeMirror tm) {
+        if (((Type) tm).isPrimitive()) {
+            if (((Type) tm).isAnnotated()) {
+                // Despite a comment "Should be {@code null} for the default value." for the
+                // Type.metadata field, passing null leads to an assertion error.
+                return ((Type) tm).cloneWithMetadata(TypeMetadata.EMPTY);
+            } else {
+                return tm;
+            }
+        }
+        return ((Type) tm).stripMetadata();
     }
 }

@@ -972,7 +972,7 @@ public abstract class CFAbstractTransfer<
                             .getElement();
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromObjectCreation(n, constructorElt);
+                    .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
         }
         return super.visitObjectCreation(n, p);
     }
@@ -998,7 +998,7 @@ public abstract class CFAbstractTransfer<
             // Updates the inferred parameter type of the invoked method
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromMethodInvocation(n, receiverTree, method);
+                    .updateFromMethodInvocation(n, receiverTree, method, store);
         }
 
         Tree tree = n.getTree();

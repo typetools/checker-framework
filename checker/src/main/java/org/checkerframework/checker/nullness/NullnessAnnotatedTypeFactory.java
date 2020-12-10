@@ -68,6 +68,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import scenelib.annotations.el.AField;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -730,8 +731,72 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    // This implementation overrides the superclass implementation to:
+    //  * check for @MonotonicNonNull
+    //  * output @RequiresNonNull rather than @RequiresQualifier.
     @Override
-    public WholeProgramInference createWholeProgramInference() {
+    public List<AnnotationMirror> getPreconditionAnnotation(VariableElement elt, AField f) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return null;
+        }
+
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                return requiresNonNullAnno(elt);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a {@code RequiresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code RequiresNonNull("...")} annotation for the given field
+     */
+    @SuppressWarnings("UnusedVariable") // TEMPORARY
+    private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
+        //         if (false) { // TODO
+        //             return "@org.checkerframework.checker.nullness.qual.RequiresNonNull(\"this."
+        //                     + fieldElement.getSimpleName()
+        //                     + "\")";
+        //         }
+        return null;
+    }
+
+    @Override
+    public List<AnnotationMirror> getPostconditionAnnotation(
+            VariableElement elt, AField f, List<AnnotationMirror> preconds) {
+        AnnotatedTypeMirror declaredType = fromElement(elt);
+        if (!(declaredType.hasAnnotation(NULLABLE)
+                || declaredType.hasAnnotation(POLYNULL)
+                || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+            return null;
+        }
+        if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
+                && preconds.contains(requiresNonNullAnno(elt))) {
+            // The postcondition is implied by the precondition and the field being
+            // @MonotonicNonNull.
+            return null;
+        }
+        for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
+            if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
+                // if (false) { // TODO
+                //     return "@org.checkerframework.checker.nullness.qual.EnsuresNonNull(\"this."
+                //             + elt.getSimpleName()
+                //             + "\")";
+                // }
+                return null;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected WholeProgramInference createWholeProgramInference() {
         return new NullnessWholeProgramInferenceScenes(this);
     }
 }
