@@ -28,5 +28,5 @@ class ConflictingAnnotationsTest {
     }
 
     void expectsSibling1(
-                    @org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1 int i) {}
+            @org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1 int i) {}
 }

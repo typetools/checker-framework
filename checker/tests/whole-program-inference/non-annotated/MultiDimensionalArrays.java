@@ -2,12 +2,12 @@
 // are printed correctly.
 
 import java.util.List;
-import org.checkerframework.common.aliasing.qual.MaybeAliased;
-import org.checkerframework.common.aliasing.qual.NonLeaked;
-import org.checkerframework.common.aliasing.qual.Unique;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.SiblingWithFields;
+import org.checkerframework.common.aliasing.qual.MaybeAliased;
+import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.aliasing.qual.Unique;
 
 class MultiDimensionalArrays {
 
