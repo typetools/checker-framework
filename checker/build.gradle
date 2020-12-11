@@ -369,7 +369,7 @@ void commonWPIlogic() {
     }
 }
 
-// This task is similar to the wholeProgramInferenceTests task below, but it doesn't
+// This task is similar to the wholeProgramInferenceJaifTests task below, but it doesn't
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
 task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
@@ -446,7 +446,8 @@ task wholeProgramInferenceJaifTests(dependsOn: 'shadowJar', group: 'Verification
     outputs.upToDateWhen { false }
 }
 
-// empty task that just runs both the jaif and stub WPI tests
+// Empty task that just runs both the jaif and stub WPI tests.
+// It is run as part of the nonJunitTests task.
 task wholeProgramInferenceTests() {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceJaifTests')
