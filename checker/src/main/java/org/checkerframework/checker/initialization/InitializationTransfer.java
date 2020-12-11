@@ -23,7 +23,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -150,7 +149,7 @@ public class InitializationTransfer<
     public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        JavaExpression expr = JavaExpressions.fromNode(analysis.getTypeFactory(), n.getTarget());
+        JavaExpression expr = JavaExpression.fromNode(analysis.getTypeFactory(), n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
         // initialized.

@@ -26,7 +26,6 @@ import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -279,7 +278,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // store information about method call if possible
-        JavaExpression methodCall = JavaExpressions.fromNode(analysis.getTypeFactory(), n);
+        JavaExpression methodCall = JavaExpression.fromNode(analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
     }
 
@@ -570,7 +569,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     available
      */
     public @Nullable V getValue(FieldAccessNode n) {
-        FieldAccess fieldAccess = JavaExpressions.fromNodeFieldAccess(analysis.getTypeFactory(), n);
+        FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(analysis.getTypeFactory(), n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -582,7 +581,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     available
      */
     public @Nullable V getValue(MethodInvocationNode n) {
-        JavaExpression method = JavaExpressions.fromNode(analysis.getTypeFactory(), n, true);
+        JavaExpression method = JavaExpression.fromNode(analysis.getTypeFactory(), n, true);
         if (method == null) {
             return null;
         }
@@ -597,13 +596,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *     available
      */
     public @Nullable V getValue(ArrayAccessNode n) {
-        ArrayAccess arrayAccess = JavaExpressions.fromArrayAccess(analysis.getTypeFactory(), n);
+        ArrayAccess arrayAccess = JavaExpression.fromArrayAccess(analysis.getTypeFactory(), n);
         return arrayValues.get(arrayAccess);
     }
 
     /** Update the information in the store by considering an assignment with target {@code n}. */
     public void updateForAssignment(Node n, @Nullable V val) {
-        JavaExpression je = JavaExpressions.fromNode(analysis.getTypeFactory(), n);
+        JavaExpression je = JavaExpression.fromNode(analysis.getTypeFactory(), n);
         if (je instanceof ArrayAccess) {
             updateForArrayAssignment((ArrayAccess) je, val);
         } else if (je instanceof FieldAccess) {

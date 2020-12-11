@@ -29,7 +29,6 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -304,7 +303,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
                     JavaExpression sequenceExpr =
-                            JavaExpressions.fromTree(this.atypeFactory, sequenceTree);
+                            JavaExpression.fromTree(this.atypeFactory, sequenceTree);
                     if (mayAppearInSameLen(sequenceExpr)) {
                         String recString = sequenceExpr.toString();
                         if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {
