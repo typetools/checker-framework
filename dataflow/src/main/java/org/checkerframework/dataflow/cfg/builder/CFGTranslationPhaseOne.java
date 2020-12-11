@@ -2949,7 +2949,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         if (!TreeUtils.isFieldAccess(tree)) {
             // Could be a selector of a class or package
             Element element = TreeUtils.elementFromUse(tree);
-            if (ElementUtils.isClassElement(element)) {
+            if (ElementUtils.isTypeElement(element)) {
                 Node result = new ClassNameNode(tree, expr);
                 extendWithNode(result);
                 return result;

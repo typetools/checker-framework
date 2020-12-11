@@ -586,14 +586,14 @@ public class ElementUtils {
         return types;
     }
 
-    /** The set of kinds that represent classes. */
-    private static final Set<ElementKind> classElementKinds;
+    /** The set of kinds that represent types. */
+    private static final Set<ElementKind> typeElementKinds;
 
     static {
-        classElementKinds = EnumSet.noneOf(ElementKind.class);
+        typeElementKinds = EnumSet.noneOf(ElementKind.class);
         for (ElementKind kind : ElementKind.values()) {
             if (kind.isClass() || kind.isInterface()) {
-                classElementKinds.add(kind);
+                typeElementKinds.add(kind);
             }
         }
     }
@@ -602,19 +602,42 @@ public class ElementUtils {
      * Return the set of kinds that represent classes.
      *
      * @return the set of kinds that represent classes
+     * @deprecated use {@link typeElementKinds}
      */
+    @Deprecated // use typeElementKinds
     public static Set<ElementKind> classElementKinds() {
-        return classElementKinds;
+        return typeElementKinds();
     }
 
     /**
-     * Is the given element kind a class, i.e., a class, enum, interface, or annotation type.
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<ElementKind> typeElementKinds() {
+        return typeElementKinds;
+    }
+
+    /**
+     * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
+     *
+     * @param element the element to test
+     * @return true, iff the given kind is a class kind
+     * @deprecated use {@link #isTypeElement}
+     */
+    @Deprecated // use isTypeElement
+    public static boolean isClassElement(Element element) {
+        return isTypeElement(element);
+    }
+
+    /**
+     * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
      *
      * @param element the element to test
      * @return true, iff the given kind is a class kind
      */
-    public static boolean isClassElement(Element element) {
-        return classElementKinds().contains(element.getKind());
+    public static boolean isTypeElement(Element element) {
+        return typeElementKinds().contains(element.getKind());
     }
 
     /**
