@@ -114,9 +114,14 @@ public class AnnotationConverter {
         return typeMirrorToAnnotationFieldType(ee.getReturnType());
     }
 
+    /**
+     * Converts a TypeMirror to an AnnotationFieldType.
+     *
+     * @param tm a type for an annotation element/field: primitive, String, class, enum constant, or
+     *     array thereof
+     * @return an AnnotationFieldType corresponding to the argument
+     */
     protected static AnnotationFieldType typeMirrorToAnnotationFieldType(TypeMirror tm) {
-        // An annotation value is one of: primitive, String, class, enum constant, or list of any of
-        // those.
         switch (tm.getKind()) {
             case BOOLEAN:
                 return BasicAFT.forType(boolean.class);
