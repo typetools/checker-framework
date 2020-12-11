@@ -1016,35 +1016,21 @@ public abstract class AnnotatedTypeMirror {
          */
         @Override
         public AnnotatedDeclaredType getErased() {
-            // 1. |G<T_1, ..., T_n>| = |G|
-            // 2. |T.C| = |T|.C
-            if (!getTypeArguments().isEmpty()) {
-                // Handle case 1.
-                AnnotatedDeclaredType rType =
-                        (AnnotatedDeclaredType)
-                                AnnotatedTypeMirror.createType(
-                                        atypeFactory.types.erasure(underlyingType),
-                                        atypeFactory,
-                                        declaration);
-                rType.addAnnotations(annotations);
-                rType.setTypeArguments(Collections.emptyList());
-                return rType.getErased();
-
-            } else if ((getEnclosingType() != null)
-                    && (getEnclosingType().getKind() != TypeKind.NONE)) {
-                // Handle case 2
-                // Shallow copy provides a fresh type when there are no type arguments
-                // and we set the enclosing type
-                // Therefore, we do not need to use deepCopy
-                AnnotatedDeclaredType rType = shallowCopy();
-                AnnotatedDeclaredType et = getEnclosingType();
-                rType.setEnclosingType(et.getErased());
-                return rType;
-
-            } else {
-
-                return this.deepCopy();
+            AnnotatedDeclaredType erased =
+                    (AnnotatedDeclaredType)
+                            AnnotatedTypeMirror.createType(
+                                    atypeFactory.types.erasure(underlyingType),
+                                    atypeFactory,
+                                    declaration);
+            erased.addAnnotations(this.getAnnotations());
+            AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
+            AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
+            while (erasedEnclosing != null) {
+                erasedEnclosing.addAnnotations(thisEnclosing.getAnnotations());
+                erasedEnclosing = erasedEnclosing.getEnclosingType();
+                thisEnclosing = thisEnclosing.getEnclosingType();
             }
+            return erased;
         }
 
         /** Sets the enclosing type. */
