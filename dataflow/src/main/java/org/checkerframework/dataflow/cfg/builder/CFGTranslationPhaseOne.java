@@ -3024,13 +3024,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         "start of try statement #" + TreeUtils.treeUids.get(tree),
                         env.getTypeUtils()));
 
-        // TODO: Should we handle try-with-resources blocks by also generating code
-        // for automatically closing the resources?
-        List<? extends Tree> resources = tree.getResources();
-        for (Tree resource : resources) {
-            scan(resource, p);
-        }
-
         List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
         for (CatchTree c : catches) {
             TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
@@ -3066,6 +3059,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         Label doneLabel = new Label();
 
         tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+
+        // Must scan the resources *after* we push frame to tryStack. Otherwise we can
+        // lose catch blocks.
+        // TODO: Should we handle try-with-resources blocks by also generating code
+        // for automatically closing the resources?
+        List<? extends Tree> resources = tree.getResources();
+        for (Tree resource : resources) {
+            scan(resource, p);
+        }
 
         extendWithNode(
                 new MarkerNode(

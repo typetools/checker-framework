@@ -249,6 +249,9 @@ public abstract class AnnotatedTypeMirror {
      *
      * <p>If there is only one hierarchy, you can use {@link #getAnnotation()} instead.
      *
+     * <p>May return null if the receiver is a type variable or a wildcard without a primary
+     * annotation, or if the receiver is not yet fully annotated.
+     *
      * @param p the qualifier hierarchy to check for
      * @return an annotation from the same hierarchy as p if present
      */
