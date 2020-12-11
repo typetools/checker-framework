@@ -34,6 +34,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /**
@@ -192,6 +193,33 @@ public class ElementUtils {
             return n.toString();
         } else {
             return getQualifiedName(elt.getEnclosingElement()) + "." + elt;
+        }
+    }
+
+    /**
+     * Returns the binary name of the given type.
+     *
+     * @param te a type
+     * @return the binary name of the type
+     */
+    @SuppressWarnings("signature:return.type.incompatible") // string manipulation
+    public static @BinaryName String getBinaryName(TypeElement te) {
+        Element enclosing = te.getEnclosingElement();
+        String simpleName = te.getSimpleName().toString();
+        if (enclosing == null) { // is this possible?
+            return simpleName;
+        }
+        if (ElementUtils.isClassElement(enclosing)) {
+            return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
+        } else if (enclosing.getKind() == ElementKind.PACKAGE) {
+            PackageElement pe = (PackageElement) enclosing;
+            if (pe.isUnnamed()) {
+                return simpleName;
+            } else {
+                return pe.getQualifiedName() + "." + simpleName;
+            }
+        } else {
+            throw new BugInCF("Unexpected enclosing %s for %s", enclosing, te);
         }
     }
 
