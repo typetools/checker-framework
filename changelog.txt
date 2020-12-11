@@ -4,6 +4,9 @@ The Called Methods Checker supports the -AdisableReturnsReceiver command-line op
 
 Implementation details:
 
+Added -AhaltOnError command-line option, which is useful only for debugging
+the Checker Framework itself.
+
 Class renamings:
  * `StubParser` => `AnnotationFileParser`
  * `Receiver` => `JavaExpression`

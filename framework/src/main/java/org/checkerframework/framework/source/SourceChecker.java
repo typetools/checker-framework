@@ -328,6 +328,10 @@ import org.plumelib.util.UtilPlume;
     // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
     "dumpOnErrors",
 
+    // Halt when reporting internal execptions
+    // TODO org.checkerframework.common.basetype.SourceChecker.logException()
+    "haltOnError",
+
     /// Visualizing the CFG
 
     // Implemented in the wrapper rather than this file, but worth noting here.
@@ -834,14 +838,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor
             if (hasOption("version")) {
                 messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
             }
-        } catch (UserError ce) {
-            logUserError(ce);
-        } catch (TypeSystemError ce) {
-            logTypeSystemError(ce);
-        } catch (BugInCF ce) {
-            logBugInCF(ce);
         } catch (Throwable t) {
+            logException(t);
+        }
+    }
+
+    /**
+     * Log an exception.
+     *
+     * @param t the exception to log
+     */
+    private void logException(Throwable t) {
+        if (t instanceof UserError) {
+            logUserError((UserError) t);
+        } else if (t instanceof TypeSystemError) {
+            logTypeSystemError((TypeSystemError) t);
+        } else if (t instanceof BugInCF) {
+            logBugInCF((BugInCF) t);
+        } else {
             logBugInCF(wrapThrowableAsBugInCF("SourceChecker.typeProcessingStart", t, null));
+        }
+        if (hasOption("haltOnError")) {
+            // TODO: Will the messager have finished producing output?
+            System.exit(1);
         }
     }
 
