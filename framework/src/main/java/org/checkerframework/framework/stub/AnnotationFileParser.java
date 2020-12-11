@@ -74,6 +74,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -594,6 +595,9 @@ public class AnnotationFileParser {
      */
     private void processPackage(PackageDeclaration packDecl, StubAnnotations stubAnnos) {
         assert (packDecl != null);
+        if (notAnnotatedForThisChecker(packDecl.getAnnotations())) {
+            return;
+        }
         String packageName = packDecl.getNameAsString();
         typeBeingParsed = new FqName(packageName, null);
         Element elem = elements.getPackageElement(packageName);
@@ -619,6 +623,10 @@ public class AnnotationFileParser {
         if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
             // Don't process private classes of the JDK.  They can't be referenced outside of the
             // JDK and might refer to types that are not accessible.
+            return;
+        }
+
+        if (notAnnotatedForThisChecker(typeDecl.getAnnotations())) {
             return;
         }
         String innerName =
@@ -872,6 +880,9 @@ public class AnnotationFileParser {
      */
     private void processCallableDeclaration(
             CallableDeclaration<?> decl, ExecutableElement elt, StubAnnotations stubAnnos) {
+        if (notAnnotatedForThisChecker(decl.getAnnotations())) {
+            return;
+        }
         // Declaration annotations
         recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
         if (decl.isMethodDeclaration()) {
@@ -1002,27 +1013,21 @@ public class AnnotationFileParser {
      */
     @SuppressWarnings("unused") // for disabled warning message
     private void clearAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
-        Set<AnnotationMirror> annos = atype.getAnnotations();
-        // TODO: This should check whether the annotation file is @AnnotatedFor the current type
-        // system.
-        // @AnnotatedFor isn't integrated in stub files yet.
-        if (annos != null && !annos.isEmpty()) {
-            // TODO: only produce output if the removed annotation isn't the top and default
-            // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
-            /*
-            if (false) {
-                stubWarnOverwritesBytecode(
-                        String.format(
-                                "in file %s at line %s removed existing annotations on type: %s",
-                                filename.substring(filename.lastIndexOf('/') + 1),
-                                typeDef.getBegin().get().line,
-                                atype.toString(true)));
-            }
-            */
-            // Clear existing annotations, which only makes a difference for
-            // type variables, but doesn't hurt in other cases.
-            atype.clearAnnotations();
+        // TODO: only produce output if the removed annotation isn't the top or default
+        // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
+        /*
+        if (!atype.getAnnotations().isEmpty()) {
+            stubWarnOverwritesBytecode(
+                    String.format(
+                            "in file %s at line %s removed existing annotations on type: %s",
+                            filename.substring(filename.lastIndexOf('/') + 1),
+                            typeDef.getBegin().get().line,
+                            atype.toString(true)));
         }
+        */
+        // Clear existing annotations, which only makes a difference for
+        // type variables, but doesn't hurt in other cases.
+        atype.clearAnnotations();
     }
 
     /**
@@ -1743,6 +1748,33 @@ public class AnnotationFileParser {
             stubWarnNotFound("Imported package not found: " + packageName);
         }
         return packageElement;
+    }
+
+    /**
+     * Returns true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
+     * not contain this checker.
+     *
+     * @param annotations a list of JavaParser annotations
+     * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
+     *     not contain this checker
+     */
+    private boolean notAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
+        if (isJdkAsStub) {
+            // The Jdk stubs have purity annotations that should be read for all checkers.
+            // TODO: Parse the jdk stubs, but only save the declaration annotations.
+            return false;
+        }
+        for (AnnotationExpr ae : annotations) {
+            if (ae.getNameAsString().equals("AnnotatedFor")
+                    || ae.getNameAsString()
+                            .equals("org.checkerframework.framework.qual.AnnotatedFor")) {
+                AnnotationMirror af = getAnnotation(ae, allAnnotations);
+                if (atypeFactory.areSameByClass(af, AnnotatedFor.class)) {
+                    return !atypeFactory.doesAnnotatedForApplyToThisChecker(af);
+                }
+            }
+        }
+        return false;
     }
 
     /**
