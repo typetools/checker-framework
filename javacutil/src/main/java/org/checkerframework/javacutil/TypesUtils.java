@@ -29,6 +29,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.ImmutableTypes;
@@ -125,6 +126,19 @@ public final class TypesUtils {
                             type.getKind(), type);
                 }
         }
+    }
+
+    /**
+     * Returns the binary name.
+     *
+     * @param type a type
+     * @return the binary name
+     */
+    public static @BinaryName String binaryName(TypeMirror type) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            throw new BugInCF("Only declared types have a binary name");
+        }
+        return ElementUtils.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
     }
 
     /**
