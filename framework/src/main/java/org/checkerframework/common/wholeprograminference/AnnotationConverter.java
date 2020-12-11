@@ -18,6 +18,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
@@ -80,7 +81,7 @@ public class AnnotationConverter {
                 value = newList;
             } else if (value instanceof TypeMirror) {
                 try {
-                    value = Class.forName(((TypeMirror) value).toString());
+                    value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
                 } catch (ClassNotFoundException e) {
                     throw new BugInCF(String.format("value = %s [%s]", value, value.getClass()), e);
                 }

@@ -39,6 +39,7 @@ import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
@@ -73,6 +74,18 @@ public class AnnotationUtils {
         @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
         @CanonicalName String name = elm.getQualifiedName().toString();
         return name;
+    }
+
+    /**
+     * Returns the binary name of an annotation as a String.
+     *
+     * @param annotation the annotation whose binary name to return
+     * @return the binary name of an annotation as a String
+     */
+    public static final @BinaryName String annotationBinaryName(AnnotationMirror annotation) {
+        final DeclaredType annoType = annotation.getAnnotationType();
+        final TypeElement elm = (TypeElement) annoType.asElement();
+        return ElementUtils.getBinaryName(elm);
     }
 
     /**

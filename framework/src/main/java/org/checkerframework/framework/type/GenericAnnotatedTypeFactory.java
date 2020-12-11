@@ -2336,7 +2336,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected Class<?> AnnotationMirrorToClass(AnnotationMirror am) {
         try {
-            return Class.forName(AnnotationUtils.annotationName(am));
+            return Class.forName(AnnotationUtils.annotationBinaryName(am));
         } catch (ClassNotFoundException e) {
             throw new BugInCF(e);
         }
