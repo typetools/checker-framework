@@ -385,13 +385,14 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes an invalid formatter string and, returns a syntax trees element that represents a
-     * {@link InvalidFormat} annotation with the invalid formatter string as value.
+     * Creates an {@link InvalidFormat} annotation with the given string as its value.
+     *
+     * @param invalidFormatString an invalid formatter string
+     * @return an {@link InvalidFormat} annotation with the given string as its value
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
         builder.setValue("value", invalidFormatString);
         return builder.build();
     }
@@ -405,12 +406,13 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
-     * represents a {@link Format} annotation with the list as value.
+     * Creates a {@code @}{@link Format} annotation with the given list as its value.
+     *
+     * @param args conversion categories for the {@code @Format} annotation
+     * @return a {@code @}{@link Format} annotation with the given list as its value
      */
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, Format.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Format.class);
         builder.setValue("value", args);
         return builder.build();
     }

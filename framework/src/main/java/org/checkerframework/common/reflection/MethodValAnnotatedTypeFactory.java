@@ -93,8 +93,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             methodNames.add(sig.methodName);
             params.add(sig.params);
         }
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, MethodVal.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MethodVal.class);
         builder.setValue("className", classNames);
         builder.setValue("methodName", methodNames);
         builder.setValue("params", params);

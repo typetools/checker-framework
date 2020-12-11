@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -23,6 +24,7 @@ import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
 import scenelib.annotations.field.ArrayAFT;
 import scenelib.annotations.field.BasicAFT;
+import scenelib.annotations.field.ClassTokenAFT;
 import scenelib.annotations.field.ScalarAFT;
 
 /**
@@ -49,10 +51,12 @@ public class AnnotationConverter {
         Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
-            AnnotationFieldType aft =
-                    getAnnotationFieldType(ee, am.getElementValues().get(ee).getValue());
+            Object value = am.getElementValues().get(ee).getValue();
+            AnnotationFieldType aft = getAnnotationFieldType(ee, value);
             if (aft == null) {
-                return null;
+                throw new BugInCF(
+                        "getAnnotationFieldType(%s, %s [%s] [%s]) => null",
+                        ee, value, value.getClass(), value instanceof TypeMirror);
             }
             // Here we just add the type of the field into fieldTypes.
             fieldTypes.put(ee.getSimpleName().toString(), aft);
@@ -100,23 +104,32 @@ public class AnnotationConverter {
         return builder.build();
     }
 
-    /** Returns an AnnotationFieldType given an ExecutableElement or value. */
-    protected static AnnotationFieldType getAnnotationFieldType(
+    /**
+     * Returns the type of an element (that is, a field) of an annotation.
+     *
+     * @param ee an element (that is, a field) of an annotation
+     * @param value the value for the field
+     * @return the type of the given annotation field. Returns null if the type cannot be inferred
+     *     because the value is an empty list and the element has no default value.
+     */
+    protected static @Nullable AnnotationFieldType getAnnotationFieldType(
             ExecutableElement ee, Object value) {
         if (value instanceof List<?>) {
             AnnotationValue defaultValue = ee.getDefaultValue();
             if (defaultValue == null || ((ArrayType) ((Array) defaultValue).type) == null) {
+                // The element has no default value, so infer from the first element of `value`.
                 List<?> listV = (List<?>) value;
-                if (!listV.isEmpty()) {
-                    ScalarAFT scalarAFT =
-                            (ScalarAFT)
-                                    getAnnotationFieldType(
-                                            ee, ((AnnotationValue) listV.get(0)).getValue());
-                    if (scalarAFT != null) {
-                        return new ArrayAFT(scalarAFT);
-                    }
+                if (listV.isEmpty()) {
+                    return null;
                 }
-                return null;
+                ScalarAFT scalarAFT =
+                        (ScalarAFT)
+                                getAnnotationFieldType(
+                                        ee, ((AnnotationValue) listV.get(0)).getValue());
+                if (scalarAFT == null) {
+                    return null;
+                }
+                return new ArrayAFT(scalarAFT);
             }
             Type elemType = ((ArrayType) ((Array) defaultValue).type).elemtype;
             try {
@@ -142,8 +155,12 @@ public class AnnotationConverter {
             return BasicAFT.forType(short.class);
         } else if (value instanceof String) {
             return BasicAFT.forType(String.class);
+        } else if (value instanceof Class || value instanceof TypeMirror) {
+            return ClassTokenAFT.ctaft;
         }
-        return null;
+        // TODO: Handle enums.
+        throw new BugInCF(
+                "Fallthrough: getAnnotationFieldType(%s, %s [%s])", ee, value, value.getClass());
     }
 
     /**

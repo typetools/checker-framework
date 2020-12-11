@@ -62,8 +62,7 @@ public class I18nFormatterTransfer extends CFTransfer {
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
             JavaExpression firstParam = JavaExpression.fromNode(atypeFactory, node.getArgument(0));
             AnnotationBuilder builder =
-                    new AnnotationBuilder(
-                            tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
+                    new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class);
             // No need to set a value of @I18nInvalidFormat
             builder.setValue("value", "");
             elseStore.insertValue(firstParam, builder.build());

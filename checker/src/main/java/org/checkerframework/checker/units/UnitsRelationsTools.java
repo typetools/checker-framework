@@ -281,7 +281,7 @@ public class UnitsRelationsTools {
             final ProcessingEnvironment env,
             final Class<? extends Annotation> annoClass,
             final Prefix p) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(env, annoClass);
         builder.setValue("value", p);
         return builder.build();
     }

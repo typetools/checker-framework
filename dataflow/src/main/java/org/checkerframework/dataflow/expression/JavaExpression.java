@@ -387,7 +387,7 @@ public abstract class JavaExpression {
                 assert TreeUtils.isUseOfElement(identifierTree)
                         : "@AssumeAssertion(nullness): tree kind";
                 Element ele = TreeUtils.elementFromUse(identifierTree);
-                if (ElementUtils.isClassElement(ele)) {
+                if (ElementUtils.isTypeElement(ele)) {
                     result = new ClassName(ele.asType());
                     break;
                 }
@@ -438,7 +438,7 @@ public abstract class JavaExpression {
         }
         assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(memberSelectTree);
-        if (ElementUtils.isClassElement(ele)) {
+        if (ElementUtils.isTypeElement(ele)) {
             // o instanceof MyClass.InnerClass
             // o instanceof MyClass.InnerInterface
             TypeMirror selectType = TreeUtils.typeOf(memberSelectTree);
