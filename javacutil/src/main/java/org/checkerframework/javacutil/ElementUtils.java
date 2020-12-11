@@ -608,7 +608,7 @@ public class ElementUtils {
     }
 
     /**
-     * Is the given element kind a class,, i.e. a class, enum, interface, or annotation type.
+     * Is the given element kind a class, i.e., a class, enum, interface, or annotation type.
      *
      * @param element the element to test
      * @return true, iff the given kind is a class kind
