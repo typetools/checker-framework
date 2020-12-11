@@ -425,7 +425,7 @@ task testWPIJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
-            // TODO: There must be a variable that holds this value
+            // TODO: There must be a variable that holds this value.
             args = ['-cp', "${buildDir}/classes/java/test"]
             args += ['-i']
             for (File jaif : jaifs) {

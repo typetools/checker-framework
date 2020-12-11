@@ -154,27 +154,11 @@ public class ASceneWrapper {
                         break;
                     case JAIF:
                         // First, create strings from contract annotations.
-                        System.out.println(
-                                "Creating strings for wrapper "
-                                        + System.identityHashCode(this)
-                                        + " around "
-                                        + System.identityHashCode(scene));
                         for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
                             AClass aClass = classEntry.getValue();
-                            System.out.println(
-                                    "Creating strings for "
-                                            + System.identityHashCode(aClass)
-                                            + " "
-                                            + aClass);
                             for (Map.Entry<String, AMethod> methodEntry :
                                     aClass.getMethods().entrySet()) {
                                 AMethod aMethod = methodEntry.getValue();
-                                System.out.println(
-                                        "Creating strings for "
-                                                + System.identityHashCode(aMethod)
-                                                + " "
-                                                + aMethod.getMethodName());
-                                System.out.println("  preconditions = " + aMethod.preconditions);
                                 List<AnnotationMirror> contractAnnotationMirrors =
                                         checker.getTypeFactory().getContractAnnotations(aMethod);
                                 List<Annotation> contractAnnotations =
@@ -182,9 +166,6 @@ public class ASceneWrapper {
                                                 AnnotationConverter::annotationMirrorToAnnotation,
                                                 contractAnnotationMirrors);
                                 aMethod.contracts = contractAnnotations;
-                                System.out.printf(
-                                        "contractsAsStrings for %s = %s%n",
-                                        aMethod.getMethodName(), aMethod.contracts);
                             }
                         }
                         IndexFileWriter.write(scene, new FileWriter(filepath));

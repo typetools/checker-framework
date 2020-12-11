@@ -2249,18 +2249,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return precondition annotations for the method
      */
     public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-        System.out.printf("getPreconditionAnnotations(%s)%n", m.getMethodName());
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
             VariableElement elt = entry.getKey();
             AField afield = entry.getValue();
-            System.out.printf(
-                    "getPreconditionAnnotations(%s) considering %s %s%n",
-                    m.getMethodName(), elt, afield);
             result.addAll(getPreconditionAnnotation(elt, afield));
         }
         Collections.sort(result, Ordering.usingToString());
-        System.out.printf("getPreconditionAnnotations(%s) => %s%n", m.getMethodName(), result);
         return result;
     }
 
@@ -2290,15 +2285,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // TODO: should this only check the top-level annotations?
         if (declaredType.equals(inferredType)) {
-            System.out.printf(
-                    "  getPreconditionAnnotation(%s) => null; declaredType.equals(inferredType): %s%n",
-                    elt, declaredType);
             return Collections.emptyList();
         }
-
-        System.out.printf("getPreconditionAnnotation(%s, %s)%n", elt, f);
-        System.out.printf("  declaredType = %s%n", declaredType.toString(true));
-        System.out.printf("  inferredType = %s%n", inferredType.toString(true));
 
         List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
         for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
@@ -2315,19 +2303,13 @@ public abstract class GenericAnnotatedTypeFactory<
                 }
             }
 
-            System.out.printf("  declaredAm = %s%n", declaredAm);
-            System.out.printf("  inferredAm = %s%n", inferredAm);
             if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
                 continue;
             }
-            System.out.printf(
-                    "Annotation mirrors differ:%n  %s [%s]%n  %s [%s]%n",
-                    declaredAm, declaredAm.getClass(), inferredAm, inferredAm.getClass());
-            // inferredAm must be a subtype of declaredAm (since they are not equal)
+            // inferredAm must be a subtype of declaredAm (since they are not equal).
             result.add(requiresQualifierAnno(elt, inferredAm));
         }
 
-        System.out.printf("getPreconditionAnnotation(%s) => %s%n", elt, result);
         return result;
     }
 

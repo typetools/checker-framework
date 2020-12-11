@@ -19,7 +19,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -221,33 +220,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     preOrPost, methodElt, atypeFactory.getClass().getSimpleName());
         }
 
-        System.out.printf(
-                "%s: updateContracts(%s, %s)%nstore = %s%n",
-                atypeFactory.getClass().getSimpleName(), preOrPost, methodElt, store);
-
         String className = getEnclosingClassName(methodElt);
         String jaifPath = storage.getJaifPath(className);
         AClass clazz =
                 storage.getAClass(className, jaifPath, ((MethodSymbol) methodElt).enclClass());
         AMethod amethod = clazz.methods.getVivify(JVMNames.getJVMMethodSignature(methodElt));
-        System.out.println("updateContracts:");
-        System.out.printf("  clazz %s %s%n", System.identityHashCode(clazz), clazz);
-        System.out.printf("  amethod %s %s%n", System.identityHashCode(amethod), amethod);
-        System.out.printf("all %d scenes:%n", storage.scenes.entrySet().size());
-        for (Map.Entry<String, ASceneWrapper> sceneEntry : storage.scenes.entrySet()) {
-            String filepath = sceneEntry.getKey();
-            ASceneWrapper asw = sceneEntry.getValue();
-            System.out.printf("  filepath %s%n", filepath);
-            System.out.printf(
-                    "  scene %s wraps %s%n",
-                    System.identityHashCode(asw), System.identityHashCode(asw.getAScene()));
-            for (Map.Entry<String, AClass> classEntry : asw.getAScene().classes.entrySet()) {
-                String iterClazzName = classEntry.getKey();
-                AClass iterClazz = classEntry.getValue();
-                System.out.printf(
-                        "    class %s %s%n", iterClazzName, System.identityHashCode(iterClazz));
-            }
-        }
 
         amethod.setFieldsFromMethodElement(methodElt);
 
@@ -260,11 +237,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 store.getFieldValues().entrySet()) {
             FieldAccess fa = entry.getKey();
             CFAbstractValue<?> v = entry.getValue();
-            System.out.printf("Store entry: %s %s%n", fa, v);
-            System.out.printf("  amethod %s = %s%n", System.identityHashCode(amethod), amethod);
-            System.out.printf(
-                    "    preconditions = %s%n",
-                    amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
 
             VariableElement fieldElement = fa.getField();
             AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fieldElement);
@@ -276,42 +248,11 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror atm = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldType);
             adjustForUpdateNonField(atm);
 
-            System.out.printf("about to call vivifyAndAddTypeMirrorToContract%n");
-            System.out.printf("  amethod = %s%n", amethod);
-            System.out.printf(
-                    "    preconditions = %s%n",
-                    amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
             AField afield = vivifyAndAddTypeMirrorToContract(amethod, preOrPost, fieldElement);
-            System.out.printf("called vivifyAndAddTypeMirrorToContract%n");
-            System.out.printf("  amethod = %s%n", amethod);
-            System.out.printf(
-                    "    preconditions = %s%n",
-                    amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
-
-            System.out.printf(
-                    "about to call updateAnnotationSetInScene(%s, %s, %s, %s, %s)%n",
-                    afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath);
-            System.out.printf("  amethod = %s %s%n", System.identityHashCode(amethod), amethod);
-            System.out.printf(
-                    "    preconditions = %s%n",
-                    amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
 
             updateAnnotationSetInScene(
                     afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath, false);
-
-            System.out.printf(
-                    "called updateAnnotationSetInScene(%s, %s, %s, %s, %s)%n",
-                    afield.type, TypeUseLocation.FIELD, atm, fieldType, jaifPath);
-            System.out.printf("  amethod = %s%n", amethod);
-            System.out.printf(
-                    "    preconditions = %s%n",
-                    amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
         }
-        System.out.printf("After updateContracts part 1:%n");
-        System.out.printf("  amethod %s = %s%n", System.identityHashCode(amethod), amethod);
-        System.out.printf(
-                "    preconditions = %s%n",
-                amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
 
         // Process fields that are not in the store.
         TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
@@ -334,11 +275,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                         afield.type, TypeUseLocation.FIELD, fieldType, fieldType, jaifPath, false);
             }
         }
-        System.out.printf("After updateContracts part 2:%n");
-        System.out.printf("  amethod %s = %s%n", System.identityHashCode(amethod), amethod);
-        System.out.printf(
-                "    preconditions = %s%n",
-                amethod.preconditions.toString().replace(" , ", String.format(",%n    ")));
     }
 
     /**
@@ -352,10 +288,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private AField vivifyAndAddTypeMirrorToContract(
             AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
-        System.out.printf(
-                "vivifyAndAddTypeMirrorToContract(%s, %s, %s)%n", amethod, preOrPost, fieldElement);
         TypeMirror typeMirror = TypesUtils.unannotatedType(fieldElement.asType());
-        System.out.printf("  typeMirror = %s [%s]%n", typeMirror, typeMirror.getClass());
 
         switch (preOrPost) {
             case BEFORE:

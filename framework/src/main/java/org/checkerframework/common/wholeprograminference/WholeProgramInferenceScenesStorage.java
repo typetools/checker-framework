@@ -176,8 +176,6 @@ public class WholeProgramInferenceScenesStorage {
         ASceneWrapper scene = getScene(jaifPath);
         AClass aClass = scene.getAScene().classes.getVivify(className);
         scene.updateSymbolInformation(aClass, classSymbol);
-        System.out.printf(
-                "getAClass(%s) => %s %s%n", className, System.identityHashCode(aClass), aClass);
         return aClass;
     }
 
@@ -231,10 +229,7 @@ public class WholeProgramInferenceScenesStorage {
         }
         AnnotatedTypeMirror atmFromScene =
                 atmFromATypeElement(rhsATM.getUnderlyingType(), type, atf);
-        System.out.printf("atmFromScene = %s%n", atmFromScene);
-        System.out.printf("rhsATM = %s%n", rhsATM);
         updateAtmWithLub(rhsATM, atmFromScene, atf);
-        System.out.printf("rhsATM = %s (updated)%n", rhsATM);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos =
                     ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -242,16 +237,10 @@ public class WholeProgramInferenceScenesStorage {
             // current type on the source code, halt.
             if (upperAnnos.size() == rhsATM.getAnnotations().size()
                     && atf.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
-                System.out.printf("updateAnnotationSetInScene did nothing%n");
                 return;
             }
         }
-        // System.out.printf("about to call updateTypeElementFromATM(%s)%n", type);
-        System.out.printf(
-                "about to call updateTypeElementFromATM(%s, %s, %s, %s, %s, %s, %s)%n",
-                type, 1, defLoc, rhsATM, lhsATM, atf, ignoreIfAnnotated);
         updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, atf, ignoreIfAnnotated);
-        System.out.printf("called updateTypeElementFromATM(%s)%n", type);
         modifiedScenes.add(jaifPath);
     }
 
@@ -518,15 +507,10 @@ public class WholeProgramInferenceScenesStorage {
         // stronger.  Add a formal parameter.
         // Only update the ATypeElement if there are no explicit annotations
         if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
-            System.out.printf(
-                    "about to loop over addAnnotationsToATypeElement. newATM=%s, typeToUpdate=%s%n",
-                    newATM, typeToUpdate);
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(
                         newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
             }
-            System.out.printf(
-                    "looped over addAnnotationsToATypeElement. typeToUpdate=%s%n", typeToUpdate);
 
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly

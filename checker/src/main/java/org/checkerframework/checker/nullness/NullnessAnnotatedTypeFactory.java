@@ -17,6 +17,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,10 +35,12 @@ import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -731,6 +734,11 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    @Override
+    protected WholeProgramInference createWholeProgramInference() {
+        return new NullnessWholeProgramInferenceScenes(this);
+    }
+
     // This implementation overrides the superclass implementation to:
     //  * check for @MonotonicNonNull
     //  * output @RequiresNonNull rather than @RequiresQualifier.
@@ -757,14 +765,13 @@ public class NullnessAnnotatedTypeFactory
      * @param fieldElement a field
      * @return a {@code RequiresNonNull("...")} annotation for the given field
      */
-    @SuppressWarnings("UnusedVariable") // TEMPORARY
     private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
-        //         if (false) { // TODO
-        //             return "@org.checkerframework.checker.nullness.qual.RequiresNonNull(\"this."
-        //                     + fieldElement.getSimpleName()
-        //                     + "\")";
-        //         }
-        return null;
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
     }
 
     @Override
@@ -784,19 +791,24 @@ public class NullnessAnnotatedTypeFactory
         }
         for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
             if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
-                // if (false) { // TODO
-                //     return "@org.checkerframework.checker.nullness.qual.EnsuresNonNull(\"this."
-                //             + elt.getSimpleName()
-                //             + "\")";
-                // }
-                return null;
+                return ensuresNonNullAnno(elt);
             }
         }
         return null;
     }
 
-    @Override
-    protected WholeProgramInference createWholeProgramInference() {
-        return new NullnessWholeProgramInferenceScenes(this);
+    /**
+     * Returns a {@code EnsuresNonNull("...")} annotation for the given field.
+     *
+     * @param fieldElement a field
+     * @return a {@code EnsuresNonNull("...")} annotation for the given field
+     */
+    private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
+        builder.setValue("value", new String[] {"this." + fieldElement.getSimpleName()});
+        AnnotationMirror am = builder.build();
+        List<AnnotationMirror> result = new ArrayList<>(1);
+        result.add(am);
+        return result;
     }
 }
