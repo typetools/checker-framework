@@ -44,7 +44,6 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1235,18 +1234,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         TreePath currentPath = getCurrentPath();
         List<JavaExpression> params =
-                JavaExpressions.getParametersOfEnclosingMethod(atypeFactory, currentPath);
+                JavaExpression.getParametersOfEnclosingMethod(atypeFactory, currentPath);
 
         TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
         JavaExpression pseudoReceiver =
-                JavaExpressions.getPseudoReceiver(currentPath, enclosingType);
+                JavaExpression.getPseudoReceiver(currentPath, enclosingType);
         JavaExpressionContext exprContext =
                 new JavaExpressionContext(pseudoReceiver, params, atypeFactory.getContext());
         JavaExpression self;
         if (implicitThis) {
             self = pseudoReceiver;
         } else if (TreeUtils.isExpressionTree(tree)) {
-            self = JavaExpressions.fromTree(atypeFactory, (ExpressionTree) tree);
+            self = JavaExpression.fromTree(atypeFactory, (ExpressionTree) tree);
         } else {
             self = new Unknown(TreeUtils.typeOf(tree));
         }

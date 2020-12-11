@@ -155,7 +155,7 @@ public final class TypesUtils {
         if (element == null) {
             return null;
         }
-        if (ElementUtils.isClassElement(element)) {
+        if (ElementUtils.isTypeElement(element)) {
             return (TypeElement) element;
         }
         return null;
