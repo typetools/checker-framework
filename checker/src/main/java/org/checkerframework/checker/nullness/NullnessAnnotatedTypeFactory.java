@@ -748,7 +748,7 @@ public class NullnessAnnotatedTypeFactory
         if (!(declaredType.hasAnnotation(NULLABLE)
                 || declaredType.hasAnnotation(POLYNULL)
                 || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-            return null;
+            return Collections.emptyList();
         }
 
         for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
@@ -756,7 +756,7 @@ public class NullnessAnnotatedTypeFactory
                 return requiresNonNullAnno(elt);
             }
         }
-        return null;
+        return Collections.emptyList();
     }
 
     /**
@@ -781,13 +781,13 @@ public class NullnessAnnotatedTypeFactory
         if (!(declaredType.hasAnnotation(NULLABLE)
                 || declaredType.hasAnnotation(POLYNULL)
                 || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-            return null;
+            return Collections.emptyList();
         }
         if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
                 && preconds.contains(requiresNonNullAnno(elt))) {
             // The postcondition is implied by the precondition and the field being
             // @MonotonicNonNull.
-            return null;
+            return Collections.emptyList();
         }
         for (scenelib.annotations.Annotation a : f.type.tlAnnotationsHere) {
             if (a.def.name.equals("org.checkerframework.checker.nullness.qual.NonNull")) {
