@@ -122,7 +122,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public WholeProgramInferenceScenes(
             AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
         this.atypeFactory = atypeFactory;
-        storage = new WholeProgramInferenceScenesStorage(ignoreNullAssignments);
+        storage = new WholeProgramInferenceScenesStorage(atypeFactory, ignoreNullAssignments);
     }
 
     @Override
@@ -717,7 +717,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             String jaifPath,
             boolean ignoreIfAnnotated) {
         storage.updateAnnotationSetInScene(
-                type, defLoc, rhsATM, lhsATM, atypeFactory, jaifPath, ignoreIfAnnotated);
+                type, defLoc, rhsATM, lhsATM, jaifPath, ignoreIfAnnotated);
     }
 
     /**
@@ -725,12 +725,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      *
      * @param typeMirror the underlying type for the result
      * @param type the ATypeElement from which to obtain annotations
-     * @param atf the annotated type factory
      * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
      *     {@code type}
      */
-    public AnnotatedTypeMirror atmFromATypeElement(
-            TypeMirror typeMirror, ATypeElement type, AnnotatedTypeFactory atf) {
-        return storage.atmFromATypeElement(typeMirror, type, atf);
+    public AnnotatedTypeMirror atmFromATypeElement(TypeMirror typeMirror, ATypeElement type) {
+        return storage.atmFromATypeElement(typeMirror, type);
     }
 }

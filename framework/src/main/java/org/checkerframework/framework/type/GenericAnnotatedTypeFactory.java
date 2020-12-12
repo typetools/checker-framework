@@ -2280,7 +2280,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         TypeMirror typeMirror = elt.asType();
         AnnotatedTypeMirror inferredType =
-                wholeProgramInference.atmFromATypeElement(typeMirror, f.type, this);
+                wholeProgramInference.atmFromATypeElement(typeMirror, f.type);
 
         // TODO: should this only check the top-level annotations?
         if (declaredType.equals(inferredType)) {
