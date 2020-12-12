@@ -92,7 +92,7 @@ public class WholeProgramInferenceScenesStorage {
      * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
      * #updateAnnotationSetInScene}.)
      */
-    private final Set<String> modifiedScenes = new HashSet<>();
+    public final Set<String> modifiedScenes = new HashSet<>();
 
     /**
      * Default constructor.
