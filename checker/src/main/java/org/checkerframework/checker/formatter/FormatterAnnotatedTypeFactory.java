@@ -80,7 +80,13 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FormatterWholeProgramInferenceScenes(this);
     }
 
+    /** The tree annotator for the Format String Checker. */
     private class FormatterTreeAnnotator extends TreeAnnotator {
+        /**
+         * Create the tree annotator for the Format String Checker.
+         *
+         * @param atypeFactory the Format String Checker type factory
+         */
         public FormatterTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
