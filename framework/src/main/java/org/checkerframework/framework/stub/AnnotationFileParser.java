@@ -1287,7 +1287,10 @@ public class AnnotationFileParser {
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
-                stubWarnNotFound("Unknown annotation: " + annotation);
+                stubWarnNotFound(
+                        String.format(
+                                "Unknown annotation %s in annotate(%s, %s)",
+                                annotation, type, annotations));
             }
         }
     }
@@ -1318,6 +1321,11 @@ public class AnnotationFileParser {
                     // `annoMirror` is applicable to `elt`
                     annos.add(annoMirror);
                 }
+            } else {
+                stubWarnNotFound(
+                        String.format(
+                                "Unknown annotation %s in recordDeclAnnotation(%s, %s, %s)",
+                                annotation, elt, annotations, stubAnnos));
             }
         }
         String eltName = ElementUtils.getQualifiedName(elt);
@@ -1768,8 +1776,7 @@ public class AnnotationFileParser {
             // allAnnotations field. This code adds the annotation when it is encountered
             // (i.e. here).
             // Note that this goes not call AnnotationFileParser#getTypeElement to avoid a spurious
-            // diagnostic
-            // if the annotation is actually unknown.
+            // diagnostic if the annotation is actually unknown.
             annoTypeElt = elements.getTypeElement(annoNameFq);
             if (annoTypeElt == null) {
                 // Not a supported annotation -> ignore
@@ -1795,8 +1802,8 @@ public class AnnotationFileParser {
                     boolean success = builderAddElement(builder, member, exp);
                     if (!success) {
                         warn(
-                                "Annotation expression, %s, could not be processed for annotation: %s.",
-                                exp, annotation);
+                                "getAnnotation(%s) => null because builderAddElement(%s, %s, %s) => false",
+                                annotation, builder, member, exp);
                         return null;
                     }
                 }
@@ -1808,9 +1815,7 @@ public class AnnotationFileParser {
             Expression valexpr = sglanno.getMemberValue();
             boolean success = builderAddElement(builder, "value", valexpr);
             if (!success) {
-                warn(
-                        "Annotation expression, %s, could not be processed for annotation: %s.",
-                        valexpr, annotation);
+                warn("For annotation %s, could not add %s to builder %s", annotation, valexpr);
                 return null;
             }
             return builder.build();
@@ -1837,7 +1842,9 @@ public class AnnotationFileParser {
                 elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
-                warn("Field not found: " + expr);
+                warn(
+                        "Field %s [%s] not found in getValueOfExpressionInAnnotation(%s, %s [%s], %s)",
+                        expr, expr.getClass(), name, expr, expr.getClass(), valueKind);
                 return null;
             }
             Object value = elem.getConstantValue() != null ? elem.getConstantValue() : elem;
@@ -2002,16 +2009,18 @@ public class AnnotationFileParser {
      */
     private boolean builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
-        TypeMirror expected = var.getReturnType();
+        TypeMirror declaredType = var.getReturnType();
         TypeKind valueKind;
-        if (expected.getKind() == TypeKind.ARRAY) {
-            valueKind = ((ArrayType) expected).getComponentType().getKind();
+        if (declaredType.getKind() == TypeKind.ARRAY) {
+            valueKind = ((ArrayType) declaredType).getComponentType().getKind();
         } else {
-            valueKind = expected.getKind();
+            valueKind = declaredType.getKind();
         }
         if (expr instanceof ArrayInitializerExpr) {
-            if (expected.getKind() != TypeKind.ARRAY) {
-                warn("unhandled annotation attribute type: " + expr + " and expected: " + expected);
+            if (declaredType.getKind() != TypeKind.ARRAY) {
+                warn(
+                        "in builderAddElement, array initializer %s for field %s of non-array type %s",
+                        expr, name, declaredType);
                 return false;
             }
 
@@ -2019,9 +2028,12 @@ public class AnnotationFileParser {
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                values[i] =
-                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
+                Expression eltExpr = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, eltExpr, valueKind);
                 if (values[i] == null) {
+                    warn(
+                            "in builderAddElement, getValueOfExpressionInAnnotation(%s, %s [%s], %s) => null for array element %d",
+                            name, eltExpr, eltExpr.getClass(), valueKind, i);
                     return false;
                 }
             }
@@ -2029,9 +2041,12 @@ public class AnnotationFileParser {
         } else {
             Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
             if (value == null) {
+                warn(
+                        "in builderAddElement, getValueOfExpressionInAnnotation(%s, %s, %s) => null",
+                        name, expr, valueKind);
                 return false;
             }
-            if (expected.getKind() == TypeKind.ARRAY) {
+            if (declaredType.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
                 builder.setValue(name, valueArray);
             } else {
@@ -2114,10 +2129,12 @@ public class AnnotationFileParser {
             }
         }
 
-        // Imported but invalid types or fields will have warnings from above,
-        // only warn on fields missing an import
-        if (res == null && !importFound) {
-            stubWarnNotFound("Static field " + nexpr.getName() + " is not imported");
+        if (res == null) {
+            if (importFound) {
+                stubWarnNotFound(nexpr.getName() + " was imported but not found");
+            } else {
+                stubWarnNotFound("Static field " + nexpr.getName() + " is not imported");
+            }
         }
 
         findVariableElementNameCache.put(nexpr, res);

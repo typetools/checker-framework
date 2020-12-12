@@ -207,8 +207,8 @@ public class WholeProgramInferenceScenesStorage {
      * <ul>
      *   <li>If there was no previous annotation for that location, then the updated set will be the
      *       annotations in rhsATM.
-     *   <li>If there was a previous annotation, the updated set will be the LUB between the
-     *       previous annotation and rhsATM.
+     *   <li>If there was a previous annotation, the updated set will combine the previous value and
+     *       rhsATM, using LUB.
      * </ul>
      *
      * @param type ATypeElement of the Scene which will be modified
@@ -260,6 +260,7 @@ public class WholeProgramInferenceScenesStorage {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
+                // TODO: It seems wrong to LUB the type parameter bounds.
                 updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                         ((AnnotatedTypeVariable) jaifATM).getLowerBound());
@@ -278,6 +279,7 @@ public class WholeProgramInferenceScenesStorage {
                 //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
                 //            break;
             case ARRAY:
+                // TODO: Array components, like type parameters, are invariant.
                 updateAtmWithLub(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                         ((AnnotatedArrayType) jaifATM).getComponentType());
@@ -429,7 +431,7 @@ public class WholeProgramInferenceScenesStorage {
      * {@link scenelib.annotations.Annotation}s of an {@link scenelib.annotations.el.ATypeElement}.
      *
      * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link scenelib.annotations.el.ATypeElement} used
+     * @param type the {@link scenelib.annotations.el.ATypeElement}
      */
     private void updateAtmFromATypeElement(AnnotatedTypeMirror atm, ATypeElement type) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere);

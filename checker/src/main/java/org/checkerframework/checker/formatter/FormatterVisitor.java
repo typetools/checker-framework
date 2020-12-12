@@ -134,6 +134,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 wpi.addMethodDeclarationAnnotation(
                         TreeUtils.elementFromDeclaration(enclosingMethod),
                         atypeFactory.FORMATMETHOD);
+                // TODO: Remove any @Format argument on the first formal parameter.
             }
         }
         return super.visitMethodInvocation(node, p);

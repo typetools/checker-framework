@@ -2306,21 +2306,34 @@ public abstract class GenericAnnotatedTypeFactory<
                 continue;
             }
             // inferredAm must be a subtype of declaredAm (since they are not equal).
-            result.add(requiresQualifierAnno(elt, inferredAm));
+            AnnotationMirror requiresQualifierAnno = requiresQualifierAnno(elt, inferredAm);
+            if (requiresQualifierAnno != null) {
+                result.add(requiresQualifierAnno);
+            }
         }
 
         return result;
     }
 
     /**
-     * Returns a {@code RequiresQualifier("...")} annotation for the given field.
+     * Returns a {@code RequiresQualifier("...")} annotation for the given field. Returns null if
+     * none can be created, because the qualifier has elements/arguments, which
+     * {@code @RequiresQualifier} does not support.
+     *
+     * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+     * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+     * {@code @B} which is a sub-qualifier of {@code @A}.
      *
      * @param fieldElement a field
      * @param qualifier the qualifier that must be present
-     * @return a {@code RequiresQualifier("...")} annotation for the given field
+     * @return a {@code RequiresQualifier("...")} annotation for the given field, or null
      */
     protected AnnotationMirror requiresQualifierAnno(
             VariableElement fieldElement, AnnotationMirror qualifier) {
+        if (!qualifier.getElementValues().isEmpty()) {
+            return null;
+        }
+
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresQualifier.class);
         builder.setValue("expression", new String[] {"this." + fieldElement.getSimpleName()});
         builder.setValue("qualifier", AnnotationMirrorToClass(qualifier));
@@ -2340,6 +2353,8 @@ public abstract class GenericAnnotatedTypeFactory<
             throw new BugInCF(e);
         }
     }
+
+    // TODO: Implement all the below, probably by copying from the above or abstracting it.
 
     /**
      * Return the string representation of postcondition annotations for the given AMethod. Does not
@@ -2363,7 +2378,9 @@ public abstract class GenericAnnotatedTypeFactory<
     // That would be more general and would eliminate most but not all of the code in overriding
     // implementations.
     /**
-     * Return the string representation of a postcondition annotation for the given field.
+     * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns null if none can
+     * be created, because the qualifier has elements/arguments, which {@code @RequiresQualifier}
+     * does not support.
      *
      * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
      * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains

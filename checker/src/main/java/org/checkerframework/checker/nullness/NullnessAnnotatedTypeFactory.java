@@ -794,7 +794,7 @@ public class NullnessAnnotatedTypeFactory
                 return ensuresNonNullAnno(elt);
             }
         }
-        return null;
+        return Collections.emptyList();
     }
 
     /**

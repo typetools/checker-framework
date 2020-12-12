@@ -201,7 +201,7 @@ public class ContractsFromMethod {
      * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
      * contractAnno}. May return null.
      *
-     * @param contractAnno a pre- or post-condition annotation
+     * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
      * @return the type annotation specified in {@code contractAnno.qualifier}
      */
     private AnnotationMirror getQualifierEnforcedByContractAnnotation(
@@ -211,9 +211,9 @@ public class ContractsFromMethod {
 
     /**
      * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-     * contractAnno}, with arguments taken from {@code argumentAnno}. May return null.
+     * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
      *
-     * @param contractAnno a pre- or post-condition annotation
+     * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
      * @param argumentAnno supplies the elements/fields in the return value
      * @return the type annotation specified in {@code contractAnno.qualifier}
      */
@@ -228,12 +228,15 @@ public class ContractsFromMethod {
 
     /**
      * Returns the annotation mirror as specified by the "qualifier" element in {@code
-     * contractAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
-     * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}.
+     * contractAnno}. If {@code argumentAnno} is specified, then elements/arguments are copied from
+     * {@code argumentAnno} to the returned annotation, renamed according to {@code
+     * argumentRenaming}. If {@code argumentAnno} is not specified, the result has no
+     * elements/arguments; this may make it invalid.
      *
      * <p>This is a helper method. Use one of its overloads if possible.
      *
-     * @param contractAnno a contract annotation, which has a {@code qualifier} element
+     * @param contractAnno a contract annotation, such as {@code @RequiresQualifier}, which has a
+     *     {@code qualifier} element/field
      * @param argumentAnno annotation containing the argument values, or {@code null}
      * @param argumentRenaming renaming of argument names, which maps from names in {@code
      *     argumentAnno} to names used in the returned annotation, or {@code null}

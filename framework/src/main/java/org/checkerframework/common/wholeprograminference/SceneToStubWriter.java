@@ -42,7 +42,6 @@ import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
 import scenelib.annotations.el.InnerTypeLocation;
 import scenelib.annotations.field.AnnotationFieldType;
-import scenelib.annotations.io.IndexFileWriter;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
@@ -143,7 +142,8 @@ public final class SceneToStubWriter {
         StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
             AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-            sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
+            // sj.add(f.getKey() + "=" + IndexFileWriter.formatAnnotationValue(aft, f.getValue()));
+            sj.add(f.getKey() + "=" + aft.format(f.getValue()));
         }
         return sj.toString();
     }
