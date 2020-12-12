@@ -80,7 +80,7 @@ public class WholeProgramInferenceScenesStorage {
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
-    private final Map<String, ASceneWrapper> scenes = new HashMap<>();
+    public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
      * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
@@ -92,7 +92,7 @@ public class WholeProgramInferenceScenesStorage {
      * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
      * #updateAnnotationSetInScene}.)
      */
-    private final Set<String> modifiedScenes = new HashSet<>();
+    public final Set<String> modifiedScenes = new HashSet<>();
 
     /**
      * Default constructor.
