@@ -1815,7 +1815,9 @@ public class AnnotationFileParser {
             Expression valexpr = sglanno.getMemberValue();
             boolean success = builderAddElement(builder, "value", valexpr);
             if (!success) {
-                warn("For annotation %s, could not add %s to builder %s", annotation, valexpr);
+                warn(
+                        "For annotation %s, could not add %s to builder %s",
+                        annotation, valexpr, builder);
                 return null;
             }
             return builder.build();
