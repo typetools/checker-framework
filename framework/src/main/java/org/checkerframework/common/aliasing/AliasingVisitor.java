@@ -16,6 +16,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -153,6 +154,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     // TODO: Change the documentation in BaseTypeVisitor to point out that
     // this isn't called for pseudo-assignments.
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,
@@ -170,6 +172,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,

@@ -56,6 +56,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -979,6 +980,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    @FormatMethod
     public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
         report(source, Kind.ERROR, messageKey, args);
     }
@@ -990,6 +992,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    @FormatMethod
     public void reportWarning(
             Object source, @CompilerMessageKey String messageKey, Object... args) {
         report(source, Kind.MANDATORY_WARNING, messageKey, args);
@@ -1017,6 +1020,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param messageKey the message key
      * @param args arguments for interpolation in the string corresponding to the given message key
      */
+    @FormatMethod
     private void report(
             Object source,
             javax.tools.Diagnostic.Kind kind,
@@ -1091,6 +1095,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * @param args optional arguments to substitute in the message
      * @see SourceChecker#report(Object, DiagMessage)
      */
+    @FormatMethod
     public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
         String ftdmsg = String.format(msg, args);
         if (messager == null) {

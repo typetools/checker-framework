@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
@@ -192,6 +193,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueTree,
@@ -247,6 +249,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             ExpressionTree valueTree,

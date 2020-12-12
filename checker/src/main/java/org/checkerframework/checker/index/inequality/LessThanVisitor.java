@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -23,6 +24,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueTree,
@@ -60,6 +62,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     }
 
     @Override
+    @FormatMethod
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
