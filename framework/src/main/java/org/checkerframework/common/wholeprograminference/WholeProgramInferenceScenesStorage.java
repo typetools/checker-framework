@@ -83,14 +83,14 @@ public class WholeProgramInferenceScenesStorage {
     public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
-     * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
-     * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
-     * corresponding Scene in the set. It is obtained by passing a class name as argument to the
-     * {@link #getJaifPath} method.
+     * The .jaif file paths for Scenes that were modified since the last time all Scenes were
+     * written into .jaif files. Each String element of this set is a path relative to
+     * JAIF_FILES_PATH. It is obtained by passing a class name as argument to the {@link
+     * #getJaifPath} method.
      *
-     * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
-     * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
-     * #updateAnnotationSetInScene}.)
+     * <p>Modifying a Scene means adding (or changing) a type annotation, such as on a field, method
+     * return type, or method parameter type. Scenes are modified by the method {@link
+     * #updateAnnotationSetInScene}.
      */
     public final Set<String> modifiedScenes = new HashSet<>();
 
