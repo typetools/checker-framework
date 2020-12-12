@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <blockquote>
  *
  * <pre>
- * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
- *  String f = "String '%s' has length %d";
+ * {@literal @}Format({GENERAL, INT}) String f = "String '%s' has length %d";
+ *
  *  String.format(f, "Example", 7);
  * </pre>
  *
