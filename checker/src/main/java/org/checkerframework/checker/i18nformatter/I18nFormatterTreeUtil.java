@@ -23,6 +23,7 @@ import javax.lang.model.util.SimpleTypeVisitor7;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -160,6 +161,7 @@ public class I18nFormatterTreeUtil {
      * @param msgKey the diagnostic message key
      * @param args arguments to the diagnostic message
      */
+    @FormatMethod
     public final void failure(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
         checker.reportError(res.location, msgKey, args);
     }
@@ -171,6 +173,7 @@ public class I18nFormatterTreeUtil {
      * @param msgKey the diagnostic message key
      * @param args arguments to the diagnostic message
      */
+    @FormatMethod
     public final void warning(Result<?> res, @CompilerMessageKey String msgKey, Object... args) {
         checker.reportWarning(res.location, msgKey, args);
     }
