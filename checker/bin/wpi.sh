@@ -182,6 +182,8 @@ echo "Finished configuring wpi.sh."
 
 rm -f "${DIR}/.cannot-run-wpi"
 
+pushd "${DIR}" || exit 5
+
 JAVA_HOME_BACKUP="${JAVA_HOME}"
 export JAVA_HOME="${JAVA11_HOME}"
 configure_and_exec_dljc "$@"
@@ -201,6 +203,8 @@ if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
     touch "${DIR}/.cannot-run-wpi"
 fi
+
+popd || exit 5
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
 

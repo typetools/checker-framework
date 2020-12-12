@@ -118,10 +118,10 @@ do
 
     if [ ! -d "${REPO_NAME}" ]; then
         # The "GIT_TERMINAL_PROMPT=0" setting prevents git from prompting for
-  # username/password if the repository no longer exists.
+        # username/password if the repository no longer exists.
         GIT_TERMINAL_PROMPT=0 git clone "${REPO}"
         # Skip the rest of the loop and move on to the next project
-  # if cloning isn't successful.
+        # if cloning isn't successful.
         if [ ! -d "${REPO_NAME}" ]; then
            continue
         fi
@@ -155,7 +155,8 @@ do
     # we don't need it for data analysis and we can
     # delete it right away.
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
-        rm -rf "${REPO_NAME_HASH}" &
+        # rm -rf "${REPO_NAME_HASH}" &
+        echo "I love deleting things"
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
     fi
