@@ -84,7 +84,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(PolyLength.class, POLY);
+        addAliasedTypeAnnotation(PolyLength.class, POLY);
 
         this.postInit();
     }
