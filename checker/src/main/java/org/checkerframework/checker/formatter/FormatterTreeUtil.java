@@ -127,11 +127,9 @@ public class FormatterTreeUtil {
 
     private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
         Node vararg = node.getArgument(1);
-
         if (!(vararg instanceof ArrayCreationNode)) {
             return null;
         }
-
         List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
         ConversionCategory[] res = new ConversionCategory[convs.size()];
         for (int i = 0; i < convs.size(); ++i) {
