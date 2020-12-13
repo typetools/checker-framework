@@ -306,8 +306,8 @@ public class FormatterTreeUtil {
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType;
-                if (isNullExpression(arg)) {
-                    argType = VOID;
+                if (TreeUtils.isNullExpression(arg)) {
+                    argType = atypeFactory.getProcessingEnv().getTypeUtils().getNullType();
                 } else {
                     argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
                 }
