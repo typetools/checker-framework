@@ -80,14 +80,14 @@ public class WholeProgramInferenceScenesStorage {
     private final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
     /**
-     * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
-     * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
-     * corresponding Scene in the set. It is obtained by passing a class name as argument to the
-     * {@link #getJaifPath} method.
+     * The .jaif file paths for Scenes that were modified since the last time all Scenes were
+     * written into .jaif files. Each String element of this set is a path relative to
+     * JAIF_FILES_PATH. It is obtained by passing a class name as argument to the {@link
+     * #getJaifPath} method.
      *
-     * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
-     * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
-     * #updateAnnotationSetInScene}.)
+     * <p>Modifying a Scene means adding (or changing) a type annotation, such as on a field, method
+     * return type, or method parameter type. Scenes are modified by the method {@link
+     * #updateAnnotationSetInScene}.
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
@@ -201,8 +201,8 @@ public class WholeProgramInferenceScenesStorage {
      * <ul>
      *   <li>If there was no previous annotation for that location, then the updated set will be the
      *       annotations in rhsATM.
-     *   <li>If there was a previous annotation, the updated set will be the LUB between the
-     *       previous annotation and rhsATM.
+     *   <li>If there was a previous annotation, the updated set will combine the previous value and
+     *       rhsATM, using LUB.
      * </ul>
      *
      * @param type ATypeElement of the Scene which will be modified
@@ -257,6 +257,7 @@ public class WholeProgramInferenceScenesStorage {
 
         switch (sourceCodeATM.getKind()) {
             case TYPEVAR:
+                // TODO: It seems wrong to LUB the type parameter bounds.
                 updateAtmWithLub(
                         ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                         ((AnnotatedTypeVariable) jaifATM).getLowerBound(),
@@ -278,6 +279,7 @@ public class WholeProgramInferenceScenesStorage {
                 // atf);
                 //            break;
             case ARRAY:
+                // TODO: Array components, like type parameters, are invariant.
                 updateAtmWithLub(
                         ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                         ((AnnotatedArrayType) jaifATM).getComponentType(),
