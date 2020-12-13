@@ -56,11 +56,6 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedDeclAnnotation(
-                com.google.errorprone.annotations.FormatMethod.class,
-                FormatMethod.class,
-                FORMATMETHOD);
-
         this.postInit();
     }
 

@@ -60,14 +60,5 @@ public class FormatMethodInvocation {
         c.format("%f", 1337);
         // :: error: (argument.type.incompatible)
         c.printf("%f", 1337);
-
-        myFormatMethod("%d", 1337);
-        // :: error: (argument.type.incompatible)
-        myFormatMethod("%f", 1337);
-    }
-
-    @com.google.errorprone.annotations.FormatMethod
-    static void myFormatMethod(String fmt, Object... args) {
-        System.out.printf(fmt, args);
     }
 }
