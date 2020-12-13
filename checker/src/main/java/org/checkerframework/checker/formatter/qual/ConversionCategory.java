@@ -149,28 +149,28 @@ public enum ConversionCategory {
      * @return the unwrapped primitive, or null
      */
     private static @Nullable Class<?> unwrapPrimitive(Class<?> c) {
-        if (c.equals(Byte.class)) {
+        if (c == Byte.class) {
             return byte.class;
         }
-        if (c.equals(Character.class)) {
+        if (c == Character.class) {
             return char.class;
         }
-        if (c.equals(Short.class)) {
+        if (c == Short.class) {
             return short.class;
         }
-        if (c.equals(Integer.class)) {
+        if (c == Integer.class) {
             return int.class;
         }
-        if (c.equals(Long.class)) {
+        if (c == Long.class) {
             return long.class;
         }
-        if (c.equals(Float.class)) {
+        if (c == Float.class) {
             return float.class;
         }
-        if (c.equals(Double.class)) {
+        if (c == Double.class) {
             return double.class;
         }
-        if (c.equals(Boolean.class)) {
+        if (c == Boolean.class) {
             return boolean.class;
         }
         return c;

@@ -127,6 +127,7 @@ public class FormatterTreeUtil {
 
     private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
         Node vararg = node.getArgument(1);
+
         if (!(vararg instanceof ArrayCreationNode)) {
             return null;
         }
