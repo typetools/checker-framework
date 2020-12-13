@@ -1,7 +1,9 @@
 Version 3.9.0
 
-The `-Ainfer` command-line argument now infers `@MonotonicNonNull`,
-`@EnsuresNonNull`, and `@RequiresNonNull` annotations.
+The `-Ainfer` command-line argument now infers
+ * method preconditions (`@RequiresQualifiers`, `@RequiresNonNull`)
+ * method postconditions (`@EnsuresQualifiers`, `@EnsuresNonNull`)
+ * `@MonotonicNonNull`
 
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
