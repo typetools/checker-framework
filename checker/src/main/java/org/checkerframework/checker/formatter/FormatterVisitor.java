@@ -10,6 +10,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
@@ -78,8 +79,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                 ConversionCategory formatCat = formatCats[i];
                                 Result<TypeMirror> arg = argTypes[i];
                                 TypeMirror argType = arg.value();
-                                ExpressionTree argTree = arg.location;
-                                System.out.printf("formatCat=%s, argTree=%s%n", formatCat, argTree);
 
                                 switch (formatCat) {
                                     case UNUSED:
@@ -88,7 +87,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                         break;
                                     case NULL:
                                         // I.3
-                                        tu.failure(arg, "format.specifier.null", " " + (1 + i));
+                                        if (argType.getKind() == TypeKind.NULL) {
+                                            tu.warning(arg, "format.specifier.null", " " + (1 + i));
+                                        } else {
+                                            tu.failure(arg, "format.specifier.null", " " + (1 + i));
+                                        }
                                         break;
                                     case GENERAL:
                                         break;
@@ -120,7 +123,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                         for (ConversionCategory cat : formatCats) {
                             if (cat == ConversionCategory.NULL) {
                                 // I.3
-                                tu.failure(invc, "format.specifier.null", "");
+                                tu.warning(invc, "format.specifier.null", "");
                             }
                             if (cat == ConversionCategory.UNUSED) {
                                 // I.2
