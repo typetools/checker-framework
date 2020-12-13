@@ -160,7 +160,13 @@ public class FormatterTreeUtil {
         return anno != null;
     }
 
-    /** Returns true if the given ExpressionTree has type java.util.Locale. */
+    /**
+     * Returns true if the given ExpressionTree has type java.util.Locale.
+     *
+     * @param e an expression
+     * @param atypeFactory the type factory
+     * @return true if the given ExpressionTree has type java.util.Locale
+     */
     public static boolean isLocale(ExpressionTree e, AnnotatedTypeFactory atypeFactory) {
         return (TypesUtils.getClassFromType(atypeFactory.getAnnotatedType(e).getUnderlyingType())
                 == Locale.class);
@@ -308,6 +314,10 @@ public class FormatterTreeUtil {
         /**
          * Checks if the type of a parameter returned from {@link #getParamTypes()} is valid for the
          * passed ConversionCategory.
+         *
+         * @param formatCat a conversion category
+         * @param paramType an argument type
+         * @return true if the argument type is compatible with the conversion category
          */
         public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
             Class<?> type = TypesUtils.getClassFromType(paramType);
