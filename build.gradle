@@ -842,7 +842,7 @@ subprojects {
 
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
         // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
-        // Tasks such as checkInterning are constructed by createCheckTypeTask.
+        // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
             dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
