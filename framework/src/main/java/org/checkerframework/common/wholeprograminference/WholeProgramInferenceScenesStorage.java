@@ -533,20 +533,18 @@ public class WholeProgramInferenceScenesStorage {
             AnnotationMirror am,
             boolean isEffectiveAnnotation) {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
-        if (anno != null) {
-            typeToUpdate.tlAnnotationsHere.add(anno);
-            if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
-                // firstKey works as a unique identifier for each annotation
-                // that should not be inserted in source code
-                String firstKey = aTypeElementToString(typeToUpdate);
-                Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
-                Set<String> annosIgnored = annosToIgnore.get(key);
-                if (annosIgnored == null) {
-                    annosIgnored = new HashSet<>();
-                    annosToIgnore.put(key, annosIgnored);
-                }
-                annosIgnored.add(anno.def().toString());
+        typeToUpdate.tlAnnotationsHere.add(anno);
+        if (isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM)) {
+            // firstKey works as a unique identifier for each annotation
+            // that should not be inserted in source code
+            String firstKey = aTypeElementToString(typeToUpdate);
+            Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
+            Set<String> annosIgnored = annosToIgnore.get(key);
+            if (annosIgnored == null) {
+                annosIgnored = new HashSet<>();
+                annosToIgnore.put(key, annosIgnored);
             }
+            annosIgnored.add(anno.def().toString());
         }
     }
 
