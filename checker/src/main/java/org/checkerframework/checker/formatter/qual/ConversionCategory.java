@@ -119,8 +119,8 @@ public enum ConversionCategory {
     /**
      * Create a new conversion category.
      *
-     * @param the argument types. Null means every type
-     * @param the format specifier characters. Null means users cannot specify it directly
+     * @param chars the format specifier characters. Null means users cannot specify it directly.
+     * @param types the argument types. Null means every type.
      */
     ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
         this.chars = chars;
