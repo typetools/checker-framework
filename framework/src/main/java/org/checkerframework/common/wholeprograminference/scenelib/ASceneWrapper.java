@@ -153,7 +153,6 @@ public class ASceneWrapper {
                         SceneToStubWriter.write(this, filepath, checker);
                         break;
                     case JAIF:
-                        // First, create strings from contract annotations.
                         for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
                             AClass aClass = classEntry.getValue();
                             for (Map.Entry<String, AMethod> methodEntry :

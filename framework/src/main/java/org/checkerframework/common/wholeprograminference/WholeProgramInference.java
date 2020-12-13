@@ -29,8 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * <p>This interface has update* methods that should be called at certain (pseudo-)assignments, and
  * they may update the type of the LHS of the (pseudo-)assignment based on the type of the RHS. In
  * case the element on the LHS already had an inferred type, its new type will be the LUB between
- * the previous type and the observed RHS. (TODO: for type parameters, the new type may need to be a
- * wildcard that contains both the previous type and the observed RHS. This is not yet implemented.)
+ * the previous and new types.
  *
  * @checker_framework.manual #whole-program-inference Whole-program inference
  */
