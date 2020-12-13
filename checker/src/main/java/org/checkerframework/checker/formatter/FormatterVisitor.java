@@ -60,7 +60,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 ConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
                     case VARARG:
-                        Result<TypeMirror>[] paramTypes = fc.getParamTypes();
+                        Result<TypeMirror>[] paramTypes = fc.getArgTypes();
                         int paraml = paramTypes.length;
                         int formatl = formatCats.length;
                         if (paraml < formatl) {
@@ -90,7 +90,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                     case GENERAL:
                                         break;
                                     default:
-                                        if (!fc.isValidParameter(formatCat, paramType)) {
+                                        if (!fc.isValidArgument(formatCat, paramType)) {
                                             // II.3
                                             ExecutableElement method =
                                                     TreeUtils.elementFromUse(node);

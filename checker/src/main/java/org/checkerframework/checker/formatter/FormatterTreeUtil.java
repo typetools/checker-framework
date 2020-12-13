@@ -293,11 +293,12 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns the type of the function's parameters. Use {@link
-         * #isValidParameter(ConversionCategory, TypeMirror) isValidParameter} and {@link
-         * #isParameterNull(TypeMirror) isParameterNull} to work with the result.
+         * Returns the types of the arguments to the call. Use {@link #isValidArgument} and {@link
+         * #isArgumentNull} to work with the result.
+         *
+         * @return the types of the arguments to the call
          */
-        public final Result<TypeMirror>[] getParamTypes() {
+        public final Result<TypeMirror>[] getArgTypes() {
             // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
@@ -310,10 +311,10 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the type of a parameter returned from {@link #getParamTypes()} is valid for the
+         * Checks if the type of a parameter returned from {@link #getArgTypes()} is valid for the
          * passed ConversionCategory.
          */
-        public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
+        public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror paramType) {
             Class<? extends Object> type = typeMirrorToClass(paramType);
             if (type == null) {
                 // we did not recognize the parameter type
@@ -328,10 +329,10 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the parameter returned from {@link #getParamTypes()} is a {@code null}
+         * Checks if the parameter returned from {@link #getArgTypes()} is a {@code null}
          * expression.
          */
-        public final boolean isParameterNull(TypeMirror type) {
+        public final boolean isArgumentNull(TypeMirror type) {
             // is it the null literal
             return type.accept(
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {
