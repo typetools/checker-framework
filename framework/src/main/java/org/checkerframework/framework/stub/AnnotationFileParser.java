@@ -70,6 +70,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -2316,6 +2317,7 @@ public class AnnotationFileParser {
      * @param warning a format string
      * @param args the arguments for {@code warning}
      */
+    @FormatMethod
     private void warn(String warning, Object... args) {
         warning = String.format(warning, args);
         if (warnings.add(warning) && !isJdkAsStub) {
