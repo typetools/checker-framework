@@ -176,6 +176,9 @@ public enum I18nConversionCategory {
      * @return true if {@code argType} can be an argument used by this format specifier
      */
     public boolean isAssignableFrom(Class<?> argType) {
+        if (types == null) {
+            return true;
+        }
         for (Class<? extends Object> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;

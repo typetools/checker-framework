@@ -276,6 +276,9 @@ public enum ConversionCategory {
      * @return true if {@code argType} can be an argument used by this format specifier
      */
     public boolean isAssignableFrom(Class<?> argType) {
+        if (types == null) {
+            return true;
+        }
         for (Class<? extends Object> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;
@@ -284,6 +287,12 @@ public enum ConversionCategory {
         return false;
     }
 
+    /**
+     * Return the name of the class.
+     *
+     * @param cls a class
+     * @return the name of the class
+     */
     private String className(Class<?> cls) {
         if (cls == Boolean.class) {
             return "boolean";
