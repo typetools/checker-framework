@@ -65,8 +65,10 @@ public enum ConversionCategory {
     TIME("tT", Long.class, Calendar.class, Date.class),
 
     /**
-     * In a format string, multiple conversions may be applied to the same parameter. This is
-     * seldomly needed, but the following is an example of such use:
+     * Use if the parameter is both a char and an int.
+     *
+     * <p>In a format string, multiple conversions may be applied to the same parameter. This is
+     * seldom needed, but the following is an example of such use:
      *
      * <pre>
      *   format("Test %1$c %1$d", (int)42);
@@ -84,6 +86,11 @@ public enum ConversionCategory {
      */
     CHAR_AND_INT(null, Byte.class, Short.class, Integer.class),
 
+    /**
+     * Use if the parameter is both an int and a time.
+     *
+     * @see CHAR_AND_INT
+     */
     INT_AND_TIME(null, Long.class),
 
     /**
@@ -309,6 +316,21 @@ public enum ConversionCategory {
         }
 
         return GENERAL;
+    }
+
+    /**
+     * Returns true if {@code argType} can be an argument used by this format specifier.
+     *
+     * @param argType an argument type
+     * @return true if {@code argType} can be an argument used by this format specifier
+     */
+    public boolean isAssignableFrom(Class<?> argType) {
+        for (Class<? extends Object> c : types) {
+            if (c.isAssignableFrom(argType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String className(Class<?> cls) {
