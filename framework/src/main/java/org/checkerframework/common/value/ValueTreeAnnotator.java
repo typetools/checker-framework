@@ -83,7 +83,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             handleInitializers(initializers, (AnnotatedTypeMirror.AnnotatedArrayType) type);
 
             AnnotationMirror newQual;
-            Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
+            Class<?> clazz = TypesUtils.getClassFromType(type.getUnderlyingType());
             String stringVal = null;
             if (clazz == char[].class) {
                 stringVal = getCharArrayStringVal(initializers);
@@ -265,7 +265,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             } else if (atypeFactory.isIntRange(oldAnno)
                     && (range = ValueAnnotatedTypeFactory.getRange(oldAnno))
                             .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                Class<?> newClass = ValueCheckerUtils.getClassFromType(newType);
+                Class<?> newClass = TypesUtils.getClassFromType(newType);
                 if (newClass == String.class) {
                     newAnno = atypeFactory.UNKNOWNVAL;
                 } else if (newClass == Boolean.class || newClass == boolean.class) {

@@ -547,7 +547,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 stringVals.add((String) o);
             }
             return createStringAnnotation(stringVals);
-        } else if (ValueCheckerUtils.getClassFromType(resultType) == char[].class) {
+        } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
             List<String> stringVals = new ArrayList<>(values.size());
             for (Object o : values) {
                 if (o instanceof char[]) {
