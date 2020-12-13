@@ -5,7 +5,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.SimpleTreeVisitor;
-import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
@@ -132,25 +131,24 @@ public class FormatterTreeUtil {
 
     private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
         Node vararg = node.getArgument(1);
-        if (vararg instanceof ArrayCreationNode) {
-            List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
-            ConversionCategory[] res = new ConversionCategory[convs.size()];
-            for (int i = 0; i < convs.size(); ++i) {
-                Node conv = convs.get(i);
-                if (conv instanceof FieldAccessNode) {
-                    Class<? extends Object> clazz =
-                            typeMirrorToClass(((FieldAccessNode) conv).getType());
-                    if (clazz == ConversionCategory.class) {
-                        res[i] =
-                                ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
-                        continue; /* avoid returning null */
-                    }
-                }
-                return null;
-            }
-            return res;
+        if (!(vararg instanceof ArrayCreationNode)) {
+            return null;
         }
-        return null;
+        List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+        ConversionCategory[] res = new ConversionCategory[convs.size()];
+        for (int i = 0; i < convs.size(); ++i) {
+            Node conv = convs.get(i);
+            if (conv instanceof FieldAccessNode) {
+                Class<? extends Object> clazz =
+                        typeMirrorToClass(((FieldAccessNode) conv).getType());
+                if (clazz == ConversionCategory.class) {
+                    res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+                    continue; /* avoid returning null */
+                }
+            }
+            return null;
+        }
+        return res;
     }
 
     public Result<ConversionCategory[]> asFormatCallCategories(MethodInvocationNode node) {
@@ -331,7 +329,6 @@ public class FormatterTreeUtil {
             Class<? extends Object> type = typeMirrorToClass(argType);
             if (type == null) {
                 // we did not recognize the argument type
-                System.out.printf("isValidArgument: type = null for %s%n", argType);
                 return false;
             }
             for (Class<? extends Object> c : formatCat.types) {
@@ -339,9 +336,6 @@ public class FormatterTreeUtil {
                     return true;
                 }
             }
-            System.out.printf(
-                    "isValidArgument(%s, %s): fallthrough type=%s, formatCat.types=%s%n",
-                    formatCat, argType, type, Arrays.toString(formatCat.types));
             return false;
         }
 

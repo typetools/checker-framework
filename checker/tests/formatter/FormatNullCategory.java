@@ -13,7 +13,14 @@ public class FormatNullCategory {
 
         System.out.printf("%d %n", (Object) null);
 
+        // Warning if call is legal, error if it is not.
+        // :: warning: (format.specifier.null)
         System.out.printf(n1, (Object) null);
+        // :: error: (format.specifier.null)
+        System.out.printf(n1, 3);
+        // :: warning: (format.specifier.null)
         System.out.printf(n2, (Object) null);
+        // :: error: (format.specifier.null)
+        System.out.printf(n2, 3);
     }
 }

@@ -259,34 +259,6 @@ public enum ConversionCategory {
         return GENERAL;
     }
 
-    private String className(Class<?> cls) {
-        if (cls == Boolean.class) {
-            return "boolean";
-        }
-        if (cls == Character.class) {
-            return "char";
-        }
-        if (cls == Byte.class) {
-            return "byte";
-        }
-        if (cls == Short.class) {
-            return "short";
-        }
-        if (cls == Integer.class) {
-            return "int";
-        }
-        if (cls == Long.class) {
-            return "long";
-        }
-        if (cls == Float.class) {
-            return "float";
-        }
-        if (cls == Double.class) {
-            return "double";
-        }
-        return cls.getSimpleName();
-    }
-
     /** Returns a pretty printed {@link ConversionCategory}. */
     @SuppressWarnings(
             "nullness:iterating.over.nullable") // `types` field is null only for UNUSED and
@@ -295,21 +267,20 @@ public enum ConversionCategory {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.name());
+        sb.append(name());
         sb.append(" conversion category");
 
-        if (this.types.length == 0) {
+        if (types == null || types.length == 0) {
             return sb.toString();
         }
 
-        if (this != UNUSED && this != GENERAL) {
-            StringJoiner sj = new StringJoiner(", ", "(one of: ", ")");
-            for (Class<?> cls : this.types) {
-                sj.add(className(cls));
-            }
-
-            sb.append(sj);
+        StringJoiner sj = new StringJoiner(", ", "(one of: ", ")");
+        for (Class<?> cls : types) {
+            sj.add(cls.getSimpleName());
         }
+        sb.append(" ");
+        sb.append(sj);
+
         return sb.toString();
     }
 }
