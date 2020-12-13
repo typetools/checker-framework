@@ -259,34 +259,6 @@ public enum ConversionCategory {
         return GENERAL;
     }
 
-    private String className(Class<?> cls) {
-        if (cls == Boolean.class) {
-            return "boolean";
-        }
-        if (cls == Character.class) {
-            return "char";
-        }
-        if (cls == Byte.class) {
-            return "byte";
-        }
-        if (cls == Short.class) {
-            return "short";
-        }
-        if (cls == Integer.class) {
-            return "int";
-        }
-        if (cls == Long.class) {
-            return "long";
-        }
-        if (cls == Float.class) {
-            return "float";
-        }
-        if (cls == Double.class) {
-            return "double";
-        }
-        return cls.getSimpleName();
-    }
-
     /** Returns a pretty printed {@link ConversionCategory}. */
     @SuppressWarnings(
             "nullness:iterating.over.nullable") // `types` field is null only for UNUSED and
@@ -304,7 +276,7 @@ public enum ConversionCategory {
 
         StringJoiner sj = new StringJoiner(", ", "(one of: ", ")");
         for (Class<?> cls : types) {
-            sj.add(className(cls));
+            sj.add(cls.getSimpleName());
         }
         sb.append(" ");
         sb.append(sj);
