@@ -2,10 +2,12 @@ package org.checkerframework.checker.formatter.qual;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -34,35 +36,33 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */
-    GENERAL(null /* everything */, "bBhHsS"),
+    GENERAL("bBhHsS", (Class<?>[]) null /* everything */),
 
     /**
      * Use if the parameter is of a basic types which represent Unicode characters: char, Character,
      * byte, Byte, short, and Short. This conversion may also be applied to the types int and
      * Integer when Character.isValidCodePoint(int) returns true. Applicable for conversions c, C.
      */
-    CHAR(new Class<?>[] {Character.class, Byte.class, Short.class, Integer.class}, "cC"),
+    CHAR("cC", Character.class, Byte.class, Short.class, Integer.class),
 
     /**
      * Use if the parameter is an integral type: byte, Byte, short, Short, int and Integer, long,
      * Long, and BigInteger. Applicable for conversions d, o, x, X.
      */
-    INT(
-            new Class<?>[] {Byte.class, Short.class, Integer.class, Long.class, BigInteger.class},
-            "doxX"),
+    INT("doxX", Byte.class, Short.class, Integer.class, Long.class, BigInteger.class),
 
     /**
      * Use if the parameter is a floating-point type: float, Float, double, Double, and BigDecimal.
      * Applicable for conversions e, E, f, g, G, a, A.
      */
-    FLOAT(new Class<?>[] {Float.class, Double.class, BigDecimal.class}, "eEfgGaA"),
+    FLOAT("eEfgGaA", Float.class, Double.class, BigDecimal.class),
 
     /**
      * Use if the parameter is a type which is capable of encoding a date or time: long, Long,
      * Calendar, and Date. Applicable for conversions t, T.
      */
     @SuppressWarnings("JdkObsolete")
-    TIME(new Class<?>[] {Long.class, Calendar.class, Date.class}, "tT"),
+    TIME("tT", Long.class, Calendar.class, Date.class),
 
     /**
      * In a format string, multiple conversions may be applied to the same parameter. This is
@@ -82,9 +82,9 @@ public enum ConversionCategory {
      * <p>All other intersection either lead to an already existing type, or NULL, in which case it
      * is illegal to pass object's of any type as parameter.
      */
-    CHAR_AND_INT(new Class<?>[] {Byte.class, Short.class, Integer.class}, null),
+    CHAR_AND_INT(null, Byte.class, Short.class, Integer.class),
 
-    INT_AND_TIME(new Class<?>[] {Long.class}, null),
+    INT_AND_TIME(null, Long.class),
 
     /**
      * Use if no object of any type can be passed as parameter. In this case, the only legal value
@@ -96,7 +96,7 @@ public enum ConversionCategory {
      *
      * Only null can be legally passed, passing a value such as 4 or 4.2 would lead to an exception.
      */
-    NULL(new Class<?>[0], null),
+    NULL(null),
 
     /**
      * Use if a parameter is not used by the formatter. This is seldomly needed, and indicates an
@@ -109,13 +109,7 @@ public enum ConversionCategory {
      * Only the first "a" and third "b" parameters are used, the second "unused" parameter is
      * ignored.
      */
-    UNUSED(null /* everything */, null);
-
-    /** Create a new conversion category. */
-    ConversionCategory(Class<?> @Nullable [] types, @Nullable String chars) {
-        this.types = types;
-        this.chars = chars;
-    }
+    UNUSED(null, (Class<?>[]) null /* everything */);
 
     /** The format types. */
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
@@ -123,6 +117,59 @@ public enum ConversionCategory {
 
     /** The format characters. */
     public final @Nullable String chars;
+
+    /** Create a new conversion category. */
+    ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
+        if (types == null) {
+            this.types = types;
+        } else {
+            List<Class<?>> typesWithPrimitives = new ArrayList<>();
+            for (Class<?> type : types) {
+                typesWithPrimitives.add(type);
+                Class<?> unwrapped = unwrapPrimitive(type);
+                if (unwrapped != null) {
+                    typesWithPrimitives.add(unwrapped);
+                }
+            }
+            this.types = typesWithPrimitives.toArray(new Class<?>[typesWithPrimitives.size()]);
+        }
+        this.chars = chars;
+    }
+
+    /**
+     * If the given class is a primitive wrapper, return the corresponding primitive class.
+     * Otherwise return null.
+     *
+     * @param c a class
+     * @return the unwrapped primitive, or null
+     */
+    private static @Nullable Class<?> unwrapPrimitive(Class<?> c) {
+        if (c.equals(Byte.class)) {
+            return byte.class;
+        }
+        if (c.equals(Character.class)) {
+            return char.class;
+        }
+        if (c.equals(Short.class)) {
+            return short.class;
+        }
+        if (c.equals(Integer.class)) {
+            return int.class;
+        }
+        if (c.equals(Long.class)) {
+            return long.class;
+        }
+        if (c.equals(Float.class)) {
+            return float.class;
+        }
+        if (c.equals(Double.class)) {
+            return double.class;
+        }
+        if (c.equals(Boolean.class)) {
+            return boolean.class;
+        }
+        return c;
+    }
 
     /**
      * Converts a conversion character to a category. For example:

@@ -127,25 +127,25 @@ public class FormatterTreeUtil {
 
     private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
         Node vararg = node.getArgument(1);
-        if (vararg instanceof ArrayCreationNode) {
-            List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
-            ConversionCategory[] res = new ConversionCategory[convs.size()];
-            for (int i = 0; i < convs.size(); ++i) {
-                Node conv = convs.get(i);
-                if (conv instanceof FieldAccessNode) {
-                    Class<? extends Object> clazz =
-                            TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
-                    if (clazz == ConversionCategory.class) {
-                        res[i] =
-                                ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
-                        continue; /* avoid returning null */
-                    }
-                }
-                return null;
-            }
-            return res;
+        if (!(vararg instanceof ArrayCreationNode)) {
+            return null;
         }
-        return null;
+
+        List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+        ConversionCategory[] res = new ConversionCategory[convs.size()];
+        for (int i = 0; i < convs.size(); ++i) {
+            Node conv = convs.get(i);
+            if (conv instanceof FieldAccessNode) {
+                Class<? extends Object> clazz =
+                        TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
+                if (clazz == ConversionCategory.class) {
+                    res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+                    continue; /* avoid returning null */
+                }
+            }
+            return null;
+        }
+        return res;
     }
 
     public Result<ConversionCategory[]> asFormatCallCategories(MethodInvocationNode node) {
