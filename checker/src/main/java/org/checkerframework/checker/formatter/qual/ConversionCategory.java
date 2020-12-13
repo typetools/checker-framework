@@ -260,9 +260,6 @@ public enum ConversionCategory {
     }
 
     /** Returns a pretty printed {@link ConversionCategory}. */
-    @SuppressWarnings(
-            "nullness:iterating.over.nullable") // `types` field is null only for UNUSED and
-    // GENERAL
     @Pure
     @Override
     public String toString() {
