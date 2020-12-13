@@ -95,7 +95,8 @@ public class FormatUtil {
         @SuppressWarnings({
             "unused", // called for side effect, to see if it throws an exception
             "nullness:argument.type.incompatible", // it's not documented, but String.format permits
-            // a null array,  which it treats as matching any format string
+            // a null array, which it treats as matching any format string (null is supplied to each
+            // format specifier).
             "formatter:format.string.invalid", // this is a test of format string validity
         })
         String unused = String.format(format, (Object[]) null);

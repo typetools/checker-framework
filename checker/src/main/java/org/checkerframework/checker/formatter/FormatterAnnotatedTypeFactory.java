@@ -129,11 +129,17 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(superAnno);
 
                 if (rhsArgTypes.length > lhsArgTypes.length) {
+                    System.out.printf(
+                            "isSubtypeWithElements(%s, %s, %s, %s) => false",
+                            subAnno, subKind, superAnno, superKind);
                     return false;
                 }
 
                 for (int i = 0; i < rhsArgTypes.length; ++i) {
                     if (!ConversionCategory.isSubsetOf(lhsArgTypes[i], rhsArgTypes[i])) {
+                        System.out.printf(
+                                "isSubtypeWithElements(%s, %s, %s, %s) => false",
+                                subAnno, subKind, superAnno, superKind);
                         return false;
                     }
                 }

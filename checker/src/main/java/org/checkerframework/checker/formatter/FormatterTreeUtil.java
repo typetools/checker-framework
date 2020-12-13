@@ -5,6 +5,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.SimpleTreeVisitor;
+import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
@@ -293,30 +294,44 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns the type of the function's parameters. Use {@link
-         * #isValidParameter(ConversionCategory, TypeMirror) isValidParameter} and {@link
-         * #isParameterNull(TypeMirror) isParameterNull} to work with the result.
+         * Returns the types of the arguments to the call. Use {@link #isValidArgument} and {@link
+         * #isArgumentNull} to work with the result.
+         *
+         * @return the types of the arguments to the call
          */
-        public final Result<TypeMirror>[] getParamTypes() {
+        public final Result<TypeMirror>[] getArgTypes() {
             // One to suppress warning in javac, the other to suppress warning in Eclipse...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
-                TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                TypeMirror argType;
+                if (TreeUtils.isNullExpression(arg)) {
+                    argType = atypeFactory.getProcessingEnv().getTypeUtils().getNullType();
+                } else {
+                    argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
+                }
                 res[i] = new Result<>(argType, arg);
             }
             return res;
         }
 
         /**
-         * Checks if the type of a parameter returned from {@link #getParamTypes()} is valid for the
+         * Checks if the type of an argument returned from {@link #getArgTypes()} is valid for the
          * passed ConversionCategory.
+         *
+         * @param formatCat a format specifier
+         * @param argType an argument
+         * @return true if the argument can be passed to the format specifier
          */
-        public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
-            Class<? extends Object> type = typeMirrorToClass(paramType);
+        public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror argType) {
+            if (argType.getKind() == TypeKind.NULL || isArgumentNull(argType)) {
+                return true;
+            }
+            Class<? extends Object> type = typeMirrorToClass(argType);
             if (type == null) {
-                // we did not recognize the parameter type
+                // we did not recognize the argument type
+                System.out.printf("isValidArgument: type = null for %s%n", argType);
                 return false;
             }
             for (Class<? extends Object> c : formatCat.types) {
@@ -324,14 +339,21 @@ public class FormatterTreeUtil {
                     return true;
                 }
             }
+            System.out.printf(
+                    "isValidArgument(%s, %s): fallthrough type=%s, formatCat.types=%s%n",
+                    formatCat, argType, type, Arrays.toString(formatCat.types));
             return false;
         }
 
         /**
-         * Checks if the parameter returned from {@link #getParamTypes()} is a {@code null}
-         * expression.
+         * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
+         *
+         * @param type a type
+         * @return true if the argument is a{@code null} expression
          */
-        public final boolean isParameterNull(TypeMirror type) {
+        public final boolean isArgumentNull(TypeMirror type) {
+            // TODO: Just check whether it is the VOID TypeMirrr.
+
             // is it the null literal
             return type.accept(
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {

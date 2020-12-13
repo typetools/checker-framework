@@ -59,6 +59,9 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
                 return true;
             }
         }
+        System.out.printf(
+                "isSubtype(%s [%s], %s [%s]) => false%n",
+                subAnno, getQualifierKind(subAnno), superAnno, getQualifierKind(superAnno));
         return false;
     }
 
