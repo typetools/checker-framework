@@ -39,6 +39,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
+    @SuppressWarnings("fallthrough")
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
@@ -60,7 +61,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 ConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
                     case VARARG:
-                        Result<TypeMirror>[] paramTypes = fc.getParamTypes();
+                        Result<TypeMirror>[] paramTypes = fc.getArgTypes();
                         int paraml = paramTypes.length;
                         int formatl = formatCats.length;
                         if (paraml < formatl) {
@@ -77,6 +78,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                 ConversionCategory formatCat = formatCats[i];
                                 Result<TypeMirror> param = paramTypes[i];
                                 TypeMirror paramType = param.value();
+                                ExpressionTree paramTree = param.location;
+                                System.out.printf(
+                                        "formatCat=%s, paramTree=%s%n", formatCat, paramTree);
 
                                 switch (formatCat) {
                                     case UNUSED:
@@ -90,7 +94,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                     case GENERAL:
                                         break;
                                     default:
-                                        if (!fc.isValidParameter(formatCat, paramType)) {
+                                        if (!fc.isValidArgument(formatCat, paramType)) {
                                             // II.3
                                             ExecutableElement method =
                                                     TreeUtils.elementFromUse(node);
@@ -99,7 +103,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                             tu.failure(
                                                     param,
                                                     "argument.type.incompatible",
-                                                    "", // parameter name is not useful
+                                                    "in varargs position",
                                                     methodName,
                                                     paramType,
                                                     formatCat);
@@ -109,9 +113,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             }
                         }
                         break;
-                    case NULLARRAY:
-                        /* continue */
                     case ARRAY:
+                        // III
+                        tu.warning(invc, "format.indirect.arguments");
+                        /* fallthrough */
+                    case NULLARRAY:
                         for (ConversionCategory cat : formatCats) {
                             if (cat == ConversionCategory.NULL) {
                                 // I.3
@@ -122,8 +128,6 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                                 tu.warning(invc, "format.argument.unused", "");
                             }
                         }
-                        // III
-                        tu.warning(invc, "format.indirect.arguments");
                         break;
                 }
             }

@@ -294,12 +294,20 @@ public enum ConversionCategory {
     @Pure
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.name());
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.name());
+        sb.append(" conversion category");
+
+        if (this.types.length == 0) {
+            return sb.toString();
+        }
+
         if (this != UNUSED && this != GENERAL) {
-            StringJoiner sj = new StringJoiner(", ", " conversion category (one of: ", ")");
+            StringJoiner sj = new StringJoiner(", ", "(one of: ", ")");
             for (Class<?> cls : this.types) {
                 sj.add(className(cls));
             }
+
             sb.append(sj);
         }
         return sb.toString();
