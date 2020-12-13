@@ -155,6 +155,7 @@ public enum ConversionCategory {
      * @param c a class
      * @return the unwrapped primitive, or null
      */
+    @SuppressWarnings("nullness:return.type.incompatible") // Checker Framework bug?
     private static @Nullable Class<?> unwrapPrimitive(Class<?> c) {
         if (c == Byte.class) {
             return byte.class;
