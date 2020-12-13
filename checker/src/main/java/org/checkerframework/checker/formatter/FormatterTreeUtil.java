@@ -330,8 +330,8 @@ public class FormatterTreeUtil {
             }
             Class<? extends Object> type = typeMirrorToClass(argType);
             if (type == null) {
-                // we did not recognize the parameter type
-                System.out.printf("isValidArgument: type = null for %s%n", paramType);
+                // we did not recognize the argument type
+                System.out.printf("isValidArgument: type = null for %s%n", argType);
                 return false;
             }
             for (Class<? extends Object> c : formatCat.types) {
@@ -341,12 +341,15 @@ public class FormatterTreeUtil {
             }
             System.out.printf(
                     "isValidArgument(%s, %s): fallthrough type=%s, formatCat.types=%s%n",
-                    formatCat, paramType, type, Arrays.toString(formatCat.types));
+                    formatCat, argType, type, Arrays.toString(formatCat.types));
             return false;
         }
 
         /**
          * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
+         *
+         * @param type a type
+         * @return true if the argument is a{@code null} expression
          */
         public final boolean isArgumentNull(TypeMirror type) {
             // TODO: Just check whether it is the VOID TypeMirrr.
