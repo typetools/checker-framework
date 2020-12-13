@@ -111,15 +111,21 @@ public enum ConversionCategory {
      */
     UNUSED(null, (Class<?>[]) null /* everything */);
 
-    /** The format types. */
+    /** The argument types. Null means every type. */
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
     public final Class<?> @Nullable [] types;
 
-    /** The format characters. */
+    /** The format specifier characters. Null means users cannot specify it directly. */
     public final @Nullable String chars;
 
-    /** Create a new conversion category. */
+    /**
+     * Create a new conversion category.
+     *
+     * @param the argument types. Null means every type
+     * @param the format specifier characters. Null means users cannot specify it directly
+     */
     ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
+        this.chars = chars;
         if (types == null) {
             this.types = types;
         } else {
@@ -133,7 +139,6 @@ public enum ConversionCategory {
             }
             this.types = typesWithPrimitives.toArray(new Class<?>[typesWithPrimitives.size()]);
         }
-        this.chars = chars;
     }
 
     /**
