@@ -22,22 +22,32 @@ public class JdkCheck {
         return pos.get();
     }
 
-    String orElseThrowTest1(
+    String orElseThrowTest1(@Present Optional<String> pos) {
+        return pos.orElseThrow();
+    }
+
+    String orElseThrowTest2(Optional<String> mos) {
+        // :: error: (method.invocation.invalid)
+        return mos.orElseThrow();
+    }
+
+    String orElseThrowTest3(
             @Present Optional<String> pos, Supplier<RuntimeException> exceptionSupplier) {
         return pos.orElseThrow(exceptionSupplier);
     }
 
-    String orElseThrowTest2(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
+    String orElseThrowTest4(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
         // :: error: (method.invocation.invalid)
         return mos.orElseThrow(exceptionSupplier);
     }
 
-    String orElseThrowTest3(Optional<String> mos) {
+    String orElseThrowTestFlow(Optional<String> mos) {
+        // :: error: (method.invocation.invalid)
         mos.orElseThrow();
         return mos.get();
     }
 
-    String orElseThrowTest3(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
+    String orElseThrowTestFlow(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
         // :: error: (method.invocation.invalid)
         mos.orElseThrow(exceptionSupplier);
         return mos.get();
