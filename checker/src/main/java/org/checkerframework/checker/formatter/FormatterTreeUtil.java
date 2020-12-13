@@ -335,7 +335,7 @@ public class FormatterTreeUtil {
          * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
          *
          * @param type a type
-         * @return true if the argument is a{@code null} expression
+         * @return true if the argument is a {@code null} expression
          */
         public final boolean isArgumentNull(TypeMirror type) {
             // TODO: Just check whether it is the VOID TypeMirrr.
