@@ -311,11 +311,15 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the type of a parameter returned from {@link #getArgTypes()} is valid for the
+         * Checks if the type of an argument returned from {@link #getArgTypes()} is valid for the
          * passed ConversionCategory.
+         *
+         * @param formatCat a format specifier
+         * @param argType an argument
+         * @return true if the argument can be passed to the format specifier
          */
-        public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror paramType) {
-            Class<? extends Object> type = typeMirrorToClass(paramType);
+        public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror argType) {
+            Class<? extends Object> type = typeMirrorToClass(argType);
             if (type == null) {
                 // we did not recognize the parameter type
                 return false;
@@ -329,10 +333,11 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the parameter returned from {@link #getArgTypes()} is a {@code null}
-         * expression.
+         * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
          */
         public final boolean isArgumentNull(TypeMirror type) {
+            // TODO: Just check whether it is the VOID TypeMirrr.
+
             // is it the null literal
             return type.accept(
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {
