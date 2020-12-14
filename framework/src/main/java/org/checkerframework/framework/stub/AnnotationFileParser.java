@@ -1298,8 +1298,8 @@ public class AnnotationFileParser {
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
-                // TODO: Be more specific: In what file?
-                stubWarnNotFound(String.format("Unknown annotation %s", annotation));
+                stubWarnNotFound(
+                        String.format("Unknown annotation %s in %s", annotation, filename));
             }
         }
     }
@@ -1331,13 +1331,8 @@ public class AnnotationFileParser {
                     annos.add(annoMirror);
                 }
             } else {
-                // TODO: Warn about what file it was found in.
-                if (false) {
-                    stubWarnNotFound(
-                            String.format(
-                                    "Unknown annotation %s in recordDeclAnnotation(%s, %s, %s)",
-                                    annotation, elt, annotations, stubAnnos));
-                }
+                stubWarnNotFound(
+                        String.format("Unknown annotation %s in %s", annotation, filename));
             }
         }
         String eltName = ElementUtils.getQualifiedName(elt);
