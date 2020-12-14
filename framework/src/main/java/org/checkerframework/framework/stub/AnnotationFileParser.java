@@ -502,17 +502,28 @@ public class AnnotationFileParser {
             afp.parseStubUnit(inputStream);
             afp.process(stubAnnos);
         } catch (ParseProblemException e) {
-            StringJoiner message = new StringJoiner(LINE_SEPARATOR);
-            message.add(
-                    (e.getProblems().size() == 1 ? "Problem" : e.getProblems().size() + " problems")
-                            + " while parsing stub file "
-                            + filename
-                            + ":");
-            // Manually build up the message, to get verbose location information.
-            for (Problem p : e.getProblems()) {
-                message.add(p.getVerboseMessage());
+            List<Problem> problems = e.getProblems();
+            if (problems.size() == 1) {
+                // If there is only one problem, put it on the same line, because the Checker
+                // Framework testing framework shows only the first line of each error.
+                afp.warn(
+                        "Problem while parsing stub file "
+                                + filename
+                                + ": "
+                                + problems.get(0).getVerboseMessage());
+            } else {
+                StringJoiner message = new StringJoiner(LINE_SEPARATOR);
+                message.add(
+                        e.getProblems().size()
+                                + " problems while parsing stub file "
+                                + filename
+                                + ":");
+                // Manually build up the message, to get verbose location information.
+                for (Problem p : e.getProblems()) {
+                    message.add(p.getVerboseMessage());
+                }
+                afp.warn(message.toString());
             }
-            afp.warn(message.toString());
         }
     }
 
