@@ -15,36 +15,14 @@ public class JdkCheck {
         return mos.isPresent();
     }
 
-    String isEmptyTest1(Optional<String> pos, String fallback) {
-        if (pos.isEmpty()) {
-            return fallback;
-        }
-        return pos.get();
-    }
-
-    String orElseThrowTest1(@Present Optional<String> pos) {
-        return pos.orElseThrow();
-    }
-
-    String orElseThrowTest2(Optional<String> mos) {
-        // :: error: (method.invocation.invalid)
-        return mos.orElseThrow();
-    }
-
-    String orElseThrowTest3(
+    String orElseThrowTest1(
             @Present Optional<String> pos, Supplier<RuntimeException> exceptionSupplier) {
         return pos.orElseThrow(exceptionSupplier);
     }
 
-    String orElseThrowTest4(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
+    String orElseThrowTest2(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
         // :: error: (method.invocation.invalid)
         return mos.orElseThrow(exceptionSupplier);
-    }
-
-    String orElseThrowTestFlow(Optional<String> mos) {
-        // :: error: (method.invocation.invalid)
-        mos.orElseThrow();
-        return mos.get();
     }
 
     String orElseThrowTestFlow(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
