@@ -348,7 +348,7 @@ task testWPIScripts(group: "Verification") {
                     }
                     if (line.toLowerCase().contains("error")) {
                         throw new GradleException("Failure: WPI scripts produced at least one error. " +
-                                "See ${project.projectDir}/build/wpi-many-test-results/" + details.getName() + ".")
+                                "See ${project.projectDir}/build/wpi-many-tests-results/" + details.getName() + ".")
                     }
                 }
             }

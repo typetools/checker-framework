@@ -30,27 +30,52 @@ echo "Starting wpi-many.sh. The output of this script is purely informational."
 
 # check required arguments and environment variables:
 
+if [ "x${JAVA_HOME}" = "x" ]; then
+  has_java_home="no"
+else
+  has_java_home="yes"
+fi
+
 # testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA8_HOME}" = "x" ]; then
-    echo "JAVA8_HOME must be set to a Java 8 JDK"
-    exit 1
-fi
-
-if [ ! -d "${JAVA8_HOME}" ]; then
-    echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
-    exit 1
+  has_java8="no"
+else
+  has_java8="yes"
 fi
 
 # testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
 # shellcheck disable=SC2153
 if [ "x${JAVA11_HOME}" = "x" ]; then
-    echo "JAVA11_HOME must be set to a Java 11 JDK"
+  has_java11="no"
+else
+  has_java11="yes"
+fi
+
+if [ "${has_java_home}" = "yes" ]; then
+    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
+      export JAVA8_HOME="${JAVA_HOME}"
+      has_java8="yes"
+    fi
+    if [ "${has_java11}" = "no" ] && [ "${java_version}" = 11 ]; then
+      export JAVA11_HOME="${JAVA_HOME}"
+      has_java11="yes"
+    fi
+fi
+
+if [ "${has_java8}" = "yes" ] && [ ! -d "${JAVA8_HOME}" ]; then
+    echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
     exit 1
 fi
 
-if [ ! -d "${JAVA11_HOME}" ]; then
+if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     echo "JAVA11_HOME is set to a non-existent directory ${JAVA11_HOME}"
+    exit 1
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
+    echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
     exit 1
 fi
 
