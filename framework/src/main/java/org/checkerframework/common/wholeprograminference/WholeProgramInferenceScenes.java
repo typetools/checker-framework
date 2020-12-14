@@ -112,7 +112,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public WholeProgramInferenceScenes(
             AnnotatedTypeFactory atypeFactory, boolean ignoreNullAssignments) {
         this.atypeFactory = atypeFactory;
-        storage = new WholeProgramInferenceScenesStorage(ignoreNullAssignments);
+        storage = new WholeProgramInferenceScenesStorage(atypeFactory, ignoreNullAssignments);
     }
 
     @Override
@@ -554,6 +554,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             AnnotatedTypeMirror rhsATM,
             AnnotatedTypeMirror lhsATM,
             String jaifPath) {
-        storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, atypeFactory, jaifPath);
+        storage.updateAnnotationSetInScene(type, defLoc, rhsATM, lhsATM, jaifPath);
     }
 }
