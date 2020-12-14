@@ -117,7 +117,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                         break;
                     case ARRAY:
                         // III
-                        tu.warning(invc, "format.indirect.arguments");
+                        if (!isWrappedFormatCall(fc, enclosingMethod)) {
+                            tu.warning(invc, "format.indirect.arguments");
+                        }
                         /* fallthrough */
                     case NULLARRAY:
                         for (ConversionCategory cat : formatCats) {
