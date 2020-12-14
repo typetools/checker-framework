@@ -2795,8 +2795,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
-     * that will be used by the Checker Framework in the alias's place.
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code
+     * canonicalAnno} that will be used by the Checker Framework in the alias's place.
      *
      * <p>By specifying the alias/canonical relationship using this method, the elements of the
      * alias are not preserved when the canonical annotation to use is constructed from the alias.
@@ -2804,72 +2804,72 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * #addAliasedTypeAnnotation(Class, Class, boolean, String...)}.
      *
      * @param aliasClass the class of the aliased annotation
-     * @param type the canonical annotation
+     * @param canonicalAnno the canonical annotation
      */
-    protected void addAliasedTypeAnnotation(Class<?> aliasClass, AnnotationMirror type) {
+    protected void addAliasedTypeAnnotation(Class<?> aliasClass, AnnotationMirror canonicalAnno) {
         if (getSupportedTypeQualifiers().contains(aliasClass)) {
             throw new BugInCF(
                     "AnnotatedTypeFactory: alias %s should not be in type hierarchy for %s",
                     aliasClass, this.getClass().getSimpleName());
         }
-        addAliasedTypeAnnotation(aliasClass.getCanonicalName(), type);
+        addAliasedTypeAnnotation(aliasClass.getCanonicalName(), canonicalAnno);
     }
 
     /**
      * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
-     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
-     * alias's place.
+     * for the canonical annotation {@code canonicalAnno} that will be used by the Checker Framework
+     * in the alias's place.
      *
      * <p>Use this method if the alias class is not necessarily on the classpath at Checker
      * Framework compile and run time. Otherwise, use {@link #addAliasedTypeAnnotation(Class,
      * AnnotationMirror)} which prevents the possibility of a typo in the class name.
      *
      * @param aliasName the canonical name of the aliased annotation
-     * @param type the canonical annotation
+     * @param canonicalAnno the canonical annotation
      * @deprecated use {@code addAliasedTypeAnnotation}
      */
     // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
     // name of an external annotation is a canoncal name.
     @Deprecated // use addAliasedTypeAnnotation
     protected void addAliasedAnnotation(
-            @FullyQualifiedName String aliasName, AnnotationMirror type) {
-        addAliasedTypeAnnotation(aliasName, type);
+            @FullyQualifiedName String aliasName, AnnotationMirror canonicalAnno) {
+        addAliasedTypeAnnotation(aliasName, canonicalAnno);
     }
 
     /**
      * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
-     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
-     * alias's place.
+     * for the canonical annotation {@code canonicalAnno} that will be used by the Checker Framework
+     * in the alias's place.
      *
      * <p>Use this method if the alias class is not necessarily on the classpath at Checker
      * Framework compile and run time. Otherwise, use {@link #addAliasedTypeAnnotation(Class,
      * AnnotationMirror)} which prevents the possibility of a typo in the class name.
      *
      * @param aliasName the canonical name of the aliased annotation
-     * @param type the canonical annotation
+     * @param canonicalAnno the canonical annotation
      */
     // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
     // name of an external annotation is a canoncal name.
     protected void addAliasedTypeAnnotation(
-            @FullyQualifiedName String aliasName, AnnotationMirror type) {
+            @FullyQualifiedName String aliasName, AnnotationMirror canonicalAnno) {
 
-        aliases.put(aliasName, new Alias(aliasName, type, false, null, null));
+        aliases.put(aliasName, new Alias(aliasName, canonicalAnno, false, null, null));
     }
 
     /**
-     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
-     * that will be used by the Checker Framework in the alias's place.
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code
+     * canonicalAnno} that will be used by the Checker Framework in the alias's place.
      *
      * <p>You may specify the copyElements flag to indicate whether you want the elements of the
      * alias to be copied over when the canonical annotation is constructed as a copy of {@code
-     * type}. Be careful that the framework will try to copy the elements by name matching, so make
-     * sure that names and types of the elements to be copied over are exactly the same as the ones
-     * in the canonical annotation. Otherwise, an 'Couldn't find element in annotation' error is
-     * raised.
+     * canonicalAnno}. Be careful that the framework will try to copy the elements by name matching,
+     * so make sure that names and types of the elements to be copied over are exactly the same as
+     * the ones in the canonical annotation. Otherwise, an 'Couldn't find element in annotation'
+     * error is raised.
      *
-     * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
-     * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
-     * you to explicitly specify the ignoring rules. For example, {@code
+     * <p>To facilitate the cases where some of the elements are ignored on purpose when
+     * constructing the canonical annotation, this method also provides a varargs {@code
+     * ignorableElements} for you to explicitly specify the ignoring rules. For example, {@code
      * org.checkerframework.checker.index.qual.IndexFor} is an alias of {@code
      * org.checkerframework.checker.index.qual.NonNegative}, but the element "value" of
      * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
@@ -2894,19 +2894,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code type}
-     * that will be used by the Checker Framework in the alias's place.
+     * Adds the annotation {@code aliasClass} as an alias for the canonical annotation {@code
+     * canonicalClass} that will be used by the Checker Framework in the alias's place.
      *
      * <p>You may specify the copyElements flag to indicate whether you want the elements of the
      * alias to be copied over when the canonical annotation is constructed as a copy of {@code
-     * type}. Be careful that the framework will try to copy the elements by name matching, so make
-     * sure that names and types of the elements to be copied over are exactly the same as the ones
-     * in the canonical annotation. Otherwise, an 'Couldn't find element in annotation' error is
-     * raised.
+     * canonicalClass}. Be careful that the framework will try to copy the elements by name
+     * matching, so make sure that names and types of the elements to be copied over are exactly the
+     * same as the ones in the canonical annotation. Otherwise, an 'Couldn't find element in
+     * annotation' error is raised.
      *
-     * <p>To facilitate the cases where some of the elements is ignored on purpose when constructing
-     * the canonical annotation, this method also provides a varargs {@code ignorableElements} for
-     * you to explicitly specify the ignoring rules. For example, {@code
+     * <p>To facilitate the cases where some of the elements are ignored on purpose when
+     * constructing the canonical annotation, this method also provides a varargs {@code
+     * ignorableElements} for you to explicitly specify the ignoring rules. For example, {@code
      * org.checkerframework.checker.index.qual.IndexFor} is an alias of {@code
      * org.checkerframework.checker.index.qual.NonNegative}, but the element "value" of
      * {@code @IndexFor} should be ignored when constructing {@code @NonNegative}. In the cases
@@ -2914,7 +2914,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotationMirror)} instead.
      *
      * @param aliasClass the class of the aliased annotation
-     * @param canonical the canonical annotation
+     * @param canonicalClass the class of the canonical annotation
      * @param copyElements a flag that indicates whether you want to copy the elements over when
      *     getting the alias from the canonical annotation
      * @param ignorableElements a list of elements that can be safely dropped when the elements are
@@ -2922,7 +2922,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addAliasedTypeAnnotation(
             Class<?> aliasClass,
-            Class<?> canonical,
+            Class<?> canonicalClass,
             boolean copyElements,
             String... ignorableElements) {
         if (getSupportedTypeQualifiers().contains(aliasClass)) {
@@ -2931,13 +2931,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     aliasClass, this.getClass().getSimpleName());
         }
         addAliasedTypeAnnotation(
-                aliasClass.getCanonicalName(), canonical, copyElements, ignorableElements);
+                aliasClass.getCanonicalName(), canonicalClass, copyElements, ignorableElements);
     }
 
     /**
      * Adds the annotation, whose fully-qualified name is given by {@code aliasName}, as an alias
-     * for the canonical annotation {@code type} that will be used by the Checker Framework in the
-     * alias's place.
+     * for the canonical annotation {@code canonicalAnno} that will be used by the Checker Framework
+     * in the alias's place.
      *
      * <p>Use this method if the alias class is not necessarily on the classpath at Checker
      * Framework compile and run time. Otherwise, use {@link #addAliasedTypeAnnotation(Class, Class,
