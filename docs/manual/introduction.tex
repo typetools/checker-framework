@@ -867,7 +867,8 @@ A checker guarantees two things:  type annotations reflect facts about
 run-time values, and illegal operations are not performed.
 
 For example, the Nullness Checker (Chapter~\ref{nullness-checker})
-guarantees lack of null pointer exceptions.  More precisely, it guarantees
+guarantees lack of null pointer exceptions (Java \<NullPointerException>).
+More precisely, it guarantees
 that expressions whose type is annotated with
 \refqualclass{checker/nullness/qual}{NonNull} never evaluate to null,
 and it forbids other expressions from being dereferenced.
@@ -1518,5 +1519,5 @@ same methodology in different words.
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
-%%  LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
+% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
 % LocalWords:  specification''

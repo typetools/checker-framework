@@ -6,7 +6,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 public class FormatMethodInvocation {
-    public static void main(String... p) {
+    public static void main() {
         Formatter f = new Formatter();
         f.format("%d", 1337);
         f.format(Locale.GERMAN, "%d", 1337);
@@ -60,5 +60,14 @@ public class FormatMethodInvocation {
         c.format("%f", 1337);
         // :: error: (argument.type.incompatible)
         c.printf("%f", 1337);
+
+        myFormatMethod("%d", 1337);
+        // :: error: (argument.type.incompatible)
+        myFormatMethod("%f", 1337);
+    }
+
+    @com.google.errorprone.annotations.FormatMethod
+    static void myFormatMethod(String fmt, Object... args) {
+        System.out.printf(fmt, args);
     }
 }

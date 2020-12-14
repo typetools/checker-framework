@@ -5,6 +5,8 @@ inference, without modifying the source code of the target program(s).
 
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
+The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
+
 Implementation details:
 
 Class renamings:

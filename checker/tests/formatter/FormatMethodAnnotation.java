@@ -37,4 +37,12 @@ public class FormatMethodAnnotation {
             logfile.printf(format, args);
         }
     }
+
+    @com.google.errorprone.annotations.FormatMethod
+    void log4(String format, Object... args) {
+        if (enabled) {
+            logfile.print(indent_str);
+            logfile.printf(format, args);
+        }
+    }
 }

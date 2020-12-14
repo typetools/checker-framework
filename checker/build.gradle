@@ -21,6 +21,11 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
     implementation project(':framework')
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
     implementation project(':checker-qual')
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
@@ -220,7 +225,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String jtregOutput = "${buildDir}/jtregJdk11"
     String name = 'all'
     doLast {
-        if(isJava8) {
+        if (isJava8) {
             println "This test is only run with JDK 11."
             return;
         }
@@ -424,7 +429,7 @@ void commonWPIlogic() {
     }
 }
 
-// This task is similar to the wholeProgramInferenceTests task below, but it doesn't
+// This task is similar to the wholeProgramInferenceJaifTests task below, but it doesn't
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
 task wholeProgramInferenceStubTests(dependsOn: 'shadowJar', group: 'Verification') {
@@ -463,9 +468,15 @@ task testWPIJaifs(type: Test) {
         List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
             include '*.jaif'
         }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${buildDir}/whole-program-inference/")
+        }
         List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
             include '*.java'
         }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in tests/whole-program-inference/annotated/")
+        }
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             args = ['-i']
@@ -501,7 +512,8 @@ task wholeProgramInferenceJaifTests(dependsOn: 'shadowJar', group: 'Verification
     outputs.upToDateWhen { false }
 }
 
-// empty task that just runs both the jaif and stub WPI tests
+// Empty task that just runs both the jaif and stub WPI tests.
+// It is run as part of the nonJunitTests task.
 task wholeProgramInferenceTests() {
     description "Run tests for all whole program inference modes."
     dependsOn('wholeProgramInferenceJaifTests')

@@ -33,7 +33,6 @@ import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -142,14 +141,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
             UBQualifier previousQualifier = getUBQualifier(dim, in);
             JavaExpression arrayExpr =
-                    JavaExpressions.fromNode(analysis.getTypeFactory(), node.getTarget());
+                    JavaExpression.fromNode(analysis.getTypeFactory(), node.getTarget());
             String arrayString = arrayExpr.toString();
             LessThanLengthOf newInfo =
                     (LessThanLengthOf) UBQualifier.createUBQualifier(arrayString, "-1");
             UBQualifier combined = previousQualifier.glb(newInfo);
             AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(combined);
 
-            JavaExpression dimExpr = JavaExpressions.fromNode(analysis.getTypeFactory(), dim);
+            JavaExpression dimExpr = JavaExpression.fromNode(analysis.getTypeFactory(), dim);
             result.getRegularStore().insertValue(dimExpr, newAnno);
             propagateToOperands(newInfo, dim, in, result.getRegularStore());
         }
@@ -209,7 +208,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             }
             UBQualifier qual = getUBQualifier(node, in);
             UBQualifier newQual = qual.glb(typeOfMultiplication);
-            JavaExpression je = JavaExpressions.fromNode(atypeFactory, node);
+            JavaExpression je = JavaExpression.fromNode(atypeFactory, node);
             store.insertValue(je, atypeFactory.convertUBQualifierToAnnotation(newQual));
         }
     }
@@ -238,7 +237,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
         UBQualifier newLeft = left.glb(newInfo);
-        JavaExpression leftJe = JavaExpressions.fromNode(atypeFactory, node.getLeftOperand());
+        JavaExpression leftJe = JavaExpression.fromNode(atypeFactory, node.getLeftOperand());
         store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(newLeft));
     }
 
@@ -269,7 +268,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
             newQual = newQual.glb(typeOfAddition);
         }
-        JavaExpression operandJe = JavaExpressions.fromNode(atypeFactory, operand);
+        JavaExpression operandJe = JavaExpression.fromNode(atypeFactory, operand);
         store.insertValue(operandJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
 
@@ -298,7 +297,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
-        JavaExpression rightJe = JavaExpressions.fromNode(analysis.getTypeFactory(), smaller);
+        JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), smaller);
         store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
 
@@ -324,7 +323,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         refineSubtrahendWithOffset(left, right, false, in, store);
 
-        JavaExpression rightJe = JavaExpressions.fromNode(analysis.getTypeFactory(), right);
+        JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), right);
         store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
     }
 
@@ -363,7 +362,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                             minuendQual
                                     .plusOffset(offsetNode, atypeFactory)
                                     .plusOffset(offsetAddOne ? 1 : 0));
-            JavaExpression subtrahendJe = JavaExpressions.fromNode(atypeFactory, subtrahend);
+            JavaExpression subtrahendJe = JavaExpression.fromNode(atypeFactory, subtrahend);
             store.insertValue(subtrahendJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
         }
     }
@@ -409,13 +408,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         List<Node> internalsRight = splitAssignments(right);
         for (Node internal : internalsRight) {
-            JavaExpression rightJe = JavaExpressions.fromNode(analysis.getTypeFactory(), internal);
+            JavaExpression rightJe = JavaExpression.fromNode(analysis.getTypeFactory(), internal);
             store.insertValue(rightJe, glbAnno);
         }
 
         List<Node> internalsLeft = splitAssignments(left);
         for (Node internal : internalsLeft) {
-            JavaExpression leftJe = JavaExpressions.fromNode(analysis.getTypeFactory(), internal);
+            JavaExpression leftJe = JavaExpression.fromNode(analysis.getTypeFactory(), internal);
             store.insertValue(leftJe, glbAnno);
         }
     }
@@ -452,12 +451,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         JavaExpression receiver = null;
         if (NodeUtils.isArrayLengthFieldAccess(lengthAccess)) {
             FieldAccess fa =
-                    JavaExpressions.fromNodeFieldAccess(
+                    JavaExpression.fromNodeFieldAccess(
                             atypeFactory, (FieldAccessNode) lengthAccess);
             receiver = fa.getReceiver();
 
         } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
-            JavaExpression ma = JavaExpressions.fromNode(atypeFactory, lengthAccess);
+            JavaExpression ma = JavaExpression.fromNode(atypeFactory, lengthAccess);
             if (ma instanceof MethodCall) {
                 receiver = ((MethodCall) ma).getReceiver();
             }
@@ -474,7 +473,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                 otherQualifier = otherQualifier.glb(newQualifier);
                 for (Node internal : splitAssignments(otherNode)) {
                     JavaExpression leftJe =
-                            JavaExpressions.fromNode(analysis.getTypeFactory(), internal);
+                            JavaExpression.fromNode(analysis.getTypeFactory(), internal);
                     store.insertValue(
                             leftJe, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
                 }
@@ -624,9 +623,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                         String a = subsequence.array;
 
                         JavaExpression leftOp =
-                                JavaExpressions.fromNode(atypeFactory, n.getLeftOperand());
+                                JavaExpression.fromNode(atypeFactory, n.getLeftOperand());
                         JavaExpression rightOp =
-                                JavaExpressions.fromNode(atypeFactory, n.getRightOperand());
+                                JavaExpression.fromNode(atypeFactory, n.getRightOperand());
 
                         if (rightOp.toString().equals(from)) {
                             AnnotationMirror lessThanType =
@@ -702,7 +701,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
         if (NodeUtils.isArrayLengthFieldAccess(n)) {
-            FieldAccess arrayLength = JavaExpressions.fromNodeFieldAccess(atypeFactory, n);
+            FieldAccess arrayLength = JavaExpression.fromNodeFieldAccess(atypeFactory, n);
             JavaExpression arrayJe = arrayLength.getReceiver();
             Tree arrayTree = n.getReceiver().getTree();
             TransferResult<CFValue, CFStore> result = visitLengthAccess(n, in, arrayJe, arrayTree);
@@ -722,7 +721,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
 
         if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(n)) {
-            JavaExpression stringLength = JavaExpressions.fromNode(atypeFactory, n);
+            JavaExpression stringLength = JavaExpression.fromNode(atypeFactory, n);
             if (stringLength instanceof MethodCall) {
                 JavaExpression receiverJe = ((MethodCall) stringLength).getReceiver();
                 Tree receiverTree = n.getTarget().getReceiver().getTree();
@@ -786,7 +785,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
      */
     private UBQualifier getUBQualifier(Node n, TransferInput<CFValue, CFStore> in) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-        JavaExpression je = JavaExpressions.fromNode(atypeFactory, n);
+        JavaExpression je = JavaExpression.fromNode(atypeFactory, n);
         CFValue value = null;
         if (CFAbstractStore.canInsertJavaExpression(je)) {
             value = in.getRegularStore().getValue(je);
