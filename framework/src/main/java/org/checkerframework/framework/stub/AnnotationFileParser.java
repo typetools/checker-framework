@@ -1299,7 +1299,11 @@ public class AnnotationFileParser {
                 type.replaceAnnotation(annoMirror);
             } else {
                 stubWarnNotFound(
-                        String.format("Unknown annotation %s in %s", annotation, filename));
+                        "Unknown annotation "
+                                + annotation
+                                + (processingEnv.getOptions().containsKey("-Anomsgtext")
+                                        ? ""
+                                        : (" in " + filename)));
             }
         }
     }
