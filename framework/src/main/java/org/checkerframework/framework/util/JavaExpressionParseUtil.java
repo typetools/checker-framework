@@ -1098,9 +1098,16 @@ public class JavaExpressionParseUtil {
             this(null, errorKey, args);
         }
 
+        /**
+         * Create a new JavaExpressionParseException.
+         *
+         * @param cause cause
+         * @param errorKey the error message key
+         * @param args the arguments to the error message key
+         */
         @FormatMethod
         public JavaExpressionParseException(
-                Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
+                @Nullable Throwable cause, @CompilerMessageKey String errorKey, Object... args) {
             super(cause);
             this.errorKey = errorKey;
             this.args = args;
