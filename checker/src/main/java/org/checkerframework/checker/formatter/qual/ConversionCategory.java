@@ -155,7 +155,8 @@ public enum ConversionCategory {
      * @param c a class
      * @return the unwrapped primitive, or null
      */
-    @SuppressWarnings("nullness:return.type.incompatible") // Checker Framework bug?
+    // With this, `./gradlew :checker-qual:checkNullness` yields nullness:unneeded.suppression.
+    // @SuppressWarnings("nullness:return.type.incompatible") // Checker Framework bug?
     private static @Nullable Class<?> unwrapPrimitive(Class<?> c) {
         if (c == Byte.class) {
             return byte.class;
@@ -325,12 +326,11 @@ public enum ConversionCategory {
      * @param argType an argument type
      * @return true if {@code argType} can be an argument used by this format specifier
      */
-    @SuppressWarnings("nullness:enhancedfor.type.incompatible") // https://tinyurl.com/cfissue/4004
     public boolean isAssignableFrom(Class<?> argType) {
         if (types == null) {
             return true;
         }
-        for (Class<? extends Object> c : types) {
+        for (Class<?> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;
             }
