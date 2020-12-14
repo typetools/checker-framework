@@ -147,7 +147,8 @@ public class OptionalVisitor
         return TreeUtils.isMethodInvocation(methInvok, optionalGet, env)
                 || TreeUtils.isMethodInvocation(methInvok, optionalOrElse, env)
                 || TreeUtils.isMethodInvocation(methInvok, optionalOrElseGet, env)
-                || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env)
+                || (optionalIsEmpty != null
+                        && TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env))
                 || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrowSupplier, env);
     }
 
