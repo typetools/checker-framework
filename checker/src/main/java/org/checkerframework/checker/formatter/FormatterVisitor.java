@@ -123,7 +123,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             }
                         }
                         // III
-                        tu.warning(invc, "format.indirect.arguments");
+                        if (!isWrappedFormatCall(fc, enclosingMethod)) {
+                            tu.warning(invc, "format.indirect.arguments");
+                        }
                         break;
                 }
             }
