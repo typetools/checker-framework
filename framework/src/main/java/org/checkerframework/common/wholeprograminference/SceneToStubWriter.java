@@ -431,9 +431,7 @@ public final class SceneToStubWriter {
             if (i == classNames.length - 1) {
                 printWriter.print(indents(i));
                 printWriter.println(
-                        "@org.checkerframework.framework.qual.AnnotatedFor(\""
-                                + checker.getClass().getCanonicalName()
-                                + "\")");
+                        "@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
             }
             printWriter.print(indents(i));
             if (aClass.isEnum(nameToPrint)) {
@@ -629,6 +627,7 @@ public final class SceneToStubWriter {
                         throw new BugInCF(e);
                     }
                     importDefWriter.visit();
+                    printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
                     printWriter.println();
                     anyClassPrintable = true;
                 }
