@@ -175,12 +175,11 @@ public enum I18nConversionCategory {
      * @param argType an argument type
      * @return true if {@code argType} can be an argument used by this format specifier
      */
-    @SuppressWarnings("nullness:enhancedfor.type.incompatible") // https://tinyurl.com/cfissue/4004
     public boolean isAssignableFrom(Class<?> argType) {
         if (types == null) {
             return true;
         }
-        for (Class<? extends Object> c : types) {
+        for (Class<?> c : types) {
             if (c.isAssignableFrom(argType)) {
                 return true;
             }
