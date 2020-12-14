@@ -1,6 +1,7 @@
 // @below-java11-jdk-skip-test
 
 import java.util.Optional;
+import org.checkerframework.checker.optional.qual.Present;
 
 /** Test JDK annotations, for methods added after JDK 8. */
 @SuppressWarnings("optional.parameter")
