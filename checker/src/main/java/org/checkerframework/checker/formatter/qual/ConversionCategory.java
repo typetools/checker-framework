@@ -33,10 +33,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * @see Format
  * @checker_framework.manual #formatter-checker Format String Checker
  */
+@SuppressWarnings("unchecked") // ".class" expressions in varargs position
 @AnnotatedFor("nullness")
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */
-    GENERAL("bBhHsS", (Class<?>[]) null /* everything */),
+    GENERAL("bBhHsS", (Class<? extends Object>[]) null /* everything */),
 
     /**
      * Use if the parameter is of a basic types which represent Unicode characters: char, Character,
@@ -116,7 +117,7 @@ public enum ConversionCategory {
      * Only the first "a" and third "b" parameters are used, the second "unused" parameter is
      * ignored.
      */
-    UNUSED(null, (Class<?>[]) null /* everything */);
+    UNUSED(null, (Class<? extends Object>[]) null /* everything */);
 
     /** The argument types. Null means every type. */
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
@@ -131,7 +132,7 @@ public enum ConversionCategory {
      * @param chars the format specifier characters. Null means users cannot specify it directly.
      * @param types the argument types. Null means every type.
      */
-    ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
+    ConversionCategory(@Nullable String chars, Class<? extends Object> @Nullable ... types) {
         this.chars = chars;
         if (types == null) {
             this.types = types;
@@ -155,9 +156,10 @@ public enum ConversionCategory {
      * @param c a class
      * @return the unwrapped primitive, or null
      */
-    // With this, `./gradlew :checker-qual:checkNullness` yields nullness:unneeded.suppression.
+    // With this @SuppressWarnings annotation, `./gradlew :checker-qual:checkNullness` yields
+    // nullness:unneeded.suppression.
     // @SuppressWarnings("nullness:return.type.incompatible") // Checker Framework bug?
-    private static @Nullable Class<?> unwrapPrimitive(Class<?> c) {
+    private static @Nullable Class<? extends Object> unwrapPrimitive(Class<?> c) {
         if (c == Byte.class) {
             return byte.class;
         }
@@ -182,7 +184,7 @@ public enum ConversionCategory {
         if (c == Boolean.class) {
             return boolean.class;
         }
-        return c;
+        return null;
     }
 
     /**
