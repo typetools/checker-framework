@@ -94,6 +94,7 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write out
      * @param filename the name of the file to write (must end with .astub)
+     * @param checker the type-checker whose annotations are being written
      */
     public static void write(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         writeImpl(scene, filename, checker);
@@ -413,6 +414,7 @@ public final class SceneToStubWriter {
      * @param basename the binary name of the class without the package part
      * @param aClass the AClass for {@code basename}
      * @param printWriter the writer where the class definition should be printed
+     * @param checker the type-checker whose annotations are being written
      * @return the number of outer classes within which this class is nested
      */
     private static int printClassDefinitions(
@@ -584,6 +586,7 @@ public final class SceneToStubWriter {
      *
      * @param scene the scene to write
      * @param filename the name of the file to write (must end in .astub)
+     * @param checker the type-checker whose annotations are being written
      */
     private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
         // Sort by package name first so that output is deterministic and default package
@@ -674,6 +677,7 @@ public final class SceneToStubWriter {
      * @param classname the class name
      * @param aClass the representation of the class
      * @param printWriter the writer on which to print
+     * @param checker the type-checker whose annotations are being written
      */
     private static void printClass(
             @BinaryName String classname,
