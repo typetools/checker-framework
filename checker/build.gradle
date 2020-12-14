@@ -304,7 +304,7 @@ test {
     }
 }
 
-task testWPIScripts() {
+task testWPIScripts(group: "Verification") {
     description 'Tests that the wpi-many.sh and wpi.sh scripts are working as expected. Requires an internet connection.'
 
     // This test must always be re-run when requested.
@@ -355,6 +355,9 @@ task testWPIScripts() {
         }
     }
 }
+
+// Run the WPI scripts tests as part of the unit tests. TODO: put these in a separate CI configuration?
+tasks.test.dependsOn("testWPIScripts")
 
 task testWPIStubs(type: Test) {
     description 'Internal task to run the whole-program-inference tests with -Ainfer=stubs to generate stub files'
