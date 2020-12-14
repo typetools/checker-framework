@@ -225,7 +225,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String jtregOutput = "${buildDir}/jtregJdk11"
     String name = 'all'
     doLast {
-        if(isJava8) {
+        if (isJava8) {
             println "This test is only run with JDK 11."
             return;
         }

@@ -429,7 +429,7 @@ public class WholeProgramInferenceScenesStorage {
      * {@link scenelib.annotations.Annotation}s of an {@link scenelib.annotations.el.ATypeElement}.
      *
      * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link scenelib.annotations.el.ATypeElement}
+     * @param type the {@link scenelib.annotations.el.ATypeElement} used
      */
     private void updateAtmFromATypeElement(AnnotatedTypeMirror atm, ATypeElement type) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere);
@@ -481,7 +481,6 @@ public class WholeProgramInferenceScenesStorage {
             AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM,
             boolean ignoreIfAnnotated) {
-
         // Clears only the annotations that are supported by the relevant AnnotatedTypeFactory.
         // The others stay intact.
         if (idx == 1) {
