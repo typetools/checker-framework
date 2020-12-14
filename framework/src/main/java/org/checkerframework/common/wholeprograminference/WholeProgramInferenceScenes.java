@@ -16,6 +16,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -37,6 +38,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
+import scenelib.annotations.el.AScene;
 import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.util.JVMNames;
 
@@ -495,7 +497,47 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     @Override
     public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
+        for (String jaifPath : storage.modifiedScenes) {
+            ASceneWrapper scene = storage.scenes.get(jaifPath);
+            prepareSceneForWriting(scene.getAScene());
+        }
+
         storage.writeScenes(outputFormat, checker);
+    }
+
+    // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
+    // a scene may be modifed and written at any time, including before or after
+    // postProcessClassTree is called.
+
+    /**
+     * Side-effects the AScene to make any desired changes before writing to a file.
+     *
+     * @param scene the AScene to modify
+     */
+    public void prepareSceneForWriting(AScene scene) {
+        for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
+            prepareClassForWriting(classEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the AClass to make any desired changes before writing to a file.
+     *
+     * @param clazz the AClass to modify
+     */
+    public void prepareClassForWriting(AClass clazz) {
+        for (Map.Entry<String, AMethod> methodEntry : clazz.methods.entrySet()) {
+            prepareMethodForWriting(methodEntry.getValue());
+        }
+    }
+
+    /**
+     * Side-effects the AMethod to make any desired changes before writing to a file.
+     *
+     * @param method the AMethod to modify
+     */
+    public void prepareMethodForWriting(AMethod method) {
+        // This implementation does nothing.
     }
 
     /**
