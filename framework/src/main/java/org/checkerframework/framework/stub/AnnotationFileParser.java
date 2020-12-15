@@ -1881,7 +1881,7 @@ public class AnnotationFileParser {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             Expression valexpr = sglanno.getMemberValue();
             String failure = builderAddElement(builder, "value", valexpr, astNode);
-            if (failure == null) {
+            if (failure != null) {
                 warn(
                         astNode,
                         "For annotation %s, could not add value %s because %s",
