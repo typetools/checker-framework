@@ -19,7 +19,7 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ThisKeywordNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
@@ -871,7 +871,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return the current abstract value of the current object, or {@code null} if no information
      *     is available
      */
-    public @Nullable V getValue(ThisKeywordNode n) {
+    public @Nullable V getValue(ThisNode n) {
         return thisValue;
     }
 

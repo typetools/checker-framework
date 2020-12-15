@@ -13,9 +13,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *   <em>this</em>
  * </pre>
  */
-public abstract class ThisKeywordNode extends Node {
+public abstract class ThisNode extends Node {
 
-    protected ThisKeywordNode(TypeMirror type) {
+    protected ThisNode(TypeMirror type) {
         super(type);
     }
 
@@ -25,7 +25,7 @@ public abstract class ThisKeywordNode extends Node {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        return obj instanceof ThisKeywordNode;
+        return obj instanceof ThisNode;
     }
 
     @Override
