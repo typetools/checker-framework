@@ -316,8 +316,9 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private boolean hasFormatMethodAnno(AMethod method) {
             for (Annotation anno : method.tlAnnotationsHere) {
-                if (anno.def.name.equals(
-                        "org.checkerframework.checker.formatter.qual.FormatMethod")) {
+                String annoName = anno.def.name;
+                if (annoName.equals("org.checkerframework.checker.formatter.qual.FormatMethod")
+                        || anno.def.name.equals("com.google.errorprone.annotations.FormatMethod")) {
                     return true;
                 }
             }
