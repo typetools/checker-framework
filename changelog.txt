@@ -11,6 +11,9 @@ Class renamings:
  * `Receiver` => `JavaExpression`
      *  also related class and method renamings
 
+Method deprecations:
+ * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
+
 ---------------------------------------------------------------------------
 
 Version 3.8.0, December 1, 2020

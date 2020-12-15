@@ -25,6 +25,12 @@ public class JdkCheck {
         return mos.orElseThrow(exceptionSupplier);
     }
 
+    String orElseThrowTestFlow(Optional<String> mos, Supplier<RuntimeException> exceptionSupplier) {
+        // :: error: (method.invocation.invalid)
+        mos.orElseThrow(exceptionSupplier);
+        return mos.get();
+    }
+
     String getTest1(@Present Optional<String> pos) {
         return pos.get();
     }
