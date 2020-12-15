@@ -118,13 +118,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(IndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(IndexOrLow.class, LTLengthOf.class, true);
-        addAliasedAnnotation(IndexOrHigh.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
-        addAliasedAnnotation(LengthOf.class, LTEqLengthOf.class, true);
-        addAliasedAnnotation(PolyIndex.class, POLY);
+        addAliasedTypeAnnotation(IndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(IndexOrLow.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(IndexOrHigh.class, LTEqLengthOf.class, true);
+        addAliasedTypeAnnotation(SearchIndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(NegativeIndexFor.class, LTLengthOf.class, true);
+        addAliasedTypeAnnotation(LengthOf.class, LTEqLengthOf.class, true);
+        addAliasedTypeAnnotation(PolyIndex.class, POLY);
 
         imf = new IndexMethodIdentifier(this);
 
