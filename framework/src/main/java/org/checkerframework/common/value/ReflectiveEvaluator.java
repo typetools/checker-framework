@@ -228,7 +228,7 @@ public class ReflectiveEvaluator {
         List<Class<?>> paramClasses = new ArrayList<>();
         for (Element e : paramEles) {
             TypeMirror pType = ElementUtils.getType(e);
-            paramClasses.add(ValueCheckerUtils.getClassFromType(pType));
+            paramClasses.add(TypesUtils.getClassFromType(pType));
         }
         return paramClasses;
     }
@@ -349,7 +349,7 @@ public class ReflectiveEvaluator {
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
         List<Class<?>> paramClasses = getParameterClasses(ele);
-        Class<?> recClass = boxPrimitives(ValueCheckerUtils.getClassFromType(typeToCreate));
+        Class<?> recClass = boxPrimitives(TypesUtils.getClassFromType(typeToCreate));
         Constructor<?> constructor = recClass.getConstructor(paramClasses.toArray(new Class<?>[0]));
         return constructor;
     }
