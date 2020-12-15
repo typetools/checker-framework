@@ -381,7 +381,7 @@ public class AnnotationFileParser {
                     if (importType == null && !importDecl.isStatic()) {
                         // Class or nested class (according to JSL), but we can't resolve
 
-                        stubWarnNotFound("Imported type not found: " + imported);
+                        stubWarnNotFound(importDecl, "type not found: " + imported);
                     } else if (importType == null) {
                         // static import of field or method.
 
@@ -415,7 +415,7 @@ public class AnnotationFileParser {
                             putIfAbsent(result, annoElt.getSimpleName().toString(), annoElt);
                             importedTypes.put(annoElt.getSimpleName().toString(), annoElt);
                         } else {
-                            stubWarnNotFound("Could not load import: " + imported);
+                            stubWarnNotFound(importDecl, "Could not load import: " + imported);
                         }
                     } else {
                         // Class or nested class
@@ -426,7 +426,7 @@ public class AnnotationFileParser {
                     }
                 }
             } catch (AssertionError error) {
-                stubWarnNotFound(error.toString());
+                stubWarnNotFound(importDecl, error.toString());
             }
         }
         return result;
@@ -548,6 +548,7 @@ public class AnnotationFileParser {
             // This issues a warning if the stub file contains no import statements.  That is
             // incorrect if the stub file contains fully-qualified annotations.
             stubWarnNotFound(
+                    null,
                     String.format(
                             "No supported annotations found! Does stub file %s import them?",
                             filename));
@@ -648,7 +649,7 @@ public class AnnotationFileParser {
                     || (!hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
                             && !hasNoAnnotationFileParserWarning(packageAnnos)
                             && !warnIfNotFoundIgnoresClasses)) {
-                stubWarnNotFound("Type not found: " + fqTypeName);
+                stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
             }
             return;
         }
@@ -674,7 +675,7 @@ public class AnnotationFileParser {
                                 + "...");
                 return;
             }
-            stubWarnNotFound("Skipping annotation type: " + fqTypeName);
+            stubWarnNotFound(typeDecl, "Skipping annotation type: " + fqTypeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
             if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
                 warn(
@@ -719,7 +720,7 @@ public class AnnotationFileParser {
                     break;
                 default:
                     /* do nothing */
-                    stubWarnNotFound("AnnotationFileParser ignoring: " + elt);
+                    stubWarnNotFound(decl, "AnnotationFileParser ignoring: " + elt);
                     break;
             }
         }
@@ -760,7 +761,7 @@ public class AnnotationFileParser {
 
         recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
-        annotate(type, decl.getAnnotations());
+        annotate(type, decl.getAnnotations(), decl);
 
         final List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
         final List<TypeParameter> typeParameters = decl.getTypeParameters();
@@ -823,7 +824,7 @@ public class AnnotationFileParser {
 
         recordDeclAnnotation(elt, decl.getAnnotations(), stubAnnos);
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
-        annotate(type, decl.getAnnotations());
+        annotate(type, decl.getAnnotations(), decl);
 
         putMerge(stubAnnos.atypes, elt, type);
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
@@ -855,7 +856,7 @@ public class AnnotationFileParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annotatedSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null, decl);
                 }
             }
         }
@@ -871,7 +872,7 @@ public class AnnotationFileParser {
                                     + " from type "
                                     + type);
                 } else {
-                    annotate(annotatedSupertype, supertype, null);
+                    annotate(annotatedSupertype, supertype, null, decl);
                 }
             }
         }
@@ -910,10 +911,11 @@ public class AnnotationFileParser {
             annotate(
                     methodType.getReturnType(),
                     ((MethodDeclaration) decl).getType(),
-                    decl.getAnnotations());
+                    decl.getAnnotations(),
+                    decl);
         } else {
             assert decl.isConstructorDeclaration();
-            annotate(methodType.getReturnType(), decl.getAnnotations());
+            annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
         }
 
         // Parameters
@@ -935,12 +937,14 @@ public class AnnotationFileParser {
                 // Add declaration annotations.
                 annotate(
                         methodType.getReceiverType(),
-                        decl.getReceiverParameter().get().getAnnotations());
+                        decl.getReceiverParameter().get().getAnnotations(),
+                        decl);
                 // Add type annotations.
                 annotate(
                         methodType.getReceiverType(),
                         decl.getReceiverParameter().get().getType(),
-                        decl.getReceiverParameter().get().getAnnotations());
+                        decl.getReceiverParameter().get().getAnnotations(),
+                        decl);
             }
         }
 
@@ -993,12 +997,13 @@ public class AnnotationFileParser {
                 annotate(
                         ((AnnotatedArrayType) paramType).getComponentType(),
                         param.getType(),
-                        param.getAnnotations());
+                        param.getAnnotations(),
+                        parameter);
                 // The "VarArgsAnnotations" are those just before "...".
-                annotate(paramType, param.getVarArgsAnnotations());
+                annotate(paramType, param.getVarArgsAnnotations(), parameter);
             } else {
-                annotate(paramType, param.getType(), param.getAnnotations());
-                putMerge(stubAnnos.atypes, paramElt, paramType);
+                annotate(paramType, param.getType(), param.getAnnotations(), parameter);
+                putMerge(stubAnnos.atypes, paramElt, paramType, parameter);
             }
         }
     }
@@ -1289,7 +1294,8 @@ public class AnnotationFileParser {
      * Annotate the type with the given type annotations, removing any existing annotations from the
      * same qualifier hierarchies.
      */
-    private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {
+    private void annotate(
+            AnnotatedTypeMirror type, List<AnnotationExpr> annotations, NodeWithRange astNode) {
         if (annotations == null) {
             return;
         }
@@ -1298,8 +1304,7 @@ public class AnnotationFileParser {
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
-                stubWarnNotFound(
-                        String.format("Unknown annotation %s in %s", annotation, filename));
+                stubWarnNotFound(astNode, "Unknown annotation " + annotation);
             }
         }
     }
