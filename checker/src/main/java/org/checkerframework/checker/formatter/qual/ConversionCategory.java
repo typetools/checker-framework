@@ -2,10 +2,12 @@ package org.checkerframework.checker.formatter.qual;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -31,6 +33,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * @see Format
  * @checker_framework.manual #formatter-checker Format String Checker
  */
+@SuppressWarnings("unchecked") // ".class" expressions in varargs position
 @AnnotatedFor("nullness")
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */
@@ -131,7 +134,54 @@ public enum ConversionCategory {
      */
     ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
         this.chars = chars;
-        this.types = types;
+        if (types == null) {
+            this.types = types;
+        } else {
+            List<Class<?>> typesWithPrimitives = new ArrayList<>();
+            for (Class<?> type : types) {
+                typesWithPrimitives.add(type);
+                Class<?> unwrapped = unwrapPrimitive(type);
+                if (unwrapped != null) {
+                    typesWithPrimitives.add(unwrapped);
+                }
+            }
+            this.types = typesWithPrimitives.toArray(new Class<?>[typesWithPrimitives.size()]);
+        }
+    }
+
+    /**
+     * If the given class is a primitive wrapper, return the corresponding primitive class.
+     * Otherwise return null.
+     *
+     * @param c a class
+     * @return the unwrapped primitive, or null
+     */
+    private static @Nullable Class<? extends Object> unwrapPrimitive(Class<?> c) {
+        if (c == Byte.class) {
+            return byte.class;
+        }
+        if (c == Character.class) {
+            return char.class;
+        }
+        if (c == Short.class) {
+            return short.class;
+        }
+        if (c == Integer.class) {
+            return int.class;
+        }
+        if (c == Long.class) {
+            return long.class;
+        }
+        if (c == Float.class) {
+            return float.class;
+        }
+        if (c == Double.class) {
+            return double.class;
+        }
+        if (c == Boolean.class) {
+            return boolean.class;
+        }
+        return null;
     }
 
     /**
