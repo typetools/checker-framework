@@ -413,9 +413,15 @@ task testWPIJaifs(type: Test) {
         List<File> jaifs = fileTree("${buildDir}/whole-program-inference/").matching {
             include '*.jaif'
         }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${buildDir}/whole-program-inference/")
+        }
         List<File> javas = fileTree("tests/whole-program-inference/annotated/").matching {
             include '*.java'
         }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in tests/whole-program-inference/annotated/")
+        }
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.

@@ -7,12 +7,17 @@ The `-Ainfer` command-line argument now infers
 
 The Called Methods Checker supports the -AdisableReturnsReceiver command-line option.
 
+The Format String Checker recognizes Error Prone's `@FormatMethod` annotation.
+
 Implementation details:
 
 Class renamings:
  * `StubParser` => `AnnotationFileParser`
  * `Receiver` => `JavaExpression`
      *  also related class and method renamings
+
+Method deprecations:
+ * Deprecated `AnnotatedTypeFactory.addAliasedAnnotation`; use `addAliasedTypeAnnotation`
 
 ---------------------------------------------------------------------------
 

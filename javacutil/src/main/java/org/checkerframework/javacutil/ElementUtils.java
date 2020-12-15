@@ -33,6 +33,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -317,8 +318,11 @@ public class ElementUtils {
 
     /**
      * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
+     *
+     * @param elt some element
+     * @return true if the element is declared in ByteCode
      */
-    public static boolean isElementFromByteCode(Element elt) {
+    public static boolean isElementFromByteCode(@Nullable Element elt) {
         if (elt == null) {
             return false;
         }
@@ -327,33 +331,12 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
                 // The class file could be a .java file
-                return clss.classfile.getName().endsWith(".class");
+                return clss.classfile.getKind() == Kind.CLASS;
             } else {
-                return false;
+                return elt.asType().getKind().isPrimitive();
             }
         }
-        return isElementFromByteCodeHelper(elt.getEnclosingElement());
-    }
-
-    /**
-     * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
-     */
-    private static boolean isElementFromByteCodeHelper(Element elt) {
-        if (elt == null) {
-            return false;
-        }
-        if (elt instanceof Symbol.ClassSymbol) {
-            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if (null != clss.classfile) {
-                // The class file could be a .java file
-                return (clss.classfile.getName().endsWith(".class")
-                        || clss.classfile.getName().endsWith(".class)")
-                        || clss.classfile.getName().endsWith(".class)]"));
-            } else {
-                return false;
-            }
-        }
-        return isElementFromByteCodeHelper(elt.getEnclosingElement());
+        return isElementFromByteCode(elt.getEnclosingElement());
     }
 
     /** Returns the field of the class or {@code null} if not found. */
