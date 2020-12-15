@@ -155,7 +155,7 @@ public class AnnotationFileParser {
      * fully-qualified name.
      *
      * <p>The map is populated from import statements and also by {@link #getAnnotation(
-     * AnnotationExpr, Map, NodeWithRange)} for annotations that are used fully-qualified.
+     * AnnotationExpr, Map)} for annotations that are used fully-qualified.
      *
      * @see #getAllAnnotations
      */
@@ -1319,7 +1319,7 @@ public class AnnotationFileParser {
             return;
         }
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations, astNode);
+            AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations);
             if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
             } else {
@@ -1348,7 +1348,7 @@ public class AnnotationFileParser {
         }
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations, astNode);
+            AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations);
             if (annoMirror != null) {
                 // The @Target annotation on `annotation`/`annoMirror`
                 Target target =
@@ -1823,13 +1823,10 @@ public class AnnotationFileParser {
      * @param annotation syntax tree for an annotation
      * @param allAnnotations map from simple name to annotation definition; side-effected by this
      *     method
-     * @param astNode where to report errors
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
-            AnnotationExpr annotation,
-            Map<String, TypeElement> allAnnotations,
-            NodeWithRange<?> astNode) {
+            AnnotationExpr annotation, Map<String, TypeElement> allAnnotations) {
 
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
@@ -1862,10 +1859,10 @@ public class AnnotationFileParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    boolean success = builderAddElement(builder, member, exp, astNode);
+                    boolean success = builderAddElement(builder, member, exp);
                     if (!success) {
                         warn(
-                                astNode,
+                                exp,
                                 "getAnnotation(%s) => null because builderAddElement(%s, %s, %s) => false",
                                 annotation,
                                 builder,
@@ -1879,14 +1876,14 @@ public class AnnotationFileParser {
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
-            Expression valexpr = sglanno.getMemberValue();
-            boolean success = builderAddElement(builder, "value", valexpr, astNode);
+            Expression valExpr = sglanno.getMemberValue();
+            boolean success = builderAddElement(builder, "value", valExpr);
             if (!success) {
                 warn(
-                        astNode,
+                        valExpr,
                         "For annotation %s, could not add %s to builder",
                         annotation,
-                        valexpr,
+                        valExpr,
                         builder);
                 return null;
             }
@@ -1902,21 +1899,20 @@ public class AnnotationFileParser {
      * @param name the name of an annotation element/argument, used for diagnostic messages
      * @param expr the expression to determine the value of
      * @param valueKind the type of the result
-     * @param astNode where to report errors
      * @return the value of {@code expr}, or null if some problem occurred getting the value
      */
     private @Nullable Object getValueOfExpressionInAnnotation(
-            String name, Expression expr, TypeKind valueKind, NodeWithRange<?> astNode) {
+            String name, Expression expr, TypeKind valueKind) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
             VariableElement elem;
             if (expr instanceof NameExpr) {
-                elem = findVariableElement((NameExpr) expr, astNode);
+                elem = findVariableElement((NameExpr) expr);
             } else {
-                elem = findVariableElement((FieldAccessExpr) expr, astNode);
+                elem = findVariableElement((FieldAccessExpr) expr);
             }
             if (elem == null) {
                 warn(
-                        astNode,
+                        expr,
                         "Field %s [%s] not found in getValueOfExpressionInAnnotation(%s, %s [%s], %s)",
                         expr,
                         expr.getClass(),
@@ -1960,15 +1956,12 @@ public class AnnotationFileParser {
                     if (((UnaryExpr) expr).getOperator() == UnaryExpr.Operator.MINUS) {
                         Object value =
                                 getValueOfExpressionInAnnotation(
-                                        name,
-                                        ((UnaryExpr) expr).getExpression(),
-                                        valueKind,
-                                        astNode);
+                                        name, ((UnaryExpr) expr).getExpression(), valueKind);
                         if (value instanceof Number) {
                             return convert((Number) value, valueKind, true);
                         }
                     }
-                    warn(astNode, "Unexpected Unary annotation expression: " + expr);
+                    warn(expr, "Unexpected Unary annotation expression: " + expr);
                     return null;
             }
         } else if (expr instanceof ClassExpr) {
@@ -1980,16 +1973,16 @@ public class AnnotationFileParser {
             }
             TypeElement typeElement = findTypeOfName(className);
             if (typeElement == null) {
-                warn(astNode, "AnnotationFileParser: unknown class name " + className);
+                warn(expr, "AnnotationFileParser: unknown class name " + className);
                 return null;
             }
 
             return typeElement.asType();
         } else if (expr instanceof NullLiteralExpr) {
-            warn(astNode, "Illegal annotation value null, for %s", name);
+            warn(expr, "Illegal annotation value null, for %s", name);
             return null;
         } else {
-            warn(astNode, "Unexpected annotation expression: " + expr);
+            warn(expr, "Unexpected annotation expression: " + expr);
             return null;
         }
     }
@@ -2087,11 +2080,9 @@ public class AnnotationFileParser {
      * @param builder the builder to side-effect
      * @param name the element name
      * @param expr the element value
-     * @param astNode where to report errors
      * @return true if the expression was parsed and added to {@code builder}, false otherwise
      */
-    private boolean builderAddElement(
-            AnnotationBuilder builder, String name, Expression expr, NodeWithRange<?> astNode) {
+    private boolean builderAddElement(AnnotationBuilder builder, String name, Expression expr) {
         ExecutableElement var = builder.findElement(name);
         TypeMirror declaredType = var.getReturnType();
         TypeKind valueKind;
@@ -2103,7 +2094,7 @@ public class AnnotationFileParser {
         if (expr instanceof ArrayInitializerExpr) {
             if (declaredType.getKind() != TypeKind.ARRAY) {
                 warn(
-                        astNode,
+                        expr,
                         "unhandled annotation attribute type: "
                                 + expr
                                 + " and declaredType: "
@@ -2116,15 +2107,14 @@ public class AnnotationFileParser {
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
                 values[i] =
-                        getValueOfExpressionInAnnotation(
-                                name, arrayExpressions.get(i), valueKind, astNode);
+                        getValueOfExpressionInAnnotation(name, arrayExpressions.get(i), valueKind);
                 if (values[i] == null) {
                     return false;
                 }
             }
             builder.setValue(name, values);
         } else {
-            Object value = getValueOfExpressionInAnnotation(name, expr, valueKind, astNode);
+            Object value = getValueOfExpressionInAnnotation(name, expr, valueKind);
             if (value == null) {
                 return false;
             }
@@ -2186,11 +2176,9 @@ public class AnnotationFileParser {
      * Returns the element for the given variable.
      *
      * @param nexpr the variable name
-     * @param astNode where to report errors
      * @return the element for the given variable
      */
-    private @Nullable VariableElement findVariableElement(
-            NameExpr nexpr, NodeWithRange<?> astNode) {
+    private @Nullable VariableElement findVariableElement(NameExpr nexpr) {
         if (findVariableElementNameCache.containsKey(nexpr)) {
             return findVariableElementNameCache.get(nexpr);
         }
@@ -2208,13 +2196,13 @@ public class AnnotationFileParser {
                                 typeName,
                                 String.format(
                                         "Enclosing type of static import %s not found", fieldName),
-                                astNode);
+                                nexpr);
 
                 if (enclType == null) {
                     return null;
                 } else {
                     importFound = true;
-                    res = findFieldElement(enclType, fieldName, astNode);
+                    res = findFieldElement(enclType, fieldName, nexpr);
                     break;
                 }
             }
@@ -2223,7 +2211,7 @@ public class AnnotationFileParser {
         // Imported but invalid types or fields will have warnings from above,
         // only warn on fields missing an import
         if (res == null && !importFound) {
-            stubWarnNotFound(astNode, "Static field " + nexpr.getName() + " is not imported");
+            stubWarnNotFound(nexpr, "Static field " + nexpr.getName() + " is not imported");
         }
 
         findVariableElementNameCache.put(nexpr, res);
@@ -2241,12 +2229,10 @@ public class AnnotationFileParser {
      * Returns the VariableElement for the given field access.
      *
      * @param faexpr a field access expression
-     * @param astNode where to report errors
      * @return the VariableElement for the given field access
      */
     @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
-    private @Nullable VariableElement findVariableElement(
-            FieldAccessExpr faexpr, NodeWithRange<?> astNode) {
+    private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (findVariableElementFieldCache.containsKey(faexpr)) {
             return findVariableElementFieldCache.get(faexpr);
         }
@@ -2270,12 +2256,12 @@ public class AnnotationFileParser {
             }
 
             if (rcvElt == null) {
-                stubWarnNotFound(astNode, "Type " + faexpr.getScope() + " not found");
+                stubWarnNotFound(faexpr, "Type " + faexpr.getScope() + " not found");
                 return null;
             }
         }
 
-        VariableElement res = findFieldElement(rcvElt, faexpr.getNameAsString(), astNode);
+        VariableElement res = findFieldElement(rcvElt, faexpr.getNameAsString(), faexpr);
         findVariableElementFieldCache.put(faexpr, res);
         return res;
     }
