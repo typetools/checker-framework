@@ -66,9 +66,9 @@ public class KeyForAnnotatedTypeFactory
         super(checker, true);
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.KeyForDecl", KeyFor.class, true);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.KeyForType", KeyFor.class, true);
 
         // While strictly required for soundness, this leads to too many false positives.  Printing
