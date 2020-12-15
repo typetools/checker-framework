@@ -140,7 +140,7 @@ public class TypeAnnotationUtils {
             }
             // This requires the array elements to be in the same order.  Is that the right thing?
             for (int i = 0; i < list1.size(); i++) {
-                if (!attributeEquals(list1.get(i), list2.get(1), types)) {
+                if (!attributeEquals(list1.get(i), list2.get(i), types)) {
                     return false;
                 }
             }
