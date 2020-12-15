@@ -48,6 +48,7 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
+import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -1297,6 +1298,7 @@ public class AnnotationFileParser {
      *
      * @param type array type
      * @param annotations annotations to add
+     * @param astNode where to report errors
      */
     private void annotateInnermostComponentType(
             AnnotatedArrayType type, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
@@ -1332,6 +1334,7 @@ public class AnnotationFileParser {
      * @param elt the element to be annotated
      * @param annotations set of annotations that may be applicable to elt
      * @param stubAnnos annotations from the stub file; side-effected by this method
+     * @param astNode where to report errors
      */
     private void recordDeclAnnotation(
             Element elt,
@@ -1354,9 +1357,7 @@ public class AnnotationFileParser {
                     annos.add(annoMirror);
                 }
             } else {
-                stubWarnNotFound(
-                        astNode,
-                        String.format("Unknown annotation %s in %s", annotation, filename));
+                stubWarnNotFound(astNode, String.format("Unknown annotation %s", annotation));
             }
         }
         String eltName = ElementUtils.getQualifiedName(elt);
@@ -1439,6 +1440,7 @@ public class AnnotationFileParser {
      * @param typeDecl a JavaParser type declaration
      * @param typeElt the element for {@code typeDecl}
      * @return a mapping from elements to their declaration in a stub file
+     * @param astNode where to report errors
      */
     private Map<Element, BodyDeclaration<?>> getMembers(
             TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
@@ -1525,6 +1527,7 @@ public class AnnotationFileParser {
      *
      * @param type the type to search for
      * @param types the list of AnnotatedDeclaredTypes to search in
+     * @param astNode where to report errors
      * @return the annotated type in {@code types} corresponding to {@code type}, or null if none
      *     exists
      */
@@ -1617,6 +1620,7 @@ public class AnnotationFileParser {
      *
      * @param typeElt type element where enum constant element should be looked for
      * @param enumConstDecl the declaration of the enum constant
+     * @param astNode where to report errors
      * @return enum constant element in typeElt with the provided name or null if enum constant
      *     element is not found
      */
@@ -1732,6 +1736,7 @@ public class AnnotationFileParser {
      *
      * @param typeElt type element where field element should be looked for
      * @param fieldName field name that should be found
+     * @param astNode where to report errors
      * @return field element in typeElt with the provided name or null if field element is not found
      */
     private @Nullable VariableElement findFieldElement(
@@ -1775,6 +1780,7 @@ public class AnnotationFileParser {
      * @param typeName a type name
      * @param msg a warning message to issue if the type element for {@code typeName} cannot be
      *     found
+     * @param astNode where to report errors
      * @return the type element for the given fully-qualified type name, or null
      */
     private TypeElement getTypeElement(
@@ -1801,6 +1807,7 @@ public class AnnotationFileParser {
      * @param annotation syntax tree for an annotation
      * @param allAnnotations map from simple name to annotation definition; side-effected by this
      *     method
+     * @param astNode where to report errors
      * @return the AnnotationMirror for the annotation
      */
     private AnnotationMirror getAnnotation(
@@ -1879,6 +1886,7 @@ public class AnnotationFileParser {
      * @param name the name of an annotation element/argument, used for diagnostic messages
      * @param expr the expression to determine the value of
      * @param valueKind the type of the result
+     * @param astNode where to report errors
      * @return the value of {@code expr}, or null if some problem occurred getting the value
      */
     private @Nullable Object getValueOfExpressionInAnnotation(
@@ -2063,6 +2071,7 @@ public class AnnotationFileParser {
      * @param builder the builder to side-effect
      * @param name the element name
      * @param expr the element value
+     * @param astNode where to report errors
      * @return true if the expression was parsed and added to {@code builder}, false otherwise
      */
     private boolean builderAddElement(
@@ -2209,6 +2218,7 @@ public class AnnotationFileParser {
      * Returns the VariableElement for the given field access.
      *
      * @param faexpr a field access expression
+     * @param astNode where to report errors
      * @return the VariableElement for the given field access
      */
     @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
@@ -2370,12 +2380,11 @@ public class AnnotationFileParser {
         if (!isJdkAsStub) {
             String formatted = String.format(warning, args);
             if (warnings.add(formatted)) {
-                Optional<Position> begin = astNode != null ? Optional.empty() : astNode.getBegin();
-                String withLine =
-                        filename + ":" + (begin.isPresent() ? begin.get() + ":" : "") + formatted;
                 processingEnv
                         .getMessager()
-                        .printMessage(javax.tools.Diagnostic.Kind.WARNING, withLine);
+                        .printMessage(
+                                javax.tools.Diagnostic.Kind.WARNING,
+                                fileAndLine(astNode) + formatted);
             }
         }
     }
@@ -2393,6 +2402,23 @@ public class AnnotationFileParser {
                     .printMessage(
                             javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
         }
+    }
+
+    /**
+     * Return the prefix for a warning line: A file name, line number, and column number.
+     *
+     * @param astNode where to report errors
+     * @return file name, line number, and column number
+     */
+    private String fileAndLine(NodeWithRange<?> astNode) {
+        String filenamePrinted =
+                (processingEnv.getOptions().containsKey("nomsgtext")
+                        ? new File(filename).getName()
+                        : filename);
+
+        Optional<Position> begin = astNode == null ? Optional.empty() : astNode.getBegin();
+        String lineAndColumn = (begin.isPresent() ? begin.get() + ":" : "");
+        return filenamePrinted + ":" + lineAndColumn + " ";
     }
 
     ///////////////////////////////////////////////////////////////////////////
