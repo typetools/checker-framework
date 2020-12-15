@@ -83,9 +83,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
+        addAliasedTypeAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
 
-        addAliasedAnnotation("jdk.jfr.Unsigned", UNSIGNED);
+        addAliasedTypeAnnotation("jdk.jfr.Unsigned", UNSIGNED);
 
         postInit();
     }

@@ -211,18 +211,18 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyNull.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        NONNULL_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NONNULL));
-        NULLABLE_ALIASES.forEach(annotation -> addAliasedAnnotation(annotation, NULLABLE));
+        NONNULL_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NONNULL));
+        NULLABLE_ALIASES.forEach(annotation -> addAliasedTypeAnnotation(annotation, NULLABLE));
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullDecl", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl",
                 MONOTONIC_NONNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.PolyNullType", POLYNULL);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 

@@ -151,48 +151,48 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
         evaluator = new ReflectiveEvaluator(checker, this, reportEvalWarnings);
 
-        addAliasedAnnotation("android.support.annotation.IntRange", IntRange.class, true);
+        addAliasedTypeAnnotation("android.support.annotation.IntRange", IntRange.class, true);
 
         // The actual ArrayLenRange is created by
         // {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)};
         // this line just registers the alias. The BottomVal is never used.
-        addAliasedAnnotation(MinLen.class, BOTTOMVAL);
+        addAliasedTypeAnnotation(MinLen.class, BOTTOMVAL);
 
         // @Positive is aliased here because @Positive provides useful
         // information about @MinLen annotations.
         // @NonNegative and @GTENegativeOne are aliased similarly so
         // that it's possible to overwrite a function annotated to return
         // @NonNegative with, for instance, a function that returns an @IntVal(0).
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.Positive", createIntRangeFromPositive());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.NonNegative",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.GTENegativeOne",
                 createIntRangeFromGTENegativeOne());
         // Must also alias any alias of three annotations above:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.LengthOf",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexFor",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrHigh",
                 createIntRangeFromNonNegative());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.IndexOrLow",
                 createIntRangeFromGTENegativeOne());
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.index.qual.SubstringIndexFor",
                 createIntRangeFromGTENegativeOne());
 
         // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
-        addAliasedAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
+        addAliasedTypeAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
 
         // EnumVal is treated as StringVal internally by the checker.
-        addAliasedAnnotation(EnumVal.class, StringVal.class, true);
+        addAliasedTypeAnnotation(EnumVal.class, StringVal.class, true);
 
         methods = new ValueMethodIdentifier(processingEnv);
 
