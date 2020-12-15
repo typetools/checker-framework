@@ -156,9 +156,6 @@ public enum ConversionCategory {
      * @param c a class
      * @return the unwrapped primitive, or null
      */
-    // With this @SuppressWarnings annotation, `./gradlew :checker-qual:checkNullness` yields
-    // nullness:unneeded.suppression.
-    // @SuppressWarnings("nullness:return.type.incompatible") // Checker Framework bug?
     private static @Nullable Class<? extends Object> unwrapPrimitive(Class<?> c) {
         if (c == Byte.class) {
             return byte.class;
