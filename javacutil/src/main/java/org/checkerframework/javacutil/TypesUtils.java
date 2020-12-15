@@ -31,6 +31,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
+import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.ImmutableTypes;
 
@@ -83,6 +84,63 @@ public final class TypesUtils {
     public static ArrayType createArrayType(TypeMirror componentType, Types types) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
+    }
+
+    /// Creating a Class<?>
+
+    /**
+     * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
+     * cannot determine anything more specific.
+     *
+     * @param typeMirror a TypeMirror
+     * @return the class for {@code typeMirror}
+     */
+    public static Class<?> getClassFromType(TypeMirror typeMirror) {
+
+        switch (typeMirror.getKind()) {
+            case INT:
+                return int.class;
+            case LONG:
+                return long.class;
+            case SHORT:
+                return short.class;
+            case BYTE:
+                return byte.class;
+            case CHAR:
+                return char.class;
+            case DOUBLE:
+                return double.class;
+            case FLOAT:
+                return float.class;
+            case BOOLEAN:
+                return boolean.class;
+
+            case ARRAY:
+                Class<?> componentClass =
+                        getClassFromType(((ArrayType) typeMirror).getComponentType());
+                // In Java 12, use this instead:
+                // return fooClass.arrayType();
+                return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+
+            case DECLARED:
+                // BUG: need to compute a @ClassGetName, but this code computes a
+                // @CanonicalNameOrEmpty.  They are different for inner classes.
+                @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
+                @DotSeparatedIdentifiers String typeString =
+                        TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+                if (typeString.equals("<nulltype>")) {
+                    return void.class;
+                }
+
+                try {
+                    return Class.forName(typeString);
+                } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                    return Object.class;
+                }
+
+            default:
+                return Object.class;
+        }
     }
 
     /// Getters
