@@ -494,9 +494,7 @@ public class WholeProgramInferenceScenesStorage {
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
         }
 
-        // PROBLEM:  This causes pre- and post-conditions to be ignored, though they might be
-        // stronger.  Add a formal parameter.
-        // Only update the ATypeElement if there are no explicit annotations
+        // Only update the ATypeElement if there are no explicit annotations.
         if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 addAnnotationsToATypeElement(

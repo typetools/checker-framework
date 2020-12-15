@@ -2341,7 +2341,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Converts an AnnotationMirror to a Class.
+     * Converts an AnnotationMirror to a Class. Throws an exception if it is not able to do so.
      *
      * @param am an AnnotationMirror
      * @return the Class corresponding to the given AnnotationMirror
@@ -2354,8 +2354,6 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    // TODO: Implement all the below, probably by copying from the above or abstracting it.
-
     /**
      * Return the string representation of postcondition annotations for the given AMethod. Does not
      * modify the AMethod.
@@ -2367,6 +2365,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public List<AnnotationMirror> getPostconditionAnnotations(
             AMethod m, List<AnnotationMirror> preconds) {
+        // TODO: Is this implementation adequate?  Do I need to copy or abstract all the logic in
+        // getPreconditionAnnotations above?
         List<AnnotationMirror> result = new ArrayList<>();
         for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
             result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
@@ -2374,12 +2374,9 @@ public abstract class GenericAnnotatedTypeFactory<
         return result;
     }
 
-    // TODO: Implement this here in this class, reading @PreconditionAnnotation meta-annotations.
-    // That would be more general and would eliminate most but not all of the code in overriding
-    // implementations.
     /**
      * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns null if none can
-     * be created, because the qualifier has elements/arguments, which {@code @RequiresQualifier}
+     * be created, because the qualifier has elements/arguments, which {@code @EnsuresQualifier}
      * does not support.
      *
      * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt",
@@ -2394,7 +2391,8 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public List<AnnotationMirror> getPostconditionAnnotation(
             VariableElement elt, AField f, List<AnnotationMirror> preconds) {
-        // TODO: implement outputting "@EnsuresQualifier".
+        // TODO: implement outputting "@EnsuresQualifier".  This implementation does nothing.
+        // Copy code from getPreconditionAnnotation above?
         return Collections.emptyList();
     }
 }
