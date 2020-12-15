@@ -32,7 +32,9 @@ public class VarargsFormatter {
         f.format("%d %s %s", 132, new Object[2]);
         // :: error: (argument.type.incompatible)
         f.format("%d %d", new Object[2], 123);
-        // :: warning: (format.specifier.null) :: warning: (format.indirect.arguments)
+        // "error: (format.specifier.null)" could be a warning rather than an error, but that would
+        // require reasoning about the values in an array construction expression.
+        // :: error: (format.specifier.null) :: warning: (format.indirect.arguments)
         f.format("%d %<f", new Object[1]);
 
         // too many arguments
