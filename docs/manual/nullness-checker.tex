@@ -2,8 +2,8 @@
 \chapterAndLabel{Nullness Checker}{nullness-checker}
 
 If the Nullness Checker issues no warnings for a given program, then
-running that program will never throw a null pointer exception.  This
-guarantee enables a programmer to prevent run-time errors.
+running that program will never throw a null pointer exception.  In
+other words, the Nullness Checker prevents all \<NullPointerException>s.
 See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
@@ -79,6 +79,9 @@ The checker performs additional checks if certain \code{-Alint}
 command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
+
+Section~\ref{checker-guarantees} notes some limitations to guarantees made
+by the Checker Framework.
 
 
 \subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}

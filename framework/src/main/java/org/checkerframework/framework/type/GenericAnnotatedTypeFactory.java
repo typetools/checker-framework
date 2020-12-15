@@ -58,7 +58,6 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.JavaExpressions;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -857,11 +856,11 @@ public abstract class GenericAnnotatedTypeFactory<
             throws JavaExpressionParseException {
         TypeMirror enclosingClass = TreeUtils.typeOf(TreeUtils.enclosingClass(currentPath));
 
-        JavaExpression r = JavaExpressions.getPseudoReceiver(currentPath, enclosingClass);
+        JavaExpression r = JavaExpression.getPseudoReceiver(currentPath, enclosingClass);
         JavaExpressionParseUtil.JavaExpressionContext context =
                 new JavaExpressionParseUtil.JavaExpressionContext(
                         r,
-                        JavaExpressions.getParametersOfEnclosingMethod(this, currentPath),
+                        JavaExpression.getParametersOfEnclosingMethod(this, currentPath),
                         this.getContext());
 
         return JavaExpressionParseUtil.parse(expression, context, currentPath, true);

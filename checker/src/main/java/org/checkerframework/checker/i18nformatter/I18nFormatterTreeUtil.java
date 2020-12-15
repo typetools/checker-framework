@@ -80,13 +80,14 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes an invalid formatter string and returns a syntax trees element that represents a {@link
-     * I18nInvalidFormat} annotation with the invalid formatter string as value.
+     * Creates an {@link I18nInvalidFormat} annotation with the given string as its value.
+     *
+     * @param invalidFormatString an invalid formatter string
+     * @return an {@link I18nInvalidFormat} annotation with the given string as its value
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class);
         builder.setValue("value", invalidFormatString);
         return builder.build();
     }
@@ -100,12 +101,13 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
-     * represents a {@link I18nFormat} annotation with the list as value.
+     * Creates a {@code @}{@link I18nFormat} annotation with the given list as its value.
+     *
+     * @param args conversion categories for the {@code @Format} annotation
+     * @return a {@code @}{@link I18nFormat} annotation with the given list as its value
      */
     public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, I18nFormat.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nFormat.class);
         builder.setValue("value", args);
         return builder.build();
     }
@@ -473,12 +475,7 @@ public class I18nFormatterTreeUtil {
                 // we did not recognize the parameter type
                 return false;
             }
-            for (Class<? extends Object> c : formatCat.types) {
-                if (c.isAssignableFrom(type)) {
-                    return true;
-                }
-            }
-            return false;
+            return formatCat.isAssignableFrom(type);
         }
     }
 
