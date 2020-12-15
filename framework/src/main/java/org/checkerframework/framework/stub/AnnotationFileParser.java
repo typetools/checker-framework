@@ -1862,15 +1862,15 @@ public class AnnotationFileParser {
                 for (MemberValuePair mvp : pairs) {
                     String member = mvp.getNameAsString();
                     Expression exp = mvp.getValue();
-                    boolean success = builderAddElement(builder, member, exp, astNode);
-                    if (!success) {
+                    String failure = builderAddElement(builder, member, exp, astNode);
+                    if (failure != null) {
                         warn(
                                 astNode,
-                                "getAnnotation(%s) => null because builderAddElement(%s, %s, %s) => false",
+                                "For annotation %s, could not add %s %s because %s",
                                 annotation,
-                                builder,
                                 member,
-                                exp);
+                                exp,
+                                failure);
                         return null;
                     }
                 }
@@ -1880,14 +1880,14 @@ public class AnnotationFileParser {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
             Expression valexpr = sglanno.getMemberValue();
-            boolean success = builderAddElement(builder, "value", valexpr, astNode);
-            if (!success) {
+            String failure = builderAddElement(builder, "value", valexpr, astNode);
+            if (failure == null) {
                 warn(
                         astNode,
-                        "For annotation %s, could not add %s to builder %s",
+                        "For annotation %s, could not add value %s because %s",
                         annotation,
                         valexpr,
-                        builder);
+                        failure);
                 return null;
             }
             return builder.build();
@@ -2088,9 +2088,10 @@ public class AnnotationFileParser {
      * @param name the element name
      * @param expr the element value
      * @param astNode where to report errors
-     * @return true if the expression was parsed and added to {@code builder}, false otherwise
+     * @return an error description, or null if the expression was parsed and added to {@code
+     *     builder}
      */
-    private boolean builderAddElement(
+    private String builderAddElement(
             AnnotationBuilder builder, String name, Expression expr, NodeWithRange<?> astNode) {
         ExecutableElement var = builder.findElement(name);
         TypeMirror declaredType = var.getReturnType();
@@ -2102,31 +2103,30 @@ public class AnnotationFileParser {
         }
         if (expr instanceof ArrayInitializerExpr) {
             if (declaredType.getKind() != TypeKind.ARRAY) {
-                warn(
-                        astNode,
-                        "unhandled annotation attribute type: "
-                                + expr
-                                + " and declaredType: "
-                                + declaredType);
-                return false;
+                return "unhandled annotation attribute type: "
+                        + expr
+                        + " and declaredType: "
+                        + declaredType;
             }
 
             List<Expression> arrayExpressions = ((ArrayInitializerExpr) expr).getValues();
             Object[] values = new Object[arrayExpressions.size()];
 
             for (int i = 0; i < arrayExpressions.size(); ++i) {
-                values[i] =
-                        getValueOfExpressionInAnnotation(
-                                name, arrayExpressions.get(i), valueKind, astNode);
+                expr = arrayExpressions.get(i);
+                values[i] = getValueOfExpressionInAnnotation(name, expr, valueKind, astNode);
                 if (values[i] == null) {
-                    return false;
+                    return String.format(
+                            "null expression for name=%s expr=%s, valueKind=%s",
+                            name, expr, valueKind);
                 }
             }
             builder.setValue(name, values);
         } else {
             Object value = getValueOfExpressionInAnnotation(name, expr, valueKind, astNode);
             if (value == null) {
-                return false;
+                return String.format(
+                        "null expression for name=%s expr=%s, valueKind=%s", name, expr, valueKind);
             }
             if (declaredType.getKind() == TypeKind.ARRAY) {
                 Object[] valueArray = {value};
@@ -2135,7 +2135,8 @@ public class AnnotationFileParser {
                 builderSetValue(builder, name, value);
             }
         }
-        return true;
+        // success
+        return null;
     }
 
     /**
