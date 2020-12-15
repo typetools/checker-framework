@@ -65,17 +65,17 @@ fi
 
 if [ "${has_java8}" = "yes" ] && [ ! -d "${JAVA8_HOME}" ]; then
     echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
-    exit 1
+    exit 6
 fi
 
 if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     echo "JAVA11_HOME is set to a non-existent directory ${JAVA11_HOME}"
-    exit 1
+    exit 7
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
     echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
-    exit 1
+    exit 8
 fi
 
 if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
@@ -85,7 +85,7 @@ fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     echo "CHECKERFRAMEWORK is set to a non-existent directory ${CHECKERFRAMEWORK}"
-    exit 2
+    exit 9
 fi
 
 if [ "x${DIR}" = "x" ]; then

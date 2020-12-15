@@ -172,7 +172,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}"
+    /bin/bash "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
@@ -192,7 +192,7 @@ done <"${INLIST}"
 
 popd || exit 5
 
-## This section is here rather than in wpi-summary.sh because cloc can be moderately expensive.
+## This section is here rather than in wpi-summary.sh because counting lines can be moderately expensive.
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
