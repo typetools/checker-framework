@@ -1884,7 +1884,7 @@ public class AnnotationFileParser {
             if (!success) {
                 warn(
                         astNode,
-                        "For annotation %s, could not add %s to builder %s",
+                        "For annotation %s, could not add %s to builder",
                         annotation,
                         valexpr,
                         builder);
