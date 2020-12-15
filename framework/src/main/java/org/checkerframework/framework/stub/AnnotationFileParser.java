@@ -1309,6 +1309,8 @@ public class AnnotationFileParser {
      * Annotate the type with the given type annotations, removing any existing annotations from the
      * same qualifier hierarchies.
      *
+     * @param type the type to annotate
+     * @param annotations the new annotations for the type
      * @param astNode where to report errors
      */
     private void annotate(
@@ -1725,6 +1727,13 @@ public class AnnotationFileParser {
         return null;
     }
 
+    /**
+     * Returns the element for the given variable.
+     *
+     * @param typeElt the type in which the variable is contained
+     * @param variable the variable whose element to return
+     * @return the element for the given variable
+     */
     private VariableElement findElement(TypeElement typeElt, VariableDeclarator variable) {
         final String fieldName = variable.getNameAsString();
         return findFieldElement(typeElt, fieldName, variable);
@@ -1792,6 +1801,13 @@ public class AnnotationFileParser {
         return classElement;
     }
 
+    /**
+     * Returns the element for the given package.
+     *
+     * @param packageName the package's name
+     * @param astNode where to report errors
+     * @return the element for the given package
+     */
     private PackageElement findPackage(String packageName, NodeWithRange<?> astNode) {
         PackageElement packageElement = elements.getPackageElement(packageName);
         if (packageElement == null) {
@@ -2166,6 +2182,13 @@ public class AnnotationFileParser {
      */
     private final Map<NameExpr, VariableElement> findVariableElementNameCache = new HashMap<>();
 
+    /**
+     * Returns the element for the given variable.
+     *
+     * @param nexpr the variable name
+     * @param astNode where to report errors
+     * @return the element for the given variable
+     */
     private @Nullable VariableElement findVariableElement(
             NameExpr nexpr, NodeWithRange<?> astNode) {
         if (findVariableElementNameCache.containsKey(nexpr)) {
