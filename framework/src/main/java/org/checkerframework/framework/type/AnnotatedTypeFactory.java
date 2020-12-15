@@ -1415,7 +1415,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type annotated type to which default annotations are added
      */
-    protected void addDefaultAnnotations(AnnotatedTypeMirror type) {
+    public void addDefaultAnnotations(AnnotatedTypeMirror type) {
         // Pass.
     }
 

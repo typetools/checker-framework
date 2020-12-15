@@ -154,10 +154,7 @@ public final class RegexUtil {
      * @param groups number of groups expected
      * @return true iff s is a regular expression with {@code groups} groups
      */
-    @SuppressWarnings({
-        "regex",
-        "allcheckers:deterministic"
-    }) // RegexUtil; for purity, catches an exception
+    @SuppressWarnings("regex") // RegexUtil; for purity, catches an exception
     @Pure
     // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
     // in RegexTransfer.
@@ -179,9 +176,7 @@ public final class RegexUtil {
      * @return true iff c is a regular expression
      */
     @SuppressWarnings({
-        "regex",
-        "allcheckers:purity.not.deterministic.call",
-        "lock"
+        "regex", "lock"
     }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
     @Pure
     @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
@@ -330,7 +325,7 @@ public final class RegexUtil {
      * @param p pattern whose groups to count
      * @return the count of groups in the argument
      */
-    @SuppressWarnings({"allcheckers:purity", "lock"}) // does not depend on object identity
+    @SuppressWarnings("lock") // does not depend on object identity
     @Pure
     private static int getGroupCount(Pattern p) {
         return p.matcher("").groupCount();
