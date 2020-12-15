@@ -1,4 +1,4 @@
-- compiler.warn.proc.messager: AnnotationFileParser: 1 problems while parsing stub file /home/mernst/research/types/checker-framework-fork-mernst-branch-jtreg-missing/checker/jtreg/stubs/issue1585/ParseError.astub:
+- compiler.warn.proc.messager: AnnotationFileParser: 1 problems while parsing stub file ParseError.astub:
 Encountered unexpected token: "{" "{"
     at line 3, column 17.
 

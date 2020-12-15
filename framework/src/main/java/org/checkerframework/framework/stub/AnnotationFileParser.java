@@ -45,6 +45,7 @@ import com.github.javaparser.ast.type.ReferenceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.WildcardType;
+import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -504,7 +505,10 @@ public class AnnotationFileParser {
         } catch (ParseProblemException e) {
             StringJoiner message = new StringJoiner(LINE_SEPARATOR);
             message.add(
-                    e.getProblems().size() + " problems while parsing stub file " + filename + ":");
+                    e.getProblems().size()
+                            + " problems while parsing stub file "
+                            + new File(filename).getName()
+                            + ":");
             // Manually build up the message, to get verbose location information.
             for (Problem p : e.getProblems()) {
                 message.add(p.getVerboseMessage());
