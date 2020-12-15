@@ -44,7 +44,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import scenelib.annotations.el.AClass;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -290,7 +290,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     private AField vivifyAndAddTypeMirrorToContract(
             AMethod amethod, Analysis.BeforeOrAfter preOrPost, VariableElement fieldElement) {
-        TypeMirror typeMirror = TypesUtils.unannotatedType(fieldElement.asType());
+        TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
 
         switch (preOrPost) {
             case BEFORE:
