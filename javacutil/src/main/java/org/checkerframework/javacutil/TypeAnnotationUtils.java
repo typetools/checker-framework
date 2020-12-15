@@ -27,6 +27,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * A collection of helper methods related to type annotation handling.
@@ -172,7 +173,11 @@ public class TypeAnnotationUtils {
                 return false;
             }
             for (Symbol.MethodSymbol key : map1.keySet()) {
-                if (!attributeEquals(map1.get(key), map2.get(key), types)) {
+                Attribute attr1 = map1.get(key);
+                @SuppressWarnings(
+                        "nullness:assignment.type.incompatible") // same keys in map1 & map2
+                @NonNull Attribute attr2 = map2.get(key);
+                if (!attributeEquals(attr1, attr2, types)) {
                     return false;
                 }
             }
