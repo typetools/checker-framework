@@ -322,6 +322,24 @@ public enum ConversionCategory {
         return GENERAL;
     }
 
+    /**
+     * Returns true if {@code argType} can be an argument used by this format specifier.
+     *
+     * @param argType an argument type
+     * @return true if {@code argType} can be an argument used by this format specifier
+     */
+    public boolean isAssignableFrom(Class<?> argType) {
+        if (types == null) {
+            return true;
+        }
+        for (Class<?> c : types) {
+            if (c.isAssignableFrom(argType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns a pretty printed {@link ConversionCategory}. */
     @Pure
     @Override
