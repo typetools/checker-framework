@@ -478,12 +478,7 @@ public class I18nFormatterTreeUtil {
                 // we did not recognize the parameter type
                 return false;
             }
-            for (Class<? extends Object> c : formatCat.types) {
-                if (c.isAssignableFrom(type)) {
-                    return true;
-                }
-            }
-            return false;
+            return formatCat.isAssignableFrom(type);
         }
     }
 
