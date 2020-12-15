@@ -82,6 +82,10 @@ public class TypeAnnotationUtils {
      * @param n2 the second Name to compare
      * @return true if the two names represent the same string
      */
+    @SuppressWarnings(
+            "interning:unnecessary.equals" // Name is interned within a single instance of javac,
+    // but call equals anyway out of paranoia.
+    )
     private static boolean contentEquals(Name n1, Name n2) {
         if (n1.getClass() == n2.getClass()) {
             return n1.equals(n2);
