@@ -3,10 +3,10 @@
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-public class ThisLiteralQualified {
-    public ThisLiteralQualified() {
+public class ThisKeywordQualified {
+    public ThisKeywordQualified() {
         super();
-        @UnderInitialization ThisLiteralQualified a = this;
-        @UnderInitialization ThisLiteralQualified b = ThisLiteralQualified.this;
+        @UnderInitialization ThisKeywordQualified a = this;
+        @UnderInitialization ThisKeywordQualified b = ThisKeywordQualified.this;
     }
 }

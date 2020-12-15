@@ -57,7 +57,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisKeywordNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -650,7 +650,7 @@ public class JavaExpressionParseUtil {
                 locationOfField =
                         JavaExpression.fromNode(
                                 context.checkerContext.getAnnotationProvider(),
-                                new ImplicitThisLiteralNode(receiverType));
+                                new ImplicitThisKeywordNode(receiverType));
             }
             if (locationOfField instanceof ClassName) {
                 throw new ParseRuntimeException(
@@ -810,7 +810,7 @@ public class JavaExpressionParseUtil {
                                 TreeUtils.elementFromDeclaration(methodDeclaration));
                 receiver = new ClassNameNode(enclosingType, classElt);
             } else {
-                receiver = new ImplicitThisLiteralNode(enclosingType);
+                receiver = new ImplicitThisKeywordNode(enclosingType);
             }
             JavaExpression internalReceiver =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
@@ -829,7 +829,7 @@ public class JavaExpressionParseUtil {
         public static JavaExpressionContext buildContextForLambda(
                 LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
             TypeMirror enclosingType = TreeUtils.typeOf(TreeUtils.enclosingClass(path));
-            Node receiver = new ImplicitThisLiteralNode(enclosingType);
+            Node receiver = new ImplicitThisKeywordNode(enclosingType);
             JavaExpression internalReceiver =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);
             List<JavaExpression> internalArguments = new ArrayList<>();
@@ -870,7 +870,7 @@ public class JavaExpressionParseUtil {
          */
         public static JavaExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
-            Node receiver = new ImplicitThisLiteralNode(TreeUtils.typeOf(classTree));
+            Node receiver = new ImplicitThisKeywordNode(TreeUtils.typeOf(classTree));
 
             JavaExpression internalReceiver =
                     JavaExpression.fromNode(checkerContext.getAnnotationProvider(), receiver);

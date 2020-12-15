@@ -8,6 +8,10 @@ Class renamings:
  * `StubParser` => `AnnotationFileParser`
  * `Receiver` => `JavaExpression`
      *  also related class and method renamings
+ * In the Dataflow Framework:
+    * `ThisLiteralNode` => `ThisKeywordNode`
+    * `ExplicitThisLiteralNode` => `ExplicitThisKeywordNode`
+    * `ImplicitThisLiteralNode` => `ImplicitThisKeywordNode`
 
 ---------------------------------------------------------------------------
 

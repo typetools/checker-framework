@@ -26,7 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
-import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisKeywordNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -34,7 +34,7 @@ import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ThisKeywordNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -222,9 +222,9 @@ public abstract class JavaExpression {
             } else {
                 result = fromNodeFieldAccess(provider, fan);
             }
-        } else if (receiverNode instanceof ExplicitThisLiteralNode) {
+        } else if (receiverNode instanceof ExplicitThisKeywordNode) {
             result = new ThisReference(receiverNode.getType());
-        } else if (receiverNode instanceof ThisLiteralNode) {
+        } else if (receiverNode instanceof ThisKeywordNode) {
             result = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof SuperNode) {
             result = new ThisReference(receiverNode.getType());

@@ -11,11 +11,11 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <em>this</em>
  * </pre>
  */
-public class ExplicitThisLiteralNode extends ThisLiteralNode {
+public class ExplicitThisKeywordNode extends ThisKeywordNode {
 
     protected final Tree tree;
 
-    public ExplicitThisLiteralNode(Tree t) {
+    public ExplicitThisKeywordNode(Tree t) {
         super(TreeUtils.typeOf(t));
         assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("this");
         tree = t;
@@ -28,7 +28,7 @@ public class ExplicitThisLiteralNode extends ThisLiteralNode {
 
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitExplicitThisLiteral(this, p);
+        return visitor.visitExplicitThisKeyword(this, p);
     }
 
     @Override

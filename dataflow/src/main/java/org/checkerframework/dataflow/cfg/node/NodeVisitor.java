@@ -103,9 +103,9 @@ public interface NodeVisitor<R, P> {
 
     R visitArrayAccess(ArrayAccessNode n, P p);
 
-    R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
+    R visitImplicitThisKeyword(ImplicitThisKeywordNode n, P p);
 
-    R visitExplicitThisLiteral(ExplicitThisLiteralNode n, P p);
+    R visitExplicitThisKeyword(ExplicitThisKeywordNode n, P p);
 
     R visitSuper(SuperNode n, P p);
 

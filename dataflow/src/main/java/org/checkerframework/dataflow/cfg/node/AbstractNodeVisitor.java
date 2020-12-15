@@ -246,18 +246,18 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
-    public R visitThisLiteral(ThisLiteralNode n, P p) {
+    public R visitThisKeyword(ThisKeywordNode n, P p) {
         return visitNode(n, p);
     }
 
     @Override
-    public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p) {
-        return visitThisLiteral(n, p);
+    public R visitImplicitThisKeyword(ImplicitThisKeywordNode n, P p) {
+        return visitThisKeyword(n, p);
     }
 
     @Override
-    public R visitExplicitThisLiteral(ExplicitThisLiteralNode n, P p) {
-        return visitThisLiteral(n, p);
+    public R visitExplicitThisKeyword(ExplicitThisKeywordNode n, P p) {
+        return visitThisKeyword(n, p);
     }
 
     @Override
