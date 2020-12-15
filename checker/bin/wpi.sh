@@ -219,11 +219,13 @@ elif [ "${has_java8}" = "yes" ]; then
 fi
 
 if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
-      # if running under Java 11 fails, try to run
-      # under Java 8 instead
-    export JAVA_HOME="${JAVA8_HOME}"
-    echo "couldn't build using Java 11; trying Java 8"
-    configure_and_exec_dljc "$@"
+    # if running under Java 11 fails, try to run
+    # under Java 8 instead
+    if [ "${has_java8}" = "yes" ]; then
+      export JAVA_HOME="${JAVA8_HOME}"
+      echo "couldn't build using Java 11; trying Java 8"
+      configure_and_exec_dljc "$@"
+    fi
 fi
 
 # support wpi-many.sh's ability to delete projects without usable results
