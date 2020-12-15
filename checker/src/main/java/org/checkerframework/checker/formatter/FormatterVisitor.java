@@ -125,7 +125,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                         for (ConversionCategory cat : formatCats) {
                             if (cat == ConversionCategory.NULL) {
                                 // I.3
-                                tu.warning(invc, "format.specifier.null", "");
+                                if (invc.value() == FormatterTreeUtil.InvocationType.NULLARRAY) {
+                                    tu.warning(invc, "format.specifier.null", "");
+                                } else {
+                                    tu.failure(invc, "format.specifier.null", "");
+                                }
                             }
                             if (cat == ConversionCategory.UNUSED) {
                                 // I.2
