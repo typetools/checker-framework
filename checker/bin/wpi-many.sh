@@ -172,7 +172,7 @@ do
     RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
     touch "${RESULT_LOG}"
 
-    /bin/bash "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}"
+    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}"
 
     popd || exit 5
 
