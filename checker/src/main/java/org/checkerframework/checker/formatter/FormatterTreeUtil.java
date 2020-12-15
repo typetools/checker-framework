@@ -323,12 +323,7 @@ public class FormatterTreeUtil {
                 // we did not recognize the argument type
                 return false;
             }
-            for (Class<? extends Object> c : formatCat.types) {
-                if (c.isAssignableFrom(type)) {
-                    return true;
-                }
-            }
-            return false;
+            return formatCat.isAssignableFrom(type);
         }
 
         /**
