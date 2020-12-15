@@ -320,7 +320,7 @@ public class FormatterTreeUtil {
          * @return true if the argument can be passed to the format specifier
          */
         public final boolean isValidArgument(ConversionCategory formatCat, TypeMirror argType) {
-            Class<? extends Object> type = typeMirrorToClass(argType);
+            Class<? extends Object> type = TypesUtils.getClassFromType(argType);
             if (type == null) {
                 // we did not recognize the argument type
                 return false;

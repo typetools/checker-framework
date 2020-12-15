@@ -37,7 +37,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public enum ConversionCategory {
     /** Use if the parameter can be of any type. Applicable for conversions b, B, h, H, s, S. */
-    GENERAL("bBhHsS", (Class<? extends Object>[]) null /* everything */),
+    GENERAL("bBhHsS", (Class<?>[]) null /* everything */),
 
     /**
      * Use if the parameter is of a basic types which represent Unicode characters: char, Character,
@@ -117,7 +117,7 @@ public enum ConversionCategory {
      * Only the first "a" and third "b" parameters are used, the second "unused" parameter is
      * ignored.
      */
-    UNUSED(null, (Class<? extends Object>[]) null /* everything */);
+    UNUSED(null, (Class<?>[]) null /* everything */);
 
     /** The argument types. Null means every type. */
     @SuppressWarnings("ImmutableEnumChecker") // TODO: clean this up!
@@ -132,7 +132,7 @@ public enum ConversionCategory {
      * @param chars the format specifier characters. Null means users cannot specify it directly.
      * @param types the argument types. Null means every type.
      */
-    ConversionCategory(@Nullable String chars, Class<? extends Object> @Nullable ... types) {
+    ConversionCategory(@Nullable String chars, Class<?> @Nullable ... types) {
         this.chars = chars;
         if (types == null) {
             this.types = types;
