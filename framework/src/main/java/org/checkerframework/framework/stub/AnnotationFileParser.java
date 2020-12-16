@@ -598,7 +598,7 @@ public class AnnotationFileParser {
      */
     private void processPackage(PackageDeclaration packDecl, StubAnnotations stubAnnos) {
         assert (packDecl != null);
-        if (notAnnotatedForThisChecker(packDecl.getAnnotations())) {
+        if (!isAnnotatedForThisChecker(packDecl.getAnnotations())) {
             return;
         }
         String packageName = packDecl.getNameAsString();
@@ -629,7 +629,7 @@ public class AnnotationFileParser {
             return;
         }
 
-        if (notAnnotatedForThisChecker(typeDecl.getAnnotations())) {
+        if (!isAnnotatedForThisChecker(typeDecl.getAnnotations())) {
             return;
         }
         String innerName =
@@ -890,7 +890,7 @@ public class AnnotationFileParser {
      */
     private void processCallableDeclaration(
             CallableDeclaration<?> decl, ExecutableElement elt, StubAnnotations stubAnnos) {
-        if (notAnnotatedForThisChecker(decl.getAnnotations())) {
+        if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
             return;
         }
         // Declaration annotations
@@ -1822,18 +1822,18 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
-     * not contain this checker.
+     * Returns true if one of the annotations is {@link AnnotatedFor} and this checker is in its
+     * list of checkers. If none of the annotations are {@code AnnotatedFor}, then also return true.
      *
      * @param annotations a list of JavaParser annotations
      * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
      *     not contain this checker
      */
-    private boolean notAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
+    private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
         if (isJdkAsStub) {
             // The Jdk stubs have purity annotations that should be read for all checkers.
             // TODO: Parse the jdk stubs, but only save the declaration annotations.
-            return false;
+            return true;
         }
         for (AnnotationExpr ae : annotations) {
             if (ae.getNameAsString().equals("AnnotatedFor")
@@ -1841,11 +1841,11 @@ public class AnnotationFileParser {
                             .equals("org.checkerframework.framework.qual.AnnotatedFor")) {
                 AnnotationMirror af = getAnnotation(ae, allAnnotations);
                 if (atypeFactory.areSameByClass(af, AnnotatedFor.class)) {
-                    return !atypeFactory.doesAnnotatedForApplyToThisChecker(af);
+                    return atypeFactory.doesAnnotatedForApplyToThisChecker(af);
                 }
             }
         }
-        return false;
+        return true;
     }
 
     /**

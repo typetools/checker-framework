@@ -4608,8 +4608,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Does that {@link org.checkerframework.framework.qual.AnnotatedFor}, {@code anno} annotation
-     * apply to this checker?
+     * Does {@code anno}, which is an {@link org.checkerframework.framework.qual.AnnotatedFor}
+     * annotation, apply to this checker?
      *
      * @param anno an {@link org.checkerframework.framework.qual.AnnotatedFor} annotation
      * @return whether {@code anno} applies to this checker
